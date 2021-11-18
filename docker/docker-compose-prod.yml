@@ -1,0 +1,27 @@
+version: '3.2'
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  postgres:
+
+services:
+  postgres:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345678
+      POSTGRES_DB: myscreen
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
