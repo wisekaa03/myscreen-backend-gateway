@@ -19,10 +19,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "docker:prod": "docker-compose -p myscreen -f docker/docker-compose-prod.yml up --remove-orphans -d",
-    "docker:dev": "docker-compose -p myscreen -f docker/docker-compose-dev.yml up --remove-orphans -d",
-    "docker:down:prod": "docker-compose -p myscreen -f docker/docker-compose-prod.yml down --rmi all -v",
-    "docker:down:dev": "docker-compose -p myscreen -f docker/docker-compose-dev.yml down --rmi all -v"
+    "docker:prod": "docker-compose -p myscreen-prod -f docker/docker-compose-prod.yml up --remove-orphans -d",
+    "docker:dev": "docker-compose -p myscreen-dev -f docker/docker-compose-dev.yml up --remove-orphans -d",
+    "docker:down:prod": "docker-compose -p myscreen-prod -f docker/docker-compose-prod.yml down --rmi all -v",
+    "docker:down:dev": "docker-compose -p myscreen-dev -f docker/docker-compose-dev.yml down --rmi all -v"
   },
   "engines": {
     "node": ">=16"
