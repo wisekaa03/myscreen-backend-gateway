@@ -1,23 +1,61 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "declaration": true,
+    "declaration": false,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "target": "ES2021",
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true,
+    "incremental": false,
     "skipLibCheck": true,
+    "strict": true,
     "strictNullChecks": false,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@/shared": [
+        "./src/shared"
+      ],
+      "@/shared/*": [
+        "./src/shared/*"
+      ],
+      "@/user": [
+        "./src/user"
+      ],
+      "@/user/*": [
+        "./src/user/*"
+      ],
+      "@/monitor": [
+        "./src/monitor"
+      ],
+      "@/monitor/*": [
+        "./src/monitor/*"
+      ],
+      "@/file": [
+        "./src/file"
+      ],
+      "@/file/*": [
+        "./src/file/*"
+      ],
+      "@/folder": [
+        "./src/folder"
+      ],
+      "@/folder/*": [
+        "./src/folder/*"
+      ],
+      "@/video": [
+        "./src/video"
+      ],
+      "@/video/*": [
+        "./src/video/*"
+      ],
+    }
   }
 }

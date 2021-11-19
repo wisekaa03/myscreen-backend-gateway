@@ -1,7 +1,11 @@
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeOrmOptionsService } from './shared/typeorm.options';
+
+import { TypeOrmOptionsService } from '@/shared/typeorm.options';
+import { FileModule } from '@/file/file.module';
+import { MonitorModule } from '@/monitor/monitor.module';
+import { UserModule } from '@/user/user.module';
 
 @Module({
   imports: [
@@ -10,7 +14,10 @@ import { TypeOrmOptionsService } from './shared/typeorm.options';
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmOptionsService,
     }),
-    TypeOrmModule.forFeature([]),
+
+    FileModule,
+    MonitorModule,
+    UserModule,
   ],
   providers: [Logger],
 })

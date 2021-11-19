@@ -4,11 +4,11 @@ import {
   utilities as nestWinstonModuleUtilities,
   WinstonModuleOptions,
 } from 'nest-winston';
-import winston from 'winston';
-import { ConfigService } from '@nestjs/config';
+import { transports, format } from 'winston';
+import type { ConfigService } from '@nestjs/config';
 
 const logFile = (): Format =>
-  winston.format.printf(
+  format.printf(
     ({ context, level, timestamp, message, ...meta }) =>
       `${
         typeof timestamp !== 'undefined'
@@ -23,7 +23,9 @@ const logFile = (): Format =>
       }`,
   );
 
-export default (configService: ConfigService): WinstonModuleOptions => {
+export const winstonOptions = (
+  configService: ConfigService,
+): WinstonModuleOptions => {
   const level = configService.get<string>('LOG_LEVEL', 'debug');
   const options = {
     handleExceptions: false,
@@ -34,10 +36,10 @@ export default (configService: ConfigService): WinstonModuleOptions => {
       //   format: winston.format.combine(winston.format.timestamp(), logFile()),
       //   level: 'debug',
       // }),
-      new winston.transports.Console({
-        format: winston.format.combine(
-          winston.format.timestamp(),
-          winston.format.ms(),
+      new transports.Console({
+        format: format.combine(
+          format.timestamp(),
+          format.ms(),
           nestWinstonModuleUtilities.format.nestLike('Nest', {
             prettyPrint: configService.get('NODE_ENV') === 'development',
           }),

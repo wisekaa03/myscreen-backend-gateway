@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { Logger as ITypeOrmLogger, QueryRunner } from 'typeorm';
+import type { Logger as ITypeOrmLogger, QueryRunner } from 'typeorm';
 
 export class TypeOrmLogger implements ITypeOrmLogger {
   private readonly logger = new Logger(TypeOrmLogger.name);
