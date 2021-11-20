@@ -41,7 +41,7 @@ export class MonitorEntity {
   @Column({ type: 'json' })
   monitor!: any;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   attached?: boolean;
 
   @Column()

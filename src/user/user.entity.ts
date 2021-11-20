@@ -62,10 +62,10 @@ export class UserEntity {
   @Column({ nullable: true })
   email_confirm_key?: string;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   verified!: boolean;
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   isDemoUser!: boolean;
 
   @Column({ type: 'float', default: 0 })

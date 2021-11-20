@@ -37,7 +37,7 @@ export class FileEntity {
   // @ForeignKey(() => Monitors)
   // targetId!: string;
 
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: true })
   uploading!: boolean;
 
   // @ForeignKey(() => User)

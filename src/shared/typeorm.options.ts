@@ -27,7 +27,7 @@ export class TypeOrmOptionsService implements TypeOrmOptionsFactory {
       entities: [`${pathResolve(__dirname, '..')}/**/*.entity.{ts,js}`],
       migrations: [`${pathResolve(__dirname, '..')}/migrations/*.{ts,js}`],
       migrationsRun: true,
-      autoLoadEntities: true,
+      // autoLoadEntities: true,
       cache: cache
         ? {
             type: 'ioredis',

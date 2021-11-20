@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "declaration": false,
+    "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -20,42 +20,12 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@/shared": [
-        "./src/shared"
+      "@/": [
+        "./src/"
       ],
-      "@/shared/*": [
-        "./src/shared/*"
-      ],
-      "@/user": [
-        "./src/user"
-      ],
-      "@/user/*": [
-        "./src/user/*"
-      ],
-      "@/monitor": [
-        "./src/monitor"
-      ],
-      "@/monitor/*": [
-        "./src/monitor/*"
-      ],
-      "@/file": [
-        "./src/file"
-      ],
-      "@/file/*": [
-        "./src/file/*"
-      ],
-      "@/folder": [
-        "./src/folder"
-      ],
-      "@/folder/*": [
-        "./src/folder/*"
-      ],
-      "@/video": [
-        "./src/video"
-      ],
-      "@/video/*": [
-        "./src/video/*"
-      ],
+      "@/*": [
+        "./src/*"
+      ]
     }
   }
 }
