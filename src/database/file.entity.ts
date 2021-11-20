@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '../user/user.entity';
+import { UserEntity } from './user.entity';
 
 export enum Type {
   MonitorOwnershipDoc = 'monitor-ownership-doc',

@@ -2,14 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
   JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { MonitorEntity } from '@/monitor/monitor.entity';
-import { genKey } from '../shared/utils';
+import { MonitorEntity } from './monitor.entity';
 
 enum Role {
   Administrator = 'administrator',

@@ -10,8 +10,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '@/user/user.entity';
-import { FileEntity } from '@/file/file.entity';
+import { UserEntity } from '@/database/user.entity';
+import { FileEntity } from '@/database/file.entity';
 
 export enum Orientation {
   Horizontal = 'Horizontal',

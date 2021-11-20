@@ -24,7 +24,7 @@ export class TypeOrmOptionsService implements TypeOrmOptionsFactory {
       logging: this.configService.get('LOG_LEVEL', 'debug').split(','),
       logger: new TypeOrmLogger(),
       synchronize: false,
-      entities: [`${pathResolve(__dirname, '..')}/**/*.entity.{ts,js}`],
+      entities: [`${pathResolve(__dirname, '..')}/database/*.entity.{ts,js}`],
       migrations: [`${pathResolve(__dirname, '..')}/migrations/*.{ts,js}`],
       migrationsRun: true,
       // autoLoadEntities: true,
