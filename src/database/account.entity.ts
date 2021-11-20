@@ -8,7 +8,7 @@ import {
   RelationId,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from '@/user/user.entity';
+import { UserEntity } from '@/database/user.entity';
 
 @Entity('accounts')
 export class AccountEntity {
