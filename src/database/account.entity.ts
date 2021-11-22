@@ -19,11 +19,8 @@ export class AccountEntity {
   amount!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn()
-  user!: UserEntity;
-
-  @RelationId((account: AccountEntity) => account.user)
-  userId!: string;
+  @JoinColumn({ name: 'userId' })
+  users!: UserEntity; // why users, user must be ?
 
   @CreateDateColumn()
   createdAt?: Date;

@@ -4,29 +4,27 @@ import {
   Entity,
   Generated,
   JoinColumn,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserEntity } from '@/database/user.entity';
 
 @Entity('orders')
 export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'numeric' })
   @Generated('increment')
+  @Column({ type: 'integer' })
   seqNo!: number;
 
   @Column({ type: 'numeric' })
   description!: number;
 
-  // @ForeignKey(() => User)
-  // @Column(DataType.UUID)
-  // userId!: string;
-
-  // @BelongsTo(() => User)
-  // users?: User;
+  @ManyToOne(() => UserEntity, (user) => user.id)
+  @JoinColumn({ name: 'userId' })
+  users!: UserEntity; // why users, user must be ?
 
   @CreateDateColumn()
   createdAt?: Date;

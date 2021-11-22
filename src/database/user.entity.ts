@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { MonitorEntity } from './monitor.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
 
 enum Role {
   Administrator = 'administrator',

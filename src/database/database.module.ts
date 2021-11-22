@@ -5,10 +5,7 @@ import { AccountEntity } from './account.entity';
 import { EditorEntity } from './editor.entity';
 import { FileEntity } from './file.entity';
 import { FolderEntity } from './folder.entity';
-import { MediaEditorMapEntity } from './media-editor-map.entity';
-import { MediaPlaylistMapEntity } from './media-playlist-map.entity';
 import { MediaEntity } from './media.entity';
-import { MonitorPlaylistMapEntity } from './monitor-playlist-map.entity';
 import { MonitorEntity } from './monitor.entity';
 import { OrderEntity } from './order.entity';
 import { PaymentLogsEntity } from './payment-logs.entity';
@@ -16,7 +13,6 @@ import { PaymentEntity } from './payment.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
 import { UserEntity } from './user.entity';
-import { VideoPlaylistMapEntity } from './video-playlist-map.entity';
 import { VideoEntity } from './video.entity';
 
 @Module({
@@ -26,10 +22,7 @@ import { VideoEntity } from './video.entity';
       EditorEntity,
       FileEntity,
       FolderEntity,
-      MediaEditorMapEntity,
-      MediaPlaylistMapEntity,
       MediaEntity,
-      MonitorPlaylistMapEntity,
       MonitorEntity,
       OrderEntity,
       PaymentLogsEntity,
@@ -37,7 +30,6 @@ import { VideoEntity } from './video.entity';
       PlaylistEntity,
       UptimeMonitoringEntity,
       UserEntity,
-      VideoPlaylistMapEntity,
       VideoEntity,
     ]),
   ],

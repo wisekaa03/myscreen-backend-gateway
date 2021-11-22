@@ -6,12 +6,12 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
+import { PlaylistEntity } from '@/database/playlist.entity';
 
 export enum Orientation {
   Horizontal = 'Horizontal',
@@ -29,7 +29,7 @@ export class MonitorEntity {
   @Column({ type: 'json' })
   address!: Record<string, string>;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'integer' })
   category!: number;
 
   @Column({ type: 'json' })
@@ -66,20 +66,20 @@ export class MonitorEntity {
   @Column({ type: 'float', nullable: true })
   longitude?: number;
 
-  // @ForeignKey(() => User)
-  // @Column(DataType.UUID)
-  // ownerId!: string;
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn({ name: 'ownerId' })
+  users!: UserEntity;
 
-  // @BelongsTo(() => User)
-  // users?: User;
-
-  @OneToMany(() => FileEntity, (file) => file.id)
-  @JoinColumn()
+  @ManyToMany(() => FileEntity, (file) => file.id)
+  @JoinTable()
   files?: FileEntity[];
 
-  // @ManyToMany(() => PlaylistEntity)
-  // @JoinTable()
-  // playlists?: PlaylistEntity[];
+  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.id)
+  @JoinTable({ name: 'media_playlist_map' })
+  playlists!: PlaylistEntity;
 
   @CreateDateColumn()
   createdAt?: Date;

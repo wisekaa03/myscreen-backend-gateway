@@ -10,10 +10,11 @@ export class Initial1637338021580 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     this.logger.debug(`UP ${queryRunner.connection.options.type}`);
 
+    // *** FUNCTIONS ***
     // set_updated_at()
     await queryRunner.query(
       '\n\
-      CREATE OR REPLACE FUNCTION public.set_updated_at()\n\
+      CREATE OR REPLACE FUNCTION set_updated_at()\n\
         RETURNS trigger\n\
       LANGUAGE \'plpgsql\'\n\
       COST 100\n\
@@ -27,127 +28,395 @@ export class Initial1637338021580 implements MigrationInterface {
         RETURN _new;\n\
       END;\n\
       $BODY$;\n\
-      ALTER FUNCTION public.set_updated_at() OWNER TO postgres;\n\
+      ALTER FUNCTION set_updated_at() OWNER TO postgres;\n\
     ',
     );
 
+    // *** ENUM ***
     // files_type_enum
     await queryRunner.query(
-      "DO $$ BEGIN \
-      PERFORM 'public.files_type_enum'::regtype; \
-      EXCEPTION \
-        WHEN undefined_object THEN \
-          CREATE TYPE \"public\".\"files_type_enum\" AS ENUM('monitor-ownership-doc', 'monitor-photo'); \
+      "DO $$ BEGIN\n\
+      PERFORM 'files_type_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+          CREATE TYPE \"files_type_enum\" AS ENUM('monitor-ownership-doc', 'monitor-photo');\n\
       END $$;",
     );
 
     // users_role_enum
     await queryRunner.query(
-      "DO $$ BEGIN \
-      PERFORM 'public.users_role_enum'::regtype; \
-      EXCEPTION \
-        WHEN undefined_object THEN \
-        CREATE TYPE \"public\".\"users_role_enum\" AS ENUM('administrator', 'monitor-owner', 'advertiser'); \
+      "DO $$ BEGIN\n\
+      PERFORM 'users_role_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"users_role_enum\" AS ENUM('administrator', 'monitor-owner', 'advertiser');\n\
       END $$;",
     );
 
     // monitors_orientation_enum
     await queryRunner.query(
-      "DO $$ BEGIN \
-      PERFORM 'public.monitors_orientation_enum'::regtype; \
-      EXCEPTION \
-        WHEN undefined_object THEN \
-        CREATE TYPE \"public\".\"monitors_orientation_enum\" AS ENUM('Horizontal', 'Vertical'); \
+      "DO $$ BEGIN\n\
+      PERFORM 'monitors_orientation_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"monitors_orientation_enum\" AS ENUM('Horizontal', 'Vertical');\n\
       END $$;",
     );
 
-    // files
+    // editors_renderingstatus_enum
     await queryRunner.query(
-      'CREATE TABLE IF NOT EXISTS \
-                  "files"  ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), \
-                            "originalFilename" character varying NOT NULL, \
-                            "hash" character varying NOT NULL, \
-                            "extension" character varying NOT NULL, \
-                            "type" "public"."files_type_enum" NOT NULL, \
-                            "uploading" boolean NOT NULL DEFAULT true, \
-                            "createdAt" TIMESTAMP NOT NULL DEFAULT now(), \
-                            "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), \
-                            CONSTRAINT "PK_6c16b9093a142e0e7613b04a3d9" PRIMARY KEY ("id"))',
+      "DO $$ BEGIN\n\
+      PERFORM 'editors_renderingstatus_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"editors_renderingstatus_enum\" AS ENUM('initial', 'ready', 'pending', 'error');\n\
+      END $$;",
     );
 
+    // media_type_enum
+    await queryRunner.query(
+      "DO $$ BEGIN\n\
+      PERFORM 'media_type_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"media_type_enum\" AS ENUM('video', 'image', 'audio');\n\
+      END $$;",
+    );
+
+    // *** TABLES ***
     // users
     await queryRunner.query(
-      'CREATE TABLE IF NOT EXISTS \
-                  "users"  ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), \
-                            "email" character varying NOT NULL, \
-                            "surname" character varying, \
-                            "name" character varying, \
-                            "middleName" character varying, \
-                            "password" character varying NOT NULL, \
-                            "phoneNumber" character varying, \
-                            "country" character varying DEFAULT \'RU\', \
-                            "city" character varying, \
-                            "company" character varying, \
-                            "role" "public"."users_role_enum" NOT NULL, \
-                            "forgot_confirm_key" character varying, \
-                            "email_confirm_key" character varying, \
-                            "verified" boolean NOT NULL DEFAULT false, \
-                            "isDemoUser" boolean NOT NULL DEFAULT false, \
-                            "countUsedSpace" double precision NOT NULL DEFAULT \'0\', \
-                            "createdAt" TIMESTAMP NOT NULL DEFAULT now(), \
-                            "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), \
-                            CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))',
+      'CREATE TABLE IF NOT EXISTS\n\
+                  "users"  ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                            "email" character varying NOT NULL,\n\
+                            "surname" character varying,\n\
+                            "name" character varying,\n\
+                            "middleName" character varying,\n\
+                            "password" character varying NOT NULL,\n\
+                            "phoneNumber" character varying,\n\
+                            "country" character varying DEFAULT \'RU\',\n\
+                            "city" character varying,\n\
+                            "company" character varying,\n\
+                            "role" "users_role_enum" NOT NULL,\n\
+                            "forgot_confirm_key" character varying,\n\
+                            "email_confirm_key" character varying,\n\
+                            "verified" boolean NOT NULL DEFAULT false,\n\
+                            "isDemoUser" boolean NOT NULL DEFAULT false,\n\
+                            "countUsedSpace" double precision NOT NULL DEFAULT \'0\',\n\
+                            "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                            "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                            CONSTRAINT "users_pkey" PRIMARY KEY ("id"))\
+        ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_users\n\
+        BEFORE UPDATE\n\
+        ON users\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+    ',
+    );
+
+    // folders
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+                "folders" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                          "name" character varying NOT NULL,\n\
+                          "parentFolderId" uuid,\n\
+                          "userId" uuid,\n\
+                          "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                          "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                          CONSTRAINT "folders_pkey" PRIMARY KEY ("id"),\n\
+                          CONSTRAINT "folders_userId_fkey" FOREIGN KEY ("userId")\n\
+                            REFERENCES public.users (id) MATCH SIMPLE\n\
+                              ON UPDATE CASCADE\n\
+                              ON DELETE NO ACTION\n\
+                    )',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_folders\n\
+        BEFORE UPDATE\n\
+        ON folders\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+      ',
+    );
+
+    // media
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+              "media" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                          "original_name" character varying NOT NULL,\n\
+                          "name" character varying NOT NULL,\n\
+                          "hash" character varying,\n\
+                          "type" "media_type_enum" NOT NULL,\n\
+                          "meta" json,\n\
+                          "folderId" uuid NOT NULL,\n\
+                          "ownerId" uuid,\n\
+                          "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                          "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                          CONSTRAINT "media_pkey" PRIMARY KEY ("id"),\n\
+                          CONSTRAINT "media_ownerId_fkey" FOREIGN KEY ("ownerId")\n\
+                            REFERENCES users (id) MATCH SIMPLE\n\
+                              ON UPDATE CASCADE\n\
+                              ON DELETE NO ACTION\n\
+      )',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_media\n\
+        BEFORE UPDATE\n\
+        ON media\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+      ',
+    );
+
+    // playlists
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+              "playlists" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                          "name" character varying NOT NULL,\n\
+                          "description" character varying,\n\
+                          "video_ids" uuid array,\n\
+                          "ownerId" uuid,\n\
+                          "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                          "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                          CONSTRAINT "playlists_pkey" PRIMARY KEY ("id"),\
+                          CONSTRAINT "playlists_ownerId_fkey" FOREIGN KEY ("ownerId")\n\
+                          REFERENCES users (id) MATCH SIMPLE\n\
+                          ON UPDATE CASCADE\n\
+                          ON DELETE NO ACTION\n\
+                        )\
+      ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_playlists\n\
+          BEFORE UPDATE\n\
+          ON playlists\n\
+          FOR EACH ROW\n\
+          EXECUTE FUNCTION set_updated_at();\
+    ',
     );
 
     // monitors
     await queryRunner.query(
-      'CREATE TABLE IF NOT EXISTS \
-                  "monitors" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), \
-                              "name" character varying NOT NULL, \
-                              "address" json NOT NULL, \
-                              "category" numeric NOT NULL, \
-                              "price" json NOT NULL, \
-                              "orientation" "public"."monitors_orientation_enum" NOT NULL, \
-                              "monitor" json NOT NULL, \
-                              "attached" boolean NOT NULL DEFAULT false, \
-                              "code" character varying NOT NULL, \
-                              "media" text array NOT NULL DEFAULT \'{}\', \
-                              "status" character varying NOT NULL DEFAULT \'offline\', \
-                              "last_seen" character varying, \
-                              "currentPlaylistId" uuid, \
-                              "latitude" double precision, \
-                              "longitude" double precision, \
-                              "createdAt" TIMESTAMP NOT NULL DEFAULT now(), \
-                              "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), \
-                              CONSTRAINT "UQ_32f18d6269ed22b34668835c3ae" UNIQUE ("name"), \
-                              CONSTRAINT "PK_193902e2013887310490284cdbe" PRIMARY KEY ("id"))',
+      'CREATE TABLE IF NOT EXISTS\n\
+              "monitors" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                          "name" character varying NOT NULL,\n\
+                          "address" json NOT NULL,\n\
+                          "category" integer NOT NULL,\n\
+                          "price" json NOT NULL,\n\
+                          "orientation" "monitors_orientation_enum" NOT NULL,\n\
+                          "monitor" json NOT NULL,\n\
+                          "attached" boolean NOT NULL DEFAULT false,\n\
+                          "code" character varying NOT NULL,\n\
+                          "media" character varying array NOT NULL DEFAULT \'{}\',\n\
+                          "status" character varying NOT NULL DEFAULT \'offline\',\n\
+                          "last_seen" character varying,\n\
+                          "currentPlaylistId" uuid,\n\
+                          "latitude" double precision,\n\
+                          "longitude" double precision,\n\
+                          "ownerId" uuid,\n\
+                          "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                          "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                          CONSTRAINT "monitors_name_key" UNIQUE ("name"),\n\
+                          CONSTRAINT "monitors_pkey" PRIMARY KEY ("id"),\n\
+                          CONSTRAINT "monitors_ownerId_fkey" FOREIGN KEY ("ownerId")\n\
+                            REFERENCES "users" (id) MATCH SIMPLE\n\
+                              ON UPDATE CASCADE\n\
+                              ON DELETE CASCADE\n\
+                      )\
+      ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_monitors\n\
+          BEFORE UPDATE\n\
+          ON monitors\n\
+          FOR EACH ROW\n\
+          EXECUTE FUNCTION set_updated_at();\
+    ',
     );
 
     // accounts
     await queryRunner.query(
-      'CREATE TABLE IF NOT EXISTS \
-                  "accounts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), \
-                              "userId" uuid, \
-                              "amount" character varying NOT NULL, \
-                              "createdAt" TIMESTAMP NOT NULL DEFAULT now(), \
-                              "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), \
-                              CONSTRAINT "accounts_pkey" PRIMARY KEY ("id"), \
-                              CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") \
-                                ON DELETE NO ACTION \
-                                ON UPDATE CASCADE \
+      'CREATE TABLE IF NOT EXISTS\n\
+                  "accounts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                              "userId" uuid,\n\
+                              "amount" character varying NOT NULL,\n\
+                              "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                              "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                              CONSTRAINT "accounts_pkey" PRIMARY KEY ("id"),\n\
+                              CONSTRAINT "accounts_userId_fkey" FOREIGN KEY ("userId")\n\
+                                REFERENCES "users"("id") MATCH SIMPLE\n\
+                                  ON UPDATE CASCADE\n\
+                                  ON DELETE NO ACTION\n\
                             )',
     );
     await queryRunner.query(
-      ' \
-      DROP TRIGGER IF EXISTS set_updated_at_accounts on accounts; \
-      CREATE TRIGGER set_updated_at_accounts BEFORE UPDATE ON accounts FOR EACH ROW EXECUTE PROCEDURE set_updated_at(); \
+      'CREATE TRIGGER set_updated_at_accounts\n\
+        BEFORE UPDATE\n\
+        ON accounts\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
       ',
     );
-    // await queryRunner.query(
-    //   'ALTER TABLE "accounts" ADD CONSTRAINT "FK_3aa23c0a6d107393e8b40e3e2a6" FOREIGN KEY ("userId") REFERENCES "users"("id") \
-    //               ON DELETE NO ACTION \
-    //               ON UPDATE NO ACTION',
-    // );
+
+    // media_playlist_map
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+        "media_playlist_map" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                              "mediaId" uuid,\n\
+                              "playlistId" uuid,\n\
+                              "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                              "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                              CONSTRAINT media_playlist_map_pkey PRIMARY KEY (id),\n\
+                              CONSTRAINT "media_playlist_map_mediaId_fkey" FOREIGN KEY ("mediaId")\n\
+                                  REFERENCES media (id) MATCH SIMPLE\n\
+                                  ON UPDATE CASCADE\n\
+                                  ON DELETE CASCADE,\n\
+                              CONSTRAINT "media_playlist_map_playlistId_fkey" FOREIGN KEY ("playlistId")\n\
+                                  REFERENCES playlists (id) MATCH SIMPLE\n\
+                                  ON UPDATE CASCADE\n\
+                                  ON DELETE CASCADE\n\
+                                )\
+      ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_media_playlist_map\n\
+        BEFORE UPDATE\n\
+        ON media_playlist_map\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\n\
+      ',
+    );
+
+    // editors
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+        "editors"  ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                    "width" integer NOT NULL,\n\
+                    "height" integer NOT NULL,\n\
+                    "fps" integer DEFAULT 24,\n\
+                    "renderingStatus" "editors_renderingstatus_enum" DEFAULT \'initial\'::"editors_renderingstatus_enum",\n\
+                    "fileId" character varying(255) COLLATE pg_catalog."default",\n\
+                    "keep_source_audio" boolean DEFAULT true,\n\
+                    "layers" json array DEFAULT \'{}\',\n\
+                    "total_duration" integer,\n\
+                    "audio_tracks" json array NOT NULL DEFAULT \'{}\',\n\
+                    "ownerId" uuid,\n\
+                    "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
+                    "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
+                    CONSTRAINT "editors_pkey" PRIMARY KEY (id),\n\
+                    CONSTRAINT "editors_ownerId_fkey" FOREIGN KEY ("ownerId")\n\
+                      REFERENCES users (id) MATCH SIMPLE\n\
+                        ON UPDATE CASCADE\n\
+                        ON DELETE NO ACTION\n\
+                  )',
+    );
+    await queryRunner.query(
+      '\
+        CREATE TRIGGER set_updated_at_editors\n\
+        BEFORE UPDATE\n\
+        ON editors\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+    ',
+    );
+
+    // video
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+            "videos" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                      "name" character varying NOT NULL,\n\
+                      "description" character varying,\n\
+                      "hash" boolean NOT NULL,\n\
+                      "original_name" character varying,\n\
+                      "duration" integer NOT NULL,\n\
+                      "filesize" integer NOT NULL,\n\
+                      "preview" character varying,\n\
+                      "extension" character varying NOT NULL,\n\
+                      "width" integer NOT NULL,\n\
+                      "height" integer NOT NULL,\n\
+                      "ownerId" uuid,\n\
+                      "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                      "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                      CONSTRAINT "videos_pkey" PRIMARY KEY ("id"),\n\
+                      CONSTRAINT "videos_ownerId_fkey" FOREIGN KEY ("ownerId")\n\
+                        REFERENCES users (id) MATCH SIMPLE\n\
+                          ON UPDATE CASCADE\n\
+                          ON DELETE NO ACTION\n\
+                    )\
+    ',
+    );
+    await queryRunner.query(
+      '\
+        CREATE TRIGGER set_updated_at_videos\n\
+        BEFORE UPDATE\n\
+        ON videos\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+    ',
+    );
+
+    // video_playlist_map
+    await queryRunner.query(
+      '\
+      CREATE TABLE IF NOT EXISTS\n\
+          "video_playlist_map" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                                "videoId" uuid,\n\
+                                "playlistId" uuid,\n\
+                                "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                                "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                                CONSTRAINT "video_playlist_map_pkey" PRIMARY KEY (id),\n\
+                                CONSTRAINT "video_playlist_map_playlistId_fkey" FOREIGN KEY ("playlistId")\n\
+                                  REFERENCES playlists (id) MATCH SIMPLE\n\
+                                    ON UPDATE CASCADE\n\
+                                    ON DELETE CASCADE,\n\
+                                CONSTRAINT "video_playlist_map_videoId_fkey" FOREIGN KEY ("videoId")\n\
+                                  REFERENCES videos (id) MATCH SIMPLE\n\
+                                    ON UPDATE CASCADE\n\
+                                    ON DELETE CASCADE\n\
+                              )\
+    ',
+    );
+
+    // files
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+                  "files"  ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                            "originalFilename" character varying NOT NULL,\n\
+                            "hash" character varying NOT NULL,\n\
+                            "extension" character varying NOT NULL,\n\
+                            "type" "files_type_enum" NOT NULL,\n\
+                            "uploading" boolean NOT NULL DEFAULT true,\n\
+                            "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                            "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                            "folderId" uuid,\n\
+                            "targetId" uuid,\n\
+                            "ownerId" uuid,\n\
+                            CONSTRAINT files_pkey PRIMARY KEY (id),\n\
+                            CONSTRAINT "files_folderId_fkey" FOREIGN KEY ("folderId")\n\
+                                REFERENCES public.folders (id) MATCH SIMPLE\n\
+                                ON UPDATE CASCADE\n\
+                                ON DELETE SET NULL,\n\
+                            CONSTRAINT "files_ownerId_fkey" FOREIGN KEY ("ownerId")\n\
+                                REFERENCES public.users (id) MATCH SIMPLE\n\
+                                ON UPDATE CASCADE\n\
+                                ON DELETE SET NULL,\n\
+                            CONSTRAINT "files_targetId_fkey" FOREIGN KEY ("targetId")\n\
+                                REFERENCES public.monitors (id) MATCH SIMPLE\n\
+                                ON UPDATE CASCADE\n\
+                                ON DELETE SET NULL\n\
+      )',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_files\n\
+        BEFORE UPDATE\n\
+        ON files\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+      ',
+    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

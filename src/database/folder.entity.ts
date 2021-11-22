@@ -2,12 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
   JoinColumn,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserEntity } from '@/database/user.entity';
 
 @Entity('folders')
 export class FolderEntity {
@@ -17,12 +17,9 @@ export class FolderEntity {
   @Column()
   name!: string;
 
-  // @ForeignKey(() => User)
-  // @Column(DataType.UUID)
-  // userId!: string;
-
-  // @BelongsTo(() => User)
-  // users?: User;
+  @ManyToOne(() => UserEntity, (user) => user.id)
+  @JoinColumn({ name: 'userId' })
+  users!: UserEntity; // why users, user must be ?
 
   @Column({ type: 'uuid', nullable: true })
   parentFolderId!: string | null;

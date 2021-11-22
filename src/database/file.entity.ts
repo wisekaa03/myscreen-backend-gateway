@@ -3,14 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from './user.entity';
+import { MonitorEntity } from './monitor.entity';
+import { FolderEntity } from './folder.entity';
 
 export enum Type {
   MonitorOwnershipDoc = 'monitor-ownership-doc',
@@ -34,26 +33,20 @@ export class FileEntity {
   @Column({ type: 'enum', enum: Type })
   type!: Type;
 
-  // @ForeignKey(() => Monitors)
-  // targetId!: string;
-
   @Column({ type: 'boolean', default: true })
   uploading!: boolean;
 
-  // @ForeignKey(() => User)
-  // ownerId!: string;
+  @ManyToOne(() => FolderEntity, (folder) => folder.id)
+  @JoinColumn({ name: 'folderId' })
+  folders!: FolderEntity; // why folders, folder must be ?
 
-  // @ForeignKey(() => Folders)
-  // folderId!: string;
+  @ManyToOne(() => MonitorEntity, (monitor) => monitor.id)
+  @JoinColumn({ name: 'targetId' })
+  monitor!: MonitorEntity;
 
-  // @BelongsTo(() => Folders)
-  // folders?: string[];
-
-  // @BelongsTo(() => Monitors, 'targetId')
-  // monitor?: Monitors;
-
-  // @BelongsTo(() => User)
-  // users?: string[];
+  @ManyToOne(() => UserEntity, (user) => user.id)
+  @JoinColumn({ name: 'ownerId' })
+  users!: UserEntity; // why users, user must be ?
 
   @CreateDateColumn()
   createdAt?: Date;
