@@ -437,6 +437,72 @@ export class Initial1637338021580 implements MigrationInterface {
                               )\
     ',
     );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_video_playlist_map\n\
+        BEFORE UPDATE\n\
+        ON video_playlist_map\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+    ',
+    );
+
+    // media_editor_map
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+        "media_editor_map"      ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                                "mediaId" uuid,\n\
+                                "editorId" uuid,\n\
+                                "createdAt" timestamp without time zone NOT NULL DEFAULT now(),\n\
+                                "updatedAt" timestamp without time zone NOT NULL DEFAULT now(),\n\
+                                CONSTRAINT media_editor_map_pkey PRIMARY KEY (id),\n\
+                                CONSTRAINT "media_editor_map_editorId_fkey" FOREIGN KEY ("editorId")\n\
+                                  REFERENCES editors (id) MATCH SIMPLE\n\
+                                    ON UPDATE CASCADE\n\
+                                    ON DELETE CASCADE,\n\
+                                CONSTRAINT "media_editor_map_mediaId_fkey" FOREIGN KEY ("mediaId")\n\
+                                  REFERENCES media (id) MATCH SIMPLE\n\
+                                    ON UPDATE CASCADE\n\
+                                    ON DELETE CASCADE\n\
+                              )\
+    ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_media_editor_map\n\
+        BEFORE UPDATE\n\
+        ON media_editor_map\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+      ',
+    );
+
+    // monitor_playlist_map
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+        "monitor_playlist_map" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                                "monitorId" uuid,\n\
+                                "playlistId" uuid,\n\
+                                "createdAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
+                                "updatedAt" timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,\n\
+                                CONSTRAINT monitor_playlist_map_pkey PRIMARY KEY (id),\n\
+                                CONSTRAINT "monitor_playlist_map_monitorId_fkey" FOREIGN KEY ("monitorId")\n\
+                                  REFERENCES public.monitors (id) MATCH SIMPLE\n\
+                                    ON UPDATE CASCADE\n\
+                                    ON DELETE CASCADE,\n\
+                                CONSTRAINT "monitor_playlist_map_playlistId_fkey" FOREIGN KEY ("playlistId")\n\
+                                  REFERENCES public.playlists (id) MATCH SIMPLE\n\
+                                    ON UPDATE CASCADE\n\
+                                    ON DELETE CASCADE\n\
+                              )\
+    ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_monitor_playlist_map\n\
+        BEFORE UPDATE\n\
+        ON monitor_playlist_map\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+      ',
+    );
 
     // files
     await queryRunner.query(
@@ -491,7 +557,7 @@ export class Initial1637338021580 implements MigrationInterface {
                     REFERENCES "users" (id) MATCH SIMPLE\n\
                     ON UPDATE CASCADE\n\
                     ON DELETE NO ACTION\n\
-        )\
+                  )\
       ',
     );
     await queryRunner.query(
@@ -535,7 +601,7 @@ export class Initial1637338021580 implements MigrationInterface {
                             REFERENCES users (id) MATCH SIMPLE\n\
                             ON UPDATE CASCADE\n\
                             ON DELETE NO ACTION\n\
-      )\
+                      )\
     ',
     );
     await queryRunner.query(
@@ -596,7 +662,7 @@ export class Initial1637338021580 implements MigrationInterface {
                                   REFERENCES monitors (id) MATCH SIMPLE\n\
                                   ON UPDATE CASCADE\n\
                                   ON DELETE NO ACTION\n\
-                              )\
+                            )\
     ',
     );
     await queryRunner.query(
