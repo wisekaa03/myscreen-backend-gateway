@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { UnauthorizedException } from '@nestjs/common';
 import { Status } from '../status.enum';
 
+/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
 // @ts-ignore
 export class UnauthorizedErrorResponse extends UnauthorizedException {
   constructor() {

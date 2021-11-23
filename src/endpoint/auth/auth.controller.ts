@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, UseGuards } from '@nestjs/common';
+import { Controller, Get, Logger } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,

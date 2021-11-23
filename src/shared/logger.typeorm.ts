@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import type { Logger as ITypeOrmLogger, QueryRunner } from 'typeorm';
+import type { Logger as ITypeOrmLogger } from 'typeorm';
 
 export class TypeOrmLogger implements ITypeOrmLogger {
   private readonly logger = new Logger(TypeOrmLogger.name);
@@ -10,7 +10,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
   logQuery(
     message: string,
     param?: unknown[],
-    queryRunner?: QueryRunner,
+    // queryRunner?: QueryRunner,
   ): void {
     if (message !== 'SELECT 1' && this.logger.debug) {
       let parameters: unknown[] | undefined;
@@ -32,7 +32,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     error: string,
     message: string,
     param?: unknown[],
-    queryRunner?: QueryRunner,
+    // queryRunner?: QueryRunner,
   ): void {
     let parameters: unknown[] | undefined;
     if (Array.isArray(param) && param.length > 0) {
@@ -56,7 +56,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     time: number,
     query: string,
     parameters?: unknown[],
-    queryRunner?: QueryRunner,
+    // queryRunner?: QueryRunner,
   ): void {
     if (this.logger.debug) {
       this.logger.debug({ message: `Time is slow: ${time}`, parameters });
@@ -66,7 +66,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
   /**
    * Logs events from the schema build process.
    */
-  logSchemaBuild(message: string, queryRunner?: QueryRunner): void {
+  logSchemaBuild(message: string /* queryRunner?: QueryRunner */): void {
     if (this.logger.debug) {
       this.logger.debug({
         message,
@@ -77,7 +77,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
   /**
    * Logs events from the migrations run process.
    */
-  logMigration(message: string, queryRunner?: QueryRunner): void {
+  logMigration(message: string /* queryRunner?: QueryRunner */): void {
     if (this.logger.debug) {
       this.logger.debug({
         message,
@@ -92,7 +92,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
   log(
     level: 'log' | 'info' | 'warn',
     message: unknown,
-    queryRunner?: QueryRunner,
+    // queryRunner?: QueryRunner,
   ): void {
     if (this.logger.debug) {
       this.logger.debug(message);

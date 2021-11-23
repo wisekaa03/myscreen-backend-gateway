@@ -1,5 +1,5 @@
-import type { Format } from 'logform';
-import safeStringify from 'fast-safe-stringify';
+// import type { Format } from 'logform';
+// import safeStringify from 'fast-safe-stringify';
 import {
   utilities as nestWinstonModuleUtilities,
   WinstonModuleOptions,
@@ -7,21 +7,21 @@ import {
 import { transports, format } from 'winston';
 import type { ConfigService } from '@nestjs/config';
 
-const logFile = (): Format =>
-  format.printf(
-    ({ context, level, timestamp, message, ...meta }) =>
-      `${
-        typeof timestamp !== 'undefined'
-          ? `${new Date(timestamp).toLocaleString()}\t`
-          : `${Date.now().toLocaleString()}\t`
-      }${`${level.charAt(0).toUpperCase() + level.slice(1)}\t`}${
-        typeof context !== 'undefined' ? `${`[${context}]`}\t` : '\t'
-      }${message}${
-        typeof meta === 'object' && Object.keys(meta).length > 0
-          ? `\t${safeStringify(meta)}`
-          : ''
-      }`,
-  );
+// const logFile = (): Format =>
+//   format.printf(
+//     ({ context, level, timestamp, message, ...meta }) =>
+//       `${
+//         typeof timestamp !== 'undefined'
+//           ? `${new Date(timestamp).toLocaleString()}\t`
+//           : `${Date.now().toLocaleString()}\t`
+//       }${`${level.charAt(0).toUpperCase() + level.slice(1)}\t`}${
+//         typeof context !== 'undefined' ? `${`[${context}]`}\t` : '\t'
+//       }${message}${
+//         typeof meta === 'object' && Object.keys(meta).length > 0
+//           ? `\t${safeStringify(meta)}`
+//           : ''
+//       }`,
+//   );
 
 export const winstonOptions = (
   configService: ConfigService,
