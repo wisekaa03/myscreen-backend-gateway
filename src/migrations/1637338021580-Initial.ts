@@ -83,11 +83,67 @@ export class Initial1637338021580 implements MigrationInterface {
       END $$;",
     );
 
+    // payments_paymentservice_enum
+    await queryRunner.query(
+      "DO $$ BEGIN\n\
+      PERFORM 'payments_paymentservice_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"payments_paymentservice_enum\" AS ENUM('youkassa', 'invoice');\n\
+      END $$;",
+    );
+
+    // payments_status_enum
+    await queryRunner.query(
+      "DO $$ BEGIN\n\
+      PERFORM 'payments_status_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"payments_status_enum\" AS ENUM('pending', 'succeeded', 'cancelled', 'waiting_for_capture');\n\
+      END $$;",
+    );
+
+    // payments_receiptstatus_enum
+    await queryRunner.query(
+      "DO $$ BEGIN\n\
+      PERFORM 'payments_receiptstatus_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"payments_receiptstatus_enum\" AS ENUM('pending', 'succeeded', 'cancelled');\n\
+      END $$;",
+    );
+
+    // payments_cancellationparty_enum
+    await queryRunner.query(
+      "DO $$ BEGIN\n\
+      PERFORM 'payments_cancellationparty_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"payments_cancellationparty_enum\" AS ENUM('yandex_checkout', 'yoo_money', 'payment_network', 'merchant');\n\
+      END $$;",
+    );
+
+    // payments_cancellationreason_enum
+    await queryRunner.query(
+      "DO $$ BEGIN\n\
+      PERFORM 'payments_cancellationreason_enum'::regtype;\n\
+      EXCEPTION\n\
+        WHEN undefined_object THEN\n\
+        CREATE TYPE \"payments_cancellationreason_enum\" AS ENUM(\n\
+          '3d_secure_failed', 'call_issuer', 'canceled_by_merchant', 'card_expired',\n\
+          'country_forbidden', 'expired_on_capture', 'fraud_suspected', 'general_decline',\n\
+          'identification_required', 'insufficient_funds', 'internal_timeout', 'invalid_card_number',\n\
+          'invalid_csc', 'issuer_unavailable', 'payment_method_limit_exceeded', 'payment_method_restricted',\n\
+          'permission_revoked', 'unsupported_mobile_operator'\n\
+        );\n\
+      END $$;",
+    );
+
     // *** TABLES ***
     // users
     await queryRunner.query(
       'CREATE TABLE IF NOT EXISTS\n\
-                  "users"  ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+        "users"            ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                             "email" character varying NOT NULL,\n\
                             "surname" character varying,\n\
                             "name" character varying,\n\
@@ -105,8 +161,9 @@ export class Initial1637338021580 implements MigrationInterface {
                             "countUsedSpace" double precision NOT NULL DEFAULT \'0\',\n\
                             "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
                             "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
-                            CONSTRAINT "users_pkey" PRIMARY KEY ("id"))\
-        ',
+                            CONSTRAINT "users_pkey" PRIMARY KEY ("id")\n\
+                          )\
+      ',
     );
     await queryRunner.query(
       'CREATE TRIGGER set_updated_at_users\n\
@@ -120,7 +177,7 @@ export class Initial1637338021580 implements MigrationInterface {
     // folders
     await queryRunner.query(
       'CREATE TABLE IF NOT EXISTS\n\
-                "folders" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+        "folders"        ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                           "name" character varying NOT NULL,\n\
                           "parentFolderId" uuid,\n\
                           "userId" uuid,\n\
@@ -131,7 +188,8 @@ export class Initial1637338021580 implements MigrationInterface {
                             REFERENCES public.users (id) MATCH SIMPLE\n\
                               ON UPDATE CASCADE\n\
                               ON DELETE NO ACTION\n\
-                    )',
+                        )\
+      ',
     );
     await queryRunner.query(
       'CREATE TRIGGER set_updated_at_folders\n\
@@ -145,7 +203,7 @@ export class Initial1637338021580 implements MigrationInterface {
     // media
     await queryRunner.query(
       'CREATE TABLE IF NOT EXISTS\n\
-              "media" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+        "media"          ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                           "original_name" character varying NOT NULL,\n\
                           "name" character varying NOT NULL,\n\
                           "hash" character varying,\n\
@@ -160,7 +218,8 @@ export class Initial1637338021580 implements MigrationInterface {
                             REFERENCES users (id) MATCH SIMPLE\n\
                               ON UPDATE CASCADE\n\
                               ON DELETE NO ACTION\n\
-      )',
+                        )\
+      ',
     );
     await queryRunner.query(
       'CREATE TRIGGER set_updated_at_media\n\
@@ -174,18 +233,18 @@ export class Initial1637338021580 implements MigrationInterface {
     // playlists
     await queryRunner.query(
       'CREATE TABLE IF NOT EXISTS\n\
-              "playlists" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+        "playlists"      ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                           "name" character varying NOT NULL,\n\
                           "description" character varying,\n\
                           "video_ids" uuid array,\n\
                           "ownerId" uuid,\n\
                           "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
                           "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
-                          CONSTRAINT "playlists_pkey" PRIMARY KEY ("id"),\
+                          CONSTRAINT "playlists_pkey" PRIMARY KEY ("id"),\n\
                           CONSTRAINT "playlists_ownerId_fkey" FOREIGN KEY ("ownerId")\n\
-                          REFERENCES users (id) MATCH SIMPLE\n\
-                          ON UPDATE CASCADE\n\
-                          ON DELETE NO ACTION\n\
+                            REFERENCES users (id) MATCH SIMPLE\n\
+                              ON UPDATE CASCADE\n\
+                              ON DELETE NO ACTION\n\
                         )\
       ',
     );
@@ -201,7 +260,7 @@ export class Initial1637338021580 implements MigrationInterface {
     // monitors
     await queryRunner.query(
       'CREATE TABLE IF NOT EXISTS\n\
-              "monitors" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+        "monitors"       ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                           "name" character varying NOT NULL,\n\
                           "address" json NOT NULL,\n\
                           "category" integer NOT NULL,\n\
@@ -225,7 +284,7 @@ export class Initial1637338021580 implements MigrationInterface {
                             REFERENCES "users" (id) MATCH SIMPLE\n\
                               ON UPDATE CASCADE\n\
                               ON DELETE CASCADE\n\
-                      )\
+                        )\
       ',
     );
     await queryRunner.query(
@@ -240,7 +299,7 @@ export class Initial1637338021580 implements MigrationInterface {
     // accounts
     await queryRunner.query(
       'CREATE TABLE IF NOT EXISTS\n\
-                  "accounts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+        "accounts"           ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                               "userId" uuid,\n\
                               "amount" character varying NOT NULL,\n\
                               "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
@@ -250,7 +309,8 @@ export class Initial1637338021580 implements MigrationInterface {
                                 REFERENCES "users"("id") MATCH SIMPLE\n\
                                   ON UPDATE CASCADE\n\
                                   ON DELETE NO ACTION\n\
-                            )',
+                            )\
+      ',
     );
     await queryRunner.query(
       'CREATE TRIGGER set_updated_at_accounts\n\
@@ -278,7 +338,7 @@ export class Initial1637338021580 implements MigrationInterface {
                                   REFERENCES playlists (id) MATCH SIMPLE\n\
                                   ON UPDATE CASCADE\n\
                                   ON DELETE CASCADE\n\
-                                )\
+                            )\
       ',
     );
     await queryRunner.query(
@@ -311,11 +371,11 @@ export class Initial1637338021580 implements MigrationInterface {
                       REFERENCES users (id) MATCH SIMPLE\n\
                         ON UPDATE CASCADE\n\
                         ON DELETE NO ACTION\n\
-                  )',
+                  )\
+      ',
     );
     await queryRunner.query(
-      '\
-        CREATE TRIGGER set_updated_at_editors\n\
+      'CREATE TRIGGER set_updated_at_editors\n\
         BEFORE UPDATE\n\
         ON editors\n\
         FOR EACH ROW\n\
@@ -326,7 +386,7 @@ export class Initial1637338021580 implements MigrationInterface {
     // video
     await queryRunner.query(
       'CREATE TABLE IF NOT EXISTS\n\
-            "videos" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+        "videos"     ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                       "name" character varying NOT NULL,\n\
                       "description" character varying,\n\
                       "hash" boolean NOT NULL,\n\
@@ -349,8 +409,7 @@ export class Initial1637338021580 implements MigrationInterface {
     ',
     );
     await queryRunner.query(
-      '\
-        CREATE TRIGGER set_updated_at_videos\n\
+      'CREATE TRIGGER set_updated_at_videos\n\
         BEFORE UPDATE\n\
         ON videos\n\
         FOR EACH ROW\n\
@@ -360,9 +419,8 @@ export class Initial1637338021580 implements MigrationInterface {
 
     // video_playlist_map
     await queryRunner.query(
-      '\
-      CREATE TABLE IF NOT EXISTS\n\
-          "video_playlist_map" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+      'CREATE TABLE IF NOT EXISTS\n\
+        "video_playlist_map"   ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                                 "videoId" uuid,\n\
                                 "playlistId" uuid,\n\
                                 "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
@@ -383,7 +441,7 @@ export class Initial1637338021580 implements MigrationInterface {
     // files
     await queryRunner.query(
       'CREATE TABLE IF NOT EXISTS\n\
-                  "files"  ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+        "files"            ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
                             "originalFilename" character varying NOT NULL,\n\
                             "hash" character varying NOT NULL,\n\
                             "extension" character varying NOT NULL,\n\
@@ -396,23 +454,155 @@ export class Initial1637338021580 implements MigrationInterface {
                             "ownerId" uuid,\n\
                             CONSTRAINT files_pkey PRIMARY KEY (id),\n\
                             CONSTRAINT "files_folderId_fkey" FOREIGN KEY ("folderId")\n\
-                                REFERENCES public.folders (id) MATCH SIMPLE\n\
+                                REFERENCES folders (id) MATCH SIMPLE\n\
                                 ON UPDATE CASCADE\n\
                                 ON DELETE SET NULL,\n\
                             CONSTRAINT "files_ownerId_fkey" FOREIGN KEY ("ownerId")\n\
-                                REFERENCES public.users (id) MATCH SIMPLE\n\
+                                REFERENCES users (id) MATCH SIMPLE\n\
                                 ON UPDATE CASCADE\n\
                                 ON DELETE SET NULL,\n\
                             CONSTRAINT "files_targetId_fkey" FOREIGN KEY ("targetId")\n\
-                                REFERENCES public.monitors (id) MATCH SIMPLE\n\
+                                REFERENCES monitors (id) MATCH SIMPLE\n\
                                 ON UPDATE CASCADE\n\
                                 ON DELETE SET NULL\n\
-      )',
+                          )\
+      ',
     );
     await queryRunner.query(
       'CREATE TRIGGER set_updated_at_files\n\
         BEFORE UPDATE\n\
         ON files\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+      ',
+    );
+
+    // orders
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+        "orders"   ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                    "seqNo" SERIAL NOT NULL,\n\
+                    "description" numeric NOT NULL,\n\
+                    "userId" uuid,\n\
+                    "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                    "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                    CONSTRAINT "orders_pkey" PRIMARY KEY ("id"),\n\
+                    CONSTRAINT "orders_userId_fkey" FOREIGN KEY ("userId")\n\
+                    REFERENCES "users" (id) MATCH SIMPLE\n\
+                    ON UPDATE CASCADE\n\
+                    ON DELETE NO ACTION\n\
+        )\
+      ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_orders\n\
+        BEFORE UPDATE\n\
+        ON orders\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+      ',
+    );
+
+    // payments
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+        "payments"      ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                        "externalPayment" character varying,\n\
+                        "paid" boolean NOT NULL,\n\
+                        "refunded" boolean NOT NULL DEFAULT false,\n\
+                        "refundId" character varying NOT NULL,\n\
+                        "test" boolean,\n\
+                        "userId" uuid,\n\
+                        "orderId" uuid,\n\
+                        "paymentService" "payments_paymentservice_enum" NOT NULL,\n\
+                        "amount" character varying NOT NULL,\n\
+                        "incomeAmount" character varying,\n\
+                        "description" character varying,\n\
+                        "status" "payments_status_enum" NOT NULL,\n\
+                        "capturedAt" timestamp,\n\
+                        "expiresAt" timestamp,\n\
+                        "receiptStatus" "payments_receiptstatus_enum",\n\
+                        "cancellationParty" "payments_cancellationparty_enum",\n\
+                        "cancellationReason" "payments_cancellationreason_enum",\n\
+                        "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                        "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                        CONSTRAINT payments_pkey PRIMARY KEY (id),\n\
+                        CONSTRAINT "payments_orderId_fkey" FOREIGN KEY ("orderId")\n\
+                            REFERENCES orders (id) MATCH SIMPLE\n\
+                            ON UPDATE CASCADE\n\
+                            ON DELETE NO ACTION,\n\
+                        CONSTRAINT "payments_userId_fkey" FOREIGN KEY ("userId")\n\
+                            REFERENCES users (id) MATCH SIMPLE\n\
+                            ON UPDATE CASCADE\n\
+                            ON DELETE NO ACTION\n\
+      )\
+    ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_payments\n\
+        BEFORE UPDATE\n\
+        ON payments\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+    ',
+    );
+
+    // payment_logs
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+        "payment_logs"  ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                        "userId" uuid,\n\
+                        "orderId" uuid,\n\
+                        "paymentId" uuid,\n\
+                        "log" jsonb,\n\
+                        "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                        "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                        CONSTRAINT payment_logs_pkey PRIMARY KEY (id),\n\
+                        CONSTRAINT "payment_logs_orderId_fkey" FOREIGN KEY ("orderId")\n\
+                            REFERENCES orders (id) MATCH SIMPLE\n\
+                            ON UPDATE CASCADE\n\
+                            ON DELETE NO ACTION,\n\
+                        CONSTRAINT "payment_logs_paymentId_fkey" FOREIGN KEY ("paymentId")\n\
+                            REFERENCES payments (id) MATCH SIMPLE\n\
+                            ON UPDATE CASCADE\n\
+                            ON DELETE NO ACTION,\n\
+                        CONSTRAINT "payment_logs_userId_fkey" FOREIGN KEY ("userId")\n\
+                            REFERENCES users (id) MATCH SIMPLE\n\
+                            ON UPDATE CASCADE\n\
+                            ON DELETE NO ACTION\n\
+                        )\
+      ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_payment_logs\n\
+        BEFORE UPDATE\n\
+        ON payment_logs\n\
+        FOR EACH ROW\n\
+        EXECUTE FUNCTION set_updated_at();\
+      ',
+    );
+
+    // uptime_monitoring
+    await queryRunner.query(
+      'CREATE TABLE IF NOT EXISTS\n\
+        "uptime_monitoring"   ("id" uuid NOT NULL DEFAULT uuid_generate_v4(),\n\
+                              "processing_hour" integer NOT NULL,\n\
+                              "monitor_id" uuid NOT NULL,\n\
+                              "count" integer DEFAULT \'0\',\n\
+                              "createdAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                              "updatedAt" TIMESTAMP NOT NULL DEFAULT now(),\n\
+                              CONSTRAINT uptime_monitoring_pkey PRIMARY KEY (id),\n\
+                              CONSTRAINT uptime_monitoring_monitor_id_fkey FOREIGN KEY (monitor_id)\n\
+                                  REFERENCES monitors (id) MATCH SIMPLE\n\
+                                  ON UPDATE CASCADE\n\
+                                  ON DELETE NO ACTION\n\
+                              )\
+    ',
+    );
+    await queryRunner.query(
+      'CREATE TRIGGER set_updated_at_uptime_monitoring\n\
+        BEFORE UPDATE\n\
+        ON uptime_monitoring\n\
         FOR EACH ROW\n\
         EXECUTE FUNCTION set_updated_at();\
       ',

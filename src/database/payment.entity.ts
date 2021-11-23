@@ -2,12 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
   JoinColumn,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { UserEntity } from '@/database/user.entity';
+import { OrderEntity } from '@/database/order.entity';
 
 export enum PaymentService {
   Youkassa = 'youkassa',
@@ -60,6 +62,59 @@ export enum CancellationReason {
 export class PaymentEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @Column({ nullable: true })
+  externalPayment!: string;
+
+  @Column({ type: 'boolean' })
+  paid!: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  refunded!: boolean;
+
+  @Column()
+  refundId!: string;
+
+  @Column({ type: 'boolean', nullable: true })
+  test!: boolean;
+
+  @ManyToOne(() => UserEntity, (user) => user.id)
+  @JoinColumn({ name: 'userId' })
+  users!: UserEntity; // why users, user must be ?
+
+  @ManyToOne(() => OrderEntity, (order) => order.id)
+  @JoinColumn({ name: 'orderId' })
+  orders!: OrderEntity; // why orders, order must be ?
+
+  @Column({ type: 'enum', enum: PaymentService, nullable: false })
+  paymentService!: PaymentService;
+
+  @Column({ nullable: false })
+  amount!: string;
+
+  @Column({ nullable: true })
+  incomeAmount!: string;
+
+  @Column()
+  description!: string;
+
+  @Column({ type: 'enum', enum: Status })
+  status!: Status;
+
+  @Column({ type: 'timestamp', nullable: true })
+  capturedAt!: Date;
+
+  @Column({ type: 'timestamp', nullable: true })
+  expiresAt!: Date;
+
+  @Column({ type: 'enum', enum: ReceiptStatus, nullable: true })
+  receiptStatus!: ReceiptStatus;
+
+  @Column({ type: 'enum', enum: CancellationParty, nullable: true })
+  cancellationParty!: CancellationParty;
+
+  @Column({ type: 'enum', enum: CancellationReason, nullable: true })
+  cancellationReason!: CancellationReason;
 
   @CreateDateColumn()
   createdAt?: Date;

@@ -10,8 +10,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { UserEntity } from './user.entity';
-import { MediaEntity } from './media.entity';
+import { UserEntity } from '@/database/user.entity';
+import { MediaEntity } from '@/database/media.entity';
 
 export enum RenderingStatus {
   Initial = 'initial',

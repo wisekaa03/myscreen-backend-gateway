@@ -5,10 +5,10 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
+
+import { UserEntity } from '@/database/user.entity';
 
 @Entity('accounts')
 export class AccountEntity {

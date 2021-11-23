@@ -9,10 +9,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { UserEntity } from '@/database/user.entity';
-import { MonitorEntity } from './monitor.entity';
-import { VideoEntity } from './video.entity';
-import { MediaEntity } from './media.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
+import { VideoEntity } from '@/database/video.entity';
+import { MediaEntity } from '@/database/media.entity';
 
 @Entity('playlists')
 export class PlaylistEntity {
