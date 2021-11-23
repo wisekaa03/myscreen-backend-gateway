@@ -19,13 +19,18 @@ import { AppModule } from './app.module';
   app.useLogger(logger);
 
   const swaggerConfig = new DocumentBuilder()
+    .addBearerAuth({
+      type: 'http',
+      description: 'Токен авторизации',
+      name: 'token',
+    })
     .setTitle(name)
     .setDescription(description)
     .setVersion(version)
     .addTag(name)
     .build();
   SwaggerModule.setup(
-    configService.get('API_PATH', '/'),
+    configService.get('API_PATH', '/api/v2'),
     app,
     SwaggerModule.createDocument(app, swaggerConfig),
   );
@@ -33,7 +38,7 @@ import { AppModule } from './app.module';
   const PORT = configService.get<number>('PORT', 3000);
   await app.listen(PORT);
   logger.verbose(
-    `Server version ${version} started on ${PORT}`,
+    `Server version ${version} started on ${await app.getUrl()}`,
     NestApplication.name,
   );
 })();

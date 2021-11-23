@@ -16,7 +16,7 @@ export enum PaymentService {
   Invoice = 'invoice',
 }
 
-export enum Status {
+export enum PaymentStatus {
   Pending = 'pending',
   Succeded = 'succeeded',
   Cancelled = 'cancelled',
@@ -98,8 +98,8 @@ export class PaymentEntity {
   @Column()
   description!: string;
 
-  @Column({ type: 'enum', enum: Status })
-  status!: Status;
+  @Column({ type: 'enum', enum: PaymentStatus })
+  status!: PaymentStatus;
 
   @Column({ type: 'timestamp', nullable: true })
   capturedAt!: Date;

@@ -14,6 +14,8 @@ import { PlaylistEntity } from './playlist.entity';
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
 import { UserEntity } from './user.entity';
 import { VideoEntity } from './video.entity';
+import { RefreshTokenEntity } from './refreshtoken.entity';
+import { RefreshTokenService } from './refreshtoken.service';
 
 @Module({
   imports: [
@@ -31,8 +33,9 @@ import { VideoEntity } from './video.entity';
       UptimeMonitoringEntity,
       UserEntity,
       VideoEntity,
+      RefreshTokenEntity,
     ]),
   ],
-  providers: [Logger],
+  providers: [Logger, RefreshTokenService],
 })
 export class DatabaseModule {}

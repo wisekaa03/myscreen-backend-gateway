@@ -31,5 +31,8 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': 1,
     'no-confusing-arrow': 0,
     'function-paren-newline': 0,
+    'class-methods-use-this': 0,
+    'max-classes-per-file': 0,
+    '@typescript-eslint/ban-ts-comment': 1,
   },
 };
