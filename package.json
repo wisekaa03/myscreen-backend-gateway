@@ -49,7 +49,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "fast-safe-stringify": "^2.1.1",
-    "ioredis": "^4.28.0",
+    "ioredis": "^4.28.1",
     "nest-winston": "^1.6.1",
     "passport": "^0.5.0",
     "passport-jwt": "^4.0.0",
