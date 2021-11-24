@@ -13,12 +13,7 @@ import { FolderEntity } from '@/database/folder.entity';
 import { UserEntity } from '@/database/user.entity';
 import { EditorEntity } from '@/database/editor.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
-
-export enum Type {
-  Video = 'video',
-  Image = 'image',
-  Audio = 'audio',
-}
+import { VideoType } from './enums/video-type.enum';
 
 @Entity('media')
 export class MediaEntity {
@@ -34,8 +29,8 @@ export class MediaEntity {
   @Column({ nullable: true })
   hash?: string;
 
-  @Column({ type: 'enum', enum: Type })
-  type!: Type;
+  @Column({ type: 'enum', enum: VideoType })
+  type!: VideoType;
 
   @Column({ type: 'json', nullable: true })
   meta?: { duration: number; filesize: number };

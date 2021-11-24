@@ -1,10 +1,10 @@
 import { Module, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 
 import { AuthController } from '@/endpoint/auth/auth.controller';
 import { AuthService } from '@/endpoint/auth/auth.service';
-import { jwtConstants } from '@/endpoint/auth/jwt.constants';
 import { JwtStrategy } from '@/endpoint/auth/jwt.strategy';
 
 import { MonitorsController } from '@/endpoint/monitors.controller';
@@ -24,9 +24,16 @@ import { LogsController } from '@/endpoint/logs.controller';
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register({
-      secret: jwtConstants.secret,
-      signOptions: { expiresIn: '60s' },
+    JwtModule.registerAsync({
+      imports: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>(
+          'JWT_TOKEN',
+          'super-&-secret-&-password',
+        ),
+        signOptions: { expiresIn: '60s' },
+      }),
+      inject: [ConfigService],
     }),
   ],
 

@@ -6,13 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserEntity } from './user.entity';
-
-export enum Role {
-  Administrator = 'administrator',
-  MonitorOwner = 'monitor-owner',
-  Advertiser = 'advertiser',
-}
+import { UserEntity } from '@/database/user.entity';
 
 @Entity('refresh_token')
 export class RefreshTokenEntity {

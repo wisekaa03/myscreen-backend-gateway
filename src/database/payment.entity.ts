@@ -10,53 +10,13 @@ import {
 
 import { UserEntity } from '@/database/user.entity';
 import { OrderEntity } from '@/database/order.entity';
-
-export enum PaymentService {
-  Youkassa = 'youkassa',
-  Invoice = 'invoice',
-}
-
-export enum PaymentStatus {
-  Pending = 'pending',
-  Succeded = 'succeeded',
-  Cancelled = 'cancelled',
-  WaitingForCapture = 'waiting_for_capture',
-}
-
-export enum ReceiptStatus {
-  Pending = 'pending',
-  Succeeded = 'succeeded',
-  Cancelled = 'cancelled',
-}
-
-export enum CancellationParty {
-  YandexCheckout = 'yandex_checkout',
-  YooMoney = 'yoo_money',
-  PaymentNetwork = 'payment_network',
-  Merchant = 'merchant',
-}
-
-export enum CancellationReason {
-  ThreeDSecureFailed = '3d_secure_failed',
-  CallIssuer = 'call_issuer',
-  CancelledByMerchant = 'canceled_by_merchant',
-  CardExpired = 'card_expired',
-  CountryForbidden = 'country_forbidden',
-  ExpiredOnCapture = 'expired_on_capture',
-  ExpiredOnConfirmation = 'expired_on_confirmation',
-  FraudSuspected = 'fraud_suspected',
-  GeneralDecline = 'general_decline',
-  IdentificationRequired = 'identification_required',
-  InsufficientFunds = 'insufficient_funds',
-  InternalTimeout = 'internal_timeout',
-  InvalidCardNumber = 'invalid_card_number',
-  InvalidCsc = 'invalid_csc',
-  IssuerUnavailable = 'issuer_unavailable',
-  PaymentMethodLimitExceeded = 'payment_method_limit_exceeded',
-  PaymentMethodRestricted = 'payment_method_restricted',
-  PermissionRevoked = 'permission_revoked',
-  UnsupportedMobileOperator = 'unsupported_mobile_operator',
-}
+import {
+  PaymentService,
+  PaymentStatus,
+  PaymentReceiptStatus,
+  PaymentCancellationParty,
+  PaymentCancellationReason,
+} from './enums/payments.enum';
 
 @Entity('payments')
 export class PaymentEntity {
@@ -107,14 +67,14 @@ export class PaymentEntity {
   @Column({ type: 'timestamp', nullable: true })
   expiresAt!: Date;
 
-  @Column({ type: 'enum', enum: ReceiptStatus, nullable: true })
-  receiptStatus!: ReceiptStatus;
+  @Column({ type: 'enum', enum: PaymentReceiptStatus, nullable: true })
+  receiptStatus!: PaymentReceiptStatus;
 
-  @Column({ type: 'enum', enum: CancellationParty, nullable: true })
-  cancellationParty!: CancellationParty;
+  @Column({ type: 'enum', enum: PaymentCancellationParty, nullable: true })
+  cancellationParty!: PaymentCancellationParty;
 
-  @Column({ type: 'enum', enum: CancellationReason, nullable: true })
-  cancellationReason!: CancellationReason;
+  @Column({ type: 'enum', enum: PaymentCancellationReason, nullable: true })
+  cancellationReason!: PaymentCancellationReason;
 
   @CreateDateColumn()
   createdAt?: Date;

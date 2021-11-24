@@ -12,13 +12,7 @@ import {
 
 import { UserEntity } from '@/database/user.entity';
 import { MediaEntity } from '@/database/media.entity';
-
-export enum RenderingStatus {
-  Initial = 'initial',
-  Ready = 'ready',
-  Pending = 'pending',
-  Error = 'error',
-}
+import { RenderingStatus } from './enums/rendering-status.enum';
 
 @Entity('editors')
 export class EditorEntity {

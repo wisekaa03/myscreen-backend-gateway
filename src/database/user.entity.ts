@@ -9,12 +9,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { MonitorEntity } from '@/database/monitor.entity';
-
-export enum Role {
-  Administrator = 'administrator',
-  MonitorOwner = 'monitor-owner',
-  Advertiser = 'advertiser',
-}
+import { UserRole } from './enums/role.enum';
 
 @Entity('users')
 export class UserEntity {
@@ -53,9 +48,9 @@ export class UserEntity {
   @Column({ nullable: true })
   company?: string;
 
-  @Column({ type: 'enum', enum: Role })
-  @ApiProperty({ enum: Role, example: Role.Administrator })
-  role!: Role;
+  @Column({ type: 'enum', enum: UserRole })
+  @ApiProperty({ enum: UserRole, example: UserRole.Administrator })
+  role!: UserRole;
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.id)
   @JoinColumn()

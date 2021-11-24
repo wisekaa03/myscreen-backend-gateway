@@ -11,11 +11,7 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { FolderEntity } from '@/database/folder.entity';
-
-export enum Type {
-  MonitorOwnershipDoc = 'monitor-ownership-doc',
-  MonitorPhoto = 'monitor-photo',
-}
+import { FileType } from './enums/file-type.enum';
 
 @Entity('files')
 export class FileEntity {
@@ -31,8 +27,8 @@ export class FileEntity {
   @Column()
   extension!: string;
 
-  @Column({ type: 'enum', enum: Type })
-  type!: Type;
+  @Column({ type: 'enum', enum: FileType })
+  type!: FileType;
 
   @Column({ type: 'boolean', default: true })
   uploading!: boolean;

@@ -12,11 +12,7 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
-
-export enum Orientation {
-  Horizontal = 'Horizontal',
-  Vertical = 'Vertical',
-}
+import { MonitorOrientation } from './enums/monitor-orientation.enum';
 
 @Entity('monitors')
 export class MonitorEntity {
@@ -35,8 +31,8 @@ export class MonitorEntity {
   @Column({ type: 'json' })
   price!: unknown;
 
-  @Column({ type: 'enum', enum: Orientation })
-  orientation!: Orientation;
+  @Column({ type: 'enum', enum: MonitorOrientation })
+  orientation!: MonitorOrientation;
 
   @Column({ type: 'json' })
   monitor!: any;
