@@ -5,7 +5,7 @@ import { Request as ExpressRequest } from 'express';
 import { UserRole } from '@/database/enums/role.enum';
 
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class RoleGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
