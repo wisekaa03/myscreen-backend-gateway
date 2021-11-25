@@ -33,7 +33,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async authentication(user: UserEntity): Promise<AuthResponseDto> {
+  async authorization(user: UserEntity): Promise<AuthResponseDto> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { id, password, forgot_confirm_key, email_confirm_key, ...data } =
       user;
@@ -94,7 +94,7 @@ export class AuthService {
     fingerprint?: string,
   ): Promise<RefreshTokenResponseDto> {
     const { token } = await this.createAccessTokenFromRefreshToken(
-      body.token,
+      body.refresh_token,
       fingerprint,
     );
 

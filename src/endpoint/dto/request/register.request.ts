@@ -19,11 +19,11 @@ export class RegisterRequestDto {
   @IsString()
   role: UserRole;
 
-  @ApiProperty({ example: 'John' })
+  @ApiProperty({ required: false, example: 'John' })
   @IsString()
   name: UserRole;
 
-  @ApiProperty({ example: 'Steve' })
+  @ApiProperty({ required: false, example: 'Steve' })
   @IsString()
   surname: UserRole;
 

@@ -50,9 +50,11 @@ export class AuthController {
     description: 'Ответ для неавторизованных пользователей',
     type: UnauthorizedErrorResponse,
   })
-  async auth(@Request() req: ExpressRequest): Promise<AuthResponseDto> {
+  async authorization(
+    @Request() req: ExpressRequest,
+  ): Promise<AuthResponseDto> {
     const { user } = req;
-    return this.authService.authentication(user);
+    return this.authService.authorization(user);
   }
 
   @Post('login')
