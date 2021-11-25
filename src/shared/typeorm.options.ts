@@ -23,10 +23,10 @@ export class TypeOrmOptionsService implements TypeOrmOptionsFactory {
       database: this.configService.get('DB_DATABASE', 'postgres'),
       logging: this.configService.get('LOG_LEVEL', 'debug').split(','),
       logger: new TypeOrmLogger(),
-      synchronize: false,
+      synchronize: true,
       entities: [`${pathResolve(__dirname, '..')}/database/*.entity.{ts,js}`],
       migrations: [`${pathResolve(__dirname, '..')}/migrations/*.{ts,js}`],
-      migrationsRun: true,
+      migrationsRun: false,
       autoLoadEntities: true,
 
       cache: cache

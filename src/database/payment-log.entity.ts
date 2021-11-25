@@ -12,25 +12,28 @@ import { UserEntity } from '@/database/user.entity';
 import { OrderEntity } from '@/database/order.entity';
 import { PaymentEntity } from '@/database/payment.entity';
 
-@Entity('payment_logs')
+@Entity('payment_log')
 export class PaymentLogsEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'userId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
   @ManyToOne(() => OrderEntity, (order) => order.id)
-  @JoinColumn({ name: 'orderId' })
-  orders!: OrderEntity; // why orders, order must be ?
+  @JoinColumn()
+  order!: OrderEntity;
 
   @ManyToOne(() => PaymentEntity, (payment) => payment.id)
-  @JoinColumn({ name: 'paymentId' })
-  payments!: PaymentEntity; // why payments, payment must be ?
+  @JoinColumn()
+  payment!: PaymentEntity;
 
   @Column({ type: 'jsonb', nullable: true })
-  log!: unknown;
+  log?: unknown;
 
   @CreateDateColumn()
   createdAt?: Date;

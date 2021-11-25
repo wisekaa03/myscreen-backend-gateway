@@ -15,10 +15,10 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { VideoEntity } from '@/database/video.entity';
 import { MediaEntity } from '@/database/media.entity';
 
-@Entity('playlists')
+@Entity('playlist')
 export class PlaylistEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column()
   name!: string;
@@ -27,22 +27,34 @@ export class PlaylistEntity {
   description!: string;
 
   @Column({ type: 'uuid', array: true, nullable: true })
-  video_ids!: string[];
+  videoIds!: string[];
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'ownerId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
-  @ManyToMany(() => MonitorEntity, (monitor) => monitor.id)
-  @JoinTable({ name: 'monitor_playlist_map' })
+  @ManyToMany(() => MonitorEntity, (monitor) => monitor.id, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinTable()
   monitors?: MonitorEntity[];
 
-  @ManyToMany(() => VideoEntity, (video) => video.id)
-  @JoinTable({ name: 'video_playlist_map' })
+  @ManyToMany(() => VideoEntity, (video) => video.id, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinTable()
   videos?: VideoEntity[];
 
-  @ManyToMany(() => MonitorEntity, (monitor) => monitor.id)
-  @JoinTable({ name: 'media_playlist_map' })
+  @ManyToMany(() => MonitorEntity, (monitor) => monitor.id, {
+    nullable: true,
+    cascade: true,
+  })
+  @JoinTable()
   media?: MediaEntity[];
 
   @CreateDateColumn()

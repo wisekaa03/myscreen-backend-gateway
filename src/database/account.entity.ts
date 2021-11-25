@@ -10,17 +10,20 @@ import {
 
 import { UserEntity } from '@/database/user.entity';
 
-@Entity('accounts')
+@Entity('account')
 export class AccountEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column()
   amount!: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'userId' })
-  users!: UserEntity; // why users, user must be ?
+  user!: UserEntity;
 
   @CreateDateColumn()
   createdAt?: Date;

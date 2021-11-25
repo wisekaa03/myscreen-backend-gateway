@@ -2,7 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -11,16 +11,22 @@ import { UserEntity } from '@/database/user.entity';
 @Entity('refresh_token')
 export class RefreshTokenEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
-  @OneToMany(() => UserEntity, (token) => token.id)
-  user: UserEntity;
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  user!: UserEntity;
 
   @Column()
   isRevoked!: boolean;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamp', default: () => 'now()' })
   expires!: Date;
+
+  @Column({ default: '' })
+  fingerprint?: string;
 
   @CreateDateColumn()
   createdAt?: Date;

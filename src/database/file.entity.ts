@@ -13,10 +13,10 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { FolderEntity } from '@/database/folder.entity';
 import { FileType } from './enums/file-type.enum';
 
-@Entity('files')
+@Entity('file')
 export class FileEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column()
   originalFilename!: string;
@@ -34,16 +34,19 @@ export class FileEntity {
   uploading!: boolean;
 
   @ManyToOne(() => FolderEntity, (folder) => folder.id)
-  @JoinColumn({ name: 'folderId' })
-  folders!: FolderEntity; // why folders, folder must be ?
+  @JoinColumn()
+  folder!: FolderEntity;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id)
-  @JoinColumn({ name: 'targetId' })
+  @JoinColumn()
   monitor!: MonitorEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'ownerId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
   @CreateDateColumn()
   createdAt?: Date;

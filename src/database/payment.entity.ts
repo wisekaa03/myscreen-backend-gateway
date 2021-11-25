@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -18,10 +19,10 @@ import {
   PaymentCancellationReason,
 } from './enums/payments.enum';
 
-@Entity('payments')
+@Entity('payment')
 export class PaymentEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column({ nullable: true })
   externalPayment!: string;
@@ -38,22 +39,25 @@ export class PaymentEntity {
   @Column({ type: 'boolean', nullable: true })
   test!: boolean;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'userId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
-  @ManyToOne(() => OrderEntity, (order) => order.id)
-  @JoinColumn({ name: 'orderId' })
-  orders!: OrderEntity; // why orders, order must be ?
+  @ManyToMany(() => OrderEntity, (order) => order.id, { cascade: true })
+  @JoinColumn()
+  orders!: OrderEntity[];
 
-  @Column({ type: 'enum', enum: PaymentService, nullable: false })
+  @Column({ type: 'enum', enum: PaymentService })
   paymentService!: PaymentService;
 
-  @Column({ nullable: false })
+  @Column()
   amount!: string;
 
   @Column({ nullable: true })
-  incomeAmount!: string;
+  incomeAmount?: string;
 
   @Column()
   description!: string;
@@ -62,19 +66,19 @@ export class PaymentEntity {
   status!: PaymentStatus;
 
   @Column({ type: 'timestamp', nullable: true })
-  capturedAt!: Date;
+  capturedAt?: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  expiresAt!: Date;
+  expiresAt?: Date;
 
   @Column({ type: 'enum', enum: PaymentReceiptStatus, nullable: true })
-  receiptStatus!: PaymentReceiptStatus;
+  receiptStatus?: PaymentReceiptStatus;
 
   @Column({ type: 'enum', enum: PaymentCancellationParty, nullable: true })
-  cancellationParty!: PaymentCancellationParty;
+  cancellationParty?: PaymentCancellationParty;
 
   @Column({ type: 'enum', enum: PaymentCancellationReason, nullable: true })
-  cancellationReason!: PaymentCancellationReason;
+  cancellationReason?: PaymentCancellationReason;
 
   @CreateDateColumn()
   createdAt?: Date;

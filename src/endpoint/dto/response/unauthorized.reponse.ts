@@ -5,12 +5,12 @@ import { Status } from '../status.enum';
 /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
 // @ts-ignore
 export class UnauthorizedErrorResponse extends UnauthorizedException {
-  constructor() {
+  constructor(message?: string) {
     super({
       status: Status.Error,
       statusCode: 401,
       code: 'server-error.10001',
-      message: 'The authorization token signature is invalid or corrupted',
+      message: message ?? 'Unauthorized request',
     });
   }
 
@@ -24,8 +24,8 @@ export class UnauthorizedErrorResponse extends UnauthorizedException {
   code: string;
 
   @ApiProperty({
-    type: 'The authorization token signature is invalid or corrupted',
-    example: 'The authorization token signature is invalid or corrupted',
+    type: 'Unauthorized request',
+    example: 'Unauthorized request',
   })
   message: string;
 }

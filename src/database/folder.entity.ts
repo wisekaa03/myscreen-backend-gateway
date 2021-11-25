@@ -9,20 +9,23 @@ import {
 } from 'typeorm';
 import { UserEntity } from '@/database/user.entity';
 
-@Entity('folders')
+@Entity('folder')
 export class FolderEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column()
   name!: string;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'userId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
-  @Column({ type: 'uuid', nullable: true })
-  parentFolderId!: string | null;
+  @ManyToOne(() => FolderEntity, { nullable: true })
+  parentFolder?: FolderEntity;
 
   @CreateDateColumn()
   createdAt?: Date;

@@ -7,45 +7,54 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserRole } from './enums/role.enum';
 
-@Entity('users')
+@Entity('user')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
-  @ApiProperty({ example: '3fa85f64-5717-4562-b3fc-2c963f66afa6' })
-  id!: string;
+  @ApiHideProperty()
+  id?: string;
 
   @Column()
   @ApiProperty({ example: 'foo@bar.baz' })
   email!: string;
 
+  @Column({ type: 'boolean', default: false })
+  @ApiProperty({ example: false, required: false })
+  disabled: boolean;
+
   @Column({ nullable: true })
-  @ApiProperty({ example: 'Steve' })
+  @ApiProperty({ example: 'Steve', required: false })
   surname?: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: 'John' })
+  @ApiProperty({ example: 'John', required: false })
   name?: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: 'Doe' })
+  @ApiProperty({ example: 'Doe', required: false })
   middleName?: string;
 
   @Column()
+  @ApiHideProperty()
   password!: string;
 
   @Column({ nullable: true })
+  @ApiProperty({ example: '+78002000000', required: false })
   phoneNumber?: string;
 
   @Column({ default: 'RU', nullable: true })
+  @ApiProperty({ example: 'RU', required: false })
   country?: string;
 
   @Column({ nullable: true })
+  @ApiProperty({ example: 'Moscow', required: false })
   city?: string;
 
   @Column({ nullable: true })
+  @ApiProperty({ example: 'Acme company Ltd', required: false })
   company?: string;
 
   @Column({ type: 'enum', enum: UserRole })
@@ -54,15 +63,19 @@ export class UserEntity {
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.id)
   @JoinColumn()
-  monitors!: MonitorEntity[];
+  @ApiHideProperty()
+  monitors?: MonitorEntity[];
 
   @Column({ nullable: true })
+  @ApiHideProperty()
   forgot_confirm_key?: string;
 
   @Column({ nullable: true })
+  @ApiHideProperty()
   email_confirm_key?: string;
 
   @Column({ type: 'boolean', default: false })
+  @ApiProperty({ example: true, required: false })
   verified!: boolean;
 
   @Column({ type: 'boolean', default: false })

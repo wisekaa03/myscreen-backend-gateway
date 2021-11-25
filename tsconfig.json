@@ -8,6 +8,7 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "target": "ES2021",
+    "noEmit": false,
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "sourceMap": true,
@@ -25,6 +26,12 @@
       ],
       "@/*": [
         "./src/*"
+      ],
+      "@/dto/": [
+        "./src/endpoint/dto/"
+      ],
+      "@/dto/*": [
+        "./src/endpoint/dto/*"
       ]
     }
   }

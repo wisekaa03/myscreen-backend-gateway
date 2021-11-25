@@ -10,10 +10,10 @@ import {
 } from 'typeorm';
 import { UserEntity } from '@/database/user.entity';
 
-@Entity('orders')
+@Entity('order')
 export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Generated('increment')
   @Column({ type: 'integer' })

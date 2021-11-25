@@ -13,17 +13,17 @@ import { MonitorEntity } from '@/database/monitor.entity';
 @Entity('uptime_monitoring')
 export class UptimeMonitoringEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
-  @Column({ type: 'integer', nullable: false })
-  processing_hour!: number;
+  @Column({ type: 'integer' })
+  processingHour!: number;
 
   @Column({ type: 'integer', default: 0, nullable: true })
   count!: number;
 
-  @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, { nullable: false })
-  @JoinColumn({ name: 'monitor_id' })
-  monitor?: MonitorEntity;
+  @ManyToOne(() => MonitorEntity, (monitor) => monitor.id)
+  @JoinColumn()
+  monitor!: MonitorEntity;
 
   @CreateDateColumn()
   createdAt?: Date;

@@ -12,22 +12,22 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 
-@Entity('videos')
+@Entity('video')
 export class VideoEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column()
   name!: string;
 
   @Column({ nullable: true })
-  description!: string;
+  description?: string;
 
   @Column()
   hash!: true;
 
   @Column({ nullable: true })
-  original_name!: string;
+  originalName?: string;
 
   @Column({ type: 'integer' })
   duration!: number;
@@ -36,7 +36,7 @@ export class VideoEntity {
   filesize!: number;
 
   @Column({ nullable: true })
-  preview!: string;
+  preview?: string;
 
   @Column()
   extension!: string;
@@ -47,13 +47,18 @@ export class VideoEntity {
   @Column({ type: 'integer' })
   height!: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'ownerId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
-  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.id)
-  @JoinTable({ name: 'video_playlist_map' })
-  playlist!: PlaylistEntity[];
+  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.id, {
+    cascade: true,
+  })
+  @JoinTable()
+  playlists!: PlaylistEntity[];
 
   @CreateDateColumn()
   createdAt?: Date;

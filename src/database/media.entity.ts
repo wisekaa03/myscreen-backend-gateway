@@ -18,10 +18,10 @@ import { VideoType } from './enums/video-type.enum';
 @Entity('media')
 export class MediaEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column()
-  original_name!: string;
+  originalName!: string;
 
   @Column()
   name!: string;
@@ -39,17 +39,22 @@ export class MediaEntity {
   @JoinColumn()
   folder!: FolderEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'ownerId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
-  @ManyToMany(() => EditorEntity, (editor) => editor.id)
-  @JoinTable({ name: 'media_editor_map' })
-  editors!: EditorEntity; // why editors, editor must be ?
+  @ManyToMany(() => EditorEntity, (editor) => editor.id, { cascade: true })
+  @JoinTable()
+  editors!: EditorEntity[];
 
-  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.id)
-  @JoinTable({ name: 'media_playlist_map' })
-  playlist!: PlaylistEntity;
+  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.id, {
+    cascade: true,
+  })
+  @JoinTable()
+  playlists!: PlaylistEntity[];
 
   @CreateDateColumn()
   createdAt?: Date;

@@ -3,21 +3,21 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { MonitorOrientation } from './enums/monitor-orientation.enum';
+import { MonitorStatus } from './enums/monitor-status.enum';
 
-@Entity('monitors')
+@Entity('monitor')
 export class MonitorEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column({ unique: true })
   name!: string;
@@ -47,11 +47,11 @@ export class MonitorEntity {
   @Column({ type: 'simple-array', default: [], array: true })
   media!: string[];
 
-  @Column({ default: 'offline' })
-  status!: string;
+  @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
+  status!: MonitorStatus;
 
   @Column({ nullable: true })
-  last_seen?: string;
+  lastSeen?: string;
 
   @Column({ type: 'uuid', nullable: true })
   currentPlaylistId?: string;
@@ -66,16 +66,16 @@ export class MonitorEntity {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn({ name: 'ownerId' })
-  users!: UserEntity;
+  @JoinColumn()
+  user!: UserEntity;
 
-  @ManyToMany(() => FileEntity, (file) => file.id)
-  @JoinTable()
-  files?: FileEntity[];
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn()
+  file?: FileEntity;
 
-  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.id)
-  @JoinTable({ name: 'media_playlist_map' })
-  playlists!: PlaylistEntity;
+  @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id)
+  @JoinColumn()
+  playlist!: PlaylistEntity;
 
   @CreateDateColumn()
   createdAt?: Date;

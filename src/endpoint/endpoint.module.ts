@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 
+import { DatabaseModule } from '@/database/database.module';
 import { AuthController } from '@/endpoint/auth/auth.controller';
 import { AuthService } from '@/endpoint/auth/auth.service';
 import { JwtStrategy } from '@/endpoint/auth/jwt.strategy';
@@ -14,7 +15,7 @@ import { FilesController } from '@/endpoint/files.controller';
 import { MediaController } from '@/endpoint/media.controller';
 import { FoldersController } from '@/endpoint/folders.controller';
 import { UploadController } from '@/endpoint/upload.controller';
-import { UsersController } from '@/endpoint/users.controller';
+import { UsersController } from '@/endpoint/user.controller';
 import { OrdersController } from '@/endpoint/orders.controller';
 import { PaymentsController } from '@/endpoint/payments.controller';
 import { UptimeController } from '@/endpoint/uptime.controller';
@@ -27,14 +28,14 @@ import { LogsController } from '@/endpoint/logs.controller';
     JwtModule.registerAsync({
       imports: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>(
-          'JWT_TOKEN',
-          'super-&-secret-&-password',
-        ),
-        signOptions: { expiresIn: '60s' },
+        secret: configService.get<string>('JWT_ACCESS_TOKEN'),
+        signOptions: {
+          expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES'),
+        },
       }),
       inject: [ConfigService],
     }),
+    DatabaseModule,
   ],
 
   controllers: [

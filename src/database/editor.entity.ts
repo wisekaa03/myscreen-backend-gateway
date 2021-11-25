@@ -14,10 +14,10 @@ import { UserEntity } from '@/database/user.entity';
 import { MediaEntity } from '@/database/media.entity';
 import { RenderingStatus } from './enums/rendering-status.enum';
 
-@Entity('editors')
+@Entity('editor')
 export class EditorEntity {
   @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  id?: string;
 
   @Column({ type: 'numeric' })
   width!: number;
@@ -36,6 +36,7 @@ export class EditorEntity {
   })
   renderingStatus!: RenderingStatus;
 
+  // ??
   @Column({ nullable: true })
   fileId?: string;
 
@@ -51,12 +52,18 @@ export class EditorEntity {
   @Column({ type: 'json', default: [], array: true })
   audio_tracks!: unknown[];
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'ownerId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
-  @ManyToMany(() => MediaEntity, (media) => media.id)
-  @JoinTable({ name: 'media_playlist_map' })
+  @ManyToMany(() => MediaEntity, (media) => media.id, {
+    cascade: true,
+    nullable: true,
+  })
+  @JoinTable()
   media?: MediaEntity[];
 
   @CreateDateColumn()
