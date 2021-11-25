@@ -23,10 +23,10 @@ import {
 import { RefreshTokenRequestDto } from '@/dto/request/refresh-token.request';
 import { LoginRequestDto } from '@/dto/request/login.request';
 import { RegisterRequestDto } from '@/dto/request/register.request';
-
-import { UnauthorizedErrorResponse } from '@/endpoint/dto/response/unauthorized.reponse';
-import { AuthService } from './auth.service';
 import { PreconditionFailedErrorResponse } from '@/dto/response/precondition.response';
+import { UnauthorizedErrorResponse } from '@/dto/response/unauthorized.reponse';
+
+import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('auth')

@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
-import { plainToInstance } from 'class-transformer';
 
 import { JWT_BASE_OPTIONS, MyscreenJwtPayload } from '@/shared/jwt.payload';
 import { Status } from '@/dto/status.enum';
@@ -16,11 +15,11 @@ import {
 import { RefreshTokenRequestDto } from '@/dto/request/refresh-token.request';
 import { ForbiddenErrorResponse } from '@/dto/response/forbidden.reponse';
 import { UnauthorizedErrorResponse } from '@/dto/response/unauthorized.reponse';
+import { PreconditionFailedErrorResponse } from '@/dto/response/precondition.response';
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
-import { PreconditionFailedErrorResponse } from '@/dto/response/precondition.response';
 
 @Injectable()
 export class AuthService {

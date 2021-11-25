@@ -32,7 +32,13 @@
       ],
       "@/dto/*": [
         "./src/endpoint/dto/*"
-      ]
+      ],
+      "@/auth/": [
+        "./src/endpoint/auth/"
+      ],
+      "@/auth/*": [
+        "./src/endpoint/auth/*"
+      ],
     }
   }
 }
