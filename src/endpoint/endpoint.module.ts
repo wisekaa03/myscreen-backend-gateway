@@ -8,19 +8,19 @@ import { AuthController } from '@/endpoint/auth/auth.controller';
 import { AuthService } from '@/endpoint/auth/auth.service';
 import { JwtStrategy } from '@/endpoint/auth/jwt.strategy';
 
-import { MonitorsController } from '@/endpoint/monitors.controller';
+import { MonitorController } from '@/endpoint/monitors.controller';
 import { VideoController } from '@/endpoint/video.controller';
 import { EditorController } from '@/endpoint/editor.controller';
-import { FilesController } from '@/endpoint/files.controller';
+import { FileController } from '@/endpoint/file.controller';
 import { MediaController } from '@/endpoint/media.controller';
-import { FoldersController } from '@/endpoint/folders.controller';
+import { FolderController } from '@/endpoint/folder.controller';
 import { UploadController } from '@/endpoint/upload.controller';
-import { UsersController } from '@/endpoint/user.controller';
-import { OrdersController } from '@/endpoint/orders.controller';
-import { PaymentsController } from '@/endpoint/payments.controller';
+import { UserController } from '@/endpoint/user.controller';
+import { OrderController } from '@/endpoint/order.controller';
+import { PaymentController } from '@/endpoint/payment.controller';
 import { UptimeController } from '@/endpoint/uptime.controller';
-import { PlaylistsController } from '@/endpoint/playlists.controller';
-import { LogsController } from '@/endpoint/logs.controller';
+import { PlaylistController } from '@/endpoint/playlist.controller';
+import { LogController } from '@/endpoint/log.controller';
 
 @Module({
   imports: [
@@ -40,19 +40,19 @@ import { LogsController } from '@/endpoint/logs.controller';
 
   controllers: [
     AuthController,
-    MonitorsController,
+    MonitorController,
     VideoController,
     EditorController,
-    FilesController,
+    FileController,
     MediaController,
-    FoldersController,
+    FolderController,
     UploadController,
-    UsersController,
-    OrdersController,
-    PaymentsController,
+    UserController,
+    OrderController,
+    PaymentController,
     UptimeController,
-    PlaylistsController,
-    LogsController,
+    PlaylistController,
+    LogController,
   ],
 
   providers: [Logger, AuthService, JwtStrategy],
