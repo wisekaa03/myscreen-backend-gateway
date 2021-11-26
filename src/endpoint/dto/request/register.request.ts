@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 import { UserRole } from '@/database/enums/role.enum';
 
@@ -9,8 +16,8 @@ export class RegisterRequestDto {
   email: string;
 
   @ApiProperty({ example: 'secret' })
-  @MinLength(8, { message: 'Password is too short' })
-  @MinLength(20, { message: 'Password is too long' })
+  @MinLength(8, { message: 'password is too short' })
+  @MaxLength(30, { message: 'password is too long' })
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'password too weak',
   })
@@ -20,7 +27,7 @@ export class RegisterRequestDto {
     enum: UserRole,
     example: UserRole.Advertiser,
   })
-  @IsString()
+  @IsEnum(UserRole)
   role: UserRole;
 
   @ApiProperty({ required: false, example: 'John' })

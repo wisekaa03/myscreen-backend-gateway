@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -18,6 +19,7 @@ export class UserEntity {
   id?: string;
 
   @Column()
+  @Index()
   @ApiProperty({ example: 'foo@bar.baz' })
   email!: string;
 
@@ -68,11 +70,11 @@ export class UserEntity {
 
   @Column({ nullable: true })
   @ApiHideProperty()
-  forgot_confirm_key?: string;
+  forgotConfirmKey?: string;
 
   @Column({ nullable: true })
   @ApiHideProperty()
-  email_confirm_key?: string;
+  emailConfirmKey?: string;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({ example: true, required: false })

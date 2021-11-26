@@ -27,6 +27,8 @@ import { RegisterRequestDto } from '@/dto/request/register.request';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
 import { AuthService } from './auth.service';
+import { VerifyEmailRequestDto } from '../dto/request/verify-email.request';
+import { SuccessResponseDto } from '../dto/response/success.response';
 
 @ApiTags('auth')
 @ApiResponse({
@@ -112,5 +114,19 @@ export class AuthController {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
     return this.authService.refresh(body, fingerprint);
+  }
+
+  @Post('/verify-email')
+  @ApiOperation({ summary: 'Подтвердить email пользователя' })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: AuthResponseDto,
+  })
+  async verifyEmail(
+    @Request() req: ExpressRequest,
+    @Body() body: VerifyEmailRequestDto,
+  ): Promise<SuccessResponseDto> {
+    return this.authService.verifyEmail(body);
   }
 }

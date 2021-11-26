@@ -35,5 +35,6 @@ module.exports = {
     'max-classes-per-file': 0,
     '@typescript-eslint/ban-ts-comment': 1,
     'operator-linebreak': 0,
+    'import/extensions': 0
   },
 };

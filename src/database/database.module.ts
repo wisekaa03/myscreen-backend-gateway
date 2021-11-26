@@ -1,6 +1,7 @@
 import { Module, Logger } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { MailGunModule } from '@/mailgun/mailgun.module';
 import { AccountEntity } from './account.entity';
 import { EditorEntity } from './editor.entity';
 import { FileEntity } from './file.entity';
@@ -20,6 +21,8 @@ import { RefreshTokenService } from './refreshtoken.service';
 
 @Module({
   imports: [
+    MailGunModule,
+
     TypeOrmModule.forFeature([
       AccountEntity,
       EditorEntity,

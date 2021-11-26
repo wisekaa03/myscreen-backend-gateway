@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+  <meta content="width=device-width" name="viewport" />
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+
+  <title>Confirm user e-mail</title>
+  <style type="text/css">
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: none;
+      width: 100% !important;
+      height: 100%;
+      font-size: 16px;
+      vertical-align: top;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f6f6f6;
+    }
+
+    .f12 {
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .f14 {
+      font-size: 14px;
+    }
+
+    .pre-line {
+      white-space: pre-line;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    .content {
+      max-width: 600px;
+      display: block;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .content-block {
+      padding: 0 0 20px;
+    }
+
+    .footer {
+      width: 100%;
+      clear: both;
+      color: #999;
+      padding: 20px;
+    }
+
+    .btn {
+      text-decoration: none;
+      line-height: 2em;
+      font-weight: bold;
+      text-align: center;
+      cursor: pointer;
+      display: inline-block;
+      padding: 8px 24px;
+      border-radius: 5px;
+    }
+
+    .btn,
+    .btn:active,
+    .btn:focus {
+      outline: 0;
+      border-width: 0;
+    }
+
+    .btn-primary {
+      background-color: #348eda;
+      border-color: #348eda;
+      color: #fff !important;
+    }
+
+    @media only screen and (max-width: 640px) {
+      body {
+        padding: 0 !important;
+      }
+
+      h1 {
+        font-weight: 800 !important;
+        margin: 20px 0 5px !important;
+      }
+
+      h2 {
+        font-weight: 800 !important;
+        margin: 20px 0 5px !important;
+      }
+
+      h3 {
+        font-weight: 800 !important;
+        margin: 20px 0 5px !important;
+      }
+
+      h4 {
+        font-weight: 800 !important;
+        margin: 20px 0 5px !important;
+      }
+
+      h1 {
+        font-size: 22px !important;
+      }
+
+      h2 {
+        font-size: 18px !important;
+      }
+
+      h3 {
+        font-size: 16px !important;
+      }
+
+      .container {
+        padding: 0 !important;
+        width: 100% !important;
+      }
+
+      .content {
+        padding: 0 !important;
+      }
+
+      .content-wrap {
+        padding: 10px !important;
+      }
+
+      .invoice {
+        width: 100% !important;
+      }
+    }
+  </style>
+  <meta content="Confirm Email" itemprop="name" />
+</head>
+
+<body bgcolor="#fff" itemscope itemtype="http://schema.org/EmailMessage" style="
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-size-adjust: none;
+      width: 100% !important;
+      height: 100%;
+      line-height: 1.6em;
+      background-color: #fff;
+      margin: 0;
+    ">
+  <table bgcolor="#fff" class="body-wrap" style="width: 100%; background-color: #fff; margin: 0">
+    <tr>
+      <td valign="top"></td>
+
+      <td class="container" style="
+            vertical-align: top;
+            display: block !important;
+            max-width: 600px !important;
+            clear: both !important;
+            margin: 0 auto;
+          " valign="top" width="600">
+        <table bgcolor="#f6f6f6" cellpadding="0" cellspacing="0" class="content main" itemprop="action" itemscope
+          itemtype="http://schema.org/ConfirmAction" style="
+              border-radius: 3px;
+              background-color: #f6f6f6;
+              border: 1px solid #e9e9e9;
+            " width="100%">
+          <tr>
+            <td class="content-wrap" style="padding: 20px" valign="top">
+              <table cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td class="content-block f14" valign="top">
+                    Приветствуем
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="content-block f14 pre-line" valign="top">
+                    {{{ text }}}
+                  </td>
+                </tr>
+
+                {{#if button}}
+                <tr>
+                  <td class="content-block" itemprop="handler" itemscope itemtype="http://schema.org/HttpActionHandler"
+                    style="vertical-align: top; text-align: center" valign="top">
+                    <a class="btn btn-primary" href="{{button.url}}" itemprop="url">
+                      {{button.text}}</a>
+                  </td>
+                </tr>
+                {{/if}}
+
+                <tr>
+                  <td class="content-block f12" style="" valign="top">
+                    Если вы получили это письмо по ошибке, просто игнорируйте
+                    его.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <table width="100%" class="footer">
+          <tr>
+            <td align="center" class="aligncenter content-block" style="
+                  font-size: 12px;
+                  vertical-align: top;
+                  color: #999;
+                  text-align: center;
+                " valign="top">
+              &copy; 2020
+              <a href="https://myscreen.ru" style="
+                    font-size: 12px;
+                    color: #777;
+                    text-decoration: none;
+                    margin: 0;
+                  ">
+                MyScreen</a>
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" class="aligncenter content-block" style="
+                  display: block;
+                  font-size: 12px;
+                  vertical-align: top;
+                  color: #999;
+                  text-align: center;
+                " valign="top">
+              Вы можете отписаться навсегда нажав этой
+              <a href="%unsubscribe_url%" style="
+                    font-size: 12px;
+                    color: #777;
+                    text-decoration: underline;
+                    margin: 0;
+                  " target="_blank">ссылке</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+
+</html>

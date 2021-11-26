@@ -11,12 +11,15 @@ import type {
   AuthenticationPayloadDto,
   AuthResponseDto,
 } from '@/dto/response/authentication.response';
-import type { RefreshTokenResponseDto } from '@/dto/response/refresh.response';
 import type { RefreshTokenRequestDto } from '@/dto/request/refresh-token.request';
+import type { RefreshTokenResponseDto } from '@/dto/response/refresh.response';
+import { VerifyEmailRequestDto } from '@/dto/request/verify-email.request';
+import { SuccessResponseDto } from '@/dto/response/success.response';
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
+
 import { ForbiddenError } from '@/dto/errors/forbidden.reponse';
 import { UnauthorizedError } from '@/dto/errors/unauthorized.reponse';
 import { PreconditionFailedError } from '@/dto/errors/precondition.response';
@@ -34,8 +37,7 @@ export class AuthService {
 
   async authorization(user: UserEntity): Promise<AuthResponseDto> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { id, password, forgot_confirm_key, email_confirm_key, ...data } =
-      user;
+    const { id, password, forgotConfirmKey, emailConfirmKey, ...data } = user;
 
     return {
       status: Status.Success,
@@ -61,8 +63,7 @@ export class AuthService {
     const refresh = await this.generateRefreshToken(user, fingerprint);
     const payload = this.buildResponsePayload(token, refresh);
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { id, password, forgot_confirm_key, email_confirm_key, ...data } =
-      user;
+    const { id, password, forgotConfirmKey, emailConfirmKey, ...data } = user;
     return {
       status: Status.Success,
       payload,
@@ -80,8 +81,7 @@ export class AuthService {
     const refresh = await this.generateRefreshToken(user, fingerprint);
     const payload = this.buildResponsePayload(token, refresh);
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { id, password, forgot_confirm_key, email_confirm_key, ...data } =
-      user;
+    const { id, password, forgotConfirmKey, emailConfirmKey, ...data } = user;
     return {
       status: Status.Success,
       payload,
@@ -223,5 +223,9 @@ export class AuthService {
     }
 
     return this.refreshTokenService.find(tokenId);
+  }
+
+  async verifyEmail(body: VerifyEmailRequestDto): Promise<SuccessResponseDto> {
+    throw new ForbiddenError();
   }
 }
