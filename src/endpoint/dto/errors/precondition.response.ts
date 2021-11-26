@@ -10,7 +10,7 @@ export class PreconditionFailedErrorResponse extends PreconditionFailedException
       status: Status.Error,
       statusCode: 412,
       code: 'server-error.10002',
-      message: message ?? 'Precondition failed',
+      message: message ?? 'User exists',
     });
   }
 
@@ -24,8 +24,8 @@ export class PreconditionFailedErrorResponse extends PreconditionFailedException
   code: string;
 
   @ApiProperty({
-    type: 'Precondition failed',
-    example: 'Precondition failed',
+    type: 'User exists',
+    example: 'User exists',
   })
   message: string;
 }

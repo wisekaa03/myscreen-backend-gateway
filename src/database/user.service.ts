@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { PreconditionFailedErrorResponse } from '@/endpoint/dto/response/precondition.response';
+import { PreconditionFailedErrorResponse } from '@/dto/errors/precondition.response';
 import { RegisterRequestDto } from '@/dto/request/register.request';
 import { UserEntity } from './user.entity';
 

@@ -5,21 +5,21 @@ import { TokenExpiredError } from 'jsonwebtoken';
 
 import { JWT_BASE_OPTIONS, MyscreenJwtPayload } from '@/shared/jwt.payload';
 import { Status } from '@/dto/status.enum';
-import { LoginRequestDto } from '@/dto/request/login.request';
-import { RegisterRequestDto } from '@/dto/request/register.request';
-import {
-  AuthenticationPayload,
+import type { LoginRequestDto } from '@/dto/request/login.request';
+import type { RegisterRequestDto } from '@/dto/request/register.request';
+import type {
+  AuthenticationPayloadDto,
   AuthResponseDto,
-  RefreshTokenResponseDto,
-} from '@/dto/response/auth.response';
-import { RefreshTokenRequestDto } from '@/dto/request/refresh-token.request';
-import { ForbiddenErrorResponse } from '@/dto/response/forbidden.reponse';
-import { UnauthorizedErrorResponse } from '@/dto/response/unauthorized.reponse';
-import { PreconditionFailedErrorResponse } from '@/dto/response/precondition.response';
+} from '@/dto/response/authentication.response';
+import type { RefreshTokenResponseDto } from '@/dto/response/refresh.response';
+import type { RefreshTokenRequestDto } from '@/dto/request/refresh-token.request';
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
+import { ForbiddenErrorResponse } from '@/dto/errors/forbidden.reponse';
+import { UnauthorizedErrorResponse } from '@/dto/errors/unauthorized.reponse';
+import { PreconditionFailedErrorResponse } from '@/dto/errors/precondition.response';
 
 @Injectable()
 export class AuthService {
@@ -103,8 +103,8 @@ export class AuthService {
   private buildResponsePayload(
     token: string,
     refresh_token?: string,
-  ): AuthenticationPayload {
-    const payload: AuthenticationPayload = {
+  ): AuthenticationPayloadDto {
+    const payload: AuthenticationPayloadDto = {
       type: 'bearer',
       token,
     };

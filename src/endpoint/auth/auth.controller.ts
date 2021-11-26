@@ -16,20 +16,35 @@ import {
 import { validate } from 'class-validator';
 import { Request as ExpressRequest } from 'express';
 
-import {
-  AuthResponseDto,
-  RefreshTokenResponseDto,
-} from '@/dto/response/auth.response';
+import { PreconditionFailedErrorResponse } from '@/dto/errors/precondition.response';
+import { UnauthorizedErrorResponse } from '@/dto/errors/unauthorized.reponse';
+import { BadRequestError } from '@/dto/errors/bad-request.response';
+
+import { AuthResponseDto } from '@/dto/response/authentication.response';
 import { RefreshTokenRequestDto } from '@/dto/request/refresh-token.request';
+import { RefreshTokenResponseDto } from '@/dto/response/refresh.response';
 import { LoginRequestDto } from '@/dto/request/login.request';
 import { RegisterRequestDto } from '@/dto/request/register.request';
-import { PreconditionFailedErrorResponse } from '@/dto/response/precondition.response';
-import { UnauthorizedErrorResponse } from '@/dto/response/unauthorized.reponse';
+import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
 
 @ApiTags('auth')
+@ApiResponse({
+  status: 400,
+  description: 'Ответ будет таким если с регистрационным данным что-то не так',
+  type: BadRequestError,
+})
+@ApiResponse({
+  status: 401,
+  description: 'Ответ для незарегистрированного пользователя',
+  type: UnauthorizedErrorResponse,
+})
+@ApiResponse({
+  status: 412,
+  description: 'Пользователь уже существует',
+  type: PreconditionFailedErrorResponse,
+})
 @Controller('auth')
 export class AuthController {
   logger = new Logger(AuthController.name);
@@ -45,11 +60,6 @@ export class AuthController {
     description: 'Успешный ответ',
     type: AuthResponseDto,
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Ответ для неавторизованных пользователей',
-    type: UnauthorizedErrorResponse,
-  })
   async authorization(
     @Request() req: ExpressRequest,
   ): Promise<AuthResponseDto> {
@@ -63,17 +73,6 @@ export class AuthController {
     status: 200,
     description: 'Успешный ответ',
     type: AuthResponseDto,
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Ответ для неавторизованных пользователей',
-    type: UnauthorizedErrorResponse,
-  })
-  @ApiResponse({
-    status: 412,
-    description:
-      'Ответ будет таким если с регистрационным данным что-то не так',
-    type: PreconditionFailedErrorResponse,
   })
   async login(
     @Request() req: ExpressRequest,
@@ -95,17 +94,6 @@ export class AuthController {
     description: 'Успешный ответ',
     type: AuthResponseDto,
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Ответ для незарегистрированного пользователя',
-    type: UnauthorizedErrorResponse,
-  })
-  @ApiResponse({
-    status: 412,
-    description:
-      'Ответ будет таким если с регистрационным данным что-то не так',
-    type: PreconditionFailedErrorResponse,
-  })
   async register(
     @Request() req: ExpressRequest,
     @Body() body: RegisterRequestDto,
@@ -121,17 +109,6 @@ export class AuthController {
     status: 200,
     description: 'Успешный ответ',
     type: AuthResponseDto,
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Ответ для незарегистрированного пользователя',
-    type: UnauthorizedErrorResponse,
-  })
-  @ApiResponse({
-    status: 412,
-    description:
-      'Ответ будет таким если с регистрационным данным что-то не так',
-    type: PreconditionFailedErrorResponse,
   })
   async refresh(
     @Request() req: ExpressRequest,

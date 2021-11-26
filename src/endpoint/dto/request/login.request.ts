@@ -7,6 +7,6 @@ export class LoginRequestDto {
   email: string;
 
   @ApiProperty({ example: 'secret' })
-  @MinLength(8, { message: 'Password is too short' })
+  @MinLength(8, { message: 'password is too short' })
   password: string;
 }

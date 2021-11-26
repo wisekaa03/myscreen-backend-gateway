@@ -7,6 +7,7 @@ import { WinstonModule } from 'nest-winston';
 import { winstonOptions } from '@/shared/logger.options';
 import { version, name, description } from '../package.json';
 import { AppModule } from './app.module';
+import { ValidationPipe } from './pipes/validation.pipe';
 
 (async () => {
   const configService = new ConfigService();
@@ -17,6 +18,7 @@ import { AppModule } from './app.module';
     cors: true,
   });
   app.useLogger(logger);
+  app.useGlobalPipes(new ValidationPipe());
 
   const swaggerConfig = new DocumentBuilder()
     .addBearerAuth({
