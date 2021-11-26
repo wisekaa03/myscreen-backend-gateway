@@ -121,7 +121,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: AuthResponseDto,
+    type: SuccessResponseDto,
   })
   async verifyEmail(
     @Request() req: ExpressRequest,

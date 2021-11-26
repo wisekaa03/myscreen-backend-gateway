@@ -4711,10 +4711,10 @@ nest-winston@^1.6.1:
     cli-color "^2.0.0"
     fast-safe-stringify "^2.1.1"
 
-nestjs-mailgun@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-1.0.5.tgz#8eba16e664892a9404895c569dad24b8099fbb22"
-  integrity sha512-fp8UiXpzUmsC/rHRJT3KFZi81qPZ6BRRnqjn6852GA/rCjhjH0iyxGoBD9PCBg40C1veM4KX/J6mZoWnCPUFjQ==
+nestjs-mailgun@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-1.2.2.tgz#cff8d7064534133b9871768007be5c864828580a"
+  integrity sha512-HAZ24NlONXzQenOum3AE/EyE8N8XZ3s30ZJ7Tgj0TeTbN1A2ETzoSbzV5JXkX+qLAaC5hpHNT87RKzgaRqRCcQ==
   dependencies:
     form-data "^4.0.0"
     mailgun.js "^4.0.1"
