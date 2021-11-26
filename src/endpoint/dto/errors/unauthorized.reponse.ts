@@ -4,7 +4,7 @@ import { Status } from '../status.enum';
 
 /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
 // @ts-ignore
-export class UnauthorizedErrorResponse extends UnauthorizedException {
+export class UnauthorizedError extends UnauthorizedException {
   constructor(message?: string) {
     super({
       status: Status.Error,

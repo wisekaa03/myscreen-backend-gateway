@@ -17,9 +17,9 @@ import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
-import { ForbiddenErrorResponse } from '@/dto/errors/forbidden.reponse';
-import { UnauthorizedErrorResponse } from '@/dto/errors/unauthorized.reponse';
-import { PreconditionFailedErrorResponse } from '@/dto/errors/precondition.response';
+import { ForbiddenError } from '@/dto/errors/forbidden.reponse';
+import { UnauthorizedError } from '@/dto/errors/unauthorized.reponse';
+import { PreconditionFailedError } from '@/dto/errors/precondition.response';
 
 @Injectable()
 export class AuthService {
@@ -53,7 +53,8 @@ export class AuthService {
       ? await this.userService.validateCredentials(user, login.password)
       : false;
     if (!valid) {
-      throw new UnauthorizedErrorResponse();
+      this.logger.warn(`Password mismatched: "${login.password}"`);
+      throw new UnauthorizedError();
     }
 
     const token = await this.generateAccessToken(user);
@@ -150,17 +151,20 @@ export class AuthService {
     const token = await this.getStoredTokenFromRefreshTokenPayload(payload);
 
     if (!token) {
-      throw new PreconditionFailedErrorResponse('Refresh token not found');
+      this.logger.warn(`Refresh token "${encoded}" not found`);
+      throw new PreconditionFailedError('Refresh token not found');
     }
 
     if (token.isRevoked) {
-      throw new PreconditionFailedErrorResponse('Refresh token revoked');
+      this.logger.warn(`Refresh token "${encoded}" revoked`);
+      throw new PreconditionFailedError('Refresh token revoked');
     }
 
     const user = await this.getUserFromRefreshTokenPayload(payload);
 
     if (!user) {
-      throw new PreconditionFailedErrorResponse('Refresh token malformed');
+      this.logger.warn(`Refresh token "${encoded}" malformed`);
+      throw new PreconditionFailedError('Refresh token malformed');
     }
 
     return { user, token };
@@ -172,8 +176,8 @@ export class AuthService {
   ): Promise<{ token: string; user: UserEntity }> {
     const { user } = await this.resolveRefreshToken(refresh);
     if (user.disabled) {
-      this.logger.warn(`User ${user.email} is disabled.`);
-      throw new ForbiddenErrorResponse(`User ${user.email} is disabled.`);
+      this.logger.warn(`User ${user.email} is disabled`);
+      throw new ForbiddenError(`User ${user.email} is disabled`);
     }
 
     const token = await this.generateAccessToken(user);
@@ -187,10 +191,10 @@ export class AuthService {
     } catch (e) {
       if (e instanceof TokenExpiredError) {
         this.logger.warn(`Token ${token} expired`);
-        throw new PreconditionFailedErrorResponse('Refresh token expired');
+        throw new PreconditionFailedError('Refresh token expired');
       } else {
         this.logger.warn(`Token ${token} malformed`);
-        throw new PreconditionFailedErrorResponse('Refresh token malformed');
+        throw new PreconditionFailedError('Refresh token malformed');
       }
     }
   }
@@ -202,7 +206,7 @@ export class AuthService {
 
     if (!subId) {
       this.logger.warn(`Token ${JSON.stringify(payload)} malformed`);
-      throw new PreconditionFailedErrorResponse('Refresh token malformed');
+      throw new PreconditionFailedError('Refresh token malformed');
     }
 
     return this.userService.findById(subId);
@@ -215,7 +219,7 @@ export class AuthService {
 
     if (!tokenId) {
       this.logger.warn(`Token ${JSON.stringify(payload)} malformed`);
-      throw new PreconditionFailedErrorResponse('Refresh token malformed');
+      throw new PreconditionFailedError('Refresh token malformed');
     }
 
     return this.refreshTokenService.find(tokenId);

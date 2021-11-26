@@ -13,11 +13,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { validate } from 'class-validator';
 import { Request as ExpressRequest } from 'express';
 
-import { PreconditionFailedErrorResponse } from '@/dto/errors/precondition.response';
-import { UnauthorizedErrorResponse } from '@/dto/errors/unauthorized.reponse';
+import { PreconditionFailedError } from '@/dto/errors/precondition.response';
+import { UnauthorizedError } from '@/dto/errors/unauthorized.reponse';
 import { BadRequestError } from '@/dto/errors/bad-request.response';
 
 import { AuthResponseDto } from '@/dto/response/authentication.response';
@@ -38,12 +37,12 @@ import { AuthService } from './auth.service';
 @ApiResponse({
   status: 401,
   description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedErrorResponse,
+  type: UnauthorizedError,
 })
 @ApiResponse({
   status: 412,
   description: 'Пользователь уже существует',
-  type: PreconditionFailedErrorResponse,
+  type: PreconditionFailedError,
 })
 @Controller('auth')
 export class AuthController {
@@ -78,10 +77,6 @@ export class AuthController {
     @Request() req: ExpressRequest,
     @Body() body: LoginRequestDto,
   ): Promise<AuthResponseDto> {
-    const login = await validate(body);
-    if (Object.keys(login).length > 0) {
-      throw new PreconditionFailedErrorResponse();
-    }
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
     return this.authService.login(body, fingerprint);

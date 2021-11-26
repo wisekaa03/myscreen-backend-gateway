@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { PreconditionFailedErrorResponse } from '@/dto/errors/precondition.response';
+import { PreconditionFailedError } from '@/dto/errors/precondition.response';
 import { RegisterRequestDto } from '@/dto/request/register.request';
 import { UserEntity } from './user.entity';
 
@@ -20,7 +20,7 @@ export class UserService {
     });
 
     if (existingUser) {
-      throw new PreconditionFailedErrorResponse();
+      throw new PreconditionFailedError();
     }
 
     const user: UserEntity = {
