@@ -27,12 +27,6 @@
       "@/*": [
         "./src/*"
       ],
-      "@/dto": [
-        "./src/endpoint/dto/"
-      ],
-      "@/dto/*": [
-        "./src/endpoint/dto/*"
-      ],
       "@/auth": [
         "./src/endpoint/auth/"
       ],
