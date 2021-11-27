@@ -4,23 +4,26 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 
 import { DatabaseModule } from '@/database/database.module';
-import { AuthController } from '@/endpoint/auth/auth.controller';
-import { AuthService } from '@/endpoint/auth/auth.service';
-import { JwtStrategy } from '@/endpoint/auth/jwt.strategy';
 
-import { MonitorController } from '@/endpoint/monitors.controller';
-import { VideoController } from '@/endpoint/video.controller';
-import { EditorController } from '@/endpoint/editor.controller';
-import { FileController } from '@/endpoint/file.controller';
-import { MediaController } from '@/endpoint/media.controller';
-import { FolderController } from '@/endpoint/folder.controller';
-import { UploadController } from '@/endpoint/upload.controller';
-import { UserController } from '@/endpoint/user.controller';
-import { OrderController } from '@/endpoint/order.controller';
-import { PaymentController } from '@/endpoint/payment.controller';
-import { UptimeController } from '@/endpoint/uptime.controller';
-import { PlaylistController } from '@/endpoint/playlist.controller';
-import { LogController } from '@/endpoint/log.controller';
+import { AuthController } from './auth/auth.controller';
+import { AuthService } from './auth/auth.service';
+import { JwtStrategy } from './auth/jwt.strategy';
+
+import { MediaController } from './media/media.controller';
+import { MediaService } from './media/media.service';
+
+import { MonitorController } from './monitors.controller';
+import { VideoController } from './video.controller';
+import { EditorController } from './editor.controller';
+import { FileController } from './file.controller';
+import { FolderController } from './folder.controller';
+import { UploadController } from './upload.controller';
+import { UserController } from './user.controller';
+import { OrderController } from './order.controller';
+import { PaymentController } from './payment.controller';
+import { UptimeController } from './uptime.controller';
+import { PlaylistController } from './playlist.controller';
+import { LogController } from './log.controller';
 
 @Module({
   imports: [
@@ -55,6 +58,6 @@ import { LogController } from '@/endpoint/log.controller';
     LogController,
   ],
 
-  providers: [Logger, AuthService, JwtStrategy],
+  providers: [Logger, JwtStrategy, AuthService, MediaService],
 })
 export class EndpointModule {}

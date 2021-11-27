@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 
 import { winstonOptions } from '@/shared/logger.options';
-import { version, name, description } from '../package.json';
+import { version, author, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ValidationPipe } from './pipes/validation.pipe';
 
@@ -32,10 +32,9 @@ import { ValidationPipe } from './pipes/validation.pipe';
       description: 'Токен авторизации',
       name: 'token',
     })
-    .setTitle(name)
-    .setDescription(description)
+    .setTitle(description)
+    .setDescription(author)
     .setVersion(version)
-    .addTag(name)
     .build();
 
   const swaggerOptions: SwaggerCustomOptions = {
