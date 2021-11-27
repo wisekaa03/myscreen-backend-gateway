@@ -1,6 +1,10 @@
 import { NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import {
+  SwaggerModule,
+  DocumentBuilder,
+  SwaggerCustomOptions,
+} from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 
@@ -11,12 +15,14 @@ import { ValidationPipe } from './pipes/validation.pipe';
 
 (async () => {
   const configService = new ConfigService();
+  const apiPath = configService.get<string>('API_PATH', '/api/v2');
   const logger = WinstonModule.createLogger(winstonOptions(configService));
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger,
     cors: true,
   });
+  app.setGlobalPrefix(apiPath);
   app.useLogger(logger);
   app.useGlobalPipes(new ValidationPipe());
 
@@ -31,10 +37,18 @@ import { ValidationPipe } from './pipes/validation.pipe';
     .setVersion(version)
     .addTag(name)
     .build();
+
+  const swaggerOptions: SwaggerCustomOptions = {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+    customSiteTitle: description,
+  };
   SwaggerModule.setup(
-    configService.get('API_PATH', '/api/v2'),
+    apiPath,
     app,
     SwaggerModule.createDocument(app, swaggerConfig),
+    swaggerOptions,
   );
 
   const PORT = configService.get<number>('PORT', 3000);

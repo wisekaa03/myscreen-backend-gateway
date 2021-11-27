@@ -5,7 +5,7 @@ import {
   Get,
   Logger,
   Post,
-  Request,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -61,26 +61,29 @@ export class AuthController {
   @Get('/')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Проверяет, авторизован ли пользователь' })
+  @ApiOperation({
+    operationId: 'auth',
+    summary: 'Проверяет, авторизован ли пользователь',
+  })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: AuthResponse,
   })
-  async authorization(@Request() req: ExpressRequest): Promise<AuthResponse> {
+  async authorization(@Req() req: ExpressRequest): Promise<AuthResponse> {
     const { user } = req;
     return this.authService.authorization(user);
   }
 
   @Post('login')
-  @ApiOperation({ summary: 'Авторизация пользователя' })
+  @ApiOperation({ operationId: 'login', summary: 'Авторизация пользователя' })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: AuthResponse,
   })
   async login(
-    @Request() req: ExpressRequest,
+    @Req() req: ExpressRequest,
     @Body() body: LoginRequest,
   ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
@@ -89,14 +92,17 @@ export class AuthController {
   }
 
   @Post('register')
-  @ApiOperation({ summary: 'Регистрация пользователя' })
+  @ApiOperation({
+    operationId: 'register',
+    summary: 'Регистрация пользователя',
+  })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: AuthResponse,
   })
   async register(
-    @Request() req: ExpressRequest,
+    @Req() req: ExpressRequest,
     @Body() body: RegisterRequest,
   ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
@@ -105,14 +111,14 @@ export class AuthController {
   }
 
   @Post('/refresh')
-  @ApiOperation({ summary: 'Обновление токена' })
+  @ApiOperation({ operationId: 'refresh', summary: 'Обновление токена' })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: RefreshTokenResponse,
   })
   async refresh(
-    @Request() req: ExpressRequest,
+    @Req() req: ExpressRequest,
     @Body() body: RefreshTokenRequest,
   ): Promise<RefreshTokenResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
@@ -121,14 +127,17 @@ export class AuthController {
   }
 
   @Post('/verify-email')
-  @ApiOperation({ summary: 'Подтвердить email пользователя' })
+  @ApiOperation({
+    operationId: 'verify-email',
+    summary: 'Подтвердить email пользователя',
+  })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
   async verifyEmail(
-    @Request() req: ExpressRequest,
+    @Req() req: ExpressRequest,
     @Body() body: VerifyEmailRequest,
   ): Promise<SuccessResponse> {
     return this.authService.verifyEmail(body);
@@ -136,6 +145,7 @@ export class AuthController {
 
   @Post('/reset-password')
   @ApiOperation({
+    operationId: 'reset-password',
     summary: 'Отправить на почту пользователю разрешение на смену пароля',
   })
   @ApiResponse({
@@ -144,21 +154,24 @@ export class AuthController {
     type: SuccessResponse,
   })
   async resetPasswordInvitation(
-    @Request() req: ExpressRequest,
+    @Req() req: ExpressRequest,
     @Body() body: ResetPasswordInvitationRequest,
   ): Promise<SuccessResponse> {
     return this.authService.forgotPasswordInvitation(body);
   }
 
   @Post('/reset-password-verify')
-  @ApiOperation({ summary: 'Меняет пароль пользователя' })
+  @ApiOperation({
+    operationId: 'reset-password-verify',
+    summary: 'Меняет пароль пользователя',
+  })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
   async resetPasswordVerify(
-    @Request() req: ExpressRequest,
+    @Req() req: ExpressRequest,
     @Body() body: ResetPasswordVerifyRequest,
   ): Promise<SuccessResponse> {
     return this.authService.forgotPasswordVerify(body);
@@ -167,13 +180,16 @@ export class AuthController {
   @Delete('/delete')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Удаление аккаунта пользователя' })
+  @ApiOperation({
+    operationId: 'delete',
+    summary: 'Скрытие аккаунта пользователя',
+  })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async deleteUser(@Request() req: ExpressRequest): Promise<SuccessResponse> {
+  async deleteUser(@Req() req: ExpressRequest): Promise<SuccessResponse> {
     const { user } = req;
     return this.authService.setUserDisabled(user);
   }
