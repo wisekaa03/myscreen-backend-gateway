@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -21,6 +22,7 @@ export class UserEntity {
   @ApiProperty({ example: 'foo@bar.baz' })
   email!: string;
 
+  @Index()
   @Column({ type: 'boolean', default: false })
   @ApiProperty({ example: false, required: false })
   disabled: boolean;

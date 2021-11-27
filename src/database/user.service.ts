@@ -127,11 +127,11 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<UserEntity> {
-    return this.userRepository.findOne({ email });
+    return this.userRepository.findOne({ email, disabled: false });
   }
 
   async findById(userId: string): Promise<UserEntity> {
-    return this.userRepository.findOne(userId);
+    return this.userRepository.findOne({ id: userId, disabled: false });
   }
 
   async validateCredentials(

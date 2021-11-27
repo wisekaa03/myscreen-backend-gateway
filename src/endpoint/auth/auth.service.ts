@@ -6,11 +6,11 @@ import { TokenExpiredError } from 'jsonwebtoken';
 import { JWT_BASE_OPTIONS, MyscreenJwtPayload } from '@/shared/jwt.payload';
 
 import {
+  Status,
   ForbiddenError,
   UnauthorizedError,
   BadRequestError,
   PreconditionFailedError,
-  Status,
   AuthResponse,
   LoginRequest,
   RegisterRequest,
@@ -234,8 +234,8 @@ export class AuthService {
   /**
    * Проверяет почту на соответствие
    * @async
-   * @param {VerifyEmailRequestDto} body
-   * @returns {SuccessResponseDto} Результат
+   * @param {VerifyEmailRequest} body
+   * @returns {SuccessResponse} Результат
    */
   async verifyEmail(body: VerifyEmailRequest): Promise<SuccessResponse> {
     const [email, verifyToken] = decodeMailToken(body.verify_email);
@@ -266,8 +266,8 @@ export class AuthService {
   /**
    * Выдает ссылку email пользователя
    * @async
-   * @param {ResetPasswordInvitationRequestDto} body
-   * @returns {SuccessResponseDto} Результат
+   * @param {ResetPasswordInvitationRequest} body
+   * @returns {SuccessResponse} Результат
    */
   async forgotPasswordInvitation(
     body: ResetPasswordInvitationRequest,
@@ -282,8 +282,8 @@ export class AuthService {
   /**
    * Меняет пароль пользователя
    * @async
-   * @param {ResetPasswordVerifyRequestDto} body
-   * @returns {SuccessResponseDto} Результат
+   * @param {ResetPasswordVerifyRequest} body
+   * @returns {SuccessResponse} Результат
    */
   async forgotPasswordVerify(
     body: ResetPasswordVerifyRequest,
@@ -292,6 +292,20 @@ export class AuthService {
       body.verify_code,
       body.password,
     );
+
+    return {
+      status: Status.Success,
+    };
+  }
+
+  /**
+   * Удаляет пользователя
+   * @async
+   * @param {UserEntity} user
+   * @returns {SuccessResponse} Результат
+   */
+  async setUserDisabled(user: UserEntity): Promise<SuccessResponse> {
+    await this.userService.update({ ...user, disabled: true });
 
     return {
       status: Status.Success,

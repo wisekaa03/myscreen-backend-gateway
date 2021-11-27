@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Logger,
   Post,
@@ -161,5 +162,19 @@ export class AuthController {
     @Body() body: ResetPasswordVerifyRequest,
   ): Promise<SuccessResponse> {
     return this.authService.forgotPasswordVerify(body);
+  }
+
+  @Delete('/delete')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Удаление аккаунта пользователя' })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deleteUser(@Request() req: ExpressRequest): Promise<SuccessResponse> {
+    const { user } = req;
+    return this.authService.setUserDisabled(user);
   }
 }
