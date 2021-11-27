@@ -30,6 +30,15 @@ export class UserService {
   }
 
   @Transaction()
+  async update(
+    user: Partial<UserEntity>,
+    @TransactionRepository(UserEntity)
+    userRepository: Repository<UserEntity> = null,
+  ): Promise<UserEntity> {
+    return userRepository.save(user);
+  }
+
+  @Transaction()
   async create(
     create: RegisterRequestDto,
     @TransactionRepository(UserEntity)
@@ -58,7 +67,7 @@ export class UserService {
       countUsedSpace: 0,
     };
     const savedUser = await userRepository.save(user);
-    const verifyToken = generateMailToken(user, user.emailConfirmKey);
+    const verifyToken = generateMailToken(user.email, user.emailConfirmKey);
     const confirmUrl = `${this.frontendUrl}/verify-register-email?key=${verifyToken}`;
 
     await Promise.all([

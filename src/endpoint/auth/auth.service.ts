@@ -22,7 +22,9 @@ import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
 
 import { ForbiddenError } from '@/dto/errors/forbidden.reponse';
 import { UnauthorizedError } from '@/dto/errors/unauthorized.reponse';
+import { BadRequestError } from '@/dto/errors/bad-request.response';
 import { PreconditionFailedError } from '@/dto/errors/precondition.response';
+import { decodeMailToken } from '@/shared/mail-token';
 
 @Injectable()
 export class AuthService {
@@ -226,6 +228,27 @@ export class AuthService {
   }
 
   async verifyEmail(body: VerifyEmailRequestDto): Promise<SuccessResponseDto> {
-    throw new ForbiddenError();
+    const [email, verifyToken] = decodeMailToken(body.verify_email);
+
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestError();
+    }
+
+    if (user.verified) {
+      throw new BadRequestError();
+    }
+
+    if (user.emailConfirmKey === verifyToken) {
+      user.emailConfirmKey = null;
+      user.verified = true;
+      await this.userService.update(user);
+
+      return {
+        status: Status.Success,
+      };
+    }
+
+    throw new BadRequestError();
   }
 }

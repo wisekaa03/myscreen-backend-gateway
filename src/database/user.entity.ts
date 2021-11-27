@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -18,8 +17,7 @@ export class UserEntity {
   @ApiHideProperty()
   id?: string;
 
-  @Column()
-  @Index()
+  @Column({ unique: true })
   @ApiProperty({ example: 'foo@bar.baz' })
   email!: string;
 
