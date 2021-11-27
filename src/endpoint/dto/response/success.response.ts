@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '../status.enum';
 
-export class SuccessResponseDto {
+export class SuccessResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,

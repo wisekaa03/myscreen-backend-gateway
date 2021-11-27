@@ -24,7 +24,6 @@ export class UnauthorizedError extends UnauthorizedException {
   code: string;
 
   @ApiProperty({
-    type: 'Unauthorized request',
     example: 'Unauthorized request',
   })
   message: string;

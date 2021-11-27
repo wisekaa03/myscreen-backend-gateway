@@ -1,10 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
-export class LoginRequest {
-  @ApiProperty({ example: 'foo@bar.baz' })
-  @IsEmail()
-  email: string;
+export class ResetPasswordVerifyRequest {
+  @ApiProperty({ example: 'j481y1b' })
+  @IsString()
+  @IsNotEmpty()
+  verify_code: string;
 
   @ApiProperty({ example: 'Secret~12345678' })
   @MinLength(8, { message: 'password is too short' })

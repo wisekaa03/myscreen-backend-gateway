@@ -24,7 +24,6 @@ export class ForbiddenError extends ForbiddenException {
   code: string;
 
   @ApiProperty({
-    type: 'Forbidden',
     example: 'Forbidden',
   })
   message: string;

@@ -1,21 +1,24 @@
 import { compare, hash } from 'bcrypt';
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Transaction, TransactionRepository } from 'typeorm';
 
-import { ConfigService } from '@nestjs/config';
+import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { MailService } from '@/mail/mail.service';
-import { PreconditionFailedError } from '@/dto/errors/precondition.response';
-import { RegisterRequestDto } from '@/dto/request/register.request';
-import { generateMailToken } from '@/shared/mail-token';
+import {
+  BadRequestError,
+  PreconditionFailedError,
+  RegisterRequest,
+} from '@/dto';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
 
 @Injectable()
 export class UserService {
-  logger = new Logger(UserService.name);
+  private logger = new Logger(UserService.name);
 
-  frontendUrl: string;
+  private frontendUrl: string;
 
   constructor(
     @InjectRepository(UserEntity)
@@ -40,7 +43,7 @@ export class UserService {
 
   @Transaction()
   async create(
-    create: RegisterRequestDto,
+    create: RegisterRequest,
     @TransactionRepository(UserEntity)
     userRepository: Repository<UserEntity> = null,
   ): Promise<UserEntity> {
@@ -68,7 +71,7 @@ export class UserService {
     };
     const savedUser = await userRepository.save(user);
     const verifyToken = generateMailToken(user.email, user.emailConfirmKey);
-    const confirmUrl = `${this.frontendUrl}/verify-register-email?key=${verifyToken}`;
+    const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
     await Promise.all([
       this.mailService.sendWelcomeMessage(user),
@@ -76,6 +79,51 @@ export class UserService {
     ]);
 
     return savedUser;
+  }
+
+  async forgotPasswordInvitation(email: string): Promise<void> {
+    const user = await this.userRepository.findOne({ email });
+
+    if (!user) {
+      this.logger.warn(`User with email "${email}" not exists`);
+      throw new BadRequestError();
+    }
+    user.forgotConfirmKey = genKey();
+    this.userRepository.save(user);
+
+    const verifyToken = generateMailToken(user.email, user.forgotConfirmKey);
+    const forgotPasswordUrl = `${this.frontendUrl}/reset-password-verify?key=${verifyToken}`;
+
+    this.mailService.forgotPassword(user, forgotPasswordUrl);
+  }
+
+  @Transaction()
+  async forgotPasswordVerify(
+    forgotPasswordToken: string,
+    password: string,
+    @TransactionRepository(UserEntity)
+    userRepository: Repository<UserEntity> = null,
+  ): Promise<void> {
+    const [email, forgotPassword] = decodeMailToken(forgotPasswordToken);
+
+    const user = await userRepository.findOne({ email });
+    if (!user) {
+      this.logger.warn(`User with email "${email}" not exists`);
+      throw new BadRequestError();
+    }
+
+    if (forgotPassword === user.forgotConfirmKey) {
+      user.password = await hash(password, 7);
+      user.forgotConfirmKey = null;
+      await userRepository.save(user);
+
+      return;
+    }
+
+    this.logger.warn(
+      `Forgot password '${forgotPassword}' not equal to our records`,
+    );
+    throw new BadRequestError();
   }
 
   async findByEmail(email: string): Promise<UserEntity> {

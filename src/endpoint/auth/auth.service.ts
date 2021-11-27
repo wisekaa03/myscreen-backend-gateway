@@ -4,26 +4,30 @@ import { JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
 
 import { JWT_BASE_OPTIONS, MyscreenJwtPayload } from '@/shared/jwt.payload';
-import { Status } from '@/dto/status.enum';
-import type { LoginRequestDto } from '@/dto/request/login.request';
-import type { RegisterRequestDto } from '@/dto/request/register.request';
-import type {
-  AuthenticationPayloadDto,
-  AuthResponseDto,
-} from '@/dto/response/authentication.response';
-import type { RefreshTokenRequestDto } from '@/dto/request/refresh-token.request';
-import type { RefreshTokenResponseDto } from '@/dto/response/refresh.response';
-import { VerifyEmailRequestDto } from '@/dto/request/verify-email.request';
-import { SuccessResponseDto } from '@/dto/response/success.response';
+
+import {
+  ForbiddenError,
+  UnauthorizedError,
+  BadRequestError,
+  PreconditionFailedError,
+  Status,
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+  RefreshTokenRequest,
+  VerifyEmailRequest,
+  ResetPasswordVerifyRequest,
+  RefreshTokenResponse,
+  AuthenticationPayload,
+  SuccessResponse,
+  ResetPasswordInvitationRequest,
+} from '@/dto';
+
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
 
-import { ForbiddenError } from '@/dto/errors/forbidden.reponse';
-import { UnauthorizedError } from '@/dto/errors/unauthorized.reponse';
-import { BadRequestError } from '@/dto/errors/bad-request.response';
-import { PreconditionFailedError } from '@/dto/errors/precondition.response';
 import { decodeMailToken } from '@/shared/mail-token';
 
 @Injectable()
@@ -37,7 +41,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async authorization(user: UserEntity): Promise<AuthResponseDto> {
+  async authorization(user: UserEntity): Promise<AuthResponse> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const { id, password, forgotConfirmKey, emailConfirmKey, ...data } = user;
 
@@ -48,9 +52,9 @@ export class AuthService {
   }
 
   async login(
-    login: LoginRequestDto,
+    login: LoginRequest,
     fingerprint?: string,
-  ): Promise<AuthResponseDto> {
+  ): Promise<AuthResponse> {
     const user = await this.userService.findByEmail(login.email);
 
     const valid = user
@@ -74,9 +78,9 @@ export class AuthService {
   }
 
   async register(
-    login: RegisterRequestDto,
+    login: RegisterRequest,
     fingerprint?: string,
-  ): Promise<AuthResponseDto> {
+  ): Promise<AuthResponse> {
     const user = await this.userService.create(login);
 
     const token = await this.generateAccessToken(user);
@@ -92,9 +96,9 @@ export class AuthService {
   }
 
   async refresh(
-    body: RefreshTokenRequestDto,
+    body: RefreshTokenRequest,
     fingerprint?: string,
-  ): Promise<RefreshTokenResponseDto> {
+  ): Promise<RefreshTokenResponse> {
     const { token } = await this.createAccessTokenFromRefreshToken(
       body.refresh_token,
       fingerprint,
@@ -106,8 +110,8 @@ export class AuthService {
   private buildResponsePayload(
     token: string,
     refresh_token?: string,
-  ): AuthenticationPayloadDto {
-    const payload: AuthenticationPayloadDto = {
+  ): AuthenticationPayload {
+    const payload: AuthenticationPayload = {
       type: 'bearer',
       token,
     };
@@ -227,7 +231,13 @@ export class AuthService {
     return this.refreshTokenService.find(tokenId);
   }
 
-  async verifyEmail(body: VerifyEmailRequestDto): Promise<SuccessResponseDto> {
+  /**
+   * Проверяет почту на соответствие
+   * @async
+   * @param {VerifyEmailRequestDto} body
+   * @returns {SuccessResponseDto} Результат
+   */
+  async verifyEmail(body: VerifyEmailRequest): Promise<SuccessResponse> {
     const [email, verifyToken] = decodeMailToken(body.verify_email);
 
     const user = await this.userService.findByEmail(email);
@@ -249,6 +259,42 @@ export class AuthService {
       };
     }
 
+    this.logger.warn(`Verify email '${verifyToken}' not equal to our records`);
     throw new BadRequestError();
+  }
+
+  /**
+   * Выдает ссылку email пользователя
+   * @async
+   * @param {ResetPasswordInvitationRequestDto} body
+   * @returns {SuccessResponseDto} Результат
+   */
+  async forgotPasswordInvitation(
+    body: ResetPasswordInvitationRequest,
+  ): Promise<SuccessResponse> {
+    await this.userService.forgotPasswordInvitation(body.email);
+
+    return {
+      status: Status.Success,
+    };
+  }
+
+  /**
+   * Меняет пароль пользователя
+   * @async
+   * @param {ResetPasswordVerifyRequestDto} body
+   * @returns {SuccessResponseDto} Результат
+   */
+  async forgotPasswordVerify(
+    body: ResetPasswordVerifyRequest,
+  ): Promise<SuccessResponse> {
+    await this.userService.forgotPasswordVerify(
+      body.verify_code,
+      body.password,
+    );
+
+    return {
+      status: Status.Success,
+    };
   }
 }

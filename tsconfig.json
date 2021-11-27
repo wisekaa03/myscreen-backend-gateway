@@ -27,13 +27,13 @@
       "@/*": [
         "./src/*"
       ],
-      "@/dto/": [
+      "@/dto": [
         "./src/endpoint/dto/"
       ],
       "@/dto/*": [
         "./src/endpoint/dto/*"
       ],
-      "@/auth/": [
+      "@/auth": [
         "./src/endpoint/auth/"
       ],
       "@/auth/*": [

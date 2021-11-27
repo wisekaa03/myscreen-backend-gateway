@@ -13,22 +13,27 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request as ExpressRequest } from 'express';
+import type { Request as ExpressRequest } from 'express';
 
+import {
+  LoginRequest,
+  RefreshTokenRequest,
+  RegisterRequest,
+  VerifyEmailRequest,
+  ResetPasswordInvitationRequest,
+  ResetPasswordVerifyRequest,
+} from '@/dto/request';
+import {
+  RefreshTokenResponse,
+  AuthResponse,
+  SuccessResponse,
+} from '@/dto/response';
 import { PreconditionFailedError } from '@/dto/errors/precondition.response';
 import { UnauthorizedError } from '@/dto/errors/unauthorized.reponse';
 import { BadRequestError } from '@/dto/errors/bad-request.response';
-
-import { AuthResponseDto } from '@/dto/response/authentication.response';
-import { RefreshTokenRequestDto } from '@/dto/request/refresh-token.request';
-import { RefreshTokenResponseDto } from '@/dto/response/refresh.response';
-import { LoginRequestDto } from '@/dto/request/login.request';
-import { RegisterRequestDto } from '@/dto/request/register.request';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
 import { AuthService } from './auth.service';
-import { VerifyEmailRequestDto } from '../dto/request/verify-email.request';
-import { SuccessResponseDto } from '../dto/response/success.response';
 
 @ApiTags('auth')
 @ApiResponse({
@@ -59,11 +64,9 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: AuthResponseDto,
+    type: AuthResponse,
   })
-  async authorization(
-    @Request() req: ExpressRequest,
-  ): Promise<AuthResponseDto> {
+  async authorization(@Request() req: ExpressRequest): Promise<AuthResponse> {
     const { user } = req;
     return this.authService.authorization(user);
   }
@@ -73,12 +76,12 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: AuthResponseDto,
+    type: AuthResponse,
   })
   async login(
     @Request() req: ExpressRequest,
-    @Body() body: LoginRequestDto,
-  ): Promise<AuthResponseDto> {
+    @Body() body: LoginRequest,
+  ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
     return this.authService.login(body, fingerprint);
@@ -89,12 +92,12 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: AuthResponseDto,
+    type: AuthResponse,
   })
   async register(
     @Request() req: ExpressRequest,
-    @Body() body: RegisterRequestDto,
-  ): Promise<AuthResponseDto> {
+    @Body() body: RegisterRequest,
+  ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
     return this.authService.register(body, fingerprint);
@@ -105,12 +108,12 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: AuthResponseDto,
+    type: RefreshTokenResponse,
   })
   async refresh(
     @Request() req: ExpressRequest,
-    @Body() body: RefreshTokenRequestDto,
-  ): Promise<RefreshTokenResponseDto> {
+    @Body() body: RefreshTokenRequest,
+  ): Promise<RefreshTokenResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
     return this.authService.refresh(body, fingerprint);
@@ -121,12 +124,42 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: SuccessResponseDto,
+    type: SuccessResponse,
   })
   async verifyEmail(
     @Request() req: ExpressRequest,
-    @Body() body: VerifyEmailRequestDto,
-  ): Promise<SuccessResponseDto> {
+    @Body() body: VerifyEmailRequest,
+  ): Promise<SuccessResponse> {
     return this.authService.verifyEmail(body);
+  }
+
+  @Post('/reset-password')
+  @ApiOperation({
+    summary: 'Отправить на почту пользователю разрешение на смену пароля',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async resetPasswordInvitation(
+    @Request() req: ExpressRequest,
+    @Body() body: ResetPasswordInvitationRequest,
+  ): Promise<SuccessResponse> {
+    return this.authService.forgotPasswordInvitation(body);
+  }
+
+  @Post('/reset-password-verify')
+  @ApiOperation({ summary: 'Меняет пароль пользователя' })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async resetPasswordVerify(
+    @Request() req: ExpressRequest,
+    @Body() body: ResetPasswordVerifyRequest,
+  ): Promise<SuccessResponse> {
+    return this.authService.forgotPasswordVerify(body);
   }
 }

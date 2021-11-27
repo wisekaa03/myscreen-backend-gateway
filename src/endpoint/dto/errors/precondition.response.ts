@@ -24,7 +24,6 @@ export class PreconditionFailedError extends PreconditionFailedException {
   code: string;
 
   @ApiProperty({
-    type: 'User exists',
     example: 'User exists',
   })
   message: string;

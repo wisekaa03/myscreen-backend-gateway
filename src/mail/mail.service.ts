@@ -108,7 +108,7 @@ export class MailService {
     const message = {
       from: this.from,
       to: user.email,
-      subject: 'Подтверждение аккаунта',
+      subject: 'Сброс пароля',
       text: this.forgotPasswordText(forgotPasswordUrl),
     };
 
