@@ -7,6 +7,7 @@ import { JWT_BASE_OPTIONS, MyscreenJwtPayload } from '@/shared/jwt.payload';
 
 import {
   Status,
+  userEntityToUser,
   ForbiddenError,
   UnauthorizedError,
   BadRequestError,
@@ -42,12 +43,9 @@ export class AuthService {
   ) {}
 
   async authorization(user: UserEntity): Promise<AuthResponse> {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { id, password, forgotConfirmKey, emailConfirmKey, ...data } = user;
-
     return {
       status: Status.Success,
-      data,
+      data: userEntityToUser(user),
     };
   }
 
@@ -68,12 +66,11 @@ export class AuthService {
     const token = await this.generateAccessToken(user);
     const refresh = await this.generateRefreshToken(user, fingerprint);
     const payload = this.buildResponsePayload(token, refresh);
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { id, password, forgotConfirmKey, emailConfirmKey, ...data } = user;
+
     return {
       status: Status.Success,
       payload,
-      data,
+      data: userEntityToUser(user),
     };
   }
 
@@ -86,12 +83,11 @@ export class AuthService {
     const token = await this.generateAccessToken(user);
     const refresh = await this.generateRefreshToken(user, fingerprint);
     const payload = this.buildResponsePayload(token, refresh);
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const { id, password, forgotConfirmKey, emailConfirmKey, ...data } = user;
+
     return {
       status: Status.Success,
       payload,
-      data,
+      data: userEntityToUser(user),
     };
   }
 

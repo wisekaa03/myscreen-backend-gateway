@@ -14,7 +14,20 @@ export class User extends PickType(UserEntity, [
   'phoneNumber',
   'role',
   'verified',
-  'disabled',
   'createdAt',
   'updatedAt',
 ]) {}
+
+export const userEntityToUser = (user: UserEntity): User => {
+  const {
+    id,
+    disabled,
+    forgotConfirmKey,
+    emailConfirmKey,
+    password,
+    monitors,
+    ...data
+  } = user;
+
+  return data;
+};

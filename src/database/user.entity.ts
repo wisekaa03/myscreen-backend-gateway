@@ -24,7 +24,7 @@ export class UserEntity {
 
   @Index()
   @Column({ type: 'boolean', default: false })
-  @ApiProperty({ example: false, required: false })
+  @ApiHideProperty()
   disabled: boolean;
 
   @Column({ nullable: true })
