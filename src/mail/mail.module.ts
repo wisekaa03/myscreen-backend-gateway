@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailgunModule } from 'nestjs-mailgun';
 
-import { MailGunService } from '@/mailgun/mailgun.service';
+import { MailService } from '@/mail/mail.service';
 
 // TODO: заменить это все микросервисной архитектурой
 
@@ -12,14 +12,15 @@ import { MailGunService } from '@/mailgun/mailgun.service';
     MailgunModule.forAsyncRoot({
       imports: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        DOMAIN: configService.get<string>('MAIL_API_DOMAIN'),
-        API_KEY: configService.get<string>('MAIL_API_KEY'),
-        HOST: configService.get<string>('MAIL_API_HOST', 'api.eu.mailgun.net'),
+        domain: configService.get<string>('MAILGUN_API_DOMAIN'),
+        apiKey: configService.get<string>('MAILGUN_API_KEY'),
+        publicApiKey: configService.get<string>('MAILGUN_PUBLIC_KEY'),
+        host: configService.get<string>('MAILGUN_API_HOST', 'api.mailgun.net'),
       }),
       inject: [ConfigService],
     }),
   ],
-  providers: [MailGunService],
-  exports: [MailGunService],
+  providers: [MailService],
+  exports: [MailService],
 })
-export class MailGunModule {}
+export class MailModule {}

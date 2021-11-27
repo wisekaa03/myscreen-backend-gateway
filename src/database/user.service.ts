@@ -3,7 +3,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Transaction, TransactionRepository } from 'typeorm';
 
-import { MailGunService } from '@/mailgun/mailgun.service';
+import { ConfigService } from '@nestjs/config';
+import { MailService } from '@/mail/mail.service';
 import { PreconditionFailedError } from '@/dto/errors/precondition.response';
 import { RegisterRequestDto } from '@/dto/request/register.request';
 import { generateMailToken } from '@/shared/mail-token';
@@ -14,11 +15,19 @@ import { UserEntity } from './user.entity';
 export class UserService {
   logger = new Logger(UserService.name);
 
+  frontendUrl: string;
+
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    private readonly mailgunService: MailGunService,
-  ) {}
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
+  ) {
+    this.frontendUrl = configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost',
+    );
+  }
 
   @Transaction()
   async create(
@@ -49,11 +58,12 @@ export class UserService {
       countUsedSpace: 0,
     };
     const savedUser = await userRepository.save(user);
-
     const verifyToken = generateMailToken(user, user.emailConfirmKey);
+    const confirmUrl = `${this.frontendUrl}/verify-register-email?key=${verifyToken}`;
+
     await Promise.all([
-      this.mailgunService.sendWelcomeMessage(user),
-      this.mailgunService.sendVerificationCode(user, verifyToken),
+      this.mailService.sendWelcomeMessage(user),
+      this.mailService.sendVerificationCode(user, confirmUrl),
     ]);
 
     return savedUser;

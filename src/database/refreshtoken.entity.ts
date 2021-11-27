@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -9,6 +10,7 @@ import {
 import { UserEntity } from '@/database/user.entity';
 
 @Entity('refresh_token')
+@Index('IDX_id_expires', ['id', 'expires'])
 export class RefreshTokenEntity {
   @PrimaryGeneratedColumn('uuid')
   id?: string;
