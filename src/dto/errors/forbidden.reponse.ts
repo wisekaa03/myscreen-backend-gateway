@@ -15,7 +15,7 @@ export class ForbiddenError extends ForbiddenException {
   }
 
   @ApiProperty({ type: Status.Error, example: Status.Error })
-  private status: Status;
+  status: Status.Error;
 
   @ApiProperty({ type: '403', example: 403 })
   statusCode: number;

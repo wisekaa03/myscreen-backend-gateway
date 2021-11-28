@@ -15,7 +15,7 @@ export class UnauthorizedError extends UnauthorizedException {
   }
 
   @ApiProperty({ type: Status.Error, example: Status.Error })
-  private status: Status;
+  status: Status.Error;
 
   @ApiProperty({ type: '401', example: 401 })
   statusCode: number;

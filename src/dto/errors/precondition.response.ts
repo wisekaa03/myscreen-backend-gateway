@@ -15,7 +15,7 @@ export class PreconditionFailedError extends PreconditionFailedException {
   }
 
   @ApiProperty({ type: Status.Error, example: Status.Error })
-  private status: Status;
+  status: Status.Error;
 
   @ApiProperty({ type: '412', example: 412 })
   statusCode: number;

@@ -14,8 +14,8 @@ export class BadRequestError extends BadRequestException {
     });
   }
 
-  @ApiProperty({ type: Status.Error, enum: Status, example: Status.Error })
-  private status: Status;
+  @ApiProperty({ type: Status.Error, example: Status.Error })
+  status: Status.Error;
 
   @ApiProperty({ type: '400', example: 400 })
   statusCode: number;

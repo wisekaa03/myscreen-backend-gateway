@@ -5,7 +5,7 @@ import {
   Get,
   Logger,
   Param,
-  Put,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -24,13 +24,11 @@ import {
   UserUpdateRequest,
   SuccessResponse,
   UsersResponse,
+  userEntityToUser,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
+import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
 import { UserRole } from '@/database/enums/role.enum';
 import { UserService } from '@/database/user.service';
-import { Roles } from '@/guards/roles.decorator';
-import { RolesGuard } from '@/guards/roles.guard';
-import { userEntityToUser } from '@/dto/user.dto';
 import { AuthService } from './auth/auth.service';
 
 @ApiTags('user')
@@ -102,7 +100,7 @@ export class UserController {
     };
   }
 
-  @Put('/:userId')
+  @Post('/:userId')
   @Roles(UserRole.Administrator)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
@@ -149,7 +147,7 @@ export class UserController {
     return this.authService.setUserDisabled(user);
   }
 
-  @Delete('/enable/:userId')
+  @Post('/enable/:userId')
   @Roles(UserRole.Administrator)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()

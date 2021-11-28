@@ -17,21 +17,20 @@ import {
 import type { Request as ExpressRequest } from 'express';
 
 import {
+  PreconditionFailedError,
+  UnauthorizedError,
+  BadRequestError,
   LoginRequest,
   RefreshTokenRequest,
   RegisterRequest,
   VerifyEmailRequest,
   ResetPasswordInvitationRequest,
   ResetPasswordVerifyRequest,
-} from '@/dto/request';
-import {
   RefreshTokenResponse,
   AuthResponse,
   SuccessResponse,
-} from '@/dto/response';
-import { PreconditionFailedError } from '@/dto/errors/precondition.response';
-import { UnauthorizedError } from '@/dto/errors/unauthorized.reponse';
-import { BadRequestError } from '@/dto/errors/bad-request.response';
+  Status,
+} from '@/dto';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
 import { AuthService } from './auth.service';
@@ -109,6 +108,19 @@ export class AuthController {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
     return this.authService.register(body, fingerprint);
+  }
+
+  @Get('/ping')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ operationId: 'ping', summary: 'Проверка токена' })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async ping(): Promise<SuccessResponse> {
+    return { status: Status.Success };
   }
 
   @Post('/refresh')
