@@ -126,12 +126,12 @@ export class UserController {
     return this.userService.updateFromRequest(user, body);
   }
 
-  @Delete('/disabled/:userId')
+  @Delete('/disable/:userId')
   @Roles(UserRole.Administrator)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'disabled__userId_',
+    operationId: 'disable__userId_',
     summary: 'Скрытие аккаунта пользователя (только администратор)',
   })
   @ApiResponse({
@@ -149,13 +149,13 @@ export class UserController {
     return this.authService.setUserDisabled(user);
   }
 
-  @Delete('/enabled/:userId')
+  @Delete('/enable/:userId')
   @Roles(UserRole.Administrator)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'enabled__userId_',
-    summary: 'Скрытие аккаунта пользователя (только администратор)',
+    operationId: 'enable__userId_',
+    summary: 'Открытие аккаунта пользователя (только администратор)',
   })
   @ApiResponse({
     status: 200,

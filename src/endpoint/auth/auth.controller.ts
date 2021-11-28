@@ -178,12 +178,12 @@ export class AuthController {
     return this.authService.forgotPasswordVerify(body);
   }
 
-  @Delete('/disabled')
+  @Delete('/disable')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'delete',
-    summary: 'Скрытие аккаунта пользователя',
+    operationId: 'disable',
+    summary: 'Удаление аккаунта пользователя',
   })
   @ApiResponse({
     status: 200,
