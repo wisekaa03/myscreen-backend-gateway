@@ -171,7 +171,7 @@ export class UserController {
     return this.authService.setUserEnabled(user);
   }
 
-  @Post('/delete/:userId')
+  @Delete('/delete/:userId')
   @Roles(UserRole.Administrator)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
