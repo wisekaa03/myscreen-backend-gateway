@@ -170,4 +170,27 @@ export class UserController {
     }
     return this.authService.setUserEnabled(user);
   }
+
+  @Post('/delete/:userId')
+  @Roles(UserRole.Administrator)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'delete__userId_',
+    summary: 'Удаление аккаунта пользователя (только администратор)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deleteUserAdmin(
+    @Param('userId') userId: string,
+  ): Promise<SuccessResponse> {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new BadRequestException();
+    }
+    return this.userService.deleteUser(user);
+  }
 }

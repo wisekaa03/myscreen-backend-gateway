@@ -24,6 +24,7 @@ import {
   Status,
   User,
   userEntityToUser,
+  SuccessResponse,
 } from '@/dto';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
@@ -76,6 +77,19 @@ export class UserService {
     return {
       status: Status.Success,
       data: userEntityToUser(data),
+    };
+  }
+
+  @Transaction()
+  async deleteUser(
+    user: UserEntity,
+    @TransactionRepository(UserEntity)
+    userRepository: Repository<UserEntity> = null,
+  ): Promise<SuccessResponse> {
+    await userRepository.delete(user.id);
+
+    return {
+      status: Status.Success,
     };
   }
 
