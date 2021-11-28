@@ -20,7 +20,6 @@ export class User extends PickType(UserEntity, [
 
 export const userEntityToUser = (user: UserEntity): User => {
   const {
-    id,
     disabled,
     forgotConfirmKey,
     emailConfirmKey,

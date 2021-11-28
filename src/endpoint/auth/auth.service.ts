@@ -295,13 +295,27 @@ export class AuthService {
   }
 
   /**
-   * Удаляет пользователя
+   * Скрывает пользователя
    * @async
    * @param {UserEntity} user
    * @returns {SuccessResponse} Результат
    */
   async setUserDisabled(user: UserEntity): Promise<SuccessResponse> {
     await this.userService.update({ ...user, disabled: true });
+
+    return {
+      status: Status.Success,
+    };
+  }
+
+  /**
+   * Показывает пользователя
+   * @async
+   * @param {UserEntity} user
+   * @returns {SuccessResponse} Результат
+   */
+  async setUserEnabled(user: UserEntity): Promise<SuccessResponse> {
+    await this.userService.update({ ...user, disabled: false });
 
     return {
       status: Status.Success,

@@ -63,7 +63,8 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'auth',
-    summary: 'Проверяет, авторизован ли пользователь',
+    summary:
+      'Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию',
   })
   @ApiResponse({
     status: 200,
@@ -177,7 +178,7 @@ export class AuthController {
     return this.authService.forgotPasswordVerify(body);
   }
 
-  @Delete('/delete')
+  @Delete('/disabled')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
@@ -189,7 +190,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async deleteUser(@Req() req: ExpressRequest): Promise<SuccessResponse> {
+  async disabledUser(@Req() req: ExpressRequest): Promise<SuccessResponse> {
     const { user } = req;
     return this.authService.setUserDisabled(user);
   }

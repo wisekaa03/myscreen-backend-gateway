@@ -5,3 +5,4 @@ export * from './reset-password-invitation.request';
 export * from './reset-password-verify.request';
 export * from './verify-email.request';
 export * from './media-get-files.request';
+export * from './user-update.request';

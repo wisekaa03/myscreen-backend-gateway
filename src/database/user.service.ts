@@ -2,7 +2,12 @@ import { compare, hash } from 'bcrypt';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Transaction, TransactionRepository } from 'typeorm';
+import {
+  FindManyOptions,
+  Repository,
+  Transaction,
+  TransactionRepository,
+} from 'typeorm';
 
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { MailService } from '@/mail/mail.service';
@@ -10,6 +15,11 @@ import {
   BadRequestError,
   PreconditionFailedError,
   RegisterRequest,
+  UserUpdateRequest,
+  AuthResponse,
+  Status,
+  User,
+  userEntityToUser,
 } from '@/dto';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
@@ -39,6 +49,30 @@ export class UserService {
     userRepository: Repository<UserEntity> = null,
   ): Promise<UserEntity> {
     return userRepository.save(user);
+  }
+
+  async updateFromRequest(
+    user: UserEntity,
+    body: UserUpdateRequest,
+  ): Promise<AuthResponse> {
+    const userToBeSaved = Object.assign(user, body);
+    const data = await this.update(userToBeSaved);
+    return {
+      status: Status.Success,
+      data: userEntityToUser(data),
+    };
+  }
+
+  async selectFromRequest(
+    user: UserEntity,
+    body: UserUpdateRequest,
+  ): Promise<AuthResponse> {
+    const userToBeSaved = Object.assign(user, body);
+    const data = await this.update(userToBeSaved);
+    return {
+      status: Status.Success,
+      data: userEntityToUser(data),
+    };
   }
 
   @Transaction()
@@ -124,6 +158,17 @@ export class UserService {
       `Forgot password '${forgotPassword}' not equal to our records`,
     );
     throw new BadRequestError();
+  }
+
+  async findAll(includeDisabled: boolean): Promise<User[]> {
+    const findMany: FindManyOptions<UserEntity> = {
+      where: {
+        ...(includeDisabled ? { disabled: false } : undefined),
+      },
+    };
+    return this.userRepository
+      .find(findMany)
+      .then((users) => users.map((user) => userEntityToUser(user)));
   }
 
   async findByEmail(email: string): Promise<UserEntity> {
