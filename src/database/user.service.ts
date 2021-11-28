@@ -90,7 +90,7 @@ export class UserService {
     });
 
     if (existingUser) {
-      throw new PreconditionFailedException(`User "${create.email}" exists`);
+      throw new PreconditionFailedException(`User '${create.email}' exists`);
     }
 
     const user: UserEntity = {
@@ -122,7 +122,7 @@ export class UserService {
     const user = await this.userRepository.findOne({ email });
 
     if (!user) {
-      throw new BadGatewayException(`User with email "${email}" not exists`);
+      throw new BadGatewayException(`User with email '${email}' not exists`);
     }
     user.forgotConfirmKey = genKey();
     this.userRepository.save(user);
@@ -144,7 +144,7 @@ export class UserService {
 
     const user = await userRepository.findOne({ email });
     if (!user) {
-      throw new BadRequestException(`User with email "${email}" not exists`);
+      throw new BadRequestException(`User with email '${email}' not exists`);
     }
 
     if (forgotPassword === user.forgotConfirmKey) {

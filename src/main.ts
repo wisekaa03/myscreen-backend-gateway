@@ -12,7 +12,7 @@ import { winstonOptions } from '@/shared/logger.options';
 import { version, author, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ValidationPipe } from './pipes/validation.pipe';
-import { ExceptionsFilter } from './exception/all-exceptions.filter';
+import { ExceptionsFilter } from './exception/exceptions.filter';
 
 (async () => {
   const configService = new ConfigService();

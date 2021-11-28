@@ -64,7 +64,7 @@ export class AuthService {
       : false;
     if (!valid) {
       throw new UnauthorizedException(
-        `Password mismatched: "${login.password}"`,
+        `Password mismatched: '${login.password}'`,
       );
     }
 
@@ -159,13 +159,13 @@ export class AuthService {
 
     if (!token) {
       throw new PreconditionFailedException(
-        `Refresh token "${encoded}" not found`,
+        `Refresh token '${encoded}' not found`,
       );
     }
 
     if (token.isRevoked) {
       throw new PreconditionFailedException(
-        `Refresh token "${encoded}" revoked`,
+        `Refresh token '${encoded}' revoked`,
       );
     }
 
@@ -173,7 +173,7 @@ export class AuthService {
 
     if (!user) {
       throw new PreconditionFailedException(
-        `Refresh token "${encoded}" malformed`,
+        `Refresh token '${encoded}' malformed`,
       );
     }
 
