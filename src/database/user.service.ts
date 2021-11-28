@@ -1,5 +1,11 @@
 import { compare, hash } from 'bcrypt';
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  Logger,
+  PreconditionFailedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -12,8 +18,6 @@ import {
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { MailService } from '@/mail/mail.service';
 import {
-  BadRequestError,
-  PreconditionFailedError,
   RegisterRequest,
   UserUpdateRequest,
   AuthResponse,
@@ -86,8 +90,7 @@ export class UserService {
     });
 
     if (existingUser) {
-      this.logger.warn(`User "${create.email}" exists`);
-      throw new PreconditionFailedError();
+      throw new PreconditionFailedException(`User "${create.email}" exists`);
     }
 
     const user: UserEntity = {
@@ -119,8 +122,7 @@ export class UserService {
     const user = await this.userRepository.findOne({ email });
 
     if (!user) {
-      this.logger.warn(`User with email "${email}" not exists`);
-      throw new BadRequestError();
+      throw new BadGatewayException(`User with email "${email}" not exists`);
     }
     user.forgotConfirmKey = genKey();
     this.userRepository.save(user);
@@ -142,8 +144,7 @@ export class UserService {
 
     const user = await userRepository.findOne({ email });
     if (!user) {
-      this.logger.warn(`User with email "${email}" not exists`);
-      throw new BadRequestError();
+      throw new BadRequestException(`User with email "${email}" not exists`);
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
@@ -154,10 +155,9 @@ export class UserService {
       return;
     }
 
-    this.logger.warn(
+    throw new BadRequestException(
       `Forgot password '${forgotPassword}' not equal to our records`,
     );
-    throw new BadRequestError();
   }
 
   async findAll(includeDisabled: boolean): Promise<User[]> {

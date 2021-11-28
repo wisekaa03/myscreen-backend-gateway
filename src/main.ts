@@ -1,4 +1,4 @@
-import { NestApplication, NestFactory } from '@nestjs/core';
+import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import {
   SwaggerModule,
@@ -12,6 +12,7 @@ import { winstonOptions } from '@/shared/logger.options';
 import { version, author, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ValidationPipe } from './pipes/validation.pipe';
+import { ExceptionsFilter } from './exception/all-exceptions.filter';
 
 (async () => {
   const configService = new ConfigService();
@@ -22,6 +23,8 @@ import { ValidationPipe } from './pipes/validation.pipe';
     logger,
     cors: true,
   });
+  const httpAdaper = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
   app.setGlobalPrefix(apiPath);
   app.useLogger(logger);
   app.useGlobalPipes(new ValidationPipe());

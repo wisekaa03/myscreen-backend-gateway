@@ -1,4 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  ForbiddenException,
+  UnauthorizedException,
+  BadGatewayException,
+  BadRequestException,
+  PreconditionFailedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
@@ -8,10 +16,6 @@ import { JWT_BASE_OPTIONS, MyscreenJwtPayload } from '@/shared/jwt.payload';
 import {
   Status,
   userEntityToUser,
-  ForbiddenError,
-  UnauthorizedError,
-  BadRequestError,
-  PreconditionFailedError,
   AuthResponse,
   LoginRequest,
   RegisterRequest,
@@ -59,8 +63,9 @@ export class AuthService {
       ? await this.userService.validateCredentials(user, login.password)
       : false;
     if (!valid) {
-      this.logger.warn(`Password mismatched: "${login.password}"`);
-      throw new UnauthorizedError();
+      throw new UnauthorizedException(
+        `Password mismatched: "${login.password}"`,
+      );
     }
 
     const token = await this.generateAccessToken(user);
@@ -153,20 +158,23 @@ export class AuthService {
     const token = await this.getStoredTokenFromRefreshTokenPayload(payload);
 
     if (!token) {
-      this.logger.warn(`Refresh token "${encoded}" not found`);
-      throw new PreconditionFailedError('Refresh token not found');
+      throw new PreconditionFailedException(
+        `Refresh token "${encoded}" not found`,
+      );
     }
 
     if (token.isRevoked) {
-      this.logger.warn(`Refresh token "${encoded}" revoked`);
-      throw new PreconditionFailedError('Refresh token revoked');
+      throw new PreconditionFailedException(
+        `Refresh token "${encoded}" revoked`,
+      );
     }
 
     const user = await this.getUserFromRefreshTokenPayload(payload);
 
     if (!user) {
-      this.logger.warn(`Refresh token "${encoded}" malformed`);
-      throw new PreconditionFailedError('Refresh token malformed');
+      throw new PreconditionFailedException(
+        `Refresh token "${encoded}" malformed`,
+      );
     }
 
     return { user, token };
@@ -179,7 +187,7 @@ export class AuthService {
     const { user } = await this.resolveRefreshToken(refresh);
     if (user.disabled) {
       this.logger.warn(`User ${user.email} is disabled`);
-      throw new ForbiddenError(`User ${user.email} is disabled`);
+      throw new ForbiddenException(`User ${user.email} is disabled`);
     }
 
     const token = await this.generateAccessToken(user);
@@ -192,11 +200,9 @@ export class AuthService {
       return await this.jwtService.verifyAsync(token);
     } catch (e) {
       if (e instanceof TokenExpiredError) {
-        this.logger.warn(`Token ${token} expired`);
-        throw new PreconditionFailedError('Refresh token expired');
+        throw new PreconditionFailedException(`Token ${token} expired`);
       } else {
-        this.logger.warn(`Token ${token} malformed`);
-        throw new PreconditionFailedError('Refresh token malformed');
+        throw new PreconditionFailedException(`Token ${token} malformed`);
       }
     }
   }
@@ -207,8 +213,9 @@ export class AuthService {
     const subId = payload.sub;
 
     if (!subId) {
-      this.logger.warn(`Token ${JSON.stringify(payload)} malformed`);
-      throw new PreconditionFailedError('Refresh token malformed');
+      throw new PreconditionFailedException(
+        `Token ${JSON.stringify(payload)} malformed`,
+      );
     }
 
     return this.userService.findById(subId);
@@ -220,8 +227,9 @@ export class AuthService {
     const tokenId = payload.jti;
 
     if (!tokenId) {
-      this.logger.warn(`Token ${JSON.stringify(payload)} malformed`);
-      throw new PreconditionFailedError('Refresh token malformed');
+      throw new PreconditionFailedException(
+        `Token ${JSON.stringify(payload)} malformed`,
+      );
     }
 
     return this.refreshTokenService.find(tokenId);
@@ -238,11 +246,11 @@ export class AuthService {
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new BadRequestError();
+      throw new BadRequestException();
     }
 
     if (user.verified) {
-      throw new BadRequestError();
+      throw new BadRequestException();
     }
 
     if (user.emailConfirmKey === verifyToken) {
@@ -255,8 +263,9 @@ export class AuthService {
       };
     }
 
-    this.logger.warn(`Verify email '${verifyToken}' not equal to our records`);
-    throw new BadRequestError();
+    throw new BadGatewayException(
+      `Verify email '${verifyToken}' not equal to our records`,
+    );
   }
 
   /**

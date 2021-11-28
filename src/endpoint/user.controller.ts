@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -16,9 +17,9 @@ import {
 } from '@nestjs/swagger';
 
 import {
-  AuthResponse,
   BadRequestError,
   ForbiddenError,
+  AuthResponse,
   Status,
   UnauthorizedError,
   UserUpdateRequest,
@@ -92,7 +93,7 @@ export class UserController {
   async userGet(@Param('userId') userId: string): Promise<AuthResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestError();
+      throw new BadRequestException();
     }
     return {
       status: Status.Success,
@@ -119,7 +120,7 @@ export class UserController {
   ): Promise<AuthResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestError();
+      throw new BadRequestException();
     }
     return this.userService.updateFromRequest(user, body);
   }
@@ -142,7 +143,7 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestError();
+      throw new BadRequestException();
     }
     return this.authService.setUserDisabled(user);
   }
@@ -165,7 +166,7 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestError();
+      throw new BadRequestException();
     }
     return this.authService.setUserEnabled(user);
   }
