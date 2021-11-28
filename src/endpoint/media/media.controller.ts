@@ -9,9 +9,9 @@ import {
 import {
   BadRequestError,
   UnauthorizedError,
-  PreconditionFailedError,
   MediaGetFilesRequest,
   MediaGetFilesResponse,
+  ForbiddenError,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { MediaService } from './media.service';
@@ -28,9 +28,9 @@ import { MediaService } from './media.service';
   type: UnauthorizedError,
 })
 @ApiResponse({
-  status: 412,
-  description: 'Пользователь уже существует',
-  type: PreconditionFailedError,
+  status: 403,
+  description: 'Ответ для неавторизованного пользователя',
+  type: ForbiddenError,
 })
 @Controller('/media')
 export class MediaController {
