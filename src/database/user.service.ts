@@ -9,10 +9,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
-  FindManyOptions,
   Repository,
   Transaction,
   TransactionRepository,
+  FindConditions,
 } from 'typeorm';
 
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
@@ -22,7 +22,6 @@ import {
   UserUpdateRequest,
   AuthResponse,
   Status,
-  User,
   userEntityToUser,
   SuccessResponse,
 } from '@/dto';
@@ -175,12 +174,11 @@ export class UserService {
   }
 
   async findAll(includeDisabled: boolean): Promise<UserEntity[]> {
-    const findMany: FindManyOptions<UserEntity> = {
-      where: {
-        ...(includeDisabled ? { disabled: false } : undefined),
-      },
-    };
-    return this.userRepository.find(findMany).then((users) =>
+    const where: FindConditions<UserEntity> = {};
+    if (includeDisabled) {
+      where.disabled = false;
+    }
+    return this.userRepository.find({ where }).then((users) =>
       users.map((user) => {
         /* eslint-disable-next-line no-param-reassign */
         user.password = undefined;
@@ -193,8 +191,8 @@ export class UserService {
     return this.userRepository.findOne({ email, disabled: false });
   }
 
-  async findById(userId: string): Promise<UserEntity> {
-    return this.userRepository.findOne({ id: userId, disabled: false });
+  async findById(id: string): Promise<UserEntity> {
+    return this.userRepository.findOne({ id, disabled: false });
   }
 
   async validateCredentials(

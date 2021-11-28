@@ -1,6 +1,8 @@
 import { Module, Logger } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { TypeOrmOptionsService } from '@/shared/typeorm.options';
+
 import { MailModule } from '@/mail/mail.module';
 import { AccountEntity } from './account.entity';
 import { EditorEntity } from './editor.entity';
@@ -22,6 +24,10 @@ import { RefreshTokenService } from './refreshtoken.service';
 @Module({
   imports: [
     MailModule,
+
+    TypeOrmModule.forRootAsync({
+      useClass: TypeOrmOptionsService,
+    }),
 
     TypeOrmModule.forFeature([
       AccountEntity,
