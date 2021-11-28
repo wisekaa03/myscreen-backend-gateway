@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/dto/status.enum';
-import { User } from '@/dto/user.dto';
+import { UserEntity } from '../../database/user.entity';
 
 export class UsersResponse {
   @ApiProperty({
@@ -12,5 +12,5 @@ export class UsersResponse {
   status: Status;
 
   @ApiProperty()
-  data: User[];
+  data: UserEntity[];
 }

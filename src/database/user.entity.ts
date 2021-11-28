@@ -15,11 +15,14 @@ import { UserRole } from './enums/role.enum';
 @Entity('user')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
-  @ApiHideProperty()
+  @ApiProperty({
+    description: 'Идентификатор пользователя',
+    example: '1234567',
+  })
   id?: string;
 
   @Column({ unique: true })
-  @ApiProperty({ example: 'foo@bar.baz' })
+  @ApiProperty({ description: 'EMail пользователя', example: 'foo@bar.baz' })
   email!: string;
 
   @Index()
@@ -28,15 +31,15 @@ export class UserEntity {
   disabled: boolean;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: 'Steve', required: false })
+  @ApiProperty({ description: 'Фамилия', example: 'Steve', required: false })
   surname?: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: 'John', required: false })
+  @ApiProperty({ description: 'Имя', example: 'John', required: false })
   name?: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: 'Doe', required: false })
+  @ApiProperty({ description: 'Отчество', example: 'Doe', required: false })
   middleName?: string;
 
   @Column()
@@ -44,23 +47,35 @@ export class UserEntity {
   password!: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: '+78002000000', required: false })
+  @ApiProperty({
+    description: 'Телефон пользователя',
+    example: '+78002000000',
+    required: false,
+  })
   phoneNumber?: string;
 
   @Column({ default: 'RU', nullable: true })
-  @ApiProperty({ example: 'RU', required: false })
+  @ApiProperty({ description: 'Страна', example: 'RU', required: false })
   country?: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: 'Moscow', required: false })
+  @ApiProperty({ description: 'Город', example: 'Moscow', required: false })
   city?: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ example: 'Acme company Ltd', required: false })
+  @ApiProperty({
+    description: 'Компания',
+    example: 'Acme company Ltd',
+    required: false,
+  })
   company?: string;
 
   @Column({ type: 'enum', enum: UserRole })
-  @ApiProperty({ enum: UserRole, example: UserRole.Administrator })
+  @ApiProperty({
+    description: 'Роль пользователя',
+    enum: UserRole,
+    example: UserRole.Administrator,
+  })
   role!: UserRole;
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.id)
@@ -77,15 +92,27 @@ export class UserEntity {
   emailConfirmKey?: string;
 
   @Column({ type: 'boolean', default: false })
-  @ApiProperty({ example: true, required: false })
+  @ApiProperty({
+    description: 'EMail подтвержден',
+    example: true,
+    required: false,
+  })
   verified!: boolean;
 
   @Column({ type: 'boolean', default: false })
-  @ApiProperty({ example: true })
+  @ApiProperty({
+    description: 'Демо пользователь',
+    example: true,
+    required: false,
+  })
   isDemoUser!: boolean;
 
   @Column({ type: 'float', default: 0 })
-  @ApiProperty({ example: 21000000 })
+  @ApiProperty({
+    description: 'Использованное место',
+    example: 21000000,
+    required: false,
+  })
   countUsedSpace!: number;
 
   @CreateDateColumn()

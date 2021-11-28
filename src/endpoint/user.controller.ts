@@ -97,7 +97,11 @@ export class UserController {
     }
     return {
       status: Status.Success,
-      data: userEntityToUser(await this.userService.findById(user?.id)),
+      data: await this.userService.findById(user?.id).then((u) => {
+        /* eslint-disable-next-line no-param-reassign */
+        u.password = undefined;
+        return u;
+      }),
     };
   }
 

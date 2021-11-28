@@ -174,15 +174,19 @@ export class UserService {
     );
   }
 
-  async findAll(includeDisabled: boolean): Promise<User[]> {
+  async findAll(includeDisabled: boolean): Promise<UserEntity[]> {
     const findMany: FindManyOptions<UserEntity> = {
       where: {
         ...(includeDisabled ? { disabled: false } : undefined),
       },
     };
-    return this.userRepository
-      .find(findMany)
-      .then((users) => users.map((user) => userEntityToUser(user)));
+    return this.userRepository.find(findMany).then((users) =>
+      users.map((user) => {
+        /* eslint-disable-next-line no-param-reassign */
+        user.password = undefined;
+        return user;
+      }),
+    );
   }
 
   async findByEmail(email: string): Promise<UserEntity> {
