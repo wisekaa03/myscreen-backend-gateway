@@ -39,6 +39,19 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .addTag('auth', 'Аутентификация пользователя')
     .addTag('user', 'Действия с пользователями (только администратор)')
     .addTag('media', 'Путь для манипуляций с файлами редактора')
+
+    // .addTag('monitor', 'Точки пользователя')
+    // .addTag('video', 'Видео путь для загрузки и мета-данные')
+    // .addTag('editor', 'Путь для манипуляция с редактором')
+    // .addTag('file', 'Путь для манипуляция с файлами')
+    // .addTag('folder', 'Путь для манипуляция с папками')
+    // .addTag('upload', 'Путь для загрузки файлов')
+    // .addTag('order', 'Путь для манипуляция с заказами')
+    // .addTag('payment', 'Путь для манипуляция с оплатами')
+    // .addTag('uptime', 'Путь для проверки аптайм мониторов')
+    // .addTag('playlist', 'Плейлисты пользователя')
+    // .addTag('log', 'Путь для манипуляция с логами')
+
     .setDescription(author)
     .setVersion(version)
     .build();

@@ -9,13 +9,15 @@ export class AuthenticationPayload {
 
   @ApiProperty({
     description: 'Токен, используемый в Authorization: Bearer',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2Mzc4NTMzM...',
+    example:
+      'eyJcbGciOcJIUcI1xxxxxxxxxxxxxxxxxxx.eyJxYXQiOxE2MdfcyDI2Mxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxn0.Mmdi-pZl1xxxxxxxxxxxxxxxxxxxxxxxxxxGfJlWM',
   })
   token: string;
 
   @ApiProperty({
     description: 'Refresh токен, используемый для запросов /api/v2/refresh',
-    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE2Mzc4NTc4O...',
+    example:
+      'exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.eyJpYXQiOjE2MzgyMDI2MxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxIn0.E9jKilfGxxxxxxxxxxxxxOlP-GvhkxxxxxxxxxxNw0o',
     required: false,
   })
   refresh_token?: string;

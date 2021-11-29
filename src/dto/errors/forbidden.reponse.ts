@@ -14,7 +14,11 @@ export class ForbiddenError extends ForbiddenException {
     });
   }
 
-  @ApiProperty({ type: Status.Error, example: Status.Error })
+  @ApiProperty({
+    type: Status.Error,
+    example: Status.Error,
+    description: 'Статус операции',
+  })
   status: Status.Error;
 
   @ApiProperty({ type: '403', example: 403 })
