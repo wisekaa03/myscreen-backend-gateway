@@ -70,7 +70,7 @@ export class UserController {
     description: 'Успешный ответ',
     type: UserUpdateRequest,
   })
-  async userGetAll(): Promise<UsersResponse> {
+  async users(): Promise<UsersResponse> {
     return {
       status: Status.Success,
       data: await this.userService.findAll(false),
@@ -90,18 +90,15 @@ export class UserController {
     description: 'Успешный ответ',
     type: UserUpdateRequest,
   })
-  async userGet(@Param('userId') userId: string): Promise<AuthResponse> {
+  async user(@Param('userId') userId: string): Promise<AuthResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();
     }
+
     return {
       status: Status.Success,
-      data: await this.userService.findById(user?.id).then((u) => {
-        /* eslint-disable-next-line no-param-reassign */
-        u.password = undefined;
-        return u;
-      }),
+      data: await this.userService.findById(user.id),
     };
   }
 
@@ -126,7 +123,13 @@ export class UserController {
     if (!user) {
       throw new BadRequestException();
     }
-    return this.userService.updateFromRequest(user, body);
+
+    return {
+      status: Status.Success,
+      data: userEntityToUser(
+        await this.userService.update(Object.assign(user, body)),
+      ),
+    };
   }
 
   @Delete('/disable/:userId')
@@ -142,14 +145,17 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async disabledUserAdmin(
-    @Param('userId') userId: string,
-  ): Promise<SuccessResponse> {
+  async disableUser(@Param('userId') userId: string): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();
     }
-    return this.authService.setUserDisabled(user);
+
+    await this.userService.update({ ...user, disabled: true });
+
+    return {
+      status: Status.Success,
+    };
   }
 
   @Post('/enable/:userId')
@@ -165,14 +171,17 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async enableUserAdmin(
-    @Param('userId') userId: string,
-  ): Promise<SuccessResponse> {
+  async enableUser(@Param('userId') userId: string): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();
     }
-    return this.authService.setUserEnabled(user);
+
+    await this.userService.update({ ...user, disabled: false });
+
+    return {
+      status: Status.Success,
+    };
   }
 
   @Delete('/delete/:userId')
@@ -188,13 +197,16 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async deleteUserAdmin(
-    @Param('userId') userId: string,
-  ): Promise<SuccessResponse> {
+  async deleteUser(@Param('userId') userId: string): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();
     }
-    return this.userService.deleteUser(user);
+
+    await this.userService.delete(user);
+
+    return {
+      status: Status.Success,
+    };
   }
 }

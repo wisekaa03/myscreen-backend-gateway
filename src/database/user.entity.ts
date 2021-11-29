@@ -44,7 +44,7 @@ export class UserEntity {
 
   @Column()
   @ApiHideProperty()
-  password!: string;
+  password?: string;
 
   @Column({ nullable: true })
   @ApiProperty({

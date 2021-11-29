@@ -13,18 +13,11 @@ import {
   Transaction,
   TransactionRepository,
   FindConditions,
+  DeleteResult,
 } from 'typeorm';
 
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { MailService } from '@/mail/mail.service';
-import {
-  RegisterRequest,
-  UserUpdateRequest,
-  AuthResponse,
-  Status,
-  userEntityToUser,
-  SuccessResponse,
-} from '@/dto';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
 
@@ -55,46 +48,18 @@ export class UserService {
     return userRepository.save(user);
   }
 
-  async updateFromRequest(
-    user: UserEntity,
-    body: UserUpdateRequest,
-  ): Promise<AuthResponse> {
-    const userToBeSaved = Object.assign(user, body);
-    const data = await this.update(userToBeSaved);
-    return {
-      status: Status.Success,
-      data: userEntityToUser(data),
-    };
-  }
-
-  async selectFromRequest(
-    user: UserEntity,
-    body: UserUpdateRequest,
-  ): Promise<AuthResponse> {
-    const userToBeSaved = Object.assign(user, body);
-    const data = await this.update(userToBeSaved);
-    return {
-      status: Status.Success,
-      data: userEntityToUser(data),
-    };
-  }
-
   @Transaction()
-  async deleteUser(
+  async delete(
     user: UserEntity,
     @TransactionRepository(UserEntity)
     userRepository: Repository<UserEntity> = null,
-  ): Promise<SuccessResponse> {
-    await userRepository.delete(user.id);
-
-    return {
-      status: Status.Success,
-    };
+  ): Promise<DeleteResult> {
+    return userRepository.delete(user.id);
   }
 
   @Transaction()
   async create(
-    create: RegisterRequest,
+    create: Partial<UserEntity>,
     @TransactionRepository(UserEntity)
     userRepository: Repository<UserEntity> = null,
   ): Promise<UserEntity> {
@@ -103,7 +68,7 @@ export class UserService {
     });
 
     if (existingUser) {
-      throw new PreconditionFailedException(`User '${create.email}' exists`);
+      throw new PreconditionFailedException('User exists', create.email);
     }
 
     const user: UserEntity = {
@@ -135,7 +100,7 @@ export class UserService {
     const user = await this.userRepository.findOne({ email });
 
     if (!user) {
-      throw new BadGatewayException(`User with email '${email}' not exists`);
+      throw new BadGatewayException('User not exists', email);
     }
     user.forgotConfirmKey = genKey();
     this.userRepository.save(user);
@@ -157,7 +122,7 @@ export class UserService {
 
     const user = await userRepository.findOne({ email });
     if (!user) {
-      throw new BadRequestException(`User with email '${email}' not exists`);
+      throw new BadRequestException('User not exists', email);
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
@@ -169,7 +134,8 @@ export class UserService {
     }
 
     throw new BadRequestException(
-      `Forgot password '${forgotPassword}' not equal to our records`,
+      'Forgot password not equal to our records',
+      forgotPassword,
     );
   }
 
@@ -180,19 +146,29 @@ export class UserService {
     }
     return this.userRepository.find({ where }).then((users) =>
       users.map((user) => {
-        /* eslint-disable-next-line no-param-reassign */
-        user.password = undefined;
-        return user;
+        const { password, ...data } = user;
+        return data;
       }),
     );
   }
 
   async findByEmail(email: string): Promise<UserEntity> {
-    return this.userRepository.findOne({ email, disabled: false });
+    return this.userRepository.findOne({
+      email,
+      disabled: false,
+    });
   }
 
   async findById(id: string): Promise<UserEntity> {
-    return this.userRepository.findOne({ id, disabled: false });
+    return this.userRepository
+      .findOne({
+        id,
+        disabled: false,
+      })
+      .then((user) => {
+        const { password, ...data } = user;
+        return data;
+      });
   }
 
   async validateCredentials(

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -31,6 +32,7 @@ import {
   SuccessResponse,
   Status,
 } from '@/dto';
+import { UserService } from '@/database/user.service';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
 import { AuthService } from './auth.service';
@@ -55,7 +57,10 @@ import { AuthService } from './auth.service';
 export class AuthController {
   logger = new Logger(AuthController.name);
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @Get('/')
   @UseGuards(JwtAuthGuard)
@@ -107,6 +112,7 @@ export class AuthController {
   ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
+
     return this.authService.register(body, fingerprint);
   }
 
@@ -195,15 +201,23 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'disable',
-    summary: 'Удаление аккаунта пользователя',
+    summary: 'Скрытие аккаунта пользователя',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async disabledUser(@Req() req: ExpressRequest): Promise<SuccessResponse> {
+  async disableUser(@Req() req: ExpressRequest): Promise<SuccessResponse> {
     const { user } = req;
-    return this.authService.setUserDisabled(user);
+    if (!user) {
+      throw new BadRequestException();
+    }
+
+    await this.userService.update({ ...user, disabled: true });
+
+    return {
+      status: Status.Success,
+    };
   }
 }

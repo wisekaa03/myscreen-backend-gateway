@@ -63,9 +63,7 @@ export class AuthService {
       ? await this.userService.validateCredentials(user, login.password)
       : false;
     if (!valid) {
-      throw new UnauthorizedException(
-        `Password mismatched: '${login.password}'`,
-      );
+      throw new UnauthorizedException('Password mismatched', login.password);
     }
 
     const token = await this.generateAccessToken(user);
@@ -80,10 +78,10 @@ export class AuthService {
   }
 
   async register(
-    login: RegisterRequest,
+    create: RegisterRequest,
     fingerprint?: string,
   ): Promise<AuthResponse> {
-    const user = await this.userService.create(login);
+    const user = await this.userService.create(create);
 
     const token = await this.generateAccessToken(user);
     const refresh = await this.generateRefreshToken(user, fingerprint);
@@ -297,34 +295,6 @@ export class AuthService {
       body.verify_code,
       body.password,
     );
-
-    return {
-      status: Status.Success,
-    };
-  }
-
-  /**
-   * Скрывает пользователя
-   * @async
-   * @param {UserEntity} user
-   * @returns {SuccessResponse} Результат
-   */
-  async setUserDisabled(user: UserEntity): Promise<SuccessResponse> {
-    await this.userService.update({ ...user, disabled: true });
-
-    return {
-      status: Status.Success,
-    };
-  }
-
-  /**
-   * Показывает пользователя
-   * @async
-   * @param {UserEntity} user
-   * @returns {SuccessResponse} Результат
-   */
-  async setUserEnabled(user: UserEntity): Promise<SuccessResponse> {
-    await this.userService.update({ ...user, disabled: false });
 
     return {
       status: Status.Success,
