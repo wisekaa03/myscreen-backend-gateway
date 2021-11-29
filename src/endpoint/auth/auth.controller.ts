@@ -176,7 +176,7 @@ export class AuthController {
   @Post('/reset-password-verify')
   @ApiOperation({
     operationId: 'reset-password-verify',
-    summary: 'Меняет пароль пользователя',
+    summary: 'Меняет пароль пользователя по приглашению из почты',
   })
   @ApiResponse({
     status: 200,

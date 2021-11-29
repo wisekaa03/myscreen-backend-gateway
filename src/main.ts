@@ -36,6 +36,9 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
       name: 'token',
     })
     .setTitle(description)
+    .addTag('auth', 'Аутентификация пользователя')
+    .addTag('user', 'Действия с пользователями (только администратор)')
+    .addTag('media', 'Путь для манипуляций с файлами редактора')
     .setDescription(author)
     .setVersion(version)
     .build();
