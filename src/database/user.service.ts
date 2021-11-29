@@ -160,15 +160,10 @@ export class UserService {
   }
 
   async findById(id: string): Promise<UserEntity> {
-    return this.userRepository
-      .findOne({
-        id,
-        disabled: false,
-      })
-      .then((user) => {
-        const { password, ...data } = user;
-        return data;
-      });
+    return this.userRepository.findOne({
+      id,
+      disabled: false,
+    });
   }
 
   async validateCredentials(

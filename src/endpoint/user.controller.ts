@@ -107,7 +107,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'user__userId_',
+    operationId: 'post_user__userId_',
     summary: 'Изменение информации о пользователе (только администратор)',
   })
   @ApiResponse({
