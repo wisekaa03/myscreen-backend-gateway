@@ -17,6 +17,7 @@ import {
   Status,
   userEntityToUser,
   AuthResponse,
+  UserUpdateRequest,
   LoginRequest,
   RegisterRequest,
   RefreshTokenRequest,
@@ -51,6 +52,13 @@ export class AuthService {
       status: Status.Success,
       data: userEntityToUser(user),
     };
+  }
+
+  async update(
+    user: UserEntity,
+    update: UserUpdateRequest,
+  ): Promise<UserEntity> {
+    return this.userService.update(user, update);
   }
 
   async login(
@@ -252,9 +260,10 @@ export class AuthService {
     }
 
     if (user.emailConfirmKey === verifyToken) {
-      user.emailConfirmKey = null;
-      user.verified = true;
-      await this.userService.update(user);
+      await this.userService.update(user, {
+        emailConfirmKey: null,
+        verified: true,
+      });
 
       return {
         status: Status.Success,

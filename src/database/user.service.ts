@@ -41,11 +41,26 @@ export class UserService {
 
   @Transaction()
   async update(
-    user: Partial<UserEntity>,
+    user: UserEntity,
+    update: Partial<UserEntity>,
     @TransactionRepository(UserEntity)
     userRepository: Repository<UserEntity> = null,
   ): Promise<UserEntity> {
-    return userRepository.save(user);
+    const userToBeSaved = await userRepository.save(
+      Object.assign(user, update),
+    );
+
+    if (typeof update.email !== undefined) {
+      const verifyToken = generateMailToken(
+        update.email,
+        update.emailConfirmKey,
+      );
+      const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
+
+      await this.mailService.sendVerificationCode(userToBeSaved, confirmUrl);
+    }
+
+    return userToBeSaved;
   }
 
   @Transaction()

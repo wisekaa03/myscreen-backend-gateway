@@ -22,6 +22,7 @@ import {
   UnauthorizedError,
   BadRequestError,
   LoginRequest,
+  UserUpdateRequest,
   RefreshTokenRequest,
   RegisterRequest,
   VerifyEmailRequest,
@@ -31,6 +32,7 @@ import {
   AuthResponse,
   SuccessResponse,
   Status,
+  userEntityToUser,
 } from '@/dto';
 import { UserService } from '@/database/user.service';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
@@ -78,6 +80,35 @@ export class AuthController {
   async authorization(@Req() req: ExpressRequest): Promise<AuthResponse> {
     const { user } = req;
     return this.authService.authorization(user);
+  }
+
+  @Delete('/update')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'update',
+    summary: 'Изменение аккаунта пользователя',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: AuthResponse,
+  })
+  async update(
+    @Req() req: ExpressRequest,
+    @Body() update: UserUpdateRequest,
+  ): Promise<AuthResponse> {
+    const { user } = req;
+    if (!user) {
+      throw new BadRequestException();
+    }
+
+    const data = await this.authService.update(user, update);
+
+    return {
+      status: Status.Success,
+      data: userEntityToUser(data),
+    };
   }
 
   @Post('login')
@@ -214,7 +245,7 @@ export class AuthController {
       throw new BadRequestException();
     }
 
-    await this.userService.update({ ...user, disabled: true });
+    await this.userService.update(user, { disabled: true });
 
     return {
       status: Status.Success,

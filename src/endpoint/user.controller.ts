@@ -117,7 +117,7 @@ export class UserController {
   })
   async userUpdate(
     @Param('userId') userId: string,
-    @Body() body: UserUpdateRequest,
+    @Body() update: UserUpdateRequest,
   ): Promise<AuthResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
@@ -126,9 +126,7 @@ export class UserController {
 
     return {
       status: Status.Success,
-      data: userEntityToUser(
-        await this.userService.update(Object.assign(user, body)),
-      ),
+      data: await this.authService.update(user, update),
     };
   }
 
@@ -151,7 +149,7 @@ export class UserController {
       throw new BadRequestException();
     }
 
-    await this.userService.update({ ...user, disabled: true });
+    await this.userService.update(user, { disabled: true });
 
     return {
       status: Status.Success,
@@ -177,7 +175,7 @@ export class UserController {
       throw new BadRequestException();
     }
 
-    await this.userService.update({ ...user, disabled: false });
+    await this.userService.update(user, { disabled: false });
 
     return {
       status: Status.Success,
