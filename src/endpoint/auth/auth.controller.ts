@@ -82,7 +82,7 @@ export class AuthController {
     return this.authService.authorization(user);
   }
 
-  @Delete('/update')
+  @Post('/update')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
