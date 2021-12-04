@@ -16,7 +16,7 @@ import {
   BadRequestError,
   ForbiddenError,
   PreconditionFailedError,
-  ServerError,
+  InternalServerError,
 } from '@/dto';
 
 @Catch()
@@ -45,7 +45,7 @@ export class ExceptionsFilter extends BaseExceptionFilter {
         exceptionRule = new PreconditionFailedError(exception.message);
       } else if (exception instanceof InternalServerErrorException) {
         this.logger.error(`${exception.message} ${response}`, exception.stack);
-        exceptionRule = new ServerError(exception.message);
+        exceptionRule = new InternalServerError(exception.message);
       }
     }
 
