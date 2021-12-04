@@ -46,21 +46,19 @@ export class UserService {
     @TransactionRepository(UserEntity)
     userRepository: Repository<UserEntity> = null,
   ): Promise<UserEntity> {
-    const userToBeSaved = await userRepository.save(
-      Object.assign(user, update),
-    );
+    if (typeof update.email !== 'undefined' && user.email !== update.email) {
+      const emailConfirmKey = genKey();
 
-    if (typeof update.email !== undefined) {
-      const verifyToken = generateMailToken(
-        update.email,
-        update.emailConfirmKey,
-      );
+      const verifyToken = generateMailToken(update.email, emailConfirmKey);
       const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
-      await this.mailService.sendVerificationCode(userToBeSaved, confirmUrl);
+      return Promise.all([
+        userRepository.save(Object.assign(user, update, { emailConfirmKey })),
+        this.mailService.sendVerificationCode(update.email, confirmUrl),
+      ]).then(([saved]) => saved);
     }
 
-    return userToBeSaved;
+    return userRepository.save(Object.assign(user, update));
   }
 
   @Transaction()
@@ -99,14 +97,14 @@ export class UserService {
       isDemoUser: false,
       countUsedSpace: 0,
     };
-    const savedUser = await userRepository.save(user);
     const verifyToken = generateMailToken(user.email, user.emailConfirmKey);
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
-    await Promise.all([
-      this.mailService.sendWelcomeMessage(user),
-      this.mailService.sendVerificationCode(user, confirmUrl),
-    ]);
+    const savedUser = await Promise.all([
+      userRepository.save(user),
+      this.mailService.sendWelcomeMessage(user.email),
+      this.mailService.sendVerificationCode(user.email, confirmUrl),
+    ]).then(([saved]) => saved);
 
     return savedUser;
   }
@@ -120,10 +118,10 @@ export class UserService {
     user.forgotConfirmKey = genKey();
     this.userRepository.save(user);
 
-    const verifyToken = generateMailToken(user.email, user.forgotConfirmKey);
+    const verifyToken = generateMailToken(email, user.forgotConfirmKey);
     const forgotPasswordUrl = `${this.frontendUrl}/reset-password-verify?key=${verifyToken}`;
 
-    this.mailService.forgotPassword(user, forgotPasswordUrl);
+    this.mailService.forgotPassword(email, forgotPasswordUrl);
   }
 
   @Transaction()

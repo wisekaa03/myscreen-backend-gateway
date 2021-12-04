@@ -19,13 +19,13 @@ import {
 import {
   BadRequestError,
   ForbiddenError,
+  UnauthorizedError,
+  InternalServerError,
   AuthResponse,
   Status,
-  UnauthorizedError,
   UserUpdateRequest,
   SuccessResponse,
   UsersResponse,
-  userEntityToUser,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
 import { UserRole } from '@/database/enums/role.enum';
@@ -47,6 +47,11 @@ import { AuthService } from './auth/auth.service';
   status: 403,
   description: 'Ответ для неавторизованного пользователя',
   type: ForbiddenError,
+})
+@ApiResponse({
+  status: 500,
+  description: 'Ошибка сервера',
+  type: InternalServerError,
 })
 @Controller('user')
 export class UserController {

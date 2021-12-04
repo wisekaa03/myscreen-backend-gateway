@@ -12,10 +12,14 @@ import { MailService } from '@/mail/mail.service';
     MailgunModule.forAsyncRoot({
       imports: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        domain: configService.get<string>('MAILGUN_API_DOMAIN'),
-        apiKey: configService.get<string>('MAILGUN_API_KEY'),
-        publicApiKey: configService.get<string>('MAILGUN_PUBLIC_KEY'),
-        host: configService.get<string>('MAILGUN_API_HOST', 'api.mailgun.net'),
+        username: 'api',
+        key: configService.get<string>('MAILGUN_API_KEY'),
+        public_key: configService.get<string>('MAILGUN_PUBLIC_KEY'),
+        timeout: Number(configService.get<string>('MAILGUN_TIMEOUT', '3000')),
+        url: `https://${configService.get<string>(
+          'MAILGUN_API_HOST',
+          'api.mailgun.net',
+        )}`,
       }),
       inject: [ConfigService],
     }),

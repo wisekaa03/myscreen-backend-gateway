@@ -1,26 +1,27 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MailgunService } from 'nestjs-mailgun';
-
-import { UserEntity } from '@/database/user.entity';
+import { MailgunService, MailgunError } from 'nestjs-mailgun';
 
 @Injectable()
 export class MailService {
   logger = new Logger(MailService.name);
 
-  private host: string;
+  private template = 'template.user-action';
+
+  private domain: string;
 
   private from: string;
-
-  private template: string;
 
   constructor(
     private readonly mailgunService: MailgunService,
     private readonly configService: ConfigService,
   ) {
-    this.host = configService.get<string>('MAILGUN_API_DOMAIN');
-    this.from = `MyScreen <no-reply@${this.host}>`;
-    this.template = 'template.user-action';
+    this.domain = configService.get<string>('MAILGUN_API_DOMAIN');
+    this.from = `MyScreen <no-reply@${this.domain}>`;
   }
 
   private confirmEmailText = (confirmUrl: string) =>
@@ -43,19 +44,23 @@ export class MailService {
    * @param {UserEntity} user User entity
    * @returns {void}
    */
-  async sendWelcomeMessage(user: UserEntity): Promise<void> {
+  async sendWelcomeMessage(email: string): Promise<any> {
     const message = {
       from: this.from,
-      to: user.email,
+      to: email,
       subject: 'Регистрация',
       text: this.registerEmailText(),
     };
 
-    await this.mailgunService.sendEmail({
-      ...message,
-      template: this.template,
-      'h:X-Mailgun-Variables': JSON.stringify(message),
-    });
+    return this.mailgunService
+      .createEmail(this.domain, {
+        ...message,
+        template: this.template,
+        'h:X-Mailgun-Variables': JSON.stringify(message),
+      })
+      .catch((error: MailgunError) => {
+        throw new InternalServerErrorException(error);
+      });
   }
 
   /**
@@ -65,13 +70,10 @@ export class MailService {
    * @param {string} verify Email validation Key
    * @returns {void}
    */
-  async sendVerificationCode(
-    user: UserEntity,
-    confirmUrl: string,
-  ): Promise<void> {
+  async sendVerificationCode(email: string, confirmUrl: string): Promise<any> {
     const message = {
       from: this.from,
-      to: user.email,
+      to: email,
       subject: 'Подтверждение аккаунта',
       text: this.confirmEmailText(confirmUrl),
     };
@@ -84,14 +86,18 @@ export class MailService {
       },
     };
 
-    await this.mailgunService.sendEmail({
-      ...message,
-      template: this.template,
-      'h:X-Mailgun-Variables': JSON.stringify({
+    return this.mailgunService
+      .createEmail(this.domain, {
         ...message,
-        ...variables,
-      }),
-    });
+        template: this.template,
+        'h:X-Mailgun-Variables': JSON.stringify({
+          ...message,
+          ...variables,
+        }),
+      })
+      .catch((error: MailgunError) => {
+        throw new InternalServerErrorException(error);
+      });
   }
 
   /**
@@ -101,13 +107,10 @@ export class MailService {
    * @param {string} verify Forgot password Key
    * @returns {void}
    */
-  async forgotPassword(
-    user: UserEntity,
-    forgotPasswordUrl: string,
-  ): Promise<void> {
+  async forgotPassword(email: string, forgotPasswordUrl: string): Promise<any> {
     const message = {
       from: this.from,
-      to: user.email,
+      to: email,
       subject: 'Сброс пароля',
       text: this.forgotPasswordText(forgotPasswordUrl),
     };
@@ -120,13 +123,17 @@ export class MailService {
       },
     };
 
-    await this.mailgunService.sendEmail({
-      ...message,
-      template: this.template,
-      'h:X-Mailgun-Variables': JSON.stringify({
+    return this.mailgunService
+      .createEmail(this.domain, {
         ...message,
-        ...variables,
-      }),
-    });
+        template: this.template,
+        'h:X-Mailgun-Variables': JSON.stringify({
+          ...message,
+          ...variables,
+        }),
+      })
+      .catch((error: MailgunError) => {
+        throw new InternalServerErrorException(error);
+      });
   }
 }

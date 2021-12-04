@@ -21,6 +21,7 @@ import {
   PreconditionFailedError,
   UnauthorizedError,
   BadRequestError,
+  InternalServerError,
   LoginRequest,
   UserUpdateRequest,
   RefreshTokenRequest,
@@ -54,6 +55,11 @@ import { AuthService } from './auth.service';
   status: 412,
   description: 'Пользователь уже существует',
   type: PreconditionFailedError,
+})
+@ApiResponse({
+  status: 500,
+  description: 'Ошибка сервера',
+  type: InternalServerError,
 })
 @Controller('auth')
 export class AuthController {

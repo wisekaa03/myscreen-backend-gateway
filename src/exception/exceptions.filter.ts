@@ -29,7 +29,9 @@ export class ExceptionsFilter extends BaseExceptionFilter {
     if (exception instanceof HttpException) {
       let response = exception.getResponse();
       if (typeof response === 'object') {
-        response = (response as Record<string, string>).error;
+        response =
+          (response as Record<string, string>).error ??
+          (response as Record<string, string>).details;
       }
       if (exception instanceof UnauthorizedException) {
         this.logger.error(`${exception.message} ${response}`, exception.stack);
