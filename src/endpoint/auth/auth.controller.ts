@@ -34,6 +34,7 @@ import {
   SuccessResponse,
   Status,
   userEntityToUser,
+  UserResponse,
 } from '@/dto';
 import { UserService } from '@/database/user.service';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
@@ -85,7 +86,11 @@ export class AuthController {
   })
   async authorization(@Req() req: ExpressRequest): Promise<AuthResponse> {
     const { user } = req;
-    return this.authService.authorization(user);
+
+    return {
+      status: Status.Success,
+      data: userEntityToUser(user),
+    };
   }
 
   @Post('/update')
@@ -98,19 +103,17 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: AuthResponse,
+    type: UserResponse,
   })
   async update(
     @Req() req: ExpressRequest,
     @Body() update: UserUpdateRequest,
-  ): Promise<AuthResponse> {
+  ): Promise<UserResponse> {
     const { user } = req;
     if (!user) {
       throw new BadRequestException();
     }
-
     const data = await this.authService.update(user, update);
-
     return {
       status: Status.Success,
       data: userEntityToUser(data),
@@ -193,7 +196,6 @@ export class AuthController {
     type: SuccessResponse,
   })
   async verifyEmail(
-    @Req() req: ExpressRequest,
     @Body() body: VerifyEmailRequest,
   ): Promise<SuccessResponse> {
     return this.authService.verifyEmail(body);
@@ -210,7 +212,6 @@ export class AuthController {
     type: SuccessResponse,
   })
   async resetPasswordInvitation(
-    @Req() req: ExpressRequest,
     @Body() body: ResetPasswordInvitationRequest,
   ): Promise<SuccessResponse> {
     return this.authService.forgotPasswordInvitation(body);
@@ -227,7 +228,6 @@ export class AuthController {
     type: SuccessResponse,
   })
   async resetPasswordVerify(
-    @Req() req: ExpressRequest,
     @Body() body: ResetPasswordVerifyRequest,
   ): Promise<SuccessResponse> {
     return this.authService.forgotPasswordVerify(body);

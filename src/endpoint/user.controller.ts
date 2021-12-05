@@ -28,7 +28,7 @@ import {
   UsersResponse,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
-import { UserRole } from '@/database/enums/role.enum';
+import { UserRoleEnum } from '@/database/enums/role.enum';
 import { UserService } from '@/database/user.service';
 import { AuthService } from './auth/auth.service';
 
@@ -53,6 +53,9 @@ import { AuthService } from './auth/auth.service';
   description: 'Ошибка сервера',
   type: InternalServerError,
 })
+@Roles(UserRoleEnum.Administrator)
+@UseGuards(JwtAuthGuard, RolesGuard)
+@ApiBearerAuth()
 @Controller('user')
 export class UserController {
   logger = new Logger(UserController.name);
@@ -63,9 +66,6 @@ export class UserController {
   ) {}
 
   @Get('/')
-  @Roles(UserRole.Administrator)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'user',
     summary: 'Получение информации о пользователях (только администратор)',
@@ -83,9 +83,6 @@ export class UserController {
   }
 
   @Get('/:userId')
-  @Roles(UserRole.Administrator)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'user__userId_',
     summary: 'Получение информации о пользователе (только администратор)',
@@ -103,14 +100,11 @@ export class UserController {
 
     return {
       status: Status.Success,
-      data: await this.userService.findById(user.id),
+      data: user,
     };
   }
 
   @Post('/:userId')
-  @Roles(UserRole.Administrator)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'post_user__userId_',
     summary: 'Изменение информации о пользователе (только администратор)',
@@ -136,9 +130,6 @@ export class UserController {
   }
 
   @Delete('/disable/:userId')
-  @Roles(UserRole.Administrator)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'disable__userId_',
     summary: 'Скрытие аккаунта пользователя (только администратор)',
@@ -162,9 +153,6 @@ export class UserController {
   }
 
   @Post('/enable/:userId')
-  @Roles(UserRole.Administrator)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'enable__userId_',
     summary: 'Открытие аккаунта пользователя (только администратор)',
@@ -188,9 +176,6 @@ export class UserController {
   }
 
   @Delete('/delete/:userId')
-  @Roles(UserRole.Administrator)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'delete__userId_',
     summary: 'Удаление аккаунта пользователя (только администратор)',

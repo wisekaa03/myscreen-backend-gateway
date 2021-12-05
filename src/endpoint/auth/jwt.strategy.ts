@@ -24,6 +24,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: MyscreenJwtPayload): Promise<UserEntity> {
+    // TODO: заменить
     const user = await this.userService.findById(payload.sub);
 
     if (!user) {

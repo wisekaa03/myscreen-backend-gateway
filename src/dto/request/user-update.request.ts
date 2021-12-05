@@ -1,41 +1,60 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString, IsEmail } from 'class-validator';
+import { IsEnum, IsString, IsEmail, IsOptional } from 'class-validator';
 
-import { UserRole } from '@/database/enums/role.enum';
+import { UserRole, UserRoleEnum } from '@/database/enums/role.enum';
 
 export class UserUpdateRequest {
-  @ApiProperty({ description: 'Почта пользователя', example: 'foo@bar.baz' })
+  @ApiProperty({
+    required: false,
+    description: 'Почта пользователя',
+    example: 'foo@bar.baz',
+  })
+  @IsOptional()
   @IsEmail()
   email: string;
 
   @ApiProperty({
+    required: false,
     description: 'Роль пользователя',
     enum: UserRole,
-    example: UserRole.Advertiser,
+    example: UserRoleEnum.Advertiser,
   })
+  @IsOptional()
   @IsEnum(UserRole)
-  role: UserRole;
+  role: UserRoleEnum;
 
   @ApiProperty({ required: false, description: 'Имя', example: 'John' })
+  @IsOptional()
   @IsString()
-  name: UserRole;
+  name: string;
 
   @ApiProperty({ required: false, description: 'Фамилия', example: 'Steve' })
+  @IsOptional()
   @IsString()
-  surname: UserRole;
+  surname: string;
 
   @ApiProperty({ required: false, description: 'Отчество', example: 'Doe' })
+  @IsOptional()
   @IsString()
-  middleName?: UserRole;
+  middleName?: string;
+
+  @ApiProperty({ required: false, description: 'Город', example: 'Krasnodar' })
+  @IsOptional()
+  @IsString()
+  city?: string;
 
   @ApiProperty({ required: false, description: 'Страна', example: 'RU' })
+  @IsOptional()
+  @IsString()
   country?: string;
 
   @ApiProperty({
     required: false,
     description: 'Компания',
-    example: 'Acme company',
+    example: 'ACME corporation',
   })
+  @IsOptional()
+  @IsString()
   company?: string;
 
   @ApiProperty({
@@ -43,5 +62,7 @@ export class UserUpdateRequest {
     description: 'Номер телефона',
     example: '+78002000000',
   })
+  @IsOptional()
+  @IsString()
   phoneNumber?: string;
 }

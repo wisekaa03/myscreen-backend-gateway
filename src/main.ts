@@ -1,5 +1,6 @@
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { ValidationPipe } from '@nestjs/common';
 import {
   SwaggerModule,
   DocumentBuilder,
@@ -11,7 +12,6 @@ import { WinstonModule } from 'nest-winston';
 import { winstonOptions } from '@/shared/logger.options';
 import { version, author, description } from '../package.json';
 import { AppModule } from './app.module';
-import { ValidationPipe } from './pipes/validation.pipe';
 import { ExceptionsFilter } from './exception/exceptions.filter';
 
 (async () => {
@@ -27,7 +27,14 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
   app.setGlobalPrefix(apiPath);
   app.useLogger(logger);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
+    }),
+  );
 
   const swaggerConfig = new DocumentBuilder()
     .addBearerAuth({

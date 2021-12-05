@@ -3,9 +3,7 @@ import {
   Logger,
   ForbiddenException,
   UnauthorizedException,
-  BadGatewayException,
   BadRequestException,
-  PreconditionFailedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtSignOptions, JwtService } from '@nestjs/jwt';
@@ -47,13 +45,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async authorization(user: UserEntity): Promise<AuthResponse> {
-    return {
-      status: Status.Success,
-      data: userEntityToUser(user),
-    };
-  }
-
   async update(
     user: UserEntity,
     update: UserUpdateRequest,
@@ -65,7 +56,7 @@ export class AuthService {
     login: LoginRequest,
     fingerprint?: string,
   ): Promise<AuthResponse> {
-    const user = await this.userService.findByEmail(login.email);
+    const user = await this.userService.findByEmail(login.email, false, true);
 
     const valid = user
       ? await this.userService.validateCredentials(user, login.password)
@@ -142,10 +133,7 @@ export class AuthService {
     user: UserEntity,
     fingerprint?: string,
   ): Promise<string> {
-    const token = await this.refreshTokenService.createRefreshToken(
-      user,
-      fingerprint,
-    );
+    const token = await this.refreshTokenService.create(user, fingerprint);
 
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
@@ -164,23 +152,17 @@ export class AuthService {
     const token = await this.getStoredTokenFromRefreshTokenPayload(payload);
 
     if (!token) {
-      throw new PreconditionFailedException(
-        `Refresh token '${encoded}' not found`,
-      );
+      throw new ForbiddenException(`Refresh token '${encoded}' not found`);
     }
 
     if (token.isRevoked) {
-      throw new PreconditionFailedException(
-        `Refresh token '${encoded}' revoked`,
-      );
+      throw new ForbiddenException(`Refresh token '${encoded}' revoked`);
     }
 
     const user = await this.getUserFromRefreshTokenPayload(payload);
 
     if (!user) {
-      throw new PreconditionFailedException(
-        `Refresh token '${encoded}' malformed`,
-      );
+      throw new ForbiddenException(`Refresh token '${encoded}' malformed`);
     }
 
     return { user, token };
@@ -206,9 +188,9 @@ export class AuthService {
       return await this.jwtService.verifyAsync(token);
     } catch (e) {
       if (e instanceof TokenExpiredError) {
-        throw new PreconditionFailedException(`Token ${token} expired`);
+        throw new ForbiddenException(`Token ${token} expired`);
       } else {
-        throw new PreconditionFailedException(`Token ${token} malformed`);
+        throw new ForbiddenException(`Token ${token} malformed`);
       }
     }
   }
@@ -219,7 +201,7 @@ export class AuthService {
     const subId = payload.sub;
 
     if (!subId) {
-      throw new PreconditionFailedException(
+      throw new ForbiddenException(
         `Token ${JSON.stringify(payload)} malformed`,
       );
     }
@@ -233,7 +215,7 @@ export class AuthService {
     const tokenId = payload.jti;
 
     if (!tokenId) {
-      throw new PreconditionFailedException(
+      throw new ForbiddenException(
         `Token ${JSON.stringify(payload)} malformed`,
       );
     }
@@ -270,7 +252,7 @@ export class AuthService {
       };
     }
 
-    throw new BadGatewayException(
+    throw new ForbiddenException(
       `Verify email '${verifyToken}' not equal to our records`,
     );
   }

@@ -2,13 +2,14 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsEnum,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
 
-import { UserRole } from '@/database/enums/role.enum';
+import { UserRole, UserRoleEnum } from '@/database/enums/role.enum';
 
 export class RegisterRequest {
   @ApiProperty({ description: 'Почта пользователя', example: 'foo@bar.baz' })
@@ -31,35 +32,45 @@ export class RegisterRequest {
   password: string;
 
   @ApiProperty({
-    enum: Object.values(UserRole).filter(
-      (role) => role !== UserRole.Administrator,
-    ),
-    example: UserRole.Advertiser,
+    enum: UserRole,
+    example: UserRoleEnum.Advertiser,
     description: 'Роль пользователя',
   })
   @IsEnum(UserRole)
-  role: UserRole;
+  role: UserRoleEnum;
 
   @ApiProperty({ required: false, description: 'Имя', example: 'John' })
+  @IsOptional()
   @IsString()
-  name: UserRole;
+  name: string;
 
   @ApiProperty({ required: false, description: 'Фамилия', example: 'Steve' })
+  @IsOptional()
   @IsString()
-  surname: UserRole;
+  surname: string;
 
   @ApiProperty({ required: false, description: 'Отчество', example: 'Doe' })
+  @IsOptional()
   @IsString()
-  middleName?: UserRole;
+  middleName?: string;
+
+  @ApiProperty({ required: false, description: 'Город', example: 'Krasnodar' })
+  @IsOptional()
+  @IsString()
+  city?: string;
 
   @ApiProperty({ required: false, description: 'Страна', example: 'RU' })
+  @IsOptional()
+  @IsString()
   country?: string;
 
   @ApiProperty({
     required: false,
     description: 'Компания',
-    example: 'Acme company',
+    example: 'ACME corporation',
   })
+  @IsOptional()
+  @IsString()
   company?: string;
 
   @ApiProperty({
@@ -67,5 +78,7 @@ export class RegisterRequest {
     description: 'Номер телефона',
     example: '+78002000000',
   })
+  @IsOptional()
+  @IsString()
   phoneNumber?: string;
 }

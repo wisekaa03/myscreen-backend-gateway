@@ -27,7 +27,7 @@ export class RefreshTokenService {
     });
   }
 
-  async createRefreshToken(
+  async create(
     user: UserEntity,
     fingerprint?: string,
   ): Promise<RefreshTokenEntity> {

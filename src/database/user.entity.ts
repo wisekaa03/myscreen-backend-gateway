@@ -9,8 +9,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+
 import { MonitorEntity } from '@/database/monitor.entity';
-import { UserRole } from './enums/role.enum';
+import { UserRole, UserRoleEnum } from './enums/role.enum';
 
 @Entity('user')
 export class UserEntity {
@@ -54,29 +55,29 @@ export class UserEntity {
   })
   phoneNumber?: string;
 
+  @Column({ nullable: true })
+  @ApiProperty({ description: 'Город', example: 'Krasnodar', required: false })
+  city?: string;
+
   @Column({ default: 'RU', nullable: true })
   @ApiProperty({ description: 'Страна', example: 'RU', required: false })
   country?: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ description: 'Город', example: 'Moscow', required: false })
-  city?: string;
-
-  @Column({ nullable: true })
   @ApiProperty({
     description: 'Компания',
-    example: 'Acme company Ltd',
+    example: 'ACME corporation',
     required: false,
   })
   company?: string;
 
-  @Column({ type: 'enum', enum: UserRole })
+  @Column({ type: 'enum', enum: UserRoleEnum })
   @ApiProperty({
     description: 'Роль пользователя',
     enum: UserRole,
-    example: UserRole.Administrator,
+    example: UserRoleEnum.Advertiser,
   })
-  role!: UserRole;
+  role!: UserRoleEnum;
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.id)
   @JoinColumn()

@@ -157,26 +157,49 @@ export class UserService {
     if (includeDisabled) {
       where.disabled = false;
     }
-    return this.userRepository.find({ where }).then((users) =>
-      users.map((user) => {
-        const { password, ...data } = user;
-        return data;
-      }),
-    );
+    return this.userRepository
+      .find({ where })
+      .then((users) => users.map(({ password, ...data }) => data));
   }
 
-  async findByEmail(email: string): Promise<UserEntity> {
-    return this.userRepository.findOne({
-      email,
-      disabled: false,
-    });
+  async findByEmail(
+    email: string,
+    disabled = false,
+    includePassword = false,
+  ): Promise<UserEntity> {
+    if (includePassword) {
+      return this.userRepository.findOne({
+        email,
+        disabled,
+      });
+    }
+
+    return this.userRepository
+      .findOne({
+        email,
+        disabled,
+      })
+      .then(({ password, ...data }) => data);
   }
 
-  async findById(id: string): Promise<UserEntity> {
-    return this.userRepository.findOne({
-      id,
-      disabled: false,
-    });
+  async findById(
+    id: string,
+    disabled = false,
+    includePassword = false,
+  ): Promise<UserEntity> {
+    if (includePassword) {
+      return this.userRepository.findOne({
+        id,
+        disabled,
+      });
+    }
+
+    return this.userRepository
+      .findOne({
+        id,
+        disabled,
+      })
+      .then(({ password, ...data }) => data);
   }
 
   async validateCredentials(
