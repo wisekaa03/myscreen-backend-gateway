@@ -109,6 +109,37 @@ export class UserService {
     return savedUser;
   }
 
+  /**
+   * createTest
+   * Используется в /test/app.e2e-spec.ts
+   *
+   * @param create
+   * @param userRepository
+   * @returns {UserEntity} Пользователь
+   */
+  @Transaction()
+  async createTest(
+    create: Partial<UserEntity>,
+    @TransactionRepository(UserEntity)
+    userRepository: Repository<UserEntity> = null,
+  ): Promise<UserEntity> {
+    const user: UserEntity = {
+      email: create.email,
+      password: await hash(create.password, 7),
+      disabled: false,
+      name: create.name,
+      surname: create.surname,
+      middleName: create.middleName,
+      emailConfirmKey: genKey(),
+      role: create.role,
+      verified: false,
+      isDemoUser: false,
+      countUsedSpace: 0,
+    };
+
+    return userRepository.save(user);
+  }
+
   async forgotPasswordInvitation(email: string): Promise<void> {
     const user = await this.userRepository.findOne({ email });
 

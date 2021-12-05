@@ -101,7 +101,7 @@ export class AuthController {
     summary: 'Изменение аккаунта пользователя',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
     type: UserResponse,
   })
@@ -123,7 +123,7 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ operationId: 'login', summary: 'Авторизация пользователя' })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
     type: AuthResponse,
   })
@@ -142,7 +142,7 @@ export class AuthController {
     summary: 'Регистрация пользователя',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
     type: AuthResponse,
   })
