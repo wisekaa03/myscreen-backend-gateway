@@ -172,7 +172,7 @@ export class AuthController {
   @Post('/refresh')
   @ApiOperation({ operationId: 'refresh', summary: 'Обновление токена' })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
     type: RefreshTokenResponse,
   })
@@ -191,7 +191,7 @@ export class AuthController {
     summary: 'Подтвердить email пользователя',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
@@ -207,7 +207,7 @@ export class AuthController {
     summary: 'Отправить на почту пользователю разрешение на смену пароля',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
@@ -223,7 +223,7 @@ export class AuthController {
     summary: 'Меняет пароль пользователя по приглашению из почты',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })

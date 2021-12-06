@@ -8,9 +8,8 @@ import { DatabaseModule } from '@/database/database.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { JwtStrategy } from './auth/jwt.strategy';
-
-import { MediaController } from './media/media.controller';
-import { MediaService } from './media/media.service';
+import { UserController } from './user.controller';
+import { MediaController } from './media.controller';
 
 import { MonitorController } from './monitors.controller';
 import { VideoController } from './video.controller';
@@ -18,7 +17,6 @@ import { EditorController } from './editor.controller';
 import { FileController } from './file.controller';
 import { FolderController } from './folder.controller';
 import { UploadController } from './upload.controller';
-import { UserController } from './user.controller';
 import { OrderController } from './order.controller';
 import { PaymentController } from './payment.controller';
 import { UptimeController } from './uptime.controller';
@@ -38,6 +36,7 @@ import { LogController } from './log.controller';
       }),
       inject: [ConfigService],
     }),
+
     DatabaseModule,
   ],
 
@@ -58,6 +57,6 @@ import { LogController } from './log.controller';
     LogController,
   ],
 
-  providers: [Logger, JwtStrategy, AuthService, MediaService],
+  providers: [Logger, JwtStrategy, AuthService],
 })
 export class EndpointModule {}

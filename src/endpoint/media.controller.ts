@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -12,9 +12,12 @@ import {
   MediaGetFilesRequest,
   MediaGetFilesResponse,
   ForbiddenError,
+  InternalServerError,
+  LimitRequest,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
-import { MediaService } from './media.service';
+import { JwtAuthGuard } from '@/guards';
+import { MediaEntity } from '@/database/media.entity';
+import { MediaService } from '@/database/media.service';
 
 @ApiTags('media')
 @ApiResponse({
@@ -32,25 +35,32 @@ import { MediaService } from './media.service';
   description: 'Ответ для неавторизованного пользователя',
   type: ForbiddenError,
 })
+@ApiResponse({
+  status: 500,
+  description: 'Ошибка сервера',
+  type: InternalServerError,
+})
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('/media')
 export class MediaController {
   logger = new Logger(MediaController.name);
 
   constructor(private readonly mediaService: MediaService) {}
 
-  @Get('/')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
+  @Post('/')
   @ApiOperation({
     operationId: 'media',
-    summary: 'Получение списка файлов редактора',
+    summary: 'Получение списка файлов',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
-    type: MediaGetFilesRequest,
+    type: MediaGetFilesResponse,
   })
-  async getMedia(): Promise<MediaGetFilesResponse> {
-    return this.mediaService.getMedia();
+  async getMedia(
+    @Body() body: MediaGetFilesRequest,
+  ): Promise<MediaGetFilesResponse> {
+    return this.mediaService.getMedia(body);
   }
 }

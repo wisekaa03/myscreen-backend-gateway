@@ -158,7 +158,7 @@ export class UserController {
     summary: 'Открытие аккаунта пользователя (только администратор)',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })

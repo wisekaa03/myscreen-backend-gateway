@@ -1,4 +1,40 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, Matches, MaxLength, MinLength } from 'class-validator';
+import { IsObject, IsBoolean, IsEnum, IsString } from 'class-validator';
 
-export class MediaGetFilesRequest {}
+import { MediaEntity } from '@/database/media.entity';
+import { VideoType } from '@/database/enums/video-type.enum';
+import { LimitRequest } from './limit.request';
+
+export class MediaGetFilesRequest {
+  @ApiProperty({
+    description: 'Тип файла',
+    enum: VideoType,
+    example: VideoType.Video,
+    required: false,
+  })
+  @IsEnum(VideoType)
+  type?: VideoType;
+
+  @ApiProperty({
+    description: 'Показывать все',
+    example: false,
+    required: false,
+  })
+  @IsBoolean()
+  showAll?: boolean;
+
+  @ApiProperty({
+    description: 'ID папки',
+    example: '',
+    required: false,
+  })
+  @IsString()
+  folderId?: string;
+
+  @ApiProperty({
+    description: 'Рамки для запроса',
+    required: false,
+  })
+  @IsObject()
+  scope: LimitRequest<MediaEntity>;
+}

@@ -9,6 +9,7 @@ import { EditorEntity } from './editor.entity';
 import { FileEntity } from './file.entity';
 import { FolderEntity } from './folder.entity';
 import { MediaEntity } from './media.entity';
+import { MediaService } from './media.service';
 import { MonitorEntity } from './monitor.entity';
 import { OrderEntity } from './order.entity';
 import { PaymentLogsEntity } from './payment-log.entity';
@@ -46,7 +47,7 @@ import { RefreshTokenService } from './refreshtoken.service';
       RefreshTokenEntity,
     ]),
   ],
-  providers: [Logger, UserService, RefreshTokenService],
-  exports: [UserService, RefreshTokenService],
+  providers: [Logger, UserService, RefreshTokenService, MediaService],
+  exports: [UserService, RefreshTokenService, MediaService],
 })
 export class DatabaseModule {}

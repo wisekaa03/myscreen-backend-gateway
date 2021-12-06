@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import superAgentRequest from 'supertest';
 
-import { AppModule } from '../src/app.module';
 import {
   AuthResponse,
   RegisterRequest,
@@ -12,6 +11,7 @@ import {
 } from '@/dto';
 import { UserRoleEnum } from '@/database/enums/role.enum';
 import { UserService } from '@/database/user.service';
+import { AppModule } from '@/app.module';
 
 const registerRequest: RegisterRequest = {
   email: 'foo@bar.baz', // 'wisekaa03@gmail.com',
