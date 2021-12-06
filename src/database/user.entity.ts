@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
+import { IsEmail, IsUUID } from 'class-validator';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserRole, UserRoleEnum } from './enums/role.enum';
 
@@ -18,12 +19,19 @@ export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор пользователя',
+    format: 'uuid',
     example: '1234567',
   })
+  @IsUUID()
   id?: string;
 
   @Column({ unique: true })
-  @ApiProperty({ description: 'EMail пользователя', example: 'foo@bar.baz' })
+  @ApiProperty({
+    description: 'EMail пользователя',
+    format: 'email',
+    example: 'foo@bar.baz',
+  })
+  @IsEmail()
   email!: string;
 
   @Index()
@@ -75,6 +83,7 @@ export class UserEntity {
   @ApiProperty({
     description: 'Роль пользователя',
     enum: UserRole,
+    type: UserRole,
     example: UserRoleEnum.Advertiser,
   })
   role!: UserRoleEnum;
@@ -117,8 +126,18 @@ export class UserEntity {
   countUsedSpace!: number;
 
   @CreateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   createdAt?: Date;
 
   @UpdateDateColumn()
+  @ApiProperty({
+    description: 'Время изменения',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   updatedAt?: Date;
 }

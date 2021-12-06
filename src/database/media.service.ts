@@ -17,6 +17,7 @@ import {
 } from '@/dto';
 import { MediaEntity } from './media.entity';
 import { MediaGetFilesRequest } from '../dto/request/media-get-files.request';
+import { Media } from '@/dto/media.dto';
 
 @Injectable()
 export class MediaService {
@@ -35,7 +36,8 @@ export class MediaService {
       data: [
         {
           name: body.scope.order.name,
-        } as MediaEntity,
+          usedInEditors: 2,
+        } as Media,
       ],
     };
   }

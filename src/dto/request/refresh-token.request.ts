@@ -3,9 +3,8 @@ import { IsNotEmpty } from 'class-validator';
 
 export class RefreshTokenRequest {
   @ApiProperty({
-    description: 'Refresh токен',
-    example:
-      'exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.eyJpYXQiOjE2MzgyMDI2MxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxIn0.E9jKilfGxxxxxxxxxxxxxOlP-GvhkxxxxxxxxxxNw0o',
+    description: 'Refresh токен, используемый для запросов /api/v2/refresh',
+    example: 'exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx',
   })
   @IsNotEmpty({ message: 'the refresh token is required' })
   refresh_token: string;

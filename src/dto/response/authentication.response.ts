@@ -9,15 +9,13 @@ export class AuthenticationPayload {
 
   @ApiProperty({
     description: 'Токен, используемый в Authorization: Bearer',
-    example:
-      'eyJcbGciOcJIUcI1xxxxxxxxxxxxxxxxxxx.eyJxYXQiOxE2MdfcyDI2Mxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxn0.Mmdi-pZl1xxxxxxxxxxxxxxxxxxxxxxxxxxGfJlWM',
+    example: 'eyJcbGciOcJIUcI1xxxxxxxxxxxxxxxx',
   })
   token: string;
 
   @ApiProperty({
     description: 'Refresh токен, используемый для запросов /api/v2/refresh',
-    example:
-      'exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.eyJpYXQiOjE2MzgyMDI2MxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxIn0.E9jKilfGxxxxxxxxxxxxxOlP-GvhkxxxxxxxxxxNw0o',
+    example: 'exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx',
     required: false,
   })
   refresh_token?: string;
@@ -31,9 +29,17 @@ export class AuthResponse {
   })
   status: Status;
 
-  @ApiProperty({ description: 'Возвращаемый токен' })
+  @ApiProperty({
+    description: 'Возвращаемый токен',
+    title: 'AuthenticationPayload',
+    type: AuthenticationPayload,
+  })
   payload?: AuthenticationPayload;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'Пользователь',
+    title: 'User',
+    type: User,
+  })
   data: User;
 }

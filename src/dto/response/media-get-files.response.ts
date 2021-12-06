@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Status } from '../status.enum';
-import { MediaEntity } from '../../database/media.entity';
+import { Status } from '@/dto/status.enum';
+import { Media } from '@/dto/media.dto';
 
 export class MediaGetFilesResponse {
   @ApiProperty({
@@ -14,6 +14,11 @@ export class MediaGetFilesResponse {
   @ApiProperty({ description: 'Количество файлов' })
   count: number;
 
-  @ApiProperty({ description: 'Файлы' })
-  data: MediaEntity[];
+  @ApiProperty({
+    description: 'Файлы',
+    title: 'Media',
+    type: Media,
+    isArray: true,
+  })
+  data: Media[];
 }

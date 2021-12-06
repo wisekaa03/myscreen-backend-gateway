@@ -33,6 +33,8 @@ export class MediaGetFilesRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
+    title: 'LimitRequest<Media>',
+    type: LimitRequest,
     required: false,
   })
   @IsObject()
