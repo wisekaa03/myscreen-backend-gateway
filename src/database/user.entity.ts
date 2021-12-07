@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
-import { IsEmail, IsUUID } from 'class-validator';
+import { IsEmail, IsEnum, IsString, IsUUID } from 'class-validator';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserRole, UserRoleEnum } from './enums/role.enum';
 
@@ -41,16 +41,20 @@ export class UserEntity {
 
   @Column({ nullable: true })
   @ApiProperty({ description: 'Фамилия', example: 'Steve', required: false })
+  @IsString()
   surname?: string;
 
   @Column({ nullable: true })
   @ApiProperty({ description: 'Имя', example: 'John', required: false })
+  @IsString()
   name?: string;
 
   @Column({ nullable: true })
   @ApiProperty({ description: 'Отчество', example: 'Doe', required: false })
+  @IsString()
   middleName?: string;
 
+  // TODO: transformer function
   @Column()
   password?: string;
 
@@ -60,14 +64,17 @@ export class UserEntity {
     example: '+78002000000',
     required: false,
   })
+  @IsString()
   phoneNumber?: string;
 
   @Column({ nullable: true })
   @ApiProperty({ description: 'Город', example: 'Krasnodar', required: false })
+  @IsString()
   city?: string;
 
   @Column({ default: 'RU', nullable: true })
   @ApiProperty({ description: 'Страна', example: 'RU', required: false })
+  @IsString()
   country?: string;
 
   @Column({ nullable: true })
@@ -76,6 +83,7 @@ export class UserEntity {
     example: 'ACME corporation',
     required: false,
   })
+  @IsString()
   company?: string;
 
   @Column({ type: 'enum', enum: UserRoleEnum })
@@ -85,6 +93,7 @@ export class UserEntity {
     type: UserRole,
     example: UserRoleEnum.Advertiser,
   })
+  @IsEnum(UserRole)
   role!: UserRoleEnum;
 
   @Column({ type: 'varchar', nullable: true })

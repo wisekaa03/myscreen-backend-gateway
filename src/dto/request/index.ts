@@ -7,5 +7,7 @@ export * from './reset-password-verify.request';
 export * from './verify-email.request';
 export * from './media-get-files.request';
 export * from './user-update.request';
-export * from './folder-get.request';
+export * from './folder.request';
+export * from './folders-get.request';
 export * from './folder-create.request';
+export * from './folder-update.request';

@@ -10,11 +10,18 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import { IsOptional, IsUUID, IsString } from 'class-validator';
+import {
+  IsUUID,
+  IsString,
+  MinLength,
+  IsAlphanumeric,
+  IsDefined,
+} from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 
 @Entity('folder')
 @Unique('UNIQ_user_name_parentFolder', ['name', 'userId', 'parentFolderId'])
+@Index('IDX_user_parentFolder', ['userId', 'parentFolderId'])
 export class FolderEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
@@ -23,15 +30,18 @@ export class FolderEntity {
     required: false,
   })
   @IsUUID()
-  @IsOptional()
   id?: string;
 
   @Column({ nullable: true })
   @ApiProperty({
     description: 'Наименование папки',
+    example: 'bar',
     required: false,
   })
+  @IsDefined()
   @IsString()
+  @IsAlphanumeric()
+  @MinLength(1)
   name!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -44,25 +54,18 @@ export class FolderEntity {
   user!: UserEntity;
 
   @Column({ nullable: true })
+  @IsUUID()
   userId!: string;
 
   @ManyToOne(() => FolderEntity, (folder) => folder.id, {
     nullable: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    cascade: true,
     eager: false,
   })
   @JoinColumn({ name: 'parentFolderId' })
   @Index()
-  @ApiProperty({
-    description: 'Родительская папка',
-    type: 'string',
-    format: 'uuid',
-    name: 'parentFolderId',
-    required: false,
-  })
-  @IsUUID()
-  @IsOptional()
   parentFolder?: FolderEntity;
 
   @Column({ nullable: true })
@@ -74,7 +77,6 @@ export class FolderEntity {
     required: false,
   })
   @IsUUID()
-  @IsOptional()
   parentFolderId!: string;
 
   @CreateDateColumn()
@@ -83,7 +85,6 @@ export class FolderEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: false,
   })
-  @IsOptional()
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -92,6 +93,5 @@ export class FolderEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: false,
   })
-  @IsOptional()
   updatedAt?: Date;
 }

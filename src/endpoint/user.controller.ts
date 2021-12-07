@@ -6,6 +6,7 @@ import {
   Get,
   Logger,
   Param,
+  ParseUUIDPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -92,7 +93,9 @@ export class UserController {
     description: 'Успешный ответ',
     type: UserUpdateRequest,
   })
-  async user(@Param('userId') userId: string): Promise<AuthResponse> {
+  async user(
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<AuthResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();
@@ -115,7 +118,7 @@ export class UserController {
     type: UserUpdateRequest,
   })
   async userUpdate(
-    @Param('userId') userId: string,
+    @Param('userId', ParseUUIDPipe) userId: string,
     @Body() update: UserUpdateRequest,
   ): Promise<AuthResponse> {
     const user = await this.userService.findById(userId);
@@ -139,7 +142,9 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async disableUser(@Param('userId') userId: string): Promise<SuccessResponse> {
+  async disableUser(
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();
@@ -162,7 +167,9 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async enableUser(@Param('userId') userId: string): Promise<SuccessResponse> {
+  async enableUser(
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();
@@ -185,7 +192,9 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async deleteUser(@Param('userId') userId: string): Promise<SuccessResponse> {
+  async deleteUser(
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();

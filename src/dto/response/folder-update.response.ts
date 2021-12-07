@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/dto/status.enum';
-import { Folder } from '../folder.dto';
+import { FolderResponse } from './folder.response';
 
-export class FolderCreateResponse {
+export class FolderUpdateResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -14,7 +14,7 @@ export class FolderCreateResponse {
   @ApiProperty({
     description: 'Папка',
     title: 'Folder',
-    type: Folder,
+    type: FolderResponse,
   })
-  data!: Folder;
+  data!: FolderResponse;
 }

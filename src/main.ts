@@ -29,10 +29,11 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   app.useLogger(logger);
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
       forbidUnknownValues: true,
+      skipUndefinedProperties: true,
+      stopAtFirstError: true,
     }),
   );
 

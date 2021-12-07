@@ -1,22 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmptyObject,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  Max,
-  Min,
-} from 'class-validator';
-
-import { MediaEntity } from '@/database/media.entity';
+import { Allow, IsOptional, Max, Min } from 'class-validator';
 
 export type OrderDirection = 'ASC' | 'DESC';
 
-export type OrderRequest<T = MediaEntity> = {
+export type OrderRequest<T> = {
   [P in keyof T]?: OrderDirection;
 };
 
-export class LimitRequest<T = MediaEntity> {
+export class LimitRequest<T> {
   @ApiProperty({
     description: 'Лимит строк результатов',
     example: 20,
@@ -24,7 +15,8 @@ export class LimitRequest<T = MediaEntity> {
   })
   @Min(5)
   @Max(100)
-  limit?: number;
+  @IsOptional()
+  limit!: number;
 
   @ApiProperty({
     description: 'Страница результатов',
@@ -33,7 +25,8 @@ export class LimitRequest<T = MediaEntity> {
   })
   @Min(1)
   @Max(100)
-  page?: number;
+  @IsOptional()
+  page!: number;
 
   @ApiProperty({
     description: 'Порядок результатов',
@@ -41,8 +34,7 @@ export class LimitRequest<T = MediaEntity> {
     example: { name: 'ASC', createdAt: 'DESC' },
     required: false,
   })
-  @IsObject()
-  @IsNotEmptyObject()
   @IsOptional()
-  order?: OrderRequest<T>;
+  @Allow()
+  order!: OrderRequest<T>;
 }

@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOneOptions, FindManyOptions } from 'typeorm';
 
 import { FolderEntity } from './folder.entity';
-import { UserEntity } from './user.entity';
 
 @Injectable()
 export class FolderService {
@@ -20,19 +19,12 @@ export class FolderService {
     this.folderRepository.findAndCount(find);
 
   findFolder = async (
-    where: FindOneOptions<FolderEntity>,
-  ): Promise<FolderEntity | undefined> => this.folderRepository.findOne(where);
+    find: FindOneOptions<FolderEntity>,
+  ): Promise<FolderEntity | undefined> => this.folderRepository.findOne(find);
 
-  createFolder = async (
-    user: UserEntity,
-    name: string,
-    parentFolderId: string,
-  ): Promise<FolderEntity> =>
-    this.folderRepository.save(
-      this.folderRepository.create({
-        user,
-        parentFolderId,
-        name,
-      }),
-    );
+  updateFolder = async (folder: Partial<FolderEntity>): Promise<FolderEntity> =>
+    this.folderRepository.save(this.folderRepository.create(folder));
+
+  deleteFolder = async (folder: FolderEntity): Promise<FolderEntity> =>
+    this.folderRepository.remove(folder);
 }
