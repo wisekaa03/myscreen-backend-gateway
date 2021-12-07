@@ -14,7 +14,7 @@ import { UserRole, UserRoleEnum } from '@/database/enums/role.enum';
 export class RegisterRequest {
   @ApiProperty({ description: 'Почта пользователя', example: 'foo@bar.baz' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({
     example: 'Secret~12345678',
@@ -29,7 +29,7 @@ export class RegisterRequest {
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'password too weak',
   })
-  password: string;
+  password!: string;
 
   @ApiProperty({
     enum: UserRole,
@@ -37,31 +37,31 @@ export class RegisterRequest {
     description: 'Роль пользователя',
   })
   @IsEnum(UserRole)
-  role: UserRoleEnum;
+  role!: UserRoleEnum;
 
   @ApiProperty({ required: false, description: 'Имя', example: 'John' })
-  @IsOptional()
   @IsString()
-  name: string;
+  @IsOptional()
+  name?: string;
 
   @ApiProperty({ required: false, description: 'Фамилия', example: 'Steve' })
-  @IsOptional()
   @IsString()
-  surname: string;
+  @IsOptional()
+  surname?: string;
 
   @ApiProperty({ required: false, description: 'Отчество', example: 'Doe' })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   middleName?: string;
 
   @ApiProperty({ required: false, description: 'Город', example: 'Krasnodar' })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   city?: string;
 
   @ApiProperty({ required: false, description: 'Страна', example: 'RU' })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   country?: string;
 
   @ApiProperty({
@@ -69,8 +69,8 @@ export class RegisterRequest {
     description: 'Компания',
     example: 'ACME corporation',
   })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   company?: string;
 
   @ApiProperty({
@@ -78,7 +78,7 @@ export class RegisterRequest {
     description: 'Номер телефона',
     example: '+78002000000',
   })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   phoneNumber?: string;
 }

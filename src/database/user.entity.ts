@@ -23,7 +23,7 @@ export class UserEntity {
     example: '1234567',
   })
   @IsUUID()
-  id?: string;
+  id!: string;
 
   @Column({ unique: true })
   @ApiProperty({
@@ -37,7 +37,7 @@ export class UserEntity {
   @Index()
   @Column({ type: 'boolean', default: false })
   @ApiHideProperty()
-  disabled: boolean;
+  disabled!: boolean;
 
   @Column({ nullable: true })
   @ApiProperty({ description: 'Фамилия', example: 'Steve', required: false })
@@ -52,7 +52,6 @@ export class UserEntity {
   middleName?: string;
 
   @Column()
-  @ApiHideProperty()
   password?: string;
 
   @Column({ nullable: true })
@@ -88,18 +87,15 @@ export class UserEntity {
   })
   role!: UserRoleEnum;
 
+  @Column({ type: 'varchar', nullable: true })
+  forgotConfirmKey?: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  emailConfirmKey?: string | null;
+
   @OneToMany(() => MonitorEntity, (monitor) => monitor.id)
   @JoinColumn()
-  @ApiHideProperty()
   monitors?: MonitorEntity[];
-
-  @Column({ nullable: true })
-  @ApiHideProperty()
-  forgotConfirmKey?: string;
-
-  @Column({ nullable: true })
-  @ApiHideProperty()
-  emailConfirmKey?: string;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({

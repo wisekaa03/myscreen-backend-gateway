@@ -5,13 +5,13 @@ import { User } from '@/dto/user.dto';
 
 export class AuthenticationPayload {
   @ApiProperty({ description: 'Тип: Bearer', example: 'bearer' })
-  type: string;
+  type!: string;
 
   @ApiProperty({
     description: 'Токен, используемый в Authorization: Bearer',
     example: 'eyJcbGciOcJIUcI1xxxxxxxxxxxxxxxx',
   })
-  token: string;
+  token!: string;
 
   @ApiProperty({
     description: 'Refresh токен, используемый для запросов /api/v2/refresh',
@@ -27,7 +27,7 @@ export class AuthResponse {
     enum: Status,
     example: Status.Success,
   })
-  status: Status;
+  status!: Status;
 
   @ApiProperty({
     description: 'Возвращаемый токен',
@@ -41,5 +41,5 @@ export class AuthResponse {
     title: 'User',
     type: User,
   })
-  data: User;
+  data!: User;
 }

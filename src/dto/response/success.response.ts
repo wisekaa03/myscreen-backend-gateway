@@ -7,5 +7,5 @@ export class SuccessResponse {
     type: Status.Success,
     example: Status.Success,
   })
-  status: Status.Success;
+  status!: Status.Success;
 }

@@ -11,7 +11,7 @@ export class ResetPasswordVerifyRequest {
   @ApiProperty({ example: 'j481y1b' })
   @IsString()
   @IsNotEmpty()
-  verify_code: string;
+  verify_code!: string;
 
   @ApiProperty({ example: 'Secret~12345678' })
   @MinLength(8, { message: 'password is too short' })
@@ -19,5 +19,5 @@ export class ResetPasswordVerifyRequest {
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'password too weak',
   })
-  password: string;
+  password!: string;
 }

@@ -7,5 +7,5 @@ export class RefreshTokenRequest {
     example: 'exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx',
   })
   @IsNotEmpty({ message: 'the refresh token is required' })
-  refresh_token: string;
+  refresh_token!: string;
 }

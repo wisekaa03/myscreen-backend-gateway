@@ -6,5 +6,5 @@ export class ResetPasswordInvitationRequest {
     example: 'foo@bar.baz',
   })
   @IsEmail()
-  email: string;
+  email!: string;
 }

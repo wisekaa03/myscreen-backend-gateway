@@ -19,16 +19,16 @@ export class BadRequestError extends BadRequestException {
     example: Status.Error,
     description: 'Статус операции',
   })
-  status: Status.Error;
+  status!: Status.Error;
 
   @ApiProperty({ type: '400', example: 400 })
-  statusCode: number;
+  statusCode!: number;
 
   @ApiProperty({ type: 'server-error.10004', example: 'server-error.10004' })
-  code: string;
+  code!: string;
 
   @ApiProperty({
     example: 'Bad request',
   })
-  message: string;
+  message!: string;
 }

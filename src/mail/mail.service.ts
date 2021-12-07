@@ -20,7 +20,7 @@ export class MailService {
     private readonly mailgunService: MailgunService,
     private readonly configService: ConfigService,
   ) {
-    this.domain = configService.get<string>('MAILGUN_API_DOMAIN');
+    this.domain = configService.get<string>('MAILGUN_API_DOMAIN', 'localhost');
     this.from = `MyScreen <no-reply@${this.domain}>`;
   }
 

@@ -78,7 +78,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 
   const PORT = configService.get<number>('PORT', 3000);
   await app.listen(PORT);
-  logger.verbose(
+  logger.verbose!(
     `Server version ${version} started on ${await app.getUrl()}`,
     NestApplication.name,
   );

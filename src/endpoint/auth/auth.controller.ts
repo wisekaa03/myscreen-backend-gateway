@@ -84,9 +84,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: AuthResponse,
   })
-  async authorization(@Req() req: ExpressRequest): Promise<AuthResponse> {
-    const { user } = req;
-
+  async authorization(@Req() { user }: ExpressRequest): Promise<AuthResponse> {
     return {
       status: Status.Success,
       data: userEntityToUser(user),
@@ -106,13 +104,9 @@ export class AuthController {
     type: UserResponse,
   })
   async update(
-    @Req() req: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() update: UserUpdateRequest,
   ): Promise<UserResponse> {
-    const { user } = req;
-    if (!user) {
-      throw new BadRequestException();
-    }
     const data = await this.authService.update(user, update);
     return {
       status: Status.Success,
@@ -133,6 +127,7 @@ export class AuthController {
   ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
+
     return this.authService.login(body, fingerprint);
   }
 
@@ -156,19 +151,6 @@ export class AuthController {
     return this.authService.register(body, fingerprint);
   }
 
-  @Get('/ping')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ operationId: 'ping', summary: 'Проверка токена' })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: SuccessResponse,
-  })
-  async ping(): Promise<SuccessResponse> {
-    return { status: Status.Success };
-  }
-
   @Post('/refresh')
   @ApiOperation({ operationId: 'refresh', summary: 'Обновление токена' })
   @ApiResponse({
@@ -182,6 +164,7 @@ export class AuthController {
   ): Promise<RefreshTokenResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
+
     return this.authService.refresh(body, fingerprint);
   }
 

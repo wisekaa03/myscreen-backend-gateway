@@ -22,7 +22,7 @@ export class RefreshTokenService {
       },
     ];
 
-    return this.refreshTokenEntity.findOne({
+    return this.refreshTokenEntity.findOneOrFail({
       where,
     });
   }

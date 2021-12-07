@@ -19,16 +19,16 @@ export class InternalServerError extends InternalServerErrorException {
     example: Status.Error,
     description: 'Статус операции',
   })
-  status: Status.Error;
+  status!: Status.Error;
 
   @ApiProperty({ type: '500', example: 500 })
-  statusCode: number;
+  statusCode!: number;
 
   @ApiProperty({ type: 'server-error.10000', example: 'server-error.10000' })
-  code: string;
+  code!: string;
 
   @ApiProperty({
     example: 'Server error',
   })
-  message: string;
+  message!: string;
 }

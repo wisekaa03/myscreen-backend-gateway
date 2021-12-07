@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
+import type { Request as ExpressRequest } from 'express';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -13,10 +22,9 @@ import {
   MediaGetFilesResponse,
   ForbiddenError,
   InternalServerError,
-  LimitRequest,
+  Status,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
-import { MediaEntity } from '@/database/media.entity';
 import { MediaService } from '@/database/media.service';
 
 @ApiTags('media')
@@ -59,8 +67,26 @@ export class MediaController {
     type: MediaGetFilesResponse,
   })
   async getMedia(
+    @Req() { user }: ExpressRequest,
     @Body() body: MediaGetFilesRequest,
   ): Promise<MediaGetFilesResponse> {
-    return this.mediaService.getMedia(body);
+    const [data, count] = await this.mediaService.getMediaFiles({
+      take: body.scope?.limit ?? undefined,
+      skip:
+        body.scope?.page && body.scope.page > 0
+          ? (body.scope.limit ?? 0) * (body.scope.page - 1)
+          : undefined,
+      order: body.scope?.order ?? undefined,
+      where: {
+        user,
+        // ...body.where,
+      },
+    });
+
+    return {
+      status: Status.Success,
+      count,
+      data,
+    };
   }
 }

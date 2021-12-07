@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsOptional, IsUUID } from 'class-validator';
 
 import { FolderEntity } from '@/database/folder.entity';
 import { UserEntity } from '@/database/user.entity';
@@ -23,13 +23,13 @@ export class MediaMeta {
     description: 'Длительность',
     example: '200',
   })
-  duration: number;
+  duration!: number;
 
   @ApiProperty({
     description: 'Размер файла',
     example: '20500',
   })
-  filesize: number;
+  filesize!: number;
 }
 
 @Entity('media')
@@ -40,6 +40,7 @@ export class MediaEntity {
     example: '1234567',
     format: 'uuid',
   })
+  @IsOptional()
   @IsUUID()
   id?: string;
 
@@ -48,6 +49,7 @@ export class MediaEntity {
     description: 'Изначальное имя файла',
     example: 'foo.mp4',
   })
+  @IsOptional()
   originalName!: string;
 
   @Column()
@@ -55,6 +57,7 @@ export class MediaEntity {
     description: 'Имя файла',
     example: 'bar',
   })
+  @IsOptional()
   name!: string;
 
   @Column({ nullable: true })
@@ -62,6 +65,7 @@ export class MediaEntity {
     description: 'Hash файла',
     example: '2b0439011a3a215ae1756bfc342e5bbc',
   })
+  @IsOptional()
   hash?: string;
 
   @Column({ type: 'enum', enum: VideoType })
@@ -71,6 +75,7 @@ export class MediaEntity {
     enum: VideoType,
     example: VideoType.Video,
   })
+  @IsOptional()
   type!: VideoType;
 
   @Column({ type: 'json', nullable: true })
@@ -80,6 +85,7 @@ export class MediaEntity {
     example: { duration: 200, filesize: 20500 },
     required: false,
   })
+  @IsOptional()
   meta?: MediaMeta;
 
   @ManyToOne(() => FolderEntity, (folder) => folder.id, { nullable: false })
@@ -90,6 +96,7 @@ export class MediaEntity {
     name: 'folderId',
     required: false,
   })
+  @IsOptional()
   folder!: FolderEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -115,6 +122,7 @@ export class MediaEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: false,
   })
+  @IsOptional()
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -123,5 +131,6 @@ export class MediaEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: false,
   })
+  @IsOptional()
   updatedAt?: Date;
 }

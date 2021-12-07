@@ -5,5 +5,5 @@ export class VerifyEmailRequest {
   @ApiProperty({ example: 'j481y1b' })
   @IsString()
   @IsNotEmpty()
-  verify_email: string;
+  verify_email!: string;
 }

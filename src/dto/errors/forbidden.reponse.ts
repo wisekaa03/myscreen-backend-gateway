@@ -19,16 +19,16 @@ export class ForbiddenError extends ForbiddenException {
     example: Status.Error,
     description: 'Статус операции',
   })
-  status: Status.Error;
+  status!: Status.Error;
 
   @ApiProperty({ type: '403', example: 403 })
-  statusCode: number;
+  statusCode!: number;
 
   @ApiProperty({ type: 'server-error.10002', example: 'server-error.10002' })
-  code: string;
+  code!: string;
 
   @ApiProperty({
     example: 'Forbidden',
   })
-  message: string;
+  message!: string;
 }

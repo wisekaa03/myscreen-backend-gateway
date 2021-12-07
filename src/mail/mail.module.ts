@@ -13,8 +13,8 @@ import { MailService } from '@/mail/mail.service';
       imports: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         username: 'api',
-        key: configService.get<string>('MAILGUN_API_KEY'),
-        public_key: configService.get<string>('MAILGUN_PUBLIC_KEY'),
+        key: configService.get<string>('MAILGUN_API_KEY', ''),
+        public_key: configService.get<string>('MAILGUN_PUBLIC_KEY', ''),
         timeout: Number(configService.get<string>('MAILGUN_TIMEOUT', '3000')),
         url: `https://${configService.get<string>(
           'MAILGUN_API_HOST',

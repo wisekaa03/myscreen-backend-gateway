@@ -9,9 +9,9 @@ export class UserUpdateRequest {
     description: 'Почта пользователя',
     example: 'foo@bar.baz',
   })
-  @IsOptional()
   @IsEmail()
-  email: string;
+  @IsOptional()
+  email?: string;
 
   @ApiProperty({
     required: false,
@@ -19,33 +19,33 @@ export class UserUpdateRequest {
     enum: UserRole,
     example: UserRoleEnum.Advertiser,
   })
-  @IsOptional()
   @IsEnum(UserRole)
-  role: UserRoleEnum;
+  @IsOptional()
+  role?: UserRoleEnum;
 
   @ApiProperty({ required: false, description: 'Имя', example: 'John' })
-  @IsOptional()
   @IsString()
-  name: string;
+  @IsOptional()
+  name?: string;
 
   @ApiProperty({ required: false, description: 'Фамилия', example: 'Steve' })
-  @IsOptional()
   @IsString()
-  surname: string;
+  @IsOptional()
+  surname?: string;
 
   @ApiProperty({ required: false, description: 'Отчество', example: 'Doe' })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   middleName?: string;
 
   @ApiProperty({ required: false, description: 'Город', example: 'Krasnodar' })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   city?: string;
 
   @ApiProperty({ required: false, description: 'Страна', example: 'RU' })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   country?: string;
 
   @ApiProperty({
@@ -53,8 +53,8 @@ export class UserUpdateRequest {
     description: 'Компания',
     example: 'ACME corporation',
   })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   company?: string;
 
   @ApiProperty({
@@ -62,7 +62,7 @@ export class UserUpdateRequest {
     description: 'Номер телефона',
     example: '+78002000000',
   })
-  @IsOptional()
   @IsString()
+  @IsOptional()
   phoneNumber?: string;
 }

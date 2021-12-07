@@ -1,5 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmptyObject, IsObject, Max, Min } from 'class-validator';
+import {
+  IsNotEmptyObject,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  Max,
+  Min,
+} from 'class-validator';
 
 import { MediaEntity } from '@/database/media.entity';
 
@@ -17,7 +24,7 @@ export class LimitRequest<T = MediaEntity> {
   })
   @Min(5)
   @Max(100)
-  limit: number;
+  limit?: number;
 
   @ApiProperty({
     description: 'Страница результатов',
@@ -26,7 +33,7 @@ export class LimitRequest<T = MediaEntity> {
   })
   @Min(1)
   @Max(100)
-  page: number;
+  page?: number;
 
   @ApiProperty({
     description: 'Порядок результатов',
@@ -36,5 +43,6 @@ export class LimitRequest<T = MediaEntity> {
   })
   @IsObject()
   @IsNotEmptyObject()
-  order: OrderRequest<T>;
+  @IsOptional()
+  order?: OrderRequest<T>;
 }

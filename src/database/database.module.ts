@@ -8,6 +8,7 @@ import { AccountEntity } from './account.entity';
 import { EditorEntity } from './editor.entity';
 import { FileEntity } from './file.entity';
 import { FolderEntity } from './folder.entity';
+import { FolderService } from './folder.service';
 import { MediaEntity } from './media.entity';
 import { MediaService } from './media.service';
 import { MonitorEntity } from './monitor.entity';
@@ -47,7 +48,15 @@ import { RefreshTokenService } from './refreshtoken.service';
       RefreshTokenEntity,
     ]),
   ],
-  providers: [Logger, UserService, RefreshTokenService, MediaService],
-  exports: [UserService, RefreshTokenService, MediaService],
+
+  providers: [
+    Logger,
+    UserService,
+    RefreshTokenService,
+    FolderService,
+    MediaService,
+  ],
+
+  exports: [UserService, RefreshTokenService, FolderService, MediaService],
 })
 export class DatabaseModule {}

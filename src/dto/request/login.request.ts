@@ -4,7 +4,7 @@ import { IsEmail, Matches, MaxLength, MinLength } from 'class-validator';
 export class LoginRequest {
   @ApiProperty({ description: 'Почта пользователя', example: 'foo@bar.baz' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description:
@@ -19,5 +19,5 @@ export class LoginRequest {
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
     message: 'password too weak',
   })
-  password: string;
+  password!: string;
 }

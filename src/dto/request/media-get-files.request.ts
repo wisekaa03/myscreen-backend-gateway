@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, IsBoolean, IsEnum, IsString } from 'class-validator';
+import {
+  IsObject,
+  IsBoolean,
+  IsEnum,
+  IsString,
+  IsOptional,
+} from 'class-validator';
 
 import { MediaEntity } from '@/database/media.entity';
 import { VideoType } from '@/database/enums/video-type.enum';
@@ -25,10 +31,10 @@ export class MediaGetFilesRequest {
 
   @ApiProperty({
     description: 'ID папки',
-    example: '',
     required: false,
   })
   @IsString()
+  @IsOptional()
   folderId?: string;
 
   @ApiProperty({
@@ -38,5 +44,6 @@ export class MediaGetFilesRequest {
     required: false,
   })
   @IsObject()
-  scope: LimitRequest<MediaEntity>;
+  @IsOptional()
+  scope?: LimitRequest<MediaEntity>;
 }

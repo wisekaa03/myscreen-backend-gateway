@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/dto/status.enum';
-import { Media } from '@/dto/media.dto';
+import { Folder } from '../folder.dto';
 
-export class MediaGetFilesResponse {
+export class FoldersGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -11,14 +11,14 @@ export class MediaGetFilesResponse {
   })
   status!: Status.Success;
 
-  @ApiProperty({ description: 'Количество файлов' })
+  @ApiProperty({ description: 'Количество папок', example: 1 })
   count!: number;
 
   @ApiProperty({
-    description: 'Файлы',
-    title: 'Media',
-    type: Media,
+    description: 'Папки',
+    title: 'Folder',
+    type: [Folder],
     isArray: true,
   })
-  data!: Media[];
+  data!: Folder[];
 }

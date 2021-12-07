@@ -10,6 +10,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
+import { TypeORMError } from 'typeorm';
 
 import {
   UnauthorizedError,
@@ -30,25 +31,27 @@ export class ExceptionsFilter extends BaseExceptionFilter {
       let response = exception.getResponse();
       if (typeof response === 'object') {
         response =
+          (response as Record<string, string>).message ??
           (response as Record<string, string>).error ??
           (response as Record<string, string>).details;
       }
+
+      this.logger.error(`${exception.message} ${response}`, exception.stack);
+
       if (exception instanceof UnauthorizedException) {
-        this.logger.error(`${exception.message} ${response}`, exception.stack);
         exceptionRule = new UnauthorizedError(exception.message);
       } else if (exception instanceof BadRequestException) {
-        this.logger.error(`${exception.message} ${response}`, exception.stack);
         exceptionRule = new BadRequestError(exception.message);
       } else if (exception instanceof ForbiddenException) {
-        this.logger.error(`${exception.message} ${response}`, exception.stack);
         exceptionRule = new ForbiddenError(exception.message);
       } else if (exception instanceof PreconditionFailedException) {
-        this.logger.error(`${exception.message} ${response}`, exception.stack);
         exceptionRule = new PreconditionFailedError(exception.message);
       } else if (exception instanceof InternalServerErrorException) {
-        this.logger.error(`${exception.message} ${response}`, exception.stack);
         exceptionRule = new InternalServerError(exception.message);
       }
+    } else if (exception instanceof Error) {
+      this.logger.error(exception.message, exception.stack);
+      exceptionRule = new InternalServerError();
     }
 
     super.catch(exceptionRule || exception, host);

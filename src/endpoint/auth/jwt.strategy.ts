@@ -23,9 +23,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: MyscreenJwtPayload): Promise<UserEntity> {
+  async validate(payload: MyscreenJwtPayload): Promise<UserEntity | null> {
     // TODO: заменить
-    const user = await this.userService.findById(payload.sub);
+    const user = payload.sub
+      ? await this.userService.findById(payload.sub)
+      : null;
 
     if (!user) {
       return null;

@@ -2,24 +2,19 @@ import { compare, hash } from 'bcrypt';
 import {
   BadGatewayException,
   BadRequestException,
+  PreconditionFailedException,
   Injectable,
   Logger,
-  PreconditionFailedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Repository,
-  Transaction,
-  TransactionRepository,
-  FindConditions,
-  DeleteResult,
-} from 'typeorm';
+import { Repository, FindConditions, DeleteResult, DeepPartial } from 'typeorm';
 
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { MailService } from '@/mail/mail.service';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
+import { UserRoleEnum } from './enums/role.enum';
 
 @Injectable()
 export class UserService {
@@ -39,12 +34,9 @@ export class UserService {
     );
   }
 
-  @Transaction()
   async update(
     user: UserEntity,
     update: Partial<UserEntity>,
-    @TransactionRepository(UserEntity)
-    userRepository: Repository<UserEntity> = null,
   ): Promise<UserEntity> {
     if (typeof update.email !== 'undefined' && user.email !== update.email) {
       const emailConfirmKey = genKey();
@@ -53,57 +45,57 @@ export class UserService {
       const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
       return Promise.all([
-        userRepository.save(Object.assign(user, update, { emailConfirmKey })),
+        this.userRepository.save(
+          Object.assign(user, update, { emailConfirmKey }),
+        ),
         this.mailService.sendVerificationCode(update.email, confirmUrl),
       ]).then(([saved]) => saved);
     }
 
-    return userRepository.save(Object.assign(user, update));
+    return this.userRepository.save(Object.assign(user, update));
   }
 
-  @Transaction()
-  async delete(
-    user: UserEntity,
-    @TransactionRepository(UserEntity)
-    userRepository: Repository<UserEntity> = null,
-  ): Promise<DeleteResult> {
-    return userRepository.delete(user.id);
+  async delete(user: UserEntity): Promise<DeleteResult> {
+    return this.userRepository.delete(user.id);
   }
 
-  @Transaction()
-  async create(
-    create: Partial<UserEntity>,
-    @TransactionRepository(UserEntity)
-    userRepository: Repository<UserEntity> = null,
-  ): Promise<UserEntity> {
-    const existingUser = await userRepository.findOne({
-      email: create.email,
+  async create(create: DeepPartial<UserEntity>): Promise<UserEntity> {
+    const { email, password } = create;
+    if (!email) {
+      throw new BadRequestException();
+    }
+    if (!password) {
+      throw new BadRequestException();
+    }
+
+    const existingUser = await this.userRepository.findOne({
+      email,
     });
 
     if (existingUser) {
       throw new PreconditionFailedException('User exists', create.email);
     }
 
-    const user: UserEntity = {
-      email: create.email,
-      password: await hash(create.password, 7),
+    const user: DeepPartial<UserEntity> = {
+      email,
+      password: await hash(password, 7),
       disabled: false,
       name: create.name,
       surname: create.surname,
       middleName: create.middleName,
       emailConfirmKey: genKey(),
-      role: create.role,
+      role: create.role ?? UserRoleEnum.Advertiser,
       verified: false,
       isDemoUser: false,
       countUsedSpace: 0,
     };
-    const verifyToken = generateMailToken(user.email, user.emailConfirmKey);
+    const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
     const savedUser = await Promise.all([
-      userRepository.save(user),
-      this.mailService.sendWelcomeMessage(user.email),
-      this.mailService.sendVerificationCode(user.email, confirmUrl),
+      this.userRepository.save(user),
+      this.mailService.sendWelcomeMessage(email),
+      this.mailService.sendVerificationCode(email, confirmUrl),
     ]).then(([saved]) => saved);
 
     return savedUser;
@@ -117,27 +109,22 @@ export class UserService {
    * @param userRepository
    * @returns {UserEntity} Пользователь
    */
-  @Transaction()
-  async createTest(
-    create: Partial<UserEntity>,
-    @TransactionRepository(UserEntity)
-    userRepository: Repository<UserEntity> = null,
-  ): Promise<UserEntity> {
-    const user: UserEntity = {
+  async createTest(create: Partial<UserEntity>): Promise<UserEntity> {
+    const user: DeepPartial<UserEntity> = {
       email: create.email,
-      password: await hash(create.password, 7),
+      password: await hash(create.password ?? '', 7),
       disabled: false,
       name: create.name,
       surname: create.surname,
       middleName: create.middleName,
       emailConfirmKey: genKey(),
-      role: create.role,
+      role: create.role ?? UserRoleEnum.Advertiser,
       verified: false,
       isDemoUser: false,
       countUsedSpace: 0,
     };
 
-    return userRepository.save(user);
+    return this.userRepository.save(this.userRepository.create(user));
   }
 
   async forgotPasswordInvitation(email: string): Promise<void> {
@@ -155,16 +142,13 @@ export class UserService {
     this.mailService.forgotPassword(email, forgotPasswordUrl);
   }
 
-  @Transaction()
   async forgotPasswordVerify(
     forgotPasswordToken: string,
     password: string,
-    @TransactionRepository(UserEntity)
-    userRepository: Repository<UserEntity> = null,
   ): Promise<void> {
     const [email, forgotPassword] = decodeMailToken(forgotPasswordToken);
 
-    const user = await userRepository.findOne({ email });
+    const user = await this.userRepository.findOne({ email });
     if (!user) {
       throw new BadRequestException('User not exists', email);
     }
@@ -172,7 +156,7 @@ export class UserService {
     if (forgotPassword === user.forgotConfirmKey) {
       user.password = await hash(password, 7);
       user.forgotConfirmKey = null;
-      await userRepository.save(user);
+      await this.userRepository.save(user);
 
       return;
     }
@@ -183,7 +167,7 @@ export class UserService {
     );
   }
 
-  async findAll(includeDisabled: boolean): Promise<UserEntity[]> {
+  async findAll(includeDisabled: boolean): Promise<Partial<UserEntity>[]> {
     const where: FindConditions<UserEntity> = {};
     if (includeDisabled) {
       where.disabled = false;
@@ -199,14 +183,14 @@ export class UserService {
     includePassword = false,
   ): Promise<UserEntity> {
     if (includePassword) {
-      return this.userRepository.findOne({
+      return this.userRepository.findOneOrFail({
         email,
         disabled,
       });
     }
 
     return this.userRepository
-      .findOne({
+      .findOneOrFail({
         email,
         disabled,
       })
@@ -219,14 +203,14 @@ export class UserService {
     includePassword = false,
   ): Promise<UserEntity> {
     if (includePassword) {
-      return this.userRepository.findOne({
+      return this.userRepository.findOneOrFail({
         id,
         disabled,
       });
     }
 
     return this.userRepository
-      .findOne({
+      .findOneOrFail({
         id,
         disabled,
       })
@@ -237,6 +221,6 @@ export class UserService {
     user: UserEntity,
     password: string,
   ): Promise<boolean> {
-    return compare(password, user.password);
+    return compare(password, user.password ?? '');
   }
 }
