@@ -8,6 +8,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -107,7 +108,7 @@ export class UserController {
     };
   }
 
-  @Post('/:userId')
+  @Put('/:userId')
   @ApiOperation({
     operationId: 'post_user__userId_',
     summary: 'Изменение информации о пользователе (только администратор)',
@@ -195,6 +196,9 @@ export class UserController {
   async deleteUser(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<SuccessResponse> {
+    if (!userId) {
+      throw new BadRequestException();
+    }
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new BadRequestException();

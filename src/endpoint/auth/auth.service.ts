@@ -56,7 +56,20 @@ export class AuthService {
     login: LoginRequest,
     fingerprint?: string,
   ): Promise<AuthResponse> {
+    if (!login.email || !login.password) {
+      throw new UnauthorizedException('Password mismatched', login.password);
+    }
+
     const user = await this.userService.findByEmail(login.email, false, true);
+    if (!user) {
+      throw new UnauthorizedException('Password mismatched', login.password);
+    }
+    if (!user.verified) {
+      throw new UnauthorizedException(
+        'You have to respond to our email',
+        login.email,
+      );
+    }
 
     const valid = user
       ? await this.userService.validateCredentials(user, login.password)
@@ -76,19 +89,11 @@ export class AuthService {
     };
   }
 
-  async register(
-    create: RegisterRequest,
-    fingerprint?: string,
-  ): Promise<AuthResponse> {
+  async register(create: RegisterRequest): Promise<AuthResponse> {
     const user = await this.userService.create(create);
-
-    const token = await this.generateAccessToken(user);
-    const refresh = await this.generateRefreshToken(user, fingerprint);
-    const payload = this.buildResponsePayload(token, refresh);
 
     return {
       status: Status.Success,
-      payload,
       data: userEntityToUser(user),
     };
   }
@@ -197,7 +202,7 @@ export class AuthService {
 
   private async getUserFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
-  ): Promise<UserEntity> {
+  ): Promise<UserEntity | undefined> {
     const subId = payload.sub;
 
     if (!subId) {

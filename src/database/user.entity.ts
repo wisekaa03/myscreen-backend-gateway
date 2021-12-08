@@ -10,7 +10,15 @@ import {
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
-import { IsEmail, IsEnum, IsString, IsUUID } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsString,
+  IsUUID,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserRole, UserRoleEnum } from './enums/role.enum';
 
@@ -56,6 +64,20 @@ export class UserEntity {
 
   // TODO: transformer function
   @Column()
+  @ApiProperty({
+    example: 'Secret~12345678',
+    description:
+      'Пароля пользователя (должен удовлетворять минимальным требованиям)',
+    minLength: 8,
+    maxLength: 30,
+    pattern: '/((?=.*d)|(?=.*W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
+  })
+  @IsString()
+  @MinLength(8, { message: 'password is too short' })
+  @MaxLength(30, { message: 'password is too long' })
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'password too weak',
+  })
   password?: string;
 
   @Column({ nullable: true })

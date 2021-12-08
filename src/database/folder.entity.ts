@@ -6,6 +6,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -18,6 +19,7 @@ import {
   IsDefined,
 } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
+import { MediaEntity } from './media.entity';
 
 @Entity('folder')
 @Unique('UNIQ_user_name_parentFolder', ['name', 'userId', 'parentFolderId'])
@@ -73,11 +75,18 @@ export class FolderEntity {
     description: 'Родительская папка',
     type: 'string',
     format: 'uuid',
-    name: 'parentFolderId',
     required: false,
   })
   @IsUUID()
   parentFolderId!: string;
+
+  @OneToMany(() => MediaEntity, (media) => media.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
+  media?: MediaEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

@@ -6,6 +6,7 @@ import {
   Get,
   Logger,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -75,7 +76,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'auth',
+    operationId: 'get_auth',
     summary:
       'Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию',
   })
@@ -91,11 +92,11 @@ export class AuthController {
     };
   }
 
-  @Post('/update')
+  @Put('/')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'update',
+    operationId: 'update_auth',
     summary: 'Изменение аккаунта пользователя',
   })
   @ApiResponse({
@@ -141,14 +142,8 @@ export class AuthController {
     description: 'Успешный ответ',
     type: AuthResponse,
   })
-  async register(
-    @Req() req: ExpressRequest,
-    @Body() body: RegisterRequest,
-  ): Promise<AuthResponse> {
-    // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
-    const fingerprint = req?.hostname;
-
-    return this.authService.register(body, fingerprint);
+  async register(@Body() body: RegisterRequest): Promise<AuthResponse> {
+    return this.authService.register(body);
   }
 
   @Post('/refresh')
@@ -168,9 +163,9 @@ export class AuthController {
     return this.authService.refresh(body, fingerprint);
   }
 
-  @Post('/verify-email')
+  @Post('/email-verify')
   @ApiOperation({
-    operationId: 'verify-email',
+    operationId: 'email-verify',
     summary: 'Подтвердить email пользователя',
   })
   @ApiResponse({

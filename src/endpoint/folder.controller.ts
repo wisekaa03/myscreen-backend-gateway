@@ -184,7 +184,7 @@ export class FolderController {
     summary: 'Изменение информации о папке',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: FolderUpdateResponse,
   })

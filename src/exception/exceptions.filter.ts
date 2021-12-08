@@ -61,7 +61,11 @@ export class ExceptionsFilter extends BaseExceptionFilter {
         exceptionRule = new InternalServerError(exception.message);
       }
     } else if (exception instanceof Error) {
-      this.logger.error(exception.message, exception.stack);
+      this.logger.error(
+        exception.message,
+        exception.stack,
+        'ExceptionsFilter: TypeORM',
+      );
       exceptionRule = new InternalServerError();
     }
 

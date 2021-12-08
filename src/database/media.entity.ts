@@ -10,10 +10,16 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 import { FolderEntity } from '@/database/folder.entity';
-import { UserEntity } from '@/database/user.entity';
 import { EditorEntity } from '@/database/editor.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { VideoType } from './enums/video-type.enum';
@@ -23,12 +29,14 @@ export class MediaMeta {
     description: 'Длительность',
     example: '200',
   })
+  @IsNumber()
   duration!: number;
 
   @ApiProperty({
     description: 'Размер файла',
     example: '20500',
   })
+  @IsNumber()
   filesize!: number;
 }
 
@@ -40,7 +48,6 @@ export class MediaEntity {
     example: '1234567',
     format: 'uuid',
   })
-  @IsOptional()
   @IsUUID()
   id?: string;
 
@@ -49,7 +56,6 @@ export class MediaEntity {
     description: 'Изначальное имя файла',
     example: 'foo.mp4',
   })
-  @IsOptional()
   originalName!: string;
 
   @Column()
@@ -57,7 +63,6 @@ export class MediaEntity {
     description: 'Имя файла',
     example: 'bar',
   })
-  @IsOptional()
   name!: string;
 
   @Column({ nullable: true })
@@ -65,7 +70,8 @@ export class MediaEntity {
     description: 'Hash файла',
     example: '2b0439011a3a215ae1756bfc342e5bbc',
   })
-  @IsOptional()
+  @IsString()
+  // @IsHash()
   hash?: string;
 
   @Column({ type: 'enum', enum: VideoType })
@@ -75,7 +81,7 @@ export class MediaEntity {
     enum: VideoType,
     example: VideoType.Video,
   })
-  @IsOptional()
+  @IsEnum(VideoType)
   type!: VideoType;
 
   @Column({ type: 'json', nullable: true })
@@ -85,26 +91,23 @@ export class MediaEntity {
     example: { duration: 200, filesize: 20500 },
     required: false,
   })
-  @IsOptional()
+  @ValidateNested()
+  @Type(() => MediaMeta)
   meta?: MediaMeta;
 
-  @ManyToOne(() => FolderEntity, (folder) => folder.id, { nullable: false })
-  @JoinColumn()
-  @ApiProperty({
-    type: 'string',
-    format: 'uuid',
-    name: 'folderId',
-    required: false,
-  })
-  @IsOptional()
+  @ManyToOne(() => FolderEntity, (folder) => folder.id)
+  @JoinColumn({ name: 'folderId' })
   folder!: FolderEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.id, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
+  @Column({ nullable: true })
+  @ApiProperty({
+    description: 'Папка',
+    type: 'string',
+    format: 'uuid',
+    required: false,
   })
-  @JoinColumn()
-  user!: UserEntity;
+  @IsUUID()
+  folderId!: string;
 
   @ManyToMany(() => EditorEntity, (editor) => editor.id, { cascade: true })
   @JoinTable()
@@ -122,7 +125,6 @@ export class MediaEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: false,
   })
-  @IsOptional()
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -131,6 +133,5 @@ export class MediaEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: false,
   })
-  @IsOptional()
   updatedAt?: Date;
 }

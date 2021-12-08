@@ -92,11 +92,16 @@ export class UserService {
     const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
-    const savedUser = await Promise.all([
-      this.userRepository.save(user),
-      this.mailService.sendWelcomeMessage(email),
-      this.mailService.sendVerificationCode(email, confirmUrl),
-    ]).then(([saved]) => saved);
+    const savedUser =
+      process.env.NODE_END !== 'production'
+        ? await Promise.all([this.userRepository.save(user)]).then(
+            ([saved]) => saved,
+          )
+        : await Promise.all([
+            this.userRepository.save(user),
+            this.mailService.sendWelcomeMessage(email),
+            this.mailService.sendVerificationCode(email, confirmUrl),
+          ]).then(([saved]) => saved);
 
     return savedUser;
   }
@@ -181,40 +186,36 @@ export class UserService {
     email: string,
     disabled = false,
     includePassword = false,
-  ): Promise<UserEntity> {
+  ): Promise<UserEntity | undefined> {
     if (includePassword) {
-      return this.userRepository.findOneOrFail({
+      return this.userRepository.findOne({
         email,
         disabled,
       });
     }
 
-    return this.userRepository
-      .findOneOrFail({
-        email,
-        disabled,
-      })
-      .then(({ password, ...data }) => data);
+    return this.userRepository.findOne({
+      email,
+      disabled,
+    });
   }
 
   async findById(
     id: string,
     disabled = false,
     includePassword = false,
-  ): Promise<UserEntity> {
+  ): Promise<UserEntity | undefined> {
     if (includePassword) {
-      return this.userRepository.findOneOrFail({
+      return this.userRepository.findOne({
         id,
         disabled,
       });
     }
 
-    return this.userRepository
-      .findOneOrFail({
-        id,
-        disabled,
-      })
-      .then(({ password, ...data }) => data);
+    return this.userRepository.findOne({
+      id,
+      disabled,
+    });
   }
 
   async validateCredentials(
