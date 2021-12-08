@@ -1,4 +1,3 @@
-import { compare, hash } from 'bcrypt';
 import {
   BadGatewayException,
   BadRequestException,
@@ -46,13 +45,17 @@ export class UserService {
 
       return Promise.all([
         this.userRepository.save(
-          Object.assign(user, update, { emailConfirmKey }),
+          this.userRepository.create(
+            Object.assign(user, update, { emailConfirmKey }),
+          ),
         ),
         this.mailService.sendVerificationCode(update.email, confirmUrl),
       ]).then(([saved]) => saved);
     }
 
-    return this.userRepository.save(Object.assign(user, update));
+    return this.userRepository.save(
+      this.userRepository.create(Object.assign(user, update)),
+    );
   }
 
   async delete(user: UserEntity): Promise<DeleteResult> {
@@ -60,11 +63,14 @@ export class UserService {
   }
 
   async create(create: DeepPartial<UserEntity>): Promise<UserEntity> {
-    const { email, password } = create;
+    const { email, password, name, surname, middleName, role } = create;
     if (!email) {
       throw new BadRequestException();
     }
     if (!password) {
+      throw new BadRequestException();
+    }
+    if (!role) {
       throw new BadRequestException();
     }
 
@@ -78,13 +84,13 @@ export class UserService {
 
     const user: DeepPartial<UserEntity> = {
       email,
-      password: await hash(password, 7),
+      password,
       disabled: false,
-      name: create.name,
-      surname: create.surname,
-      middleName: create.middleName,
+      name,
+      surname,
+      middleName,
       emailConfirmKey: genKey(),
-      role: create.role ?? UserRoleEnum.Advertiser,
+      role,
       verified: false,
       isDemoUser: false,
       countUsedSpace: 0,
@@ -94,11 +100,11 @@ export class UserService {
 
     const savedUser =
       process.env.NODE_END !== 'production'
-        ? await Promise.all([this.userRepository.save(user)]).then(
-            ([saved]) => saved,
-          )
+        ? await Promise.all([
+            this.userRepository.save(this.userRepository.create(user)),
+          ]).then(([saved]) => saved)
         : await Promise.all([
-            this.userRepository.save(user),
+            this.userRepository.save(this.userRepository.create(user)),
             this.mailService.sendWelcomeMessage(email),
             this.mailService.sendVerificationCode(email, confirmUrl),
           ]).then(([saved]) => saved);
@@ -117,7 +123,7 @@ export class UserService {
   async createTest(create: Partial<UserEntity>): Promise<UserEntity> {
     const user: DeepPartial<UserEntity> = {
       email: create.email,
-      password: await hash(create.password ?? '', 7),
+      password: create.password,
       disabled: false,
       name: create.name,
       surname: create.surname,
@@ -172,10 +178,10 @@ export class UserService {
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
-      user.password = await hash(password, 7);
+      user.password = password;
       user.forgotConfirmKey = null;
 
-      return this.userRepository.save(user);
+      return this.userRepository.save(this.userRepository.create(user));
     }
 
     throw new BadRequestException(
@@ -189,9 +195,7 @@ export class UserService {
     if (includeDisabled) {
       where.disabled = false;
     }
-    return this.userRepository
-      .find({ where })
-      .then((users) => users.map(({ password, ...data }) => data));
+    return this.userRepository.find({ where });
   }
 
   async findByEmail(
@@ -228,12 +232,5 @@ export class UserService {
       id,
       disabled,
     });
-  }
-
-  async validateCredentials(
-    user: UserEntity,
-    password: string,
-  ): Promise<boolean> {
-    return compare(password, user.password ?? '');
   }
 }

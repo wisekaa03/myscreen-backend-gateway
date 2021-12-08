@@ -1,4 +1,8 @@
+import { createHmac } from 'crypto';
 import {
+  AfterLoad,
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -64,7 +68,6 @@ export class UserEntity {
   @IsString()
   middleName?: string;
 
-  // TODO: transformer function
   @Column()
   @ApiProperty({
     example: 'Secret~12345678',
@@ -81,6 +84,32 @@ export class UserEntity {
     message: 'password too weak',
   })
   password?: string;
+
+  @AfterLoad()
+  private loadTempPassword(): void {
+    Object.defineProperty(this, '#loadedPassword', {
+      value: this.password,
+      writable: false,
+      configurable: true,
+      enumerable: false,
+    });
+  }
+
+  @BeforeUpdate()
+  @BeforeInsert()
+  private hashPasswords() {
+    if (this.password) {
+      const loadedPassword = Object.getOwnPropertyDescriptor(
+        this,
+        '#loadedPassword',
+      )?.value;
+      if (this.password !== loadedPassword) {
+        this.password = createHmac('sha256', this.password.normalize()).digest(
+          'hex',
+        );
+      }
+    }
+  }
 
   @Column({ nullable: true })
   @ApiProperty({

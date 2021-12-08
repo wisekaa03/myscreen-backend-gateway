@@ -1,3 +1,4 @@
+import { createHmac } from 'crypto';
 import {
   Injectable,
   Logger,
@@ -69,7 +70,8 @@ export class AuthService {
     }
 
     const valid = user
-      ? await this.userService.validateCredentials(user, login.password)
+      ? createHmac('sha256', login.password.normalize()).digest('hex') ===
+        user.password
       : false;
     if (!valid) {
       throw new UnauthorizedException('Password mismatched', login.password);
