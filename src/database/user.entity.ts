@@ -18,6 +18,7 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  IsDefined,
 } from 'class-validator';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserRole, UserRoleEnum } from './enums/role.enum';
@@ -39,6 +40,7 @@ export class UserEntity {
     format: 'email',
     example: 'foo@bar.baz',
   })
+  @IsDefined()
   @IsEmail()
   email!: string;
 
@@ -115,6 +117,7 @@ export class UserEntity {
     type: UserRole,
     example: UserRoleEnum.Advertiser,
   })
+  @IsDefined()
   @IsEnum(UserRole)
   role!: UserRoleEnum;
 

@@ -2,12 +2,12 @@ import {
   BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   Logger,
+  Patch,
   Post,
-  Put,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -83,16 +83,16 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: AuthResponse,
+    type: UserResponse,
   })
-  async authorization(@Req() { user }: ExpressRequest): Promise<AuthResponse> {
+  async authorization(@Req() { user }: ExpressRequest): Promise<UserResponse> {
     return {
       status: Status.Success,
       data: userEntityToUser(user),
     };
   }
 
-  @Put('/')
+  @Patch('/')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
@@ -140,9 +140,9 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'Успешный ответ',
-    type: AuthResponse,
+    type: UserResponse,
   })
-  async register(@Body() body: RegisterRequest): Promise<AuthResponse> {
+  async register(@Body() body: RegisterRequest): Promise<UserResponse> {
     return this.authService.register(body);
   }
 
@@ -154,13 +154,18 @@ export class AuthController {
     type: RefreshTokenResponse,
   })
   async refresh(
-    @Req() req: ExpressRequest,
-    @Body() body: RefreshTokenRequest,
+    @Body() { refresh_token }: RefreshTokenRequest,
   ): Promise<RefreshTokenResponse> {
-    // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
-    const fingerprint = req?.hostname;
+    if (!refresh_token) {
+      throw new UnauthorizedException('Token malformed');
+    }
 
-    return this.authService.refresh(body, fingerprint);
+    return {
+      status: Status.Success,
+      token: await this.authService.createAccessTokenFromRefreshToken(
+        refresh_token,
+      ),
+    };
   }
 
   @Post('/email-verify')
@@ -190,9 +195,17 @@ export class AuthController {
     type: SuccessResponse,
   })
   async resetPasswordInvitation(
-    @Body() body: ResetPasswordInvitationRequest,
+    @Body() { email }: ResetPasswordInvitationRequest,
   ): Promise<SuccessResponse> {
-    return this.authService.forgotPasswordInvitation(body);
+    if (!email) {
+      throw new UnauthorizedException();
+    }
+
+    await this.userService.forgotPasswordInvitation(email);
+
+    return {
+      status: Status.Success,
+    };
   }
 
   @Post('/reset-password-verify')
@@ -206,12 +219,16 @@ export class AuthController {
     type: SuccessResponse,
   })
   async resetPasswordVerify(
-    @Body() body: ResetPasswordVerifyRequest,
+    @Body() { verify_code, password }: ResetPasswordVerifyRequest,
   ): Promise<SuccessResponse> {
-    return this.authService.forgotPasswordVerify(body);
+    await this.userService.forgotPasswordVerify(verify_code, password);
+
+    return {
+      status: Status.Success,
+    };
   }
 
-  @Delete('/disable')
+  @Patch('/disable')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({

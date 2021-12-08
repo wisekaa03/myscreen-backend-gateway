@@ -7,8 +7,7 @@ import {
   Logger,
   Param,
   ParseUUIDPipe,
-  Post,
-  Put,
+  Patch,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -108,7 +107,7 @@ export class UserController {
     };
   }
 
-  @Put('/:userId')
+  @Patch('/:userId')
   @ApiOperation({
     operationId: 'post_user__userId_',
     summary: 'Изменение информации о пользователе (только администратор)',
@@ -133,7 +132,7 @@ export class UserController {
     };
   }
 
-  @Delete('/disable/:userId')
+  @Patch('/disable/:userId')
   @ApiOperation({
     operationId: 'disable__userId_',
     summary: 'Скрытие аккаунта пользователя (только администратор)',
@@ -158,7 +157,7 @@ export class UserController {
     };
   }
 
-  @Post('/enable/:userId')
+  @Patch('/enable/:userId')
   @ApiOperation({
     operationId: 'enable__userId_',
     summary: 'Открытие аккаунта пользователя (только администратор)',

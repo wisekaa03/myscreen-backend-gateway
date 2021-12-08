@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/dto/status.enum';
-import { UserEntity } from '@/database/user.entity';
 import { User } from '../user.dto';
 
 export class UsersResponse {
@@ -13,7 +12,7 @@ export class UsersResponse {
   status!: Status;
 
   @ApiProperty({ description: 'Пользователи', type: [User] })
-  data!: Partial<User>[];
+  data!: User[];
 }
 
 export class UserResponse {
@@ -24,6 +23,10 @@ export class UserResponse {
   })
   status!: Status;
 
-  @ApiProperty()
-  data!: Partial<UserEntity>;
+  @ApiProperty({
+    description: 'Папки',
+    title: 'FolderResponse',
+    type: User,
+  })
+  data!: User;
 }

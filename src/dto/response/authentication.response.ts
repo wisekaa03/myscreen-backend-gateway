@@ -16,7 +16,6 @@ export class AuthenticationPayload {
   @ApiProperty({
     description: 'Refresh токен, используемый для запросов /api/v2/refresh',
     example: 'exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx',
-    required: false,
   })
   refresh_token?: string;
 }

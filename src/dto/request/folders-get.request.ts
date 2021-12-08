@@ -10,6 +10,7 @@ export class FoldersGetRequest {
     description: 'Запрос',
     title: 'FolderRequest',
     type: FolderRequest,
+    required: false,
   })
   @ValidateNested()
   @Type(() => FolderRequest)
@@ -17,7 +18,7 @@ export class FoldersGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    title: 'LimitRequest<Folder>',
+    title: 'LimitRequest',
     type: LimitRequest,
     required: false,
   })

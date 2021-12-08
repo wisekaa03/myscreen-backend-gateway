@@ -9,11 +9,14 @@ import {
   Status,
   LoginRequest,
   UserUpdateRequest,
+  UserResponse,
+  SuccessResponse,
+  RefreshTokenResponse,
 } from '@/dto';
 import { UserRoleEnum } from '@/database/enums/role.enum';
+import { UserEntity } from '@/database/user.entity';
 import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
-import { UserEntity } from '../src/database/user.entity';
 import { generateMailToken } from '@/shared/mail-token';
 
 const registerRequest: RegisterRequest = {
@@ -65,8 +68,8 @@ describe('Backend API (e2e)', () => {
 
   let user: UserEntity | undefined;
   let verifyToken: string;
-
   let token = '';
+  let refreshToken = '';
   let userId = '';
 
   /**
@@ -79,9 +82,11 @@ describe('Backend API (e2e)', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(201)
-      .then(({ body }: { body: AuthResponse }) => {
-        token = body.payload?.token ?? '';
-        userId = body.data.id;
+      .then(({ body }: { body: UserResponse }) => {
+        expect(body.data?.id).toBeDefined();
+        if (body.data.id) {
+          userId = body.data.id;
+        }
       }));
 
   test('POST /auth/login [email пока не подтвержден] (Авторизация пользователя)', async () =>
@@ -92,6 +97,9 @@ describe('Backend API (e2e)', () => {
       .expect('Content-Type', /json/)
       .expect(401));
 
+  /**
+   * Регистрация пользователя опять с теми же самыми параметрами
+   */
   test('POST /auth/register [опять, с теми же самыми параметрами] (Регистрация пользователя)', async () =>
     request
       .post('/auth/register')
@@ -99,6 +107,17 @@ describe('Backend API (e2e)', () => {
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(412));
+
+  /**
+   * Регистрация пользователя опять
+   */
+  test('POST /auth/register [email изменен, пароль изменен] (Регистрация пользователя)', async () =>
+    request
+      .post('/auth/register')
+      .send({ ...registerRequest, email: '', password: '' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400));
 
   /**
    * Подтвердить email пользователя
@@ -113,27 +132,18 @@ describe('Backend API (e2e)', () => {
         .send({ verify_email: verifyToken })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(201);
+        .expect(201)
+        .then(({ body }: { body: SuccessResponse }) => {
+          expect(body.status).toBe(Status.Success);
+        });
     }
 
     return expect(false).toEqual(true);
   });
 
   /**
-   * Авторизация пользователя
+   * Авторизация пользователя с пустым паролем
    */
-  test('POST /auth/login [success] (Авторизация пользователя)', async () =>
-    request
-      .post('/auth/login')
-      .send(loginRequest)
-      .set('Accept', 'application/json')
-      .expect('Content-Type', /json/)
-      .expect(201)
-      .then(({ body }: { body: AuthResponse }) => {
-        token = body.payload?.token ?? '';
-        userId = body.data.id;
-      }));
-
   test('POST /auth/login [с пустым паролем] (Авторизация пользователя)', async () =>
     request
       .post('/auth/login')
@@ -167,22 +177,123 @@ describe('Backend API (e2e)', () => {
       .expect(401));
 
   /**
+   * Авторизация пользователя [success]
+   */
+  test('POST /auth/login [success] (Авторизация пользователя)', async () =>
+    request
+      .post('/auth/login')
+      .send(loginRequest)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(201)
+      .then(({ body }: { body: AuthResponse }) => {
+        expect(body.payload?.type).toBe('bearer');
+        expect(body.data?.id).toBe(userId);
+        expect(body.payload?.token).toBeDefined();
+        expect(body.payload?.refresh_token).toBeDefined();
+        token = body.payload?.token ?? '';
+        refreshToken = body.payload?.refresh_token ?? '';
+      }));
+
+  /**
    * Изменение аккаунта пользователя
    */
-  test('PUT /auth (Изменение аккаунта пользователя)', async () =>
+  test('PATCH /auth (Изменение аккаунта пользователя)', async () =>
     request
-      .put('/auth')
+      .patch('/auth')
       .auth(token, { type: 'bearer' })
       .send(updateUser)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200));
+      .expect(200)
+      .then(({ body }: { body: UserResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.data.id).toBe(userId);
+      }));
+  // TODO: проверить изменение пользователя
 
-  // TODO: GET /auth - Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию
-  // TODO: POST /auth/refresh - Обновление токена
+  /**
+   * Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию
+   */
+  test('GET /auth (Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию)', async () =>
+    request
+      .get('/auth')
+      .auth(token, { type: 'bearer' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: UserResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.data.id).toBe(userId);
+      }));
+
+  /**
+   * Обновление токена
+   */
+  test('POST /auth/refresh [неправильный refresh_token] (Обновление токена)', async () =>
+    request
+      .post('/auth/refresh')
+      .send({ refresh_token: 'фывфвафавыаы' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(403));
+
+  test('POST /auth/refresh [отсутствие refresh_token] (Обновление токена)', async () =>
+    request
+      .post('/auth/refresh')
+      .send({})
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(401));
+
+  test('POST /auth/refresh [success] (Обновление токена)', async () =>
+    request
+      .post('/auth/refresh')
+      .send({ refresh_token: refreshToken })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(201)
+      .then(({ body }: { body: RefreshTokenResponse }) => {
+        expect(body.token).toBeDefined();
+        token = body.token ?? '';
+      }));
+
   // TODO: POST /auth/reset-password - Отправить на почту пользователю разрешение на смену пароля
   // TODO: POST /auth/reset-password-verify - Меняет пароль пользователя по приглашению из почты
-  // TODO: DELETE /auth/disable - Скрытие аккаунта пользователя
+
+  /**
+   * Скрытие аккаунта пользователя - неавторизован
+   */
+  test('PATCH /auth/disable [неавторизован] (Скрытие аккаунта пользователя)', async () =>
+    request
+      .patch('/auth/disable')
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(401));
+
+  /**
+   * Скрытие аккаунта пользователя
+   */
+  test('PATCH /auth/disable [success] (Скрытие аккаунта пользователя)', async () =>
+    request
+      .patch('/auth/disable')
+      .auth(token, { type: 'bearer' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: SuccessResponse }) => {
+        expect(body.status).toBe(Status.Success);
+      }));
+
+  test('Change user Disabled: False (database access)', async () => {
+    if (user) {
+      const userUpdate = await userService.update(user, {
+        disabled: false,
+      });
+      return expect(userUpdate.id).toBe(userId);
+    }
+    return expect(false).toEqual(true);
+  });
 
   // TODO: GET /folder - Получение списка папок
   // TODO: POST /folder/create - Создание новой папки
@@ -193,13 +304,12 @@ describe('Backend API (e2e)', () => {
   /**
    * Administrator
    */
-  test('Change user Disabled: False and Role: Administrator (database access)', async () => {
+  test('Change user Role: Administrator (database access)', async () => {
     if (user) {
-      await userService.update(user, {
-        disabled: false,
+      const userUpdate = await userService.update(user, {
         role: UserRoleEnum.Administrator,
       });
-      return expect(true).toEqual(true);
+      return expect(userUpdate.id).toBe(userId);
     }
     return expect(false).toEqual(true);
   });

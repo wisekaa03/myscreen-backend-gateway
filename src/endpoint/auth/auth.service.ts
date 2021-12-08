@@ -18,13 +18,10 @@ import {
   UserUpdateRequest,
   LoginRequest,
   RegisterRequest,
-  RefreshTokenRequest,
   VerifyEmailRequest,
-  ResetPasswordVerifyRequest,
-  RefreshTokenResponse,
   AuthenticationPayload,
   SuccessResponse,
-  ResetPasswordInvitationRequest,
+  UserResponse,
 } from '@/dto';
 
 import { UserService } from '@/database/user.service';
@@ -89,25 +86,13 @@ export class AuthService {
     };
   }
 
-  async register(create: RegisterRequest): Promise<AuthResponse> {
+  async register(create: RegisterRequest): Promise<UserResponse> {
     const user = await this.userService.create(create);
 
     return {
       status: Status.Success,
       data: userEntityToUser(user),
     };
-  }
-
-  async refresh(
-    body: RefreshTokenRequest,
-    fingerprint?: string,
-  ): Promise<RefreshTokenResponse> {
-    const { token } = await this.createAccessTokenFromRefreshToken(
-      body.refresh_token,
-      fingerprint,
-    );
-
-    return { token };
   }
 
   private buildResponsePayload(
@@ -173,19 +158,14 @@ export class AuthService {
     return { user, token };
   }
 
-  async createAccessTokenFromRefreshToken(
-    refresh: string,
-    fingerprint?: string,
-  ): Promise<{ token: string; user: UserEntity }> {
+  async createAccessTokenFromRefreshToken(refresh: string): Promise<string> {
     const { user } = await this.resolveRefreshToken(refresh);
     if (user.disabled) {
-      this.logger.warn(`User ${user.email} is disabled`);
-      throw new ForbiddenException(`User ${user.email} is disabled`);
+      this.logger.warn(`User '${user.email}' is disabled`);
+      throw new ForbiddenException(`User '${user.email}' is disabled`);
     }
 
-    const token = await this.generateAccessToken(user);
-
-    return { user, token };
+    return this.generateAccessToken(user);
   }
 
   private async decodeRefreshToken(token: string): Promise<MyscreenJwtPayload> {
@@ -203,15 +183,15 @@ export class AuthService {
   private async getUserFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
   ): Promise<UserEntity | undefined> {
-    const subId = payload.sub;
+    const { sub } = payload;
 
-    if (!subId) {
+    if (!sub) {
       throw new ForbiddenException(
         `Token ${JSON.stringify(payload)} malformed`,
       );
     }
 
-    return this.userService.findById(subId);
+    return this.userService.findById(sub);
   }
 
   private async getStoredTokenFromRefreshTokenPayload(
@@ -260,40 +240,5 @@ export class AuthService {
     throw new ForbiddenException(
       `Verify email '${verifyToken}' not equal to our records`,
     );
-  }
-
-  /**
-   * Выдает ссылку email пользователя
-   * @async
-   * @param {ResetPasswordInvitationRequest} body
-   * @returns {SuccessResponse} Результат
-   */
-  async forgotPasswordInvitation(
-    body: ResetPasswordInvitationRequest,
-  ): Promise<SuccessResponse> {
-    await this.userService.forgotPasswordInvitation(body.email);
-
-    return {
-      status: Status.Success,
-    };
-  }
-
-  /**
-   * Меняет пароль пользователя
-   * @async
-   * @param {ResetPasswordVerifyRequest} body
-   * @returns {SuccessResponse} Результат
-   */
-  async forgotPasswordVerify(
-    body: ResetPasswordVerifyRequest,
-  ): Promise<SuccessResponse> {
-    await this.userService.forgotPasswordVerify(
-      body.verify_code,
-      body.password,
-    );
-
-    return {
-      status: Status.Success,
-    };
   }
 }

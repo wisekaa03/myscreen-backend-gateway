@@ -16,9 +16,7 @@ export class FoldersGetResponse {
 
   @ApiProperty({
     description: 'Папки',
-    title: 'Folder',
     type: [FolderResponse],
-    isArray: true,
   })
   data!: FolderResponse[];
 }

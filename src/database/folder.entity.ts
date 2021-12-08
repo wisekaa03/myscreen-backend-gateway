@@ -29,7 +29,6 @@ export class FolderEntity {
   @ApiProperty({
     description: 'Идентификатор файла',
     format: 'uuid',
-    required: false,
   })
   @IsUUID()
   id?: string;
@@ -38,7 +37,6 @@ export class FolderEntity {
   @ApiProperty({
     description: 'Наименование папки',
     example: 'bar',
-    required: false,
   })
   @IsDefined()
   @IsString()

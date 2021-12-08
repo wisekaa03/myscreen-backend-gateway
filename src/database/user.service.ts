@@ -132,7 +132,13 @@ export class UserService {
     return this.userRepository.save(this.userRepository.create(user));
   }
 
-  async forgotPasswordInvitation(email: string): Promise<void> {
+  /**
+   * Выдает ссылку на email пользователя
+   * @async
+   * @param {string} email
+   * @returns {any} Результат
+   */
+  async forgotPasswordInvitation(email: string): Promise<any> {
     const user = await this.userRepository.findOne({ email });
 
     if (!user) {
@@ -144,13 +150,20 @@ export class UserService {
     const verifyToken = generateMailToken(email, user.forgotConfirmKey);
     const forgotPasswordUrl = `${this.frontendUrl}/reset-password-verify?key=${verifyToken}`;
 
-    this.mailService.forgotPassword(email, forgotPasswordUrl);
+    return this.mailService.forgotPassword(email, forgotPasswordUrl);
   }
 
+  /**
+   * Меняет пароль пользователя
+   * @async
+   * @param {string} forgotPasswordToken
+   * @param {string} password
+   * @returns {SuccessResponse} Результат
+   */
   async forgotPasswordVerify(
     forgotPasswordToken: string,
     password: string,
-  ): Promise<void> {
+  ): Promise<UserEntity> {
     const [email, forgotPassword] = decodeMailToken(forgotPasswordToken);
 
     const user = await this.userRepository.findOne({ email });
@@ -161,9 +174,8 @@ export class UserService {
     if (forgotPassword === user.forgotConfirmKey) {
       user.password = await hash(password, 7);
       user.forgotConfirmKey = null;
-      await this.userRepository.save(user);
 
-      return;
+      return this.userRepository.save(user);
     }
 
     throw new BadRequestException(
@@ -172,7 +184,7 @@ export class UserService {
     );
   }
 
-  async findAll(includeDisabled: boolean): Promise<Partial<UserEntity>[]> {
+  async findAll(includeDisabled: boolean): Promise<UserEntity[]> {
     const where: FindConditions<UserEntity> = {};
     if (includeDisabled) {
       where.disabled = false;

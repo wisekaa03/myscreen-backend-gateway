@@ -10,8 +10,8 @@ import {
   Param,
   NotFoundException,
   ParseUUIDPipe,
-  Put,
   Delete,
+  Patch,
 } from '@nestjs/common';
 
 import type { Request as ExpressRequest } from 'express';
@@ -178,7 +178,7 @@ export class FolderController {
     };
   }
 
-  @Put('/:folderId')
+  @Patch('/:folderId')
   @ApiOperation({
     operationId: 'update_folder',
     summary: 'Изменение информации о папке',

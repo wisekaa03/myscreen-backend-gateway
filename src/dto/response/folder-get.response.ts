@@ -11,12 +11,9 @@ export class FoldersGetResponse {
   })
   status!: Status.Success;
 
-  @ApiProperty({ description: 'Количество папок', example: 1 })
-  count!: number;
-
   @ApiProperty({
     description: 'Папки',
-    title: 'Folder',
+    title: 'FolderResponse',
     type: FolderResponse,
     isArray: true,
   })
