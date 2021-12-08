@@ -12,6 +12,7 @@ import {
   UserResponse,
   SuccessResponse,
   RefreshTokenResponse,
+  FoldersGetResponse,
 } from '@/dto';
 import { UserRoleEnum } from '@/database/enums/role.enum';
 import { UserEntity } from '@/database/user.entity';
@@ -228,7 +229,7 @@ describe('Backend API (e2e)', () => {
       }));
 
   /**
-   * Обновление токена
+   * Обновление токена [неправильный refresh_token]
    */
   test('POST /auth/refresh [неправильный refresh_token] (Обновление токена)', async () =>
     request
@@ -238,6 +239,9 @@ describe('Backend API (e2e)', () => {
       .expect('Content-Type', /json/)
       .expect(403));
 
+  /**
+   * Обновление токена [отсутствие refresh_token]
+   */
   test('POST /auth/refresh [отсутствие refresh_token] (Обновление токена)', async () =>
     request
       .post('/auth/refresh')
@@ -285,6 +289,9 @@ describe('Backend API (e2e)', () => {
         expect(body.status).toBe(Status.Success);
       }));
 
+  /**
+   * Изменение через базу disabled: false
+   */
   test('Change user Disabled: False (database access)', async () => {
     if (user) {
       const userUpdate = await userService.update(user, {
@@ -295,10 +302,52 @@ describe('Backend API (e2e)', () => {
     return expect(false).toEqual(true);
   });
 
-  // TODO: GET /folder - Получение списка папок
+  /**
+   * Получение списка папок [ scope: { limit: 0 } ]
+   */
+  test('POST /folder [ scope: { limit: 0 } }] (Получение списка папок)', async () =>
+    request
+      .post('/folder')
+      .auth(token, { type: 'bearer' })
+      .send({ where: {}, scope: { limit: 0 } })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(201)
+      .then(({ body }: { body: FoldersGetResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.count).toBe(0);
+      }));
+
   // TODO: POST /folder/create - Создание новой папки
+
+  /**
+   * Получение списка папок [{ where: { id: '' }, scope: { limit: 0 } }]
+   */
+  test("POST /folder [{ where: { id: '' }, scope: { limit: 0 } }] (Получение списка папок)", async () =>
+    request
+      .post('/folder')
+      .auth(token, { type: 'bearer' })
+      .send({ where: { id: '' }, scope: { limit: 0 } })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(500));
+
+  /**
+   * Получение списка папок
+   */
+  test('POST /folder [success] (Получение списка папок)', async () =>
+    request
+      .post('/folder')
+      .auth(token, { type: 'bearer' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(201)
+      .then(({ body }: { body: FoldersGetResponse }) => {
+        expect(body.status).toBe(Status.Success);
+      }));
+
+  // TODO: PATCH /folder/{folderId} - Изменение информации о папке
   // TODO: GET /folder/{folderId} - Получение информации о папке
-  // TODO: PUT /folder/{folderId} - Изменение информации о папке
   // TODO: DELETE /folder/{folderId} - Удаление папки
 
   /**
