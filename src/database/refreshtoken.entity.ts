@@ -21,7 +21,7 @@ export class RefreshTokenEntity {
   })
   user!: UserEntity;
 
-  @Column()
+  @Column({ type: 'boolean' })
   isRevoked!: boolean;
 
   @Column({ type: 'timestamp', default: () => 'now()' })

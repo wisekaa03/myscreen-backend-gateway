@@ -16,7 +16,7 @@ export class LimitRequest<T> {
   @Min(5)
   @Max(100)
   @IsOptional()
-  limit!: number;
+  limit?: number;
 
   @ApiProperty({
     description: 'Страница результатов',
@@ -26,7 +26,7 @@ export class LimitRequest<T> {
   @Min(1)
   @Max(100)
   @IsOptional()
-  page!: number;
+  page?: number;
 
   @ApiProperty({
     description: 'Порядок результатов',
@@ -36,5 +36,5 @@ export class LimitRequest<T> {
   })
   @IsOptional()
   @Allow()
-  order!: OrderRequest<T>;
+  order?: OrderRequest<T>;
 }

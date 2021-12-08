@@ -12,6 +12,7 @@ import {
   ParseUUIDPipe,
   Delete,
   Patch,
+  HttpCode,
 } from '@nestjs/common';
 
 import type { Request as ExpressRequest } from 'express';
@@ -74,12 +75,13 @@ export class FolderController {
   constructor(private readonly folderService: FolderService) {}
 
   @Post('/')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'get_folders',
     summary: 'Получение списка папок',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: FoldersGetResponse,
   })
@@ -87,6 +89,10 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() body: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
+    if (body?.where?.id) {
+      throw new BadRequestException();
+    }
+
     const [data, count] = await this.folderService.findFolders({
       take: body.scope?.limit,
       skip:
@@ -108,6 +114,7 @@ export class FolderController {
   }
 
   @Post('/create')
+  @HttpCode(201)
   @ApiOperation({
     operationId: 'create_folder',
     summary: 'Создание новой папки',
@@ -151,6 +158,7 @@ export class FolderController {
   }
 
   @Get('/:folderId')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'get_folder',
     summary: 'Получение информации о папке',
@@ -179,6 +187,7 @@ export class FolderController {
   }
 
   @Patch('/:folderId')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'update_folder',
     summary: 'Изменение информации о папке',
@@ -208,12 +217,13 @@ export class FolderController {
   }
 
   @Delete('/:folderId')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'delete_folder',
     summary: 'Удаление папки',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })

@@ -1,3 +1,4 @@
+import { createHmac } from 'crypto';
 import {
   BadGatewayException,
   BadRequestException,
@@ -13,7 +14,6 @@ import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { MailService } from '@/mail/mail.service';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
-import { UserRoleEnum } from './enums/role.enum';
 
 @Injectable()
 export class UserService {
@@ -62,8 +62,8 @@ export class UserService {
     return this.userRepository.delete(user.id);
   }
 
-  async create(create: DeepPartial<UserEntity>): Promise<UserEntity> {
-    const { email, password, name, surname, middleName, role } = create;
+  async create(create: Partial<UserEntity>): Promise<UserEntity> {
+    const { email, password, role } = create;
     if (!email) {
       throw new BadRequestException();
     }
@@ -77,20 +77,15 @@ export class UserService {
     const existingUser = await this.userRepository.findOne({
       email,
     });
-
     if (existingUser) {
       throw new PreconditionFailedException('User exists', create.email);
     }
 
     const user: DeepPartial<UserEntity> = {
-      email,
-      password,
+      ...create,
       disabled: false,
-      name,
-      surname,
-      middleName,
+      password: createHmac('sha256', password.normalize()).digest('hex'),
       emailConfirmKey: genKey(),
-      role,
       verified: false,
       isDemoUser: false,
       countUsedSpace: 0,
@@ -98,16 +93,15 @@ export class UserService {
     const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
-    const savedUser =
-      process.env.NODE_END !== 'production'
-        ? await Promise.all([
-            this.userRepository.save(this.userRepository.create(user)),
-          ]).then(([saved]) => saved)
-        : await Promise.all([
-            this.userRepository.save(this.userRepository.create(user)),
-            this.mailService.sendWelcomeMessage(email),
-            this.mailService.sendVerificationCode(email, confirmUrl),
-          ]).then(([saved]) => saved);
+    if (process.env.NODE_END !== 'production') {
+      return this.userRepository.save(this.userRepository.create(user));
+    }
+
+    const savedUser = await Promise.all([
+      this.userRepository.save(this.userRepository.create(user)),
+      this.mailService.sendWelcomeMessage(email),
+      this.mailService.sendVerificationCode(email, confirmUrl),
+    ]).then(([saved]) => saved);
 
     return savedUser;
   }
@@ -122,14 +116,13 @@ export class UserService {
    */
   async createTest(create: Partial<UserEntity>): Promise<UserEntity> {
     const user: DeepPartial<UserEntity> = {
-      email: create.email,
-      password: create.password,
+      ...create,
       disabled: false,
-      name: create.name,
-      surname: create.surname,
-      middleName: create.middleName,
+      password: createHmac('sha256', create.password?.normalize() ?? '').digest(
+        'hex',
+      ),
+
       emailConfirmKey: genKey(),
-      role: create.role ?? UserRoleEnum.Advertiser,
       verified: false,
       isDemoUser: false,
       countUsedSpace: 0,
@@ -145,7 +138,7 @@ export class UserService {
    * @returns {any} Результат
    */
   async forgotPasswordInvitation(email: string): Promise<any> {
-    const user = await this.userRepository.findOne({ email });
+    const user = await this.userRepository.findOne({ email, disabled: false });
 
     if (!user) {
       throw new BadGatewayException('User not exists', email);
@@ -155,6 +148,10 @@ export class UserService {
 
     const verifyToken = generateMailToken(email, user.forgotConfirmKey);
     const forgotPasswordUrl = `${this.frontendUrl}/reset-password-verify?key=${verifyToken}`;
+
+    if (process.env.NODE_ENV !== 'production') {
+      return Promise.resolve();
+    }
 
     return this.mailService.forgotPassword(email, forgotPasswordUrl);
   }
@@ -201,15 +198,7 @@ export class UserService {
   async findByEmail(
     email: string,
     disabled = false,
-    includePassword = false,
   ): Promise<UserEntity | undefined> {
-    if (includePassword) {
-      return this.userRepository.findOne({
-        email,
-        disabled,
-      });
-    }
-
     return this.userRepository.findOne({
       email,
       disabled,
@@ -219,18 +208,13 @@ export class UserService {
   async findById(
     id: string,
     disabled = false,
-    includePassword = false,
   ): Promise<UserEntity | undefined> {
-    if (includePassword) {
-      return this.userRepository.findOne({
-        id,
-        disabled,
-      });
-    }
-
     return this.userRepository.findOne({
       id,
       disabled,
     });
   }
+
+  validateCredentials = (user: UserEntity, password: string): boolean =>
+    createHmac('sha256', password.normalize()).digest('hex') === user.password;
 }

@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Logger,
   Param,
   ParseUUIDPipe,
@@ -108,6 +109,7 @@ export class UserController {
   }
 
   @Patch('/:userId')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'post_user__userId_',
     summary: 'Изменение информации о пользователе (только администратор)',
@@ -128,11 +130,12 @@ export class UserController {
 
     return {
       status: Status.Success,
-      data: await this.authService.update(user, update),
+      data: await this.userService.update(user, update),
     };
   }
 
   @Patch('/disable/:userId')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'disable__userId_',
     summary: 'Скрытие аккаунта пользователя (только администратор)',
@@ -158,12 +161,13 @@ export class UserController {
   }
 
   @Patch('/enable/:userId')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'enable__userId_',
     summary: 'Открытие аккаунта пользователя (только администратор)',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
@@ -183,6 +187,7 @@ export class UserController {
   }
 
   @Delete('/delete/:userId')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'delete__userId_',
     summary: 'Удаление аккаунта пользователя (только администратор)',

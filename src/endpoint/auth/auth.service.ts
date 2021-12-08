@@ -1,4 +1,3 @@
-import { createHmac } from 'crypto';
 import {
   Injectable,
   Logger,
@@ -16,13 +15,10 @@ import {
   Status,
   userEntityToUser,
   AuthResponse,
-  UserUpdateRequest,
   LoginRequest,
-  RegisterRequest,
   VerifyEmailRequest,
   AuthenticationPayload,
   SuccessResponse,
-  UserResponse,
 } from '@/dto';
 
 import { UserService } from '@/database/user.service';
@@ -34,7 +30,7 @@ import { decodeMailToken } from '@/shared/mail-token';
 
 @Injectable()
 export class AuthService {
-  logger = new Logger(AuthService.name);
+  private logger = new Logger(AuthService.name);
 
   constructor(
     private readonly userService: UserService,
@@ -43,38 +39,30 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async update(
-    user: UserEntity,
-    update: UserUpdateRequest,
-  ): Promise<UserEntity> {
-    return this.userService.update(user, update);
-  }
-
   async login(
-    login: LoginRequest,
+    { email, password }: LoginRequest,
     fingerprint?: string,
   ): Promise<AuthResponse> {
-    if (!login.email || !login.password) {
-      throw new UnauthorizedException('Password mismatched', login.password);
+    if (!email || !password) {
+      throw new UnauthorizedException('Password mismatched', password);
     }
 
-    const user = await this.userService.findByEmail(login.email, false, true);
+    const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Password mismatched', login.password);
+      throw new UnauthorizedException('Password mismatched', password);
     }
     if (!user.verified) {
       throw new UnauthorizedException(
         'You have to respond to our email',
-        login.email,
+        email,
       );
     }
 
-    const valid = user
-      ? createHmac('sha256', login.password.normalize()).digest('hex') ===
-        user.password
+    const valid = user.password
+      ? this.userService.validateCredentials(user, password)
       : false;
     if (!valid) {
-      throw new UnauthorizedException('Password mismatched', login.password);
+      throw new UnauthorizedException('Password mismatched', password);
     }
 
     const token = await this.generateAccessToken(user);
@@ -84,15 +72,6 @@ export class AuthService {
     return {
       status: Status.Success,
       payload,
-      data: userEntityToUser(user),
-    };
-  }
-
-  async register(create: RegisterRequest): Promise<UserResponse> {
-    const user = await this.userService.create(create);
-
-    return {
-      status: Status.Success,
       data: userEntityToUser(user),
     };
   }
@@ -223,7 +202,6 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException();
     }
-
     if (user.verified) {
       throw new BadRequestException();
     }

@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Logger,
   Patch,
   Post,
@@ -73,6 +74,7 @@ export class AuthController {
   ) {}
 
   @Get('/')
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
@@ -93,6 +95,7 @@ export class AuthController {
   }
 
   @Patch('/')
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
@@ -100,7 +103,7 @@ export class AuthController {
     summary: 'Изменение аккаунта пользователя',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: UserResponse,
   })
@@ -108,7 +111,8 @@ export class AuthController {
     @Req() { user }: ExpressRequest,
     @Body() update: UserUpdateRequest,
   ): Promise<UserResponse> {
-    const data = await this.authService.update(user, update);
+    const data = await this.userService.update(user, update);
+
     return {
       status: Status.Success,
       data: userEntityToUser(data),
@@ -116,9 +120,10 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(200)
   @ApiOperation({ operationId: 'login', summary: 'Авторизация пользователя' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: AuthResponse,
   })
@@ -133,6 +138,7 @@ export class AuthController {
   }
 
   @Post('register')
+  @HttpCode(201)
   @ApiOperation({
     operationId: 'register',
     summary: 'Регистрация пользователя',
@@ -143,13 +149,19 @@ export class AuthController {
     type: UserResponse,
   })
   async register(@Body() body: RegisterRequest): Promise<UserResponse> {
-    return this.authService.register(body);
+    const user = await this.userService.create(body);
+
+    return {
+      status: Status.Success,
+      data: userEntityToUser(user),
+    };
   }
 
   @Post('/refresh')
+  @HttpCode(200)
   @ApiOperation({ operationId: 'refresh', summary: 'Обновление токена' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: RefreshTokenResponse,
   })
@@ -169,12 +181,13 @@ export class AuthController {
   }
 
   @Post('/email-verify')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'email-verify',
     summary: 'Подтвердить email пользователя',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
@@ -185,12 +198,13 @@ export class AuthController {
   }
 
   @Post('/reset-password')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'reset-password',
     summary: 'Отправить на почту пользователю разрешение на смену пароля',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
@@ -209,12 +223,13 @@ export class AuthController {
   }
 
   @Post('/reset-password-verify')
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'reset-password-verify',
     summary: 'Меняет пароль пользователя по приглашению из почты',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
@@ -229,6 +244,7 @@ export class AuthController {
   }
 
   @Patch('/disable')
+  @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
