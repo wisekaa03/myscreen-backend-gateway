@@ -23,6 +23,7 @@ import { FolderEntity } from '@/database/folder.entity';
 import { EditorEntity } from '@/database/editor.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { VideoType } from './enums/video-type.enum';
+import { UserEntity } from './user.entity';
 
 export class MediaMeta {
   @ApiProperty({
@@ -94,6 +95,10 @@ export class MediaEntity {
   @ValidateNested()
   @Type(() => MediaMeta)
   meta?: MediaMeta;
+
+  @ManyToOne(() => UserEntity, (user) => user.id)
+  @JoinColumn({ name: 'userId' })
+  user!: UserEntity;
 
   @ManyToOne(() => FolderEntity, (folder) => folder.id)
   @JoinColumn({ name: 'folderId' })

@@ -3,18 +3,25 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   Logger,
   Post,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 
+import { diskStorage } from 'multer';
 import {
   BadRequestError,
   UnauthorizedError,
@@ -23,9 +30,12 @@ import {
   ForbiddenError,
   InternalServerError,
   Status,
+  SuccessResponse,
+  MediaUploadFileRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { MediaService } from '@/database/media.service';
+import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 
 @ApiTags('media')
 @ApiResponse({
@@ -57,12 +67,13 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post('/')
+  @HttpCode(200)
   @ApiOperation({
-    operationId: 'media',
+    operationId: 'media_get',
     summary: 'Получение списка файлов',
   })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Успешный ответ',
     type: MediaGetFilesResponse,
   })
@@ -71,15 +82,10 @@ export class MediaController {
     @Body() body: MediaGetFilesRequest,
   ): Promise<MediaGetFilesResponse> {
     const [data, count] = await this.mediaService.getMediaFiles({
-      take: body.scope?.limit ?? undefined,
-      skip:
-        body.scope?.page && body.scope.page > 0
-          ? (body.scope.limit ?? 0) * (body.scope.page - 1)
-          : undefined,
-      order: body.scope?.order ?? undefined,
+      ...paginationQueryToConfig(body.scope),
       where: {
         user,
-        // ...body.where,
+        ...body.where,
       },
     });
 
@@ -87,6 +93,49 @@ export class MediaController {
       status: Status.Success,
       count,
       data,
+    };
+  }
+
+  @Post('/upload')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'media_upload',
+    summary: 'Загрузка файлов',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './upload',
+      }),
+    }),
+  )
+  async uploadMedia(
+    @Req() { user }: ExpressRequest,
+    @Body() body: MediaUploadFileRequest,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<SuccessResponse> {
+    this.logger.debug(file);
+
+    return {
+      status: Status.Success,
     };
   }
 }

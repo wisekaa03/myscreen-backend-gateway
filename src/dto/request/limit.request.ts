@@ -7,7 +7,7 @@ export type OrderRequest<T> = {
   [P in keyof T]?: OrderDirection;
 };
 
-export class LimitRequest<T> {
+export class LimitRequest<T = any> {
   @ApiProperty({
     description: 'Лимит строк результатов',
     example: 20,

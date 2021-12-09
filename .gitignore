@@ -109,3 +109,4 @@ dist
 
 .env
 docker/postgres
+/upload

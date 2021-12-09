@@ -1,3 +1,4 @@
+import type { Request as ExpressRequest } from 'express';
 import {
   Controller,
   Logger,
@@ -14,8 +15,6 @@ import {
   Patch,
   HttpCode,
 } from '@nestjs/common';
-
-import type { Request as ExpressRequest } from 'express';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -39,6 +38,7 @@ import {
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { FolderService } from '@/database/folder.service';
+import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 
 @ApiTags('folder')
 @ApiResponse({
@@ -94,12 +94,7 @@ export class FolderController {
     }
 
     const [data, count] = await this.folderService.findFolders({
-      take: body.scope?.limit,
-      skip:
-        body.scope?.page && body.scope.page > 0
-          ? (body.scope.limit ?? 0) * (body.scope.page - 1)
-          : undefined,
-      order: body.scope?.order ?? undefined,
+      ...paginationQueryToConfig(body.scope),
       where: {
         user,
         ...body.where,

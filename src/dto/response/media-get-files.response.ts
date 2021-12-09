@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/dto/status.enum';
-import { Media } from '@/dto/media.dto';
+import { MediaResponse } from '@/dto/response';
 
 export class MediaGetFilesResponse {
   @ApiProperty({
@@ -17,8 +17,8 @@ export class MediaGetFilesResponse {
   @ApiProperty({
     description: 'Файлы',
     title: 'Media',
-    type: Media,
+    type: MediaResponse,
     isArray: true,
   })
-  data!: Media[];
+  data!: MediaResponse[];
 }
