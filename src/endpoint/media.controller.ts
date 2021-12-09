@@ -120,13 +120,7 @@ export class MediaController {
       },
     },
   })
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './upload',
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('file'))
   async uploadMedia(
     @Req() { user }: ExpressRequest,
     @Body() body: MediaUploadFileRequest,

@@ -2,6 +2,8 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { MulterModule } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 import { DatabaseModule } from '@/database/database.module';
 
@@ -33,6 +35,15 @@ import { LogController } from './log.controller';
         signOptions: {
           expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES'),
         },
+      }),
+      inject: [ConfigService],
+    }),
+
+    MulterModule.registerAsync({
+      useFactory: async (configService: ConfigService) => ({
+        storage: diskStorage({
+          destination: configService.get('FILE_UPLOAD', 'upload'),
+        }),
       }),
       inject: [ConfigService],
     }),

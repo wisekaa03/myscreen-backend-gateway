@@ -1,0 +1,11 @@
+ignores: [
+  "@nestjs/schematics",
+  "@nestjs/platform-socket.io",
+  "aws-sdk",
+  "dotenv",
+  "@types/cli-color",
+  "@types/passport",
+  "@types/validator",
+  "ts-node",
+  "depcheck"
+  ]
