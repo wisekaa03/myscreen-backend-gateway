@@ -1,4 +1,4 @@
-import { resolve as pathResolve } from 'path';
+import { resolve as pathResolve } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type {

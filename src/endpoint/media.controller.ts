@@ -2,7 +2,6 @@ import type { Request as ExpressRequest } from 'express';
 import {
   Body,
   Controller,
-  Get,
   HttpCode,
   Logger,
   Post,
@@ -21,7 +20,6 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 
-import { diskStorage } from 'multer';
 import {
   BadRequestError,
   UnauthorizedError,
@@ -123,10 +121,10 @@ export class MediaController {
   @UseInterceptors(FileInterceptor('file'))
   async uploadMedia(
     @Req() { user }: ExpressRequest,
-    @Body() body: MediaUploadFileRequest,
+    @Body() { name, folderId }: MediaUploadFileRequest,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<SuccessResponse> {
-    this.logger.debug(file);
+    this.mediaService.upload(user, name, folderId, file);
 
     return {
       status: Status.Success,

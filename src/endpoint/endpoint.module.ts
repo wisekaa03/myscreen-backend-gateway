@@ -2,9 +2,10 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import { S3Module } from 'nestjs-s3';
 import { MulterModule } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
 
+import { MulterModuleOptionsClass } from '@/shared/multer-module-options-class';
 import { DatabaseModule } from '@/database/database.module';
 
 import { AuthController } from './auth/auth.controller';
@@ -12,7 +13,6 @@ import { AuthService } from './auth/auth.service';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { UserController } from './user.controller';
 import { MediaController } from './media.controller';
-
 import { MonitorController } from './monitors.controller';
 import { VideoController } from './video.controller';
 import { EditorController } from './editor.controller';
@@ -39,13 +39,26 @@ import { LogController } from './log.controller';
       inject: [ConfigService],
     }),
 
-    MulterModule.registerAsync({
+    S3Module.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
-        storage: diskStorage({
-          destination: configService.get('FILE_UPLOAD', 'upload'),
-        }),
+        config: {
+          endpoint: configService.get('AWS_HOST', 'storage.yandexcloud.net'),
+          accessKey: configService.get('AWS_ACCESS_KEY'),
+          secretKey: configService.get('AWS_SECRET_KEY'),
+          region: configService.get('AWS_REGION', 'ru-central1'),
+          apiVersion: '',
+          httpOptions: {
+            timeout: 10000,
+            connectTimeout: 10000,
+          },
+        },
       }),
       inject: [ConfigService],
+    }),
+
+    MulterModule.registerAsync({
+      imports: [S3Module, DatabaseModule],
+      useClass: MulterModuleOptionsClass,
     }),
 
     DatabaseModule,
