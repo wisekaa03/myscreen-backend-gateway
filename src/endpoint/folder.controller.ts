@@ -87,17 +87,13 @@ export class FolderController {
   })
   async getFolders(
     @Req() { user }: ExpressRequest,
-    @Body() body: FoldersGetRequest,
+    @Body() { scope, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
-    if (body?.where?.id) {
-      throw new BadRequestException();
-    }
-
     const [data, count] = await this.folderService.findFolders({
-      ...paginationQueryToConfig(body.scope),
+      ...paginationQueryToConfig(scope),
       where: {
         user,
-        ...body.where,
+        ...where,
       },
     });
 

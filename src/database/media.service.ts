@@ -1,11 +1,13 @@
-import { Injectable, Logger, NotImplementedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindManyOptions } from 'typeorm';
+import { Repository, FindManyOptions, DeepPartial } from 'typeorm';
+import { randomUUID } from 'crypto';
 
-import { MediaEntity } from './media.entity';
+import { MediaEntity, MediaMeta } from './media.entity';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
+import { VideoType } from './enums/video-type.enum';
 
 @Injectable()
 export class MediaService {
@@ -31,52 +33,73 @@ export class MediaService {
     this.mediaRepository.findAndCount(find);
 
   /**
-   * File name
-   * @param {Express.Request} req
-   * @param {Express.Multer.File} file
-   */
-  filename = async (
-    req: Express.Request,
-    file: Express.Multer.File,
-  ): Promise<string> => {
-    // eslint-disable-next-line
-    debugger;
-
-    // TODO:
-    return file.originalname;
-  };
-
-  /**
-   * Content type
-   * @param {Express.Request} req
-   * @param {Express.Multer.File} file
-   */
-  contentType = async (
-    req: Express.Request,
-    file: Express.Multer.File,
-  ): Promise<string> => {
-    const [type] = file.mimetype.split('/');
-
-    return type;
-  };
-
-  /**
    * Upload media files
    * @async
    * @param {UserEntity} user
-   * @param {string} name
    * @param {string} folderId
-   * @param {Express.Multer.File} file
+   * @param {Array<Express.Multer.File>} files
    */
   upload = async (
     user: UserEntity,
-    name: string,
     folderId: string,
-    file: Express.Multer.File,
-  ): Promise<[MediaEntity, number]> => {
-    // eslint-disable-next-line
-    debugger;
+    files: Array<Express.Multer.File>,
+  ): Promise<Array<MediaEntity | undefined>> => {
+    const folder = await this.folderService.findFolder({
+      where: { user, id: folderId },
+    });
+    if (!folder) {
+      throw new BadRequestException(`Folder ${folderId} not found`);
+    }
 
-    throw new NotImplementedException();
+    const filesPromises = files.flatMap(async (file) => {
+      const [type] = file.mimetype.split('/');
+
+      const meta = await this.metaInformation(file);
+
+      const media: DeepPartial<MediaEntity> = {
+        user,
+        folder,
+        originalName: file.originalname,
+        name: file.filename,
+        meta,
+        hash: file.hash,
+        type:
+          Object.values(VideoType).find((t) => t === type) ?? VideoType.Image,
+      };
+
+      return {
+        database: this.mediaRepository.save(this.mediaRepository.create(media)),
+        // TODO
+        s3: randomUUID(),
+      };
+    });
+
+    const errors = [];
+    const returnFiles = await Promise.allSettled(filesPromises)
+      .then((data) =>
+        data.map((result) => {
+          if (result.status === 'fulfilled') {
+            return result.value.database as unknown as MediaEntity;
+          }
+
+          errors.push(result.reason);
+          return undefined;
+        }),
+      )
+      .then((data) => data);
+
+    return returnFiles;
   };
+
+  /**
+   * Meta information and hash
+   * @async
+   * @param {Express.Multer.File} file The file
+   * @return {[MediaMeta, string]} [MediaMeta, hash]
+   */
+  metaInformation = async (file: Express.Multer.File): Promise<MediaMeta> => ({
+    duration: file.media?.format?.duration,
+    filesize: file.size,
+    meta: file.media,
+  });
 }

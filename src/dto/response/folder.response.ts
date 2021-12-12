@@ -8,4 +8,12 @@ export class FolderResponse extends PickType(FolderEntity, [
   'parentFolderId',
   'createdAt',
   'updatedAt',
-]) {}
+]) {
+  id!: string;
+
+  name!: string;
+
+  userId!: string;
+
+  parentFolderId!: string | null;
+}

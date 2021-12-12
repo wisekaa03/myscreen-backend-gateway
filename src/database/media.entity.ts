@@ -10,8 +10,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import type { FfprobeData } from 'media-probe';
 import {
   IsEnum,
+  IsJSON,
   IsNumber,
   IsString,
   IsUUID,
@@ -39,6 +41,12 @@ export class MediaMeta {
   })
   @IsNumber()
   filesize!: number;
+
+  @ApiProperty({
+    description: 'Параметры видео, картинки или аудио',
+  })
+  @IsJSON()
+  meta!: FfprobeData;
 }
 
 @Entity('media')
@@ -116,13 +124,13 @@ export class MediaEntity {
 
   @ManyToMany(() => EditorEntity, (editor) => editor.id, { cascade: true })
   @JoinTable()
-  editors!: EditorEntity[];
+  editors?: EditorEntity[];
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.id, {
     cascade: true,
   })
   @JoinTable()
-  playlists!: PlaylistEntity[];
+  playlists?: PlaylistEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

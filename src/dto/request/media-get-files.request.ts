@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, ValidateNested } from 'class-validator';
+import { IsBoolean, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { MediaEntity } from '@/database/media.entity';
@@ -20,9 +20,10 @@ export class MediaGetFilesRequest {
     title: 'Media',
     required: false,
   })
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => MediaRequest)
-  where?: MediaRequest;
+  where!: MediaRequest;
 
   @ApiProperty({
     description: 'Рамки для запроса',

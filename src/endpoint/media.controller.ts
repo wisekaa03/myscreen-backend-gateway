@@ -1,12 +1,13 @@
 import type { Request as ExpressRequest } from 'express';
 import {
+  BadRequestException,
   Body,
   Controller,
   HttpCode,
   Logger,
   Post,
   Req,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -18,7 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 import {
   BadRequestError,
@@ -32,8 +33,8 @@ import {
   MediaUploadFileRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
-import { MediaService } from '@/database/media.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { MediaService } from '@/database/media.service';
 
 @ApiTags('media')
 @ApiResponse({
@@ -77,13 +78,17 @@ export class MediaController {
   })
   async getMedia(
     @Req() { user }: ExpressRequest,
-    @Body() body: MediaGetFilesRequest,
+    @Body() { where, scope }: MediaGetFilesRequest,
   ): Promise<MediaGetFilesResponse> {
+    if (!where.folderId) {
+      throw new BadRequestException('The folderId must be provided');
+    }
+
     const [data, count] = await this.mediaService.getMediaFiles({
-      ...paginationQueryToConfig(body.scope),
+      ...paginationQueryToConfig(scope),
       where: {
         user,
-        ...body.where,
+        ...where,
       },
     });
 
@@ -109,22 +114,26 @@ export class MediaController {
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['file'],
+      required: ['folderId', 'files'],
       properties: {
-        file: {
+        folderId: {
           type: 'string',
-          format: 'binary',
+          format: 'uuid',
+        },
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
         },
       },
     },
   })
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(FilesInterceptor('files'))
   async uploadMedia(
     @Req() { user }: ExpressRequest,
-    @Body() { name, folderId }: MediaUploadFileRequest,
-    @UploadedFile() file: Express.Multer.File,
+    @Body() { folderId }: MediaUploadFileRequest,
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<SuccessResponse> {
-    this.mediaService.upload(user, name, folderId, file);
+    this.mediaService.upload(user, folderId, files);
 
     return {
       status: Status.Success,

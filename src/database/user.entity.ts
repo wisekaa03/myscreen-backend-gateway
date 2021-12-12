@@ -18,7 +18,9 @@ import {
   MinLength,
   MaxLength,
   Matches,
-  IsDefined,
+  IsNotEmpty,
+  IsISO31661Alpha2,
+  IsPhoneNumber,
 } from 'class-validator';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserRole, UserRoleEnum } from './enums/role.enum';
@@ -40,7 +42,7 @@ export class UserEntity {
     format: 'email',
     example: 'foo@bar.baz',
   })
-  @IsDefined()
+  @IsNotEmpty()
   @IsEmail()
   email!: string;
 
@@ -73,7 +75,6 @@ export class UserEntity {
     maxLength: 30,
     pattern: '/((?=.*d)|(?=.*W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
   })
-  @IsString()
   @MinLength(8, { message: 'password is too short' })
   @MaxLength(30, { message: 'password is too long' })
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
@@ -87,7 +88,7 @@ export class UserEntity {
     example: '+78002000000',
     required: false,
   })
-  @IsString()
+  @IsPhoneNumber()
   phoneNumber?: string;
 
   @Column({ nullable: true })
@@ -97,7 +98,7 @@ export class UserEntity {
 
   @Column({ default: 'RU', nullable: true })
   @ApiProperty({ description: 'Страна', example: 'RU', required: false })
-  @IsString()
+  @IsISO31661Alpha2()
   country?: string;
 
   @Column({ nullable: true })
@@ -116,7 +117,7 @@ export class UserEntity {
     type: UserRole,
     example: UserRoleEnum.Advertiser,
   })
-  @IsDefined()
+  @IsNotEmpty()
   @IsEnum(UserRole)
   role!: UserRoleEnum;
 

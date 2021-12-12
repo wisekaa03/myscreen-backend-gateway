@@ -1,6 +1,6 @@
 /* eslint @typescript-eslint/no-var-requires:0 */
 
-const path = require('path');
+// const path = require('path');
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { jsWithTs: tsjPreset } = require('ts-jest/presets');
 // In the following statement, replace `./tsconfig` with the path to your `tsconfig` file

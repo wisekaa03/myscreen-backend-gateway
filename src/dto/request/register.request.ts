@@ -1,6 +1,6 @@
 import { PickType } from '@nestjs/swagger';
 
-import { IsDefined } from 'class-validator';
+import { IsNotEmpty } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 import { UserRoleEnum } from '@/database/enums/role.enum';
 
@@ -16,12 +16,12 @@ export class RegisterRequest extends PickType(UserEntity, [
   'company',
   'phoneNumber',
 ]) {
-  @IsDefined()
+  @IsNotEmpty()
   email!: string;
 
-  @IsDefined()
+  @IsNotEmpty()
   password!: string;
 
-  @IsDefined()
+  @IsNotEmpty()
   role!: UserRoleEnum;
 }

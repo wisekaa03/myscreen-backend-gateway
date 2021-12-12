@@ -1,6 +1,7 @@
 /* eslint max-len:0 */
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import superAgentRequest from 'supertest';
 
 import {
@@ -13,12 +14,15 @@ import {
   SuccessResponse,
   RefreshTokenResponse,
   FoldersGetResponse,
+  FolderUpdateResponse,
+  MediaGetFilesResponse,
 } from '@/dto';
 import { UserRoleEnum } from '@/database/enums/role.enum';
 import { UserEntity } from '@/database/user.entity';
 import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
 import { generateMailToken } from '@/shared/mail-token';
+import { ExceptionsFilter } from '@/exception/exceptions.filter';
 
 const registerRequest: RegisterRequest = {
   email: 'foo@bar.baz', // 'wisekaa03@gmail.com',
@@ -61,6 +65,19 @@ describe('Backend API (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    const httpAdaper = app.get(HttpAdapterHost);
+    app.useLogger(false);
+    app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        forbidUnknownValues: true,
+        skipUndefinedProperties: true,
+        stopAtFirstError: true,
+      }),
+    );
+
     await app.init();
 
     userService = app.get<UserService>(UserService);
@@ -72,6 +89,10 @@ describe('Backend API (e2e)', () => {
   let token = '';
   let refreshToken = '';
   let userId = '';
+  let parentFolderId = '';
+  let parentFolderId2 = '';
+  let folderId1 = '';
+  let folderId2 = '';
 
   /**
    *
@@ -160,7 +181,7 @@ describe('Backend API (e2e)', () => {
         .send({ email: 'foo@bar.baz' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(400));
 
     test('POST /auth/login [с пустым email] (Авторизация пользователя)', async () =>
       request
@@ -168,7 +189,7 @@ describe('Backend API (e2e)', () => {
         .send({ password: 'Secret~123456' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(400));
 
     test('POST /auth/login [с неправильным паролем] (Авторизация пользователя)', async () =>
       request
@@ -176,7 +197,7 @@ describe('Backend API (e2e)', () => {
         .send({ ...loginRequest, password: 'sss' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(400));
 
     test('POST /auth/login [с неправильным email] (Авторизация пользователя)', async () =>
       request
@@ -184,7 +205,7 @@ describe('Backend API (e2e)', () => {
         .send({ ...loginRequest, email: 'sss' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(400));
 
     /**
      * Авторизация пользователя [success]
@@ -338,10 +359,10 @@ describe('Backend API (e2e)', () => {
 
   /**
    *
-   * Папки (/folders)
+   * Папки (/folder)
    *
    */
-  describe('Папки /folders', () => {
+  describe('Папки /folder', () => {
     /**
      * Получение списка папок [ scope: { limit: 0 } ]
      */
@@ -352,13 +373,89 @@ describe('Backend API (e2e)', () => {
         .send({ where: {}, scope: { limit: 0 } })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: FoldersGetResponse }) => {
+        .expect(400));
+
+    /**
+     * Создание новой папки
+     */
+    test('POST /folder/create [name: "bar"] (Создание новой папки)', async () =>
+      request
+        .post('/folder/create')
+        .auth(token, { type: 'bearer' })
+        .send({ name: 'bar' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: FolderUpdateResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.count).toBe(0);
+          expect(body.data.name).toBe('bar');
+          expect(body.data.parentFolderId).toBe(null);
+          expect(body.data.userId).toBe(userId);
+          parentFolderId = body.data.id;
         }));
 
-    // TODO: POST /folder/create - Создание новой папки
+    test('POST /folder/create [name: "```"] [unsuccess] (Создание новой папки)', async () =>
+      request
+        .post('/folder/create')
+        .auth(token, { type: 'bearer' })
+        .send({ name: '```' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(400));
+
+    test('POST /folder/create [name: "foo"] (Создание новой папки)', async () =>
+      request
+        .post('/folder/create')
+        .auth(token, { type: 'bearer' })
+        .send({ name: 'foo' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: FolderUpdateResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data.name).toBe('foo');
+          expect(body.data.parentFolderId).toBe(null);
+          expect(body.data.userId).toBe(userId);
+          parentFolderId2 = body.data.id;
+        }));
+
+    /**
+     * Создание новой под-папки
+     */
+    test('POST /folder/create [name: "foo", parentFolderId] (Создание новой под-папки)', async () =>
+      request
+        .post('/folder/create')
+        .auth(token, { type: 'bearer' })
+        .send({ name: 'foo', parentFolderId })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: FolderUpdateResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data.name).toBe('foo');
+          expect(body.data.parentFolderId).toBe(parentFolderId);
+          expect(body.data.userId).toBe(userId);
+          folderId1 = body.data.id;
+        }));
+
+    /**
+     * Создание новой под-папки
+     */
+    test('POST /folder/create [name: "baz", parentFolderId] (Создание новой под-папки)', async () =>
+      request
+        .post('/folder/create')
+        .auth(token, { type: 'bearer' })
+        .send({ name: 'baz', parentFolderId: parentFolderId2 })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: FolderUpdateResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data.name).toBe('baz');
+          expect(body.data.parentFolderId).toBe(parentFolderId2);
+          expect(body.data.userId).toBe(userId);
+          folderId2 = body.data.id;
+        }));
 
     /**
      * Получение списка папок [{ where: { id: '' }, scope: { limit: 0 } }]
@@ -388,11 +485,49 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: FoldersGetResponse }) => {
           expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
         }));
 
     // TODO: PATCH /folder/{folderId} - Изменение информации о папке
     // TODO: GET /folder/{folderId} - Получение информации о папке
     // TODO: DELETE /folder/{folderId} - Удаление папки
+  });
+
+  /**
+   *
+   * Медиа
+   *
+   */
+  describe('Медиа /media', () => {
+    /**
+     * Получение списка файлов (неуспешно)
+     */
+    test('POST /media [unsuccess] (Получение списка файлов)', async () =>
+      request
+        .post('/media')
+        .auth(token, { type: 'bearer' })
+        .send({ where: {} })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(400));
+
+    /**
+     * Получение списка файлов
+     */
+    test('POST /media (Получение списка файлов)', async () =>
+      request
+        .post('/media')
+        .auth(token, { type: 'bearer' })
+        .send({ where: { folderId: folderId1 } })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MediaGetFilesResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+        }));
+
+    // TODO: POST /media/upload - Загрузка файлов
   });
 
   /**

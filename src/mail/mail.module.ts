@@ -10,7 +10,6 @@ import { MailService } from '@/mail/mail.service';
 @Module({
   imports: [
     MailgunModule.forAsyncRoot({
-      imports: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         username: 'api',
         key: configService.get<string>('MAILGUN_API_KEY', ''),

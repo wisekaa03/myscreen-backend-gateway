@@ -2,8 +2,8 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { S3Module } from 'nestjs-s3';
 import { MulterModule } from '@nestjs/platform-express';
+import { S3Module } from 'nestjs-s3';
 
 import { MulterModuleOptionsClass } from '@/shared/multer-module-options-class';
 import { DatabaseModule } from '@/database/database.module';
@@ -46,7 +46,8 @@ import { LogController } from './log.controller';
           accessKey: configService.get('AWS_ACCESS_KEY'),
           secretKey: configService.get('AWS_SECRET_KEY'),
           region: configService.get('AWS_REGION', 'ru-central1'),
-          apiVersion: '',
+          apiVersion: '2006-03-01',
+          signatureVersion: 'v3',
           httpOptions: {
             timeout: 10000,
             connectTimeout: 10000,
@@ -57,7 +58,7 @@ import { LogController } from './log.controller';
     }),
 
     MulterModule.registerAsync({
-      imports: [S3Module, DatabaseModule],
+      imports: [DatabaseModule],
       useClass: MulterModuleOptionsClass,
     }),
 

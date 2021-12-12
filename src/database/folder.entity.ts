@@ -11,13 +11,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
-import {
-  IsUUID,
-  IsString,
-  MinLength,
-  IsAlphanumeric,
-  IsDefined,
-} from 'class-validator';
+import { IsUUID, MinLength, IsAlphanumeric, IsNotEmpty } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 import { MediaEntity } from './media.entity';
 
@@ -31,15 +25,14 @@ export class FolderEntity {
     format: 'uuid',
   })
   @IsUUID()
-  id?: string;
+  id!: string;
 
   @Column({ nullable: true })
   @ApiProperty({
     description: 'Наименование папки',
     example: 'bar',
   })
-  @IsDefined()
-  @IsString()
+  @IsNotEmpty()
   @IsAlphanumeric()
   @MinLength(1)
   name!: string;
@@ -66,7 +59,7 @@ export class FolderEntity {
   })
   @JoinColumn({ name: 'parentFolderId' })
   @Index()
-  parentFolder?: FolderEntity;
+  parentFolder!: FolderEntity | null;
 
   @Column({ nullable: true })
   @ApiProperty({
@@ -76,7 +69,7 @@ export class FolderEntity {
     required: false,
   })
   @IsUUID()
-  parentFolderId!: string;
+  parentFolderId!: string | null;
 
   @OneToMany(() => MediaEntity, (media) => media.id, {
     onDelete: 'CASCADE',
