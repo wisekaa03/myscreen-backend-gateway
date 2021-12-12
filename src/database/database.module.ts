@@ -1,8 +1,9 @@
 import { Module, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { S3Module } from 'nestjs-s3';
 
 import { TypeOrmOptionsService } from '@/shared/typeorm.options';
-
 import { MailModule } from '@/mail/mail.module';
 import { AccountEntity } from './account.entity';
 import { EditorEntity } from './editor.entity';
@@ -47,6 +48,25 @@ import { RefreshTokenService } from './refreshtoken.service';
       VideoEntity,
       RefreshTokenEntity,
     ]),
+
+    S3Module.forRootAsync({
+      useFactory: async (configService: ConfigService) => ({
+        config: {
+          endpoint: configService.get('AWS_HOST', 'storage.yandexcloud.net'),
+          accessKey: configService.get<string>('AWS_ACCESS_KEY'),
+          secretKey: configService.get<string>('AWS_SECRET_KEY'),
+          region: configService.get<string>('AWS_REGION', 'ru-central1'),
+          apiVersion: '2006-03-01',
+          s3ForcePathStyle: true,
+          signatureVersion: 'v4',
+          httpOptions: {
+            timeout: 10000,
+            connectTimeout: 10000,
+          },
+        },
+      }),
+      inject: [ConfigService],
+    }),
   ],
 
   providers: [

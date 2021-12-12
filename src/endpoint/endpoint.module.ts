@@ -3,7 +3,6 @@ import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { MulterModule } from '@nestjs/platform-express';
-import { S3Module } from 'nestjs-s3';
 
 import { MulterModuleOptionsClass } from '@/shared/multer-module-options-class';
 import { DatabaseModule } from '@/database/database.module';
@@ -34,24 +33,6 @@ import { LogController } from './log.controller';
         secret: configService.get<string>('JWT_ACCESS_TOKEN'),
         signOptions: {
           expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES'),
-        },
-      }),
-      inject: [ConfigService],
-    }),
-
-    S3Module.forRootAsync({
-      useFactory: async (configService: ConfigService) => ({
-        config: {
-          endpoint: configService.get('AWS_HOST', 'storage.yandexcloud.net'),
-          accessKey: configService.get('AWS_ACCESS_KEY'),
-          secretKey: configService.get('AWS_SECRET_KEY'),
-          region: configService.get('AWS_REGION', 'ru-central1'),
-          apiVersion: '2006-03-01',
-          signatureVersion: 'v3',
-          httpOptions: {
-            timeout: 10000,
-            connectTimeout: 10000,
-          },
         },
       }),
       inject: [ConfigService],

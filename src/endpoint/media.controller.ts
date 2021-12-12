@@ -31,6 +31,7 @@ import {
   Status,
   SuccessResponse,
   MediaUploadFileRequest,
+  MediaUploadFilesResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
@@ -132,11 +133,12 @@ export class MediaController {
     @Req() { user }: ExpressRequest,
     @Body() { folderId }: MediaUploadFileRequest,
     @UploadedFiles() files: Array<Express.Multer.File>,
-  ): Promise<SuccessResponse> {
-    this.mediaService.upload(user, folderId, files);
+  ): Promise<MediaUploadFilesResponse> {
+    const data = await this.mediaService.upload(user, folderId, files);
 
     return {
       status: Status.Success,
+      data,
     };
   }
 }
