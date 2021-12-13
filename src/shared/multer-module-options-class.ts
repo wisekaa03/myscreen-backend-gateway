@@ -16,6 +16,7 @@ export class MulterModuleOptionsClass {
   createMulterOptions(): MulterModuleOptions {
     return {
       storage: multerMedia({
+        algorithm: 'md5',
         destination: (
           req: ExpressRequest,
           file: Express.Multer.File,

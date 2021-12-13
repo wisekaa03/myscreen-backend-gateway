@@ -1,6 +1,11 @@
 import { createReadStream } from 'node:fs';
 import { resolve as pathResolve } from 'node:path';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InjectS3, S3 } from 'nestjs-s3';
@@ -12,6 +17,7 @@ import {
   TransactionRepository,
 } from 'typeorm';
 
+import { isAWSError } from '@/shared/is-aws-error';
 import { MediaEntity, MediaMeta } from './media.entity';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
@@ -69,8 +75,7 @@ export class MediaService {
     }
 
     const filesPromises = files.flatMap((file) => {
-      const [mime] = file.mimetype.split('/');
-      const meta = this.metaInformation(file);
+      const [meta, type] = this.metaInformation(file);
 
       const media: DeepPartial<MediaEntity> = {
         user,
@@ -78,10 +83,8 @@ export class MediaService {
         originalName: file.originalname,
         name: file.filename,
         meta,
+        type,
         hash: file.hash,
-        type:
-          Object.values(VideoType).find((type) => type === mime) ??
-          VideoType.Image,
       };
 
       return [
@@ -89,7 +92,7 @@ export class MediaService {
         this.s3Service
           .upload({
             Bucket: this.bucket,
-            Key: `${folder.id}/${file.filename}-${file.originalname}`,
+            Key: `${folderId}/${file.filename}-${file.originalname}`,
             ContentType: file.mimetype,
             Body: createReadStream(
               pathResolve(__dirname, '../../..', file.path),
@@ -115,15 +118,24 @@ export class MediaService {
     );
 
     if (errors.length > 0) {
+      const message: Array<string> = [];
+
       errors.forEach((error: unknown) => {
-        if (error instanceof Error) {
+        if (isAWSError(error)) {
+          this.logger.error(error.code, error.stack);
+          message.push(error.message);
+        } else if (error instanceof Error) {
           this.logger.error(error, error.stack);
+          message.push(error.message);
         } else {
           this.logger.error(error);
+          message.push((error as string)?.toString());
         }
       });
 
-      throw new BadRequestException("Can't load on S3");
+      throw new RequestTimeoutException(
+        `Can't upload on S3: ${message.join(', ')}`,
+      );
     }
 
     return returnFiles;
@@ -134,9 +146,20 @@ export class MediaService {
    * @param {Express.Multer.File} file The file
    * @return {[MediaMeta, string]} [MediaMeta, hash]
    */
-  metaInformation = (file: Express.Multer.File): MediaMeta => ({
-    duration: file.media?.format?.duration,
-    filesize: file.size,
-    meta: file.media,
-  });
+  metaInformation = (file: Express.Multer.File): [MediaMeta, VideoType] => {
+    const [mime] = file.mimetype.split('/');
+    const type =
+      Object.values(VideoType).find((t) => t === mime) ?? VideoType.Image;
+
+    if (file?.media) {
+      const meta: MediaMeta = {
+        filesize: Number(file.media.format?.size) ?? file.size,
+        ...file.media,
+      };
+
+      return [meta, type];
+    }
+
+    return [{ filesize: file.size }, type];
+  };
 }

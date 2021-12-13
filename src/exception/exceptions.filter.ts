@@ -9,6 +9,7 @@ import {
   PreconditionFailedException,
   InternalServerErrorException,
   NotFoundException,
+  RequestTimeoutException,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 
@@ -37,10 +38,7 @@ export class ExceptionsFilter extends BaseExceptionFilter {
           (response as Record<string, string>).details;
       }
 
-      this.logger.error(
-        `Error: ${exception.message}. Description: ${response}.`,
-        exception.stack,
-      );
+      this.logger.error(response, exception.stack);
 
       if (exception instanceof UnauthorizedException) {
         exceptionRule = new UnauthorizedError(exception.message);
@@ -55,6 +53,8 @@ export class ExceptionsFilter extends BaseExceptionFilter {
         exceptionRule = new ForbiddenError(exception.message);
       } else if (exception instanceof NotFoundException) {
         exceptionRule = new NotFoundError(exception.message);
+      } else if (exception instanceof RequestTimeoutException) {
+        exceptionRule = new InternalServerError(exception.message);
       } else if (exception instanceof PreconditionFailedException) {
         exceptionRule = new PreconditionFailedError(exception.message);
       } else if (exception instanceof InternalServerErrorException) {

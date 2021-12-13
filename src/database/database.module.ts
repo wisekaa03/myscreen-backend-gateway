@@ -52,13 +52,13 @@ import { RefreshTokenService } from './refreshtoken.service';
     S3Module.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
         config: {
-          endpoint: configService.get('AWS_HOST', 'storage.yandexcloud.net'),
-          accessKey: configService.get<string>('AWS_ACCESS_KEY'),
-          secretKey: configService.get<string>('AWS_SECRET_KEY'),
+          endpoint: configService.get<string>(
+            'AWS_HOST',
+            'storage.yandexcloud.net',
+          ),
+          accessKeyId: configService.get<string>('AWS_ACCESS_KEY'),
+          secretAccessKey: configService.get<string>('AWS_SECRET_KEY'),
           region: configService.get<string>('AWS_REGION', 'ru-central1'),
-          apiVersion: '2006-03-01',
-          s3ForcePathStyle: true,
-          signatureVersion: 'v4',
           httpOptions: {
             timeout: 10000,
             connectTimeout: 10000,

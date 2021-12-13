@@ -134,11 +134,15 @@ export class MediaController {
     @Body() { folderId }: MediaUploadFileRequest,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<MediaUploadFilesResponse> {
-    const data = await this.mediaService.upload(user, folderId, files);
+    if (files.some((file) => !!file.media)) {
+      const data = await this.mediaService.upload(user, folderId, files);
 
-    return {
-      status: Status.Success,
-      data,
-    };
+      return {
+        status: Status.Success,
+        data,
+      };
+    }
+
+    throw new BadRequestError('Some of the files has not a media properties');
   }
 }

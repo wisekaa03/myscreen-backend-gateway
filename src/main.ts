@@ -4,7 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import {
   SwaggerModule,
   DocumentBuilder,
-  SwaggerCustomOptions,
+  type SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';

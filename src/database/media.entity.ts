@@ -31,9 +31,10 @@ export class MediaMeta {
   @ApiProperty({
     description: 'Длительность',
     example: '200',
+    required: false,
   })
   @IsNumber()
-  duration!: number;
+  duration?: number;
 
   @ApiProperty({
     description: 'Размер файла',
@@ -44,9 +45,10 @@ export class MediaMeta {
 
   @ApiProperty({
     description: 'Параметры видео, картинки или аудио',
+    required: false,
   })
   @IsJSON()
-  meta!: FfprobeData;
+  meta?: any;
 }
 
 @Entity('media')
