@@ -3,7 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { S3Module } from 'nestjs-s3';
 
-import { TypeOrmOptionsService } from '@/shared/typeorm.options';
+import { TypeOrmOptionsClass } from '@/shared/typeorm.options';
+import { S3ModuleOptionsClass } from '@/shared/s3-module-options-class';
 import { MailModule } from '@/mail/mail.module';
 import { AccountEntity } from './account.entity';
 import { EditorEntity } from './editor.entity';
@@ -29,7 +30,8 @@ import { RefreshTokenService } from './refreshtoken.service';
     MailModule,
 
     TypeOrmModule.forRootAsync({
-      useClass: TypeOrmOptionsService,
+      useClass: TypeOrmOptionsClass,
+      inject: [ConfigService],
     }),
 
     TypeOrmModule.forFeature([
@@ -50,21 +52,7 @@ import { RefreshTokenService } from './refreshtoken.service';
     ]),
 
     S3Module.forRootAsync({
-      useFactory: async (configService: ConfigService) => ({
-        config: {
-          endpoint: configService.get<string>(
-            'AWS_HOST',
-            'storage.yandexcloud.net',
-          ),
-          accessKeyId: configService.get<string>('AWS_ACCESS_KEY'),
-          secretAccessKey: configService.get<string>('AWS_SECRET_KEY'),
-          region: configService.get<string>('AWS_REGION', 'ru-central1'),
-          httpOptions: {
-            timeout: 10000,
-            connectTimeout: 10000,
-          },
-        },
-      }),
+      useClass: S3ModuleOptionsClass,
       inject: [ConfigService],
     }),
   ],

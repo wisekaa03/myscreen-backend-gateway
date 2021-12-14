@@ -7,18 +7,18 @@ import { LimitRequest } from './limit.request';
 import { MediaRequest } from './media.request';
 
 export class MediaGetFilesRequest {
-  @ApiProperty({
-    description: 'Показывать все',
-    example: false,
-    required: false,
-  })
-  @IsBoolean()
-  showAll?: boolean;
+  // @ApiProperty({
+  //   description: 'Показывать все',
+  //   example: false,
+  //   required: false,
+  // })
+  // @IsBoolean()
+  // showAll?: boolean;
 
   @ApiProperty({
     description: 'Запрос',
     title: 'Media',
-    required: false,
+    required: true,
   })
   @IsNotEmpty()
   @ValidateNested()

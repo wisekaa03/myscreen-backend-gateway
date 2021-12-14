@@ -9,10 +9,10 @@ import type {
 import { TypeOrmLogger } from './logger.typeorm';
 
 @Injectable()
-export class TypeOrmOptionsService implements TypeOrmOptionsFactory {
+export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
 
-  createTypeOrmOptions(): TypeOrmModuleOptions {
+  async createTypeOrmOptions(): Promise<TypeOrmModuleOptions> {
     const cache = this.configService.get<string>('REDIS_HOST');
     return {
       type: 'postgres',

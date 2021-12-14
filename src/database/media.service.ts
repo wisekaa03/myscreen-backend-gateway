@@ -1,10 +1,13 @@
 import { createReadStream } from 'node:fs';
 import { resolve as pathResolve } from 'node:path';
+import { Readable } from 'node:stream';
+import { Response as ExpressResponse } from 'express';
+import { PromiseResult } from 'aws-sdk/lib/request';
 import {
-  BadRequestException,
   Injectable,
   Logger,
-  RequestTimeoutException,
+  NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,7 +30,7 @@ import { VideoType } from './enums/video-type.enum';
 export class MediaService {
   private logger = new Logger(MediaService.name);
 
-  private bucket: string;
+  public bucket: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -44,13 +47,24 @@ export class MediaService {
    * Get media files
    *
    * @async
-   * @param {MediaGetFilesRequest} body
-   * @returns {MediaGetFilesResponse} Результат
+   * @param {FindManyOptions<MediaEntity>} find
+   * @returns {[MediaEntity[], number]} Результат
    */
   getMediaFiles = async (
     find: FindManyOptions<MediaEntity>,
   ): Promise<[MediaEntity[], number]> =>
     this.mediaRepository.findAndCount(find);
+
+  /**
+   * Get media file
+   *
+   * @async
+   * @param {FindManyOptions<MediaEntity>} find
+   * @returns {MediaEntity} Результат
+   */
+  getMediaFile = async (
+    find: FindManyOptions<MediaEntity>,
+  ): Promise<MediaEntity | undefined> => this.mediaRepository.findOne(find);
 
   /**
    * Upload media files
@@ -71,17 +85,17 @@ export class MediaService {
       where: { user, id: folderId },
     });
     if (!folder) {
-      throw new BadRequestException(`Folder ${folderId} not found`);
+      throw new NotFoundException(`Folder ${folderId} not found`);
     }
 
     const filesPromises = files.flatMap((file) => {
       const [meta, type] = this.metaInformation(file);
 
       const media: DeepPartial<MediaEntity> = {
-        user,
-        folder,
+        userId: user.id,
+        folderId,
         originalName: file.originalname,
-        name: file.filename,
+        name: file.originalname,
         meta,
         type,
         hash: file.hash,
@@ -92,13 +106,17 @@ export class MediaService {
         this.s3Service
           .upload({
             Bucket: this.bucket,
-            Key: `${folderId}/${file.filename}-${file.originalname}`,
+            Key: `${folderId}/${file.hash}-${file.originalname}`,
             ContentType: file.mimetype,
             Body: createReadStream(
               pathResolve(__dirname, '../../..', file.path),
             ),
           })
-          .promise(),
+          .promise()
+          .catch((error) => {
+            this.logger.error('S3 Error: upload', error);
+            throw new ServiceUnavailableException(error);
+          }),
       ];
     });
 
@@ -106,7 +124,10 @@ export class MediaService {
     const returnFiles = await Promise.allSettled(filesPromises).then((data) =>
       data.reduce((results, result) => {
         if (result.status === 'fulfilled') {
-          if (result.value instanceof MediaEntity && !result.value) {
+          if (
+            result.value instanceof MediaEntity &&
+            Array.isArray(Object.keys(result.value))
+          ) {
             return results.concat(result.value);
           }
           return results;
@@ -114,7 +135,7 @@ export class MediaService {
 
         errors.push(result.reason);
         return results;
-      }, [] as MediaEntity[]),
+      }, [] as Array<MediaEntity>),
     );
 
     if (errors.length > 0) {
@@ -133,7 +154,7 @@ export class MediaService {
         }
       });
 
-      throw new RequestTimeoutException(
+      throw new ServiceUnavailableException(
         `Can't upload on S3: ${message.join(', ')}`,
       );
     }
@@ -142,9 +163,105 @@ export class MediaService {
   }
 
   /**
-   * Meta information and hash
+   * Get media file from S3
+   * @async
+   * @param {ExpressRequest} request
+   * @param {UserEntity} user
+   * @param {string} id
+   */
+  async getMediaFileS3(
+    response: ExpressResponse,
+    user: UserEntity,
+    id: string,
+  ): Promise<PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>> {
+    const media = await this.mediaRepository.findOne({
+      where: { user, id },
+    });
+
+    if (!media) {
+      throw new NotFoundException(`Media '${id}' is not exists`);
+    }
+
+    const Key = `${media.folderId}/${media.hash}-${media.originalName}`;
+    return this.s3Service
+      .getObject({
+        Bucket: this.bucket,
+        Key,
+      })
+      .on(
+        'httpHeaders',
+        (
+          statusCode: number,
+          headers: { [key: string]: string },
+          awsResponse: AWS.Response<AWS.S3.Types.GetObjectOutput, AWS.AWSError>,
+        ) => {
+          if (statusCode === 200) {
+            response.setHeader('Content-Length', headers['content-length']);
+            response.setHeader('Content-Type', headers['content-type']);
+            response.setHeader('Last-Modified', headers['last-modified']);
+            if (!response.headersSent) {
+              response.flushHeaders();
+            }
+            (
+              awsResponse.httpResponse.createUnbufferedStream() as Readable
+            ).pipe(response);
+          }
+        },
+      )
+      .on('error', (error) => {
+        this.logger.error(error, MediaService.name);
+      })
+      .promise();
+  }
+
+  /**
+   * Delete media files
+   * @async
+   * @param {UserEntity} user
+   * @param {string} id
+   */
+  @Transaction()
+  async delete(
+    user: UserEntity,
+    id: string,
+    @TransactionRepository(MediaEntity)
+    mediaRepository: Repository<MediaEntity> = this.mediaRepository,
+  ): Promise<MediaEntity> {
+    const media = await mediaRepository.findOne({
+      where: { user, id },
+    });
+
+    if (!media) {
+      throw new NotFoundException(`Media '${id}' is not exists`);
+    }
+
+    const Key = `${media.folderId}/${media.hash}-${media.originalName}`;
+    const s3media = await this.s3Service
+      .headObject({
+        Bucket: this.bucket,
+        Key,
+      })
+      .promise()
+      .catch((error: string) => {
+        this.logger.error('S3 Error: headObject', error);
+      });
+
+    if (s3media) {
+      await this.s3Service
+        .deleteObject({ Bucket: this.bucket, Key })
+        .promise()
+        .catch((error: string) => {
+          this.logger.error('S3 Error: deleteObject', error);
+        });
+    }
+
+    return mediaRepository.remove(media);
+  }
+
+  /**
+   * Meta information
    * @param {Express.Multer.File} file The file
-   * @return {[MediaMeta, string]} [MediaMeta, hash]
+   * @return {[MediaMeta, VideoType]} [MediaMeta, VideType]
    */
   metaInformation = (file: Express.Multer.File): [MediaMeta, VideoType] => {
     const [mime] = file.mimetype.split('/');
@@ -152,9 +269,25 @@ export class MediaService {
       Object.values(VideoType).find((t) => t === mime) ?? VideoType.Image;
 
     if (file?.media) {
+      const {
+        media: { format: mediaFormat, streams },
+      } = file;
+      const { filename, ...format } = mediaFormat ?? {};
       const meta: MediaMeta = {
-        filesize: Number(file.media.format?.size) ?? file.size,
-        ...file.media,
+        filesize: Number(file.media.format?.size) || file.size,
+        duration: Number(file.media.format?.duration),
+        width:
+          Number(file.media.format?.width) ||
+          Number(file.media.streams?.[0].width) ||
+          undefined,
+        height:
+          Number(file.media.format?.height) ||
+          file.media.streams?.[0].height ||
+          undefined,
+        info: {
+          format,
+          streams,
+        },
       };
 
       return [meta, type];

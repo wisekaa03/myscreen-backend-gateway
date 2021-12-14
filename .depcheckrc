@@ -8,4 +8,4 @@ ignores: [
   "@types/validator",
   "ts-node",
   "depcheck"
-  ]
+]

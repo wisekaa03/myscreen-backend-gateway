@@ -37,6 +37,22 @@ export class MediaMeta {
   duration?: number;
 
   @ApiProperty({
+    description: 'Размер по горизонтали',
+    example: '200',
+    required: false,
+  })
+  @IsNumber()
+  width?: number;
+
+  @ApiProperty({
+    description: 'Размер по вертикали',
+    example: '200',
+    required: false,
+  })
+  @IsNumber()
+  height?: number;
+
+  @ApiProperty({
     description: 'Размер файла',
     example: '20500',
   })
@@ -48,7 +64,7 @@ export class MediaMeta {
     required: false,
   })
   @IsJSON()
-  meta?: any;
+  info?: FfprobeData;
 }
 
 @Entity('media')
@@ -83,7 +99,7 @@ export class MediaEntity {
   })
   @IsString()
   // @IsHash()
-  hash?: string;
+  hash!: string;
 
   @Column({ type: 'enum', enum: VideoType })
   @ApiProperty({
@@ -100,17 +116,21 @@ export class MediaEntity {
     description: 'Метаинформация',
     type: MediaMeta,
     example: { duration: 200, filesize: 20500 },
-    required: false,
+    required: true,
   })
   @ValidateNested()
   @Type(() => MediaMeta)
-  meta?: MediaMeta;
+  meta!: MediaMeta;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
+  @ManyToOne(() => UserEntity, (user) => user.id, { eager: false })
   @JoinColumn({ name: 'userId' })
   user!: UserEntity;
 
-  @ManyToOne(() => FolderEntity, (folder) => folder.id)
+  @Column({ nullable: true })
+  @IsUUID()
+  userId!: string;
+
+  @ManyToOne(() => FolderEntity, (folder) => folder.id, { eager: false })
   @JoinColumn({ name: 'folderId' })
   folder!: FolderEntity;
 

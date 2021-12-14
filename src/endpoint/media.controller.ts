@@ -1,12 +1,23 @@
-import type { Request as ExpressRequest } from 'express';
+import type {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express';
+import { PromiseResult } from 'aws-sdk/lib/request';
 import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
+  Get,
   HttpCode,
   Logger,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
   Post,
+  Put,
   Req,
+  Response,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -20,18 +31,21 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { InjectS3, S3 } from 'nestjs-s3';
 
 import {
   BadRequestError,
   UnauthorizedError,
-  MediaGetFilesRequest,
-  MediaGetFilesResponse,
   ForbiddenError,
   InternalServerError,
+  ServiceUnavailableError,
   Status,
   SuccessResponse,
+  MediaGetFilesRequest,
+  MediaGetFilesResponse,
   MediaUploadFileRequest,
   MediaUploadFilesResponse,
+  NotFoundError,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
@@ -54,9 +68,19 @@ import { MediaService } from '@/database/media.service';
   type: ForbiddenError,
 })
 @ApiResponse({
+  status: 404,
+  description: 'Ошибка медиа',
+  type: NotFoundError,
+})
+@ApiResponse({
   status: 500,
   description: 'Ошибка сервера',
   type: InternalServerError,
+})
+@ApiResponse({
+  status: 503,
+  description: 'Ошибка сервера',
+  type: ServiceUnavailableError,
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -64,13 +88,16 @@ import { MediaService } from '@/database/media.service';
 export class MediaController {
   logger = new Logger(MediaController.name);
 
-  constructor(private readonly mediaService: MediaService) {}
+  constructor(
+    private readonly mediaService: MediaService,
+    @InjectS3() private readonly s3Service: S3,
+  ) {}
 
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'media_get',
-    summary: 'Получение списка файлов',
+    summary: 'Получение списка медиа',
   })
   @ApiResponse({
     status: 200,
@@ -100,16 +127,16 @@ export class MediaController {
     };
   }
 
-  @Post('/upload')
+  @Put('/')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'media_upload',
-    summary: 'Загрузка файлов',
+    summary: 'Загрузка медиа',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: SuccessResponse,
+    type: MediaUploadFilesResponse,
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -134,7 +161,7 @@ export class MediaController {
     @Body() { folderId }: MediaUploadFileRequest,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<MediaUploadFilesResponse> {
-    if (files.some((file) => !!file.media)) {
+    if (files.some((file) => file.media)) {
       const data = await this.mediaService.upload(user, folderId, files);
 
       return {
@@ -144,5 +171,62 @@ export class MediaController {
     }
 
     throw new BadRequestError('Some of the files has not a media properties');
+  }
+
+  @Get('/file/:mediaId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'media_get_file',
+    summary: 'Скачивание медиа',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    content: {
+      'video/mp4': {
+        encoding: {
+          contentType: {
+            contentType: 'video/mp4',
+          },
+        },
+      },
+    },
+  })
+  async getMediaFile(
+    @Req() { user }: ExpressRequest,
+    @Response() response: ExpressResponse,
+    @Param('mediaId', ParseUUIDPipe) id: string,
+  ): Promise<PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>> {
+    return this.mediaService
+      .getMediaFileS3(response, user, id)
+      .catch((error) => {
+        throw new NotFoundException(`S3 Error: ${error}`);
+      });
+  }
+
+  @Delete('/:mediaId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'media_delete',
+    summary: 'Удаление медиа',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deleteMedia(
+    @Req() { user }: ExpressRequest,
+    @Param('mediaId', ParseUUIDPipe) mediaId: string,
+  ): Promise<SuccessResponse> {
+    const success = await this.mediaService.delete(user, mediaId);
+
+    if (success) {
+      return {
+        status: Status.Success,
+      };
+    }
+
+    throw new NotFoundException('This file is not exists');
   }
 }
