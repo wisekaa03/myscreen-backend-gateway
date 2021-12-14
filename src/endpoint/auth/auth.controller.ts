@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -256,10 +255,9 @@ export class AuthController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async disableUser(@Req() req: ExpressRequest): Promise<SuccessResponse> {
-    const { user } = req;
+  async disableUser(@Req() { user }: ExpressRequest): Promise<SuccessResponse> {
     if (!user) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
 
     await this.userService.update(user, { disabled: true });

@@ -3,7 +3,6 @@ import {
   Logger,
   ForbiddenException,
   UnauthorizedException,
-  BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtSignOptions, JwtService } from '@nestjs/jwt';
@@ -200,10 +199,10 @@ export class AuthService {
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
     if (user.verified) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
 
     if (user.emailConfirmKey === verifyToken) {

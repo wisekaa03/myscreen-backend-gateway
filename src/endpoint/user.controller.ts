@@ -9,6 +9,7 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -23,11 +24,11 @@ import {
   ForbiddenError,
   UnauthorizedError,
   InternalServerError,
-  AuthResponse,
   Status,
   UserUpdateRequest,
   SuccessResponse,
   UsersResponse,
+  UserResponse,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
 import { UserRoleEnum } from '@/database/enums/role.enum';
@@ -75,12 +76,14 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: UserUpdateRequest,
+    type: UsersResponse,
   })
   async users(): Promise<UsersResponse> {
     return {
       status: Status.Success,
-      data: await this.userService.findAll(false),
+      data: await this.userService
+        .findAll(false)
+        .then((user) => user.map(({ password, ...data }) => data)),
     };
   }
 
@@ -92,19 +95,20 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: UserUpdateRequest,
+    type: UserResponse,
   })
   async user(
     @Param('userId', ParseUUIDPipe) userId: string,
-  ): Promise<AuthResponse> {
+  ): Promise<UserResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
+    const { password, ...data } = user;
 
     return {
       status: Status.Success,
-      data: user,
+      data,
     };
   }
 
@@ -117,20 +121,22 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: UserUpdateRequest,
+    type: UserResponse,
   })
   async userUpdate(
     @Param('userId', ParseUUIDPipe) userId: string,
     @Body() update: UserUpdateRequest,
-  ): Promise<AuthResponse> {
+  ): Promise<UserResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
 
     return {
       status: Status.Success,
-      data: await this.userService.update(user, update),
+      data: await this.userService
+        .update(user, update)
+        .then(({ password, ...data }) => data),
     };
   }
 
@@ -150,7 +156,7 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
 
     await this.userService.update(user, { disabled: true });
@@ -176,7 +182,7 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
 
     await this.userService.update(user, { disabled: false });
@@ -201,11 +207,11 @@ export class UserController {
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<SuccessResponse> {
     if (!userId) {
-      throw new BadRequestException();
+      throw new BadRequestException('userId is required');
     }
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
 
     await this.userService.delete(user);

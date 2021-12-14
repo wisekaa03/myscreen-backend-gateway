@@ -46,6 +46,7 @@ import {
   MediaUploadFileRequest,
   MediaUploadFilesResponse,
   NotFoundError,
+  MediaGetFileResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
@@ -108,7 +109,7 @@ export class MediaController {
     @Req() { user }: ExpressRequest,
     @Body() { where, scope }: MediaGetFilesRequest,
   ): Promise<MediaGetFilesResponse> {
-    if (!where.folderId) {
+    if (!where?.folderId) {
       throw new BadRequestException('The folderId must be provided');
     }
 
@@ -173,6 +174,38 @@ export class MediaController {
     throw new BadRequestError('Some of the files has not a media properties');
   }
 
+  @Get('/:mediaId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'media_get_db',
+    summary: 'Получение медиа',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MediaGetFileResponse,
+  })
+  async getMediaDB(
+    @Req() { user }: ExpressRequest,
+    @Param('mediaId', ParseUUIDPipe) id: string,
+  ): Promise<MediaGetFileResponse> {
+    const data = await this.mediaService.getMediaFile({
+      where: {
+        user,
+        id,
+      },
+    });
+
+    if (!data) {
+      throw new NotFoundException('Media not found');
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
   @Get('/file/:mediaId')
   @HttpCode(200)
   @ApiOperation({
@@ -192,7 +225,7 @@ export class MediaController {
       },
     },
   })
-  async getMediaFile(
+  async getMediaFileS3(
     @Req() { user }: ExpressRequest,
     @Response() response: ExpressResponse,
     @Param('mediaId', ParseUUIDPipe) id: string,

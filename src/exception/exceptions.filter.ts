@@ -34,11 +34,10 @@ export class ExceptionsFilter extends BaseExceptionFilter {
       if (typeof response === 'object') {
         response =
           (response as Record<string, string | Array<string>>).message ??
-          (response as Record<string, string>).error ??
           (response as Record<string, string>).details;
       }
 
-      this.logger.error(response, exception.stack);
+      this.logger.error(`${exception.message}. ${response}`, exception.stack);
 
       if (exception instanceof UnauthorizedException) {
         exceptionRule = new UnauthorizedError(exception.message);
@@ -46,9 +45,7 @@ export class ExceptionsFilter extends BaseExceptionFilter {
         if (Array.isArray(response)) {
           response = `${response.join(', ')}.`;
         }
-        exceptionRule = new BadRequestError(
-          `${exception.message}. ${response}`,
-        );
+        exceptionRule = new BadRequestError(response.toString());
       } else if (exception instanceof ForbiddenException) {
         exceptionRule = new ForbiddenError(exception.message);
       } else if (exception instanceof NotFoundException) {

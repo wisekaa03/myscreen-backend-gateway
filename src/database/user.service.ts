@@ -1,10 +1,10 @@
 import { createHmac } from 'crypto';
 import {
   BadGatewayException,
-  BadRequestException,
   PreconditionFailedException,
   Injectable,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -65,13 +65,13 @@ export class UserService {
   async create(create: Partial<UserEntity>): Promise<UserEntity> {
     const { email, password, role } = create;
     if (!email) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
     if (!password) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
     if (!role) {
-      throw new BadRequestException();
+      throw new UnauthorizedException();
     }
 
     const existingUser = await this.userRepository.findOne({
@@ -171,7 +171,7 @@ export class UserService {
 
     const user = await this.userRepository.findOne({ email });
     if (!user) {
-      throw new BadRequestException('User not exists', email);
+      throw new UnauthorizedException('User not exists', email);
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
@@ -181,13 +181,13 @@ export class UserService {
       return this.userRepository.save(this.userRepository.create(user));
     }
 
-    throw new BadRequestException(
+    throw new UnauthorizedException(
       'Forgot password not equal to our records',
       forgotPassword,
     );
   }
 
-  async findAll(includeDisabled: boolean): Promise<UserEntity[]> {
+  async findAll(includeDisabled = true): Promise<UserEntity[]> {
     const where: FindConditions<UserEntity> = {};
     if (includeDisabled) {
       where.disabled = false;
