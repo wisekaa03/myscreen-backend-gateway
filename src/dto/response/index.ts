@@ -9,3 +9,5 @@ export * from './media.response';
 export * from './media-get-files.response';
 export * from './media-get-file.response';
 export * from './media-upload-files.response';
+export * from './playlist.response';
+export * from './playlists-get.response';

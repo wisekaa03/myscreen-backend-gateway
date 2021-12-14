@@ -38,7 +38,7 @@ import { AuthService } from './auth/auth.service';
 @ApiTags('user')
 @ApiResponse({
   status: 400,
-  description: 'Ответ будет таким если с регистрационным данным что-то не так',
+  description: 'Ответ будет таким если с данным что-то не так',
   type: BadRequestError,
 })
 @ApiResponse({
@@ -192,7 +192,7 @@ export class UserController {
     };
   }
 
-  @Delete('/delete/:userId')
+  @Delete('/:userId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'delete__userId_',

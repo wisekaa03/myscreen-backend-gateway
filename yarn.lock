@@ -990,10 +990,10 @@
   dependencies:
     "@types/express" "*"
 
-"@types/node@*", "@types/node@>=10.0.0", "@types/node@^16.11.12":
-  version "16.11.12"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.12.tgz#ac7fb693ac587ee182c3780c26eb65546a1a3c10"
-  integrity sha512-+2Iggwg7PxoO5Kyhvsq9VarmPbIelXP070HMImEpbtGCoyWNINQj4wzjbQCXzdHTRXnqufutJb5KAURZANNBAw==
+"@types/node@*", "@types/node@>=10.0.0", "@types/node@^16.11.13":
+  version "16.11.13"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-16.11.13.tgz#6b71641b81a98c6a538d89892440c06f147edddc"
+  integrity sha512-eUXZzHLHoZqj1frtUetNkUetYoJ6X55UmrVnFD4DMhVeAmwLjniZhtBmsRiemQh4uq4G3vUra/Ws/hs9vEvL3Q==
 
 "@types/node@^10.0.3":
   version "10.17.60"
@@ -1762,12 +1762,12 @@ browser-process-hrtime@^1.0.0:
   integrity sha512-9o5UecI3GhkpM6DrXr69PblIuWxPKk9Y0jHBRhdocZ2y7YECBFCsHm79Pr3OyR2AvjhDkabFJaDJMYRazHgsow==
 
 browserslist@^4.14.5, browserslist@^4.17.5:
-  version "4.18.1"
-  resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.18.1.tgz#60d3920f25b6860eb917c6c7b185576f4d8b017f"
-  integrity sha512-8ScCzdpPwR2wQh8IT82CA2VgDwjHyqMovPBZSNH54+tm4Jk2pCuv90gmAdH6J84OCRWi0b4gMe6O6XPXuJnjgQ==
+  version "4.19.1"
+  resolved "https://registry.yarnpkg.com/browserslist/-/browserslist-4.19.1.tgz#4ac0435b35ab655896c31d53018b6dd5e9e4c9a3"
+  integrity sha512-u2tbbG5PdKRTUoctO3NBD8FQ5HdPh1ZXPHzp1rwaa5jTc+RV9/+RlWiAIKmjRPQF+xbGM9Kklj5bZQFa2s/38A==
   dependencies:
-    caniuse-lite "^1.0.30001280"
-    electron-to-chromium "^1.3.896"
+    caniuse-lite "^1.0.30001286"
+    electron-to-chromium "^1.4.17"
     escalade "^3.1.1"
     node-releases "^2.0.1"
     picocolors "^1.0.0"
@@ -1845,7 +1845,7 @@ camelcase@^6.2.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-6.2.1.tgz#250fd350cfd555d0d2160b1d51510eaf8326e86e"
   integrity sha512-tVI4q5jjFV5CavAU8DXfza/TJcZutVKo/5Foskmsqcm0MsL91moHvwiGNnqaa2o6PF/7yT5ikDRcVcl8Rj6LCA==
 
-caniuse-lite@^1.0.30001280:
+caniuse-lite@^1.0.30001286:
   version "1.0.30001286"
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001286.tgz#3e9debad420419618cfdf52dc9b6572b28a8fff6"
   integrity sha512-zaEMRH6xg8ESMi2eQ3R4eZ5qw/hJiVsO/HlLwniIwErij0JDr9P+8V4dtx1l+kLq6j3yy8l8W4fst1lBnat5wQ==
@@ -2112,9 +2112,9 @@ concat-stream@^1.5.2, concat-stream@^1.6.2:
     typedarray "^0.0.6"
 
 confusing-browser-globals@^1.0.10:
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/confusing-browser-globals/-/confusing-browser-globals-1.0.10.tgz#30d1e7f3d1b882b25ec4933d1d1adac353d20a59"
-  integrity sha512-gNld/3lySHwuhaVluJUKLePYirM3QNCKzVxqAdhJII9/WXKVX5PURzMVJspS1jTslSqjeuG4KMVTSouit5YPHA==
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/confusing-browser-globals/-/confusing-browser-globals-1.0.11.tgz#ae40e9b57cdd3915408a2805ebd3a5585608dc81"
+  integrity sha512-JsPKdmh8ZkmnHxDk55FZ1TqVLvEQTvoByJZRN9jzI0UjxK/QgAmsphz7PGtqgPieQZ/CQcHWXCR7ATDNhGe+YA==
 
 consola@^2.15.0:
   version "2.15.3"
@@ -2416,7 +2416,7 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
-electron-to-chromium@^1.3.896:
+electron-to-chromium@^1.4.17:
   version "1.4.17"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.17.tgz#16ec40f61005582d5d41fac08400a254dccfb85f"
   integrity sha512-zhk1MravPtq/KBhmGB7TLBILmXTgRG9TFSI3qS3DbgyfHzIl72iiTE37r/BHIbPCJJlWIo5rySyxiH4vWhu2ZA==
@@ -4571,10 +4571,10 @@ magic-string@0.25.7, magic-string@^0.25.7:
   dependencies:
     sourcemap-codec "^1.4.4"
 
-mailgun.js@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-4.1.1.tgz#eecac3e6afa3b1fcf7eb17fbaed762925b884bb2"
-  integrity sha512-Q5XAROhD1xxj1dFV6FTFwTdy6ACXsU0ZYl6Dr8uIsOK8yn3HQR/yneLfT8lHLCZ11GFijvAXZmLKDCYmxOCnTg==
+mailgun.js@^4.1.2:
+  version "4.1.2"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-4.1.2.tgz#3b2db38077f80de27ec42a106d925b517fc4b4c9"
+  integrity sha512-O1ErWm1IfkAKlLMg8VaDG+77ouxc99OH34dV+rfhMmuZoEnKK0ZEpy2YBvdI4twHf2noHR3SAGX10FKSJXmAgg==
   dependencies:
     base-64 "^1.0.0"
     bluebird "^3.7.2"
@@ -4810,13 +4810,13 @@ nest-winston@^1.6.2:
     cli-color "^2.0.1"
     fast-safe-stringify "^2.1.1"
 
-nestjs-mailgun@^2.0.12:
-  version "2.0.12"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.0.12.tgz#c13810763e143ea360bd967f7aad60e47987c0e9"
-  integrity sha512-avWu+LXV+mEko/wAoXa/qQiJ+tAl28reBydxGX318aaB7hia54B3q29oDTtlG77AyOGUOuWJlQ/dIwgjSaFXLQ==
+nestjs-mailgun@^2.0.13:
+  version "2.0.13"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.0.13.tgz#d0a0b4e9e0dd8d089394ac4f7442a1ac60df280f"
+  integrity sha512-uE3O1UC7r/fGHPALIE5UMf17PAL9zlX3xOJ1GrKkLBjHukVpH7U5Fg5uU7rCETgUP4xbJhRqmr1G5bx6gnDS2w==
   dependencies:
     form-data "^4.0.0"
-    mailgun.js "^4.1.1"
+    mailgun.js "^4.1.2"
     reflect-metadata "^0.1.13"
     rxjs "^7.4.0"
 
@@ -5474,7 +5474,7 @@ readable-stream@1.1.x:
     isarray "0.0.1"
     string_decoder "~0.10.x"
 
-readable-stream@^2.2.2, readable-stream@^2.3.7:
+readable-stream@^2.2.2:
   version "2.3.7"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-2.3.7.tgz#1eca1cf711aef814c04f62252a36a62f6cb23b57"
   integrity sha512-Ebho8K4jIbHAxnuxi7o42OrZgF/ZTNcsZj6nRKyUmkhLFq8CHItp/fy6hQZuZmP/n3yZ9VBUbp4zz/mX8hmYPw==
@@ -6605,11 +6605,12 @@ windows-release@^4.0.0:
     execa "^4.0.2"
 
 winston-transport@^4.4.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/winston-transport/-/winston-transport-4.4.0.tgz#17af518daa690d5b2ecccaa7acf7b20ca7925e59"
-  integrity sha512-Lc7/p3GtqtqPBYYtS6KCN3c77/2QCev51DvcJKbkFPQNoj1sinkGwLGFDxkXY9J6p9+EPnYs+D90uwbnaiURTw==
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/winston-transport/-/winston-transport-4.4.1.tgz#42a830e07363719c13c12bd2fb87a226f692dc75"
+  integrity sha512-ciZRlU4CSjHqHe8RQG1iPxKMRVwv6ZJ0RC7DxStKWd0KjpAhPDy5gVYSCpIUq+5CUsP+IyNOTZy1X0tO2QZqjg==
   dependencies:
-    readable-stream "^2.3.7"
+    logform "^2.2.0"
+    readable-stream "^3.4.0"
     triple-beam "^1.2.0"
 
 winston@^3.3.3:

@@ -688,7 +688,7 @@ describe('Backend API (e2e)', () => {
     /**
      * Удаление аккаунта пользователя (только администратор)
      */
-    test('/user/delete/{userId} (Удаление аккаунта пользователя, только администратор)', async () =>
+    test('/user/{userId} (Удаление аккаунта пользователя, только администратор)', async () =>
       request
         .delete(`/user/delete/${userId}`)
         .auth(token, { type: 'bearer' })

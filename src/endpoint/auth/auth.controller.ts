@@ -45,7 +45,7 @@ import { AuthService } from './auth.service';
 @ApiTags('auth')
 @ApiResponse({
   status: 400,
-  description: 'Ответ будет таким если с регистрационным данным что-то не так',
+  description: 'Ответ будет таким если с данным что-то не так',
   type: BadRequestError,
 })
 @ApiResponse({

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindConditions, MoreThan, Repository } from 'typeorm';
+import { type DeepPartial, MoreThan, Repository } from 'typeorm';
 
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { UserEntity } from './user.entity';
@@ -15,15 +15,11 @@ export class RefreshTokenService {
   ) {}
 
   async find(id: string): Promise<RefreshTokenEntity> {
-    const where: FindConditions<RefreshTokenEntity>[] = [
-      {
+    return this.refreshTokenEntity.findOneOrFail({
+      where: {
         id,
         expires: MoreThan(new Date(Date.now())),
       },
-    ];
-
-    return this.refreshTokenEntity.findOneOrFail({
-      where,
     });
   }
 
@@ -35,13 +31,13 @@ export class RefreshTokenService {
       Date.now() + Number(this.configService.get('JWT_REFRESH_EXPIRES')) * 1000,
     );
 
-    const token: RefreshTokenEntity = {
+    const token: DeepPartial<RefreshTokenEntity> = {
       user,
       isRevoked: false,
       fingerprint,
       expires,
     };
 
-    return this.refreshTokenEntity.save(token);
+    return this.refreshTokenEntity.save(this.refreshTokenEntity.create(token));
   }
 }

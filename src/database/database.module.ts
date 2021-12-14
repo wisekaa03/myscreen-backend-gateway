@@ -18,6 +18,7 @@ import { OrderEntity } from './order.entity';
 import { PaymentLogsEntity } from './payment-log.entity';
 import { PaymentEntity } from './payment.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { PlaylistService } from './playlist.service';
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';
@@ -63,8 +64,15 @@ import { RefreshTokenService } from './refreshtoken.service';
     RefreshTokenService,
     FolderService,
     MediaService,
+    PlaylistService,
   ],
 
-  exports: [UserService, RefreshTokenService, FolderService, MediaService],
+  exports: [
+    UserService,
+    RefreshTokenService,
+    FolderService,
+    MediaService,
+    PlaylistService,
+  ],
 })
 export class DatabaseModule {}
