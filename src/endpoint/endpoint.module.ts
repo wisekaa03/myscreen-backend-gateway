@@ -12,7 +12,7 @@ import { AuthService } from './auth/auth.service';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { UserController } from './user.controller';
 import { MediaController } from './media.controller';
-import { MonitorController } from './monitors.controller';
+import { MonitorController } from './monitor.controller';
 import { VideoController } from './video.controller';
 import { EditorController } from './editor.controller';
 import { FileController } from './file.controller';
