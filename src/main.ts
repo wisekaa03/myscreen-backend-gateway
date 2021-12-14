@@ -21,7 +21,6 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger,
-    cors: true,
   });
   const httpAdaper = app.get(HttpAdapterHost);
   app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));

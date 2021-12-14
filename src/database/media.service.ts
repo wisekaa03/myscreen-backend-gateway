@@ -108,9 +108,7 @@ export class MediaService {
             Bucket: this.bucket,
             Key: `${folderId}/${file.hash}-${file.originalname}`,
             ContentType: file.mimetype,
-            Body: createReadStream(
-              pathResolve(__dirname, '../../..', file.path),
-            ),
+            Body: createReadStream(file.path),
           })
           .promise()
           .catch((error) => {

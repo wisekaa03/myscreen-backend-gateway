@@ -76,7 +76,7 @@ export class MediaEntity {
     format: 'uuid',
   })
   @IsUUID()
-  id?: string;
+  id!: string;
 
   @Column()
   @ApiProperty({
@@ -122,7 +122,12 @@ export class MediaEntity {
   @Type(() => MediaMeta)
   meta!: MediaMeta;
 
-  @ManyToOne(() => UserEntity, (user) => user.id, { eager: false })
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
   @JoinColumn({ name: 'userId' })
   user!: UserEntity;
 

@@ -2,6 +2,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+// import { ConfigService } from '@nestjs/config';
+// import { WinstonModule } from 'nest-winston';
 import superAgentRequest from 'supertest';
 
 import {
@@ -16,6 +18,7 @@ import {
   FoldersGetResponse,
   FolderUpdateResponse,
   MediaGetFilesResponse,
+  MediaUploadFilesResponse,
 } from '@/dto';
 import { UserRoleEnum } from '@/database/enums/role.enum';
 import { UserEntity } from '@/database/user.entity';
@@ -23,6 +26,7 @@ import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
 import { generateMailToken } from '@/shared/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
+import { winstonOptions } from '@/shared/logger.options';
 
 const registerRequest: RegisterRequest = {
   email: 'foo@bar.baz', // 'wisekaa03@gmail.com',
@@ -66,7 +70,12 @@ describe('Backend API (e2e)', () => {
 
     app = moduleFixture.createNestApplication();
     const httpAdaper = app.get(HttpAdapterHost);
+
+    // const configService = app.get(ConfigService);
+    // const logger = WinstonModule.createLogger(winstonOptions(configService));
+    // app.useLogger(logger);
     app.useLogger(false);
+
     app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
     app.useGlobalPipes(
       new ValidationPipe({
@@ -93,6 +102,7 @@ describe('Backend API (e2e)', () => {
   let parentFolderId2 = '';
   let folderId1 = '';
   let folderId2 = '';
+  let mediaId1 = '';
 
   /**
    *
@@ -111,7 +121,8 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: UserResponse }) => {
-          expect(body.data?.id).toBeDefined();
+          expect(body.data.id).toBeDefined();
+          expect((body.data as any).password).toBeUndefined();
           if (body.data.id) {
             userId = body.data.id;
           }
@@ -181,7 +192,7 @@ describe('Backend API (e2e)', () => {
         .send({ email: 'foo@bar.baz' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(400));
+        .expect(401));
 
     test('POST /auth/login [с пустым email] (Авторизация пользователя)', async () =>
       request
@@ -189,7 +200,7 @@ describe('Backend API (e2e)', () => {
         .send({ password: 'Secret~123456' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(400));
+        .expect(401));
 
     test('POST /auth/login [с неправильным паролем] (Авторизация пользователя)', async () =>
       request
@@ -197,7 +208,7 @@ describe('Backend API (e2e)', () => {
         .send({ ...loginRequest, password: 'sss' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(400));
+        .expect(401));
 
     test('POST /auth/login [с неправильным email] (Авторизация пользователя)', async () =>
       request
@@ -205,7 +216,7 @@ describe('Backend API (e2e)', () => {
         .send({ ...loginRequest, email: 'sss' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(400));
+        .expect(401));
 
     /**
      * Авторизация пользователя [success]
@@ -222,6 +233,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data?.id).toBe(userId);
           expect(body.payload?.token).toBeDefined();
           expect(body.payload?.refresh_token).toBeDefined();
+          expect((body.data as any).password).toBeUndefined();
           token = body.payload?.token ?? '';
           refreshToken = body.payload?.refresh_token ?? '';
         }));
@@ -240,6 +252,7 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.id).toBe(userId);
+          expect((body.data as any).password).toBeUndefined();
         }));
     // TODO: проверить изменение пользователя
 
@@ -256,6 +269,7 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.id).toBe(userId);
+          expect((body.data as any).password).toBeUndefined();
         }));
 
     /**
@@ -391,6 +405,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data.name).toBe('bar');
           expect(body.data.parentFolderId).toBe(null);
           expect(body.data.userId).toBe(userId);
+          expect((body.data as any)?.user?.password).toBeUndefined();
           parentFolderId = body.data.id;
         }));
 
@@ -416,6 +431,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data.name).toBe('foo');
           expect(body.data.parentFolderId).toBe(null);
           expect(body.data.userId).toBe(userId);
+          expect((body.data as any)?.user?.password).toBeUndefined();
           parentFolderId2 = body.data.id;
         }));
 
@@ -435,6 +451,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data.name).toBe('foo');
           expect(body.data.parentFolderId).toBe(parentFolderId);
           expect(body.data.userId).toBe(userId);
+          expect((body.data as any)?.user?.password).toBeUndefined();
           folderId1 = body.data.id;
         }));
 
@@ -454,6 +471,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data.name).toBe('baz');
           expect(body.data.parentFolderId).toBe(parentFolderId2);
           expect(body.data.userId).toBe(userId);
+          expect((body.data as any)?.user?.password).toBeUndefined();
           folderId2 = body.data.id;
         }));
 
@@ -486,11 +504,76 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: FoldersGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
+          expect((body.data as any)?.[0]?.user?.password).toBeUndefined();
         }));
 
-    // TODO: PATCH /folder/{folderId} - Изменение информации о папке
-    // TODO: GET /folder/{folderId} - Получение информации о папке
-    // TODO: DELETE /folder/{folderId} - Удаление папки
+    /**
+     * Изменение информации о папке
+     */
+    test('PATCH /folder/{folderId} [success] (Изменение информации о папке)', async () =>
+      request
+        .patch(`/folder/${folderId2}`)
+        .auth(token, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .send({
+          name: 'bar2',
+        })
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: FolderUpdateResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(folderId2);
+          expect(body.data.name).toBe('bar2');
+          expect((body.data as any)?.user?.password).toBeUndefined();
+        }));
+
+    /**
+     * Изменение информации о папке [неуспешно]
+     */
+    test('PATCH /folder/{folderId} [unsuccess] (Изменение информации о папке)', async () =>
+      request
+        .patch(`/folder/${folderId2}`)
+        .auth(token, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .send({
+          name: 'bar2',
+          user: {},
+        })
+        .expect('Content-Type', /json/)
+        .expect(400));
+
+    /**
+     * Получение информации о папке [успешно]
+     */
+    test('GET /folder/{folderId} [success] (Получение информации о папке)', async () =>
+      request
+        .get(`/folder/${folderId2}`)
+        .auth(token, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: FolderUpdateResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(folderId2);
+          expect(body.data.name).toBe('bar2');
+          expect((body.data as any)?.user?.password).toBeUndefined();
+        }));
+
+    /**
+     * Удаление папки [успешно]
+     */
+    test('DELETE /folder/{folderId} [success] (Удаление папки)', async () =>
+      request
+        .delete(`/folder/${folderId2}`)
+        .auth(token, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: SuccessResponse }) => {
+          expect(body.status).toBe(Status.Success);
+        }));
   });
 
   /**
@@ -525,9 +608,56 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: MediaGetFilesResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
+          expect(body.data[0]?.user?.password).toBeUndefined();
         }));
 
-    // TODO: POST /media/upload - Загрузка файлов
+    /**
+     * Загрузка файлов [success]
+     */
+    test('PUT /media [success] (Загрузка файлов)', async () =>
+      request
+        .put('/media')
+        .auth(token, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .field('folderId', folderId1)
+        .attach('files', `${__dirname}/testing.png`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MediaUploadFilesResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data[0].id).toBeDefined();
+          mediaId1 = body.data[0].id;
+          expect(body.data[0]?.user?.password).toBeUndefined();
+        }));
+
+    /**
+     * Скачивание медиа [success]
+     */
+    test('GET /media/file/{mediaId} [success] (Скачивание медиа)', async () =>
+      request
+        .get(`/media/file/${mediaId1}`)
+        .auth(token, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', 'image/png')
+        .expect(200)
+        .then(({ body }: { body: any }) => {
+          expect(body).toBeDefined();
+        }));
+
+    /**
+     * Удаление файлов [success]
+     */
+    test('DELETE /media/{mediaId} [success] (Удаление файлов)', async () =>
+      request
+        .delete(`/media/${mediaId1}`)
+        .auth(token, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: SuccessResponse }) => {
+          expect(body.status).toBe(Status.Success);
+        }));
   });
 
   /**
