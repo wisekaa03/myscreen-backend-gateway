@@ -20,6 +20,8 @@ export class PaymentLogsEntity {
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
   })
   @JoinColumn()
   user!: UserEntity;

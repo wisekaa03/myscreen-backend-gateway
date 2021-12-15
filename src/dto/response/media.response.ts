@@ -1,4 +1,5 @@
-import { OmitType } from '@nestjs/swagger';
+// import { OmitType } from '@nestjs/swagger';
 import { MediaEntity } from '@/database/media.entity';
 
-export class MediaResponse extends OmitType(MediaEntity, []) {}
+// OmitType(MediaEntity, []) {}
+export class MediaResponse extends MediaEntity {}

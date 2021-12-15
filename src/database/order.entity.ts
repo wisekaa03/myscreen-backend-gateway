@@ -22,9 +22,14 @@ export class OrderEntity {
   @Column({ type: 'numeric' })
   description!: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.id)
-  @JoinColumn({ name: 'userId' })
-  users!: UserEntity; // why users, user must be ?
+  @ManyToOne(() => UserEntity, (user) => user.id, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
+  @JoinColumn()
+  user!: UserEntity;
 
   @CreateDateColumn()
   createdAt?: Date;

@@ -19,6 +19,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
 import { UserEntity } from './user.entity';
+import { UserSizeEntity } from './user.view.entity';
 import { UserService } from './user.service';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
@@ -43,6 +44,7 @@ import { RefreshTokenService } from './refreshtoken.service';
       PlaylistEntity,
       UptimeMonitoringEntity,
       UserEntity,
+      UserSizeEntity,
       RefreshTokenEntity,
     ]),
 

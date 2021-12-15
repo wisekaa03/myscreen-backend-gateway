@@ -111,6 +111,13 @@ export class MediaEntity {
   @IsEnum(VideoType)
   type!: VideoType;
 
+  @Column({ type: 'integer' })
+  @ApiProperty({
+    description: 'Размер файла',
+    example: 210000,
+  })
+  filesize!: number;
+
   @Column({ type: 'json', nullable: true })
   @ApiProperty({
     description: 'Метаинформация',

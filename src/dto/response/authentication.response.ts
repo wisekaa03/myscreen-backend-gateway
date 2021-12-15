@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '@/dto/status.enum';
 import { User } from '@/dto/user.dto';
 import { UserEntity } from '@/database/user.entity';
+import { UserSizeEntity } from '@/database/user.view.entity';
 
 export class AuthenticationPayload {
   @ApiProperty({ description: 'Тип: Bearer', example: 'bearer' })
@@ -41,5 +42,5 @@ export class AuthResponse {
     title: 'User',
     type: User,
   })
-  data!: Partial<UserEntity>;
+  data!: Partial<UserEntity> & Partial<UserSizeEntity>;
 }

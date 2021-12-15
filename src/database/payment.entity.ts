@@ -42,6 +42,8 @@ export class PaymentEntity {
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
   })
   @JoinColumn()
   user!: UserEntity;

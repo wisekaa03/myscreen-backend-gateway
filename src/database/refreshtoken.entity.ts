@@ -18,6 +18,8 @@ export class RefreshTokenEntity {
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
   })
   user!: UserEntity;
 

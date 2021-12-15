@@ -15,6 +15,7 @@ import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { MailService } from '@/mail/mail.service';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
+import { UserSizeEntity } from './user.view.entity';
 
 @Injectable()
 export class UserService {
@@ -25,6 +26,8 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(UserSizeEntity)
+    private readonly userSizeRepository: Repository<UserSizeEntity>,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
   ) {
@@ -108,7 +111,6 @@ export class UserService {
       emailConfirmKey: genKey(),
       verified: false,
       isDemoUser: false,
-      countUsedSpace: 0,
     };
     const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
@@ -144,7 +146,6 @@ export class UserService {
       emailConfirmKey: genKey(),
       verified: false,
       isDemoUser: false,
-      countUsedSpace: 0,
     };
 
     return this.userRepository.save(this.userRepository.create(user));
@@ -163,7 +164,7 @@ export class UserService {
     }
 
     user.forgotConfirmKey = genKey();
-    this.userRepository.save(user);
+    this.userRepository.save(this.userRepository.create(user));
 
     const verifyToken = generateMailToken(email, user.forgotConfirmKey);
     const forgotPasswordUrl = `${this.frontendUrl}/reset-password-verify?key=${verifyToken}`;
@@ -211,14 +212,14 @@ export class UserService {
     if (includeDisabled) {
       where.disabled = false;
     }
-    return this.userRepository.find({ where });
+    return this.userSizeRepository.find({ where });
   }
 
   async findByEmail(
     email: string,
     disabled = false,
-  ): Promise<UserEntity | undefined> {
-    return this.userRepository.findOne({
+  ): Promise<(UserEntity & Partial<UserSizeEntity>) | undefined> {
+    return this.userSizeRepository.findOne({
       email,
       disabled,
     });
@@ -227,8 +228,8 @@ export class UserService {
   async findById(
     id: string,
     disabled = false,
-  ): Promise<UserEntity | undefined> {
-    return this.userRepository.findOne({
+  ): Promise<(UserEntity & Partial<UserSizeEntity>) | undefined> {
+    return this.userSizeRepository.findOne({
       id,
       disabled,
     });

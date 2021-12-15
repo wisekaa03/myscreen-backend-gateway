@@ -1,7 +1,8 @@
 import { PickType } from '@nestjs/swagger';
 import { UserEntity } from '@/database/user.entity';
+import { UserSizeEntity } from '@/database/user.view.entity';
 
-export class User extends PickType(UserEntity, [
+export class User extends PickType(UserSizeEntity, [
   'id',
   'email',
   'city',
@@ -26,4 +27,5 @@ export const userEntityToUser = ({
   password,
   monitors,
   ...data
-}: UserEntity): Partial<UserEntity> => data;
+}: UserEntity & Partial<UserSizeEntity>): Partial<UserEntity> &
+  Partial<UserSizeEntity> => data;

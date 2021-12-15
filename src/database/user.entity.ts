@@ -4,6 +4,8 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -127,10 +129,6 @@ export class UserEntity {
   @Column({ type: 'varchar', nullable: true })
   emailConfirmKey?: string | null;
 
-  @OneToMany(() => MonitorEntity, (monitor) => monitor.id)
-  @JoinColumn()
-  monitors?: MonitorEntity[];
-
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
     description: 'EMail подтвержден',
@@ -147,13 +145,8 @@ export class UserEntity {
   })
   isDemoUser!: boolean;
 
-  @Column({ type: 'float', default: 0 })
-  @ApiProperty({
-    description: 'Использованное место',
-    example: 21000000,
-    required: false,
-  })
-  countUsedSpace!: number;
+  @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
+  monitors?: MonitorEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

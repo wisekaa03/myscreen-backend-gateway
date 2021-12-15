@@ -40,6 +40,7 @@ export class FolderEntity {
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    cascade: true,
     eager: false,
   })
   @JoinColumn({ name: 'userId' })

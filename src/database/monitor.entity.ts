@@ -63,9 +63,11 @@ export class MonitorEntity {
   @Column({ type: 'float', nullable: true })
   longitude?: number;
 
-  @ManyToOne(() => UserEntity, (user) => user.id, {
+  @ManyToOne(() => UserEntity, (user) => user.monitors, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
   })
   @JoinColumn()
   user!: UserEntity;

@@ -96,6 +96,7 @@ export class MediaService {
         folderId,
         originalName: file.originalname,
         name: file.originalname,
+        filesize: meta.filesize,
         meta,
         type,
         hash: file.hash,
