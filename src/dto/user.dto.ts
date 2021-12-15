@@ -26,4 +26,4 @@ export const userEntityToUser = ({
   password,
   monitors,
   ...data
-}: UserEntity): User => data;
+}: UserEntity): Partial<UserEntity> => data;

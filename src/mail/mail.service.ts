@@ -39,10 +39,10 @@ export class MailService {
     'Мы рады видеть Вас в числе наших пользователей.';
 
   /**
-   *
+   * Отправляет приветственное письмо
    * @async
-   * @param {UserEntity} user User entity
-   * @returns {void}
+   * @param {string} email Почта пользователя
+   * @returns {any}
    */
   async sendWelcomeMessage(email: string): Promise<any> {
     const message = {
@@ -64,11 +64,11 @@ export class MailService {
   }
 
   /**
-   *
+   * Отправляет письмо, подтверждающее пользователя
    * @async
-   * @param {UserEntity} user User entity
-   * @param {string} verify Email validation Key
-   * @returns {void}
+   * @param {string} email Почта пользователя
+   * @param {string} confirmUrl URL по которому нужно пройти
+   * @returns {any}
    */
   async sendVerificationCode(email: string, confirmUrl: string): Promise<any> {
     const message = {
@@ -101,11 +101,11 @@ export class MailService {
   }
 
   /**
-   *
+   * Отправляет письмо о смене пароля
    * @async
-   * @param {UserEntity} user User entity
-   * @param {string} verify Forgot password Key
-   * @returns {void}
+   * @param {string} email Почта
+   * @param {string} forgotPasswordUrl URL по которому нужно пройти
+   * @returns {any}
    */
   async forgotPassword(email: string, forgotPasswordUrl: string): Promise<any> {
     const message = {

@@ -10,15 +10,7 @@ import { TokenExpiredError } from 'jsonwebtoken';
 
 import { JWT_BASE_OPTIONS, MyscreenJwtPayload } from '@/shared/jwt.payload';
 
-import {
-  Status,
-  userEntityToUser,
-  AuthResponse,
-  LoginRequest,
-  VerifyEmailRequest,
-  AuthenticationPayload,
-  SuccessResponse,
-} from '@/dto';
+import { userEntityToUser, AuthenticationPayload } from '@/dto';
 
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
@@ -39,9 +31,10 @@ export class AuthService {
   ) {}
 
   async login(
-    { email, password }: LoginRequest,
+    email: string,
+    password: string,
     fingerprint?: string,
-  ): Promise<AuthResponse> {
+  ): Promise<[Partial<UserEntity>, AuthenticationPayload]> {
     if (!email || !password) {
       throw new UnauthorizedException('Password mismatched', password);
     }
@@ -51,10 +44,7 @@ export class AuthService {
       throw new UnauthorizedException('Password mismatched', password);
     }
     if (!user.verified) {
-      throw new UnauthorizedException(
-        'You have to respond to our email',
-        email,
-      );
+      throw new ForbiddenException('You have to respond to our email', email);
     }
 
     const valid = user.password
@@ -64,15 +54,13 @@ export class AuthService {
       throw new UnauthorizedException('Password mismatched', password);
     }
 
-    const token = await this.generateAccessToken(user);
-    const refresh = await this.generateRefreshToken(user, fingerprint);
+    const [token, refresh] = await Promise.all([
+      this.generateAccessToken(user),
+      this.generateRefreshToken(user, fingerprint),
+    ]);
     const payload = this.buildResponsePayload(token, refresh);
 
-    return {
-      status: Status.Success,
-      payload,
-      data: userEntityToUser(user),
-    };
+    return [userEntityToUser(user), payload];
   }
 
   private buildResponsePayload(
@@ -115,31 +103,27 @@ export class AuthService {
     return this.jwtService.signAsync({}, opts);
   }
 
-  async resolveRefreshToken(
-    encoded: string,
-  ): Promise<{ user: UserEntity; token: RefreshTokenEntity }> {
+  async resolveRefreshToken(encoded: string): Promise<UserEntity> {
     const payload = await this.decodeRefreshToken(encoded);
     const token = await this.getStoredTokenFromRefreshTokenPayload(payload);
 
     if (!token) {
       throw new ForbiddenException(`Refresh token '${encoded}' not found`);
     }
-
     if (token.isRevoked) {
       throw new ForbiddenException(`Refresh token '${encoded}' revoked`);
     }
 
     const user = await this.getUserFromRefreshTokenPayload(payload);
-
     if (!user) {
       throw new ForbiddenException(`Refresh token '${encoded}' malformed`);
     }
 
-    return { user, token };
+    return user;
   }
 
   async createAccessTokenFromRefreshToken(refresh: string): Promise<string> {
-    const { user } = await this.resolveRefreshToken(refresh);
+    const user = await this.resolveRefreshToken(refresh);
     if (user.disabled) {
       this.logger.warn(`User '${user.email}' is disabled`);
       throw new ForbiddenException(`User '${user.email}' is disabled`);
@@ -191,11 +175,11 @@ export class AuthService {
   /**
    * Проверяет почту на соответствие
    * @async
-   * @param {VerifyEmailRequest} body
-   * @returns {SuccessResponse} Результат
+   * @param {string} verify_email Токен
+   * @returns {true} Результат
    */
-  async verifyEmail(body: VerifyEmailRequest): Promise<SuccessResponse> {
-    const [email, verifyToken] = decodeMailToken(body.verify_email);
+  async verifyEmail(verify_email: string): Promise<true> {
+    const [email, verifyToken] = decodeMailToken(verify_email);
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
@@ -211,9 +195,7 @@ export class AuthService {
         verified: true,
       });
 
-      return {
-        status: Status.Success,
-      };
+      return true;
     }
 
     throw new ForbiddenException(

@@ -23,6 +23,7 @@ import {
   UnauthorizedError,
   BadRequestError,
   InternalServerError,
+  ServiceUnavailableError,
   LoginRequest,
   UserUpdateRequest,
   RefreshTokenRequest,
@@ -63,6 +64,11 @@ import { AuthService } from './auth.service';
   description: 'Ошибка сервера',
   type: InternalServerError,
 })
+@ApiResponse({
+  status: 503,
+  description: 'Ошибка сервера',
+  type: ServiceUnavailableError,
+})
 @Controller('auth')
 export class AuthController {
   logger = new Logger(AuthController.name);
@@ -87,9 +93,14 @@ export class AuthController {
     type: UserResponse,
   })
   async authorization(@Req() { user }: ExpressRequest): Promise<UserResponse> {
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const data = userEntityToUser(user);
+
     return {
       status: Status.Success,
-      data: userEntityToUser(user),
+      data,
     };
   }
 
@@ -128,12 +139,22 @@ export class AuthController {
   })
   async login(
     @Req() req: ExpressRequest,
-    @Body() body: LoginRequest,
+    @Body() { email, password }: LoginRequest,
   ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const fingerprint = req?.hostname;
 
-    return this.authService.login(body, fingerprint);
+    const [data, payload] = await this.authService.login(
+      email,
+      password,
+      fingerprint,
+    );
+
+    return {
+      status: Status.Success,
+      payload,
+      data,
+    };
   }
 
   @Post('register')
@@ -148,11 +169,11 @@ export class AuthController {
     type: UserResponse,
   })
   async register(@Body() body: RegisterRequest): Promise<UserResponse> {
-    const user = await this.userService.create(body);
+    const data = userEntityToUser(await this.userService.create(body));
 
     return {
       status: Status.Success,
-      data: userEntityToUser(user),
+      data,
     };
   }
 
@@ -167,15 +188,13 @@ export class AuthController {
   async refresh(
     @Body() { refresh_token }: RefreshTokenRequest,
   ): Promise<RefreshTokenResponse> {
-    if (!refresh_token) {
-      throw new UnauthorizedException('Token malformed');
-    }
+    const token = await this.authService.createAccessTokenFromRefreshToken(
+      refresh_token,
+    );
 
     return {
       status: Status.Success,
-      token: await this.authService.createAccessTokenFromRefreshToken(
-        refresh_token,
-      ),
+      token,
     };
   }
 
@@ -191,9 +210,13 @@ export class AuthController {
     type: SuccessResponse,
   })
   async verifyEmail(
-    @Body() body: VerifyEmailRequest,
+    @Body() { verify_email }: VerifyEmailRequest,
   ): Promise<SuccessResponse> {
-    return this.authService.verifyEmail(body);
+    await this.authService.verifyEmail(verify_email);
+
+    return {
+      status: Status.Success,
+    };
   }
 
   @Post('/reset-password')
@@ -210,10 +233,6 @@ export class AuthController {
   async resetPasswordInvitation(
     @Body() { email }: ResetPasswordInvitationRequest,
   ): Promise<SuccessResponse> {
-    if (!email) {
-      throw new UnauthorizedException();
-    }
-
     await this.userService.forgotPasswordInvitation(email);
 
     return {
@@ -259,7 +278,6 @@ export class AuthController {
     if (!user) {
       throw new UnauthorizedException();
     }
-
     await this.userService.update(user, { disabled: true });
 
     return {

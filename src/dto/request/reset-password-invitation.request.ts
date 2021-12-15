@@ -1,10 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail } from 'class-validator';
+import { PickType } from '@nestjs/swagger';
+import { UserEntity } from '@/database/user.entity';
 
-export class ResetPasswordInvitationRequest {
-  @ApiProperty({
-    example: 'foo@bar.baz',
-  })
-  @IsEmail()
-  email!: string;
-}
+export class ResetPasswordInvitationRequest extends PickType(UserEntity, [
+  'email',
+]) {}

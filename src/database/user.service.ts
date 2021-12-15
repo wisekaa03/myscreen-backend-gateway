@@ -1,9 +1,10 @@
 import { createHmac } from 'crypto';
 import {
-  BadGatewayException,
-  PreconditionFailedException,
   Injectable,
   Logger,
+  PreconditionFailedException,
+  ForbiddenException,
+  BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -33,6 +34,13 @@ export class UserService {
     );
   }
 
+  /**
+   * Изменяет пользователя
+   * @async
+   * @param {UserEntity} user Пользователь
+   * @param {Partial<UserEntity>} update Изменения
+   * @returns {UserEntity} Результат
+   */
   async update(
     user: UserEntity,
     update: Partial<UserEntity>,
@@ -58,20 +66,32 @@ export class UserService {
     );
   }
 
+  /**
+   * Удаляет пользователя
+   * @async
+   * @param {UserEntity} create
+   * @returns {DeleteResult} Результат
+   */
   async delete(user: UserEntity): Promise<DeleteResult> {
     return this.userRepository.delete(user.id);
   }
 
+  /**
+   * Заводит нового пользователя
+   * @async
+   * @param {Partial<UserEntity>} create
+   * @returns {UserEntity} Пользователь
+   */
   async create(create: Partial<UserEntity>): Promise<UserEntity> {
     const { email, password, role } = create;
     if (!email) {
-      throw new UnauthorizedException();
+      throw new BadRequestException();
     }
     if (!password) {
-      throw new UnauthorizedException();
+      throw new BadRequestException();
     }
     if (!role) {
-      throw new UnauthorizedException();
+      throw new BadRequestException();
     }
 
     const existingUser = await this.userRepository.findOne({
@@ -109,9 +129,8 @@ export class UserService {
   /**
    * createTest
    * Используется в /test/app.e2e-spec.ts
-   *
-   * @param create
-   * @param userRepository
+   * @async
+   * @param {Partial<UserEntity>} create
    * @returns {UserEntity} Пользователь
    */
   async createTest(create: Partial<UserEntity>): Promise<UserEntity> {
@@ -132,17 +151,17 @@ export class UserService {
   }
 
   /**
-   * Выдает ссылку на email пользователя
+   * Выдает на почту пользователю ссылку на смену пароля
    * @async
    * @param {string} email
    * @returns {any} Результат
    */
   async forgotPasswordInvitation(email: string): Promise<any> {
     const user = await this.userRepository.findOne({ email, disabled: false });
-
     if (!user) {
-      throw new BadGatewayException('User not exists', email);
+      throw new ForbiddenException('User not exists', email);
     }
+
     user.forgotConfirmKey = genKey();
     this.userRepository.save(user);
 
@@ -181,7 +200,7 @@ export class UserService {
       return this.userRepository.save(this.userRepository.create(user));
     }
 
-    throw new UnauthorizedException(
+    throw new ForbiddenException(
       'Forgot password not equal to our records',
       forgotPassword,
     );

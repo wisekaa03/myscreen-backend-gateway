@@ -1,4 +1,5 @@
 /* eslint max-len:0 */
+import { readFileSync } from 'fs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
@@ -134,7 +135,7 @@ describe('Backend API (e2e)', () => {
         .send(loginRequest)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(403));
 
     /**
      * Регистрация пользователя опять с теми же самыми параметрами
@@ -292,7 +293,7 @@ describe('Backend API (e2e)', () => {
         .send({})
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(403));
 
     test('POST /auth/refresh [success] (Обновление токена)', async () =>
       request
@@ -315,7 +316,7 @@ describe('Backend API (e2e)', () => {
         .send({})
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(403));
 
     /**
      * Отправить на почту пользователю разрешение на смену пароля [succcess]
@@ -478,102 +479,113 @@ describe('Backend API (e2e)', () => {
     /**
      * Получение списка папок [{ where: { id: '' }, scope: { limit: 0 } }]
      */
-    test("POST /folder [{ where: { id: '' }, scope: { limit: 0 } }] (Получение списка папок)", async () => {
-      request
-        .post('/folder')
-        .auth(token, { type: 'bearer' })
-        .send({
-          where: { id: '' },
-          scope: { limit: 0 },
-        })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(500);
-    });
+    test("POST /folder [{ where: { id: '' }, scope: { limit: 0 } }] (Получение списка папок)", async () =>
+      token
+        ? request
+            .post('/folder')
+            .auth(token, { type: 'bearer' })
+            .send({
+              where: { id: '' },
+              scope: { limit: 0 },
+            })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400)
+        : expect(false).toEqual(true));
 
     /**
      * Получение списка папок
      */
     test('POST /folder [success] (Получение списка папок)', async () =>
-      request
-        .post('/folder')
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: FoldersGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect((body.data as any)?.[0]?.user?.password).toBeUndefined();
-        }));
+      token
+        ? request
+            .post('/folder')
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(({ body }: { body: FoldersGetResponse }) => {
+              expect(body.status).toBe(Status.Success);
+              expect(body.data).toBeDefined();
+              expect((body.data as any)?.[0]?.user?.password).toBeUndefined();
+            })
+        : expect(false).toEqual(true));
 
     /**
      * Изменение информации о папке
      */
     test('PATCH /folder/{folderId} [success] (Изменение информации о папке)', async () =>
-      request
-        .patch(`/folder/${folderId2}`)
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .send({
-          name: 'bar2',
-        })
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: FolderUpdateResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBe(folderId2);
-          expect(body.data.name).toBe('bar2');
-          expect((body.data as any)?.user?.password).toBeUndefined();
-        }));
+      token && folderId2
+        ? request
+            .patch(`/folder/${folderId2}`)
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .send({
+              name: 'bar2',
+            })
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(({ body }: { body: FolderUpdateResponse }) => {
+              expect(body.status).toBe(Status.Success);
+              expect(body.data).toBeDefined();
+              expect(body.data.id).toBe(folderId2);
+              expect(body.data.name).toBe('bar2');
+              expect((body.data as any)?.user?.password).toBeUndefined();
+            })
+        : expect(false).toEqual(true));
 
     /**
      * Изменение информации о папке [неуспешно]
      */
     test('PATCH /folder/{folderId} [unsuccess] (Изменение информации о папке)', async () =>
-      request
-        .patch(`/folder/${folderId2}`)
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .send({
-          name: 'bar2',
-          user: {},
-        })
-        .expect('Content-Type', /json/)
-        .expect(400));
+      token && folderId2
+        ? request
+            .patch(`/folder/${folderId2}`)
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .send({
+              name: 'bar2',
+              user: {},
+            })
+            .expect('Content-Type', /json/)
+            .expect(400)
+        : expect(false).toEqual(true));
 
     /**
      * Получение информации о папке [успешно]
      */
     test('GET /folder/{folderId} [success] (Получение информации о папке)', async () =>
-      request
-        .get(`/folder/${folderId2}`)
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: FolderUpdateResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBe(folderId2);
-          expect(body.data.name).toBe('bar2');
-          expect((body.data as any)?.user?.password).toBeUndefined();
-        }));
+      token && folderId2
+        ? request
+            .get(`/folder/${folderId2}`)
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(({ body }: { body: FolderUpdateResponse }) => {
+              expect(body.status).toBe(Status.Success);
+              expect(body.data).toBeDefined();
+              expect(body.data.id).toBe(folderId2);
+              expect(body.data.name).toBe('bar2');
+              expect((body.data as any)?.user?.password).toBeUndefined();
+            })
+        : expect(false).toEqual(true));
 
     /**
      * Удаление папки [успешно]
      */
     test('DELETE /folder/{folderId} [success] (Удаление папки)', async () =>
-      request
-        .delete(`/folder/${folderId2}`)
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: SuccessResponse }) => {
-          expect(body.status).toBe(Status.Success);
-        }));
+      token && folderId2
+        ? request
+            .delete(`/folder/${folderId2}`)
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(({ body }: { body: SuccessResponse }) => {
+              expect(body.status).toBe(Status.Success);
+            })
+        : expect(false).toEqual(true));
   });
 
   /**
@@ -586,78 +598,90 @@ describe('Backend API (e2e)', () => {
      * Получение списка файлов (неуспешно)
      */
     test('POST /media [unsuccess] (Получение списка файлов)', async () =>
-      request
-        .post('/media')
-        .auth(token, { type: 'bearer' })
-        .send({ where: {} })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(400));
+      token
+        ? request
+            .post('/media')
+            .auth(token, { type: 'bearer' })
+            .send({ where: {} })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(400)
+        : expect(false).toEqual(true));
 
     /**
      * Получение списка файлов
      */
     test('POST /media (Получение списка файлов)', async () =>
-      request
-        .post('/media')
-        .auth(token, { type: 'bearer' })
-        .send({ where: { folderId: folderId1 } })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: MediaGetFilesResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data[0]?.user?.password).toBeUndefined();
-        }));
+      token && folderId1
+        ? request
+            .post('/media')
+            .auth(token, { type: 'bearer' })
+            .send({ where: { folderId: folderId1 } })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(({ body }: { body: MediaGetFilesResponse }) => {
+              expect(body.status).toBe(Status.Success);
+              expect(body.data).toBeDefined();
+              expect(body.data[0]?.user?.password).toBeUndefined();
+            })
+        : expect(false).toEqual(true));
 
     /**
      * Загрузка файлов [success]
      */
     test('PUT /media [success] (Загрузка файлов)', async () =>
-      request
-        .put('/media')
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .field('folderId', folderId1)
-        .attach('files', `${__dirname}/testing.png`)
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: MediaUploadFilesResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data[0].id).toBeDefined();
-          mediaId1 = body.data[0].id;
-          expect(body.data[0]?.user?.password).toBeUndefined();
-        }));
+      token && folderId1
+        ? request
+            .put('/media')
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .field('folderId', folderId1)
+            .attach('files', `${__dirname}/testing.png`)
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(({ body }: { body: MediaUploadFilesResponse }) => {
+              expect(body.status).toBe(Status.Success);
+              expect(body.data).toBeDefined();
+              expect(body.data[0].id).toBeDefined();
+              mediaId1 = body.data[0].id;
+              expect(body.data[0]?.user?.password).toBeUndefined();
+            })
+        : expect(false).toEqual(true));
 
     /**
      * Скачивание медиа [success]
      */
     test('GET /media/file/{mediaId} [success] (Скачивание медиа)', async () =>
-      request
-        .get(`/media/file/${mediaId1}`)
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', 'image/png')
-        .expect(200)
-        .then(({ body }: { body: any }) => {
-          expect(body).toBeDefined();
-        }));
+      token && mediaId1
+        ? request
+            .get(`/media/file/${mediaId1}`)
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', 'image/png')
+            .expect(200)
+            .then(({ body }: { body: unknown }) => {
+              expect(body).toBeDefined();
+              const file = readFileSync(`${__dirname}/testing.png`);
+              expect(body).toStrictEqual(file);
+            })
+        : expect(false).toEqual(true));
 
     /**
      * Удаление файлов [success]
      */
     test('DELETE /media/{mediaId} [success] (Удаление файлов)', async () =>
-      request
-        .delete(`/media/${mediaId1}`)
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: SuccessResponse }) => {
-          expect(body.status).toBe(Status.Success);
-        }));
+      token && mediaId1
+        ? request
+            .delete(`/media/${mediaId1}`)
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(({ body }: { body: SuccessResponse }) => {
+              expect(body.status).toBe(Status.Success);
+            })
+        : expect(false).toEqual(true));
   });
 
   /**
@@ -674,9 +698,11 @@ describe('Backend API (e2e)', () => {
         const userUpdate = await userService.update(user, {
           role: UserRoleEnum.Administrator,
         });
-        return expect(userUpdate.id).toBe(userId);
+        expect(userUpdate.id).toBe(userId);
+        expect(userUpdate.role).toBe(UserRoleEnum.Administrator);
+      } else {
+        expect(false).toEqual(true);
       }
-      return expect(false).toEqual(true);
     });
 
     // TODO: GET /user - Получение информации о пользователях (только администратор)
@@ -689,13 +715,15 @@ describe('Backend API (e2e)', () => {
      * Удаление аккаунта пользователя (только администратор)
      */
     test('/user/{userId} (Удаление аккаунта пользователя, только администратор)', async () =>
-      request
-        .delete(`/user/delete/${userId}`)
-        .auth(token, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .expect({ status: Status.Success }));
+      token && userId
+        ? request
+            .delete(`/user/${userId}`)
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .expect({ status: Status.Success })
+        : expect(false).toBe(true));
   });
 
   afterAll(async () => {

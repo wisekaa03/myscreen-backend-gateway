@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/dto/status.enum';
 import { User } from '@/dto/user.dto';
+import { UserEntity } from '@/database/user.entity';
 
 export class AuthenticationPayload {
   @ApiProperty({ description: 'Тип: Bearer', example: 'bearer' })
@@ -26,7 +27,7 @@ export class AuthResponse {
     enum: Status,
     example: Status.Success,
   })
-  status!: Status;
+  status!: Status.Success;
 
   @ApiProperty({
     description: 'Возвращаемый токен',
@@ -40,5 +41,5 @@ export class AuthResponse {
     title: 'User',
     type: User,
   })
-  data!: User;
+  data!: Partial<UserEntity>;
 }
