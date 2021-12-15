@@ -59,11 +59,9 @@ export class EditorEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @ManyToMany(() => MediaEntity, (media) => media.id, {
-    cascade: true,
+  @ManyToMany(() => MediaEntity, (media) => media.editors, {
     nullable: true,
   })
-  @JoinTable()
   media?: MediaEntity[];
 
   @CreateDateColumn()

@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -12,7 +11,6 @@ import {
 
 import { UserEntity } from '@/database/user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { VideoEntity } from '@/database/video.entity';
 import { MediaEntity } from '@/database/media.entity';
 
 @Entity('playlist')
@@ -36,25 +34,18 @@ export class PlaylistEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @ManyToMany(() => MonitorEntity, (monitor) => monitor.id, {
-    nullable: true,
-    cascade: true,
-  })
-  @JoinTable()
+  @ManyToMany(
+    () => MonitorEntity,
+    (monitor: MonitorEntity) => monitor.playlists,
+    {
+      nullable: true,
+    },
+  )
   monitors?: MonitorEntity[];
 
-  @ManyToMany(() => VideoEntity, (video) => video.id, {
+  @ManyToMany(() => MediaEntity, (media: MediaEntity) => media.playlists, {
     nullable: true,
-    cascade: true,
   })
-  @JoinTable()
-  videos?: VideoEntity[];
-
-  @ManyToMany(() => MonitorEntity, (monitor) => monitor.id, {
-    nullable: true,
-    cascade: true,
-  })
-  @JoinTable()
   media?: MediaEntity[];
 
   @CreateDateColumn()

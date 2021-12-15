@@ -48,17 +48,15 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .addTag('folder', 'Манипуляции с папками')
     .addTag('media', 'Манипуляции с медиа файлами')
 
-    .addTag('monitor', 'Точки пользователя')
     .addTag('playlist', 'Плейлисты пользователя')
     .addTag('editor', 'Манипуляции с редактором')
+    .addTag('monitor', 'Точки пользователя')
 
     // .addTag('order', 'Путь для манипуляция с заказами')
     // .addTag('payment', 'Путь для манипуляция с оплатами')
     // .addTag('uptime', 'Путь для проверки аптайм мониторов')
     // .addTag('log', 'Путь для манипуляция с логами')
 
-    // .addTag('video', 'Видео путь для загрузки и мета-данные')
-    // .addTag('file', 'Путь для манипуляция с файлами')
     // .addTag('upload', 'Путь для загрузки файлов')
 
     .setDescription(author)

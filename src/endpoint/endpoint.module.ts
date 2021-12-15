@@ -13,9 +13,7 @@ import { JwtStrategy } from './auth/jwt.strategy';
 import { UserController } from './user.controller';
 import { MediaController } from './media.controller';
 import { MonitorController } from './monitor.controller';
-import { VideoController } from './video.controller';
 import { EditorController } from './editor.controller';
-import { FileController } from './file.controller';
 import { FolderController } from './folder.controller';
 import { UploadController } from './upload.controller';
 import { OrderController } from './order.controller';
@@ -49,9 +47,7 @@ import { LogController } from './log.controller';
   controllers: [
     AuthController,
     MonitorController,
-    VideoController,
     EditorController,
-    FileController,
     MediaController,
     FolderController,
     UploadController,

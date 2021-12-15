@@ -149,13 +149,21 @@ export class MediaEntity {
   @IsUUID()
   folderId!: string;
 
-  @ManyToMany(() => EditorEntity, (editor) => editor.id, { cascade: true })
+  @ManyToMany(() => EditorEntity, (editor: EditorEntity) => editor.media, {
+    cascade: true,
+    nullable: true,
+  })
   @JoinTable()
   editors?: EditorEntity[];
 
-  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.id, {
-    cascade: true,
-  })
+  @ManyToMany(
+    () => PlaylistEntity,
+    (playlist: PlaylistEntity) => playlist.media,
+    {
+      cascade: true,
+      nullable: true,
+    },
+  )
   @JoinTable()
   playlists?: PlaylistEntity[];
 

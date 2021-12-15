@@ -3,13 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 import { UserEntity } from '@/database/user.entity';
-import { FileEntity } from '@/database/file.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { MonitorOrientation } from './enums/monitor-orientation.enum';
 import { MonitorStatus } from './enums/monitor-status.enum';
@@ -69,13 +70,12 @@ export class MonitorEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @ManyToOne(() => FileEntity, (file) => file.id)
-  @JoinColumn()
-  file?: FileEntity;
-
-  @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id)
-  @JoinColumn()
-  playlist!: PlaylistEntity;
+  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.monitors, {
+    cascade: true,
+    nullable: true,
+  })
+  @JoinTable()
+  playlists?: PlaylistEntity;
 
   @CreateDateColumn()
   createdAt?: Date;

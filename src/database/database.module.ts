@@ -6,9 +6,7 @@ import { S3Module } from 'nestjs-s3';
 import { TypeOrmOptionsClass } from '@/shared/typeorm.options';
 import { S3ModuleOptionsClass } from '@/shared/s3-module-options-class';
 import { MailModule } from '@/mail/mail.module';
-import { AccountEntity } from './account.entity';
 import { EditorEntity } from './editor.entity';
-import { FileEntity } from './file.entity';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
 import { MediaEntity } from './media.entity';
@@ -22,7 +20,6 @@ import { PlaylistService } from './playlist.service';
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';
-import { VideoEntity } from './video.entity';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
 
@@ -36,9 +33,7 @@ import { RefreshTokenService } from './refreshtoken.service';
     }),
 
     TypeOrmModule.forFeature([
-      AccountEntity,
       EditorEntity,
-      FileEntity,
       FolderEntity,
       MediaEntity,
       MonitorEntity,
@@ -48,7 +43,6 @@ import { RefreshTokenService } from './refreshtoken.service';
       PlaylistEntity,
       UptimeMonitoringEntity,
       UserEntity,
-      VideoEntity,
       RefreshTokenEntity,
     ]),
 
