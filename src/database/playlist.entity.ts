@@ -1,8 +1,11 @@
+import { IsNotEmpty, IsUUID } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -16,16 +19,29 @@ import { MediaEntity } from '@/database/media.entity';
 @Entity('playlist')
 export class PlaylistEntity {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  @ApiProperty({
+    description: 'Идентификатор файла',
+    example: '1234567',
+    format: 'uuid',
+  })
+  @IsUUID()
+  id!: string;
 
   @Column()
+  @ApiProperty({
+    description: 'Имя файла',
+    example: 'bar',
+  })
+  @IsNotEmpty()
   name!: string;
 
   @Column({ nullable: true })
+  @ApiProperty({
+    description: 'Имя файла',
+    example: 'bar',
+  })
+  @IsNotEmpty()
   description!: string;
-
-  @Column({ type: 'uuid', array: true, nullable: true })
-  videoIds!: string[];
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
@@ -36,23 +52,42 @@ export class PlaylistEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @ManyToMany(
-    () => MonitorEntity,
-    (monitor: MonitorEntity) => monitor.playlists,
-    {
-      nullable: true,
-    },
-  )
+  @Column({ nullable: true })
+  @IsUUID()
+  userId!: string;
+
+  @ManyToMany(() => MonitorEntity, (monitor) => monitor.playlists, {
+    nullable: true,
+  })
   monitors?: MonitorEntity[];
 
-  @ManyToMany(() => MediaEntity, (media: MediaEntity) => media.playlists, {
+  @ManyToMany(() => MediaEntity, (media) => media.playlists, {
     nullable: true,
   })
   media?: MediaEntity[];
 
+  @ManyToMany(() => MediaEntity, (media) => media.rendered, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    nullable: true,
+    eager: false,
+  })
+  @JoinTable()
+  rendered?: MediaEntity[];
+
   @CreateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   createdAt?: Date;
 
   @UpdateDateColumn()
+  @ApiProperty({
+    description: 'Время изменения',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   updatedAt?: Date;
 }

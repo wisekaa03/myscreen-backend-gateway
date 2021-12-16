@@ -27,7 +27,6 @@ import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
 import { generateMailToken } from '@/shared/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
-import { winstonOptions } from '@/shared/logger.options';
 
 const registerRequest: RegisterRequest = {
   email: 'foo@bar.baz', // 'wisekaa03@gmail.com',

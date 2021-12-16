@@ -1,3 +1,5 @@
+import { IsUUID } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
@@ -18,7 +20,7 @@ import { MonitorStatus } from './enums/monitor-status.enum';
 @Entity('monitor')
 export class MonitorEntity {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  id!: string;
 
   @Column({ unique: true })
   name!: string;
@@ -72,7 +74,13 @@ export class MonitorEntity {
   @JoinColumn()
   user!: UserEntity;
 
+  @Column({ nullable: true })
+  @IsUUID()
+  userId!: string;
+
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.monitors, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
     cascade: true,
     nullable: true,
   })
@@ -80,8 +88,18 @@ export class MonitorEntity {
   playlists?: PlaylistEntity;
 
   @CreateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   createdAt?: Date;
 
   @UpdateDateColumn()
+  @ApiProperty({
+    description: 'Время изменения',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   updatedAt?: Date;
 }

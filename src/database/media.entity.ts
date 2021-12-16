@@ -14,6 +14,7 @@ import type { FfprobeData } from 'media-probe';
 import {
   IsEnum,
   IsJSON,
+  IsNotEmpty,
   IsNumber,
   IsString,
   IsUUID,
@@ -83,6 +84,7 @@ export class MediaEntity {
     description: 'Изначальное имя файла',
     example: 'foo.mp4',
   })
+  @IsNotEmpty()
   originalName!: string;
 
   @Column()
@@ -90,6 +92,7 @@ export class MediaEntity {
     description: 'Имя файла',
     example: 'bar',
   })
+  @IsNotEmpty()
   name!: string;
 
   @Column({ nullable: true })
@@ -156,23 +159,34 @@ export class MediaEntity {
   @IsUUID()
   folderId!: string;
 
-  @ManyToMany(() => EditorEntity, (editor: EditorEntity) => editor.media, {
+  @Column()
+  @ApiProperty({
+    type: 'string',
+    description: 'Предпросмотр',
+    required: false,
+  })
+  preview?: string;
+
+  @ManyToMany(() => EditorEntity, (editor) => editor.media, {
     cascade: true,
     nullable: true,
   })
   @JoinTable()
   editors?: EditorEntity[];
 
-  @ManyToMany(
-    () => PlaylistEntity,
-    (playlist: PlaylistEntity) => playlist.media,
-    {
-      cascade: true,
-      nullable: true,
-    },
-  )
+  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.media, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    nullable: true,
+  })
   @JoinTable()
   playlists?: PlaylistEntity[];
+
+  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.rendered, {
+    nullable: true,
+  })
+  rendered?: PlaylistEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

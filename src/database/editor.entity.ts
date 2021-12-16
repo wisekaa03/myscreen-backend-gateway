@@ -1,9 +1,10 @@
+import { IsUUID } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -61,14 +62,28 @@ export class EditorEntity {
   @JoinColumn()
   user!: UserEntity;
 
+  @Column({ nullable: true })
+  @IsUUID()
+  userId!: string;
+
   @ManyToMany(() => MediaEntity, (media) => media.editors, {
     nullable: true,
   })
   media?: MediaEntity[];
 
   @CreateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   createdAt?: Date;
 
   @UpdateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   updatedAt?: Date;
 }

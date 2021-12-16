@@ -14,17 +14,14 @@ export class PlaylistService {
     private readonly configService: ConfigService,
   ) {}
 
-  async find(
+  find = async (
     find: FindManyOptions<PlaylistEntity>,
-  ): Promise<[Array<PlaylistEntity>, number]> {
-    return this.playlistEntity.findAndCount(find);
-  }
+  ): Promise<[Array<PlaylistEntity>, number]> =>
+    this.playlistEntity.findAndCount(find);
 
-  async findOne(
+  findOne = async (
     find: FindManyOptions<PlaylistEntity>,
-  ): Promise<PlaylistEntity | undefined> {
-    return this.playlistEntity.findOne(find);
-  }
+  ): Promise<PlaylistEntity | undefined> => this.playlistEntity.findOne(find);
 
   async create(user: UserEntity): Promise<PlaylistEntity> {
     const playlist: DeepPartial<PlaylistEntity> = {
