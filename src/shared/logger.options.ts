@@ -1,6 +1,6 @@
 import {
   utilities as nestWinstonModuleUtilities,
-  WinstonModuleOptions,
+  type WinstonModuleOptions,
 } from 'nest-winston';
 import { transports, format } from 'winston';
 import type { ConfigService } from '@nestjs/config';

@@ -9,7 +9,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindConditions, DeleteResult, DeepPartial } from 'typeorm';
+import {
+  Repository,
+  FindConditions,
+  type DeleteResult,
+  type DeepPartial,
+} from 'typeorm';
 
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { MailService } from '@/mail/mail.service';

@@ -2,7 +2,7 @@ import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { PromiseResult } from 'aws-sdk/lib/request';
+import type { PromiseResult } from 'aws-sdk/lib/request';
 import {
   BadRequestException,
   Body,
@@ -31,7 +31,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { InjectS3, S3 } from 'nestjs-s3';
+import { InjectS3, type S3 } from 'nestjs-s3';
 
 import {
   BadRequestError,

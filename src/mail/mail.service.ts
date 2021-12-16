@@ -4,7 +4,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MailgunService, MailgunError } from 'nestjs-mailgun';
+import { MailgunService, type MailgunError } from 'nestjs-mailgun';
 
 @Injectable()
 export class MailService {

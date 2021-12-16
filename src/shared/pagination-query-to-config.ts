@@ -1,4 +1,4 @@
-import { FindManyOptions } from 'typeorm';
+import type { FindManyOptions } from 'typeorm';
 import { LimitRequest } from '@/dto/request/limit.request';
 
 export const paginationQueryToConfig = <T>(

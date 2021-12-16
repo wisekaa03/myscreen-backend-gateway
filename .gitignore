@@ -111,3 +111,4 @@ dist
 docker/postgres
 !upload
 upload/*
+swagger.yml

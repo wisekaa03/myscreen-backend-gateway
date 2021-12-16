@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOneOptions, FindManyOptions } from 'typeorm';
+import { Repository, type FindOneOptions, type FindManyOptions } from 'typeorm';
 
 import { FolderEntity } from './folder.entity';
 

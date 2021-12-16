@@ -5,10 +5,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JwtSignOptions, JwtService } from '@nestjs/jwt';
+import { type JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
 
-import { JWT_BASE_OPTIONS, MyscreenJwtPayload } from '@/shared/jwt.payload';
+import {
+  JWT_BASE_OPTIONS,
+  type MyscreenJwtPayload,
+} from '@/shared/jwt.payload';
 
 import { userEntityToUser, AuthenticationPayload } from '@/dto';
 

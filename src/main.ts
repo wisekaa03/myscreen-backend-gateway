@@ -1,3 +1,6 @@
+import { writeFileSync } from 'node:fs';
+import { resolve as pathResolve } from 'node:path';
+import { stringify as yamlStringify } from 'yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
@@ -10,7 +13,7 @@ import { ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 
 import { winstonOptions } from '@/shared/logger.options';
-import { version, author, description } from '../package.json';
+import { version, author, homepage, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ExceptionsFilter } from './exception/exceptions.filter';
 
@@ -43,6 +46,11 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
       name: 'token',
     })
     .setTitle(description)
+    .setDescription(description)
+    .setVersion(version)
+    .setExternalDoc(description, homepage)
+    .setContact(author.name, author.url, author.email)
+
     .addTag('auth', 'Аутентификация пользователя')
     .addTag('user', 'Действия с пользователями (только администратор)')
     .addTag('folder', 'Манипуляции с папками')
@@ -59,8 +67,6 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 
     // .addTag('upload', 'Путь для загрузки файлов')
 
-    .setDescription(author)
-    .setVersion(version)
     .build();
 
   const swaggerOptions: SwaggerCustomOptions = {
@@ -69,12 +75,12 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     },
     customSiteTitle: description,
   };
-  SwaggerModule.setup(
-    apiPath,
-    app,
-    SwaggerModule.createDocument(app, swaggerConfig),
-    swaggerOptions,
-  );
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  if (process.env.NODE_ENV !== 'production') {
+    const swagger = yamlStringify(swaggerDocument);
+    writeFileSync(pathResolve(__dirname, '../..', 'swagger.yml'), swagger);
+  }
+  SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
   const PORT = configService.get<number>('PORT', 3000);
   await app.listen(PORT);

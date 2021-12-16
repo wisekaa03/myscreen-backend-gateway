@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3ModuleOptions, S3ModuleOptionsFactory } from 'nestjs-s3';
+import type { S3ModuleOptions, S3ModuleOptionsFactory } from 'nestjs-s3';
 
 @Injectable()
 export class S3ModuleOptionsClass implements S3ModuleOptionsFactory {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
+import type {
   MulterModuleOptions,
   MulterOptionsFactory,
 } from '@nestjs/platform-express';

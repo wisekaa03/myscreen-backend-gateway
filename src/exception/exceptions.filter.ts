@@ -1,6 +1,6 @@
 import {
   Catch,
-  ArgumentsHost,
+  type ArgumentsHost,
   Logger,
   HttpException,
   UnauthorizedException,
