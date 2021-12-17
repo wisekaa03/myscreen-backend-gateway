@@ -31,11 +31,10 @@ import {
   UserGetResponse,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
+import { AuthService } from '@/auth/auth.service';
 import { UserRoleEnum } from '@/database/enums/role.enum';
 import { UserService } from '@/database/user.service';
-import { AuthService } from './auth/auth.service';
 
-@ApiTags('user')
 @ApiResponse({
   status: 400,
   description: 'Ответ будет таким если с данным что-то не так',
@@ -59,6 +58,7 @@ import { AuthService } from './auth/auth.service';
 @Roles(UserRoleEnum.Administrator)
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
+@ApiTags('user')
 @Controller('user')
 export class UserController {
   logger = new Logger(UserController.name);

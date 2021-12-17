@@ -1,6 +1,6 @@
 import { Controller, Logger } from '@nestjs/common';
 
-@Controller('/log')
+@Controller('log')
 export class LogController {
   logger = new Logger(LogController.name);
 }

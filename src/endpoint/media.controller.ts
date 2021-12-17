@@ -52,7 +52,6 @@ import { JwtAuthGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { MediaService } from '@/database/media.service';
 
-@ApiTags('media')
 @ApiResponse({
   status: 400,
   description: 'Ответ будет таким если с данным что-то не так',
@@ -85,7 +84,8 @@ import { MediaService } from '@/database/media.service';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('/media')
+@ApiTags('media')
+@Controller('media')
 export class MediaController {
   logger = new Logger(MediaController.name);
 

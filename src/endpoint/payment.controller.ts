@@ -30,7 +30,6 @@ import { JwtAuthGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PaymentService } from '@/database/payment.service';
 
-@ApiTags('payment')
 @ApiResponse({
   status: 400,
   description: 'Ответ будет таким если с данным что-то не так',
@@ -63,7 +62,8 @@ import { PaymentService } from '@/database/payment.service';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('/payment')
+@ApiTags('payment')
+@Controller('payment')
 export class PaymentController {
   logger = new Logger(PaymentController.name);
 

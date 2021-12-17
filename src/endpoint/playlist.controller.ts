@@ -30,7 +30,6 @@ import { JwtAuthGuard } from '@/guards';
 import { PlaylistService } from '@/database/playlist.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 
-@ApiTags('playlist')
 @ApiResponse({
   status: 400,
   description: 'Ответ будет таким если с данным что-то не так',
@@ -63,7 +62,8 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('/playlist')
+@ApiTags('playlist')
+@Controller('playlist')
 export class PlaylistController {
   logger = new Logger(PlaylistController.name);
 

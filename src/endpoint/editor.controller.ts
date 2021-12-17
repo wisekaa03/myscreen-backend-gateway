@@ -30,7 +30,6 @@ import { JwtAuthGuard } from '@/guards';
 import { EditorService } from '@/database/editor.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 
-@ApiTags('editor')
 @ApiResponse({
   status: 400,
   description: 'Ответ будет таким если с данным что-то не так',
@@ -63,7 +62,8 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('/editor')
+@ApiTags('editor')
+@Controller('editor')
 export class EditorController {
   logger = new Logger(EditorController.name);
 

@@ -1,15 +1,8 @@
 import { Module, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
-import { MulterModule } from '@nestjs/platform-express';
-
-import { MulterModuleOptionsClass } from '@/shared/multer-module-options-class';
+import { AuthModule } from '@/auth/auth.module';
 import { DatabaseModule } from '@/database/database.module';
 
-import { AuthController } from './auth/auth.controller';
-import { AuthService } from './auth/auth.service';
-import { JwtStrategy } from './auth/jwt.strategy';
+import { AuthController } from './auth.controller';
 import { UserController } from './user.controller';
 import { MediaController } from './media.controller';
 import { MonitorController } from './monitor.controller';
@@ -22,26 +15,7 @@ import { PlaylistController } from './playlist.controller';
 import { LogController } from './log.controller';
 
 @Module({
-  imports: [
-    PassportModule,
-    JwtModule.registerAsync({
-      imports: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_TOKEN'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES'),
-        },
-      }),
-      inject: [ConfigService],
-    }),
-
-    MulterModule.registerAsync({
-      imports: [DatabaseModule],
-      useClass: MulterModuleOptionsClass,
-    }),
-
-    DatabaseModule,
-  ],
+  imports: [AuthModule, DatabaseModule],
 
   controllers: [
     AuthController,
@@ -57,6 +31,6 @@ import { LogController } from './log.controller';
     LogController,
   ],
 
-  providers: [Logger, JwtStrategy, AuthService],
+  providers: [Logger],
 })
 export class EndpointModule {}

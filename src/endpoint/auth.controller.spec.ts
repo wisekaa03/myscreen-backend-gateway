@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { AuthService } from './auth.service';
+import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
-import { AuthController } from './auth.controller';
 import { JwtAuthGuard } from '@/guards';
+import { AuthController } from './auth.controller';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),

@@ -30,7 +30,6 @@ import { JwtAuthGuard } from '@/guards';
 import { MonitorService } from '@/database/monitor.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 
-@ApiTags('monitor')
 @ApiResponse({
   status: 400,
   description: 'Ответ будет таким если с данным что-то не так',
@@ -63,7 +62,8 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('/monitor')
+@ApiTags('monitor')
+@Controller('monitor')
 export class MonitorController {
   logger = new Logger(MonitorController.name);
 

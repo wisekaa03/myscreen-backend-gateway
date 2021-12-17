@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { UserService } from '@/database/user.service';
-import { UserController } from './user.controller';
-import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { UserRoleEnum } from '@/database/enums/role.enum';
+import { UserService } from '@/database/user.service';
+import { AuthService } from '@/auth/auth.service';
+import { UserController } from './user.controller';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),

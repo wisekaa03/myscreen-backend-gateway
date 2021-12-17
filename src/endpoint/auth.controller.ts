@@ -38,12 +38,10 @@ import {
   userEntityToUser,
   UserGetResponse,
 } from '@/dto';
+import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
-import { AuthService } from './auth.service';
-
-@ApiTags('auth')
 @ApiResponse({
   status: 400,
   description: 'Ответ будет таким если с данным что-то не так',
@@ -69,6 +67,7 @@ import { AuthService } from './auth.service';
   description: 'Ошибка сервера',
   type: ServiceUnavailableError,
 })
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   logger = new Logger(AuthController.name);

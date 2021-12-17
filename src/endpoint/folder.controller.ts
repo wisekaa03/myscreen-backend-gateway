@@ -40,7 +40,6 @@ import { JwtAuthGuard } from '@/guards';
 import { FolderService } from '@/database/folder.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 
-@ApiTags('folder')
 @ApiResponse({
   status: 400,
   description: 'Ответ будет таким если с данным что-то не так',
@@ -68,7 +67,8 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@Controller('/folder')
+@ApiTags('folder')
+@Controller('folder')
 export class FolderController {
   logger = new Logger(FolderController.name);
 
