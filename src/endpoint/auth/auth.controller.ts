@@ -83,7 +83,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'get_auth',
+    operationId: 'auth_get',
     summary:
       'Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию',
   })
@@ -111,7 +111,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'update_auth',
+    operationId: 'auth_update',
     summary: 'Изменение аккаунта пользователя',
   })
   @ApiResponse({

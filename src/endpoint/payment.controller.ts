@@ -72,7 +72,7 @@ export class PaymentController {
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'playlists_get',
+    operationId: 'payments_get',
     summary: 'Получение списка оплат',
   })
   @ApiResponse({
