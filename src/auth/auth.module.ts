@@ -2,9 +2,7 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import { MulterModule } from '@nestjs/platform-express';
 
-import { MulterModuleOptionsClass } from '@/shared/multer-module-options-class';
 import { DatabaseModule } from '@/database/database.module';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
@@ -20,11 +18,6 @@ import { JwtStrategy } from './jwt.strategy';
         },
       }),
       inject: [ConfigService],
-    }),
-
-    MulterModule.registerAsync({
-      imports: [DatabaseModule],
-      useClass: MulterModuleOptionsClass,
     }),
 
     DatabaseModule,

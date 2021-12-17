@@ -7,14 +7,9 @@ import type {
 import type { Request as ExpressRequest } from 'express';
 import multerMedia from 'multer-media';
 
-import { MediaService } from '@/database/media.service';
-
 @Injectable()
 export class MulterModuleOptionsClass implements MulterOptionsFactory {
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly mediaService: MediaService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   async createMulterOptions(): Promise<MulterModuleOptions> {
     return {
