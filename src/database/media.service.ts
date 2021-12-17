@@ -1,5 +1,4 @@
 import { createReadStream } from 'node:fs';
-import { resolve as pathResolve } from 'node:path';
 import { Readable } from 'node:stream';
 import { Response as ExpressResponse } from 'express';
 import { PromiseResult } from 'aws-sdk/lib/request';
@@ -40,7 +39,7 @@ export class MediaService {
     @InjectRepository(MediaEntity)
     private readonly mediaRepository: Repository<MediaEntity>,
   ) {
-    this.bucket = configService.get('AWS_BUCKET', 'myscreen-video-editor');
+    this.bucket = configService.get('AWS_BUCKET', 'myscreen-media');
   }
 
   /**

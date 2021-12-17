@@ -274,7 +274,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async disableUser(@Req() { user }: ExpressRequest): Promise<SuccessResponse> {
+  async disable(@Req() { user }: ExpressRequest): Promise<SuccessResponse> {
     if (!user) {
       throw new UnauthorizedException();
     }

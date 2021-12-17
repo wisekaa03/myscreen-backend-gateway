@@ -82,8 +82,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   }
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
-  const PORT = configService.get<number>('PORT', 3000);
-  await app.listen(PORT);
+  await app.listen(configService.get<number>('PORT', 3000));
   logger.log(
     `Server version ${version} started on ${await app.getUrl()}`,
     NestApplication.name,
