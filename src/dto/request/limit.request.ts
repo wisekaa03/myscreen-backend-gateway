@@ -31,7 +31,7 @@ export class LimitRequest<T = any> {
   @ApiProperty({
     description: 'Порядок результатов',
     type: 'OrderRequest',
-    example: { name: 'ASC', createdAt: 'DESC' },
+    example: { createdAt: 'DESC' },
     required: false,
   })
   @IsOptional()

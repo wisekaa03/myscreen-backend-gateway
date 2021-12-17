@@ -80,14 +80,14 @@ export class OrderController {
     description: 'Успешный ответ',
     type: OrdersGetResponse,
   })
-  async getPlaylists(
+  async getOrders(
     @Req() { user }: ExpressRequest,
     @Body() { where, scope }: OrdersGetRequest,
   ): Promise<OrdersGetResponse> {
     const [data, count] = await this.orderService.find({
       ...paginationQueryToConfig(scope),
       where: {
-        user,
+        userId: user.id,
         ...where,
       },
     });

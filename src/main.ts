@@ -53,15 +53,15 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 
     .addTag('auth', 'Аутентификация пользователя')
     .addTag('user', 'Действия с пользователями (только администратор)')
-    .addTag('folder', 'Манипуляции с папками')
-    .addTag('media', 'Манипуляции с медиа файлами')
+    .addTag('folder', 'Папки')
+    .addTag('media', 'Медиа файлы')
 
-    .addTag('playlist', 'Плейлисты пользователя')
-    .addTag('editor', 'Манипуляции с редактором')
-    .addTag('monitor', 'Точки пользователя')
+    .addTag('playlist', 'Плейлисты')
+    .addTag('editor', 'Редакторы')
+    .addTag('monitor', 'Мониторы')
 
-    .addTag('order', 'Путь для манипуляций с заказами')
-    .addTag('payment', 'Путь для манипуляций с оплатами')
+    .addTag('order', 'Заказы')
+    .addTag('payment', 'Оплаты')
 
     // .addTag('uptime', 'Путь для проверки аптайм мониторов')
     // .addTag('log', 'Путь для манипуляция с логами')

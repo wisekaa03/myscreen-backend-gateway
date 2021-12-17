@@ -1,29 +1,29 @@
-export enum PaymentService {
+export enum PaymentEnumService {
   Youkassa = 'youkassa',
   Invoice = 'invoice',
 }
 
-export enum PaymentStatus {
+export enum PaymentEnumStatus {
   Pending = 'pending',
   Succeded = 'succeeded',
   Cancelled = 'cancelled',
   WaitingForCapture = 'waiting_for_capture',
 }
 
-export enum PaymentReceiptStatus {
+export enum PaymentEnumReceiptStatus {
   Pending = 'pending',
   Succeeded = 'succeeded',
   Cancelled = 'cancelled',
 }
 
-export enum PaymentCancellationParty {
+export enum PaymentEnumCancellationParty {
   YandexCheckout = 'yandex_checkout',
   YooMoney = 'yoo_money',
   PaymentNetwork = 'payment_network',
   Merchant = 'merchant',
 }
 
-export enum PaymentCancellationReason {
+export enum PaymentEnumCancellationReason {
   ThreeDSecureFailed = '3d_secure_failed',
   CallIssuer = 'call_issuer',
   CancelledByMerchant = 'canceled_by_merchant',

@@ -16,5 +16,7 @@ export * from './media-get-files.request';
 export * from './media-upload-file.request';
 export * from './order.request';
 export * from './orders-get.request';
+export * from './payment.request';
+export * from './payments-get.request';
 export * from './playlist.request';
 export * from './playlists-get.request';

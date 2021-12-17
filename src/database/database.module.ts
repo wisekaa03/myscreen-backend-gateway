@@ -24,6 +24,7 @@ import { UserSizeEntity } from './user.view.entity';
 import { UserService } from './user.service';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
+import { PaymentService } from './payment.service';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { RefreshTokenService } from './refreshtoken.service';
     MediaService,
     PlaylistService,
     OrderService,
+    PaymentService,
   ],
 
   exports: [
@@ -72,6 +74,7 @@ import { RefreshTokenService } from './refreshtoken.service';
     MediaService,
     PlaylistService,
     OrderService,
+    PaymentService,
   ],
 })
 export class DatabaseModule {}

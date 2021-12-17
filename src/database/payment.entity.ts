@@ -9,16 +9,16 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsUUID } from 'class-validator';
+import { IsString, IsUUID } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 import { OrderEntity } from '@/database/order.entity';
 import {
-  PaymentService,
-  PaymentStatus,
-  PaymentReceiptStatus,
-  PaymentCancellationParty,
-  PaymentCancellationReason,
+  PaymentEnumService,
+  PaymentEnumStatus,
+  PaymentEnumReceiptStatus,
+  PaymentEnumCancellationParty,
+  PaymentEnumCancellationReason,
 } from './enums/payments.enum';
 
 @Entity('payment')
@@ -64,8 +64,8 @@ export class PaymentEntity {
   @JoinColumn()
   orders!: OrderEntity[];
 
-  @Column({ type: 'enum', enum: PaymentService })
-  paymentService!: PaymentService;
+  @Column({ type: 'enum', enum: PaymentEnumService })
+  paymentService!: PaymentEnumService;
 
   @Column()
   amount!: string;
@@ -74,10 +74,15 @@ export class PaymentEntity {
   incomeAmount?: string;
 
   @Column()
+  @ApiProperty({
+    description: 'Описание',
+    example: 'Чтобы',
+  })
+  @IsString()
   description!: string;
 
-  @Column({ type: 'enum', enum: PaymentStatus })
-  status!: PaymentStatus;
+  @Column({ type: 'enum', enum: PaymentEnumStatus })
+  status!: PaymentEnumStatus;
 
   @Column({ type: 'timestamp', nullable: true })
   capturedAt?: Date;
@@ -85,14 +90,14 @@ export class PaymentEntity {
   @Column({ type: 'timestamp', nullable: true })
   expiresAt?: Date;
 
-  @Column({ type: 'enum', enum: PaymentReceiptStatus, nullable: true })
-  receiptStatus?: PaymentReceiptStatus;
+  @Column({ type: 'enum', enum: PaymentEnumReceiptStatus, nullable: true })
+  receiptStatus?: PaymentEnumReceiptStatus;
 
-  @Column({ type: 'enum', enum: PaymentCancellationParty, nullable: true })
-  cancellationParty?: PaymentCancellationParty;
+  @Column({ type: 'enum', enum: PaymentEnumCancellationParty, nullable: true })
+  cancellationParty?: PaymentEnumCancellationParty;
 
-  @Column({ type: 'enum', enum: PaymentCancellationReason, nullable: true })
-  cancellationReason?: PaymentCancellationReason;
+  @Column({ type: 'enum', enum: PaymentEnumCancellationReason, nullable: true })
+  cancellationReason?: PaymentEnumCancellationReason;
 
   @CreateDateColumn()
   createdAt?: Date;

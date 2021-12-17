@@ -2,21 +2,21 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { PlaylistEntity } from '@/database/playlist.entity';
 import { LimitRequest } from './limit.request';
-import { PlaylistRequest } from './playlist.request';
+import { PaymentEntity } from '@/database/payment.entity';
+import { PaymentRequest } from './payment.request';
 
-export class PlaylistsGetRequest {
+export class PaymentsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'PlaylistRequest',
-    type: PlaylistRequest,
+    title: 'PaymentRequest',
+    type: PaymentRequest,
     required: false,
   })
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => PlaylistRequest)
-  where!: PlaylistRequest;
+  @Type(() => PaymentRequest)
+  where?: PaymentRequest;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -26,5 +26,5 @@ export class PlaylistsGetRequest {
   })
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<PlaylistEntity>;
+  scope?: LimitRequest<PaymentEntity>;
 }

@@ -33,7 +33,7 @@ export class OrderEntity {
   @Column()
   @ApiProperty({
     description: 'Описание',
-    example: 'bar',
+    example: 'Чтобы',
   })
   @IsString()
   description!: string;
