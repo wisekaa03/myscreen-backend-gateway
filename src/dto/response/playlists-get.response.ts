@@ -8,6 +8,7 @@ export class PlaylistsGetResponse {
     description: 'Статус операции',
     enum: Status,
     example: Status.Success,
+    required: true,
   })
   status!: Status.Success;
 
@@ -19,6 +20,7 @@ export class PlaylistsGetResponse {
     title: 'PlaylistResponse',
     type: PlaylistResponse,
     isArray: true,
+    required: true,
   })
   data!: PlaylistResponse[];
 }

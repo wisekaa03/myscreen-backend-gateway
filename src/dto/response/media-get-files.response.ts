@@ -8,6 +8,7 @@ export class MediaGetFilesResponse {
     description: 'Статус операции',
     enum: Status,
     example: Status.Success,
+    required: true,
   })
   status!: Status.Success;
 
@@ -16,9 +17,10 @@ export class MediaGetFilesResponse {
 
   @ApiProperty({
     description: 'Файлы',
-    title: 'Media',
+    title: 'MediaResponse',
     type: MediaResponse,
     isArray: true,
+    required: true,
   })
   data!: MediaResponse[];
 }

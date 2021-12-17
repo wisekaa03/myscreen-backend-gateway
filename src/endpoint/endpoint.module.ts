@@ -15,7 +15,6 @@ import { MediaController } from './media.controller';
 import { MonitorController } from './monitor.controller';
 import { EditorController } from './editor.controller';
 import { FolderController } from './folder.controller';
-import { UploadController } from './upload.controller';
 import { OrderController } from './order.controller';
 import { PaymentController } from './payment.controller';
 import { UptimeController } from './uptime.controller';
@@ -50,7 +49,6 @@ import { LogController } from './log.controller';
     EditorController,
     MediaController,
     FolderController,
-    UploadController,
     UserController,
     OrderController,
     PaymentController,

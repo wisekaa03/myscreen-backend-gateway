@@ -8,19 +8,35 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
+import { IsString, IsUUID } from 'class-validator';
+
 import { UserEntity } from '@/database/user.entity';
 
 @Entity('order')
 export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  @ApiProperty({
+    description: 'Идентификатор файла',
+    example: '1234567',
+    format: 'uuid',
+  })
+  @IsUUID()
+  id!: string;
 
   @Generated('increment')
   @Column({ type: 'integer' })
-  seqNo!: number;
+  @Exclude()
+  seqNo?: number;
 
-  @Column({ type: 'numeric' })
-  description!: number;
+  @Column()
+  @ApiProperty({
+    description: 'Описание',
+    example: 'bar',
+  })
+  @IsString()
+  description!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onUpdate: 'CASCADE',
@@ -31,9 +47,23 @@ export class OrderEntity {
   @JoinColumn()
   user!: UserEntity;
 
+  @Column()
+  @IsUUID()
+  userId!: string;
+
   @CreateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   createdAt?: Date;
 
   @UpdateDateColumn()
+  @ApiProperty({
+    description: 'Время изменения',
+    example: '2021-01-01T10:00:00.147Z',
+    required: false,
+  })
   updatedAt?: Date;
 }

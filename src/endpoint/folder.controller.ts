@@ -28,7 +28,7 @@ import {
   FoldersGetResponse,
   FoldersGetRequest,
   FolderCreateRequest,
-  FolderUpdateResponse,
+  FolderGetResponse,
   ForbiddenError,
   InternalServerError,
   Status,
@@ -113,12 +113,12 @@ export class FolderController {
   @ApiResponse({
     status: 201,
     description: 'Успешный ответ',
-    type: FolderUpdateResponse,
+    type: FolderGetResponse,
   })
   async createFolder(
     @Req() { user }: ExpressRequest,
     @Body() { name, parentFolderId }: FolderCreateRequest,
-  ): Promise<FolderUpdateResponse> {
+  ): Promise<FolderGetResponse> {
     if (!parentFolderId) {
       const parentFolder = await this.folderService.findFolder({
         where: { user, name, parentFolderId: null },
@@ -157,12 +157,12 @@ export class FolderController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: FolderUpdateResponse,
+    type: FolderGetResponse,
   })
   async getFolder(
     @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
-  ): Promise<FolderUpdateResponse> {
+  ): Promise<FolderGetResponse> {
     return {
       status: Status.Success,
       data: await this.folderService
@@ -186,13 +186,13 @@ export class FolderController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: FolderUpdateResponse,
+    type: FolderGetResponse,
   })
   async updateFolder(
     @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
     @Body() { name }: FolderUpdateRequest,
-  ): Promise<FolderUpdateResponse> {
+  ): Promise<FolderGetResponse> {
     return {
       status: Status.Success,
       data: await this.folderService

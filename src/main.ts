@@ -60,12 +60,11 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .addTag('editor', 'Манипуляции с редактором')
     .addTag('monitor', 'Точки пользователя')
 
-    // .addTag('order', 'Путь для манипуляция с заказами')
-    // .addTag('payment', 'Путь для манипуляция с оплатами')
+    .addTag('order', 'Путь для манипуляций с заказами')
+    .addTag('payment', 'Путь для манипуляций с оплатами')
+
     // .addTag('uptime', 'Путь для проверки аптайм мониторов')
     // .addTag('log', 'Путь для манипуляция с логами')
-
-    // .addTag('upload', 'Путь для загрузки файлов')
 
     .build();
 

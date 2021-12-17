@@ -2,29 +2,21 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { MediaEntity } from '@/database/media.entity';
+import { OrderEntity } from '@/database/order.entity';
 import { LimitRequest } from './limit.request';
-import { MediaRequest } from './media.request';
+import { OrderRequest } from './order.request';
 
-export class MediaGetFilesRequest {
-  // @ApiProperty({
-  //   description: 'Показывать все',
-  //   example: false,
-  //   required: false,
-  // })
-  // @IsBoolean()
-  // showAll?: boolean;
-
+export class OrdersGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'MediaRequest',
-    type: MediaRequest,
-    required: true,
+    title: 'OrderRequest',
+    type: OrderRequest,
+    required: false,
   })
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => MediaRequest)
-  where!: MediaRequest;
+  @Type(() => OrderRequest)
+  where?: OrderRequest;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -34,5 +26,5 @@ export class MediaGetFilesRequest {
   })
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<MediaEntity>;
+  scope?: LimitRequest<OrderEntity>;
 }

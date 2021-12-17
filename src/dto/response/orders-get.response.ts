@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/dto/status.enum';
-import { MediaResponse } from '@/dto/response';
+import { OrderResponse } from './order.response';
 
-export class MediaUploadFilesResponse {
+export class OrdersGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -12,15 +12,15 @@ export class MediaUploadFilesResponse {
   })
   status!: Status.Success;
 
-  // @ApiProperty({ description: 'Количество файлов' })
-  // count!: number;
+  @ApiProperty({ description: 'Количество заказов' })
+  count!: number;
 
   @ApiProperty({
-    description: 'Файлы',
-    title: 'MediaResponse',
-    type: MediaResponse,
+    description: 'Заказы',
+    title: 'OrderResponse',
+    type: OrderResponse,
     isArray: true,
     required: true,
   })
-  data!: MediaResponse[];
+  data!: OrderResponse[];
 }

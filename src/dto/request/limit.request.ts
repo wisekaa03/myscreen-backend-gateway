@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Allow, IsOptional, Max, Min } from 'class-validator';
 
-export type OrderDirection = 'ASC' | 'DESC';
+export type LimitOrderDirection = 'ASC' | 'DESC';
 
-export type OrderRequest<T> = {
-  [P in keyof T]?: OrderDirection;
+export type LimitOrderRequest<T> = {
+  [P in keyof T]?: LimitOrderDirection;
 };
 
 export class LimitRequest<T = any> {
@@ -36,5 +36,5 @@ export class LimitRequest<T = any> {
   })
   @IsOptional()
   @Allow()
-  order?: OrderRequest<T>;
+  order?: LimitOrderRequest<T>;
 }

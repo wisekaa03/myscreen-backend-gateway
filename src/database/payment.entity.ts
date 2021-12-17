@@ -8,6 +8,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsUUID } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 import { OrderEntity } from '@/database/order.entity';
@@ -22,7 +24,13 @@ import {
 @Entity('payment')
 export class PaymentEntity {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  @ApiProperty({
+    description: 'Идентификатор файла',
+    example: '1234567',
+    format: 'uuid',
+  })
+  @IsUUID()
+  id!: string;
 
   @Column({ nullable: true })
   externalPayment!: string;
@@ -47,6 +55,10 @@ export class PaymentEntity {
   })
   @JoinColumn()
   user!: UserEntity;
+
+  @Column()
+  @IsUUID()
+  userId!: string;
 
   @ManyToMany(() => OrderEntity, (order) => order.id, { cascade: true })
   @JoinColumn()

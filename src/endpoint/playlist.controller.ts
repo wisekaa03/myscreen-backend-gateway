@@ -1,6 +1,5 @@
 import { Request as ExpressRequest } from 'express';
 import {
-  BadRequestException,
   Body,
   Controller,
   HttpCode,
