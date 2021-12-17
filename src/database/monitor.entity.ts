@@ -1,4 +1,4 @@
-import { IsUUID } from 'class-validator';
+import { IsDefined, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -9,6 +9,7 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -18,11 +19,14 @@ import { MonitorOrientation } from './enums/monitor-orientation.enum';
 import { MonitorStatus } from './enums/monitor-status.enum';
 
 @Entity('monitor')
+@Unique('IDX_user_name', ['user', 'name'])
 export class MonitorEntity {
   @PrimaryGeneratedColumn('uuid')
+  @IsUUID()
   id!: string;
 
-  @Column({ unique: true })
+  @Column()
+  @IsDefined()
   name!: string;
 
   @Column({ type: 'json' })

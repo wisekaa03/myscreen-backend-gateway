@@ -72,8 +72,8 @@ export class PaymentController {
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'orders_get',
-    summary: 'Получение списка заказов',
+    operationId: 'playlists_get',
+    summary: 'Получение списка оплат',
   })
   @ApiResponse({
     status: 200,

@@ -18,7 +18,8 @@ import { RenderingStatus } from './enums/rendering-status.enum';
 @Entity('editor')
 export class EditorEntity {
   @PrimaryGeneratedColumn('uuid')
-  id?: string;
+  @IsUUID()
+  id!: string;
 
   @Column({ type: 'numeric' })
   width!: number;
@@ -45,13 +46,13 @@ export class EditorEntity {
   keep_source_audio!: boolean;
 
   @Column({ type: 'json', default: [], array: true })
-  layers!: unknown[];
+  layers?: unknown[];
 
   @Column({ type: 'numeric', default: 0, nullable: true })
-  total_duration!: number;
+  total_duration?: number;
 
   @Column({ type: 'json', default: [], array: true })
-  audio_tracks!: unknown[];
+  audio_tracks?: unknown[];
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',

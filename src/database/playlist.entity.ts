@@ -38,7 +38,7 @@ export class PlaylistEntity {
   @Column({ nullable: true })
   @ApiProperty({
     description: 'Имя файла',
-    example: 'bar',
+    example: 'Описание плэйлиста',
   })
   @IsNotEmpty()
   description!: string;

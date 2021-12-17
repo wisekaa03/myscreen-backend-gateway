@@ -1,15 +1,34 @@
-import { Controller, Logger, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { Request as ExpressRequest } from 'express';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  Logger,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 import {
   BadRequestError,
   ForbiddenError,
   InternalServerError,
+  MonitorsGetRequest,
+  MonitorsGetResponse,
   NotFoundError,
   ServiceUnavailableError,
+  Status,
   UnauthorizedError,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
+import { MonitorService } from '@/database/monitor.service';
+import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 
 @ApiTags('monitor')
 @ApiResponse({
@@ -47,4 +66,36 @@ import { JwtAuthGuard } from '@/guards';
 @Controller('/monitor')
 export class MonitorController {
   logger = new Logger(MonitorController.name);
+
+  constructor(private readonly monitorService: MonitorService) {}
+
+  @Post('/')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'monitors_get',
+    summary: 'Получение списка мониторов',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MonitorsGetResponse,
+  })
+  async getMonitors(
+    @Req() { user }: ExpressRequest,
+    @Body() { where, scope }: MonitorsGetRequest,
+  ): Promise<MonitorsGetResponse> {
+    const [data, count] = await this.monitorService.find({
+      ...paginationQueryToConfig(scope),
+      where: {
+        userId: user.id,
+        ...where,
+      },
+    });
+
+    return {
+      status: Status.Success,
+      count,
+      data,
+    };
+  }
 }

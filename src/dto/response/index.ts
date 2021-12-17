@@ -17,3 +17,7 @@ export * from './payment.response';
 export * from './payments-get.response';
 export * from './playlist.response';
 export * from './playlists-get.response';
+export * from './monitor.response';
+export * from './monitors-get.response';
+export * from './editor.response';
+export * from './editors-get.response';

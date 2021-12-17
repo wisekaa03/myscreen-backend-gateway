@@ -76,7 +76,7 @@ export class PaymentEntity {
   @Column()
   @ApiProperty({
     description: 'Описание',
-    example: 'Чтобы',
+    example: 'Патамучта',
   })
   @IsString()
   description!: string;
