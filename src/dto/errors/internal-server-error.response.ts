@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { InternalServerErrorException } from '@nestjs/common';
-import { Status } from '../status.enum';
+import { Status } from '@/enums/status.enum';
 
 /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
 // @ts-ignore

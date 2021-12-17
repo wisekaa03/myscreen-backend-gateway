@@ -31,12 +31,12 @@ import {
   FolderGetResponse,
   ForbiddenError,
   InternalServerError,
-  Status,
   NotFoundError,
   FolderUpdateRequest,
   SuccessResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
+import { Status } from '@/enums/status.enum';
 import { FolderService } from '@/database/folder.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 

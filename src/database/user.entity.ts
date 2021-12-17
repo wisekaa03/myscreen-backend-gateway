@@ -1,15 +1,4 @@
 import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-
-import {
   IsEmail,
   IsEnum,
   IsString,
@@ -21,8 +10,19 @@ import {
   IsISO31661Alpha2,
   IsPhoneNumber,
 } from 'class-validator';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+
+import { UserRole, UserRoleEnum } from '@/enums';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { UserRole, UserRoleEnum } from './enums/role.enum';
 
 @Entity('user')
 export class UserEntity {

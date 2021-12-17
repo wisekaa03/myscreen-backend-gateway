@@ -34,13 +34,13 @@ import {
   RefreshTokenResponse,
   AuthResponse,
   SuccessResponse,
-  Status,
   userEntityToUser,
   UserGetResponse,
 } from '@/dto';
+import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
+import { Status } from '@/enums/status.enum';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
-import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 
 @ApiResponse({
   status: 400,

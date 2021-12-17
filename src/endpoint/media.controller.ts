@@ -39,7 +39,6 @@ import {
   ForbiddenError,
   InternalServerError,
   ServiceUnavailableError,
-  Status,
   SuccessResponse,
   MediaGetFilesRequest,
   MediaGetFilesResponse,
@@ -49,6 +48,7 @@ import {
   MediaGetFileResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
+import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { MediaService } from '@/database/media.service';
 

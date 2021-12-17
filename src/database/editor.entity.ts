@@ -11,9 +11,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { RenderingStatus } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { MediaEntity } from '@/database/media.entity';
-import { RenderingStatus } from './enums/rendering-status.enum';
 
 @Entity('editor')
 export class EditorEntity {

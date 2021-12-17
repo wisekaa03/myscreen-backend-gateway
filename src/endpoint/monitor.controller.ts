@@ -23,10 +23,10 @@ import {
   MonitorsGetResponse,
   NotFoundError,
   ServiceUnavailableError,
-  Status,
   UnauthorizedError,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
+import { Status } from '@/enums/status.enum';
 import { MonitorService } from '@/database/monitor.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 

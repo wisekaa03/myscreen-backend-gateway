@@ -24,11 +24,11 @@ import {
   UnauthorizedError,
   PlaylistsGetRequest,
   PlaylistsGetResponse,
-  Status,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
-import { PlaylistService } from '@/database/playlist.service';
+import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { PlaylistService } from '@/database/playlist.service';
 
 @ApiResponse({
   status: 400,

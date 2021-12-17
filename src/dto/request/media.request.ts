@@ -1,7 +1,7 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
 
-import { VideoType } from '@/database/enums/video-type.enum';
+import { VideoType } from '@/enums';
 import { MediaEntity } from '@/database/media.entity';
 
 export class MediaRequest extends PartialType(

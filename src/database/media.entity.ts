@@ -22,10 +22,10 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
+import { VideoType } from '@/enums';
 import { FolderEntity } from '@/database/folder.entity';
 import { EditorEntity } from '@/database/editor.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
-import { VideoType } from './enums/video-type.enum';
 import { UserEntity } from './user.entity';
 
 export class MediaMeta {

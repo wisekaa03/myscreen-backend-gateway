@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Status } from '@/dto/status.enum';
+import { Status } from '@/enums/status.enum';
 import { EditorResponse } from './editor.response';
 
 export class EditorsGetResponse {

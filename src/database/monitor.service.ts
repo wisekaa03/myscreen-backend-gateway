@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
-import { MonitorEntity } from './monitor.entity';
 
+import { MonitorEntity } from './monitor.entity';
 import { UserEntity } from './user.entity';
 
 @Injectable()

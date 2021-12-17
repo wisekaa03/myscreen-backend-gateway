@@ -20,10 +20,10 @@ import {
 } from 'typeorm';
 
 import { isAWSError } from '@/shared/is-aws-error';
+import { VideoType } from '@/enums';
 import { MediaEntity, MediaMeta } from './media.entity';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
-import { VideoType } from './enums/video-type.enum';
 
 @Injectable()
 export class MediaService {
@@ -99,6 +99,8 @@ export class MediaService {
         meta,
         type,
         hash: file.hash,
+        // TODO: доделать preview
+        preview: '',
       };
 
       return [

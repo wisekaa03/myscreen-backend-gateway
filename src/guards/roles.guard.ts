@@ -6,7 +6,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import type { Request as ExpressRequest } from 'express';
 
-import type { UserRoleEnum } from '@/database/enums/role.enum';
+import type { UserRoleEnum } from '@/enums/role.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

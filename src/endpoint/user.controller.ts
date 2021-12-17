@@ -24,15 +24,15 @@ import {
   ForbiddenError,
   UnauthorizedError,
   InternalServerError,
-  Status,
   UserUpdateRequest,
   SuccessResponse,
   UsersGetResponse,
   UserGetResponse,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
+import { Status } from '@/enums/status.enum';
 import { AuthService } from '@/auth/auth.service';
-import { UserRoleEnum } from '@/database/enums/role.enum';
+import { UserRoleEnum } from '@/enums/role.enum';
 import { UserService } from '@/database/user.service';
 
 @ApiResponse({

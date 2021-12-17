@@ -23,10 +23,10 @@ import {
   InternalServerError,
   NotFoundError,
   ServiceUnavailableError,
-  Status,
   UnauthorizedError,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
+import { Status } from '@/enums/status.enum';
 import { EditorService } from '@/database/editor.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 

@@ -13,10 +13,9 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { MonitorOrientation, MonitorStatus } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
-import { MonitorOrientation } from './enums/monitor-orientation.enum';
-import { MonitorStatus } from './enums/monitor-status.enum';
 
 @Entity('monitor')
 @Unique('IDX_user_name', ['user', 'name'])

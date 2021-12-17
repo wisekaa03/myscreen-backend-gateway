@@ -11,15 +11,15 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsUUID } from 'class-validator';
 
-import { UserEntity } from '@/database/user.entity';
-import { OrderEntity } from '@/database/order.entity';
 import {
   PaymentEnumService,
   PaymentEnumStatus,
   PaymentEnumReceiptStatus,
   PaymentEnumCancellationParty,
   PaymentEnumCancellationReason,
-} from './enums/payments.enum';
+} from '@/enums';
+import { UserEntity } from '@/database/user.entity';
+import { OrderEntity } from '@/database/order.entity';
 
 @Entity('payment')
 export class PaymentEntity {

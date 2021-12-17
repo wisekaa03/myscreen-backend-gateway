@@ -10,23 +10,25 @@ import superAgentRequest from 'supertest';
 import {
   AuthResponse,
   RegisterRequest,
-  Status,
   LoginRequest,
   UserUpdateRequest,
   UserResponse,
   SuccessResponse,
   RefreshTokenResponse,
   FoldersGetResponse,
-  FolderUpdateResponse,
+  FolderGetResponse,
   MediaGetFilesResponse,
   MediaUploadFilesResponse,
+  UsersGetResponse,
+  UserGetResponse,
 } from '@/dto';
-import { UserRoleEnum } from '@/database/enums/role.enum';
+import { Status } from '@/enums';
+import { generateMailToken } from '@/shared/mail-token';
+import { ExceptionsFilter } from '@/exception/exceptions.filter';
+import { UserRoleEnum } from '@/enums/role.enum';
 import { UserEntity } from '@/database/user.entity';
 import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
-import { generateMailToken } from '@/shared/mail-token';
-import { ExceptionsFilter } from '@/exception/exceptions.filter';
 
 const registerRequest: RegisterRequest = {
   email: 'foo@bar.baz', // 'wisekaa03@gmail.com',
@@ -120,7 +122,7 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
-        .then(({ body }: { body: UserResponse }) => {
+        .then(({ body }: { body: UsersGetResponse }) => {
           expect(body.data.id).toBeDefined();
           expect((body.data as any).password).toBeUndefined();
           if (body.data.id) {
@@ -249,7 +251,7 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
-        .then(({ body }: { body: UserResponse }) => {
+        .then(({ body }: { body: UserGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.id).toBe(userId);
           expect((body.data as any).password).toBeUndefined();
@@ -266,7 +268,7 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
-        .then(({ body }: { body: UserResponse }) => {
+        .then(({ body }: { body: UserGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.id).toBe(userId);
           expect((body.data as any).password).toBeUndefined();
@@ -400,7 +402,7 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
-        .then(({ body }: { body: FolderUpdateResponse }) => {
+        .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.name).toBe('bar');
           expect(body.data.parentFolderId).toBe(null);
@@ -426,7 +428,7 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
-        .then(({ body }: { body: FolderUpdateResponse }) => {
+        .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.name).toBe('foo');
           expect(body.data.parentFolderId).toBe(null);
@@ -446,7 +448,7 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
-        .then(({ body }: { body: FolderUpdateResponse }) => {
+        .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.name).toBe('foo');
           expect(body.data.parentFolderId).toBe(parentFolderId);
@@ -466,7 +468,7 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
-        .then(({ body }: { body: FolderUpdateResponse }) => {
+        .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.name).toBe('baz');
           expect(body.data.parentFolderId).toBe(parentFolderId2);
@@ -524,7 +526,7 @@ describe('Backend API (e2e)', () => {
             })
             .expect('Content-Type', /json/)
             .expect(200)
-            .then(({ body }: { body: FolderUpdateResponse }) => {
+            .then(({ body }: { body: FolderGetResponse }) => {
               expect(body.status).toBe(Status.Success);
               expect(body.data).toBeDefined();
               expect(body.data.id).toBe(folderId2);
@@ -561,7 +563,7 @@ describe('Backend API (e2e)', () => {
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(200)
-            .then(({ body }: { body: FolderUpdateResponse }) => {
+            .then(({ body }: { body: FolderGetResponse }) => {
               expect(body.status).toBe(Status.Success);
               expect(body.data).toBeDefined();
               expect(body.data.id).toBe(folderId2);
