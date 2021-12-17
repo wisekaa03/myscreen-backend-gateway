@@ -1,23 +1,13 @@
-import { PickType } from '@nestjs/swagger';
+import { OmitType } from '@nestjs/swagger';
 import { UserEntity } from '@/database/user.entity';
 import { UserSizeEntity } from '@/database/user.view.entity';
 
-export class User extends PickType(UserSizeEntity, [
-  'id',
-  'email',
-  'city',
-  'company',
-  'countUsedSpace',
-  'country',
-  'isDemoUser',
-  'middleName',
-  'name',
-  'surname',
-  'phoneNumber',
-  'role',
-  'verified',
-  'createdAt',
-  'updatedAt',
+export class UserResponse extends OmitType(UserSizeEntity, [
+  'disabled',
+  'forgotConfirmKey',
+  'emailConfirmKey',
+  'password',
+  'monitors',
 ]) {}
 
 export const userEntityToUser = ({

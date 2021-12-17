@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/dto/status.enum';
-import { User } from '@/dto/user.dto';
+import { UserResponse } from '@/dto/response/user.response';
 import { UserEntity } from '@/database/user.entity';
 import { UserSizeEntity } from '@/database/user.view.entity';
 
@@ -39,8 +39,8 @@ export class AuthResponse {
 
   @ApiProperty({
     description: 'Пользователь',
-    title: 'User',
-    type: User,
+    title: 'UserResponse',
+    type: UserResponse,
   })
   data!: Partial<UserEntity> & Partial<UserSizeEntity>;
 }

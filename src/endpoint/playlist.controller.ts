@@ -21,11 +21,11 @@ import {
   ForbiddenError,
   InternalServerError,
   NotFoundError,
+  ServiceUnavailableError,
+  UnauthorizedError,
   PlaylistsGetRequest,
   PlaylistsGetResponse,
-  ServiceUnavailableError,
   Status,
-  UnauthorizedError,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { PlaylistService } from '@/database/playlist.service';

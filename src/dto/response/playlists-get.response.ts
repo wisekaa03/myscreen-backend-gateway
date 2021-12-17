@@ -16,7 +16,7 @@ export class PlaylistsGetResponse {
 
   @ApiProperty({
     description: 'Плэйлисты',
-    title: 'Playlist',
+    title: 'PlaylistResponse',
     type: PlaylistResponse,
     isArray: true,
   })

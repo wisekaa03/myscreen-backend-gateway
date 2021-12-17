@@ -9,7 +9,8 @@ import { PlaylistRequest } from './playlist.request';
 export class PlaylistsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'Media',
+    title: 'PlaylistRequest',
+    type: PlaylistRequest,
     required: true,
   })
   @IsNotEmpty()

@@ -27,8 +27,8 @@ import {
   Status,
   UserUpdateRequest,
   SuccessResponse,
-  UsersResponse,
-  UserResponse,
+  UsersGetResponse,
+  UserGetResponse,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
 import { UserRoleEnum } from '@/database/enums/role.enum';
@@ -76,9 +76,9 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: UsersResponse,
+    type: UsersGetResponse,
   })
-  async users(): Promise<UsersResponse> {
+  async users(): Promise<UsersGetResponse> {
     return {
       status: Status.Success,
       data: await this.userService
@@ -95,11 +95,11 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: UserResponse,
+    type: UserGetResponse,
   })
   async user(
     @Param('userId', ParseUUIDPipe) userId: string,
-  ): Promise<UserResponse> {
+  ): Promise<UserGetResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new UnauthorizedException();
@@ -121,12 +121,12 @@ export class UserController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: UserResponse,
+    type: UserGetResponse,
   })
   async userUpdate(
     @Param('userId', ParseUUIDPipe) userId: string,
     @Body() update: UserUpdateRequest,
-  ): Promise<UserResponse> {
+  ): Promise<UserGetResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new UnauthorizedException();

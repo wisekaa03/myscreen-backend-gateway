@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '../status.enum';
-import { User } from '../user.dto';
+import { UserResponse } from './user.response';
 import { UserEntity } from '@/database/user.entity';
 import { UserSizeEntity } from '@/database/user.view.entity';
 
-export class UsersResponse {
+export class UsersGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -13,11 +13,16 @@ export class UsersResponse {
   })
   status!: Status.Success;
 
-  @ApiProperty({ description: 'Пользователи', type: [User], isArray: true })
+  @ApiProperty({
+    description: 'Пользователи',
+    title: 'UserResponse',
+    type: UserResponse,
+    isArray: true,
+  })
   data!: Partial<UserEntity> & Partial<UserSizeEntity>[];
 }
 
-export class UserResponse {
+export class UserGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -27,8 +32,8 @@ export class UserResponse {
 
   @ApiProperty({
     description: 'Пользователь',
-    title: 'User',
-    type: User,
+    title: 'UserResponse',
+    type: UserResponse,
   })
   data!: Partial<UserEntity> & Partial<UserSizeEntity>;
 }

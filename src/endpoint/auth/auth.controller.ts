@@ -36,7 +36,7 @@ import {
   SuccessResponse,
   Status,
   userEntityToUser,
-  UserResponse,
+  UserGetResponse,
 } from '@/dto';
 import { UserService } from '@/database/user.service';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
@@ -90,9 +90,11 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: UserResponse,
+    type: UserGetResponse,
   })
-  async authorization(@Req() { user }: ExpressRequest): Promise<UserResponse> {
+  async authorization(
+    @Req() { user }: ExpressRequest,
+  ): Promise<UserGetResponse> {
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -115,12 +117,12 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: UserResponse,
+    type: UserGetResponse,
   })
   async update(
     @Req() { user }: ExpressRequest,
     @Body() update: UserUpdateRequest,
-  ): Promise<UserResponse> {
+  ): Promise<UserGetResponse> {
     const data = await this.userService.update(user, update);
 
     return {
@@ -166,9 +168,9 @@ export class AuthController {
   @ApiResponse({
     status: 201,
     description: 'Успешный ответ',
-    type: UserResponse,
+    type: UserGetResponse,
   })
-  async register(@Body() body: RegisterRequest): Promise<UserResponse> {
+  async register(@Body() body: RegisterRequest): Promise<UserGetResponse> {
     const data = userEntityToUser(await this.userService.create(body));
 
     return {

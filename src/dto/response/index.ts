@@ -4,6 +4,7 @@ export * from './success.response';
 export * from './folder.response';
 export * from './folders-get.response';
 export * from './folder-update.response';
+export * from './user.response';
 export * from './users.response';
 export * from './media.response';
 export * from './media-get-files.response';
