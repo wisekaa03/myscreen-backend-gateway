@@ -79,7 +79,7 @@ export class PlaylistEntity {
   @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T10:00:00.147Z',
-    required: false,
+    required: true,
   })
   createdAt?: Date;
 
@@ -87,7 +87,7 @@ export class PlaylistEntity {
   @ApiProperty({
     description: 'Время изменения',
     example: '2021-01-01T10:00:00.147Z',
-    required: false,
+    required: true,
   })
   updatedAt?: Date;
 }

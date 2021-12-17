@@ -76,7 +76,7 @@ export class EditorEntity {
   @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T10:00:00.147Z',
-    required: false,
+    required: true,
   })
   createdAt?: Date;
 
@@ -84,7 +84,7 @@ export class EditorEntity {
   @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T10:00:00.147Z',
-    required: false,
+    required: true,
   })
   updatedAt?: Date;
 }

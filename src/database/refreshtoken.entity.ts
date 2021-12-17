@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
 import { UserEntity } from '@/database/user.entity';
 
 @Entity('refresh_token')
@@ -33,8 +34,18 @@ export class RefreshTokenEntity {
   fingerprint?: string;
 
   @CreateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: true,
+  })
   createdAt?: Date;
 
   @UpdateDateColumn()
+  @ApiProperty({
+    description: 'Время изменения',
+    example: '2021-01-01T10:00:00.147Z',
+    required: true,
+  })
   updatedAt?: Date;
 }

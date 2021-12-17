@@ -100,8 +100,18 @@ export class PaymentEntity {
   cancellationReason?: PaymentEnumCancellationReason;
 
   @CreateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: true,
+  })
   createdAt?: Date;
 
   @UpdateDateColumn()
+  @ApiProperty({
+    description: 'Время изменения',
+    example: '2021-01-01T10:00:00.147Z',
+    required: true,
+  })
   updatedAt?: Date;
 }
