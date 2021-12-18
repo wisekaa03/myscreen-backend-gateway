@@ -2,11 +2,9 @@ import {
   IsBoolean,
   IsDate,
   IsEnum,
-  IsJSON,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
-  IsNumber,
   IsObject,
   IsUUID,
   Length,
@@ -54,6 +52,7 @@ export class MonitorEntity {
   @IsNotEmpty()
   name!: string;
 
+  // TODO: transformer functions
   @Column({ type: 'json' })
   @ApiProperty({
     description: 'Адрес монитора',
@@ -77,6 +76,7 @@ export class MonitorEntity {
   @IsEnum(MonitorCategoryEnum)
   category!: MonitorCategoryEnum;
 
+  // TODO: transformer functions
   @Column({ type: 'json' })
   @ApiProperty({
     description: 'Стоимость показов',
@@ -96,6 +96,7 @@ export class MonitorEntity {
   @IsEnum(MonitorOrientation)
   orientation!: MonitorOrientation;
 
+  // TODO: transformer functions
   @Column({ type: 'json' })
   @ApiProperty({
     description: 'Модель и прочие характеристики монитора',

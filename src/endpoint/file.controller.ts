@@ -187,7 +187,7 @@ export class FileController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-get',
-    summary: 'Получить файл из БД',
+    summary: 'Получить файл',
   })
   @ApiResponse({
     status: 200,

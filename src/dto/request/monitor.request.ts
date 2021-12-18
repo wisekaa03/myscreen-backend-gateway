@@ -4,7 +4,13 @@ import { MonitorEntity } from '@/database/monitor.entity';
 
 export class MonitorRequest extends OmitType(MonitorEntity, [
   'id',
+  'attached',
   'lastSeen',
   'createdAt',
   'updatedAt',
+
+  // TODO: transformer functions
+  'address',
+  'price',
+  'monitorInfo',
 ]) {}
