@@ -594,16 +594,18 @@ describe('Backend API (e2e)', () => {
    * Медиа
    *
    */
-  describe('Медиа /media', () => {
+  describe('Файлы /file', () => {
     /**
      * Получение списка файлов (неуспешно)
      */
-    test('POST /media [unsuccess] (Получение списка файлов)', async () =>
+    test('POST /file [unsuccess] (Получение списка файлов)', async () =>
       token
         ? request
-            .post('/media')
+            .post('/file')
             .auth(token, { type: 'bearer' })
-            .send({ where: {} })
+            .send({
+              where: { folderId: '111' },
+            })
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(400)
@@ -612,10 +614,10 @@ describe('Backend API (e2e)', () => {
     /**
      * Получение списка файлов
      */
-    test('POST /media (Получение списка файлов)', async () =>
+    test('POST /file (Получение списка файлов)', async () =>
       token && folderId1
         ? request
-            .post('/media')
+            .post('/file')
             .auth(token, { type: 'bearer' })
             .send({ where: { folderId: folderId1 } })
             .set('Accept', 'application/json')
@@ -631,13 +633,15 @@ describe('Backend API (e2e)', () => {
     /**
      * Загрузка файлов [success]
      */
-    test('PUT /media [success] (Загрузка файлов)', async () =>
+    test('PUT /file [success] (Загрузка файлов)', async () =>
       token && folderId1
         ? request
-            .put('/media')
+            .put('/file')
             .auth(token, { type: 'bearer' })
             .set('Accept', 'application/json')
-            .field('folderId', folderId1)
+            .field({
+              param: `{ "folderId": "${folderId1}", "category": "media" }`,
+            })
             .attach('files', `${__dirname}/testing.png`)
             .expect('Content-Type', /json/)
             .expect(200)
@@ -653,10 +657,10 @@ describe('Backend API (e2e)', () => {
     /**
      * Скачивание медиа [success]
      */
-    test('GET /media/file/{mediaId} [success] (Скачивание медиа)', async () =>
+    test('GET /file/get/{mediaId} [success] (Скачивание медиа)', async () =>
       token && mediaId1
         ? request
-            .get(`/media/file/${mediaId1}`)
+            .get(`/file/get/${mediaId1}`)
             .auth(token, { type: 'bearer' })
             .set('Accept', 'application/json')
             .expect('Content-Type', 'image/png')
@@ -671,10 +675,10 @@ describe('Backend API (e2e)', () => {
     /**
      * Удаление файлов [success]
      */
-    test('DELETE /media/{mediaId} [success] (Удаление файлов)', async () =>
+    test('DELETE /file/{mediaId} [success] (Удаление файлов)', async () =>
       token && mediaId1
         ? request
-            .delete(`/media/${mediaId1}`)
+            .delete(`/file/${mediaId1}`)
             .auth(token, { type: 'bearer' })
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
