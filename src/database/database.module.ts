@@ -8,8 +8,9 @@ import { EditorEntity } from './editor.entity';
 import { EditorService } from './editor.service';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
-import { MediaEntity } from './media.entity';
-import { MediaService } from './media.service';
+import { FileEntity } from './file.entity';
+import { FileService } from './file.service';
+import { FilePreviewEntity } from './file-preview.entity';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorService } from './monitor.service';
 import { OrderEntity } from './order.entity';
@@ -38,7 +39,8 @@ import { RefreshTokenService } from './refreshtoken.service';
     TypeOrmModule.forFeature([
       EditorEntity,
       FolderEntity,
-      MediaEntity,
+      FileEntity,
+      FilePreviewEntity,
       MonitorEntity,
       OrderEntity,
       PaymentLogsEntity,
@@ -55,7 +57,7 @@ import { RefreshTokenService } from './refreshtoken.service';
     Logger,
     EditorService,
     FolderService,
-    MediaService,
+    FileService,
     MonitorService,
     OrderService,
     PaymentService,
@@ -67,7 +69,7 @@ import { RefreshTokenService } from './refreshtoken.service';
   exports: [
     EditorService,
     FolderService,
-    MediaService,
+    FileService,
     MonitorService,
     OrderService,
     PaymentService,

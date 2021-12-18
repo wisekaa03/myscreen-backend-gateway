@@ -23,9 +23,13 @@ export class MonitorService {
     find: FindManyOptions<MonitorEntity>,
   ): Promise<MonitorEntity | undefined> => this.monitorRepository.findOne(find);
 
-  async create(user: UserEntity): Promise<MonitorEntity> {
+  async create(
+    user: UserEntity,
+    monitor: Partial<MonitorEntity>,
+  ): Promise<MonitorEntity> {
     const order: DeepPartial<MonitorEntity> = {
-      user,
+      userId: user.id,
+      ...monitor,
     };
 
     return this.monitorRepository.save(this.monitorRepository.create(order));

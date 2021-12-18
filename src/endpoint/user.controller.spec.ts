@@ -43,7 +43,7 @@ describe(UserController.name, () => {
     expect(userController).toBeDefined();
   });
 
-  it('JwtAuthGuard, RolesGuard and Roles: Administrator is apply to the UserController', async () => {
+  it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
     const guards = Reflect.getMetadata('__guards__', UserController);
     const guardJwt = new guards[0]();
     const guardRoles = new guards[1]();

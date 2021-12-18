@@ -1,4 +1,5 @@
-export enum FileType {
-  MonitorOwnershipDoc = 'monitor-ownership-doc',
-  MonitorPhoto = 'monitor-photo',
+export enum FileCategory {
+  MonitorOwnership = 'ownership',
+  MonitorPhoto = 'photo',
+  Media = 'media',
 }

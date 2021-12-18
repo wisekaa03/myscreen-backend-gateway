@@ -17,8 +17,8 @@ import {
   RefreshTokenResponse,
   FoldersGetResponse,
   FolderGetResponse,
-  MediaGetFilesResponse,
-  MediaUploadFilesResponse,
+  FilesGetResponse,
+  FilesUploadResponse,
   UsersGetResponse,
   UserGetResponse,
 } from '@/dto';
@@ -621,7 +621,7 @@ describe('Backend API (e2e)', () => {
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(200)
-            .then(({ body }: { body: MediaGetFilesResponse }) => {
+            .then(({ body }: { body: FilesGetResponse }) => {
               expect(body.status).toBe(Status.Success);
               expect(body.data).toBeDefined();
               expect(body.data[0]?.user?.password).toBeUndefined();
@@ -641,7 +641,7 @@ describe('Backend API (e2e)', () => {
             .attach('files', `${__dirname}/testing.png`)
             .expect('Content-Type', /json/)
             .expect(200)
-            .then(({ body }: { body: MediaUploadFilesResponse }) => {
+            .then(({ body }: { body: FilesUploadResponse }) => {
               expect(body.status).toBe(Status.Success);
               expect(body.data).toBeDefined();
               expect(body.data[0].id).toBeDefined();

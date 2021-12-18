@@ -3,13 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 import type { FfprobeData } from 'media-probe';
 import {
   IsEnum,
@@ -22,10 +22,13 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { VideoType } from '@/enums';
+import { MonitorRequest } from '@/dto';
+import { FileCategory, VideoType } from '@/enums';
 import { FolderEntity } from '@/database/folder.entity';
 import { EditorEntity } from '@/database/editor.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
+import { FilePreviewEntity } from '@/database/file-preview.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
 
 export class MediaMeta {
@@ -68,16 +71,32 @@ export class MediaMeta {
   info?: FfprobeData;
 }
 
-@Entity('media')
-export class MediaEntity {
+@Entity('file')
+export class FileEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор файла',
     example: '1234567',
     format: 'uuid',
+    required: true,
   })
   @IsUUID()
   id!: string;
+
+  @ManyToOne(() => FolderEntity, (folder) => folder.id, { eager: false })
+  @JoinColumn({ name: 'folderId' })
+  folder!: FolderEntity;
+
+  @Column({ nullable: true })
+  @ApiProperty({
+    description: 'Папка',
+    type: 'string',
+    format: 'uuid',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsUUID()
+  folderId!: string;
 
   @Column()
   @ApiProperty({
@@ -90,12 +109,20 @@ export class MediaEntity {
   @Column()
   @ApiProperty({
     description: 'Имя файла',
-    example: 'bar',
+    example: 'foo.mp4',
   })
   @IsNotEmpty()
   name!: string;
 
-  @Column({ nullable: true })
+  @Column({ default: 'mp4' })
+  @ApiProperty({
+    description: 'Расширение файла',
+    example: 'mp4',
+  })
+  @IsNotEmpty()
+  extension!: string;
+
+  @Column()
   @ApiProperty({
     description: 'Hash файла',
     example: '2b0439011a3a215ae1756bfc342e5bbc',
@@ -110,9 +137,22 @@ export class MediaEntity {
     type: VideoType,
     enum: VideoType,
     example: VideoType.Video,
+    required: true,
   })
   @IsEnum(VideoType)
-  type!: VideoType;
+  videoType!: VideoType;
+
+  @Column({ type: 'enum', enum: FileCategory })
+  @ApiProperty({
+    description: 'В какую категорию относить файл',
+    type: FileCategory,
+    enum: FileCategory,
+    example: FileCategory.Media,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEnum(FileCategory)
+  category!: FileCategory;
 
   @Column({ type: 'integer' })
   @ApiProperty({
@@ -142,51 +182,37 @@ export class MediaEntity {
   user!: UserEntity;
 
   @Column({ nullable: true })
+  @ApiProperty({
+    description: 'Идентификатор пользователя',
+    type: 'string',
+    format: 'uuid',
+    required: true,
+  })
   @IsUUID()
   userId!: string;
 
-  @ManyToOne(() => FolderEntity, (folder) => folder.id, { eager: false })
-  @JoinColumn({ name: 'folderId' })
-  folder!: FolderEntity;
+  @OneToMany(() => FilePreviewEntity, (filePreview) => filePreview.file)
+  preview?: FilePreviewEntity[];
 
-  @Column({ nullable: true })
-  @ApiProperty({
-    description: 'Папка',
-    type: 'string',
-    format: 'uuid',
-    required: false,
-  })
-  @IsUUID()
-  folderId!: string;
-
-  @Column()
-  @ApiProperty({
-    type: 'string',
-    description: 'Предпросмотр',
-    required: false,
-  })
-  preview?: string;
-
-  @ManyToMany(() => EditorEntity, (editor) => editor.media, {
-    cascade: true,
+  @ManyToMany(() => EditorEntity, (editor) => editor.files, {
     nullable: true,
   })
-  @JoinTable()
   editors?: EditorEntity[];
 
-  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.media, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
+  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.files, {
     nullable: true,
   })
-  @JoinTable()
   playlists?: PlaylistEntity[];
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.rendered, {
     nullable: true,
   })
   rendered?: PlaylistEntity[];
+
+  @ManyToMany(() => MonitorEntity, (monitor) => monitor.files, {
+    nullable: true,
+  })
+  monitors?: MonitorEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

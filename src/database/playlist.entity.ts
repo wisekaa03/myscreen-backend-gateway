@@ -14,7 +14,7 @@ import {
 
 import { UserEntity } from '@/database/user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { MediaEntity } from '@/database/media.entity';
+import { FileEntity } from '@/database/file.entity';
 
 @Entity('playlist')
 export class PlaylistEntity {
@@ -61,19 +61,23 @@ export class PlaylistEntity {
   })
   monitors?: MonitorEntity[];
 
-  @ManyToMany(() => MediaEntity, (media) => media.playlists, {
+  @ManyToMany(() => FileEntity, (file) => file.playlists, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
     nullable: true,
   })
-  media?: MediaEntity[];
+  @JoinTable()
+  files?: FileEntity[];
 
-  @ManyToMany(() => MediaEntity, (media) => media.rendered, {
+  @ManyToMany(() => FileEntity, (file) => file.rendered, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     nullable: true,
     eager: false,
   })
   @JoinTable()
-  rendered?: MediaEntity[];
+  rendered?: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

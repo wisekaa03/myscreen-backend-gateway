@@ -68,15 +68,25 @@ export class PaymentEntity {
   paymentService!: PaymentEnumService;
 
   @Column()
-  amount!: string;
+  @ApiProperty({
+    description: 'Описание платежа',
+    example: '1000 RUB',
+  })
+  @IsString()
+  amount?: string;
 
-  @Column({ nullable: true })
+  @Column()
+  @ApiProperty({
+    description: 'Описание платежа',
+    example: '1000 RUB',
+  })
+  @IsString()
   incomeAmount?: string;
 
   @Column()
   @ApiProperty({
-    description: 'Описание',
-    example: 'Патамучта',
+    description: 'Описание платежа',
+    example: 'описание платежа',
   })
   @IsString()
   description!: string;

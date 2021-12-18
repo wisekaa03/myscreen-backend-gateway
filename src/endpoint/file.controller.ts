@@ -26,9 +26,11 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
+  ApiExtraModels,
   ApiOperation,
   ApiResponse,
   ApiTags,
+  getSchemaPath,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { InjectS3, type S3 } from 'nestjs-s3';
@@ -39,18 +41,19 @@ import {
   ForbiddenError,
   InternalServerError,
   ServiceUnavailableError,
-  SuccessResponse,
-  MediaGetFilesRequest,
-  MediaGetFilesResponse,
-  MediaUploadFileRequest,
-  MediaUploadFilesResponse,
   NotFoundError,
-  MediaGetFileResponse,
+  SuccessResponse,
+  FilesGetRequest,
+  FilesGetResponse,
+  FilesUploadResponse,
+  FileGetResponse,
+  FileUploadRequest,
+  FileUploadRequestBody,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
-import { MediaService } from '@/database/media.service';
+import { FileService } from '@/database/file.service';
 
 @ApiResponse({
   status: 400,
@@ -84,36 +87,32 @@ import { MediaService } from '@/database/media.service';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@ApiTags('media')
-@Controller('media')
-export class MediaController {
-  logger = new Logger(MediaController.name);
+@ApiTags('file')
+@Controller('file')
+export class FileController {
+  logger = new Logger(FileController.name);
 
   constructor(
-    private readonly mediaService: MediaService,
+    private readonly fileService: FileService,
     @InjectS3() private readonly s3Service: S3,
   ) {}
 
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'media_get',
-    summary: 'Получение списка медиа',
+    operationId: 'files-get',
+    summary: 'Получение списка файлов',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: MediaGetFilesResponse,
+    type: FilesGetResponse,
   })
-  async getMedia(
+  async getFiles(
     @Req() { user }: ExpressRequest,
-    @Body() { where, scope }: MediaGetFilesRequest,
-  ): Promise<MediaGetFilesResponse> {
-    if (!where?.folderId) {
-      throw new BadRequestException('The folderId must be provided');
-    }
-
-    const [data, count] = await this.mediaService.getMediaFiles({
+    @Body() { where, scope }: FilesGetRequest,
+  ): Promise<FilesGetResponse> {
+    const [data, count] = await this.fileService.getFiles({
       ...paginationQueryToConfig(scope),
       where: {
         user,
@@ -131,65 +130,75 @@ export class MediaController {
   @Put('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'media_upload',
-    summary: 'Загрузка медиа',
+    operationId: 'files-upload',
+    summary: 'Загрузка файлов',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: MediaUploadFilesResponse,
+    type: FilesUploadResponse,
   })
   @ApiConsumes('multipart/form-data')
+  @ApiExtraModels(FileUploadRequest)
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['folderId', 'files'],
+      required: ['files', 'param'],
       properties: {
-        folderId: {
-          type: 'string',
-          format: 'uuid',
-        },
         files: {
           type: 'array',
+          description: 'Файл(ы)',
           items: { type: 'string', format: 'binary' },
+        },
+        param: {
+          type: 'object',
+          description: 'Параметры загрузки файла',
+          $ref: getSchemaPath(FileUploadRequest),
         },
       },
     },
   })
   @UseInterceptors(FilesInterceptor('files'))
-  async uploadMedia(
+  async uploadFiles(
     @Req() { user }: ExpressRequest,
-    @Body() { folderId }: MediaUploadFileRequest,
+    @Body() body: FileUploadRequestBody,
     @UploadedFiles() files: Array<Express.Multer.File>,
-  ): Promise<MediaUploadFilesResponse> {
-    if (files.some((file) => file.media)) {
-      const data = await this.mediaService.upload(user, folderId, files);
-
-      return {
-        status: Status.Success,
-        data,
-      };
+  ): Promise<FilesUploadResponse> {
+    if (files.length < 1) {
+      throw new BadRequestException('Files expected');
     }
 
-    throw new BadRequestError('Some of the files has not a media properties');
+    let param: FileUploadRequest;
+    try {
+      param = JSON.parse(body.param);
+    } catch (err) {
+      throw new BadRequestException('The param must be a string');
+    }
+    const [data, count] = await this.fileService.upload(user, param, files);
+
+    return {
+      status: Status.Success,
+      count,
+      data,
+    };
   }
 
-  @Get('/:mediaId')
+  @Get('/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'media_get_db',
-    summary: 'Получение медиа',
+    operationId: 'file-get',
+    summary: 'Получить файл из БД',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: MediaGetFileResponse,
+    type: FileGetResponse,
   })
-  async getMediaDB(
+  async getFileDB(
     @Req() { user }: ExpressRequest,
-    @Param('mediaId', ParseUUIDPipe) id: string,
-  ): Promise<MediaGetFileResponse> {
-    const data = await this.mediaService.getMediaFile({
+    @Param('fileId', ParseUUIDPipe) id: string,
+  ): Promise<FileGetResponse> {
+    const data = await this.fileService.getFile({
       where: {
         user,
         id,
@@ -197,7 +206,7 @@ export class MediaController {
     });
 
     if (!data) {
-      throw new NotFoundException('Media not found');
+      throw new NotFoundException('File not found');
     }
 
     return {
@@ -206,10 +215,10 @@ export class MediaController {
     };
   }
 
-  @Get('/file/:mediaId')
+  @Get('/get/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'media_get_file',
+    operationId: 'file-get-s3',
     summary: 'Скачивание медиа',
   })
   @ApiResponse({
@@ -225,34 +234,32 @@ export class MediaController {
       },
     },
   })
-  async getMediaFileS3(
+  async getFileS3(
     @Req() { user }: ExpressRequest,
     @Response() response: ExpressResponse,
-    @Param('mediaId', ParseUUIDPipe) id: string,
+    @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>> {
-    return this.mediaService
-      .getMediaFileS3(response, user, id)
-      .catch((error) => {
-        throw new NotFoundException(`S3 Error: ${error}`);
-      });
+    return this.fileService.getFileS3(response, user, id).catch((error) => {
+      throw new NotFoundException(`S3 Error: ${error}`);
+    });
   }
 
-  @Delete('/:mediaId')
+  @Delete('/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'media_delete',
-    summary: 'Удаление медиа',
+    operationId: 'file-delete',
+    summary: 'Удаление файла',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async deleteMedia(
+  async deleteFile(
     @Req() { user }: ExpressRequest,
-    @Param('mediaId', ParseUUIDPipe) mediaId: string,
+    @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<SuccessResponse> {
-    const success = await this.mediaService.delete(user, mediaId);
+    const success = await this.fileService.delete(user, fileId);
 
     if (success) {
       return {

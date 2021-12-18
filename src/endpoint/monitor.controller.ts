@@ -1,5 +1,6 @@
 import type { Request as ExpressRequest } from 'express';
 import {
+  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -19,6 +20,8 @@ import {
   BadRequestError,
   ForbiddenError,
   InternalServerError,
+  MonitorCreateResponse,
+  MonitorRequest,
   MonitorsGetRequest,
   MonitorsGetResponse,
   NotFoundError,
@@ -72,7 +75,7 @@ export class MonitorController {
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitors_get',
+    operationId: 'monitors-get',
     summary: 'Получение списка мониторов',
   })
   @ApiResponse({
@@ -95,6 +98,31 @@ export class MonitorController {
     return {
       status: Status.Success,
       count,
+      data,
+    };
+  }
+
+  @Post('/create')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'monitor-create',
+    summary: 'Создание монитора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MonitorCreateResponse,
+  })
+  async createMonitors(
+    @Req() { user }: ExpressRequest,
+    @Body() monitor: MonitorRequest,
+  ): Promise<MonitorCreateResponse> {
+    const data = await this.monitorService.create(user, monitor).catch(() => {
+      throw new BadRequestException(`Монитор '${monitor.name}' уже существует`);
+    });
+
+    return {
+      status: Status.Success,
       data,
     };
   }

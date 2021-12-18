@@ -6,3 +6,4 @@ export * from './rendering-status.enum';
 export * from './role.enum';
 export * from './status.enum';
 export * from './video-type.enum';
+export * from './monitor.category.enum';

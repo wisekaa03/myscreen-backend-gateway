@@ -5,7 +5,7 @@ import {
   ViewColumn,
   ViewEntity,
 } from 'typeorm';
-import { MediaEntity } from './media.entity';
+import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 
 @ViewEntity({
@@ -15,14 +15,14 @@ import { UserEntity } from './user.entity';
       .select('"user".*')
       .from(UserEntity, 'user')
       .leftJoinAndSelect(
-        (qb: SelectQueryBuilder<MediaEntity>) =>
+        (qb: SelectQueryBuilder<FileEntity>) =>
           qb
-            .select('"media"."userId"')
-            .addSelect('SUM("media"."filesize")', 'countUsedSpace')
-            .groupBy('"media"."userId"')
-            .from(MediaEntity, 'media'),
-        'media',
-        '"media"."userId" = "user"."id"',
+            .select('"file"."userId"')
+            .addSelect('SUM("file"."filesize")', 'countUsedSpace')
+            .groupBy('"file"."userId"')
+            .from(FileEntity, 'file'),
+        'file',
+        '"file"."userId" = "user"."id"',
       ),
 })
 export class UserSizeEntity extends UserEntity {

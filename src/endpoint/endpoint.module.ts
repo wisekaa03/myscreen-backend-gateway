@@ -7,7 +7,7 @@ import { MulterModuleOptionsClass } from '@/shared/multer-module-options-class';
 import { DatabaseModule } from '@/database/database.module';
 import { AuthController } from './auth.controller';
 import { UserController } from './user.controller';
-import { MediaController } from './media.controller';
+import { FileController } from './file.controller';
 import { MonitorController } from './monitor.controller';
 import { EditorController } from './editor.controller';
 import { FolderController } from './folder.controller';
@@ -31,7 +31,7 @@ import { LogController } from './log.controller';
     AuthController,
     MonitorController,
     EditorController,
-    MediaController,
+    FileController,
     FolderController,
     UserController,
     OrderController,

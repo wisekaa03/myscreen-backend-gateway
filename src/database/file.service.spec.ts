@@ -5,8 +5,9 @@ import { getS3ConnectionToken } from 'nestjs-s3';
 import { S3_MODULE_CONNECTION } from 'nestjs-s3/dist/s3.constants';
 
 import { FolderService } from './folder.service';
-import { MediaEntity } from './media.entity';
-import { MediaService } from './media.service';
+import { FileEntity } from './file.entity';
+import { FileService } from './file.service';
+import { MonitorService } from './monitor.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -20,16 +21,16 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(MediaService.name, () => {
-  let mediaService: MediaService;
+describe(FileService.name, () => {
+  let fileService: FileService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        MediaService,
+        FileService,
         ConfigService,
         {
-          provide: getRepositoryToken(MediaEntity),
+          provide: getRepositoryToken(FileEntity),
           useClass: mockRepository,
         },
         {
@@ -40,14 +41,18 @@ describe(MediaService.name, () => {
           provide: FolderService,
           useClass: mockRepository,
         },
+        {
+          provide: MonitorService,
+          useClass: mockRepository,
+        },
       ],
     }).compile();
 
-    mediaService = module.get<MediaService>(MediaService);
+    fileService = module.get<FileService>(FileService);
   });
 
   it('should be defined', () => {
-    expect(mediaService).toBeDefined();
+    expect(fileService).toBeDefined();
   });
 
   // TODO: should inspect:

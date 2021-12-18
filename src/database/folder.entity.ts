@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 import { IsUUID, MinLength, IsAlphanumeric, IsNotEmpty } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
-import { MediaEntity } from './media.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('folder')
 @Unique('UNIQ_user_name_parentFolder', ['name', 'userId', 'parentFolderId'])
@@ -72,13 +72,13 @@ export class FolderEntity {
   @IsUUID()
   parentFolderId!: string | null;
 
-  @OneToMany(() => MediaEntity, (media) => media.id, {
+  @OneToMany(() => FileEntity, (file) => file.id, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     cascade: true,
     eager: false,
   })
-  media?: MediaEntity[];
+  files?: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

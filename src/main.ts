@@ -25,6 +25,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     logger,
   });
+  app.disable('x-powered-by');
   const httpAdaper = app.get(HttpAdapterHost);
   app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
   app.setGlobalPrefix(apiPath);
@@ -54,7 +55,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .addTag('auth', 'Аутентификация пользователя')
     .addTag('user', 'Действия с пользователями (только администратор)')
     .addTag('folder', 'Папки')
-    .addTag('media', 'Медиа файлы')
+    .addTag('file', 'Файлы')
 
     .addTag('playlist', 'Плейлисты')
     .addTag('editor', 'Редакторы')

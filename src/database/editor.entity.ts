@@ -5,6 +5,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -13,7 +14,7 @@ import {
 
 import { RenderingStatus } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
-import { MediaEntity } from '@/database/media.entity';
+import { FileEntity } from '@/database/file.entity';
 
 @Entity('editor')
 export class EditorEntity {
@@ -67,10 +68,14 @@ export class EditorEntity {
   @IsUUID()
   userId!: string;
 
-  @ManyToMany(() => MediaEntity, (media) => media.editors, {
+  @ManyToMany(() => FileEntity, (file) => file.editors, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
     nullable: true,
   })
-  media?: MediaEntity[];
+  @JoinTable()
+  files?: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

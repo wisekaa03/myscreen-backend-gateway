@@ -1,4 +1,16 @@
-import { IsDefined, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsJSON,
+  IsLatitude,
+  IsLongitude,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsUUID,
+  Length,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -13,59 +25,140 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { MonitorOrientation, MonitorStatus } from '@/enums';
+import {
+  MonitorCategoryEnum,
+  MonitorOrientation,
+  MonitorStatus,
+} from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('monitor')
 @Unique('IDX_user_name', ['user', 'name'])
 export class MonitorEntity {
   @PrimaryGeneratedColumn('uuid')
+  @ApiProperty({
+    description: 'Идентификатор монитора',
+    format: 'uuid',
+    required: false,
+  })
   @IsUUID()
   id!: string;
 
   @Column()
-  @IsDefined()
+  @ApiProperty({
+    description: 'Имя',
+    example: 'имя монитора',
+  })
+  @IsNotEmpty()
   name!: string;
 
   @Column({ type: 'json' })
-  address!: Record<string, string>;
+  @ApiProperty({
+    description: 'Адрес монитора',
+    example: {
+      city: 'Krasnodar',
+      country: 'Russia',
+      street: 'Krasnaya',
+      house: 122,
+    },
+  })
+  @IsObject()
+  address!: Record<string, string | number>;
 
-  @Column({ type: 'integer' })
-  category!: number;
+  @Column({ type: 'enum', enum: MonitorCategoryEnum })
+  @ApiProperty({
+    description: 'Категория',
+    type: MonitorCategoryEnum,
+    enum: MonitorCategoryEnum,
+    example: MonitorCategoryEnum.GAS_STATION,
+  })
+  @IsEnum(MonitorCategoryEnum)
+  category!: MonitorCategoryEnum;
 
   @Column({ type: 'json' })
-  price!: unknown;
+  @ApiProperty({
+    description: 'Стоимость показов',
+    example: { of1s: 0, show100: 0 },
+  })
+  @IsObject()
+  price!: Record<string, number>;
 
   @Column({ type: 'enum', enum: MonitorOrientation })
+  @ApiProperty({
+    description: 'Ориентация экрана',
+    type: MonitorOrientation,
+    enum: MonitorOrientation,
+    example: MonitorOrientation.Horizontal,
+    required: true,
+  })
+  @IsEnum(MonitorOrientation)
   orientation!: MonitorOrientation;
 
   @Column({ type: 'json' })
-  monitor!: any;
+  @ApiProperty({
+    description: 'Модель и прочие характеристики монитора',
+    example: {
+      model: 'Samsung',
+      resolution: 0,
+      angle: 0,
+      matrix: 0,
+      brightness: 0,
+    },
+  })
+  @IsObject()
+  monitorInfo!: Record<string, string | number>;
 
   @Column({ type: 'boolean', default: false })
+  @ApiProperty({
+    description: 'Присоединен',
+    example: false,
+  })
+  @IsBoolean()
   attached?: boolean;
 
   @Column()
+  @ApiProperty({
+    description: 'Идентификатор устройства',
+    example: '111-111-111',
+  })
+  @IsNotEmpty()
+  @Length(11, 11)
   code!: string;
 
-  // Fuck this
-  @Column({ type: 'simple-array', default: [], array: true })
-  media!: string[];
-
   @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
+  @ApiProperty({
+    description: 'Подключен',
+    type: MonitorStatus,
+    enum: MonitorStatus,
+    example: MonitorStatus.Offline,
+  })
+  @IsEnum(MonitorStatus)
   status!: MonitorStatus;
 
   @Column({ nullable: true })
-  lastSeen?: string;
-
-  @Column({ type: 'uuid', nullable: true })
-  currentPlaylistId?: string;
+  @ApiProperty({
+    description: 'Последний раз виден',
+    example: null,
+  })
+  @IsDate()
+  lastSeen?: Date;
 
   @Column({ type: 'float', nullable: true })
+  @ApiProperty({
+    description: 'Широта',
+    example: '45.0448400',
+  })
+  @IsLatitude()
   latitude?: number;
 
   @Column({ type: 'float', nullable: true })
+  @ApiProperty({
+    description: 'Долгота',
+    example: '38.9760300',
+  })
+  @IsLongitude()
   longitude?: number;
 
   @ManyToOne(() => UserEntity, (user) => user.monitors, {
@@ -81,6 +174,15 @@ export class MonitorEntity {
   @IsUUID()
   userId!: string;
 
+  @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
+  @JoinColumn()
+  currentPlaylistId?: PlaylistEntity;
+
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.monitors, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
@@ -88,7 +190,16 @@ export class MonitorEntity {
     nullable: true,
   })
   @JoinTable()
-  playlists?: PlaylistEntity;
+  playlists?: PlaylistEntity[];
+
+  @ManyToMany(() => FileEntity, (file) => file.monitors, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    nullable: true,
+  })
+  @JoinTable()
+  files?: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

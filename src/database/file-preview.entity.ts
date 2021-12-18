@@ -2,19 +2,17 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
-  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
-import { UserEntity } from '@/database/user.entity';
+import { FileEntity } from './file.entity';
 
-@Entity('order')
-export class OrderEntity {
+@Entity('file_preview')
+export class FilePreviewEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор файла',
@@ -24,31 +22,26 @@ export class OrderEntity {
   @IsUUID()
   id!: string;
 
-  @Generated('increment')
-  @Column({ type: 'integer' })
-  @IsNumber()
-  seqNo?: number;
+  @ManyToOne(() => FileEntity, (file) => file.preview)
+  file!: FileEntity;
 
   @Column()
   @ApiProperty({
-    description: 'Описание заказа',
-    example: 'описание заказа',
+    description: 'Hash файла',
+    example: '2b0439011a3a215ae1756bfc342e5bbc',
   })
   @IsString()
-  description!: string;
-
-  @ManyToOne(() => UserEntity, (user) => user.id, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
-    eager: false,
-  })
-  @JoinColumn()
-  user!: UserEntity;
+  // @IsHash()
+  hash!: string;
 
   @Column()
-  @IsUUID()
-  userId!: string;
+  @ApiProperty({
+    type: 'string',
+    description: 'Предпросмотр',
+    required: true,
+  })
+  @IsNotEmpty()
+  name!: string;
 
   @CreateDateColumn()
   @ApiProperty({
