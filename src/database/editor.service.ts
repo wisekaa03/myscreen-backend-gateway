@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { EditorEntity } from './editor.entity';
@@ -11,7 +10,6 @@ export class EditorService {
   constructor(
     @InjectRepository(EditorEntity)
     private readonly editorRepository: Repository<EditorEntity>,
-    private readonly configService: ConfigService,
   ) {}
 
   find = async (

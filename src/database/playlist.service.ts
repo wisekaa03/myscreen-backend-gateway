@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 
@@ -11,7 +10,6 @@ export class PlaylistService {
   constructor(
     @InjectRepository(PlaylistEntity)
     private readonly playlistEntity: Repository<PlaylistEntity>,
-    private readonly configService: ConfigService,
   ) {}
 
   find = async (
