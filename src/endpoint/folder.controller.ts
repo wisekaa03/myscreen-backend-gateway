@@ -14,6 +14,7 @@ import {
   Delete,
   Patch,
   HttpCode,
+  Put,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -104,7 +105,7 @@ export class FolderController {
     };
   }
 
-  @Post('/create')
+  @Put('/')
   @HttpCode(201)
   @ApiOperation({
     operationId: 'folder_create',

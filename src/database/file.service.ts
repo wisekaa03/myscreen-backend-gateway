@@ -220,7 +220,6 @@ export class FileService {
     const file = await this.fileRepository.findOne({
       where: { user, id },
     });
-
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);
     }

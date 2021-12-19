@@ -211,7 +211,7 @@ export class FileController {
     };
   }
 
-  @Get('/get/:fileId')
+  @Post('/:fileId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-get-s3',

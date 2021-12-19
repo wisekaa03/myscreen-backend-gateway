@@ -118,7 +118,7 @@ export class MonitorController {
     };
   }
 
-  @Post('/create')
+  @Put('/')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-create',
