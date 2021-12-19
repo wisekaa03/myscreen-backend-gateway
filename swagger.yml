@@ -1,0 +1,2848 @@
+openapi: 3.0.0
+paths:
+  /api/v2/auth:
+    get:
+      operationId: auth_get
+      summary: Проверяет, авторизован ли пользователь и выдает о пользователе полную
+        информацию
+      parameters: []
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserGetResponse"
+        "400":
+          &a1
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          &a2
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "412":
+          &a3
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
+        "500":
+          &a4
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "503":
+          &a5
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags:
+        &a6
+        - auth
+      security:
+        - bearer: []
+    patch:
+      operationId: auth_update
+      summary: Изменение аккаунта пользователя
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserGetResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
+      security:
+        - bearer: []
+  /api/v2/auth/login:
+    post:
+      operationId: login
+      summary: Авторизация пользователя
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
+  /api/v2/auth/register:
+    post:
+      operationId: register
+      summary: Регистрация пользователя
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserGetResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
+  /api/v2/auth/refresh:
+    post:
+      operationId: refresh
+      summary: Обновление токена
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshTokenResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
+  /api/v2/auth/email-verify:
+    post:
+      operationId: email-verify
+      summary: Подтвердить email пользователя
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyEmailRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
+  /api/v2/auth/reset-password:
+    post:
+      operationId: reset-password
+      summary: Отправить на почту пользователю разрешение на смену пароля
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordInvitationRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
+  /api/v2/auth/reset-password-verify:
+    post:
+      operationId: reset-password-verify
+      summary: Меняет пароль пользователя по приглашению из почты
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordVerifyRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
+  /api/v2/auth/disable:
+    patch:
+      operationId: disable
+      summary: Скрытие аккаунта пользователя
+      parameters: []
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
+      security:
+        - bearer: []
+  /api/v2/monitor:
+    post:
+      operationId: monitors-get
+      summary: Получение списка мониторов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorsGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorsGetResponse"
+        "400":
+          &a7
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          &a8
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          &a9
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          &a10
+          description: Ошибка монитора
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          &a11
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "503":
+          &a12
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags:
+        &a13
+        - monitor
+      security:
+        &a14
+        - bearer: []
+    put:
+      operationId: monitor-create
+      summary: Создание монитора
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorCreateResponse"
+        "400": *a7
+        "401": *a8
+        "403": *a9
+        "404": *a10
+        "500": *a11
+        "503": *a12
+      tags: *a13
+      security: *a14
+  "/api/v2/monitor/{monitorId}":
+    get:
+      operationId: monitor-get
+      summary: Получение монитора
+      parameters:
+        - name: monitorId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorGetResponse"
+        "400": *a7
+        "401": *a8
+        "403": *a9
+        "404": *a10
+        "500": *a11
+        "503": *a12
+      tags: *a13
+      security: *a14
+    patch:
+      operationId: monitor-update
+      summary: Изменение монитора
+      parameters:
+        - name: monitorId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorGetResponse"
+        "400": *a7
+        "401": *a8
+        "403": *a9
+        "404": *a10
+        "500": *a11
+        "503": *a12
+      tags: *a13
+      security: *a14
+    delete:
+      operationId: monitor-delete
+      summary: Удаление монитора
+      parameters:
+        - name: monitorId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a7
+        "401": *a8
+        "403": *a9
+        "404": *a10
+        "500": *a11
+        "503": *a12
+      tags: *a13
+      security: *a14
+  /api/v2/monitor/playlist:
+    patch:
+      operationId: monitor-playlist-update
+      summary: Создание связки плэйлиста и монитора
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorsPlaylistAttachRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorsGetResponse"
+        "400": *a7
+        "401": *a8
+        "403": *a9
+        "404": *a10
+        "500": *a11
+        "503": *a12
+      tags: *a13
+      security: *a14
+    delete:
+      operationId: monitor-playlist-delete
+      summary: Удаление связки плэйлиста и монитора
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MonitorsPlaylistAttachRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorsGetResponse"
+        "400": *a7
+        "401": *a8
+        "403": *a9
+        "404": *a10
+        "500": *a11
+        "503": *a12
+      tags: *a13
+      security: *a14
+  /api/v2/editor:
+    post:
+      operationId: editors_get
+      summary: Получение списка редакторов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditorsGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EditorsGetResponse"
+        "400":
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: Ошибка монитора
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "503":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags:
+        - editor
+      security:
+        - bearer: []
+  /api/v2/file:
+    post:
+      operationId: files-get
+      summary: Получение списка файлов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilesGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilesGetResponse"
+        "400":
+          &a15
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          &a16
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          &a17
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          &a18
+          description: Ошибка медиа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          &a19
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "503":
+          &a20
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags:
+        &a21
+        - file
+      security:
+        &a22
+        - bearer: []
+    put:
+      operationId: files-upload
+      summary: Загрузка файлов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - files
+                - param
+              properties:
+                files:
+                  type: array
+                  description: Файл(ы)
+                  items:
+                    type: string
+                    format: binary
+                param:
+                  type: object
+                  description: Параметры загрузки файла
+                  $ref: "#/components/schemas/FileUploadRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilesUploadResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+  "/api/v2/file/{fileId}":
+    get:
+      operationId: file-get
+      summary: Получить файл
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileGetResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+    patch:
+      operationId: file-update
+      summary: Изменить файл
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileGetResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+    post:
+      operationId: file-get-s3
+      summary: Скачивание медиа
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            video/mp4:
+              encoding:
+                video_mp4:
+                  contentType: video/mp4
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+    delete:
+      operationId: file-delete
+      summary: Удаление файла
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+  /api/v2/folder:
+    post:
+      operationId: folders_get
+      summary: Получение списка папок
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FoldersGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FoldersGetResponse"
+        "400":
+          &a23
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          &a24
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          &a25
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          &a26
+          description: Ошибка папки
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          &a27
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+      tags:
+        &a28
+        - folder
+      security:
+        &a29
+        - bearer: []
+    put:
+      operationId: folder_create
+      summary: Создание новой папки
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderCreateRequest"
+      responses:
+        "201":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderGetResponse"
+        "400": *a23
+        "401": *a24
+        "403": *a25
+        "404": *a26
+        "500": *a27
+      tags: *a28
+      security: *a29
+  "/api/v2/folder/{folderId}":
+    get:
+      operationId: folder_get
+      summary: Получение информации о папке
+      parameters:
+        - name: folderId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderGetResponse"
+        "400": *a23
+        "401": *a24
+        "403": *a25
+        "404": *a26
+        "500": *a27
+      tags: *a28
+      security: *a29
+    patch:
+      operationId: folder_update
+      summary: Изменение информации о папке
+      parameters:
+        - name: folderId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FolderUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderGetResponse"
+        "400": *a23
+        "401": *a24
+        "403": *a25
+        "404": *a26
+        "500": *a27
+      tags: *a28
+      security: *a29
+    delete:
+      operationId: folder_delete
+      summary: Удаление папки
+      parameters:
+        - name: folderId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a23
+        "401": *a24
+        "403": *a25
+        "404": *a26
+        "500": *a27
+      tags: *a28
+      security: *a29
+  /api/v2/user:
+    get:
+      operationId: users_get
+      summary: Получение информации о пользователях (только администратор)
+      parameters: []
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersGetResponse"
+        "400":
+          &a30
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          &a31
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          &a32
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "500":
+          &a33
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+      tags:
+        &a34
+        - user
+      security:
+        &a35
+        - bearer: []
+  "/api/v2/user/{userId}":
+    get:
+      operationId: user_get
+      summary: Получение информации о пользователе (только администратор)
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserGetResponse"
+        "400": *a30
+        "401": *a31
+        "403": *a32
+        "500": *a33
+      tags: *a34
+      security: *a35
+    patch:
+      operationId: user_patch
+      summary: Изменение информации о пользователе (только администратор)
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserGetResponse"
+        "400": *a30
+        "401": *a31
+        "403": *a32
+        "500": *a33
+      tags: *a34
+      security: *a35
+    delete:
+      operationId: user_delete
+      summary: Удаление аккаунта пользователя (только администратор)
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a30
+        "401": *a31
+        "403": *a32
+        "500": *a33
+      tags: *a34
+      security: *a35
+  "/api/v2/user/disable/{userId}":
+    patch:
+      operationId: user_disable
+      summary: Скрытие аккаунта пользователя (только администратор)
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a30
+        "401": *a31
+        "403": *a32
+        "500": *a33
+      tags: *a34
+      security: *a35
+  "/api/v2/user/enable/{userId}":
+    patch:
+      operationId: user_enable
+      summary: Открытие аккаунта пользователя (только администратор)
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a30
+        "401": *a31
+        "403": *a32
+        "500": *a33
+      tags: *a34
+      security: *a35
+  /api/v2/order:
+    post:
+      operationId: orders_get
+      summary: Получение списка заказов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrdersGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersGetResponse"
+        "400":
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: Ошибка медиа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "503":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags:
+        - order
+      security:
+        - bearer: []
+  /api/v2/payment:
+    post:
+      operationId: payments_get
+      summary: Получение списка оплат
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentsGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentsGetResponse"
+        "400":
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: Ошибка медиа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "503":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags:
+        - payment
+      security:
+        - bearer: []
+  /api/v2/playlist:
+    post:
+      operationId: playlists_get
+      summary: Получение списка плэйлистов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaylistsGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaylistsGetResponse"
+        "400":
+          &a36
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          &a37
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          &a38
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          &a39
+          description: Ошибка медиа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          &a40
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "503":
+          &a41
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags:
+        &a42
+        - playlist
+      security:
+        &a43
+        - bearer: []
+    put:
+      operationId: playlists_create
+      summary: Создание плэйлиста
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaylistCreateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaylistGetResponse"
+        "400": *a36
+        "401": *a37
+        "403": *a38
+        "404": *a39
+        "500": *a40
+        "503": *a41
+      tags: *a42
+      security: *a43
+  "/api/v2/playlist/{playlistId}":
+    get:
+      operationId: playlist_get
+      summary: Получение плэйлиста
+      parameters:
+        - name: playlistId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaylistGetResponse"
+        "400": *a36
+        "401": *a37
+        "403": *a38
+        "404": *a39
+        "500": *a40
+        "503": *a41
+      tags: *a42
+      security: *a43
+    delete:
+      operationId: playlist_delete
+      summary: Удаление плэйлиста
+      parameters:
+        - name: playlistId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a36
+        "401": *a37
+        "403": *a38
+        "404": *a39
+        "500": *a40
+        "503": *a41
+      tags: *a42
+      security: *a43
+info:
+  title: MyScreen backend API
+  description: MyScreen backend API
+  version: 2.3.1
+  contact:
+    name: Stanislav V Vyaliy
+    url: https://wisekaa.dev
+    email: wisekaa03@gmail.com
+tags:
+  - name: auth
+    description: Аутентификация пользователя
+  - name: user
+    description: Действия с пользователями (только администратор)
+  - name: folder
+    description: Папки
+  - name: file
+    description: Файл
+  - name: playlist
+    description: Плейлист
+  - name: monitor
+    description: Монитор
+  - name: editor
+    description: Редакторы
+  - name: order
+    description: Заказы
+  - name: payment
+    description: Оплата
+servers: []
+components:
+  securitySchemes:
+    bearer:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+      description: Токен авторизации
+      name: token
+  schemas:
+    BadRequestError:
+      type: object
+      properties:
+        status:
+          type: error
+          example: error
+          description: Статус операции
+        statusCode:
+          type: "400"
+          example: 400
+        code:
+          type: server-error.10004
+          example: server-error.10004
+        message:
+          type: string
+          example: Bad request
+      required:
+        - status
+        - statusCode
+        - code
+        - message
+    UnauthorizedError:
+      type: object
+      properties:
+        status:
+          type: error
+          example: error
+          description: Статус операции
+        statusCode:
+          type: "401"
+          example: 401
+        code:
+          type: server-error.10001
+          example: server-error.10001
+        message:
+          type: string
+          example: Unauthorized request
+      required:
+        - status
+        - statusCode
+        - code
+        - message
+    PreconditionFailedError:
+      type: object
+      properties:
+        status:
+          type: error
+          example: error
+          description: Статус операции
+        statusCode:
+          type: "412"
+          example: 412
+        code:
+          type: server-error.10002
+          example: server-error.10002
+        message:
+          type: string
+          example: User exists
+      required:
+        - status
+        - statusCode
+        - code
+        - message
+    InternalServerError:
+      type: object
+      properties:
+        status:
+          type: error
+          example: error
+          description: Статус операции
+        statusCode:
+          type: "500"
+          example: 500
+        code:
+          type: server-error.10000
+          example: server-error.10000
+        message:
+          type: string
+          example: Server error
+      required:
+        - status
+        - statusCode
+        - code
+        - message
+    ServiceUnavailableError:
+      type: object
+      properties:
+        status:
+          type: error
+          example: error
+          description: Статус операции
+        statusCode:
+          type: "503"
+          example: 503
+        code:
+          type: server-error.10000
+          example: server-error.10000
+        message:
+          type: string
+          example: Service Unavailable
+      required:
+        - status
+        - statusCode
+        - code
+        - message
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор пользователя
+          format: uuid
+          example: "1234567"
+        email:
+          type: string
+          description: EMail пользователя
+          format: email
+          example: foo@bar.baz
+        surname:
+          type: string
+          description: Фамилия
+          example: Steve
+        name:
+          type: string
+          description: Имя
+          example: John
+        middleName:
+          type: string
+          description: Отчество
+          example: Doe
+        phoneNumber:
+          type: string
+          description: Телефон пользователя
+          example: "+78002000000"
+        city:
+          type: string
+          description: Город
+          example: Krasnodar
+        country:
+          type: string
+          description: Страна
+          example: RU
+        company:
+          type: string
+          description: Компания
+          example: ACME corporation
+        role:
+          type: array
+          description: Роль пользователя
+          example: advertiser
+          items:
+            &a44
+            type: string
+            enum:
+              - monitor-owner
+              - advertiser
+        verified:
+          type: boolean
+          description: EMail подтвержден
+          example: true
+        isDemoUser:
+          type: boolean
+          description: Демо пользователь
+          example: true
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+        countUsedSpace:
+          type: number
+          description: Использованное место
+          example: 0
+      required:
+        - id
+        - email
+        - role
+        - createdAt
+        - updatedAt
+    UserGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Пользователь
+          title: UserResponse
+          allOf:
+            - $ref: "#/components/schemas/UserResponse"
+      required:
+        - status
+        - data
+    UserUpdateRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: EMail пользователя
+          format: email
+          example: foo@bar.baz
+        surname:
+          type: string
+          description: Фамилия
+          example: Steve
+        name:
+          type: string
+          description: Имя
+          example: John
+        middleName:
+          type: string
+          description: Отчество
+          example: Doe
+        phoneNumber:
+          type: string
+          description: Телефон пользователя
+          example: "+78002000000"
+        city:
+          type: string
+          description: Город
+          example: Krasnodar
+        country:
+          type: string
+          description: Страна
+          example: RU
+        company:
+          type: string
+          description: Компания
+          example: ACME corporation
+        role:
+          type: array
+          description: Роль пользователя
+          example: advertiser
+          items: *a44
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: EMail пользователя
+          format: email
+          example: foo@bar.baz
+        password:
+          type: string
+          example: Secret~12345678
+          description: Пароля пользователя (должен удовлетворять минимальным требованиям)
+          minLength: 8
+          maxLength: 30
+          pattern: |-
+            /((?=.*d)|(?=.*W+))(?![.
+            ])(?=.*[A-Z])(?=.*[a-z]).*$/
+      required:
+        - email
+        - password
+    AuthenticationPayload:
+      type: object
+      properties:
+        type:
+          type: string
+          description: "Тип: Bearer"
+          example: bearer
+        token:
+          type: string
+          description: "Токен, используемый в Authorization: Bearer"
+          example: eyJcbGciOcJIUcI1xxxxxxxxxxxxxxxx
+        refresh_token:
+          type: string
+          description: Refresh токен, используемый для запросов /api/v2/refresh
+          example: exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx
+      required:
+        - type
+        - token
+        - refresh_token
+    AuthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        payload:
+          description: Возвращаемый токен
+          title: AuthenticationPayload
+          allOf:
+            - $ref: "#/components/schemas/AuthenticationPayload"
+        data:
+          description: Пользователь
+          title: UserResponse
+          allOf:
+            - $ref: "#/components/schemas/UserResponse"
+      required:
+        - status
+        - payload
+        - data
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: EMail пользователя
+          format: email
+          example: foo@bar.baz
+        surname:
+          type: string
+          description: Фамилия
+          example: Steve
+        name:
+          type: string
+          description: Имя
+          example: John
+        middleName:
+          type: string
+          description: Отчество
+          example: Doe
+        password:
+          type: string
+          example: Secret~12345678
+          description: Пароля пользователя (должен удовлетворять минимальным требованиям)
+          minLength: 8
+          maxLength: 30
+          pattern: |-
+            /((?=.*d)|(?=.*W+))(?![.
+            ])(?=.*[A-Z])(?=.*[a-z]).*$/
+        phoneNumber:
+          type: string
+          description: Телефон пользователя
+          example: "+78002000000"
+        city:
+          type: string
+          description: Город
+          example: Krasnodar
+        country:
+          type: string
+          description: Страна
+          example: RU
+        company:
+          type: string
+          description: Компания
+          example: ACME corporation
+        role:
+          type: array
+          description: Роль пользователя
+          example: advertiser
+          items: *a44
+      required:
+        - email
+        - password
+        - role
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          description: Refresh токен, используемый для запросов /api/v2/refresh
+          example: exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx
+      required:
+        - refresh_token
+    RefreshTokenResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        token:
+          type: string
+          description: "Токен, используемый в Authorization: Bearer"
+          example: eyJcbGciOcJIUcI1xxxxxxxxxxxxxxxx
+      required:
+        - status
+        - token
+    VerifyEmailRequest:
+      type: object
+      properties:
+        verify_email:
+          type: string
+          example: j481y1b
+      required:
+        - verify_email
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: success
+          description: Статус операции
+          example: success
+      required:
+        - status
+    ResetPasswordInvitationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          description: EMail пользователя
+          format: email
+          example: foo@bar.baz
+      required:
+        - email
+    ResetPasswordVerifyRequest:
+      type: object
+      properties:
+        verify_code:
+          type: string
+          example: j481y1b
+        password:
+          type: string
+          example: Secret~12345678
+      required:
+        - verify_code
+        - password
+    ForbiddenError:
+      type: object
+      properties:
+        status:
+          type: error
+          example: error
+          description: Статус операции
+        statusCode:
+          type: "403"
+          example: 403
+        code:
+          type: server-error.10002
+          example: server-error.10002
+        message:
+          type: string
+          example: Forbidden
+      required:
+        - status
+        - statusCode
+        - code
+        - message
+    NotFoundError:
+      type: object
+      properties:
+        status:
+          type: error
+          example: error
+          description: Статус операции
+        statusCode:
+          type: "404"
+          example: 404
+        code:
+          type: server-error.10005
+          example: server-error.10005
+        message:
+          type: string
+          example: Not Found
+      required:
+        - status
+        - statusCode
+        - code
+        - message
+    MonitorRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя
+          example: имя монитора
+        address:
+          type: object
+          description: Адрес монитора
+          example:
+            &a45
+            city: Krasnodar
+            country: Russia
+            street: Krasnaya
+            house: 122
+        category:
+          type: string
+          description: Категория
+          enum:
+            &a46
+            - АЗС
+            - Торговый центр
+            - Коммерческий центр
+            - Муниципальное учреждение
+            - Учебное заведение
+            - Торговая точка
+            - Уличный монитор
+            - Витрина
+            - Стелла
+          example: АЗС
+        price:
+          type: object
+          description: Стоимость показов
+          example:
+            &a47
+            of1s: 0
+            show100: 0
+        orientation:
+          type: string
+          description: Ориентация экрана
+          enum:
+            &a48
+            - Horizontal
+            - Vertical
+          example: Horizontal
+        monitorInfo:
+          type: object
+          description: Модель и прочие характеристики монитора
+          example:
+            &a49
+            model: Samsung
+            resolution: 0
+            angle: 0
+            matrix: 0
+            brightness: 0
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
+        status:
+          type: string
+          description: Подключен
+          enum:
+            &a50
+            - offline
+            - online
+          example: offline
+        latitude:
+          type: number
+          description: Широта
+          example: "45.0448400"
+        longitude:
+          type: number
+          description: Долгота
+          example: "38.9760300"
+      required:
+        - name
+        - address
+        - category
+        - price
+        - orientation
+        - monitorInfo
+        - code
+        - status
+        - latitude
+        - longitude
+    LimitRequest:
+      type: object
+      properties:
+        limit:
+          type: number
+          description: Лимит строк результатов
+          example: 20
+        page:
+          type: number
+          description: Страница результатов
+          example: 1
+        order:
+          type: OrderRequest
+          description: Порядок результатов
+          example:
+            createdAt: DESC
+    MonitorsGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          title: MonitorRequest
+          allOf:
+            - $ref: "#/components/schemas/MonitorRequest"
+        scope:
+          description: Рамки для запроса
+          title: LimitRequest
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+    PlaylistResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          example: "1234567"
+          format: uuid
+        name:
+          type: string
+          description: Имя файла
+          example: bar
+        description:
+          type: string
+          description: Имя файла
+          example: Описание плэйлиста
+        files:
+          description: Файлы
+          allOf:
+            - $ref: "#/components/schemas/FileResponse"
+          items:
+            type: array
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - name
+        - description
+        - files
+        - createdAt
+        - updatedAt
+    MonitorResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор монитора
+          format: uuid
+        name:
+          type: string
+          description: Имя
+          example: имя монитора
+        address:
+          type: object
+          description: Адрес монитора
+          example: *a45
+        category:
+          type: string
+          description: Категория
+          enum: *a46
+          example: АЗС
+        price:
+          type: object
+          description: Стоимость показов
+          example: *a47
+        orientation:
+          type: string
+          description: Ориентация экрана
+          enum: *a48
+          example: Horizontal
+        monitorInfo:
+          type: object
+          description: Модель и прочие характеристики монитора
+          example: *a49
+        attached:
+          type: boolean
+          description: Присоединен
+          example: false
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
+        status:
+          type: string
+          description: Подключен
+          enum: *a50
+          example: offline
+        lastSeen:
+          format: date-time
+          type: string
+          description: Последний раз виден
+          example: null
+        latitude:
+          type: number
+          description: Широта
+          example: "45.0448400"
+        longitude:
+          type: number
+          description: Долгота
+          example: "38.9760300"
+        currentPlaylist:
+          description: Текущий плэйлист
+          allOf:
+            - $ref: "#/components/schemas/PlaylistResponse"
+        files:
+          description: Фото монитора. Документы на право владения.
+          allOf:
+            - $ref: "#/components/schemas/FileResponse"
+          items:
+            type: array
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - name
+        - address
+        - category
+        - price
+        - orientation
+        - monitorInfo
+        - attached
+        - code
+        - status
+        - lastSeen
+        - latitude
+        - longitude
+        - currentPlaylist
+        - files
+        - createdAt
+        - updatedAt
+    MonitorsGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        count:
+          type: number
+          description: Количество мониторов
+        data:
+          description: Мониторы
+          title: MonitorResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorResponse"
+      required:
+        - status
+        - count
+        - data
+    MonitorCreateResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Монитор
+          title: MonitorResponse
+          allOf:
+            - $ref: "#/components/schemas/MonitorResponse"
+      required:
+        - status
+        - data
+    MonitorGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Монитор
+          title: MonitorResponse
+          allOf:
+            - $ref: "#/components/schemas/MonitorResponse"
+      required:
+        - status
+        - data
+    MonitorsPlaylistAttachRequest:
+      type: object
+      properties:
+        playlistId:
+          type: string
+          description: Плэйлист
+          format: uuid
+        monitors:
+          description: Мониторы
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+        - playlistId
+        - monitors
+    EditorRequest:
+      type: object
+      properties: {}
+    EditorsGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          title: EditorRequest
+          allOf:
+            - $ref: "#/components/schemas/EditorRequest"
+        scope:
+          description: Рамки для запроса
+          title: LimitRequest
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+    EditorResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор редактора
+          example: "12345678"
+        width:
+          type: number
+          description: Ширина редактора
+          example: "1920"
+        height:
+          type: number
+          description: Высота редактора
+          example: "1080"
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - width
+        - height
+        - createdAt
+        - updatedAt
+    EditorsGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        count:
+          type: number
+          description: Количество оплат
+        data:
+          description: Оплаты
+          title: EditorResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/EditorResponse"
+      required:
+        - status
+        - count
+        - data
+    FileRequest:
+      type: object
+      properties:
+        folderId:
+          type: string
+          description: Папка
+          format: uuid
+        videoType:
+          type: string
+          description: Тип файла
+          enum:
+            &a51
+            - video
+            - image
+            - audio
+            - other
+          example: video
+        category:
+          type: string
+          description: В какую категорию относить файл
+          enum:
+            &a52
+            - ownership
+            - photo
+            - media
+          example: media
+      required:
+        - folderId
+        - videoType
+        - category
+    FilesGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          title: FileRequest
+          allOf:
+            - $ref: "#/components/schemas/FileRequest"
+        scope:
+          description: Рамки для запроса
+          title: LimitRequest
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+    MediaMeta:
+      type: object
+      properties:
+        duration:
+          type: number
+          description: Длительность
+          example: "200"
+        width:
+          type: number
+          description: Размер по горизонтали
+          example: "200"
+        height:
+          type: number
+          description: Размер по вертикали
+          example: "200"
+        filesize:
+          type: number
+          description: Размер файла
+          example: "20500"
+        info:
+          type: object
+          description: Параметры видео, картинки или аудио
+      required:
+        - filesize
+    MonitorIDResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор монитора
+          format: uuid
+      required:
+        - id
+    FileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          example: "1234567"
+          format: uuid
+        folderId:
+          type: string
+          description: Папка
+          format: uuid
+        originalName:
+          type: string
+          description: Изначальное имя файла
+          example: foo.mp4
+        name:
+          type: string
+          description: Имя файла
+          example: foo.mp4
+        extension:
+          type: string
+          description: Расширение файла
+          example: mp4
+        hash:
+          type: string
+          description: Hash файла
+          example: 2b0439011a3a215ae1756bfc342e5bbc
+        videoType:
+          type: string
+          description: Тип файла
+          enum: *a51
+          example: video
+        category:
+          type: string
+          description: В какую категорию относить файл
+          enum: *a52
+          example: media
+        filesize:
+          type: number
+          description: Размер файла
+          example: 210000
+        meta:
+          description: Метаинформация
+          example:
+            duration: 200
+            filesize: 20500
+          allOf:
+            - $ref: "#/components/schemas/MediaMeta"
+        userId:
+          type: string
+          description: Идентификатор пользователя
+          format: uuid
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+        monitors:
+          description: Мониторы
+          title: MonitorResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorIDResponse"
+      required:
+        - id
+        - folderId
+        - originalName
+        - name
+        - extension
+        - hash
+        - videoType
+        - category
+        - filesize
+        - meta
+        - userId
+        - createdAt
+        - updatedAt
+    FilesGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        count:
+          type: number
+          description: Количество файлов
+        data:
+          description: Файлы
+          title: FileResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/FileResponse"
+      required:
+        - status
+        - count
+        - data
+    FileUploadRequest:
+      type: object
+      properties:
+        folderId:
+          type: string
+          description: Папка
+          format: uuid
+        category:
+          type: string
+          description: В какую категорию относить файл
+          enum: *a52
+          example: media
+        monitorId:
+          type: string
+          format: uuid
+          description: Монитор
+      required:
+        - folderId
+        - category
+        - monitorId
+    FilesUploadResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        count:
+          type: number
+          description: Количество файлов
+        data:
+          description: Файлы
+          title: FileResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/FileResponse"
+      required:
+        - status
+        - count
+        - data
+    FileGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Файл
+          title: FileResponse
+          allOf:
+            - $ref: "#/components/schemas/FileResponse"
+      required:
+        - status
+        - data
+    FileUpdateRequest:
+      type: object
+      properties:
+        folderId:
+          type: string
+          description: Папка
+          format: uuid
+        name:
+          type: string
+          description: Имя файла
+          example: foo.mp4
+      required:
+        - folderId
+        - name
+    FolderRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        name:
+          type: string
+          description: Наименование папки
+          example: bar
+        parentFolderId:
+          type: string
+          description: Родительская папка
+          format: uuid
+    FoldersGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          title: FolderRequest
+          allOf:
+            - $ref: "#/components/schemas/FolderRequest"
+        scope:
+          description: Рамки для запроса
+          title: LimitRequest
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+    FolderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        name:
+          type: string
+          description: Наименование папки
+          example: bar
+        parentFolderId:
+          type: string
+          description: Родительская папка
+          format: uuid
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+    FoldersGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        count:
+          type: number
+          description: Количество папок
+          example: 1
+        data:
+          description: Папки
+          type: array
+          items:
+            $ref: "#/components/schemas/FolderResponse"
+      required:
+        - status
+        - count
+        - data
+    FolderCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Наименование папки
+          example: bar
+        parentFolderId:
+          type: string
+          description: Родительская папка
+          format: uuid
+      required:
+        - name
+    FolderGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Папки
+          title: FolderResponse
+          allOf:
+            - $ref: "#/components/schemas/FolderResponse"
+      required:
+        - status
+        - data
+    FolderUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Наименование папки
+          example: bar
+      required:
+        - name
+    UsersGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Пользователи
+          title: UserResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/UserResponse"
+      required:
+        - status
+        - data
+    OrderRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Описание заказа
+          example: описание заказа
+    OrdersGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          title: OrderRequest
+          allOf:
+            - $ref: "#/components/schemas/OrderRequest"
+        scope:
+          description: Рамки для запроса
+          title: LimitRequest
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          example: "1234567"
+          format: uuid
+        description:
+          type: string
+          description: Описание заказа
+          example: описание заказа
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - description
+        - createdAt
+        - updatedAt
+    OrdersGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        count:
+          type: number
+          description: Количество заказов
+        data:
+          description: Заказы
+          title: OrderResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderResponse"
+      required:
+        - status
+        - count
+        - data
+    PaymentRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Описание платежа
+          example: описание платежа
+    PaymentsGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          title: PaymentRequest
+          allOf:
+            - $ref: "#/components/schemas/PaymentRequest"
+        scope:
+          description: Рамки для запроса
+          title: LimitRequest
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+    PaymentResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          example: "1234567"
+          format: uuid
+        amount:
+          type: string
+          description: Описание платежа
+          example: 1000 RUB
+        incomeAmount:
+          type: string
+          description: Описание платежа
+          example: 1000 RUB
+        description:
+          type: string
+          description: Описание платежа
+          example: описание платежа
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - amount
+        - incomeAmount
+        - description
+        - createdAt
+        - updatedAt
+    PaymentsGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        count:
+          type: number
+          description: Количество оплат
+        data:
+          description: Оплаты
+          title: PaymentResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/PaymentResponse"
+      required:
+        - status
+        - count
+        - data
+    PlaylistRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя файла
+          example: bar
+        description:
+          type: string
+          description: Имя файла
+          example: Описание плэйлиста
+    PlaylistsGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          title: PlaylistRequest
+          allOf:
+            - $ref: "#/components/schemas/PlaylistRequest"
+        scope:
+          description: Рамки для запроса
+          title: LimitRequest
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+    PlaylistsGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        count:
+          type: number
+          description: Количество плэйлистов
+        data:
+          description: Плэйлисты
+          title: PlaylistResponse
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaylistResponse"
+      required:
+        - status
+        - count
+        - data
+    PlaylistCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя файла
+          example: bar
+        description:
+          type: string
+          description: Имя файла
+          example: Описание плэйлиста
+        files:
+          description: Файлы
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+        - name
+        - description
+        - files
+    PlaylistGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Плэйлист
+          title: PlaylistResponse
+          allOf:
+            - $ref: "#/components/schemas/PlaylistResponse"
+      required:
+        - status
+        - data
+externalDocs:
+  description: MyScreen backend API
+  url: https://api.myscreen.ru
