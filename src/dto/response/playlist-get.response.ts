@@ -1,21 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { FolderResponse } from './folder.response';
+import { PlaylistResponse } from './playlist.response';
 
-export class FolderGetResponse {
+export class PlaylistGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
     example: Status.Success,
+    required: true,
   })
   status!: Status.Success;
 
   @ApiProperty({
-    description: 'Папки',
-    title: 'FolderResponse',
-    type: FolderResponse,
+    description: 'Плэйлисты',
+    title: 'PlaylistResponse',
+    type: PlaylistResponse,
     required: false,
   })
-  data?: FolderResponse;
+  data?: PlaylistResponse;
 }

@@ -54,7 +54,7 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {[FileEntity[], number]} Результат
    */
-  getFiles = async (
+  find = async (
     find: FindManyOptions<FileEntity>,
   ): Promise<[FileEntity[], number]> =>
     this.fileRepository.findAndCount({
@@ -71,7 +71,7 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {FileEntity} Результат
    */
-  getFile = async (
+  findOne = async (
     find: FindManyOptions<FileEntity>,
   ): Promise<FileEntity | undefined> =>
     this.fileRepository.findOne({
@@ -96,7 +96,7 @@ export class FileService {
     @TransactionRepository(FileEntity)
     fileRepository?: Repository<FileEntity>,
   ): Promise<[Array<FileEntity>, number]> {
-    const folder = await this.folderService.findFolder({
+    const folder = await this.folderService.findOne({
       where: { user, id: folderId },
     });
     if (!folder) {

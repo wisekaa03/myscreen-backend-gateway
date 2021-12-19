@@ -6,6 +6,8 @@ export class MonitorRequest extends OmitType(MonitorEntity, [
   'id',
   'attached',
   'lastSeen',
+  'user',
+  'userId',
   'createdAt',
   'updatedAt',
 ]) {}

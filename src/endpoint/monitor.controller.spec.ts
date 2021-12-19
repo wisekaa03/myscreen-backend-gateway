@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard } from '@/guards';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorController } from './monitor.controller';
+import { PlaylistService } from '@/database/playlist.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -25,6 +26,10 @@ describe(MonitorController.name, () => {
       providers: [
         {
           provide: MonitorService,
+          useClass: mockRepository,
+        },
+        {
+          provide: PlaylistService,
           useClass: mockRepository,
         },
       ],

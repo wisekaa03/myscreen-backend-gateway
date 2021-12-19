@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
+import { UserEntity } from './user.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -9,6 +10,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  delete: async () => Promise.resolve([]),
   metadata: {
     columns: [],
     relations: [],
@@ -37,20 +39,20 @@ describe(FolderService.name, () => {
   });
 
   it('returns findFolder', async () => {
-    expect(await folderService.findFolder({})).toStrictEqual([]);
+    expect(await folderService.findOne({})).toStrictEqual([]);
   });
 
   it('returns findFolders', async () => {
-    expect(await folderService.findFolders({})).toStrictEqual([]);
+    expect(await folderService.find({})).toStrictEqual([]);
   });
 
   it('returns updateFolder', async () => {
-    expect(await folderService.updateFolder({})).toStrictEqual([]);
+    expect(await folderService.update({})).toStrictEqual([]);
   });
 
   it('returns deleteFolder', async () => {
-    expect(await folderService.deleteFolder({} as FolderEntity)).toStrictEqual(
-      [],
-    );
+    expect(
+      await folderService.delete({} as UserEntity, {} as FolderEntity),
+    ).toStrictEqual([]);
   });
 });

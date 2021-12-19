@@ -108,7 +108,7 @@ export class FileController {
     @Req() { user }: ExpressRequest,
     @Body() { where, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
-    const [data, count] = await this.fileService.getFiles({
+    const [data, count] = await this.fileService.find({
       ...paginationQueryToConfig(scope),
       where: {
         user,
@@ -194,7 +194,7 @@ export class FileController {
     @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<FileGetResponse> {
-    const data = await this.fileService.getFile({
+    const data = await this.fileService.findOne({
       where: {
         user,
         id,

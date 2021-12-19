@@ -31,6 +31,7 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { FileEntity } from './file.entity';
+import { PlaylistRequest } from '@/dto';
 
 @Entity('monitor')
 @Unique('IDX_user_name', ['user', 'name'])
@@ -182,6 +183,9 @@ export class MonitorEntity {
     eager: false,
   })
   @JoinColumn()
+  @ApiProperty({
+    description: 'Текущий плэйлист',
+  })
   currentPlaylistId?: PlaylistEntity;
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.monitors, {
@@ -191,6 +195,11 @@ export class MonitorEntity {
     nullable: true,
   })
   @JoinTable()
+  @ApiProperty({
+    description: 'Все плэйлисты',
+    type: () => PlaylistEntity,
+    isArray: true,
+  })
   playlists?: PlaylistEntity[];
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {
@@ -200,6 +209,11 @@ export class MonitorEntity {
     nullable: true,
   })
   @JoinTable()
+  @ApiProperty({
+    description: 'Все файлы',
+    type: () => FileEntity,
+    isArray: true,
+  })
   files?: FileEntity[];
 
   @CreateDateColumn()

@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  DeleteResult,
+  FindManyOptions,
+  Repository,
+} from 'typeorm';
 
 import { MonitorEntity } from './monitor.entity';
 import { UserEntity } from './user.entity';
@@ -15,13 +20,20 @@ export class MonitorService {
   find = async (
     find: FindManyOptions<MonitorEntity>,
   ): Promise<[Array<MonitorEntity>, number]> =>
-    this.monitorRepository.findAndCount(find);
+    this.monitorRepository.findAndCount({
+      ...find,
+      relations: ['files', 'playlists'],
+    });
 
   findOne = async (
     find: FindManyOptions<MonitorEntity>,
-  ): Promise<MonitorEntity | undefined> => this.monitorRepository.findOne(find);
+  ): Promise<MonitorEntity | undefined> =>
+    this.monitorRepository.findOne({
+      ...find,
+      relations: ['files', 'playlists'],
+    });
 
-  async create(
+  async update(
     user: UserEntity,
     monitor: Partial<MonitorEntity>,
   ): Promise<MonitorEntity> {
@@ -31,5 +43,15 @@ export class MonitorService {
     };
 
     return this.monitorRepository.save(this.monitorRepository.create(order));
+  }
+
+  async delete(
+    user: UserEntity,
+    monitor: MonitorEntity,
+  ): Promise<DeleteResult> {
+    return this.monitorRepository.delete({
+      id: monitor.id,
+      userId: user.id,
+    });
   }
 }

@@ -21,9 +21,13 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
   ): Promise<EditorEntity | undefined> => this.editorRepository.findOne(find);
 
-  async create(user: UserEntity): Promise<EditorEntity> {
+  async create(
+    user: UserEntity,
+    update: Partial<EditorEntity>,
+  ): Promise<EditorEntity> {
     const order: DeepPartial<EditorEntity> = {
-      user,
+      ...update,
+      userId: user.id,
     };
 
     return this.editorRepository.save(this.editorRepository.create(order));

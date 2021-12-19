@@ -89,7 +89,7 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { scope, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
-    const [data, count] = await this.folderService.findFolders({
+    const [data, count] = await this.folderService.find({
       ...paginationQueryToConfig(scope),
       where: {
         user,
@@ -120,15 +120,15 @@ export class FolderController {
     @Body() { name, parentFolderId }: FolderCreateRequest,
   ): Promise<FolderGetResponse> {
     if (!parentFolderId) {
-      const parentFolder = await this.folderService.findFolder({
-        where: { user, name, parentFolderId: null },
+      const parentFolder = await this.folderService.findOne({
+        where: { userId: user.id, name, parentFolderId: null },
       });
       if (parentFolder) {
         throw new BadRequestException(`Folder '${name}' exists`);
       }
     } else {
-      const parentFolder = await this.folderService.findFolder({
-        where: { user, id: parentFolderId },
+      const parentFolder = await this.folderService.findOne({
+        where: { userId: user.id, id: parentFolderId },
       });
       if (!parentFolder) {
         throw new BadRequestException(
@@ -139,12 +139,11 @@ export class FolderController {
 
     return {
       status: Status.Success,
-      data: await this.folderService
-        .updateFolder({ user, name, parentFolderId })
-        .then((folder) => {
-          const { user: userFolder, ...data } = folder;
-          return data;
-        }),
+      data: await this.folderService.update({
+        userId: user.id,
+        name,
+        parentFolderId,
+      }),
     };
   }
 
@@ -165,15 +164,9 @@ export class FolderController {
   ): Promise<FolderGetResponse> {
     return {
       status: Status.Success,
-      data: await this.folderService
-        .findFolder({ where: { user, id } })
-        .then((folder) => {
-          if (!folder) {
-            throw new NotFoundException();
-          }
-          const { user: userFolder, ...data } = folder;
-          return data;
-        }),
+      data: await this.folderService.findOne({
+        where: { userId: user.id, id },
+      }),
     };
   }
 
@@ -195,15 +188,7 @@ export class FolderController {
   ): Promise<FolderGetResponse> {
     return {
       status: Status.Success,
-      data: await this.folderService
-        .updateFolder({ user, id, name })
-        .then((folder) => {
-          if (!folder) {
-            throw new NotFoundException();
-          }
-          const { user: userFolder, ...data } = folder;
-          return data;
-        }),
+      data: await this.folderService.update({ userId: user.id, id, name }),
     };
   }
 
@@ -222,12 +207,12 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
-    const folder = await this.folderService.findFolder({ where: { user, id } });
+    const folder = await this.folderService.findOne({ where: { user, id } });
     if (!folder) {
-      throw new NotFoundException(`User '${user.name}' has not '${id}' folder`);
+      throw new NotFoundException(`Folder '${id}' is not found`);
     }
 
-    await this.folderService.deleteFolder(folder);
+    await this.folderService.delete(user, folder);
 
     return {
       status: Status.Success,

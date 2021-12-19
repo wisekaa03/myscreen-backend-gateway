@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '@/enums/status.enum';
 import { MonitorResponse } from './monitor.response';
 
-export class MonitorsGetResponse {
+export class MonitorGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -12,15 +12,11 @@ export class MonitorsGetResponse {
   })
   status!: Status.Success;
 
-  @ApiProperty({ description: 'Количество мониторов' })
-  count!: number;
-
   @ApiProperty({
-    description: 'Мониторы',
+    description: 'Монитор',
     title: 'MonitorResponse',
     type: MonitorResponse,
-    isArray: true,
-    required: true,
+    required: false,
   })
-  data!: MonitorResponse[];
+  data?: MonitorResponse;
 }
