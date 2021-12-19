@@ -14,6 +14,7 @@ import {
   NotFoundException,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Req,
@@ -48,6 +49,7 @@ import {
   FileGetResponse,
   FileUploadRequest,
   FileUploadRequestBody,
+  FileUpdateRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -200,9 +202,45 @@ export class FileController {
         id,
       },
     });
-
     if (!data) {
       throw new NotFoundException('File not found');
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Patch('/:fileId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'file-update',
+    summary: 'Изменить файл',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: FileGetResponse,
+  })
+  async updateFileDB(
+    @Req() { user }: ExpressRequest,
+    @Param('fileId', ParseUUIDPipe) id: string,
+    @Body() update: FileUpdateRequest,
+  ): Promise<FileGetResponse> {
+    const file = await this.fileService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+    });
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    const data = await this.fileService.update(update);
+    if (!data) {
+      throw new BadRequestException('File exists and not exists ?');
     }
 
     return {

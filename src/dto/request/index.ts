@@ -12,6 +12,7 @@ export * from './folder-create.request';
 export * from './folder-update.request';
 export * from './file.request';
 export * from './file-upload.request';
+export * from './file-update.request';
 export * from './files-get.request';
 export * from './file-preview.request';
 export * from './order.request';

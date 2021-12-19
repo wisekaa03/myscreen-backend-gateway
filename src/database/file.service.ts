@@ -82,6 +82,18 @@ export class FileService {
     });
 
   /**
+   * Update file
+   *
+   * @async
+   * @param {FindManyOptions<FileEntity>} find
+   * @returns {FileEntity} Результат
+   */
+  update = async (
+    update: Partial<FileEntity>,
+  ): Promise<FileEntity | undefined> =>
+    this.fileRepository.save(this.fileRepository.create(update));
+
+  /**
    * Upload files
    * @async
    * @param {UserEntity} user
