@@ -6,16 +6,33 @@ import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { AuthService } from './auth.service';
 
+const email = 'foo@bar.baz';
+const password = 'Secret~123456';
+const token = 'token';
+
+const user = {
+  id: '1',
+  email,
+  surname: 'Steve',
+  name: 'John',
+  middleName: 'Doe',
+  phoneNumber: '+78002000000',
+  city: 'Krasnodar',
+  country: 'RU',
+  company: 'ACME corporation',
+  role: 'advertiser',
+  verified: true,
+  isDemoUser: false,
+  createdAt: '1000-01-01T01:00:50.804Z',
+  updatedAt: '1000-01-01T01:00:43.121Z',
+  countUsedSpace: '0',
+};
+
 export const mockRepository = jest.fn(() => ({
-  findOne: async () => Promise.resolve([]),
-  findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
-  remove: async () => Promise.resolve([]),
-  metadata: {
-    columns: [],
-    relations: [],
-  },
+  findByEmail: async () => Promise.resolve({ ...user, password }),
+  validateCredentials: () => true,
+  signAsync: async () => Promise.resolve(token),
+  create: async () => Promise.resolve({ id: '1' }),
 }));
 
 describe(AuthService.name, () => {
@@ -48,8 +65,16 @@ describe(AuthService.name, () => {
     expect(authService).toBeDefined();
   });
 
+  it('login', async () => {
+    const login = await authService.login(email, password);
+    expect(login).toEqual([
+      user,
+      { refresh_token: token, token, type: 'bearer' },
+    ]);
+  });
+
   // TODO: should inspect:
-  // TODO: - login, buildResponsePayload, generateAccessToken, generateRefreshToken
+  // TODO: - buildResponsePayload, generateAccessToken, generateRefreshToken
   // TODO: - resolveRefreshToken, createAccessTokenFromRefreshToken, decodeRefreshToken
   // TODO: - getUserFromRefreshTokenPayload, getStoredTokenFromRefreshTokenPayload, verifyEmail
 });

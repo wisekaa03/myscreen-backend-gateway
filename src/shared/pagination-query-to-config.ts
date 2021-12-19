@@ -2,7 +2,7 @@ import type { FindManyOptions } from 'typeorm';
 import { LimitRequest } from '@/dto/request/limit.request';
 
 export const paginationQueryToConfig = <T>(
-  scope: LimitRequest<T> | undefined,
+  scope?: LimitRequest<T>,
 ): FindManyOptions<T> => {
   const pagination: FindManyOptions<T> = {};
 

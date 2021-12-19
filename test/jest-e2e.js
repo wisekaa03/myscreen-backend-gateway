@@ -52,6 +52,7 @@ module.exports = {
   ],
   testPathIgnorePatterns: [
     '<rootDir>/.git/',
+    '<rootDir>/coverage',
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
   ],

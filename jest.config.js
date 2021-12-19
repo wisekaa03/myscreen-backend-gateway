@@ -49,6 +49,7 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.[jt]s?(x)', '**/(*.)+(spec|test).[jt]s?(x)'],
   testPathIgnorePatterns: [
     '<rootDir>/.git/',
+    '<rootDir>/coverage',
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
     '<rootDir>/test/',
