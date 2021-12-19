@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsArray, IsDate, IsNotEmpty, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -64,13 +64,12 @@ export class PlaylistEntity {
     eager: false,
   })
   @JoinTable()
+  @IsArray()
   @ApiProperty({
     description: 'Файлы',
-    type: () => FileEntity,
-    format: 'uuid',
     isArray: true,
+    allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
-  @IsArray()
   files!: FileEntity[];
 
   @ManyToMany(() => FileEntity, (file) => file.rendered, {
@@ -88,7 +87,8 @@ export class PlaylistEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  createdAt?: Date;
+  @IsDate()
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -96,5 +96,6 @@ export class PlaylistEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  updatedAt?: Date;
+  @IsDate()
+  updatedAt!: Date;
 }

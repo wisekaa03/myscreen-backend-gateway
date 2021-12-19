@@ -1,4 +1,4 @@
-import { IsUUID } from 'class-validator';
+import { IsDate, IsNumber, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -19,13 +19,30 @@ import { FileEntity } from '@/database/file.entity';
 @Entity('editor')
 export class EditorEntity {
   @PrimaryGeneratedColumn('uuid')
+  @ApiProperty({
+    description: 'Идентификатор редактора',
+    example: '12345678',
+    required: true,
+  })
   @IsUUID()
   id!: string;
 
   @Column({ type: 'numeric' })
+  @ApiProperty({
+    description: 'Ширина редактора',
+    example: '1920',
+    required: true,
+  })
+  @IsNumber()
   width!: number;
 
   @Column({ type: 'numeric' })
+  @ApiProperty({
+    description: 'Высота редактора',
+    example: '1080',
+    required: true,
+  })
+  @IsNumber()
   height!: number;
 
   @Column({ type: 'numeric', default: 24 })
@@ -83,7 +100,8 @@ export class EditorEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  createdAt?: Date;
+  @IsDate()
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -91,5 +109,6 @@ export class EditorEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  updatedAt?: Date;
+  @IsDate()
+  updatedAt!: Date;
 }

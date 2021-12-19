@@ -7,7 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsDate, IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 import { FileEntity } from './file.entity';
 
@@ -49,7 +49,8 @@ export class FilePreviewEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  createdAt?: Date;
+  @IsDate()
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -57,5 +58,6 @@ export class FilePreviewEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  updatedAt?: Date;
+  @IsDate()
+  updatedAt!: Date;
 }

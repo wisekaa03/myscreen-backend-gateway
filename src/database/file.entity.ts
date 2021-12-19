@@ -9,9 +9,10 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import type { FfprobeData } from 'media-probe';
 import {
+  IsDate,
   IsEnum,
   IsJSON,
   IsNotEmpty,
@@ -220,7 +221,8 @@ export class FileEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  createdAt?: Date;
+  @IsDate()
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -228,5 +230,6 @@ export class FileEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  updatedAt?: Date;
+  @IsDate()
+  updatedAt!: Date;
 }

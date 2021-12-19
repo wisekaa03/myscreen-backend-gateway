@@ -26,8 +26,8 @@ export class UptimeMonitoringEntity {
   monitor!: MonitorEntity;
 
   @CreateDateColumn()
-  createdAt?: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt?: Date;
+  updatedAt!: Date;
 }

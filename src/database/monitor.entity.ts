@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsDate,
   IsEnum,
@@ -31,7 +32,7 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { FileEntity } from './file.entity';
-import { PlaylistRequest } from '@/dto';
+import { FileResponse } from '@/dto';
 
 @Entity('monitor')
 @Unique('IDX_user_name', ['user', 'name'])
@@ -194,10 +195,11 @@ export class MonitorEntity {
     nullable: true,
   })
   @JoinTable()
+  @IsArray()
   @ApiProperty({
     description: 'Фото монитора. Документы на право владения.',
-    type: () => FileEntity,
     isArray: true,
+    allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
   files?: FileEntity[];
 
@@ -207,7 +209,8 @@ export class MonitorEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  createdAt?: Date;
+  @IsDate()
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -215,5 +218,6 @@ export class MonitorEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  updatedAt?: Date;
+  @IsDate()
+  updatedAt!: Date;
 }
