@@ -332,7 +332,7 @@ export class MonitorController {
   @Delete('/playlist')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitor-playlist-update',
+    operationId: 'monitor-playlist-delete',
     summary: 'Удаление связки плэйлиста и монитора',
   })
   @ApiResponse({
