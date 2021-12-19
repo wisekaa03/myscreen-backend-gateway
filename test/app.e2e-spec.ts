@@ -394,9 +394,9 @@ describe('Backend API (e2e)', () => {
     /**
      * Создание новой папки
      */
-    test('POST /folder/create [name: "bar"] (Создание новой папки)', async () =>
+    test('PUT /folder [name: "bar"] (Создание новой папки)', async () =>
       request
-        .post('/folder/create')
+        .put('/folder')
         .auth(token, { type: 'bearer' })
         .send({ name: 'bar' })
         .set('Accept', 'application/json')
@@ -411,18 +411,18 @@ describe('Backend API (e2e)', () => {
           parentFolderId = body.data.id;
         }));
 
-    test('POST /folder/create [name: "```"] [unsuccess] (Создание новой папки)', async () =>
+    test('PUT /folder [name: "```"] [unsuccess] (Создание новой папки)', async () =>
       request
-        .post('/folder/create')
+        .put('/folder')
         .auth(token, { type: 'bearer' })
         .send({ name: '```' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(400));
 
-    test('POST /folder/create [name: "foo"] (Создание новой папки)', async () =>
+    test('PUT /folder [name: "foo"] (Создание новой папки)', async () =>
       request
-        .post('/folder/create')
+        .put('/folder')
         .auth(token, { type: 'bearer' })
         .send({ name: 'foo' })
         .set('Accept', 'application/json')
@@ -440,9 +440,9 @@ describe('Backend API (e2e)', () => {
     /**
      * Создание новой под-папки
      */
-    test('POST /folder/create [name: "foo", parentFolderId] (Создание новой под-папки)', async () =>
+    test('PUT /folder [name: "foo", parentFolderId] (Создание новой под-папки)', async () =>
       request
-        .post('/folder/create')
+        .put('/folder')
         .auth(token, { type: 'bearer' })
         .send({ name: 'foo', parentFolderId })
         .set('Accept', 'application/json')
@@ -460,9 +460,9 @@ describe('Backend API (e2e)', () => {
     /**
      * Создание новой под-папки
      */
-    test('POST /folder/create [name: "baz", parentFolderId] (Создание новой под-папки)', async () =>
+    test('PUT /folder [name: "baz", parentFolderId] (Создание новой под-папки)', async () =>
       request
-        .post('/folder/create')
+        .put('/folder')
         .auth(token, { type: 'bearer' })
         .send({ name: 'baz', parentFolderId: parentFolderId2 })
         .set('Accept', 'application/json')
@@ -657,10 +657,10 @@ describe('Backend API (e2e)', () => {
     /**
      * Скачивание медиа [success]
      */
-    test('GET /file/get/{mediaId} [success] (Скачивание медиа)', async () =>
+    test('POST /file/{mediaId} [success] (Скачивание медиа)', async () =>
       token && mediaId1
         ? request
-            .get(`/file/get/${mediaId1}`)
+            .post(`/file/${mediaId1}`)
             .auth(token, { type: 'bearer' })
             .set('Accept', 'application/json')
             .expect('Content-Type', 'image/png')
