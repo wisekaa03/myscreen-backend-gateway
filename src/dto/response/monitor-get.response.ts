@@ -16,7 +16,7 @@ export class MonitorGetResponse {
     description: 'Монитор',
     title: 'MonitorResponse',
     type: MonitorResponse,
-    required: false,
+    required: true,
   })
-  data?: MonitorResponse;
+  data!: MonitorResponse;
 }

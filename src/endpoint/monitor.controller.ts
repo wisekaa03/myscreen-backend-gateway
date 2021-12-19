@@ -164,6 +164,9 @@ export class MonitorController {
         id,
       },
     });
+    if (!data) {
+      throw new NotFoundException(`Monitor ${id} not found`);
+    }
 
     return {
       status: Status.Success,

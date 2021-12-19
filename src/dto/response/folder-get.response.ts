@@ -15,7 +15,7 @@ export class FolderGetResponse {
     description: 'Папки',
     title: 'FolderResponse',
     type: FolderResponse,
-    required: false,
+    required: true,
   })
-  data?: FolderResponse;
+  data!: FolderResponse;
 }

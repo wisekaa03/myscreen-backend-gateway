@@ -162,11 +162,16 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
   ): Promise<FolderGetResponse> {
+    const data = await this.folderService.findOne({
+      where: { userId: user.id, id },
+    });
+    if (!data) {
+      throw new NotFoundException(`Folder ${id} is not exists`);
+    }
+
     return {
       status: Status.Success,
-      data: await this.folderService.findOne({
-        where: { userId: user.id, id },
-      }),
+      data,
     };
   }
 

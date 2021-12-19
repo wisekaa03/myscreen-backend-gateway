@@ -13,10 +13,10 @@ export class PlaylistGetResponse {
   status!: Status.Success;
 
   @ApiProperty({
-    description: 'Плэйлисты',
+    description: 'Плэйлист',
     title: 'PlaylistResponse',
     type: PlaylistResponse,
-    required: false,
+    required: true,
   })
-  data?: PlaylistResponse;
+  data!: PlaylistResponse;
 }
