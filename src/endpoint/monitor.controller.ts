@@ -8,7 +8,6 @@ import {
   HttpCode,
   Logger,
   NotFoundException,
-  NotImplementedException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -160,7 +159,7 @@ export class MonitorController {
   ): Promise<MonitorGetResponse> {
     const data = await this.monitorService.findOne({
       where: {
-        userId: user.id,
+        user,
         id,
       },
     });
