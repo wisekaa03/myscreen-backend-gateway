@@ -180,27 +180,12 @@ export class MonitorEntity {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     cascade: true,
-    eager: false,
   })
   @JoinColumn()
   @ApiProperty({
     description: 'Текущий плэйлист',
   })
-  currentPlaylistId?: PlaylistEntity;
-
-  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.monitors, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    cascade: true,
-    nullable: true,
-  })
-  @JoinTable()
-  @ApiProperty({
-    description: 'Все плэйлисты',
-    type: () => PlaylistEntity,
-    isArray: true,
-  })
-  playlists?: PlaylistEntity[];
+  currentPlaylist?: PlaylistEntity | null;
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {
     onDelete: 'CASCADE',
@@ -210,7 +195,7 @@ export class MonitorEntity {
   })
   @JoinTable()
   @ApiProperty({
-    description: 'Все файлы',
+    description: 'Фото монитора. Документы на право владения.',
     type: () => FileEntity,
     isArray: true,
   })

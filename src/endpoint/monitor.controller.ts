@@ -312,12 +312,9 @@ export class MonitorController {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
 
-      const monitorUpdate = monitor.playlists
-        ? monitor.playlists.concat(playlist)
-        : [playlist];
       return this.monitorService.update(user, {
         ...monitor,
-        playlists: monitorUpdate,
+        currentPlaylist: playlist,
       });
     });
     const data = await Promise.all(dataPromise);
@@ -367,17 +364,14 @@ export class MonitorController {
       if (!monitor) {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
-      if (!monitor.playlists) {
+      if (!monitor.currentPlaylist) {
         throw new NotFoundException(
-          `Playlist '${attach.playlistId}' not found`,
+          `Monitor '${monitorId}' is not playing playlist '${playlist.id}'`,
         );
       }
-      const monitorUpdate = monitor.playlists.filter(
-        (p) => p.id !== playlist.id,
-      );
       return this.monitorService.update(user, {
         ...monitor,
-        playlists: monitorUpdate,
+        currentPlaylist: null,
       });
     });
     const data = await Promise.all(dataPromise);

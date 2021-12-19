@@ -13,7 +13,6 @@ import {
 } from 'typeorm';
 
 import { UserEntity } from '@/database/user.entity';
-import { MonitorEntity } from '@/database/monitor.entity';
 import { FileEntity } from '@/database/file.entity';
 
 @Entity('playlist')
@@ -55,11 +54,6 @@ export class PlaylistEntity {
   @Column({ nullable: true })
   @IsUUID()
   userId!: string;
-
-  @ManyToMany(() => MonitorEntity, (monitor) => monitor.playlists, {
-    nullable: true,
-  })
-  monitors?: MonitorEntity[];
 
   @ManyToMany(() => FileEntity, (file) => file.playlists, {
     onUpdate: 'CASCADE',
