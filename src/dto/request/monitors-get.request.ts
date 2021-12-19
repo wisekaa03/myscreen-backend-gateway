@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -10,13 +10,17 @@ export class MonitorsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     title: 'MonitorRequest',
-    type: MonitorRequest,
+    type: PartialType(
+      OmitType(MonitorRequest, ['address', 'price', 'monitorInfo']),
+    ),
     required: false,
   })
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => MonitorRequest)
-  where?: MonitorRequest;
+  @Type(() =>
+    PartialType(OmitType(MonitorRequest, ['address', 'price', 'monitorInfo'])),
+  )
+  where?: Omit<MonitorRequest, 'address' | 'price' | 'monitorInfo'>;
 
   @ApiProperty({
     description: 'Рамки для запроса',

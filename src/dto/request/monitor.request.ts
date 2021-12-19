@@ -8,9 +8,4 @@ export class MonitorRequest extends OmitType(MonitorEntity, [
   'lastSeen',
   'createdAt',
   'updatedAt',
-
-  // TODO: transformer functions
-  'address',
-  'price',
-  'monitorInfo',
 ]) {}

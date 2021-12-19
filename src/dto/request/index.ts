@@ -21,7 +21,6 @@ export * from './payments-get.request';
 export * from './playlist.request';
 export * from './playlists-get.request';
 export * from './monitor.request';
-export * from './monitor-id.request';
 export * from './monitors-get.request';
 export * from './editor.request';
 export * from './editors-get.request';
