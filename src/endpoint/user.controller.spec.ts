@@ -3,7 +3,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { UserRoleEnum } from '@/enums/role.enum';
 import { UserService } from '@/database/user.service';
-import { AuthService } from '@/auth/auth.service';
 import { UserController } from './user.controller';
 
 export const mockRepository = jest.fn(() => ({

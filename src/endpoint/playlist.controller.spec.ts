@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard } from '@/guards';
 import { PlaylistService } from '@/database/playlist.service';
 import { PlaylistController } from './playlist.controller';
+import { FileService } from '@/database/file.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -25,6 +26,10 @@ describe(PlaylistController.name, () => {
       providers: [
         {
           provide: PlaylistService,
+          useClass: mockRepository,
+        },
+        {
+          provide: FileService,
           useClass: mockRepository,
         },
       ],

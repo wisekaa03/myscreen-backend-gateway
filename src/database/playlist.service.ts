@@ -15,15 +15,20 @@ export class PlaylistService {
   find = async (
     find: FindManyOptions<PlaylistEntity>,
   ): Promise<[Array<PlaylistEntity>, number]> =>
-    this.playlistEntity.findAndCount(find);
+    this.playlistEntity.findAndCount({ ...find, relations: ['files'] });
 
   findOne = async (
     find: FindManyOptions<PlaylistEntity>,
-  ): Promise<PlaylistEntity | undefined> => this.playlistEntity.findOne(find);
+  ): Promise<PlaylistEntity | undefined> =>
+    this.playlistEntity.findOne({ ...find, relations: ['files'] });
 
-  async create(user: UserEntity): Promise<PlaylistEntity> {
+  async update(
+    user: UserEntity,
+    update: Partial<PlaylistEntity>,
+  ): Promise<PlaylistEntity> {
     const playlist: DeepPartial<PlaylistEntity> = {
-      user,
+      userId: user.id,
+      ...update,
     };
 
     return this.playlistEntity.save(this.playlistEntity.create(playlist));

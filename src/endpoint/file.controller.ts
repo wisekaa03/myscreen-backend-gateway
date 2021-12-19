@@ -196,7 +196,7 @@ export class FileController {
   ): Promise<FileGetResponse> {
     const data = await this.fileService.findOne({
       where: {
-        user,
+        userId: user.id,
         id,
       },
     });

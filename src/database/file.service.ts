@@ -97,7 +97,7 @@ export class FileService {
     fileRepository?: Repository<FileEntity>,
   ): Promise<[Array<FileEntity>, number]> {
     const folder = await this.folderService.findOne({
-      where: { user, id: folderId },
+      where: { userId: user.id, id: folderId },
     });
     if (!folder) {
       throw new NotFoundException(`Folder '${folderId}' not found`);
@@ -112,7 +112,7 @@ export class FileService {
     }
     if (monitorId) {
       monitor = await this.monitorService.findOne({
-        where: { id: monitorId },
+        where: { userId: user.id, id: monitorId },
       });
       if (!monitor) {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
@@ -218,7 +218,7 @@ export class FileService {
     id: string,
   ): Promise<PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>> {
     const file = await this.fileRepository.findOne({
-      where: { user, id },
+      where: { userId: user.id, id },
     });
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);
@@ -269,7 +269,7 @@ export class FileService {
     id: string,
   ): Promise<PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>> {
     const file = await this.fileRepository.findOne({
-      where: { user, id },
+      where: { userId: user.id, id },
     });
 
     if (!file) {
@@ -324,7 +324,7 @@ export class FileService {
     fileRepository: Repository<FileEntity> = this.fileRepository,
   ): Promise<FileEntity> {
     const file = await fileRepository.findOne({
-      where: { user, id },
+      where: { userId: user.id, id },
     });
 
     if (!file) {

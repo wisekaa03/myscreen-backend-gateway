@@ -159,7 +159,7 @@ export class MonitorController {
   ): Promise<MonitorGetResponse> {
     const data = await this.monitorService.findOne({
       where: {
-        user,
+        userId: user.id,
         id,
       },
     });

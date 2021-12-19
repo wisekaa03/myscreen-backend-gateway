@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsArray, IsNotEmpty, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -9,6 +9,7 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -16,6 +17,7 @@ import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 
 @Entity('playlist')
+@Unique('IDX_userId_name', ['userId', 'name'])
 export class PlaylistEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
@@ -59,10 +61,17 @@ export class PlaylistEntity {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     cascade: true,
-    nullable: true,
+    eager: false,
   })
   @JoinTable()
-  files?: FileEntity[];
+  @ApiProperty({
+    description: 'Файлы',
+    type: () => FileEntity,
+    format: 'uuid',
+    isArray: true,
+  })
+  @IsArray()
+  files!: FileEntity[];
 
   @ManyToMany(() => FileEntity, (file) => file.rendered, {
     onUpdate: 'CASCADE',
