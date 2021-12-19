@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  DeleteResult,
+  FindManyOptions,
+  Repository,
+} from 'typeorm';
 
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
@@ -32,5 +37,12 @@ export class PlaylistService {
     };
 
     return this.playlistEntity.save(this.playlistEntity.create(playlist));
+  }
+
+  async delete(
+    user: UserEntity,
+    playlist: PlaylistEntity,
+  ): Promise<DeleteResult> {
+    return this.playlistEntity.delete({ id: playlist.id, userId: user.id });
   }
 }

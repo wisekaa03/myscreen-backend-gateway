@@ -3,8 +3,12 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
+  Get,
   HttpCode,
   Logger,
+  Param,
+  ParseUUIDPipe,
   Post,
   Put,
   Req,
@@ -29,6 +33,7 @@ import {
   PlaylistsGetResponse,
   PlaylistGetResponse,
   PlaylistCreateRequest,
+  SuccessResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -96,7 +101,7 @@ export class PlaylistController {
     const [data, count] = await this.playlistService.find({
       ...paginationQueryToConfig(scope),
       where: {
-        user,
+        userId: user.id,
         ...where,
       },
     });
@@ -124,7 +129,7 @@ export class PlaylistController {
     @Body() body: PlaylistCreateRequest,
   ): Promise<PlaylistGetResponse> {
     const [files] = await this.fileService.find({
-      where: { id: In(body.files), user },
+      where: { id: In(body.files), userId: user.id },
     });
     if (!files) {
       throw new NotFoundError('File specified does not exist');
@@ -142,6 +147,62 @@ export class PlaylistController {
     return {
       status: Status.Success,
       data,
+    };
+  }
+
+  @Get('/:playlistId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'playlist_get',
+    summary: 'Получение плэйлиста',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: PlaylistGetResponse,
+  })
+  async getPlaylist(
+    @Req() { user }: ExpressRequest,
+    @Param('playlistId', ParseUUIDPipe) id: string,
+  ): Promise<PlaylistGetResponse> {
+    const data = await this.playlistService.findOne({
+      where: { userId: user.id, id },
+    });
+    if (!data) {
+      throw new NotFoundError(`Playlist '${id}' not found`);
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Delete('/:playlistId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'playlist_delete',
+    summary: 'Удаление плэйлиста',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deletePlaylist(
+    @Req() { user }: ExpressRequest,
+    @Param('playlistId', ParseUUIDPipe) id: string,
+  ): Promise<SuccessResponse> {
+    const data = await this.playlistService.findOne({
+      where: { userId: user.id, id },
+    });
+    if (!data) {
+      throw new NotFoundError(`Playlist '${id}' not found`);
+    }
+    await this.playlistService.delete(user, data);
+
+    return {
+      status: Status.Success,
     };
   }
 }
