@@ -29,10 +29,6 @@ describe(UserController.name, () => {
           provide: UserService,
           useClass: mockRepository,
         },
-        {
-          provide: AuthService,
-          useClass: mockRepository,
-        },
       ],
     }).compile();
 

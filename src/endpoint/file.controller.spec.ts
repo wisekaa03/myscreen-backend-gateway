@@ -29,10 +29,6 @@ describe(FileController.name, () => {
           provide: FileService,
           useClass: mockRepository,
         },
-        {
-          provide: getS3ConnectionToken(S3_MODULE_CONNECTION),
-          useClass: mockRepository,
-        },
       ],
     }).compile();
 

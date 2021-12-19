@@ -31,7 +31,6 @@ import {
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
 import { Status } from '@/enums/status.enum';
-import { AuthService } from '@/auth/auth.service';
 import { UserRoleEnum } from '@/enums/role.enum';
 import { UserService } from '@/database/user.service';
 
@@ -63,10 +62,7 @@ import { UserService } from '@/database/user.service';
 export class UserController {
   logger = new Logger(UserController.name);
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly userService: UserService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('/')
   @ApiOperation({

@@ -33,7 +33,6 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { InjectS3, type S3 } from 'nestjs-s3';
 
 import {
   BadRequestError,
@@ -92,10 +91,7 @@ import { FileService } from '@/database/file.service';
 export class FileController {
   logger = new Logger(FileController.name);
 
-  constructor(
-    private readonly fileService: FileService,
-    @InjectS3() private readonly s3Service: S3,
-  ) {}
+  constructor(private readonly fileService: FileService) {}
 
   @Post('/')
   @HttpCode(200)
