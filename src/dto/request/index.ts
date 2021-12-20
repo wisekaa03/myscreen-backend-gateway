@@ -31,4 +31,5 @@ export * from './monitor-id.request';
 export * from './monitors-get.request';
 export * from './monitors-playlist-attach.request';
 export * from './editor.request';
+export * from './editor-partial.request';
 export * from './editors-get.request';

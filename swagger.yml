@@ -2187,9 +2187,19 @@ components:
       required:
         - playlistId
         - monitors
-    EditorRequest:
+    EditorPartialRequest:
       type: object
-      properties: {}
+      properties:
+        renderingStatus:
+          type: string
+          description: Статус рендеринга
+          enum:
+            &a51
+            - initial
+            - ready
+            - pending
+            - error
+          example: initial
     EditorsGetRequest:
       type: object
       properties:
@@ -2197,7 +2207,7 @@ components:
           description: Запрос
           title: EditorRequest
           allOf:
-            - $ref: "#/components/schemas/EditorRequest"
+            - $ref: "#/components/schemas/EditorPartialRequest"
         scope:
           description: Рамки для запроса
           title: LimitRequest
@@ -2218,6 +2228,23 @@ components:
           type: number
           description: Высота редактора
           example: "1080"
+        fps:
+          type: integer
+          description: Фреймрейт
+          example: 24
+        renderingStatus:
+          type: string
+          description: Статус рендеринга
+          enum: *a51
+          example: initial
+        keep_source_audio:
+          type: boolean
+          description: Эмм...
+          example: true
+        total_duration:
+          type: integer
+          description: Общее время
+          example: 0
         createdAt:
           format: date-time
           type: string
@@ -2232,6 +2259,10 @@ components:
         - id
         - width
         - height
+        - fps
+        - renderingStatus
+        - keep_source_audio
+        - total_duration
         - createdAt
         - updatedAt
     EditorsGetResponse:
@@ -2268,7 +2299,7 @@ components:
           type: string
           description: Тип файла
           enum:
-            &a51
+            &a52
             - video
             - image
             - audio
@@ -2278,7 +2309,7 @@ components:
           type: string
           description: В какую категорию относить файл
           enum:
-            &a52
+            &a53
             - ownership
             - photo
             - media
@@ -2360,12 +2391,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a51
+          enum: *a52
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a52
+          enum: *a53
           example: media
         filesize:
           type: number
@@ -2445,7 +2476,7 @@ components:
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a52
+          enum: *a53
           example: media
         monitorId:
           type: string

@@ -2,21 +2,20 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { EditorEntity } from '@/database/editor.entity';
 import { LimitRequest } from './limit.request';
-import { EditorRequest } from './editor.request';
+import { EditorPartialRequest } from './editor-partial.request';
 
 export class EditorsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     title: 'EditorRequest',
-    type: EditorRequest,
+    type: EditorPartialRequest,
     required: false,
   })
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => EditorRequest)
-  where?: EditorRequest;
+  @Type(() => EditorPartialRequest)
+  where?: Partial<EditorPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -26,5 +25,5 @@ export class EditorsGetRequest {
   })
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<EditorEntity>;
+  scope?: LimitRequest<EditorPartialRequest>;
 }

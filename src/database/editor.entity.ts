@@ -1,4 +1,4 @@
-import { IsDate, IsNumber, IsUUID } from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsNumber, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -46,6 +46,13 @@ export class EditorEntity {
   height!: number;
 
   @Column({ type: 'numeric', default: 24 })
+  @ApiProperty({
+    description: 'Фреймрейт',
+    type: 'integer',
+    example: 24,
+    required: true,
+  })
+  @IsNumber()
   fps!: number;
 
   @Column({
@@ -54,23 +61,50 @@ export class EditorEntity {
     default: RenderingStatus.Initial,
     nullable: true,
   })
+  @ApiProperty({
+    description: 'Статус рендеринга',
+    type: RenderingStatus,
+    enum: RenderingStatus,
+    example: RenderingStatus.Initial,
+    required: true,
+  })
+  @IsEnum(RenderingStatus)
   renderingStatus!: RenderingStatus;
 
-  // ??
-  @Column({ nullable: true })
-  fileId?: string;
-
   @Column({ type: 'boolean', default: true })
+  @ApiProperty({
+    description: 'Эмм...',
+    type: 'boolean',
+    example: true,
+    required: true,
+  })
+  @IsBoolean()
   keep_source_audio!: boolean;
 
-  @Column({ type: 'json', default: [], array: true })
-  layers?: unknown[];
-
   @Column({ type: 'numeric', default: 0, nullable: true })
+  @ApiProperty({
+    description: 'Общее время',
+    type: 'integer',
+    example: 0,
+    required: true,
+  })
+  @IsNumber()
   total_duration?: number;
 
   @Column({ type: 'json', default: [], array: true })
   audio_tracks?: unknown[];
+
+  @Column({ type: 'json', default: [], array: true })
+  layers?: unknown[];
+
+  @ManyToMany(() => FileEntity, (file) => file.editors, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    nullable: true,
+  })
+  @JoinTable()
+  files?: FileEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
@@ -84,15 +118,6 @@ export class EditorEntity {
   @Column({ nullable: true })
   @IsUUID()
   userId!: string;
-
-  @ManyToMany(() => FileEntity, (file) => file.editors, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
-    nullable: true,
-  })
-  @JoinTable()
-  files?: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({
