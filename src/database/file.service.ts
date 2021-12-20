@@ -88,10 +88,45 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {FileEntity} Результат
    */
-  update = async (
+  @Transaction()
+  async update(
+    fileEntity: FileEntity,
     update: Partial<FileEntity>,
-  ): Promise<FileEntity | undefined> =>
-    this.fileRepository.save(this.fileRepository.create(update));
+    @TransactionRepository(FileEntity)
+    fileRepository?: Repository<FileEntity>,
+  ): Promise<FileEntity | undefined> {
+    if (update.folderId !== fileEntity.folderId) {
+      const Key = `${update.folderId}/${fileEntity.hash}-${fileEntity.originalName}`;
+      const CopySource = `${fileEntity.folderId}/${fileEntity.hash}-${fileEntity.originalName}`;
+
+      return Promise.all([
+        fileRepository?.save(fileRepository?.create(update)),
+        this.s3Service
+          .copyObject({
+            Bucket: this.bucket,
+            Key,
+            CopySource: `${this.bucket}/${CopySource}`,
+            MetadataDirective: 'REPLACE',
+          })
+          .promise()
+          .then(() =>
+            this.s3Service
+              .deleteObject({ Bucket: this.bucket, Key: CopySource })
+              .promise()
+              .catch((error: string) => {
+                this.logger.error('S3 Error: deleteObject', error);
+                throw new Error(error);
+              }),
+          )
+          .catch((error: string) => {
+            this.logger.error('S3 Error:', error);
+            throw new Error(error);
+          }),
+      ]).then(([updated]) => updated);
+    }
+
+    return fileRepository?.save(this.fileRepository.create(update));
+  }
 
   /**
    * Upload files

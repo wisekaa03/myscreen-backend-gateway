@@ -12,7 +12,6 @@ import {
   RegisterRequest,
   LoginRequest,
   UserUpdateRequest,
-  UserResponse,
   SuccessResponse,
   RefreshTokenResponse,
   FoldersGetResponse,
@@ -21,6 +20,7 @@ import {
   FilesUploadResponse,
   UsersGetResponse,
   UserGetResponse,
+  FileGetResponse,
 } from '@/dto';
 import { Status } from '@/enums';
 import { generateMailToken } from '@/shared/mail-token';
@@ -104,6 +104,7 @@ describe('Backend API (e2e)', () => {
   let parentFolderId2 = '';
   let folderId1 = '';
   let folderId2 = '';
+  let folderId3 = '';
   let mediaId1 = '';
 
   /**
@@ -420,21 +421,22 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(400));
 
-    test('PUT /folder [name: "foo"] (Создание новой папки)', async () =>
+    test('PUT /folder [name: "baz"] (Создание новой папки)', async () =>
       request
         .put('/folder')
         .auth(token, { type: 'bearer' })
-        .send({ name: 'foo' })
+        .send({ name: 'baz' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data.name).toBe('foo');
+          expect(body.data.name).toBe('baz');
           expect(body.data.parentFolderId).toBe(null);
           expect(body.data.userId).toBe(userId);
           expect((body.data as any)?.user?.password).toBeUndefined();
           parentFolderId2 = body.data.id;
+          folderId3 = body.data.id;
         }));
 
     /**
@@ -591,7 +593,7 @@ describe('Backend API (e2e)', () => {
 
   /**
    *
-   * Медиа
+   * Файлы
    *
    */
   describe('Файлы /file', () => {
@@ -655,6 +657,26 @@ describe('Backend API (e2e)', () => {
         : expect(false).toEqual(true));
 
     /**
+     * Изменение файлов
+     */
+    test('PATCH /file [success] (Изменение файлов)', async () =>
+      token && folderId2
+        ? request
+            .patch(`/file/${mediaId1}`)
+            .auth(token, { type: 'bearer' })
+            .set('Accept', 'application/json')
+            .send({ folderId: folderId3 })
+            .expect('Content-Type', /json/)
+            .expect(200)
+            .then(({ body }: { body: FileGetResponse }) => {
+              expect(body.status).toBe(Status.Success);
+              expect(body.data).toBeDefined();
+              expect(body.data.id).toBeDefined();
+              mediaId1 = body.data.id;
+              expect(body.data.user?.password).toBeUndefined();
+            })
+        : expect(false).toEqual(true));
+    /**
      * Скачивание медиа [success]
      */
     test('POST /file/{mediaId} [success] (Скачивание медиа)', async () =>
@@ -663,7 +685,6 @@ describe('Backend API (e2e)', () => {
             .post(`/file/${mediaId1}`)
             .auth(token, { type: 'bearer' })
             .set('Accept', 'application/json')
-            .expect('Content-Type', 'image/png')
             .expect(200)
             .then(({ body }: { body: unknown }) => {
               expect(body).toBeDefined();

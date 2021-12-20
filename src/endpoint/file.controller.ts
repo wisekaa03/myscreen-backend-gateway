@@ -238,7 +238,7 @@ export class FileController {
       throw new NotFoundException('File not found');
     }
 
-    const data = await this.fileService.update({ ...file, ...update });
+    const data = await this.fileService.update(file, { ...file, ...update });
     if (!data) {
       throw new BadRequestException('File exists and not exists ?');
     }
