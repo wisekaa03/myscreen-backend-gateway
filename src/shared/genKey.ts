@@ -1,1 +1,3 @@
-export const genKey = () => Math.floor(Math.random() * 1e11).toString(36);
+import { randomBytes } from 'crypto';
+
+export const genKey = () => randomBytes(8).toString('base64url');
