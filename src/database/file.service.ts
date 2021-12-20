@@ -23,6 +23,7 @@ import {
 import { isAWSError } from '@/shared/is-aws-error';
 import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
+import { getS3Name } from '@/shared/get-name';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
@@ -96,8 +97,9 @@ export class FileService {
     fileRepository?: Repository<FileEntity>,
   ): Promise<FileEntity | undefined> {
     if (update.folderId !== fileEntity.folderId) {
-      const Key = `${update.folderId}/${fileEntity.hash}-${fileEntity.originalName}`;
-      const CopySource = `${fileEntity.folderId}/${fileEntity.hash}-${fileEntity.originalName}`;
+      const s3Name = getS3Name(fileEntity.originalName);
+      const Key = `${update.folderId}/${fileEntity.hash}-${s3Name}`;
+      const CopySource = `${fileEntity.folderId}/${fileEntity.hash}-${s3Name}`;
 
       return Promise.all([
         fileRepository?.save(fileRepository?.create(update)),
@@ -113,13 +115,13 @@ export class FileService {
             this.s3Service
               .deleteObject({ Bucket: this.bucket, Key: CopySource })
               .promise()
-              .catch((error: string) => {
-                this.logger.error('S3 Error: deleteObject', error);
+              .catch((error) => {
+                this.logger.error('S3 Error deleteObject:', error);
                 throw new Error(error);
               }),
           )
-          .catch((error: string) => {
-            this.logger.error('S3 Error:', error);
+          .catch((error) => {
+            this.logger.error('S3 Error copyObject:', error);
             throw new Error(error);
           }),
       ]).then(([updated]) => updated);
@@ -191,12 +193,13 @@ export class FileService {
         monitors: [{ id: monitorId }],
       };
 
+      const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
       return [
         fileRepository?.save(this.fileRepository.create(media)),
         this.s3Service
           .upload({
             Bucket: this.bucket,
-            Key: `${folderId}/${file.hash}-${file.originalname}`,
+            Key,
             ContentType: file.mimetype,
             Body: createReadStream(file.path),
           })
@@ -271,7 +274,7 @@ export class FileService {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
 
-    const Key = `${file.folderId}/${file.hash}-${file.originalName}`;
+    const Key = `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`;
     return this.s3Service
       .getObject({
         Bucket: this.bucket,
@@ -325,7 +328,7 @@ export class FileService {
 
     // TODO: check file preview
 
-    const Key = `${file.folderId}/${file.hash}-${file.originalName}`;
+    const Key = `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`;
     return this.s3Service
       .getObject({
         Bucket: this.bucket,
@@ -373,32 +376,28 @@ export class FileService {
     const file = await fileRepository.findOne({
       where: { userId: user.id, id },
     });
-
     if (!file) {
       throw new NotFoundException(`Media '${id}' is not exists`);
     }
 
-    const Key = `${file.folderId}/${file.hash}-${file.originalName}`;
-    const s3media = await this.s3Service
+    const Key = `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`;
+    await this.s3Service
       .headObject({
         Bucket: this.bucket,
         Key,
       })
       .promise()
-      .catch((error: string) => {
-        this.logger.error('S3 Error: headObject', error);
+      .then(() =>
+        this.s3Service
+          .deleteObject({ Bucket: this.bucket, Key })
+          .promise()
+          .catch((error) => {
+            this.logger.error('S3 Error deleteObject:', error);
+          }),
+      )
+      .catch((error) => {
+        this.logger.error('S3 Error headerObject:', error);
       });
-
-    if (s3media) {
-      await this.s3Service
-        .deleteObject({ Bucket: this.bucket, Key })
-        .promise()
-        .catch((error: string) => {
-          this.logger.error('S3 Error: deleteObject', error);
-        });
-
-      // TODO: delete file preview
-    }
 
     return fileRepository.remove(file);
   }
