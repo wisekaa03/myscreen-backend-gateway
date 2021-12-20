@@ -24,16 +24,16 @@ export class MailService {
     this.from = `MyScreen <no-reply@${this.domain}>`;
   }
 
-  private confirmEmailText = (confirmUrl: string) =>
+  private static confirmEmailText = (confirmUrl: string) =>
     `Вы указали эту почту при регистрации на MyScreen. \n\
     Для подтверждения электронной почты и завершения процесса \n\
     регистрации, пройдите, пожалуйста, по ссылке: \n\
     ${confirmUrl}`;
 
-  private forgotPasswordText = (forgotPasswordUrl: string) =>
+  private static forgotPasswordText = (forgotPasswordUrl: string) =>
     `Чтобы восстановить доступ к своему аккаунту, пройдите, пожалуйста, по ссылке: \n${forgotPasswordUrl}`;
 
-  private registerEmailText = () =>
+  private static registerEmailText = () =>
     'Добро пожаловать в MySсreen. \n' +
     'Поздравляем с успешной регистрацией. \n' +
     'Мы рады видеть Вас в числе наших пользователей.';
@@ -49,7 +49,7 @@ export class MailService {
       from: this.from,
       to: email,
       subject: 'Регистрация',
-      text: this.registerEmailText(),
+      text: MailService.registerEmailText(),
     };
 
     return this.mailgunService
@@ -75,7 +75,7 @@ export class MailService {
       from: this.from,
       to: email,
       subject: 'Подтверждение аккаунта',
-      text: this.confirmEmailText(confirmUrl),
+      text: MailService.confirmEmailText(confirmUrl),
     };
 
     const variables = {
@@ -112,7 +112,7 @@ export class MailService {
       from: this.from,
       to: email,
       subject: 'Сброс пароля',
-      text: this.forgotPasswordText(forgotPasswordUrl),
+      text: MailService.forgotPasswordText(forgotPasswordUrl),
     };
 
     const variables = {

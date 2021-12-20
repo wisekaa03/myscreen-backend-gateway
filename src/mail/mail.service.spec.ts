@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { MailgunService } from 'nestjs-mailgun';
 import { MailService } from './mail.service';
 
+const email = 'foo@baz.bar';
 const data = { data: 'body' };
 
 describe(MailService.name, () => {
@@ -40,23 +41,20 @@ describe(MailService.name, () => {
   });
 
   it('sendWelcomeMessage: should give the expected result', async () => {
-    const sendWelcome = await mailService.sendWelcomeMessage('foo@baz.bar');
+    const sendWelcome = await mailService.sendWelcomeMessage(email);
     expect(sendWelcome).toEqual(data);
   });
 
   it('sendVerificationCode: should give the expected result', async () => {
     const sendVerificationCode = await mailService.sendVerificationCode(
-      'foo@baz.bar',
+      email,
       'secret',
     );
     expect(sendVerificationCode).toEqual(data);
   });
 
   it('forgotPassword: should give the expected result', async () => {
-    const forgotPassword = await mailService.forgotPassword(
-      'foo@baz.bar',
-      'secret',
-    );
+    const forgotPassword = await mailService.forgotPassword(email, 'secret');
     expect(forgotPassword).toEqual(data);
   });
 });
