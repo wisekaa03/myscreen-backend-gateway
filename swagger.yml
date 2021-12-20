@@ -1814,7 +1814,7 @@ components:
         - statusCode
         - code
         - message
-    MonitorRequest:
+    MonitorPartialRequest:
       type: object
       properties:
         name:
@@ -1890,17 +1890,6 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
-      required:
-        - name
-        - address
-        - category
-        - price
-        - orientation
-        - monitorInfo
-        - code
-        - status
-        - latitude
-        - longitude
     LimitRequest:
       type: object
       properties:
@@ -1924,7 +1913,7 @@ components:
           description: Запрос
           title: MonitorRequest
           allOf:
-            - $ref: "#/components/schemas/MonitorRequest"
+            - $ref: "#/components/schemas/MonitorPartialRequest"
         scope:
           description: Рамки для запроса
           title: LimitRequest
@@ -2049,6 +2038,7 @@ components:
           description: Время изменения
           example: 2021-01-01T10:00:00.147Z
       required:
+        - id
         - name
         - address
         - category
@@ -2088,6 +2078,63 @@ components:
         - status
         - count
         - data
+    MonitorRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя
+          example: имя монитора
+        address:
+          type: object
+          description: Адрес монитора
+          example: *a45
+        category:
+          type: string
+          description: Категория
+          enum: *a46
+          example: АЗС
+        price:
+          type: object
+          description: Стоимость показов
+          example: *a47
+        orientation:
+          type: string
+          description: Ориентация экрана
+          enum: *a48
+          example: Horizontal
+        monitorInfo:
+          type: object
+          description: Модель и прочие характеристики монитора
+          example: *a49
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
+        status:
+          type: string
+          description: Подключен
+          enum: *a50
+          example: offline
+        latitude:
+          type: number
+          description: Широта
+          example: "45.0448400"
+        longitude:
+          type: number
+          description: Долгота
+          example: "38.9760300"
+      required:
+        - name
+        - address
+        - category
+        - price
+        - orientation
+        - monitorInfo
+        - code
+        - status
+        - latitude
+        - longitude
     MonitorCreateResponse:
       type: object
       properties:
@@ -2210,7 +2257,7 @@ components:
         - status
         - count
         - data
-    FileRequest:
+    FilePartialRequest:
       type: object
       properties:
         folderId:
@@ -2236,10 +2283,6 @@ components:
             - photo
             - media
           example: media
-      required:
-        - folderId
-        - videoType
-        - category
     FilesGetRequest:
       type: object
       properties:
@@ -2247,7 +2290,7 @@ components:
           description: Запрос
           title: FileRequest
           allOf:
-            - $ref: "#/components/schemas/FileRequest"
+            - $ref: "#/components/schemas/FilePartialRequest"
         scope:
           description: Рамки для запроса
           title: LimitRequest
@@ -2464,10 +2507,7 @@ components:
           type: string
           description: Имя файла
           example: foo.mp4
-      required:
-        - folderId
-        - name
-    FolderRequest:
+    FolderPartialRequest:
       type: object
       properties:
         id:
@@ -2489,7 +2529,7 @@ components:
           description: Запрос
           title: FolderRequest
           allOf:
-            - $ref: "#/components/schemas/FolderRequest"
+            - $ref: "#/components/schemas/FolderPartialRequest"
         scope:
           description: Рамки для запроса
           title: LimitRequest

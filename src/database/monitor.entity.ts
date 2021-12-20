@@ -32,7 +32,6 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { FileEntity } from './file.entity';
-import { FileResponse } from '@/dto';
 
 @Entity('monitor')
 @Unique('IDX_user_name', ['user', 'name'])
@@ -41,7 +40,7 @@ export class MonitorEntity {
   @ApiProperty({
     description: 'Идентификатор монитора',
     format: 'uuid',
-    required: false,
+    required: true,
   })
   @IsUUID()
   id!: string;

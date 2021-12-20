@@ -2,20 +2,19 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { FileEntity } from '@/database/file.entity';
 import { LimitRequest } from './limit.request';
-import { FileRequest } from './file.request';
+import { FilePartialRequest } from './file-partial.request';
 
 export class FilesGetRequest {
   @ApiProperty({
     description: 'Запрос',
     title: 'FileRequest',
-    type: FileRequest,
+    type: FilePartialRequest,
     required: false,
   })
   @ValidateNested()
-  @Type(() => FileRequest)
-  where?: FileRequest;
+  @Type(() => FilePartialRequest)
+  where?: Partial<FilePartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -25,5 +24,5 @@ export class FilesGetRequest {
   })
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<FileEntity>;
+  scope?: LimitRequest<FilePartialRequest>;
 }

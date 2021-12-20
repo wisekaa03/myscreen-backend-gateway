@@ -2,21 +2,20 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { MonitorEntity } from '@/database/monitor.entity';
 import { LimitRequest } from './limit.request';
-import { MonitorRequest } from './monitor.request';
+import { MonitorPartialRequest } from './monitor-partial.request';
 
 export class MonitorsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     title: 'MonitorRequest',
-    type: MonitorRequest,
+    type: MonitorPartialRequest,
     required: false,
   })
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => MonitorRequest)
-  where?: MonitorRequest;
+  @Type(() => MonitorPartialRequest)
+  where?: Partial<MonitorPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -26,5 +25,5 @@ export class MonitorsGetRequest {
   })
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<MonitorEntity>;
+  scope?: LimitRequest<MonitorPartialRequest>;
 }
