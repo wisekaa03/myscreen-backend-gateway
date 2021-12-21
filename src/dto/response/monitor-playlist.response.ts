@@ -2,6 +2,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistResponse } from './playlist.response';
+import { FileResponse } from './file.response';
 
 export class MonitorPlaylistResponse extends MonitorEntity {
   @ApiProperty({
@@ -9,4 +10,11 @@ export class MonitorPlaylistResponse extends MonitorEntity {
     type: () => PlaylistResponse,
   })
   playlist?: PlaylistResponse | null;
+
+  @ApiProperty({
+    description: 'Фото монитора. Документы на право владения.',
+    type: () => FileResponse,
+    isArray: true,
+  })
+  files?: FileResponse[] | null;
 }

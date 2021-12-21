@@ -193,13 +193,7 @@ export class MonitorEntity {
     nullable: true,
   })
   @JoinTable()
-  @ApiProperty({
-    description: 'Фото монитора. Документы на право владения.',
-    isArray: true,
-    allOf: [{ $ref: '#/components/schemas/FileResponse' }],
-  })
-  @IsUUID('all', { each: true })
-  files?: FileEntity[];
+  files?: FileEntity[] | null;
 
   @CreateDateColumn()
   @ApiProperty({

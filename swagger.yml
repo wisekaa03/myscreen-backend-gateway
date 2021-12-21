@@ -2107,6 +2107,117 @@ components:
         - files
         - createdAt
         - updatedAt
+    MediaMeta:
+      type: object
+      properties:
+        duration:
+          type: number
+          description: Длительность
+          example: "200"
+        width:
+          type: number
+          description: Размер по горизонтали
+          example: "200"
+        height:
+          type: number
+          description: Размер по вертикали
+          example: "200"
+        filesize:
+          type: number
+          description: Размер файла
+          example: "20500"
+        info:
+          type: object
+          description: Параметры видео, картинки или аудио
+      required:
+        - filesize
+    FileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          example: "1234567"
+          format: uuid
+        folderId:
+          type: string
+          description: Папка
+          format: uuid
+        originalName:
+          type: string
+          description: Изначальное имя файла
+          example: foo.mp4
+        name:
+          type: string
+          description: Имя файла
+          example: foo.mp4
+        extension:
+          type: string
+          description: Расширение файла
+          example: mp4
+        hash:
+          type: string
+          description: Hash файла
+          example: 2b0439011a3a215ae1756bfc342e5bbc
+        videoType:
+          type: string
+          description: Тип файла
+          enum:
+            &a60
+            - video
+            - image
+            - audio
+            - other
+          example: video
+        category:
+          type: string
+          description: В какую категорию относить файл
+          enum:
+            &a61
+            - ownership
+            - photo
+            - media
+          example: media
+        filesize:
+          type: number
+          description: Размер файла
+          example: 210000
+        meta:
+          description: Метаинформация
+          example:
+            &a62
+            duration: 200
+            filesize: 20500
+          allOf:
+            - $ref: "#/components/schemas/MediaMeta"
+        userId:
+          type: string
+          description: Идентификатор пользователя
+          format: uuid
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - folderId
+        - originalName
+        - name
+        - extension
+        - hash
+        - videoType
+        - category
+        - filesize
+        - meta
+        - userId
+        - createdAt
+        - updatedAt
     MonitorPlaylistResponse:
       type: object
       properties:
@@ -2166,13 +2277,6 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
-        files:
-          description: Фото монитора. Документы на право владения.
-          allOf:
-            &a59
-            - $ref: "#/components/schemas/FileResponse"
-          items:
-            type: array
         createdAt:
           format: date-time
           type: string
@@ -2187,6 +2291,11 @@ components:
           description: Плэйлист
           allOf:
             - $ref: "#/components/schemas/PlaylistResponse"
+        files:
+          description: Фото монитора. Документы на право владения.
+          type: array
+          items:
+            $ref: "#/components/schemas/FileResponse"
       required:
         - id
         - name
@@ -2201,10 +2310,10 @@ components:
         - lastSeen
         - latitude
         - longitude
-        - files
         - createdAt
         - updatedAt
         - playlist
+        - files
     MonitorsGetResponse:
       type: object
       properties:
@@ -2344,11 +2453,6 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
-        files:
-          description: Фото монитора. Документы на право владения.
-          allOf: *a59
-          items:
-            type: array
         createdAt:
           format: date-time
           type: string
@@ -2373,7 +2477,6 @@ components:
         - lastSeen
         - latitude
         - longitude
-        - files
         - createdAt
         - updatedAt
     MonitorCreateResponse:
@@ -2443,7 +2546,7 @@ components:
           type: string
           description: Статус рендеринга
           enum:
-            &a60
+            &a59
             - initial
             - ready
             - pending
@@ -2462,117 +2565,6 @@ components:
           title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-    MediaMeta:
-      type: object
-      properties:
-        duration:
-          type: number
-          description: Длительность
-          example: "200"
-        width:
-          type: number
-          description: Размер по горизонтали
-          example: "200"
-        height:
-          type: number
-          description: Размер по вертикали
-          example: "200"
-        filesize:
-          type: number
-          description: Размер файла
-          example: "20500"
-        info:
-          type: object
-          description: Параметры видео, картинки или аудио
-      required:
-        - filesize
-    FileResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор файла
-          example: "1234567"
-          format: uuid
-        folderId:
-          type: string
-          description: Папка
-          format: uuid
-        originalName:
-          type: string
-          description: Изначальное имя файла
-          example: foo.mp4
-        name:
-          type: string
-          description: Имя файла
-          example: foo.mp4
-        extension:
-          type: string
-          description: Расширение файла
-          example: mp4
-        hash:
-          type: string
-          description: Hash файла
-          example: 2b0439011a3a215ae1756bfc342e5bbc
-        videoType:
-          type: string
-          description: Тип файла
-          enum:
-            &a61
-            - video
-            - image
-            - audio
-            - other
-          example: video
-        category:
-          type: string
-          description: В какую категорию относить файл
-          enum:
-            &a62
-            - ownership
-            - photo
-            - media
-          example: media
-        filesize:
-          type: number
-          description: Размер файла
-          example: 210000
-        meta:
-          description: Метаинформация
-          example:
-            &a63
-            duration: 200
-            filesize: 20500
-          allOf:
-            - $ref: "#/components/schemas/MediaMeta"
-        userId:
-          type: string
-          description: Идентификатор пользователя
-          format: uuid
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-      required:
-        - id
-        - folderId
-        - originalName
-        - name
-        - extension
-        - hash
-        - videoType
-        - category
-        - filesize
-        - meta
-        - userId
-        - createdAt
-        - updatedAt
     EditorLayerResponse:
       type: object
       properties:
@@ -2657,7 +2649,7 @@ components:
         renderingStatus:
           type: string
           description: Статус рендеринга
-          enum: *a60
+          enum: *a59
           example: initial
         keepSourceAudio:
           type: boolean
@@ -2809,12 +2801,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a61
+          enum: *a60
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a62
+          enum: *a61
           example: media
     FilesGetRequest:
       type: object
@@ -2860,12 +2852,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a61
+          enum: *a60
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a62
+          enum: *a61
           example: media
         filesize:
           type: number
@@ -2873,7 +2865,7 @@ components:
           example: 210000
         meta:
           description: Метаинформация
-          example: *a63
+          example: *a62
           allOf:
             - $ref: "#/components/schemas/MediaMeta"
         userId:
@@ -2943,7 +2935,7 @@ components:
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a62
+          enum: *a61
           example: media
         monitorId:
           type: string

@@ -25,6 +25,7 @@ export * from './monitor-id.response';
 export * from './monitor-get.response';
 export * from './monitors-get.response';
 export * from './monitor-create.response';
+export * from './monitor-update.response';
 export * from './monitor.response';
 export * from './editor.response';
 export * from './editor-get.response';
