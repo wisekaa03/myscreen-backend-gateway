@@ -1,11 +1,10 @@
-import { IsBoolean, IsDate, IsEnum, IsNumber, IsUUID } from 'class-validator';
+import { IsDate, IsNumber, IsUUID, Min, Max } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -36,6 +35,64 @@ export class EditorLayerEntity {
   })
   audioTracks?: EditorEntity[];
 
+  @Column({ type: 'integer' })
+  @ApiProperty({
+    description: 'Индекс файла',
+    example: '3',
+    required: true,
+  })
+  @IsNumber()
+  @Min(1)
+  index!: number;
+
+  @Column({ type: 'numeric' })
+  @ApiProperty({
+    description: 'Длительность',
+    example: '0',
+    required: true,
+  })
+  @IsNumber()
+  duration!: number;
+
+  @Column({ type: 'numeric' })
+  @ApiProperty({
+    description: 'С какой секунды начать вырезать клип',
+    example: '0',
+    required: true,
+  })
+  @IsNumber()
+  cutFrom!: number;
+
+  @Column({ type: 'numeric' })
+  @ApiProperty({
+    description: 'До какой секунды вырезать клип',
+    example: '0',
+    required: true,
+  })
+  @IsNumber()
+  cutTo!: number;
+
+  @Column({ type: 'numeric' })
+  @ApiProperty({
+    description: 'С какой секунды начинать воспроизводить клип',
+    example: '0',
+    required: true,
+  })
+  @IsNumber()
+  start!: number;
+
+  @Column({ type: 'numeric' })
+  @ApiProperty({
+    description: '', // TODO: непонятно
+    example: '1',
+    default: 1,
+    required: true,
+  })
+  @IsNumber()
+  @Min(0)
+  @Max(1)
+  mixVolume!: number;
+
   @ManyToOne(() => FileEntity, (file) => file.id, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
@@ -43,7 +100,7 @@ export class EditorLayerEntity {
     nullable: true,
   })
   @JoinColumn()
-  files!: FileEntity;
+  file!: FileEntity;
 
   @CreateDateColumn()
   @ApiProperty({

@@ -2371,7 +2371,7 @@ components:
           example: initial
         keepSourceAudio:
           type: boolean
-          description: Эмм...
+          description: ""
           example: true
         totalDuration:
           type: integer
@@ -2442,7 +2442,7 @@ components:
           example: 24
         keepSourceAudio:
           type: boolean
-          description: Эмм...
+          description: ""
           example: true
       required:
         - name
@@ -2490,7 +2490,7 @@ components:
           example: 24
         keepSourceAudio:
           type: boolean
-          description: Эмм...
+          description: ""
           example: true
     FilePartialRequest:
       type: object

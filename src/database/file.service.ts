@@ -211,7 +211,7 @@ export class FileService {
       ];
     });
 
-    const errors: Array<unknown> = [];
+    const errors: Array<Error> = [];
     let count = 0;
     const returnFiles = await Promise.allSettled(filesPromises).then((data) =>
       data.reduce((results, result) => {
@@ -307,7 +307,7 @@ export class FileService {
   }
 
   /**
-   * Get file preview from S3
+   * TODO: Get file preview from S3
    * @async
    * @param {ExpressRequest} request
    * @param {UserEntity} user

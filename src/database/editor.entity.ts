@@ -89,7 +89,7 @@ export class EditorEntity {
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({
-    description: 'Эмм...',
+    description: '', // TODO: непонятно
     type: 'boolean',
     example: true,
     required: true,
