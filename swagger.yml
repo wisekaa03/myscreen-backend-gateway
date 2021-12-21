@@ -2044,17 +2044,17 @@ components:
       properties:
         id:
           type: string
-          description: Идентификатор файла
+          description: Идентификатор плэйлиста
           example: "1234567"
           format: uuid
         name:
           type: string
-          description: Имя файла
-          example: bar
+          description: Имя плэйлиста
+          example: имя плэйлиста
         description:
           type: string
-          description: Имя файла
-          example: Описание плэйлиста
+          description: Описание плэйлиста
+          example: описание плэйлиста
         files:
           description: Файлы
           allOf:
@@ -2074,7 +2074,6 @@ components:
       required:
         - id
         - name
-        - description
         - files
         - createdAt
         - updatedAt
@@ -3042,17 +3041,17 @@ components:
       properties:
         id:
           type: string
-          description: Идентификатор файла
+          description: Идентификатор плэйлиста
           example: "1234567"
           format: uuid
         name:
           type: string
-          description: Имя файла
-          example: bar
+          description: Имя плэйлиста
+          example: имя плэйлиста
         description:
           type: string
-          description: Имя файла
-          example: Описание плэйлиста
+          description: Описание плэйлиста
+          example: описание плэйлиста
     PlaylistsGetRequest:
       type: object
       properties:
@@ -3094,12 +3093,12 @@ components:
       properties:
         name:
           type: string
-          description: Имя файла
-          example: bar
+          description: Имя плэйлиста
+          example: имя плэйлиста
         description:
           type: string
-          description: Имя файла
-          example: Описание плэйлиста
+          description: Описание плэйлиста
+          example: описание плэйлиста
         files:
           description: Файлы
           type: array
@@ -3108,7 +3107,6 @@ components:
             format: uuid
       required:
         - name
-        - description
         - files
     PlaylistGetResponse:
       type: object

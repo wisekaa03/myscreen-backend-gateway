@@ -1,6 +1,7 @@
 import {
   IsBoolean,
   IsDate,
+  IsDefined,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -40,6 +41,7 @@ export class EditorEntity {
     example: 'имя редактора',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   name!: string;
 

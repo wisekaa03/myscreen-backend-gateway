@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { IsJSON, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsDefined, IsJSON, IsNotEmpty, IsUUID } from 'class-validator';
 
 import { FileEntity } from '@/database/file.entity';
 
@@ -17,6 +17,7 @@ export class FileUploadRequest extends PickType(FileEntity, [
 }
 
 export class FileUploadRequestBody {
+  @IsDefined()
   @IsNotEmpty()
   @IsJSON()
   param!: string;

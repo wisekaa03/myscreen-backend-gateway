@@ -13,6 +13,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import type { FfprobeData } from 'media-probe';
 import {
   IsDate,
+  IsDefined,
   IsEnum,
   IsJSON,
   IsNotEmpty,
@@ -98,6 +99,7 @@ export class FileEntity {
     format: 'uuid',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsUUID()
   folderId!: string;
@@ -107,6 +109,7 @@ export class FileEntity {
     description: 'Изначальное имя файла',
     example: 'foo.mp4',
   })
+  @IsDefined()
   @IsNotEmpty()
   originalName!: string;
 
@@ -123,6 +126,7 @@ export class FileEntity {
     description: 'Расширение файла',
     example: 'mp4',
   })
+  @IsDefined()
   @IsNotEmpty()
   extension!: string;
 
@@ -154,6 +158,7 @@ export class FileEntity {
     example: FileCategory.Media,
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsEnum(FileCategory)
   category!: FileCategory;
@@ -202,11 +207,6 @@ export class FileEntity {
     nullable: true,
   })
   playlists?: PlaylistEntity[];
-
-  @ManyToMany(() => PlaylistEntity, (playlist) => playlist.rendered, {
-    nullable: true,
-  })
-  rendered?: PlaylistEntity[];
 
   @ManyToMany(() => MonitorEntity, (monitor) => monitor.files, {
     nullable: true,

@@ -10,6 +10,7 @@ import {
   IsISO31661Alpha2,
   IsPhoneNumber,
   IsDate,
+  IsDefined,
 } from 'class-validator';
 import {
   Column,
@@ -42,6 +43,7 @@ export class UserEntity {
     format: 'email',
     example: 'foo@bar.baz',
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsEmail()
   email!: string;
@@ -117,6 +119,7 @@ export class UserEntity {
     type: UserRole,
     example: UserRoleEnum.Advertiser,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsEnum(UserRole)
   role!: UserRoleEnum;

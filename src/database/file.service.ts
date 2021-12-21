@@ -174,6 +174,15 @@ export class FileService {
       throw new NotFoundException("Found category: 'media' and monitorId");
     }
 
+    // TODO: пачимута непалучайца фсе запихнуть в promise, наферное изза typeorm
+    files.forEach((file) => {
+      if (!file?.media && category === FileCategory.Media) {
+        throw new BadRequestException(
+          `'${file.originalname}' has no media property, but the category specified 'media'`,
+        );
+      }
+    });
+
     const filesPromises = files.flatMap((file) => {
       const [meta, videoType, extension] = this.metaInformation(file, category);
 
@@ -195,7 +204,7 @@ export class FileService {
 
       const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
       return [
-        fileRepository?.save(this.fileRepository.create(media)),
+        fileRepository?.save(fileRepository?.create(media)),
         this.s3Service
           .upload({
             Bucket: this.bucket,
@@ -407,10 +416,10 @@ export class FileService {
    * @param {Express.Multer.File} file The file
    * @return {[MediaMeta, VideoType]} [MediaMeta, VideType]
    */
-  metaInformation = (
+  metaInformation(
     file: Express.Multer.File,
     category: FileCategory,
-  ): [MediaMeta, VideoType, string] => {
+  ): [MediaMeta, VideoType, string] {
     const [mime] = file.mimetype.split('/');
     const extension = file.originalname.slice(
       file.originalname.lastIndexOf('.') + 1,
@@ -443,12 +452,6 @@ export class FileService {
       return [meta, type, extension];
     }
 
-    if (category === FileCategory.Media) {
-      throw new BadRequestException(
-        `'${file.originalname}' has no media property, but the category specified 'media'`,
-      );
-    }
-
     return [{ filesize: file.size }, type, extension];
-  };
+  }
 }

@@ -128,11 +128,14 @@ export class PlaylistController {
     @Req() { user }: ExpressRequest,
     @Body() body: PlaylistCreateRequest,
   ): Promise<PlaylistGetResponse> {
+    if (!(Array.isArray(body.files) && body.files.length > 0)) {
+      throw new BadRequestException('There should be Files');
+    }
     const [files] = await this.fileService.find({
       where: { id: In(body.files), userId: user.id },
     });
-    if (!files) {
-      throw new NotFoundError('File specified does not exist');
+    if (!Array.isArray(files) || body.files.length !== files.length) {
+      throw new NotFoundError('Files specified does not exist');
     }
 
     const data = await this.playlistService
@@ -141,7 +144,7 @@ export class PlaylistController {
         files,
       })
       .catch((error) => {
-        throw new BadRequestException(error);
+        throw new BadRequestException(`Playlist create error: ${error}`);
       });
 
     return {

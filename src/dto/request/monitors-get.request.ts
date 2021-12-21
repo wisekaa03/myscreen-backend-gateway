@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { LimitRequest } from './limit.request';
@@ -12,6 +12,7 @@ export class MonitorsGetRequest {
     type: MonitorPartialRequest,
     required: false,
   })
+  @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => MonitorPartialRequest)

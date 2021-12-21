@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { OrderEntity } from '@/database/order.entity';
@@ -13,6 +13,7 @@ export class OrdersGetRequest {
     type: OrderRequest,
     required: false,
   })
+  @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => OrderRequest)

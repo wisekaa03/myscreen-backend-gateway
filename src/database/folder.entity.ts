@@ -17,6 +17,7 @@ import {
   IsAlphanumeric,
   IsNotEmpty,
   IsDate,
+  IsDefined,
 } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from './file.entity';
@@ -33,11 +34,12 @@ export class FolderEntity {
   @IsUUID()
   id!: string;
 
-  @Column({ nullable: true })
+  @Column()
   @ApiProperty({
     description: 'Наименование папки',
     example: 'bar',
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsAlphanumeric()
   @MinLength(1)
@@ -53,7 +55,7 @@ export class FolderEntity {
   @Index()
   user!: UserEntity;
 
-  @Column({ nullable: true })
+  @Column()
   @IsUUID()
   userId!: string;
 
@@ -84,7 +86,7 @@ export class FolderEntity {
     cascade: true,
     eager: false,
   })
-  files?: FileEntity[];
+  files!: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

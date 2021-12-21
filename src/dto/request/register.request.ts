@@ -1,5 +1,5 @@
 import { PickType } from '@nestjs/swagger';
-import { IsNotEmpty } from 'class-validator';
+import { IsDefined, IsNotEmpty } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 
@@ -15,6 +15,7 @@ export class RegisterRequest extends PickType(UserEntity, [
   'company',
   'phoneNumber',
 ]) {
+  @IsDefined()
   @IsNotEmpty()
   password!: string;
 }

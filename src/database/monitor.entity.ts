@@ -2,6 +2,7 @@ import {
   IsArray,
   IsBoolean,
   IsDate,
+  IsDefined,
   IsEnum,
   IsLatitude,
   IsLongitude,
@@ -50,6 +51,7 @@ export class MonitorEntity {
     description: 'Имя',
     example: 'имя монитора',
   })
+  @IsDefined()
   @IsNotEmpty()
   name!: string;
 
@@ -125,6 +127,7 @@ export class MonitorEntity {
     description: 'Идентификатор устройства',
     example: '111-111-111',
   })
+  @IsDefined()
   @IsNotEmpty()
   @Length(11, 11)
   code!: string;

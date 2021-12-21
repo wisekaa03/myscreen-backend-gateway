@@ -1,4 +1,12 @@
-import { IsArray, IsDate, IsNotEmpty, IsUUID } from 'class-validator';
+import {
+  IsArray,
+  IsDate,
+  IsDefined,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+  MinLength,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -21,27 +29,33 @@ import { FileEntity } from '@/database/file.entity';
 export class PlaylistEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
-    description: 'Идентификатор файла',
+    description: 'Идентификатор плэйлиста',
     example: '1234567',
     format: 'uuid',
+    required: true,
   })
   @IsUUID()
   id!: string;
 
   @Column()
   @ApiProperty({
-    description: 'Имя файла',
-    example: 'bar',
+    description: 'Имя плэйлиста',
+    example: 'имя плэйлиста',
+    required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
+  @MinLength(6)
   name!: string;
 
   @Column({ nullable: true })
   @ApiProperty({
-    description: 'Имя файла',
-    example: 'Описание плэйлиста',
+    description: 'Описание плэйлиста',
+    example: 'описание плэйлиста',
+    required: false,
   })
-  @IsNotEmpty()
+  @IsString()
+  @MinLength(1)
   description!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -53,7 +67,7 @@ export class PlaylistEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column({ nullable: true })
+  @Column()
   @IsUUID()
   userId!: string;
 
@@ -71,15 +85,6 @@ export class PlaylistEntity {
     allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
   files!: FileEntity[];
-
-  @ManyToMany(() => FileEntity, (file) => file.rendered, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    nullable: true,
-    eager: false,
-  })
-  @JoinTable()
-  rendered?: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

@@ -7,7 +7,13 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+  IsDate,
+  IsDefined,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 
 import { FileEntity } from './file.entity';
 
@@ -40,6 +46,7 @@ export class FilePreviewEntity {
     description: 'Предпросмотр',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   name!: string;
 
