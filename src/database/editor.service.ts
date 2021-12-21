@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
-import { EditorEntity } from './editor.entity';
+import {
+  DeepPartial,
+  DeleteResult,
+  FindManyOptions,
+  Repository,
+} from 'typeorm';
 
 import { UserEntity } from './user.entity';
+import { EditorEntity } from './editor.entity';
 
 @Injectable()
 export class EditorService {
@@ -21,7 +26,7 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
   ): Promise<EditorEntity | undefined> => this.editorRepository.findOne(find);
 
-  async create(
+  async update(
     user: UserEntity,
     update: Partial<EditorEntity>,
   ): Promise<EditorEntity> {
@@ -32,4 +37,13 @@ export class EditorService {
 
     return this.editorRepository.save(this.editorRepository.create(order));
   }
+
+  delete = async (
+    user: UserEntity,
+    editor: EditorEntity,
+  ): Promise<DeleteResult> =>
+    this.editorRepository.delete({
+      id: editor.id,
+      userId: user.id,
+    });
 }

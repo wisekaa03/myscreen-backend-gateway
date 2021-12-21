@@ -25,4 +25,5 @@ export * from './monitor-get.response';
 export * from './monitors-get.response';
 export * from './monitor-create.response';
 export * from './editor.response';
+export * from './editor-get.response';
 export * from './editors-get.response';

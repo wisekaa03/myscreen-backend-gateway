@@ -3,19 +3,19 @@ import { IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { LimitRequest } from './limit.request';
-import { PlaylistPartialRequest } from './playlist-partial.request';
+import { EditorPartialRequest } from './editor-partial.request';
 
-export class PlaylistsGetRequest {
+export class EditorGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'PlaylistRequest',
-    type: PlaylistPartialRequest,
+    title: 'EditorRequest',
+    type: EditorPartialRequest,
     required: false,
   })
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => PlaylistPartialRequest)
-  where!: Partial<PlaylistPartialRequest>;
+  @Type(() => EditorPartialRequest)
+  where?: Partial<EditorPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -25,5 +25,5 @@ export class PlaylistsGetRequest {
   })
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<PlaylistPartialRequest>;
+  scope?: LimitRequest<EditorPartialRequest>;
 }

@@ -1,4 +1,11 @@
-import { IsBoolean, IsDate, IsEnum, IsNumber, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsUUID,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -14,7 +21,7 @@ import {
 
 import { RenderingStatus } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
-import { FileEntity } from '@/database/file.entity';
+import { EditorLayerEntity } from '@/database/editor-layers.entity';
 
 @Entity('editor')
 export class EditorEntity {
@@ -27,7 +34,16 @@ export class EditorEntity {
   @IsUUID()
   id!: string;
 
-  @Column({ type: 'numeric' })
+  @Column()
+  @ApiProperty({
+    description: 'Имя редактора',
+    example: 'имя редактора',
+    required: true,
+  })
+  @IsNotEmpty()
+  name!: string;
+
+  @Column({ type: 'numeric', default: 1920 })
   @ApiProperty({
     description: 'Ширина редактора',
     example: '1920',
@@ -36,7 +52,7 @@ export class EditorEntity {
   @IsNumber()
   width!: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'numeric', default: 1080 })
   @ApiProperty({
     description: 'Высота редактора',
     example: '1080',
@@ -79,7 +95,7 @@ export class EditorEntity {
     required: true,
   })
   @IsBoolean()
-  keep_source_audio!: boolean;
+  keepSourceAudio!: boolean;
 
   @Column({ type: 'numeric', default: 0, nullable: true })
   @ApiProperty({
@@ -89,22 +105,25 @@ export class EditorEntity {
     required: true,
   })
   @IsNumber()
-  total_duration?: number;
+  totalDuration!: number;
 
-  @Column({ type: 'json', default: [], array: true })
-  audio_tracks?: unknown[];
-
-  @Column({ type: 'json', default: [], array: true })
-  layers?: unknown[];
-
-  @ManyToMany(() => FileEntity, (file) => file.editors, {
+  @ManyToMany(() => EditorLayerEntity, (layer) => layer.videoLayers, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     cascade: true,
     nullable: true,
   })
   @JoinTable()
-  files?: FileEntity[];
+  videoLayers?: EditorLayerEntity[];
+
+  @ManyToMany(() => EditorLayerEntity, (layer) => layer.audioTracks, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    nullable: true,
+  })
+  @JoinTable()
+  audioTracks?: EditorLayerEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',

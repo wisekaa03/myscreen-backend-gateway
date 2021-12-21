@@ -23,10 +23,8 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { MonitorRequest } from '@/dto';
 import { FileCategory, VideoType } from '@/enums';
 import { FolderEntity } from '@/database/folder.entity';
-import { EditorEntity } from '@/database/editor.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
@@ -84,7 +82,12 @@ export class FileEntity {
   @IsUUID()
   id!: string;
 
-  @ManyToOne(() => FolderEntity, (folder) => folder.id, { eager: false })
+  @ManyToOne(() => FolderEntity, (folder) => folder.id, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
   @JoinColumn({ name: 'folderId' })
   folder!: FolderEntity;
 
@@ -194,11 +197,6 @@ export class FileEntity {
 
   @OneToMany(() => FilePreviewEntity, (filePreview) => filePreview.file)
   preview?: FilePreviewEntity[];
-
-  @ManyToMany(() => EditorEntity, (editor) => editor.files, {
-    nullable: true,
-  })
-  editors?: EditorEntity[];
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.files, {
     nullable: true,

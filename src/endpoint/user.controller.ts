@@ -66,7 +66,7 @@ export class UserController {
 
   @Get('/')
   @ApiOperation({
-    operationId: 'users_get',
+    operationId: 'users-get',
     summary: 'Получение информации о пользователях (только администратор)',
   })
   @ApiResponse({
@@ -85,7 +85,7 @@ export class UserController {
 
   @Get('/:userId')
   @ApiOperation({
-    operationId: 'user_get',
+    operationId: 'user-get',
     summary: 'Получение информации о пользователе (только администратор)',
   })
   @ApiResponse({
@@ -111,7 +111,7 @@ export class UserController {
   @Patch('/:userId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'user_patch',
+    operationId: 'user-update',
     summary: 'Изменение информации о пользователе (только администратор)',
   })
   @ApiResponse({
@@ -139,7 +139,7 @@ export class UserController {
   @Patch('/disable/:userId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'user_disable',
+    operationId: 'user-disable',
     summary: 'Скрытие аккаунта пользователя (только администратор)',
   })
   @ApiResponse({
@@ -165,7 +165,7 @@ export class UserController {
   @Patch('/enable/:userId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'user_enable',
+    operationId: 'user-enable',
     summary: 'Открытие аккаунта пользователя (только администратор)',
   })
   @ApiResponse({
@@ -191,7 +191,7 @@ export class UserController {
   @Delete('/:userId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'user_delete',
+    operationId: 'user-delete',
     summary: 'Удаление аккаунта пользователя (только администратор)',
   })
   @ApiResponse({

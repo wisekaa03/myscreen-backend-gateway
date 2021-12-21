@@ -78,7 +78,7 @@ export class FolderController {
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'folders_get',
+    operationId: 'folders-get',
     summary: 'Получение списка папок',
   })
   @ApiResponse({
@@ -108,7 +108,7 @@ export class FolderController {
   @Put('/')
   @HttpCode(201)
   @ApiOperation({
-    operationId: 'folder_create',
+    operationId: 'folder-create',
     summary: 'Создание новой папки',
   })
   @ApiResponse({
@@ -151,7 +151,7 @@ export class FolderController {
   @Get('/:folderId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'folder_get',
+    operationId: 'folder-get',
     summary: 'Получение информации о папке',
   })
   @ApiResponse({
@@ -179,7 +179,7 @@ export class FolderController {
   @Patch('/:folderId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'folder_update',
+    operationId: 'folder-update',
     summary: 'Изменение информации о папке',
   })
   @ApiResponse({
@@ -201,7 +201,7 @@ export class FolderController {
   @Delete('/:folderId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'folder_delete',
+    operationId: 'folder-delete',
     summary: 'Удаление папки',
   })
   @ApiResponse({

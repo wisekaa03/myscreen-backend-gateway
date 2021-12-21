@@ -2,6 +2,6 @@ import { PartialType, PickType } from '@nestjs/swagger';
 
 import { PlaylistEntity } from '@/database/playlist.entity';
 
-export class PlaylistRequest extends PartialType(
+export class PlaylistPartialRequest extends PartialType(
   PickType(PlaylistEntity, ['id', 'name', 'description']),
 ) {}

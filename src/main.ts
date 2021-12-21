@@ -53,11 +53,11 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .setContact(author.name, author.url, author.email)
 
     .addTag('auth', 'Аутентификация пользователя')
-    .addTag('user', 'Действия с пользователями (только администратор)')
+    .addTag('user', 'Пользователи (только администратор)')
     .addTag('folder', 'Папки')
-    .addTag('file', 'Файл')
-    .addTag('playlist', 'Плейлист')
-    .addTag('monitor', 'Монитор')
+    .addTag('file', 'Файлы')
+    .addTag('playlist', 'Плейлисты')
+    .addTag('monitor', 'Мониторы')
     .addTag('editor', 'Редакторы')
 
     .addTag('order', 'Заказы')

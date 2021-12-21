@@ -34,7 +34,6 @@ import {
   MonitorsGetResponse,
   MonitorsPlaylistAttachRequest,
   NotFoundError,
-  PlaylistsGetResponse,
   ServiceUnavailableError,
   SuccessResponse,
   UnauthorizedError,
