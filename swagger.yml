@@ -1398,6 +1398,36 @@ paths:
         "503": *a49
       tags: *a50
       security: *a51
+    patch:
+      operationId: playlist-update
+      summary: Обновление плэйлиста
+      parameters:
+        - name: playlistId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlaylistUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaylistGetResponse"
+        "400": *a44
+        "401": *a45
+        "403": *a46
+        "404": *a47
+        "500": *a48
+        "503": *a49
+      tags: *a50
+      security: *a51
     delete:
       operationId: playlist-delete
       summary: Удаление плэйлиста
@@ -3126,6 +3156,23 @@ components:
       required:
         - status
         - data
+    PlaylistUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя плэйлиста
+          example: имя плэйлиста
+        description:
+          type: string
+          description: Описание плэйлиста
+          example: описание плэйлиста
+        files:
+          description: Файлы
+          type: array
+          items:
+            type: string
+            format: uuid
 externalDocs:
   description: MyScreen backend API
   url: https://api.myscreen.ru

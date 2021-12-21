@@ -9,6 +9,7 @@ import {
   Logger,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
   Put,
   Req,
@@ -34,11 +35,13 @@ import {
   PlaylistGetResponse,
   PlaylistCreateRequest,
   SuccessResponse,
+  PlaylistUpdateRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
+import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 
 @ApiResponse({
@@ -174,6 +177,48 @@ export class PlaylistController {
     if (!data) {
       throw new NotFoundError(`Playlist '${id}' not found`);
     }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Patch('/:playlistId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'playlist-update',
+    summary: 'Обновление плэйлиста',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: PlaylistGetResponse,
+  })
+  async updatePlaylists(
+    @Req() { user }: ExpressRequest,
+    @Param('playlistId', ParseUUIDPipe) id: string,
+    @Body() body: PlaylistUpdateRequest,
+  ): Promise<PlaylistGetResponse> {
+    let files: FileEntity[] | undefined;
+    if (Array.isArray(body.files) && body.files.length > 0) {
+      [files] = await this.fileService.find({
+        where: { id: In(body.files), userId: user.id },
+      });
+      if (!Array.isArray(files) || body.files.length !== files.length) {
+        throw new NotFoundError('Files specified does not exist');
+      }
+    }
+
+    const data = await this.playlistService
+      .update(user, {
+        id,
+        ...body,
+        files,
+      })
+      .catch((error) => {
+        throw new BadRequestException(`Playlist create error: ${error}`);
+      });
 
     return {
       status: Status.Success,

@@ -23,6 +23,7 @@ export * from './payment.request';
 export * from './payments-get.request';
 export * from './playlist.request';
 export * from './playlist-partial.request';
+export * from './playlist-update.request';
 export * from './playlist-create.request';
 export * from './playlist-id.request';
 export * from './playlists-get.request';
