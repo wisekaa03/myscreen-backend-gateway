@@ -1,5 +1,4 @@
 import {
-  IsArray,
   IsDate,
   IsDefined,
   IsNotEmpty,
@@ -78,12 +77,12 @@ export class PlaylistEntity {
     eager: false,
   })
   @JoinTable()
-  @IsArray()
   @ApiProperty({
     description: 'Файлы',
     isArray: true,
     allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
+  @IsUUID('all', { each: true })
   files!: FileEntity[];
 
   @CreateDateColumn()

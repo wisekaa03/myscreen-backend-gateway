@@ -141,6 +141,116 @@ export class MonitorController {
     };
   }
 
+  @Patch('/playlist')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'monitors-playlist-create',
+    summary: 'Создание связки плэйлиста и мониторов',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MonitorsGetResponse,
+  })
+  async createMonitorPlaylist(
+    @Req() { user }: ExpressRequest,
+    @Body() attach: MonitorsPlaylistAttachRequest,
+  ): Promise<MonitorsGetResponse> {
+    if (!Array.isArray(attach.monitors) || attach.monitors.length < 1) {
+      throw new BadRequestException('Monitors should not be null or undefined');
+    }
+    const playlist = await this.playlistService.findOne({
+      where: {
+        userId: user.id,
+        id: attach.playlistId,
+      },
+    });
+    if (!playlist) {
+      throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
+    }
+
+    const dataPromise = attach.monitors.map(async (monitorId) => {
+      const monitor = await this.monitorService.findOne({
+        where: {
+          userId: user.id,
+          id: monitorId,
+        },
+      });
+      if (!monitor) {
+        throw new NotFoundException(`Monitor '${monitorId}' not found`);
+      }
+
+      return this.monitorService.update(user, {
+        ...monitor,
+        currentPlaylist: playlist,
+      });
+    });
+    const data = await Promise.all(dataPromise);
+
+    return {
+      status: Status.Success,
+      count: data.length,
+      data,
+    };
+  }
+
+  @Delete('/playlist')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'monitors-playlist-delete',
+    summary: 'Удаление связки плэйлиста и мониторов',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MonitorsGetResponse,
+  })
+  async deleteMonitorPlaylist(
+    @Req() { user }: ExpressRequest,
+    @Body() attach: MonitorsPlaylistAttachRequest,
+  ): Promise<MonitorsGetResponse> {
+    if (attach.monitors.length === 0) {
+      throw new BadRequestException();
+    }
+    const playlist = await this.playlistService.findOne({
+      where: {
+        userId: user.id,
+        id: attach.playlistId,
+      },
+    });
+    if (!playlist) {
+      throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
+    }
+
+    const dataPromise = attach.monitors.map(async (monitorId) => {
+      const monitor = await this.monitorService.findOne({
+        where: {
+          userId: user.id,
+          id: monitorId,
+        },
+      });
+      if (!monitor) {
+        throw new NotFoundException(`Monitor '${monitorId}' not found`);
+      }
+      if (!monitor.currentPlaylist) {
+        throw new NotFoundException(
+          `Monitor '${monitorId}' is not playing playlist '${playlist.id}'`,
+        );
+      }
+      return this.monitorService.update(user, {
+        ...monitor,
+        currentPlaylist: null,
+      });
+    });
+    const data = await Promise.all(dataPromise);
+
+    return {
+      status: Status.Success,
+      count: data?.length,
+      data,
+    };
+  }
+
   @Get('/:monitorId')
   @HttpCode(200)
   @ApiOperation({
@@ -236,151 +346,6 @@ export class MonitorController {
 
     return {
       status: Status.Success,
-    };
-  }
-
-  // @Get('/playlist/:monitorId')
-  // @HttpCode(200)
-  // @ApiOperation({
-  //   operationId: 'monitor-playlist-get',
-  //   summary: 'Получение плэйлиста монитора',
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Успешный ответ',
-  //   type: PlaylistsGetResponse,
-  // })
-  // async getMonitorPlaylist(
-  //   @Req() { user }: ExpressRequest,
-  //   @Param('monitorId', ParseUUIDPipe) id: string,
-  // ): Promise<PlaylistsGetResponse> {
-  //   const monitor = await this.monitorService.findOne({
-  //     where: {
-  //       userId: user.id,
-  //       id,
-  //     },
-  //   });
-  //   if (!monitor) {
-  //     throw new NotFoundException(`Monitor '${id}' is not found`);
-  //   }
-  //   if (!monitor.currentPlaylistId) {
-  //     throw new NotFoundException(`Monitor '${id}' has no playlist`);
-  //   }
-
-  //   return {
-  //     status: Status.Success,
-  //     count: monitor.playlists?.length ?? 0,
-  //     data: monitor.playlists ?? [],
-  //   };
-  // }
-
-  @Patch('/playlist')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'monitor-playlist-update',
-    summary: 'Создание связки плэйлиста и монитора',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: MonitorsGetResponse,
-  })
-  async updateMonitorPlaylist(
-    @Req() { user }: ExpressRequest,
-    @Body() attach: MonitorsPlaylistAttachRequest,
-  ): Promise<MonitorsGetResponse> {
-    if (attach.monitors.length === 0) {
-      throw new BadRequestException();
-    }
-    const playlist = await this.playlistService.findOne({
-      where: {
-        userId: user.id,
-        id: attach.playlistId,
-      },
-    });
-    if (!playlist) {
-      throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
-    }
-
-    const dataPromise = attach.monitors.map(async (monitorId) => {
-      const monitor = await this.monitorService.findOne({
-        where: {
-          userId: user.id,
-          id: monitorId,
-        },
-      });
-      if (!monitor) {
-        throw new NotFoundException(`Monitor '${monitorId}' not found`);
-      }
-
-      return this.monitorService.update(user, {
-        ...monitor,
-        currentPlaylist: playlist,
-      });
-    });
-    const data = await Promise.all(dataPromise);
-
-    return {
-      status: Status.Success,
-      count: data?.length,
-      data,
-    };
-  }
-
-  @Delete('/playlist')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'monitor-playlist-delete',
-    summary: 'Удаление связки плэйлиста и монитора',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: MonitorsGetResponse,
-  })
-  async deleteMonitorPlaylist(
-    @Req() { user }: ExpressRequest,
-    @Body() attach: MonitorsPlaylistAttachRequest,
-  ): Promise<MonitorsGetResponse> {
-    if (attach.monitors.length === 0) {
-      throw new BadRequestException();
-    }
-    const playlist = await this.playlistService.findOne({
-      where: {
-        userId: user.id,
-        id: attach.playlistId,
-      },
-    });
-    if (!playlist) {
-      throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
-    }
-
-    const dataPromise = attach.monitors.map(async (monitorId) => {
-      const monitor = await this.monitorService.findOne({
-        where: {
-          userId: user.id,
-          id: monitorId,
-        },
-      });
-      if (!monitor) {
-        throw new NotFoundException(`Monitor '${monitorId}' not found`);
-      }
-      if (!monitor.currentPlaylist) {
-        throw new NotFoundException(
-          `Monitor '${monitorId}' is not playing playlist '${playlist.id}'`,
-        );
-      }
-      return this.monitorService.update(user, {
-        ...monitor,
-        currentPlaylist: null,
-      });
-    });
-    const data = await Promise.all(dataPromise);
-
-    return {
-      status: Status.Success,
-      count: data?.length,
-      data,
     };
   }
 }

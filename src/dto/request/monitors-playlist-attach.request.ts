@@ -1,9 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-
-import { MonitorIDRequest } from './monitor-id.request';
-import { PlaylistRequest } from './playlist.request';
+import { IsDefined, IsUUID } from 'class-validator';
 
 export class MonitorsPlaylistAttachRequest {
   @ApiProperty({
@@ -12,8 +8,9 @@ export class MonitorsPlaylistAttachRequest {
     format: 'uuid',
     required: true,
   })
+  @IsDefined()
   @IsUUID()
-  playlistId!: PlaylistRequest;
+  playlistId!: string;
 
   @ApiProperty({
     description: 'Мониторы',
@@ -22,6 +19,7 @@ export class MonitorsPlaylistAttachRequest {
     isArray: true,
     required: true,
   })
+  @IsDefined({ each: true })
   @IsUUID('all', { each: true })
   monitors!: string[];
 }

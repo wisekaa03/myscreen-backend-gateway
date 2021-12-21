@@ -1,5 +1,4 @@
 import {
-  IsArray,
   IsBoolean,
   IsDate,
   IsDefined,
@@ -197,12 +196,12 @@ export class MonitorEntity {
     nullable: true,
   })
   @JoinTable()
-  @IsArray()
   @ApiProperty({
     description: 'Фото монитора. Документы на право владения.',
     isArray: true,
     allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
+  @IsUUID('all', { each: true })
   files?: FileEntity[];
 
   @CreateDateColumn()

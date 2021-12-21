@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { IsArray, IsDefined, IsNotEmpty } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsUUID } from 'class-validator';
 
 import { PlaylistEntity } from '@/database/playlist.entity';
 
@@ -16,6 +16,6 @@ export class PlaylistCreateRequest extends PickType(PlaylistEntity, [
   })
   @IsDefined()
   @IsNotEmpty()
-  @IsArray()
+  @IsUUID('all', { each: true })
   files!: string[];
 }

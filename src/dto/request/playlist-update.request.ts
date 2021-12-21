@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsArray } from 'class-validator';
+import { IsUUID } from 'class-validator';
 
 import { PlaylistEntity } from '@/database/playlist.entity';
 
@@ -13,6 +13,6 @@ export class PlaylistUpdateRequest extends PartialType(
     isArray: true,
     required: false,
   })
-  @IsArray()
+  @IsUUID('all', { each: true })
   files!: string[];
 }
