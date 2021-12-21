@@ -7,5 +7,5 @@ export class MonitorResponse extends MonitorEntity {
   @ApiProperty({
     type: () => PlaylistResponse,
   })
-  currentPlaylist?: PlaylistResponse | null;
+  playlist?: PlaylistResponse | null;
 }

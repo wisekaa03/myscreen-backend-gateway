@@ -187,7 +187,7 @@ export class MonitorEntity {
   @ApiProperty({
     description: 'Текущий плэйлист',
   })
-  currentPlaylist?: PlaylistEntity | null;
+  playlist?: PlaylistEntity | null;
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {
     onDelete: 'CASCADE',

@@ -7,7 +7,7 @@ export class MonitorPartialRequest extends PartialType(
     'lastSeen',
     'user',
     'userId',
-    'currentPlaylist',
+    'playlist',
     'files',
     'createdAt',
     'updatedAt',

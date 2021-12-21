@@ -8,7 +8,7 @@ export class MonitorRequest extends OmitType(MonitorEntity, [
   'lastSeen',
   'user',
   'userId',
-  'currentPlaylist',
+  'playlist',
   'files',
   'createdAt',
   'updatedAt',

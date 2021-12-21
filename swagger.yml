@@ -1047,6 +1047,52 @@ paths:
       security:
         &a43
         - bearer: []
+  "/api/v2/user/disable/{userId}":
+    patch:
+      operationId: user-disable
+      summary: Скрытие аккаунта пользователя (только администратор)
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a38
+        "401": *a39
+        "403": *a40
+        "500": *a41
+      tags: *a42
+      security: *a43
+  "/api/v2/user/enable/{userId}":
+    patch:
+      operationId: user-enable
+      summary: Открытие аккаунта пользователя (только администратор)
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a38
+        "401": *a39
+        "403": *a40
+        "500": *a41
+      tags: *a42
+      security: *a43
   "/api/v2/user/{userId}":
     get:
       operationId: user-get
@@ -1101,52 +1147,6 @@ paths:
     delete:
       operationId: user-delete
       summary: Удаление аккаунта пользователя (только администратор)
-      parameters:
-        - name: userId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SuccessResponse"
-        "400": *a38
-        "401": *a39
-        "403": *a40
-        "500": *a41
-      tags: *a42
-      security: *a43
-  "/api/v2/user/disable/{userId}":
-    patch:
-      operationId: user-disable
-      summary: Скрытие аккаунта пользователя (только администратор)
-      parameters:
-        - name: userId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SuccessResponse"
-        "400": *a38
-        "401": *a39
-        "403": *a40
-        "500": *a41
-      tags: *a42
-      security: *a43
-  "/api/v2/user/enable/{userId}":
-    patch:
-      operationId: user-enable
-      summary: Открытие аккаунта пользователя (только администратор)
       parameters:
         - name: userId
           required: true
@@ -1455,7 +1455,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.3.3
+  version: 2.3.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2166,7 +2166,7 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
-        currentPlaylist:
+        playlist:
           description: Текущий плэйлист
           allOf:
             - $ref: "#/components/schemas/PlaylistResponse"
@@ -2200,7 +2200,7 @@ components:
         - lastSeen
         - latitude
         - longitude
-        - currentPlaylist
+        - playlist
         - files
         - createdAt
         - updatedAt

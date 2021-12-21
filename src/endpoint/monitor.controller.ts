@@ -182,7 +182,7 @@ export class MonitorController {
 
       return this.monitorService.update(user, {
         ...monitor,
-        currentPlaylist: playlist,
+        playlist,
       });
     });
     const data = await Promise.all(dataPromise);
@@ -232,14 +232,14 @@ export class MonitorController {
       if (!monitor) {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
-      if (!monitor.currentPlaylist) {
+      if (!monitor.playlist) {
         throw new NotFoundException(
           `Monitor '${monitorId}' is not playing playlist '${playlist.id}'`,
         );
       }
       return this.monitorService.update(user, {
         ...monitor,
-        currentPlaylist: null,
+        playlist: null,
       });
     });
     const data = await Promise.all(dataPromise);

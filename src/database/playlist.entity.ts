@@ -74,7 +74,7 @@ export class PlaylistEntity {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     cascade: true,
-    eager: false,
+    eager: true,
   })
   @JoinTable()
   @ApiProperty({

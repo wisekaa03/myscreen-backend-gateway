@@ -83,6 +83,58 @@ export class UserController {
     };
   }
 
+  @Patch('/disable/:userId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'user-disable',
+    summary: 'Скрытие аккаунта пользователя (только администратор)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async disableUser(
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<SuccessResponse> {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    await this.userService.update(user, { disabled: true });
+
+    return {
+      status: Status.Success,
+    };
+  }
+
+  @Patch('/enable/:userId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'user-enable',
+    summary: 'Открытие аккаунта пользователя (только администратор)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async enableUser(
+    @Param('userId', ParseUUIDPipe) userId: string,
+  ): Promise<SuccessResponse> {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    await this.userService.update(user, { disabled: false });
+
+    return {
+      status: Status.Success,
+    };
+  }
+
   @Get('/:userId')
   @ApiOperation({
     operationId: 'user-get',
@@ -133,58 +185,6 @@ export class UserController {
       data: await this.userService
         .update(user, update)
         .then(({ password, ...data }) => data),
-    };
-  }
-
-  @Patch('/disable/:userId')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'user-disable',
-    summary: 'Скрытие аккаунта пользователя (только администратор)',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: SuccessResponse,
-  })
-  async disableUser(
-    @Param('userId', ParseUUIDPipe) userId: string,
-  ): Promise<SuccessResponse> {
-    const user = await this.userService.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    await this.userService.update(user, { disabled: true });
-
-    return {
-      status: Status.Success,
-    };
-  }
-
-  @Patch('/enable/:userId')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'user-enable',
-    summary: 'Открытие аккаунта пользователя (только администратор)',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: SuccessResponse,
-  })
-  async enableUser(
-    @Param('userId', ParseUUIDPipe) userId: string,
-  ): Promise<SuccessResponse> {
-    const user = await this.userService.findById(userId);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    await this.userService.update(user, { disabled: false });
-
-    return {
-      status: Status.Success,
     };
   }
 

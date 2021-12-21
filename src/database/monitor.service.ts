@@ -22,7 +22,7 @@ export class MonitorService {
   ): Promise<[Array<MonitorEntity>, number]> =>
     this.monitorRepository.findAndCount({
       ...find,
-      relations: ['files'],
+      relations: ['files', 'playlist'],
     });
 
   findOne = async (
@@ -30,7 +30,7 @@ export class MonitorService {
   ): Promise<MonitorEntity | undefined> =>
     this.monitorRepository.findOne({
       ...find,
-      relations: ['files'],
+      relations: ['files', 'playlist'],
     });
 
   async update(
