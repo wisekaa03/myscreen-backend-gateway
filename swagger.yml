@@ -2107,7 +2107,7 @@ components:
         - files
         - createdAt
         - updatedAt
-    MonitorResponse:
+    MonitorPlaylistResponse:
       type: object
       properties:
         id:
@@ -2166,13 +2166,10 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
-        playlist:
-          description: Текущий плэйлист
-          allOf:
-            - $ref: "#/components/schemas/PlaylistResponse"
         files:
           description: Фото монитора. Документы на право владения.
           allOf:
+            &a59
             - $ref: "#/components/schemas/FileResponse"
           items:
             type: array
@@ -2186,6 +2183,10 @@ components:
           type: string
           description: Время изменения
           example: 2021-01-01T10:00:00.147Z
+        playlist:
+          description: Плэйлист
+          allOf:
+            - $ref: "#/components/schemas/PlaylistResponse"
       required:
         - id
         - name
@@ -2200,10 +2201,10 @@ components:
         - lastSeen
         - latitude
         - longitude
-        - playlist
         - files
         - createdAt
         - updatedAt
+        - playlist
     MonitorsGetResponse:
       type: object
       properties:
@@ -2222,7 +2223,7 @@ components:
           title: MonitorResponse
           type: array
           items:
-            $ref: "#/components/schemas/MonitorResponse"
+            $ref: "#/components/schemas/MonitorPlaylistResponse"
       required:
         - status
         - count
@@ -2284,6 +2285,97 @@ components:
         - status
         - latitude
         - longitude
+    MonitorResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор монитора
+          format: uuid
+        name:
+          type: string
+          description: Имя
+          example: имя монитора
+        address:
+          type: object
+          description: Адрес монитора
+          example: *a53
+        category:
+          type: string
+          description: Категория
+          enum: *a54
+          example: АЗС
+        price:
+          type: object
+          description: Стоимость показов
+          example: *a55
+        orientation:
+          type: string
+          description: Ориентация экрана
+          enum: *a56
+          example: Horizontal
+        monitorInfo:
+          type: object
+          description: Модель и прочие характеристики монитора
+          example: *a57
+        attached:
+          type: boolean
+          description: Присоединен
+          example: false
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
+        status:
+          type: string
+          description: Подключен
+          enum: *a58
+          example: offline
+        lastSeen:
+          format: date-time
+          type: string
+          description: Последний раз виден
+          example: null
+        latitude:
+          type: number
+          description: Широта
+          example: "45.0448400"
+        longitude:
+          type: number
+          description: Долгота
+          example: "38.9760300"
+        files:
+          description: Фото монитора. Документы на право владения.
+          allOf: *a59
+          items:
+            type: array
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - name
+        - address
+        - category
+        - price
+        - orientation
+        - monitorInfo
+        - attached
+        - code
+        - status
+        - lastSeen
+        - latitude
+        - longitude
+        - files
+        - createdAt
+        - updatedAt
     MonitorCreateResponse:
       type: object
       properties:
@@ -2332,7 +2424,7 @@ components:
           description: Монитор
           title: MonitorResponse
           allOf:
-            - $ref: "#/components/schemas/MonitorResponse"
+            - $ref: "#/components/schemas/MonitorPlaylistResponse"
       required:
         - status
         - data
@@ -2351,7 +2443,7 @@ components:
           type: string
           description: Статус рендеринга
           enum:
-            &a59
+            &a60
             - initial
             - ready
             - pending
@@ -2370,6 +2462,175 @@ components:
           title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+    MediaMeta:
+      type: object
+      properties:
+        duration:
+          type: number
+          description: Длительность
+          example: "200"
+        width:
+          type: number
+          description: Размер по горизонтали
+          example: "200"
+        height:
+          type: number
+          description: Размер по вертикали
+          example: "200"
+        filesize:
+          type: number
+          description: Размер файла
+          example: "20500"
+        info:
+          type: object
+          description: Параметры видео, картинки или аудио
+      required:
+        - filesize
+    FileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          example: "1234567"
+          format: uuid
+        folderId:
+          type: string
+          description: Папка
+          format: uuid
+        originalName:
+          type: string
+          description: Изначальное имя файла
+          example: foo.mp4
+        name:
+          type: string
+          description: Имя файла
+          example: foo.mp4
+        extension:
+          type: string
+          description: Расширение файла
+          example: mp4
+        hash:
+          type: string
+          description: Hash файла
+          example: 2b0439011a3a215ae1756bfc342e5bbc
+        videoType:
+          type: string
+          description: Тип файла
+          enum:
+            &a61
+            - video
+            - image
+            - audio
+            - other
+          example: video
+        category:
+          type: string
+          description: В какую категорию относить файл
+          enum:
+            &a62
+            - ownership
+            - photo
+            - media
+          example: media
+        filesize:
+          type: number
+          description: Размер файла
+          example: 210000
+        meta:
+          description: Метаинформация
+          example:
+            &a63
+            duration: 200
+            filesize: 20500
+          allOf:
+            - $ref: "#/components/schemas/MediaMeta"
+        userId:
+          type: string
+          description: Идентификатор пользователя
+          format: uuid
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - folderId
+        - originalName
+        - name
+        - extension
+        - hash
+        - videoType
+        - category
+        - filesize
+        - meta
+        - userId
+        - createdAt
+        - updatedAt
+    EditorLayerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор слоя
+          example: "12345678"
+        index:
+          type: number
+          description: Индекс файла
+          example: "3"
+        duration:
+          type: number
+          description: Длительность
+          example: "0"
+        cutFrom:
+          type: number
+          description: С какой секунды начать вырезать клип
+          example: "0"
+        cutTo:
+          type: number
+          description: До какой секунды вырезать клип
+          example: "0"
+        start:
+          type: number
+          description: С какой секунды начинать воспроизводить клип
+          example: "0"
+        mixVolume:
+          type: number
+          description: ""
+          example: "1"
+          default: 1
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        file:
+          description: Файл
+          type: array
+          items:
+            $ref: "#/components/schemas/FileResponse"
+      required:
+        - id
+        - index
+        - duration
+        - cutFrom
+        - cutTo
+        - start
+        - mixVolume
+        - createdAt
+        - updatedAt
+        - file
     EditorResponse:
       type: object
       properties:
@@ -2396,7 +2657,7 @@ components:
         renderingStatus:
           type: string
           description: Статус рендеринга
-          enum: *a59
+          enum: *a60
           example: initial
         keepSourceAudio:
           type: boolean
@@ -2416,6 +2677,16 @@ components:
           type: string
           description: Время создания
           example: 2021-01-01T10:00:00.147Z
+        videoLayers:
+          description: Видео слой
+          type: array
+          items:
+            $ref: "#/components/schemas/EditorLayerResponse"
+        audioLayers:
+          description: Аудио слой
+          type: array
+          items:
+            $ref: "#/components/schemas/EditorLayerResponse"
       required:
         - id
         - name
@@ -2427,6 +2698,8 @@ components:
         - totalDuration
         - createdAt
         - updatedAt
+        - videoLayers
+        - audioLayers
     EditorsGetResponse:
       type: object
       properties:
@@ -2536,21 +2809,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum:
-            &a60
-            - video
-            - image
-            - audio
-            - other
+          enum: *a61
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum:
-            &a61
-            - ownership
-            - photo
-            - media
+          enum: *a62
           example: media
     FilesGetRequest:
       type: object
@@ -2565,40 +2829,7 @@ components:
           title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-    MediaMeta:
-      type: object
-      properties:
-        duration:
-          type: number
-          description: Длительность
-          example: "200"
-        width:
-          type: number
-          description: Размер по горизонтали
-          example: "200"
-        height:
-          type: number
-          description: Размер по вертикали
-          example: "200"
-        filesize:
-          type: number
-          description: Размер файла
-          example: "20500"
-        info:
-          type: object
-          description: Параметры видео, картинки или аудио
-      required:
-        - filesize
-    MonitorIDResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор монитора
-          format: uuid
-      required:
-        - id
-    FileResponse:
+    FileMonitorsResponse:
       type: object
       properties:
         id:
@@ -2629,12 +2860,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a60
+          enum: *a61
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a61
+          enum: *a62
           example: media
         filesize:
           type: number
@@ -2642,9 +2873,7 @@ components:
           example: 210000
         meta:
           description: Метаинформация
-          example:
-            duration: 200
-            filesize: 20500
+          example: *a63
           allOf:
             - $ref: "#/components/schemas/MediaMeta"
         userId:
@@ -2666,7 +2895,7 @@ components:
           title: MonitorResponse
           type: array
           items:
-            $ref: "#/components/schemas/MonitorIDResponse"
+            $ref: "#/components/schemas/MonitorResponse"
       required:
         - id
         - folderId
@@ -2699,7 +2928,7 @@ components:
           title: FileResponse
           type: array
           items:
-            $ref: "#/components/schemas/FileResponse"
+            $ref: "#/components/schemas/FileMonitorsResponse"
       required:
         - status
         - count
@@ -2714,7 +2943,7 @@ components:
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a61
+          enum: *a62
           example: media
         monitorId:
           type: string
@@ -2742,7 +2971,7 @@ components:
           title: FileResponse
           type: array
           items:
-            $ref: "#/components/schemas/FileResponse"
+            $ref: "#/components/schemas/FileMonitorsResponse"
       required:
         - status
         - count
@@ -2761,7 +2990,7 @@ components:
           description: Файл
           title: FileResponse
           allOf:
-            - $ref: "#/components/schemas/FileResponse"
+            - $ref: "#/components/schemas/FileMonitorsResponse"
       required:
         - status
         - data

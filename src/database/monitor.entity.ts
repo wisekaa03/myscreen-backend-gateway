@@ -184,9 +184,6 @@ export class MonitorEntity {
     cascade: true,
   })
   @JoinColumn()
-  @ApiProperty({
-    description: 'Текущий плэйлист',
-  })
   playlist?: PlaylistEntity | null;
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {

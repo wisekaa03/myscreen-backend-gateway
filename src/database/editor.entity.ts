@@ -116,16 +116,28 @@ export class EditorEntity {
     nullable: true,
   })
   @JoinTable()
+  @ApiProperty({
+    description: 'Видео слой',
+    type: 'string',
+    format: 'uuid',
+    isArray: true,
+  })
   videoLayers?: EditorLayerEntity[];
 
-  @ManyToMany(() => EditorLayerEntity, (layer) => layer.audioTracks, {
+  @ManyToMany(() => EditorLayerEntity, (layer) => layer.audioLayers, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     cascade: true,
     nullable: true,
   })
   @JoinTable()
-  audioTracks?: EditorLayerEntity[];
+  @ApiProperty({
+    description: 'Аудио слой',
+    type: 'string',
+    format: 'uuid',
+    isArray: true,
+  })
+  audioLayers?: EditorLayerEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',

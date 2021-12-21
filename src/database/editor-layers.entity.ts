@@ -30,10 +30,10 @@ export class EditorLayerEntity {
   })
   videoLayers?: EditorEntity[];
 
-  @ManyToMany(() => EditorEntity, (editor) => editor.audioTracks, {
+  @ManyToMany(() => EditorEntity, (editor) => editor.audioLayers, {
     nullable: true,
   })
-  audioTracks?: EditorEntity[];
+  audioLayers?: EditorEntity[];
 
   @Column({ type: 'integer' })
   @ApiProperty({
@@ -100,6 +100,12 @@ export class EditorLayerEntity {
     nullable: true,
   })
   @JoinColumn()
+  @ApiProperty({
+    description: 'Файл',
+    type: 'string',
+    format: 'uuid',
+    isArray: true,
+  })
   file!: FileEntity;
 
   @CreateDateColumn()

@@ -20,11 +20,18 @@ export class EditorService {
   find = async (
     find: FindManyOptions<EditorEntity>,
   ): Promise<[Array<EditorEntity>, number]> =>
-    this.editorRepository.findAndCount(find);
+    this.editorRepository.findAndCount({
+      ...find,
+      relations: ['videoLayers', 'audioLayers'],
+    });
 
   findOne = async (
     find: FindManyOptions<EditorEntity>,
-  ): Promise<EditorEntity | undefined> => this.editorRepository.findOne(find);
+  ): Promise<EditorEntity | undefined> =>
+    this.editorRepository.findOne({
+      ...find,
+      relations: ['videoLayers', 'audioLayers'],
+    });
 
   async update(
     user: UserEntity,
