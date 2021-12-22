@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { writeFile } from 'node:fs';
 import { resolve as pathResolve } from 'node:path';
 import { stringify as yamlStringify } from 'yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
@@ -76,8 +76,13 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     customSiteTitle: description,
   };
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  const swagger = yamlStringify(swaggerDocument);
-  writeFileSync(pathResolve(__dirname, '../../static', 'swagger.yml'), swagger);
+  writeFile(
+    pathResolve(__dirname, '../../static', 'swagger.yml'),
+    yamlStringify(swaggerDocument),
+    () => {
+      logger.log('The swagger.yml file has been writed', NestApplication.name);
+    },
+  );
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
   await app.listen(configService.get<number>('PORT', 3000));
