@@ -32,14 +32,12 @@ export class AuthResponse {
 
   @ApiProperty({
     description: 'Возвращаемый токен',
-    title: 'AuthenticationPayload',
     type: AuthenticationPayload,
   })
   payload?: AuthenticationPayload;
 
   @ApiProperty({
     description: 'Пользователь',
-    title: 'UserResponse',
     type: UserResponse,
   })
   data!: Partial<UserEntity> & Partial<UserSizeEntity>;

@@ -15,16 +15,16 @@ export class NotFoundError extends NotFoundException {
   }
 
   @ApiProperty({
-    type: Status.Error,
+    enum: Status,
     example: Status.Error,
     description: 'Статус операции',
   })
   status!: Status.Error;
 
-  @ApiProperty({ type: '404', example: 404 })
+  @ApiProperty({ example: 404 })
   statusCode!: number;
 
-  @ApiProperty({ type: 'server-error.10005', example: 'server-error.10005' })
+  @ApiProperty({ example: 'server-error.10005' })
   code!: string;
 
   @ApiProperty({

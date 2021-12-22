@@ -15,7 +15,6 @@ export class UserGetResponse {
 
   @ApiProperty({
     description: 'Пользователь',
-    title: 'UserResponse',
     type: UserResponse,
   })
   data!: Partial<UserEntity> & Partial<UserSizeEntity>;

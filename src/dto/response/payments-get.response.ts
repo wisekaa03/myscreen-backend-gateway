@@ -17,7 +17,6 @@ export class PaymentsGetResponse {
 
   @ApiProperty({
     description: 'Оплаты',
-    title: 'PaymentResponse',
     type: PaymentResponse,
     isArray: true,
     required: true,

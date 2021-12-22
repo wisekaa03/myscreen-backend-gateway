@@ -9,7 +9,6 @@ import { PaymentRequest } from './payment.request';
 export class PaymentsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'PaymentRequest',
     type: PaymentRequest,
     required: false,
   })
@@ -21,7 +20,6 @@ export class PaymentsGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    title: 'LimitRequest',
     type: LimitRequest,
     required: false,
   })

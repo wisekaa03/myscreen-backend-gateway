@@ -16,7 +16,6 @@ export class UsersGetResponse {
 
   @ApiProperty({
     description: 'Пользователи',
-    title: 'UserResponse',
     type: UserResponse,
     isArray: true,
   })

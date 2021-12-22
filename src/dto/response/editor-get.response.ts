@@ -14,7 +14,6 @@ export class EditorGetResponse {
 
   @ApiProperty({
     description: 'Оплаты',
-    title: 'EditorResponse',
     type: EditorResponse,
     isArray: true,
     required: true,

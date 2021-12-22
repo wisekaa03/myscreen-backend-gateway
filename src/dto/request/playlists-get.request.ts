@@ -8,7 +8,6 @@ import { PlaylistPartialRequest } from './playlist-partial.request';
 export class PlaylistsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'PlaylistRequest',
     type: PlaylistPartialRequest,
     required: false,
   })
@@ -20,7 +19,6 @@ export class PlaylistsGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    title: 'LimitRequest',
     type: LimitRequest,
     required: false,
   })

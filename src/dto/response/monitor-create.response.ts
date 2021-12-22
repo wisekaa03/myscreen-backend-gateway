@@ -14,7 +14,6 @@ export class MonitorCreateResponse {
 
   @ApiProperty({
     description: 'Монитор',
-    title: 'MonitorResponse',
     type: MonitorResponse,
     required: true,
   })

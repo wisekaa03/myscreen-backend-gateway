@@ -17,7 +17,6 @@ export class OrdersGetResponse {
 
   @ApiProperty({
     description: 'Заказы',
-    title: 'OrderResponse',
     type: OrderResponse,
     isArray: true,
     required: true,

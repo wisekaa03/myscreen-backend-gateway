@@ -4,7 +4,7 @@ import { Status } from '@/enums/status.enum';
 export class SuccessResponse {
   @ApiProperty({
     description: 'Статус операции',
-    type: Status.Success,
+    enum: Status,
     example: Status.Success,
   })
   status!: Status.Success;

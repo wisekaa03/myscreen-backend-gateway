@@ -1,4 +1,4 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -8,7 +8,6 @@ import { FolderPartialRequest } from './folder-partial.request';
 export class FoldersGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'FolderRequest',
     type: FolderPartialRequest,
     required: false,
   })
@@ -18,7 +17,6 @@ export class FoldersGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    title: 'LimitRequest',
     type: LimitRequest,
     required: false,
   })

@@ -15,16 +15,16 @@ export class InternalServerError extends InternalServerErrorException {
   }
 
   @ApiProperty({
-    type: Status.Error,
+    enum: Status,
     example: Status.Error,
     description: 'Статус операции',
   })
   status!: Status.Error;
 
-  @ApiProperty({ type: '500', example: 500 })
+  @ApiProperty({ example: 500 })
   statusCode!: number;
 
-  @ApiProperty({ type: 'server-error.10000', example: 'server-error.10000' })
+  @ApiProperty({ example: 'server-error.10000' })
   code!: string;
 
   @ApiProperty({

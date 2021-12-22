@@ -9,7 +9,6 @@ import { OrderRequest } from './order.request';
 export class OrdersGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'OrderRequest',
     type: OrderRequest,
     required: false,
   })
@@ -21,7 +20,6 @@ export class OrdersGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    title: 'LimitRequest',
     type: LimitRequest,
     required: false,
   })

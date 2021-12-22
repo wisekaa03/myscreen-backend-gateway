@@ -15,16 +15,16 @@ export class UnauthorizedError extends UnauthorizedException {
   }
 
   @ApiProperty({
-    type: Status.Error,
+    enum: Status,
     example: Status.Error,
     description: 'Статус операции',
   })
   status!: Status.Error;
 
-  @ApiProperty({ type: '401', example: 401 })
+  @ApiProperty({ example: 401 })
   statusCode!: number;
 
-  @ApiProperty({ type: 'server-error.10001', example: 'server-error.10001' })
+  @ApiProperty({ example: 'server-error.10001' })
   code!: string;
 
   @ApiProperty({

@@ -15,16 +15,16 @@ export class ServiceUnavailableError extends ServiceUnavailableException {
   }
 
   @ApiProperty({
-    type: Status.Error,
+    enum: Status,
     example: Status.Error,
     description: 'Статус операции',
   })
   status!: Status.Error;
 
-  @ApiProperty({ type: '503', example: 503 })
+  @ApiProperty({ example: 503 })
   statusCode!: number;
 
-  @ApiProperty({ type: 'server-error.10000', example: 'server-error.10000' })
+  @ApiProperty({ example: 'server-error.10000' })
   code!: string;
 
   @ApiProperty({

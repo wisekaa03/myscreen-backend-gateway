@@ -8,7 +8,6 @@ import { MonitorPartialRequest } from './monitor-partial.request';
 export class MonitorsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'MonitorRequest',
     type: MonitorPartialRequest,
     required: false,
   })
@@ -20,7 +19,6 @@ export class MonitorsGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    title: 'LimitRequest',
     type: LimitRequest,
     required: false,
   })

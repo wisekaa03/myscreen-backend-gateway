@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Allow, IsOptional, Max, Min } from 'class-validator';
+import { IsArray, Max, Min } from 'class-validator';
 
 export type LimitOrderDirection = 'ASC' | 'DESC';
 
@@ -15,7 +15,6 @@ export class LimitRequest<T = any> {
   })
   @Min(5)
   @Max(100)
-  @IsOptional()
   limit?: number;
 
   @ApiProperty({
@@ -25,16 +24,13 @@ export class LimitRequest<T = any> {
   })
   @Min(1)
   @Max(100)
-  @IsOptional()
   page?: number;
 
   @ApiProperty({
     description: 'Порядок результатов',
-    type: 'OrderRequest',
     example: { createdAt: 'DESC' },
     required: false,
   })
-  @IsOptional()
-  @Allow()
+  @IsArray()
   order?: LimitOrderRequest<T>;
 }

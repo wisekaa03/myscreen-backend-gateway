@@ -13,7 +13,6 @@ export class FolderGetResponse {
 
   @ApiProperty({
     description: 'Папки',
-    title: 'FolderResponse',
     type: FolderResponse,
     required: true,
   })

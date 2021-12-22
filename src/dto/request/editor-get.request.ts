@@ -8,7 +8,6 @@ import { EditorPartialRequest } from './editor-partial.request';
 export class EditorGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    title: 'EditorRequest',
     type: EditorPartialRequest,
     required: false,
   })
@@ -20,7 +19,6 @@ export class EditorGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    title: 'LimitRequest',
     type: LimitRequest,
     required: false,
   })

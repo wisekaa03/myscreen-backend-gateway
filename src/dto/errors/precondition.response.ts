@@ -15,16 +15,16 @@ export class PreconditionFailedError extends PreconditionFailedException {
   }
 
   @ApiProperty({
-    type: Status.Error,
+    enum: Status,
     example: Status.Error,
     description: 'Статус операции',
   })
   status!: Status.Error;
 
-  @ApiProperty({ type: '412', example: 412 })
+  @ApiProperty({ example: 412 })
   statusCode!: number;
 
-  @ApiProperty({ type: 'server-error.10002', example: 'server-error.10002' })
+  @ApiProperty({ example: 'server-error.10002' })
   code!: string;
 
   @ApiProperty({

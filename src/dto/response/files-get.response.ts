@@ -17,7 +17,6 @@ export class FilesGetResponse {
 
   @ApiProperty({
     description: 'Файлы',
-    title: 'FileResponse',
     type: FileMonitorsResponse,
     isArray: true,
     required: true,

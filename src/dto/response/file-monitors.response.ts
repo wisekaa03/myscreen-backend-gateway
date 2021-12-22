@@ -6,8 +6,7 @@ import { MonitorResponse } from './monitor.response';
 export class FileMonitorsResponse extends OmitType(FileEntity, ['monitors']) {
   @ApiProperty({
     description: 'Мониторы',
-    title: 'MonitorResponse',
-    type: () => MonitorResponse,
+    type: MonitorResponse,
     required: false,
     isArray: true,
   })

@@ -1455,7 +1455,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.3.6
+  version: 2.3.7
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -1493,14 +1493,17 @@ components:
       type: object
       properties:
         status:
-          type: error
+          type: string
+          enum:
+            - success
+            - error
           example: error
           description: Статус операции
         statusCode:
-          type: "400"
+          type: number
           example: 400
         code:
-          type: server-error.10004
+          type: string
           example: server-error.10004
         message:
           type: string
@@ -1514,14 +1517,17 @@ components:
       type: object
       properties:
         status:
-          type: error
+          type: string
+          enum:
+            - success
+            - error
           example: error
           description: Статус операции
         statusCode:
-          type: "401"
+          type: number
           example: 401
         code:
-          type: server-error.10001
+          type: string
           example: server-error.10001
         message:
           type: string
@@ -1535,14 +1541,17 @@ components:
       type: object
       properties:
         status:
-          type: error
+          type: string
+          enum:
+            - success
+            - error
           example: error
           description: Статус операции
         statusCode:
-          type: "412"
+          type: number
           example: 412
         code:
-          type: server-error.10002
+          type: string
           example: server-error.10002
         message:
           type: string
@@ -1556,14 +1565,17 @@ components:
       type: object
       properties:
         status:
-          type: error
+          type: string
+          enum:
+            - success
+            - error
           example: error
           description: Статус операции
         statusCode:
-          type: "500"
+          type: number
           example: 500
         code:
-          type: server-error.10000
+          type: string
           example: server-error.10000
         message:
           type: string
@@ -1577,14 +1589,17 @@ components:
       type: object
       properties:
         status:
-          type: error
+          type: string
+          enum:
+            - success
+            - error
           example: error
           description: Статус операции
         statusCode:
-          type: "503"
+          type: number
           example: 503
         code:
-          type: server-error.10000
+          type: string
           example: server-error.10000
         message:
           type: string
@@ -1685,7 +1700,6 @@ components:
           example: success
         data:
           description: Пользователь
-          title: UserResponse
           allOf:
             - $ref: "#/components/schemas/UserResponse"
       required:
@@ -1783,12 +1797,10 @@ components:
           example: success
         payload:
           description: Возвращаемый токен
-          title: AuthenticationPayload
           allOf:
             - $ref: "#/components/schemas/AuthenticationPayload"
         data:
           description: Пользователь
-          title: UserResponse
           allOf:
             - $ref: "#/components/schemas/UserResponse"
       required:
@@ -1887,8 +1899,11 @@ components:
       type: object
       properties:
         status:
-          type: success
+          type: string
           description: Статус операции
+          enum:
+            - success
+            - error
           example: success
       required:
         - status
@@ -1918,14 +1933,17 @@ components:
       type: object
       properties:
         status:
-          type: error
+          type: string
+          enum:
+            - success
+            - error
           example: error
           description: Статус операции
         statusCode:
-          type: "403"
+          type: number
           example: 403
         code:
-          type: server-error.10002
+          type: string
           example: server-error.10002
         message:
           type: string
@@ -1939,14 +1957,17 @@ components:
       type: object
       properties:
         status:
-          type: error
+          type: string
+          enum:
+            - success
+            - error
           example: error
           description: Статус операции
         statusCode:
-          type: "404"
+          type: number
           example: 404
         code:
-          type: server-error.10005
+          type: string
           example: server-error.10005
         message:
           type: string
@@ -2052,7 +2073,7 @@ components:
           description: Страница результатов
           example: 1
         order:
-          type: OrderRequest
+          type: object
           description: Порядок результатов
           example:
             createdAt: DESC
@@ -2061,12 +2082,10 @@ components:
       properties:
         where:
           description: Запрос
-          title: MonitorRequest
           allOf:
             - $ref: "#/components/schemas/MonitorPartialRequest"
         scope:
           description: Рамки для запроса
-          title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
     PlaylistResponse:
@@ -2329,7 +2348,6 @@ components:
           description: Количество мониторов
         data:
           description: Мониторы
-          title: MonitorResponse
           type: array
           items:
             $ref: "#/components/schemas/MonitorPlaylistResponse"
@@ -2491,7 +2509,6 @@ components:
           example: success
         data:
           description: Монитор
-          title: MonitorResponse
           allOf:
             - $ref: "#/components/schemas/MonitorResponse"
       required:
@@ -2525,7 +2542,6 @@ components:
           example: success
         data:
           description: Монитор
-          title: MonitorResponse
           allOf:
             - $ref: "#/components/schemas/MonitorPlaylistResponse"
       required:
@@ -2557,12 +2573,10 @@ components:
       properties:
         where:
           description: Запрос
-          title: EditorRequest
           allOf:
             - $ref: "#/components/schemas/EditorPartialRequest"
         scope:
           description: Рамки для запроса
-          title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
     EditorLayerResponse:
@@ -2707,7 +2721,6 @@ components:
           description: Количество оплат
         data:
           description: Оплаты
-          title: EditorResponse
           type: array
           items:
             $ref: "#/components/schemas/EditorResponse"
@@ -2756,7 +2769,6 @@ components:
           example: success
         data:
           description: Оплаты
-          title: EditorResponse
           type: array
           items:
             $ref: "#/components/schemas/EditorResponse"
@@ -2813,12 +2825,10 @@ components:
       properties:
         where:
           description: Запрос
-          title: FileRequest
           allOf:
             - $ref: "#/components/schemas/FilePartialRequest"
         scope:
           description: Рамки для запроса
-          title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
     FileMonitorsResponse:
@@ -2884,7 +2894,6 @@ components:
           example: 2021-01-01T10:00:00.147Z
         monitors:
           description: Мониторы
-          title: MonitorResponse
           type: array
           items:
             $ref: "#/components/schemas/MonitorResponse"
@@ -2917,7 +2926,6 @@ components:
           description: Количество файлов
         data:
           description: Файлы
-          title: FileResponse
           type: array
           items:
             $ref: "#/components/schemas/FileMonitorsResponse"
@@ -2960,7 +2968,6 @@ components:
           description: Количество файлов
         data:
           description: Файлы
-          title: FileResponse
           type: array
           items:
             $ref: "#/components/schemas/FileMonitorsResponse"
@@ -2980,7 +2987,6 @@ components:
           example: success
         data:
           description: Файл
-          title: FileResponse
           allOf:
             - $ref: "#/components/schemas/FileMonitorsResponse"
       required:
@@ -3017,12 +3023,10 @@ components:
       properties:
         where:
           description: Запрос
-          title: FolderRequest
           allOf:
             - $ref: "#/components/schemas/FolderPartialRequest"
         scope:
           description: Рамки для запроса
-          title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
     FolderResponse:
@@ -3103,7 +3107,6 @@ components:
           example: success
         data:
           description: Папки
-          title: FolderResponse
           allOf:
             - $ref: "#/components/schemas/FolderResponse"
       required:
@@ -3130,7 +3133,6 @@ components:
           example: success
         data:
           description: Пользователи
-          title: UserResponse
           type: array
           items:
             $ref: "#/components/schemas/UserResponse"
@@ -3149,12 +3151,10 @@ components:
       properties:
         where:
           description: Запрос
-          title: OrderRequest
           allOf:
             - $ref: "#/components/schemas/OrderRequest"
         scope:
           description: Рамки для запроса
-          title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
     OrderResponse:
@@ -3199,7 +3199,6 @@ components:
           description: Количество заказов
         data:
           description: Заказы
-          title: OrderResponse
           type: array
           items:
             $ref: "#/components/schemas/OrderResponse"
@@ -3219,12 +3218,10 @@ components:
       properties:
         where:
           description: Запрос
-          title: PaymentRequest
           allOf:
             - $ref: "#/components/schemas/PaymentRequest"
         scope:
           description: Рамки для запроса
-          title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
     PaymentResponse:
@@ -3279,7 +3276,6 @@ components:
           description: Количество оплат
         data:
           description: Оплаты
-          title: PaymentResponse
           type: array
           items:
             $ref: "#/components/schemas/PaymentResponse"
@@ -3308,12 +3304,10 @@ components:
       properties:
         where:
           description: Запрос
-          title: PlaylistRequest
           allOf:
             - $ref: "#/components/schemas/PlaylistPartialRequest"
         scope:
           description: Рамки для запроса
-          title: LimitRequest
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
     PlaylistsGetResponse:
@@ -3331,7 +3325,6 @@ components:
           description: Количество плэйлистов
         data:
           description: Плэйлисты
-          title: PlaylistResponse
           type: array
           items:
             $ref: "#/components/schemas/PlaylistResponse"
@@ -3371,7 +3364,6 @@ components:
           example: success
         data:
           description: Плэйлист
-          title: PlaylistResponse
           allOf:
             - $ref: "#/components/schemas/PlaylistResponse"
       required:

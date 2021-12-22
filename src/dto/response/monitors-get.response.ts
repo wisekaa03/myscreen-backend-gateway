@@ -17,7 +17,6 @@ export class MonitorsGetResponse {
 
   @ApiProperty({
     description: 'Мониторы',
-    title: 'MonitorResponse',
     type: MonitorPlaylistResponse,
     isArray: true,
     required: true,

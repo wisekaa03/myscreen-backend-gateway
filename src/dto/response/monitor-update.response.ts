@@ -14,7 +14,6 @@ export class MonitorUpdateResponse {
 
   @ApiProperty({
     description: 'Монитор',
-    title: 'MonitorResponse',
     type: MonitorPlaylistResponse,
     required: true,
   })
