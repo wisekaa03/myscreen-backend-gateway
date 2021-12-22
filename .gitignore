@@ -109,5 +109,6 @@ dist
 
 .env
 docker/postgres
-!upload
 upload/*
+!upload/.gitkeep
+

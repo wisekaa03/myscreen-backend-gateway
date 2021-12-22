@@ -39,6 +39,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
       stopAtFirstError: true,
     }),
   );
+  app.useStaticAssets(pathResolve(__dirname, '../..', 'static'));
 
   const swaggerConfig = new DocumentBuilder()
     .addBearerAuth({
@@ -75,10 +76,8 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     customSiteTitle: description,
   };
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  if (process.env.NODE_ENV !== 'production') {
-    const swagger = yamlStringify(swaggerDocument);
-    writeFileSync(pathResolve(__dirname, '../..', 'swagger.yml'), swagger);
-  }
+  const swagger = yamlStringify(swaggerDocument);
+  writeFileSync(pathResolve(__dirname, '../../static', 'swagger.yml'), swagger);
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
   await app.listen(configService.get<number>('PORT', 3000));
