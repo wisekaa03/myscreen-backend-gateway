@@ -174,7 +174,6 @@ export class FileService {
       throw new NotFoundException("Found category: 'media' and monitorId");
     }
 
-    // TODO: пачимута непалучайца фсе запихнуть в promise, наферное изза typeorm
     files.forEach((file) => {
       if (!file?.media && category === FileCategory.Media) {
         throw new BadRequestException(
@@ -199,7 +198,7 @@ export class FileService {
         hash: file.hash,
         // TODO: доделать preview
         preview: [],
-        monitors: [{ id: monitorId }],
+        monitors: monitorId ? [{ id: monitorId }] : [],
       };
 
       const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
@@ -220,46 +219,16 @@ export class FileService {
       ];
     });
 
-    const errors: Array<Error> = [];
     let count = 0;
-    const returnFiles = await Promise.allSettled(filesPromises).then((data) =>
+    const returnFiles = await Promise.all(filesPromises).then((data) =>
       data.reduce((results, result) => {
-        if (result.status === 'fulfilled') {
-          if (
-            result.value instanceof FileEntity &&
-            Array.isArray(Object.keys(result.value))
-          ) {
-            count += 1;
-            return results.concat(result.value);
-          }
-          return results;
+        if (result instanceof FileEntity) {
+          count += 1;
+          return results.concat(result);
         }
-
-        errors.push(result.reason);
         return results;
       }, [] as Array<FileEntity>),
     );
-
-    if (errors.length > 0) {
-      const message: Array<string> = [];
-
-      errors.forEach((error: unknown) => {
-        if (isAWSError(error)) {
-          this.logger.error(error.code, error.stack);
-          message.push(error.message);
-        } else if (error instanceof Error) {
-          this.logger.error(error, error.stack);
-          message.push(error.message);
-        } else {
-          this.logger.error(error);
-          message.push((error as string)?.toString());
-        }
-      });
-
-      throw new ServiceUnavailableException(
-        `Can't upload on S3: ${message.join(', ')}`,
-      );
-    }
 
     return [returnFiles, count];
   }
