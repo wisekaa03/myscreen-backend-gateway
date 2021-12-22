@@ -7,14 +7,22 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsDate, IsUUID } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 import { OrderEntity } from '@/database/order.entity';
 import { PaymentEntity } from '@/database/payment.entity';
 
 @Entity('payment_log')
-export class PaymentLogsEntity {
+export class PaymentLogEntity {
   @PrimaryGeneratedColumn('uuid')
+  @ApiProperty({
+    description: 'Идентификатор',
+    example: '1234567',
+    format: 'uuid',
+  })
+  @IsUUID()
   id?: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -38,8 +46,20 @@ export class PaymentLogsEntity {
   log?: unknown;
 
   @CreateDateColumn()
+  @ApiProperty({
+    description: 'Время создания',
+    example: '2021-01-01T10:00:00.147Z',
+    required: true,
+  })
+  @IsDate()
   createdAt!: Date;
 
   @UpdateDateColumn()
+  @ApiProperty({
+    description: 'Время изменения',
+    example: '2021-01-01T10:00:00.147Z',
+    required: true,
+  })
+  @IsDate()
   updatedAt!: Date;
 }
