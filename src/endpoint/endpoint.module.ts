@@ -13,9 +13,9 @@ import { EditorController } from './editor.controller';
 import { FolderController } from './folder.controller';
 import { OrderController } from './order.controller';
 import { PaymentController } from './payment.controller';
+import { PaymentLogController } from './log.controller';
 import { UptimeController } from './uptime.controller';
 import { PlaylistController } from './playlist.controller';
-import { LogController } from './log.controller';
 
 @Module({
   imports: [
@@ -38,7 +38,7 @@ import { LogController } from './log.controller';
     PaymentController,
     UptimeController,
     PlaylistController,
-    LogController,
+    PaymentLogController,
   ],
 
   providers: [Logger],

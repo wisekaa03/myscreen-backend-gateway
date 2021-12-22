@@ -15,7 +15,7 @@ import { MonitorEntity } from './monitor.entity';
 import { MonitorService } from './monitor.service';
 import { OrderEntity } from './order.entity';
 import { OrderService } from './order.service';
-import { PaymentLogsEntity } from './payment-log.entity';
+import { PaymentLogEntity } from './payment-log.entity';
 import { PaymentEntity } from './payment.entity';
 import { PaymentService } from './payment.service';
 import { PlaylistEntity } from './playlist.entity';
@@ -43,7 +43,7 @@ import { RefreshTokenService } from './refreshtoken.service';
       FilePreviewEntity,
       MonitorEntity,
       OrderEntity,
-      PaymentLogsEntity,
+      PaymentLogEntity,
       PaymentEntity,
       PlaylistEntity,
       UptimeMonitoringEntity,
