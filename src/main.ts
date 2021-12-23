@@ -74,6 +74,9 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
       persistAuthorization: true,
     },
     customSiteTitle: description,
+    customCss:
+      // ".swagger-ui .topbar { display: none }",
+      ".swagger-ui .topbar img { content: url('/logo-44x40.png') } .swagger-ui .topbar a::after { margin-left: 10px; content: 'MyScreen' }",
   };
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   writeFile(
@@ -86,7 +89,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
   await app.listen(configService.get<number>('PORT', 3000));
-  logger.log(
+  logger.warn(
     `Server version ${version} started on ${await app.getUrl()}`,
     NestApplication.name,
   );
