@@ -1,4 +1,4 @@
-import { createReadStream } from 'node:fs';
+import { createReadStream, unlink } from 'node:fs';
 import { Readable } from 'node:stream';
 import { Response as ExpressResponse } from 'express';
 import { PromiseResult } from 'aws-sdk/lib/request';
@@ -228,6 +228,16 @@ export class FileService {
         }
         return results;
       }, [] as Array<FileEntity>),
+    );
+
+    files.forEach((file) =>
+      unlink(file.path, (err: NodeJS.ErrnoException | null) => {
+        if (err) {
+          this.logger.error(`${file.path} was NOT deleted: ${err}`);
+        } else {
+          this.logger.debug(`${file.path} was deleted`);
+        }
+      }),
     );
 
     return [returnFiles, count];
