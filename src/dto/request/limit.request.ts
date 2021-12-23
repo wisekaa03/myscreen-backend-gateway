@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, Max, Min } from 'class-validator';
+import { IsObject, Max, Min } from 'class-validator';
 
 export type LimitOrderDirection = 'ASC' | 'DESC';
 
@@ -31,6 +31,6 @@ export class LimitRequest<T = any> {
     example: { createdAt: 'DESC' },
     required: false,
   })
-  @IsArray()
+  @IsObject()
   order?: LimitOrderRequest<T>;
 }
