@@ -4668,10 +4668,10 @@ magic-string@0.25.7, magic-string@^0.25.7:
   dependencies:
     sourcemap-codec "^1.4.4"
 
-mailgun.js@^4.1.3:
-  version "4.1.3"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-4.1.3.tgz#e82d770916f39bd6fff20a7257cdb16c6b40bb51"
-  integrity sha512-WHaCQNQfAuQbYHPFdxPZU+FUstYulW5iZuVAoLtPUIN2K98l1/qws4Kv57g3/+y5pDxbWiLhE8yzfOYIOi07nw==
+mailgun.js@^4.1.4:
+  version "4.1.4"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-4.1.4.tgz#c209c2cd33f150801ac1df26e59e566e463ee468"
+  integrity sha512-ay56poetfErj/ftTZcRyyUv1eW+maQYAHdN0JYOSyTENhPJqm4N4SVGOwM6OTtFt0wBjdb8N9tPZaQLN7xOPwA==
   dependencies:
     base-64 "^1.0.0"
     bluebird "^3.7.2"
@@ -4907,13 +4907,13 @@ nest-winston@^1.6.2:
     cli-color "^2.0.1"
     fast-safe-stringify "^2.1.1"
 
-nestjs-mailgun@^2.0.14:
-  version "2.0.14"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.0.14.tgz#a6362b983288b08f358fb89f41fcb27a098a8965"
-  integrity sha512-usN1a27NI4KmZ/mu+wcp7gIS9Ogw2h1VGUh7ztUkoiMYDnZwkyeiqOUkLtouNVb/DU41R/6zt73+4h2lqc1BVg==
+nestjs-mailgun@^2.0.15:
+  version "2.0.15"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.0.15.tgz#395e8d46b5db358c5ecd8da1f1d26c0b17356aaf"
+  integrity sha512-Tj6sXwEDnFaBqZV6WJhW+EqrJ6K0G75vHi9Trk03dJ3k162I8ARdL6UjDxbHG3bVwjsqJLwI5Vlcq0jOsl+kBw==
   dependencies:
     form-data "^4.0.0"
-    mailgun.js "^4.1.3"
+    mailgun.js "^4.1.4"
     reflect-metadata "^0.1.13"
     rxjs "^7.4.0"
 

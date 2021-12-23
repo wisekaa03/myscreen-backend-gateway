@@ -2,38 +2,36 @@ import { Logger } from '@nestjs/common';
 import type { Logger as ITypeOrmLogger } from 'typeorm';
 
 export class TypeOrmLogger implements ITypeOrmLogger {
-  private readonly logger = new Logger(TypeOrmLogger.name);
+  private readonly logger = new Logger('TypeOrm');
 
   /**
    * Logs query and parameters used in it.
    */
-  logQuery(
+  logQuery = (
     message: string,
     param?: unknown[],
     // queryRunner?: QueryRunner,
-  ): void {
-    if (message !== 'SELECT 1' && this.logger.debug) {
-      let parameters: unknown[] | undefined;
-      if (Array.isArray(param) && param.length > 0) {
-        parameters = param.map((field) =>
-          typeof field === 'string' ? field.slice(0, 50) : field,
-        );
-      } else {
-        parameters = param;
-      }
-      this.logger.debug({ message, parameters });
+  ): void => {
+    let parameters: unknown[] | undefined;
+    if (Array.isArray(param) && param.length > 0) {
+      parameters = param.map((field) =>
+        typeof field === 'string' ? field.slice(0, 50) : field,
+      );
+    } else {
+      parameters = param;
     }
-  }
+    this.logger.debug({ message, parameters });
+  };
 
   /**
    * Logs query that is failed.
    */
-  logQueryError(
+  logQueryError = (
     error: string,
     message: string,
     param?: unknown[],
     // queryRunner?: QueryRunner,
-  ): void {
+  ): void => {
     let parameters: unknown[] | undefined;
     if (Array.isArray(param) && param.length > 0) {
       parameters = param.map((field) =>
@@ -47,55 +45,42 @@ export class TypeOrmLogger implements ITypeOrmLogger {
       error,
       parameters,
     });
-  }
+  };
 
   /**
    * Logs query that is slow.
    */
-  logQuerySlow(
+  logQuerySlow = (
     time: number,
     query: string,
     parameters?: unknown[],
     // queryRunner?: QueryRunner,
-  ): void {
-    if (this.logger.debug) {
-      this.logger.debug({ message: `Time is slow: ${time}`, parameters });
-    }
-  }
+  ): void =>
+    this.logger.debug({ message: `Time is slow: ${time}`, parameters });
 
   /**
    * Logs events from the schema build process.
    */
-  logSchemaBuild(message: string /* queryRunner?: QueryRunner */): void {
-    if (this.logger.debug) {
-      this.logger.debug({
-        message,
-      });
-    }
-  }
+  logSchemaBuild = (message: string /* queryRunner?: QueryRunner */): void =>
+    this.logger.debug({
+      message,
+    });
 
   /**
    * Logs events from the migrations run process.
    */
-  logMigration(message: string /* queryRunner?: QueryRunner */): void {
-    if (this.logger.debug) {
-      this.logger.debug({
-        message,
-      });
-    }
-  }
+  logMigration = (message: string /* queryRunner?: QueryRunner */): void =>
+    this.logger.debug({
+      message,
+    });
 
   /**
    * Perform logging using given logger, or by default to the console.
    * Log has its own level and message.
    */
-  log(
+  log = (
     level: 'log' | 'info' | 'warn',
     message: unknown,
     // queryRunner?: QueryRunner,
-  ): void {
-    if (this.logger.debug) {
-      this.logger.debug(message);
-    }
-  }
+  ): void => this.logger.debug(message);
 }
