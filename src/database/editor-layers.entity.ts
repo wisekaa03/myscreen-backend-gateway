@@ -83,7 +83,7 @@ export class EditorLayerEntity {
 
   @Column({ type: 'numeric' })
   @ApiProperty({
-    description: '', // TODO: непонятно
+    description: '', // DEBUG: непонятно
     example: '1',
     default: 1,
     required: true,

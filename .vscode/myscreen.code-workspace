@@ -1,0 +1,199 @@
+{
+  "folders": [
+    {
+      "path": ".."
+    }
+  ],
+  "settings": {
+    "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/*/**": true,
+      "**/dist/*/**": true,
+      "**/upload/*/**": true
+    },
+    "editor.bracketPairColorization.enabled": true,
+    "editor.guides.bracketPairs": "active",
+    // "editor.fontFamily": "Fira Code",
+    "editor.fontFamily": "Fira Code Retina",
+    "editor.fontLigatures": true,
+    // "editor.fontWeight": "300", // Light
+    "editor.fontWeight": "400", // Regular
+    // "editor.fontWeight": "500", // Medium
+    // "editor.fontWeight": "600", // Bold
+    "jest.debugMode": true,
+    "jest.showCoverageOnLoad": false,
+    // "jest.pathToJest": "yarn test",
+    // "jest.restartJestOnSnapshotUpdate": true,
+    "javascript.format.enable": false,
+    "typescript.format.enable": false,
+    "files.autoSave": "afterDelay",
+    "editor.formatOnSave": true,
+    "[html]": {
+      "editor.formatOnSave": false
+    },
+    "[md]": {
+      "editor.formatOnSave": false
+    },
+    "[yaml]": {
+      "editor.formatOnSave": false
+    },
+    "[javascript]": {
+      "editor.formatOnSave": false,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+      }
+    },
+    "[javascriptreact]": {
+      "editor.formatOnSave": false,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+      }
+    },
+    "[typescript]": {
+      "editor.formatOnSave": false,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+      }
+    },
+    "[typescriptreact]": {
+      "editor.formatOnSave": false,
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": true,
+      }
+    },
+    "prettier.packageManager": "yarn",
+    "code-runner.enableAppInsights": false,
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "less.lint.duplicateProperties": "warning",
+    "less.lint.float": "warning",
+    "eslint.enable": true,
+    "eslint.lintTask.enable": true,
+    "eslint.alwaysShowStatus": true,
+    "eslint.packageManager": "yarn",
+    "eslint.trace.server": "verbose",
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact"
+    ],
+    "editor.tabSize": 2,
+    "scss.lint.boxModel": "warning",
+    "scss.lint.compatibleVendorPrefixes": "warning",
+    "scss.lint.duplicateProperties": "warning",
+    "scss.lint.float": "warning",
+    "scss.lint.idSelector": "warning",
+    "scss.lint.ieHack": "warning",
+    "scss.lint.important": "warning",
+    "scss.lint.importStatement": "warning",
+    "scss.lint.universalSelector": "warning",
+    "scss.lint.unknownVendorSpecificProperties": "warning",
+    "scss.lint.zeroUnits": "warning",
+    "better-comments.tags": [
+      {
+        "tag": "!",
+        "color": "#FF2D00",
+        "strikethrough": false,
+        "backgroundColor": "transparent"
+      },
+      {
+        "tag": "?",
+        "color": "#3498DB",
+        "strikethrough": false,
+        "backgroundColor": "transparent"
+      },
+      {
+        "tag": "//",
+        "color": "#474747",
+        "strikethrough": true,
+        "backgroundColor": "transparent"
+      },
+      {
+        "tag": "todo",
+        "color": "#FF8C00",
+        "strikethrough": false,
+        "backgroundColor": "transparent"
+      },
+      {
+        "tag": "fixme",
+        "color": "#FFD666",
+        "strikethrough": false,
+        "backgroundColor": "transparent"
+      },
+      {
+        "tag": "debug",
+        "color": "#FFD666",
+        "strikethrough": false,
+        "backgroundColor": "transparent"
+      },
+      {
+        "tag": "eslint",
+        "color": "#FFD666",
+        "strikethrough": false,
+        "backgroundColor": "transparent"
+      },
+      {
+        "tag": "*",
+        "color": "#98C379",
+        "strikethrough": false,
+        "backgroundColor": "transparent"
+      }
+    ],
+    "todo-tree.highlights.customHighlight": {
+      "TODO": {
+        "icon": "issue-opened",
+        "foreground": "#FF8C00",
+        "iconColour": "#FF8C00"
+      },
+      "FIXME": {
+        "icon": "bug",
+        "foreground": "#FFD666",
+        "iconColour": "#FFD666"
+      },
+      "DEBUG": {
+        "icon": "bug",
+        "foreground": "#FFD666",
+        "iconColour": "#FFD666"
+      }
+    },
+    "todo-tree.highlights.defaultHighlight": {
+      "icon": "check",
+      "type": "line",
+      "foreground": "red",
+      "opacity": 99,
+      "iconColour": "#FF8C00"
+    },
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "todo-tree.general.tags": ["TODO","FIXME","BUG","DEBUG"],
+    "npm.packageManager": "yarn",
+    "debug.node.autoAttach": "onlyWithFlag",
+    "cSpell.language": "en,ru,en-GB,en-US",
+    "cSpell.allowCompoundWords": true,
+    "cSpell.enableFiletypes": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "json",
+      "yaml",
+      "yml",
+      "markdown",
+      "jsonc"
+    ],
+    "cSpell.ignorePaths": [
+      "**/package-lock.json",
+      "**/node_modules/**",
+      "**/vscode-extension/**",
+      "**/.git/objects/**",
+      ".vscode",
+      "**/yarn.lock"
+    ],
+    "stylelint.packageManager": "yarn",
+    "todo-tree.tree.showBadges": false,
+    "todo-tree.tree.disableCompactFolders": true,
+    "todo-tree.tree.showCountsInTree": true
+  }
+}

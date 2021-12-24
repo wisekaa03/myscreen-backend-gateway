@@ -91,7 +91,7 @@ export class EditorEntity {
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({
-    description: '', // TODO: непонятно
+    description: '', // DEBUG: непонятно
     type: 'boolean',
     example: true,
     required: true,
