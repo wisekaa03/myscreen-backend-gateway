@@ -52,6 +52,8 @@ module.exports = {
     '<rootDir>/coverage',
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
+    '<rootDir>/static/',
+    '<rootDir>/template/',
     '<rootDir>/test/',
     '<rootDir>/e2e/',
   ],
