@@ -195,7 +195,7 @@ describe('Backend API (e2e)', () => {
         .send({ email: 'foo@bar.baz' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(400));
 
     test('POST /auth/login [с пустым email] (Авторизация пользователя)', async () =>
       request
@@ -203,7 +203,7 @@ describe('Backend API (e2e)', () => {
         .send({ password: 'Secret~123456' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(401));
+        .expect(400));
 
     test('POST /auth/login [с неправильным паролем] (Авторизация пользователя)', async () =>
       request
@@ -295,7 +295,7 @@ describe('Backend API (e2e)', () => {
         .send({})
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(403));
+        .expect(400));
 
     test('POST /auth/refresh [success] (Обновление токена)', async () =>
       request
@@ -318,7 +318,7 @@ describe('Backend API (e2e)', () => {
         .send({})
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(403));
+        .expect(400));
 
     /**
      * Отправить на почту пользователю разрешение на смену пароля [succcess]
