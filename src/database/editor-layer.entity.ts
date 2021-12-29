@@ -97,14 +97,14 @@ export class EditorLayerEntity {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     cascade: true,
-    nullable: true,
+    nullable: false,
+    eager: true,
   })
   @JoinColumn()
   @ApiProperty({
     description: 'Файл',
     type: 'string',
     format: 'uuid',
-    isArray: true,
   })
   file!: FileEntity;
 

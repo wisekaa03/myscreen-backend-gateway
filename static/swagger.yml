@@ -633,6 +633,183 @@ paths:
         "503": *a20
       tags: *a21
       security: *a22
+  "/api/v2/editor/layer/{editorId}":
+    put:
+      operationId: editor-layer-create
+      summary: Создание слоя редактора
+      parameters:
+        - name: editorId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditorLayerCreateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EditorLayerGetResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+  "/api/v2/editor/layer/{editorId}/{layerId}":
+    get:
+      operationId: editor-layer-get
+      summary: Получение слоя редактора
+      parameters:
+        - name: editorId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: layerId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EditorLayerGetResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+    patch:
+      operationId: editor-layer-update
+      summary: Изменить слой редактора
+      parameters:
+        - name: editorId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: layerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditorLayerUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EditorLayerGetResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+    delete:
+      operationId: editor-layer-delete
+      summary: Удаление слоя редактора
+      parameters:
+        - name: editorId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: layerId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+  "/api/v2/editor/{editorId}/frame/{time}":
+    get:
+      operationId: editor-frame-get
+      summary: Получение кадра из редактора
+      parameters:
+        - name: editorId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: time
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            image/jpeg:
+              encoding:
+                image_jpeg:
+                  contentType: image/jpeg
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+  "/api/v2/editor/{editorId}/export":
+    get:
+      operationId: editor-export
+      summary: Экспорт видео из редактора
+      parameters:
+        - name: editorId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
   /api/v2/file:
     post:
       operationId: files-get
@@ -1455,7 +1632,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.3.12
+  version: 2.3.13
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2623,9 +2800,8 @@ components:
           example: 2021-01-01T10:00:00.147Z
         file:
           description: Файл
-          type: array
-          items:
-            $ref: "#/components/schemas/FileResponse"
+          allOf:
+            - $ref: "#/components/schemas/FileResponse"
       required:
         - id
         - index
@@ -2768,10 +2944,9 @@ components:
             - error
           example: success
         data:
-          description: Оплаты
-          type: array
-          items:
-            $ref: "#/components/schemas/EditorResponse"
+          description: Редактор
+          allOf:
+            - $ref: "#/components/schemas/EditorResponse"
       required:
         - status
         - data
@@ -2798,6 +2973,91 @@ components:
           type: boolean
           description: ""
           example: true
+    EditorLayerCreateRequest:
+      type: object
+      properties:
+        index:
+          type: number
+          description: Индекс файла
+          example: "3"
+        duration:
+          type: number
+          description: Длительность
+          example: "0"
+        cutFrom:
+          type: number
+          description: С какой секунды начать вырезать клип
+          example: "0"
+        cutTo:
+          type: number
+          description: До какой секунды вырезать клип
+          example: "0"
+        start:
+          type: number
+          description: С какой секунды начинать воспроизводить клип
+          example: "0"
+        mixVolume:
+          type: number
+          description: ""
+          example: "1"
+          default: 1
+        file:
+          type: string
+          description: Файл
+          format: uuid
+      required:
+        - index
+        - duration
+        - cutFrom
+        - cutTo
+        - start
+        - mixVolume
+        - file
+    EditorLayerGetResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Слой редактора
+          allOf:
+            - $ref: "#/components/schemas/EditorLayerResponse"
+      required:
+        - status
+        - data
+    EditorLayerUpdateRequest:
+      type: object
+      properties:
+        index:
+          type: number
+          description: Индекс файла
+          example: "3"
+        duration:
+          type: number
+          description: Длительность
+          example: "0"
+        cutFrom:
+          type: number
+          description: С какой секунды начать вырезать клип
+          example: "0"
+        cutTo:
+          type: number
+          description: До какой секунды вырезать клип
+          example: "0"
+        start:
+          type: number
+          description: С какой секунды начинать воспроизводить клип
+          example: "0"
+        mixVolume:
+          type: number
+          description: ""
+          example: "1"
+          default: 1
     FilePartialRequest:
       type: object
       properties:

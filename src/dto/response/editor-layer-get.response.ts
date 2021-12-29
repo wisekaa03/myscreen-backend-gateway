@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { EditorResponse } from './editor.response';
+import { EditorLayerResponse } from './editor-layer.response';
 
-export class EditorGetResponse {
+export class EditorLayerGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -13,9 +13,9 @@ export class EditorGetResponse {
   status!: Status.Success;
 
   @ApiProperty({
-    description: 'Редактор',
-    type: EditorResponse,
+    description: 'Слой редактора',
+    type: EditorLayerResponse,
     required: true,
   })
-  data!: EditorResponse;
+  data!: EditorLayerResponse;
 }

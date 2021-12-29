@@ -31,3 +31,4 @@ export * from './editor.response';
 export * from './editor-get.response';
 export * from './editors-get.response';
 export * from './editor-layer.response';
+export * from './editor-layer-get.response';

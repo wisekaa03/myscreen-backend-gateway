@@ -22,7 +22,7 @@ import {
 
 import { RenderingStatus } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
-import { EditorLayerEntity } from '@/database/editor-layers.entity';
+import { EditorLayerEntity } from '@/database/editor-layer.entity';
 
 @Entity('editor')
 export class EditorEntity {

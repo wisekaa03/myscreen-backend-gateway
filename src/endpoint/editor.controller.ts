@@ -8,6 +8,7 @@ import {
   HttpCode,
   Logger,
   NotFoundException,
+  NotImplementedException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -36,11 +37,19 @@ import {
   UnauthorizedError,
   SuccessResponse,
   EditorCreateRequest,
+  EditorLayerCreateRequest,
+  EditorLayerResponse,
+  EditorLayerGetResponse,
+  EditorLayerUpdateRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
-import { EditorService } from '@/database/editor.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { EditorService } from '@/database/editor.service';
+import { FileService } from '@/database/file.service';
+import { VideoType } from '@/enums';
+import { EditorLayerEntity } from '@/database/editor-layer.entity';
+import { FileEntity } from '@/database/file.entity';
 
 @ApiResponse({
   status: 400,
@@ -79,7 +88,10 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 export class EditorController {
   logger = new Logger(EditorController.name);
 
-  constructor(private readonly editorService: EditorService) {}
+  constructor(
+    private readonly editorService: EditorService,
+    private readonly fileService: FileService,
+  ) {}
 
   @Post('/')
   @HttpCode(200)
@@ -155,7 +167,7 @@ export class EditorController {
       },
     });
     if (!data) {
-      throw new NotFoundException('File not found');
+      throw new NotFoundException('Editor not found');
     }
     return {
       status: Status.Success,
@@ -230,5 +242,261 @@ export class EditorController {
     return {
       status: Status.Success,
     };
+  }
+
+  @Put('/layer/:editorId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'editor-layer-create',
+    summary: 'Создание слоя редактора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: EditorLayerGetResponse,
+  })
+  async createEditorLayer(
+    @Req() { user }: ExpressRequest,
+    @Param('editorId', ParseUUIDPipe) id: string,
+    @Body() body: EditorLayerCreateRequest,
+  ): Promise<EditorLayerGetResponse> {
+    const editor = await this.editorService.findOne({
+      where: { id, userId: user.id },
+    });
+    if (!editor) {
+      throw new NotFoundException(`The editor ${id} is not found`);
+    }
+
+    const file = await this.fileService.findOne({
+      where: { id: body.file, userId: user.id },
+    });
+    if (!file) {
+      throw new NotFoundException(`The file ${body.file} is not found`);
+    }
+
+    const update: Partial<EditorLayerEntity> = {
+      ...body,
+      file,
+    };
+
+    if (file.videoType === VideoType.Audio) {
+      update.audioLayers = [editor];
+    } else {
+      update.videoLayers = [editor];
+    }
+
+    const data = await this.editorService.updateLayer(user, id, update);
+    if (!data) {
+      throw new InternalServerError();
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Get('/layer/:editorId/:layerId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'editor-layer-get',
+    summary: 'Получение слоя редактора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: EditorLayerGetResponse,
+  })
+  async getEditorLayer(
+    @Req() { user }: ExpressRequest,
+    @Param('editorId', ParseUUIDPipe) id: string,
+    @Param('layerId', ParseUUIDPipe) layerId: string,
+  ): Promise<EditorLayerGetResponse> {
+    const editor = await this.editorService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+    });
+    if (!editor) {
+      throw new NotFoundException('Editor not found');
+    }
+
+    const editorLayer = await this.editorService.findOneLayer({
+      where: {
+        userId: user.id,
+        id: layerId,
+      },
+    });
+    if (!editorLayer) {
+      throw new InternalServerError();
+    }
+
+    return {
+      status: Status.Success,
+      data: editorLayer,
+    };
+  }
+
+  @Patch('/layer/:editorId/:layerId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'editor-layer-update',
+    summary: 'Изменить слой редактора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: EditorLayerGetResponse,
+  })
+  async updateEditorLayer(
+    @Req() { user }: ExpressRequest,
+    @Param('editorId', ParseUUIDPipe) id: string,
+    @Param('layerId', ParseUUIDPipe) layerId: string,
+    @Body() body: EditorLayerUpdateRequest,
+  ): Promise<EditorLayerGetResponse> {
+    const editor = await this.editorService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+    });
+    if (!editor) {
+      throw new NotFoundException('Editor not found');
+    }
+
+    const editorLayer = await this.editorService.findOneLayer({
+      where: {
+        userId: user.id,
+        id: layerId,
+      },
+    });
+    if (!editorLayer) {
+      throw new NotFoundException('Editor not found');
+    }
+
+    const update: Partial<EditorLayerEntity> = {
+      ...editorLayer,
+      ...body,
+    };
+
+    const data = await this.editorService.updateLayer(user, id, update);
+    if (!data) {
+      throw new InternalServerError();
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Delete('/layer/:editorId/:layerId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'editor-layer-delete',
+    summary: 'Удаление слоя редактора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deleteEditorLayer(
+    @Req() { user }: ExpressRequest,
+    @Param('editorId', ParseUUIDPipe) id: string,
+    @Param('layerId', ParseUUIDPipe) layerId: string,
+  ): Promise<SuccessResponse> {
+    const editor = await this.editorService.findOne({
+      where: { userId: user.id, id },
+    });
+    if (!editor) {
+      throw new NotFoundException(`Editor '${id}' is not found`);
+    }
+
+    const editorLayer = await this.editorService.findOneLayer({
+      where: { userId: user.id, id: layerId },
+    });
+    if (!editorLayer) {
+      throw new NotFoundException(`Editor layer '${layerId}' is not found`);
+    }
+
+    await this.editorService.deleteLayer(user, editorLayer);
+
+    return {
+      status: Status.Success,
+    };
+  }
+
+  @Get('/:editorId/frame/:time')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'editor-frame-get',
+    summary: 'Получение кадра из редактора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    content: {
+      'image/jpeg': {
+        encoding: {
+          image_jpeg: {
+            contentType: 'image/jpeg',
+          },
+        },
+      },
+    },
+  })
+  async getEditorFrame(
+    @Req() { user }: ExpressRequest,
+    @Param('editorId', ParseUUIDPipe) id: string,
+    @Param('time', ParseUUIDPipe) time: string,
+  ): Promise<EditorGetResponse> {
+    const data = await this.editorService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+    });
+    if (!data) {
+      throw new NotFoundException('Editor not found');
+    }
+
+    // TODO
+    throw new NotImplementedException();
+
+    // return {
+    //   status: Status.Success,
+    //   data,
+    // };
+  }
+
+  @Get('/:editorId/export')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'editor-export',
+    summary: 'Экспорт видео из редактора',
+  })
+  async getEditorExport(
+    @Req() { user }: ExpressRequest,
+    @Param('editorId', ParseUUIDPipe) id: string,
+  ): Promise<EditorGetResponse> {
+    const data = await this.editorService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+    });
+    if (!data) {
+      throw new NotFoundException('Editor not found');
+    }
+
+    // TODO
+    throw new NotImplementedException();
+
+    // return {
+    //   status: Status.Success,
+    //   data,
+    // };
   }
 }

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorEntity } from './editor.entity';
 import { EditorService } from './editor.service';
 
@@ -24,6 +25,10 @@ describe(EditorService.name, () => {
         EditorService,
         {
           provide: getRepositoryToken(EditorEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(EditorLayerEntity),
           useClass: mockRepository,
         },
       ],

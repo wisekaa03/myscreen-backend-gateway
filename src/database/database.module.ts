@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeOrmOptionsClass } from '@/shared/typeorm.options';
 import { MailModule } from '@/mail/mail.module';
 import { EditorEntity } from './editor.entity';
+import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorService } from './editor.service';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
@@ -38,6 +39,7 @@ import { RefreshTokenService } from './refreshtoken.service';
 
     TypeOrmModule.forFeature([
       EditorEntity,
+      EditorLayerEntity,
       FolderEntity,
       FileEntity,
       FilePreviewEntity,
