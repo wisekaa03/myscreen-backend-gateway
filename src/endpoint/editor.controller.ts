@@ -428,7 +428,7 @@ export class EditorController {
     };
   }
 
-  @Get('/:editorId/frame/:time')
+  @Get('/frame/:editorId/:time')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-frame-get',
@@ -471,11 +471,16 @@ export class EditorController {
     // };
   }
 
-  @Get('/:editorId/export')
+  @Get('/export/:editorId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-export',
     summary: 'Экспорт видео из редактора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: EditorGetResponse,
   })
   async getEditorExport(
     @Req() { user }: ExpressRequest,

@@ -758,7 +758,7 @@ paths:
         "503": *a20
       tags: *a21
       security: *a22
-  "/api/v2/editor/{editorId}/frame/{time}":
+  "/api/v2/editor/frame/{editorId}/{time}":
     get:
       operationId: editor-frame-get
       summary: Получение кадра из редактора
@@ -789,7 +789,7 @@ paths:
         "503": *a20
       tags: *a21
       security: *a22
-  "/api/v2/editor/{editorId}/export":
+  "/api/v2/editor/export/{editorId}":
     get:
       operationId: editor-export
       summary: Экспорт видео из редактора
@@ -801,7 +801,11 @@ paths:
             type: string
       responses:
         "200":
-          description: ""
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EditorGetResponse"
         "400": *a15
         "401": *a16
         "403": *a17
