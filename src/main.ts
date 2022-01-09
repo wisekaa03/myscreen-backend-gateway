@@ -10,9 +10,8 @@ import {
   type SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { WinstonModule } from 'nest-winston';
+import { Logger } from 'nestjs-pino';
 
-import { winstonOptions } from '@/shared/logger.options';
 import { version, author, homepage, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ExceptionsFilter } from './exception/exceptions.filter';
@@ -20,12 +19,12 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 (async () => {
   const configService = new ConfigService();
   const apiPath = configService.get<string>('API_PATH', '/api/v2');
-  const logger = WinstonModule.createLogger(winstonOptions(configService));
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger,
+    bufferLogs: true,
   });
   app.disable('x-powered-by');
+  const logger = app.get(Logger);
   const httpAdaper = app.get(HttpAdapterHost);
   app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
   app.setGlobalPrefix(apiPath);
@@ -60,7 +59,6 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .addTag('playlist', 'Плейлисты')
     .addTag('monitor', 'Мониторы')
     .addTag('editor', 'Редакторы')
-
     .addTag('order', 'Заказы')
     .addTag('payment', 'Оплата')
 
