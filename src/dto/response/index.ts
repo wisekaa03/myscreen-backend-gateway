@@ -32,3 +32,5 @@ export * from './editor-get.response';
 export * from './editors-get.response';
 export * from './editor-layer.response';
 export * from './editor-layer-get.response';
+export * from './editor-rendering-status.response';
+export * from './editor-get-rendering-status.response';

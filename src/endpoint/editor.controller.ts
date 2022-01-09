@@ -38,9 +38,9 @@ import {
   SuccessResponse,
   EditorCreateRequest,
   EditorLayerCreateRequest,
-  EditorLayerResponse,
   EditorLayerGetResponse,
   EditorLayerUpdateRequest,
+  EditorGetRenderingStatusResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -49,7 +49,6 @@ import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { VideoType } from '@/enums';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
-import { FileEntity } from '@/database/file.entity';
 
 @ApiResponse({
   status: 400,
@@ -428,7 +427,7 @@ export class EditorController {
     };
   }
 
-  @Get('/frame/:editorId/:time')
+  @Post('/frame/:editorId/:time')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-frame-get',
@@ -447,7 +446,7 @@ export class EditorController {
       },
     },
   })
-  async getEditorFrame(
+  async postEditorFrame(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Param('time', ParseUUIDPipe) time: string,
@@ -474,6 +473,38 @@ export class EditorController {
   @Get('/export/:editorId')
   @HttpCode(200)
   @ApiOperation({
+    operationId: 'editor-get-export',
+    summary: 'Узнать статус экспорта видео из редактора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: EditorGetRenderingStatusResponse,
+  })
+  async getEditorExportStatus(
+    @Req() { user }: ExpressRequest,
+    @Param('editorId', ParseUUIDPipe) id: string,
+  ): Promise<EditorGetRenderingStatusResponse> {
+    const data = await this.editorService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+      select: ['id', 'renderingStatus'],
+    });
+    if (!data) {
+      throw new NotFoundException('Editor not found');
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Post('/export/:editorId')
+  @HttpCode(200)
+  @ApiOperation({
     operationId: 'editor-export',
     summary: 'Экспорт видео из редактора',
   })
@@ -482,7 +513,7 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorGetResponse,
   })
-  async getEditorExport(
+  async postEditorExport(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
   ): Promise<EditorGetResponse> {
