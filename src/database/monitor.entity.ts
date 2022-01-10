@@ -71,9 +71,9 @@ export class MonitorEntity {
   @Column({ type: 'enum', enum: MonitorCategoryEnum })
   @ApiProperty({
     description: 'Категория',
-    type: MonitorCategoryEnum,
     enum: MonitorCategoryEnum,
     example: MonitorCategoryEnum.GAS_STATION,
+    required: true,
   })
   @IsEnum(MonitorCategoryEnum)
   category!: MonitorCategoryEnum;
@@ -90,7 +90,6 @@ export class MonitorEntity {
   @Column({ type: 'enum', enum: MonitorOrientation })
   @ApiProperty({
     description: 'Ориентация экрана',
-    type: MonitorOrientation,
     enum: MonitorOrientation,
     example: MonitorOrientation.Horizontal,
     required: true,
@@ -134,7 +133,6 @@ export class MonitorEntity {
   @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
   @ApiProperty({
     description: 'Подключен',
-    type: MonitorStatus,
     enum: MonitorStatus,
     example: MonitorStatus.Offline,
   })

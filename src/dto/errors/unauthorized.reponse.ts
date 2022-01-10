@@ -18,6 +18,7 @@ export class UnauthorizedError extends UnauthorizedException {
     enum: Status,
     example: Status.Error,
     description: 'Статус операции',
+    required: true,
   })
   status!: Status.Error;
 

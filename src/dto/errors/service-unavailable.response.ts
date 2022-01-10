@@ -18,6 +18,7 @@ export class ServiceUnavailableError extends ServiceUnavailableException {
     enum: Status,
     example: Status.Error,
     description: 'Статус операции',
+    required: true,
   })
   status!: Status.Error;
 

@@ -8,6 +8,7 @@ export class FolderGetResponse {
     description: 'Статус операции',
     enum: Status,
     example: Status.Success,
+    required: true,
   })
   status!: Status.Success;
 

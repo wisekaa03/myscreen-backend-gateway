@@ -18,17 +18,19 @@ export class InternalServerError extends InternalServerErrorException {
     enum: Status,
     example: Status.Error,
     description: 'Статус операции',
+    required: true,
   })
   status!: Status.Error;
 
-  @ApiProperty({ example: 500 })
+  @ApiProperty({ required: true, example: 500 })
   statusCode!: number;
 
-  @ApiProperty({ example: 'server-error.10000' })
+  @ApiProperty({ required: true, example: 'server-error.10000' })
   code!: string;
 
   @ApiProperty({
     example: 'Server error',
+    required: true,
   })
   message!: string;
 }

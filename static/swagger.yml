@@ -1660,7 +1660,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.3.17
+  version: 2.3.18
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -1856,15 +1856,13 @@ components:
           description: Компания
           example: ACME corporation
         role:
-          type: array
+          type: string
           description: Роль пользователя
-          example: advertiser
-          items:
+          enum:
             &a52
-            type: string
-            enum:
-              - monitor-owner
-              - advertiser
+            - monitor-owner
+            - advertiser
+          example: advertiser
         verified:
           type: boolean
           description: EMail подтвержден
@@ -1947,10 +1945,10 @@ components:
           description: Компания
           example: ACME corporation
         role:
-          type: array
+          type: string
           description: Роль пользователя
+          enum: *a52
           example: advertiser
-          items: *a52
     LoginRequest:
       type: object
       properties:
@@ -2058,10 +2056,10 @@ components:
           description: Компания
           example: ACME corporation
         role:
-          type: array
+          type: string
           description: Роль пользователя
+          enum: *a52
           example: advertiser
-          items: *a52
       required:
         - email
         - password

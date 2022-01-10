@@ -81,7 +81,6 @@ export class EditorEntity {
   })
   @ApiProperty({
     description: 'Статус рендеринга',
-    type: RenderingStatus,
     enum: RenderingStatus,
     example: RenderingStatus.Initial,
     required: true,

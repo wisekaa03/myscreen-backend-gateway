@@ -116,8 +116,8 @@ export class UserEntity {
   @ApiProperty({
     description: 'Роль пользователя',
     enum: UserRole,
-    type: UserRole,
     example: UserRoleEnum.Advertiser,
+    required: true,
   })
   @IsDefined()
   @IsNotEmpty()

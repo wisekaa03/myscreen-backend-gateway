@@ -18,16 +18,18 @@ export class BadRequestError extends BadRequestException {
     enum: Status,
     example: Status.Error,
     description: 'Статус операции',
+    required: true,
   })
   status!: Status.Error;
 
-  @ApiProperty({ example: 400 })
+  @ApiProperty({ required: true, example: 400 })
   statusCode!: number;
 
-  @ApiProperty({ example: 'server-error.10004' })
+  @ApiProperty({ required: true, example: 'server-error.10004' })
   code!: string;
 
   @ApiProperty({
+    required: true,
     example: 'Bad request',
   })
   message!: string;
