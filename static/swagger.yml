@@ -759,7 +759,7 @@ paths:
       tags: *a21
       security: *a22
   "/api/v2/editor/frame/{editorId}/{time}":
-    get:
+    post:
       operationId: editor-frame-get
       summary: Получение кадра из редактора
       parameters:
@@ -791,6 +791,30 @@ paths:
       security: *a22
   "/api/v2/editor/export/{editorId}":
     get:
+      operationId: editor-get-export
+      summary: Узнать статус экспорта видео из редактора
+      parameters:
+        - name: editorId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EditorGetRenderingStatusResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
+    post:
       operationId: editor-export
       summary: Экспорт видео из редактора
       parameters:
@@ -1636,7 +1660,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.3.15
+  version: 2.3.16
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3062,6 +3086,38 @@ components:
           description: ""
           example: "1"
           default: 1
+    EditorRenderingStatusResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор редактора
+          example: "12345678"
+        renderingStatus:
+          type: string
+          description: Статус рендеринга
+          enum: *a59
+          example: initial
+      required:
+        - id
+        - renderingStatus
+    EditorGetRenderingStatusResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: Статус операции
+          enum:
+            - success
+            - error
+          example: success
+        data:
+          description: Редактор
+          allOf:
+            - $ref: "#/components/schemas/EditorRenderingStatusResponse"
+      required:
+        - status
+        - data
     FilePartialRequest:
       type: object
       properties:
