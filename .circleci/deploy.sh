@@ -56,14 +56,14 @@ function deploy() {
     --include="dist/***" \
     --include="static/***" \
     --include="upload/***" \
-    --include="node_modules/***" \
+    --include="node_modules/*/*.js" \
     --include="*.js" \
     --include=".env" \
     --include="package.json" \
     --include="yarn.lock" \
     --exclude='*' \
-    --exclude="node_modules/***/*.map" \
-    --exclude="node_modules/typescript/***"
+    --exclude="node_modules/typescript/***" \
+    --exclude="node_modules/*/*.map"
 
   # Go-to dir
   SSH_COMMAND="cd $2 && "
