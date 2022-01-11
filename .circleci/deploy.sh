@@ -52,18 +52,18 @@ function load_env() {
 function deploy() {
   load_env
 
-  rsync -avz -e "${SSH_PARAMS}" "${PATH_CIRCLE}" circleci@"$1":"$2" --delete --exclude='tmp' \
+  rsync -avz -e "${SSH_PARAMS}" "${PATH_CIRCLE}" circleci@"$1":"$2" --delete \
     --include="dist/***" \
     --include="static/***" \
     --include="upload/***" \
-    --include="node_modules/**/*.js" \
+    --include="node_modules/***.js" \
     --include="*.js" \
     --include=".env" \
     --include="package.json" \
     --include="yarn.lock" \
     --exclude='*' \
     --exclude="node_modules/typescript/***" \
-    --exclude="node_modules/**/*.map"
+    --exclude="node_modules/***.map"
 
   # Go-to dir
   SSH_COMMAND="cd $2 && "
