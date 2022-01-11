@@ -63,9 +63,9 @@ function deploy() {
     --include="yarn.lock" \
     --exclude='*' \
     --exclude="node_modules/typescript/***" \
-    --exclude="node_modules/***/LICENSE" \
-    --exclude="node_modules/***/*.md" \
-    --exclude="node_modules/***/*.map"
+    --exclude="node_modules/**/LICENSE" \
+    --exclude="node_modules/**/*.md" \
+    --exclude="node_modules/**/*.map"
 
   # Go-to dir
   SSH_COMMAND="cd $2 && "
