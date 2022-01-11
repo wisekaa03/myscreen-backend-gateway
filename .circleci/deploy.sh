@@ -72,7 +72,7 @@ function deploy() {
   SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && '
 
   # Cleanup `tmp` folder
-  SSH_COMMAND+="find $(pwd)/upload -type f -atime +7 -delete && "
+  SSH_COMMAND+="find $2/upload -type f -atime +7 -delete && "
 
   # Run command
   SSH_COMMAND+="pm2 restart api --update-env"
