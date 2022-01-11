@@ -68,14 +68,14 @@ function deploy() {
   SSH_COMMAND="cd $2 && "
 
   # Copy the Yandex.Cloud certificate
-  SSH_COMMAND+="mkdir -p certs &&"
+  SSH_COMMAND+="mkdir -p certs && "
   SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && '
 
   # Cleanup `tmp` folder
-  SSH_COMMAND+="find $(pwd)/tmp -type -f -atime +7 -delete && "
+  SSH_COMMAND+="find $(pwd)/upload -type f -atime +7 -delete && "
 
   # Run command
-  SSH_COMMAND+="env $(cat .env) pm2 restart api --update-env"
+  SSH_COMMAND+="pm2 restart api --update-env"
 
   bash -c "$SSH_PARAMS -t circleci@$1 \"$SSH_COMMAND \""
 }
