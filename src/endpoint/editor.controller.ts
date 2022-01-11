@@ -11,6 +11,7 @@ import {
   NotImplementedException,
   Param,
   ParseUUIDPipe,
+  ParseIntPipe,
   Patch,
   Post,
   Put,
@@ -449,7 +450,7 @@ export class EditorController {
   async postEditorFrame(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
-    @Param('time', ParseUUIDPipe) time: string,
+    @Param('time', ParseIntPipe) time: number,
   ): Promise<EditorGetResponse> {
     const data = await this.editorService.findOne({
       where: {

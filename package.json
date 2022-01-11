@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.3.18",
+  "version": "2.3.19",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -35,6 +35,7 @@
   },
   "resolutions": {
     "**/**/debug": ">=4.3.3",
+    "**/**/dotenv": ">=11.0.0",
     "**/**/express": ">=4.17.2",
     "**/**/gl": ">=5.0.0",
     "**/**/ky": ">=0.25.1",
@@ -63,7 +64,7 @@
     "aws-sdk": "^2.1054.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
-    "dotenv": "^10.0.0",
+    "dotenv": "^11.0.0",
     "editly": "^0.11.3",
     "express": "^4.17.2",
     "ioredis": "^4.28.2",
@@ -83,7 +84,7 @@
     "pino-pretty": "^7.3.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.5.1",
+    "rxjs": "^7.5.2",
     "swagger-ui-express": "^4.3.0",
     "typeorm": "^0.2.41",
     "ws": "^8.4.0",
