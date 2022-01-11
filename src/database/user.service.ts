@@ -200,7 +200,7 @@ export class UserService {
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
-      user.password = password;
+      user.password = createHmac('sha256', password.normalize()).digest('hex');
       user.forgotConfirmKey = null;
 
       return this.userRepository.save(this.userRepository.create(user));

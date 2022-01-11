@@ -10,10 +10,11 @@ export = (opts: LoggerOptions) =>
       // levelLabel: string,
     ) => {
       let message: string;
+      const context = log.context || 'HTTP';
       if (!log[messageKey]) {
-        message = `[${log.context}]`;
+        message = `[${context}]`;
       } else {
-        message = `[${log.context}] ${log[messageKey]}`;
+        message = `[${context}] ${log[messageKey]}`;
       }
       // eslint-disable-next-line no-param-reassign
       delete log.context;

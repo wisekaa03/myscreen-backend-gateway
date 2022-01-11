@@ -23,12 +23,25 @@ import { decodeMailToken } from '@/shared/mail-token';
 export class AuthService {
   private logger = new Logger(AuthService.name);
 
+  private accessTokenExpires: string;
+
+  private refreshTokenExpires: string;
+
   constructor(
     private readonly userService: UserService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) {
+    this.accessTokenExpires = this.configService.get<string>(
+      'JWT_ACCESS_EXPIRES',
+      '10min',
+    );
+    this.refreshTokenExpires = this.configService.get<string>(
+      'JWT_REFRESH_EXPIRES',
+      '30days',
+    );
+  }
 
   async login(
     email: string,
@@ -81,7 +94,7 @@ export class AuthService {
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
       subject: String(user.id),
-      expiresIn: Number(this.configService.get('JWT_ACCESS_EXPIRES')),
+      expiresIn: this.accessTokenExpires,
     };
 
     return this.jwtService.signAsync({}, opts);
@@ -95,7 +108,7 @@ export class AuthService {
 
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
-      expiresIn: this.configService.get('JWT_REFRESH_EXPIRES'),
+      expiresIn: this.refreshTokenExpires,
       subject: String(user.id),
       jwtid: String(token.id),
     };

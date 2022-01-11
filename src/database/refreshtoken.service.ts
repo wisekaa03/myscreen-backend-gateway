@@ -1,3 +1,4 @@
+import ms from 'ms';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -28,7 +29,8 @@ export class RefreshTokenService {
     fingerprint?: string,
   ): Promise<RefreshTokenEntity> {
     const expires = new Date(
-      Date.now() + Number(this.configService.get('JWT_REFRESH_EXPIRES')) * 1000,
+      Date.now() +
+        ms(this.configService.get<string>('JWT_REFRESH_EXPIRES', '30days')),
     );
 
     const token: DeepPartial<RefreshTokenEntity> = {
