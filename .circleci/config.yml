@@ -56,16 +56,8 @@ workflows:
   build-test-install-deploy-test:
     jobs:
       - build-test-install-deploy:
-          context: myscreen-test
-  #         filters:
-  #           branches:
-  #             only:
-  #               - development
-  # build-test-install-deploy-prod:
-  #   jobs:
-  #     - build-test-install-deploy:
-  #         context: myscreen-prod
-  #         filters:
-  #           branches:
-  #             only:
-  #               - master
+          context: myscreen-dev
+#          filters:
+#            branches:
+#              only:
+#                - master

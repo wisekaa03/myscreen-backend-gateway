@@ -79,12 +79,8 @@ function deploy() {
   bash -c "$SSH_PARAMS -t circleci@$1 \"$SSH_COMMAND \""
 }
 
-if [ "${CIRCLE_BRANCH}" == "master" ]; then
-  deploy "62.84.118.81" "/var/www/api-backend"
-fi
-
 # if [ "${CIRCLE_BRANCH}" == "development" ]; then
-#   deploy "62.84.118.81" "/var/www/api-backend"
+deploy "62.84.118.81" "/var/www/api-backend"
 # fi
 
 # TODO: Temporarily run same IP from master
