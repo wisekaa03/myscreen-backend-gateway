@@ -53,8 +53,10 @@ function deploy() {
   load_env
 
   rsync -avz -e "${SSH_PARAMS}" "${PATH_CIRCLE}" circleci@"$1":"$2" --delete \
-    --exclude="node_modules/typescript/***" \
     --exclude="node_modules/**/LICENSE" \
+    --exclude="node_modules/**/license" \
+    --exclude="node_modules/**/LICENSE.txt" \
+    --exclude="node_modules/**/*.lock" \
     --exclude="node_modules/**.ts" \
     --exclude="node_modules/**.md" \
     --exclude="node_modules/**.map" \
