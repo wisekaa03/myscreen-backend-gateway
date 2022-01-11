@@ -71,13 +71,13 @@ function deploy() {
   SSH_COMMAND+="mkdir -p certs && "
   SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && '
 
-  # Cleanup `tmp` folder
+  # Cleanup `upload` folder
   SSH_COMMAND+="find $2/upload -type f -atime +7 -delete && "
 
   # Run command
   SSH_COMMAND+="pm2 restart api --update-env"
 
-  bash -c "$SSH_PARAMS -t circleci@$1 \"$SSH_COMMAND \""
+  bash -c "$SSH_PARAMS -t circleci@$1 \"$SSH_COMMAND\""
 }
 
 # if [ "${CIRCLE_BRANCH}" == "development" ]; then

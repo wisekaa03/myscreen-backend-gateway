@@ -21,7 +21,7 @@ import { EndpointModule } from '@/endpoint/endpoint.module';
               {
                 target: `${__dirname}/shared/pino-pretty.js`,
                 options: {
-                  colorize: true,
+                  colorize: process.env.NODE_END !== 'production',
                   translateTime: 'yyyy-mm-dd HH:MM:ss',
                   singleLine: true,
                   ignore: 'pid,hostname',

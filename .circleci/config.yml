@@ -41,6 +41,7 @@ jobs:
       # run tests!
       - run: yarn lint
       # - run: yarn test
+      # build
       - run: yarn build
 
       - deploy:
