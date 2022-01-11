@@ -31,7 +31,7 @@ jobs:
           keys:
             - v1-dependencies-{{ .Branch }}-{{ checksum "yarn.lock" }}
 
-      - run: yarn --frozen-lockfile
+      - run: yarn install --frozen-lockfile
 
       - save_cache:
           paths:
@@ -41,8 +41,21 @@ jobs:
       # run tests!
       - run: yarn lint
       # - run: yarn test
+
       # build
       - run: yarn build
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-install-{{ .Branch }}-{{ checksum "yarn.lock" }}
+
+      - run: yarn install --production=true --frozen-lockfile
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-install-{{ .Branch }}-{{ checksum "yarn.lock" }}
 
       - deploy:
           command: ~/project/myscreen/api-backend/.circleci/deploy.sh
