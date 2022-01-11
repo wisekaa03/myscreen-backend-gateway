@@ -53,11 +53,12 @@ function deploy() {
   load_env
 
   rsync -avz -e "${SSH_PARAMS}" "${PATH_CIRCLE}" circleci@"$1":"$2" --delete \
-    --include="dist/***" \
+    --include="*.js" \
+    --include="dist/***.js" \
+    --include="dist/***.json" \
     --include="static/***" \
     --include="upload/***" \
-    --include="node_modules/***.js" \
-    --include="*.js" \
+    --include="node_modules/***" \
     --include=".env" \
     --include="package.json" \
     --include="yarn.lock" \
