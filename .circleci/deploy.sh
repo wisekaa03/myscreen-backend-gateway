@@ -55,6 +55,7 @@ function deploy() {
   rsync -avz -e "${SSH_PARAMS}" "${PATH_CIRCLE}" circleci@"$1":"$2" --delete \
     --exclude="node_modules/typescript/***" \
     --exclude="node_modules/**/LICENSE" \
+    --exclude="node_modules/**.ts" \
     --exclude="node_modules/**.md" \
     --exclude="node_modules/**.map" \
     --include="dist/***" \
