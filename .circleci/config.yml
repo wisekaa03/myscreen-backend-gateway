@@ -41,6 +41,7 @@ jobs:
       # run tests!
       - run: yarn lint
       # - run: yarn test
+      - run: yarn build
 
       - deploy:
           command: ~/project/myscreen/api-backend/.circleci/deploy.sh

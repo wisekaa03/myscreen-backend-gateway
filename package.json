@@ -12,6 +12,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist",
+    "pm2-start": "env $(cat .env) pm2 start --name \"api\" \"xvfb-run yarn start:prod\"",
     "build": "NODE_ENV=production nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
