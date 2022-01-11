@@ -23,6 +23,7 @@ function load_env() {
   echo "DB_DATABASE=$POSTGRES_DB" >>.env
   echo "DB_USERNAME=$POSTGRES_USERNAME" >>.env
   echo "DB_PASSWORD=$POSTGRES_PASSWORD" >>.env
+  echo "DB_PORT=$POSTGRES_PORT" >>.env
   echo "DB_HOST=$POSTGRES_HOST" >>.env
 
   # JWT Credentials
