@@ -45,6 +45,9 @@ jobs:
       # build
       - run: yarn build
 
+      # rm -rf
+      - run: rm -rf node_modules/
+
       # Download and cache dependencies
       - restore_cache:
           keys:
