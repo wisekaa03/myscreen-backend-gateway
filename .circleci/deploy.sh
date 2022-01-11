@@ -58,6 +58,8 @@ function deploy() {
     --exclude="node_modules/**.ts" \
     --exclude="node_modules/**.md" \
     --exclude="node_modules/**.map" \
+    --exclude="dist/**.ts" \
+    --exclude="dist/**.map" \
     --include="dist/***" \
     --include="static/***" \
     --include="upload/***" \
