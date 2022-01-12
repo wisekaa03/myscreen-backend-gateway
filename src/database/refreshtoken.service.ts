@@ -27,14 +27,25 @@ export class RefreshTokenService {
   async create(
     user: UserEntity,
     fingerprint?: string,
+    refreshToken?: string,
   ): Promise<RefreshTokenEntity> {
     const expires = new Date(
       Date.now() +
         ms(this.configService.get<string>('JWT_REFRESH_EXPIRES', '30days')),
     );
 
+    const refreshTokenExist = await this.refreshTokenEntity.findOne({
+      where: {
+        userId: user.id,
+        fingerprint,
+        isRevoked: false,
+        expires: MoreThan(new Date(Date.now())),
+      },
+    });
+
     const token: DeepPartial<RefreshTokenEntity> = {
-      user,
+      ...refreshTokenExist,
+      userId: user.id,
       isRevoked: false,
       fingerprint,
       expires,

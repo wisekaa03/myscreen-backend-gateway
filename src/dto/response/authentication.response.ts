@@ -19,7 +19,7 @@ export class AuthenticationPayload {
     description: 'Refresh токен, используемый для запросов /api/v2/refresh',
     example: 'exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx',
   })
-  refresh_token?: string;
+  refreshToken?: string;
 }
 
 export class AuthResponse {
@@ -34,12 +34,31 @@ export class AuthResponse {
   @ApiProperty({
     description: 'Возвращаемый токен',
     type: AuthenticationPayload,
+    required: true,
   })
-  payload?: AuthenticationPayload;
+  payload!: AuthenticationPayload;
 
   @ApiProperty({
     description: 'Пользователь',
     type: UserResponse,
+    required: true,
   })
   data!: Partial<UserEntity> & Partial<UserSizeEntity>;
+}
+
+export class AuthRefreshResponse {
+  @ApiProperty({
+    description: 'Статус операции',
+    enum: Status,
+    example: Status.Success,
+    required: true,
+  })
+  status!: Status.Success;
+
+  @ApiProperty({
+    description: 'Возвращаемый токен',
+    type: AuthenticationPayload,
+    required: true,
+  })
+  payload!: AuthenticationPayload;
 }

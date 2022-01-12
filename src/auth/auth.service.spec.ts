@@ -69,7 +69,7 @@ describe(AuthService.name, () => {
     const login = await authService.login(email, password);
     expect(login).toEqual([
       user,
-      { refresh_token: token, token, type: 'bearer' },
+      { refreshToken: token, token, type: 'bearer' },
     ]);
   });
 

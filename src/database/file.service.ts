@@ -20,7 +20,7 @@ import {
   TransactionRepository,
 } from 'typeorm';
 
-import { isAWSError } from '@/shared/is-aws-error';
+// import { isAWSError } from '@/shared/is-aws-error';
 import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
@@ -45,7 +45,7 @@ export class FileService {
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
   ) {
-    this.bucket = configService.get('AWS_BUCKET', 'myscreen-media');
+    this.bucket = configService.get<string>('AWS_BUCKET', 'myscreen-media');
   }
 
   /**
@@ -243,6 +243,18 @@ export class FileService {
     return [returnFiles, count];
   }
 
+  getS3Object = (
+    file: FileEntity,
+  ): AWS.Request<AWS.S3.GetObjectOutput, AWS.AWSError> =>
+    this.s3Service
+      .getObject({
+        Bucket: this.bucket,
+        Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
+      })
+      .on('error', (error) => {
+        this.logger.error(error, FileService.name);
+      });
+
   /**
    * Get file from S3
    * @async
@@ -262,12 +274,7 @@ export class FileService {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
 
-    const Key = `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`;
-    return this.s3Service
-      .getObject({
-        Bucket: this.bucket,
-        Key,
-      })
+    return this.getS3Object(file)
       .on(
         'httpHeaders',
         (
@@ -288,9 +295,6 @@ export class FileService {
           }
         },
       )
-      .on('error', (error) => {
-        this.logger.error(error, FileService.name);
-      })
       .promise();
   }
 

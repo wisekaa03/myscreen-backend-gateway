@@ -26,13 +26,13 @@ import {
   ServiceUnavailableError,
   LoginRequest,
   UserUpdateRequest,
-  RefreshTokenRequest,
   RegisterRequest,
   VerifyEmailRequest,
   ResetPasswordInvitationRequest,
   ResetPasswordVerifyRequest,
-  RefreshTokenResponse,
+  AuthRefreshRequest,
   AuthResponse,
+  AuthRefreshResponse,
   SuccessResponse,
   userEntityToUser,
   UserGetResponse,
@@ -143,7 +143,7 @@ export class AuthController {
     @Body() { email, password }: LoginRequest,
   ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
-    const fingerprint = req?.hostname;
+    const fingerprint = req?.ip;
 
     const [data, payload] = await this.authService.login(
       email,
@@ -184,18 +184,23 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: RefreshTokenResponse,
+    type: AuthRefreshResponse,
   })
   async refresh(
-    @Body() { refresh_token }: RefreshTokenRequest,
-  ): Promise<RefreshTokenResponse> {
-    const token = await this.authService.createAccessTokenFromRefreshToken(
-      refresh_token,
+    @Req() req: ExpressRequest,
+    @Body() { refreshToken }: AuthRefreshRequest,
+  ): Promise<AuthRefreshResponse> {
+    // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
+    const fingerprint = req?.ip;
+
+    const payload = await this.authService.createAccessTokenFromRefreshToken(
+      refreshToken,
+      fingerprint,
     );
 
     return {
       status: Status.Success,
-      token,
+      payload,
     };
   }
 
@@ -211,9 +216,9 @@ export class AuthController {
     type: SuccessResponse,
   })
   async verifyEmail(
-    @Body() { verify_email }: VerifyEmailRequest,
+    @Body() { verify }: VerifyEmailRequest,
   ): Promise<SuccessResponse> {
-    await this.authService.verifyEmail(verify_email);
+    await this.authService.verifyEmail(verify);
 
     return {
       status: Status.Success,
@@ -253,9 +258,9 @@ export class AuthController {
     type: SuccessResponse,
   })
   async resetPasswordVerify(
-    @Body() { verify_code, password }: ResetPasswordVerifyRequest,
+    @Body() { verify, password }: ResetPasswordVerifyRequest,
   ): Promise<SuccessResponse> {
-    await this.userService.forgotPasswordVerify(verify_code, password);
+    await this.userService.forgotPasswordVerify(verify, password);
 
     return {
       status: Status.Success,

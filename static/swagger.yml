@@ -136,14 +136,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RefreshTokenRequest"
+              $ref: "#/components/schemas/AuthRefreshRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RefreshTokenResponse"
+                $ref: "#/components/schemas/AuthRefreshResponse"
         "400": *a1
         "401": *a2
         "412": *a3
@@ -1660,7 +1660,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.3.21
+  version: 2.3.22
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -1980,14 +1980,14 @@ components:
           type: string
           description: "Токен, используемый в Authorization: Bearer"
           example: eyJcbGciOcJIUcI1xxxxxxxxxxxxxxxx
-        refresh_token:
+        refreshToken:
           type: string
           description: Refresh токен, используемый для запросов /api/v2/refresh
           example: exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx
       required:
         - type
         - token
-        - refresh_token
+        - refreshToken
     AuthResponse:
       type: object
       properties:
@@ -2064,16 +2064,16 @@ components:
         - email
         - password
         - role
-    RefreshTokenRequest:
+    AuthRefreshRequest:
       type: object
       properties:
-        refresh_token:
+        refreshToken:
           type: string
           description: Refresh токен, используемый для запросов /api/v2/refresh
           example: exJxcGxiOxJIxzIxNixsIxR5cxxxxxxxxxxx.E9jKilfGxxxxxxxxxxxxx
       required:
-        - refresh_token
-    RefreshTokenResponse:
+        - refreshToken
+    AuthRefreshResponse:
       type: object
       properties:
         status:
@@ -2083,21 +2083,21 @@ components:
             - success
             - error
           example: success
-        token:
-          type: string
-          description: "Токен, используемый в Authorization: Bearer"
-          example: eyJcbGciOcJIUcI1xxxxxxxxxxxxxxxx
+        payload:
+          description: Возвращаемый токен
+          allOf:
+            - $ref: "#/components/schemas/AuthenticationPayload"
       required:
         - status
-        - token
+        - payload
     VerifyEmailRequest:
       type: object
       properties:
-        verify_email:
+        verify:
           type: string
           example: j481y1b
       required:
-        - verify_email
+        - verify
     SuccessResponse:
       type: object
       properties:
@@ -2123,14 +2123,14 @@ components:
     ResetPasswordVerifyRequest:
       type: object
       properties:
-        verify_code:
+        verify:
           type: string
           example: j481y1b
         password:
           type: string
           example: Secret~12345678
       required:
-        - verify_code
+        - verify
         - password
     ForbiddenError:
       type: object

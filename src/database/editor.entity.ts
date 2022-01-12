@@ -121,7 +121,7 @@ export class EditorEntity {
     format: 'uuid',
     isArray: true,
   })
-  videoLayers?: EditorLayerEntity[];
+  videoLayers!: EditorLayerEntity[];
 
   @ManyToMany(() => EditorLayerEntity, (layer) => layer.audioLayers, {
     onUpdate: 'CASCADE',
@@ -136,7 +136,7 @@ export class EditorEntity {
     format: 'uuid',
     isArray: true,
   })
-  audioLayers?: EditorLayerEntity[];
+  audioLayers!: EditorLayerEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
@@ -147,7 +147,7 @@ export class EditorEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column({ nullable: true })
+  @Column()
   @IsUUID()
   userId!: string;
 

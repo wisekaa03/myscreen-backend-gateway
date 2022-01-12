@@ -78,14 +78,14 @@ export class AuthService {
 
   private buildResponsePayload(
     token: string,
-    refresh_token?: string,
+    refreshToken?: string,
   ): AuthenticationPayload {
     const payload: AuthenticationPayload = {
       type: 'bearer',
       token,
     };
-    if (refresh_token) {
-      payload.refresh_token = refresh_token;
+    if (refreshToken) {
+      payload.refreshToken = refreshToken;
     }
     return payload;
   }
@@ -103,14 +103,19 @@ export class AuthService {
   async generateRefreshToken(
     user: UserEntity,
     fingerprint?: string,
+    refreshToken?: string,
   ): Promise<string> {
-    const token = await this.refreshTokenService.create(user, fingerprint);
+    const refreshTokenUpdated = await this.refreshTokenService.create(
+      user,
+      fingerprint,
+      refreshToken,
+    );
 
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
       expiresIn: this.refreshTokenExpires,
       subject: String(user.id),
-      jwtid: String(token.id),
+      jwtid: String(refreshTokenUpdated.id),
     };
 
     return this.jwtService.signAsync({}, opts);
@@ -135,14 +140,22 @@ export class AuthService {
     return user;
   }
 
-  async createAccessTokenFromRefreshToken(refresh: string): Promise<string> {
-    const user = await this.resolveRefreshToken(refresh);
+  async createAccessTokenFromRefreshToken(
+    refreshToken: string,
+    fingerprint: string,
+  ): Promise<AuthenticationPayload> {
+    const user = await this.resolveRefreshToken(refreshToken);
     if (user.disabled) {
       this.logger.warn(`User '${user.email}' is disabled`);
       throw new ForbiddenException(`User '${user.email}' is disabled`);
     }
 
-    return this.generateAccessToken(user);
+    const [token, refreshTokenUpdated] = await Promise.all([
+      this.generateAccessToken(user),
+      this.generateRefreshToken(user, fingerprint, refreshToken),
+    ]);
+
+    return this.buildResponsePayload(token, refreshTokenUpdated);
   }
 
   private async decodeRefreshToken(token: string): Promise<MyscreenJwtPayload> {

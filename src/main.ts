@@ -22,6 +22,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
+    cors: true,
   });
   app.disable('x-powered-by');
   const logger = app.get(Logger);

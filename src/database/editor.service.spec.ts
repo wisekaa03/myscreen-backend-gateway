@@ -1,8 +1,10 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorEntity } from './editor.entity';
 import { EditorService } from './editor.service';
+import { FileService } from './file.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -23,6 +25,11 @@ describe(EditorService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EditorService,
+        ConfigService,
+        {
+          provide: FileService,
+          useClass: mockRepository,
+        },
         {
           provide: getRepositoryToken(EditorEntity),
           useClass: mockRepository,

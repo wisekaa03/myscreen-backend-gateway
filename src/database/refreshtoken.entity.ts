@@ -3,12 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate } from 'class-validator';
+import { IsDate, IsUUID } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 
 @Entity('refresh_token')
@@ -23,7 +24,12 @@ export class RefreshTokenEntity {
     cascade: true,
     eager: false,
   })
+  @JoinColumn()
   user!: UserEntity;
+
+  @Column()
+  @IsUUID()
+  userId!: string;
 
   @Column({ type: 'boolean' })
   isRevoked!: boolean;

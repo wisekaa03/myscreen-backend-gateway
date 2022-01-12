@@ -11,7 +11,7 @@ export class ResetPasswordVerifyRequest {
   @ApiProperty({ example: 'j481y1b' })
   @IsDefined()
   @IsNotEmpty()
-  verify_code!: string;
+  verify!: string;
 
   @ApiProperty({ example: 'Secret~12345678' })
   @IsDefined()
