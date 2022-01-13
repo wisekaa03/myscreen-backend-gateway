@@ -518,22 +518,22 @@ export class EditorController {
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
   ): Promise<EditorGetResponse> {
-    const data = await this.editorService.findOne({
+    const editor = await this.editorService.findOne({
       where: {
         userId: user.id,
         id,
       },
+      relations: ['videoLayers', 'audioLayers'],
     });
-    if (!data) {
+    if (!editor) {
       throw new NotFoundException('Editor not found');
     }
 
-    // TODO
-    throw new NotImplementedException();
+    const data = await this.editorService.export(editor);
 
-    // return {
-    //   status: Status.Success,
-    //   data,
-    // };
+    return {
+      status: Status.Success,
+      data,
+    };
   }
 }

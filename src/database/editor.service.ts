@@ -21,8 +21,9 @@ import {
   FindManyOptions,
   Repository,
 } from 'typeorm';
-import editly, { VideoLayer } from 'editly';
+import editly from 'editly';
 
+import { RenderingStatus } from '@/enums';
 import { UserEntity } from './user.entity';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
@@ -309,5 +310,37 @@ export class EditorService {
     return createReadStream(outPath).on('end', () => {
       fs.unlink(outPath);
     });
+  }
+
+  async export(editor: EditorEntity): Promise<EditorEntity> {
+    const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
+    editlyConfig.outPath = path.resolve(mkdirPath, 'out.mp4');
+
+    try {
+      const editorUpdated = await this.editorRepository.save(
+        this.editorRepository.create({
+          ...editor,
+          totalDuration: this.calculateDuration(editor.videoLayers),
+          renderingStatus: RenderingStatus.Pending,
+        }),
+      );
+
+      (async () => {
+        // eslint-disable-next-line no-debugger
+        debugger;
+
+        // TODO
+      })();
+
+      return editorUpdated;
+    } catch (error) {
+      this.editorRepository.save(
+        this.editorRepository.create({
+          ...editor,
+          renderingStatus: RenderingStatus.Error,
+        }),
+      );
+      throw new NotAcceptableException(error);
+    }
   }
 }
