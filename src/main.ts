@@ -28,7 +28,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
         'https://cp.dev.myscreen.ru',
         'https://api.myscreen.ru',
         'https://api.dev.myscreen.ru',
-        'http://localhost',
+        'http://localhost:3000',
       ],
       credentials: true,
     },
