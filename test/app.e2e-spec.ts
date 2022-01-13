@@ -1,19 +1,20 @@
 /* eslint max-len:0 */
-import { readFileSync } from 'fs';
+import { readFileSync } from 'node:fs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 // import { ConfigService } from '@nestjs/config';
 // import { WinstonModule } from 'nest-winston';
 import superAgentRequest from 'supertest';
+import { LoggerModule } from 'nestjs-pino';
 
 import {
   AuthResponse,
   RegisterRequest,
+  AuthRefreshResponse,
   LoginRequest,
   UserUpdateRequest,
   SuccessResponse,
-  RefreshTokenResponse,
   FoldersGetResponse,
   FolderGetResponse,
   FilesGetResponse,
@@ -29,6 +30,18 @@ import { UserRoleEnum } from '@/enums/role.enum';
 import { UserEntity } from '@/database/user.entity';
 import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
+
+export const mockRepository = jest.fn(() => ({
+  findOne: async () => Promise.resolve([]),
+  findAndCount: async () => Promise.resolve([]),
+  save: async () => Promise.resolve([]),
+  create: () => [],
+  remove: async () => Promise.resolve([]),
+  metadata: {
+    columns: [],
+    relations: [],
+  },
+}));
 
 const registerRequest: RegisterRequest = {
   email: 'foo@bar.baz', // 'wisekaa03@gmail.com',
@@ -68,6 +81,12 @@ describe('Backend API (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
+      providers: [
+        {
+          provide: LoggerModule,
+          useClass: mockRepository,
+        },
+      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
@@ -235,10 +254,10 @@ describe('Backend API (e2e)', () => {
           expect(body.payload?.type).toBe('bearer');
           expect(body.data?.id).toBe(userId);
           expect(body.payload?.token).toBeDefined();
-          expect(body.payload?.refresh_token).toBeDefined();
+          expect(body.payload?.refreshToken).toBeDefined();
           expect((body.data as any).password).toBeUndefined();
           token = body.payload?.token ?? '';
-          refreshToken = body.payload?.refresh_token ?? '';
+          refreshToken = body.payload?.refreshToken ?? '';
         }));
 
     /**
@@ -304,9 +323,9 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
-        .then(({ body }: { body: RefreshTokenResponse }) => {
-          expect(body.token).toBeDefined();
-          token = body.token ?? '';
+        .then(({ body }: { body: AuthRefreshResponse }) => {
+          expect(body.payload.token).toBeDefined();
+          token = body.payload.token ?? '';
         }));
 
     /**

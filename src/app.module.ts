@@ -19,9 +19,12 @@ import { EndpointModule } from '@/endpoint/endpoint.module';
           transport: {
             targets: [
               {
-                target: `${__dirname}/shared/pino-pretty.js`,
+                target:
+                  process.env.NODE_ENV === 'test'
+                    ? 'pino-pretty'
+                    : `${__dirname}/shared/pino-pretty.js`,
                 options: {
-                  colorize: process.env.NODE_END !== 'production',
+                  colorize: process.env.NODE_ENV !== 'production',
                   translateTime: 'yyyy-mm-dd HH:MM:ss',
                   singleLine: true,
                   ignore: 'pid,hostname',

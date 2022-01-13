@@ -5634,15 +5634,15 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^2.0.15:
-  version "2.0.15"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.0.15.tgz#395e8d46b5db358c5ecd8da1f1d26c0b17356aaf"
-  integrity sha512-Tj6sXwEDnFaBqZV6WJhW+EqrJ6K0G75vHi9Trk03dJ3k162I8ARdL6UjDxbHG3bVwjsqJLwI5Vlcq0jOsl+kBw==
+nestjs-mailgun@^2.0.18:
+  version "2.0.18"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.0.18.tgz#50d7cb50ed99b891a7c15851267c5c5b694b5633"
+  integrity sha512-/NW12vrXkJJuOWeBg8Cl+5Eh7PBEcghqeJFL+5qtL5gdcLN5Xm1N7UOXGzP+LwjAnjlQBRJvqybBL7h4S8XVkg==
   dependencies:
     form-data "^4.0.0"
     mailgun.js "^4.1.4"
     reflect-metadata "^0.1.13"
-    rxjs "^7.4.0"
+    rxjs "^7.5.2"
 
 nestjs-pino@^2.4.0:
   version "2.4.0"
@@ -6790,7 +6790,7 @@ rxjs@6.6.7, rxjs@^6.6.0:
   dependencies:
     tslib "^1.9.0"
 
-rxjs@^7.2.0, rxjs@^7.4.0, rxjs@^7.5.2:
+rxjs@^7.2.0, rxjs@^7.5.2:
   version "7.5.2"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-7.5.2.tgz#11e4a3a1dfad85dbf7fb6e33cbba17668497490b"
   integrity sha512-PwDt186XaL3QN5qXj/H9DGyHhP3/RYYgZZwqBv9Tv8rsAaiwFH1IsJJlcgD37J7UW5a6O67qX0KWKS3/pu0m4w==
