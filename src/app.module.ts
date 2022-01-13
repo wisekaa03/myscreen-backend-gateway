@@ -1,3 +1,4 @@
+// import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from 'nestjs-s3';
@@ -9,6 +10,7 @@ import { MailModule } from '@/mail/mail.module';
 import { DatabaseModule } from '@/database/database.module';
 import { AuthModule } from '@/auth/auth.module';
 import { EndpointModule } from '@/endpoint/endpoint.module';
+// import { LoggingInterceptor } from '@/intercept/logging.interceptor';
 
 @Module({
   imports: [
@@ -52,6 +54,9 @@ import { EndpointModule } from '@/endpoint/endpoint.module';
     AuthModule,
     EndpointModule,
   ],
-  providers: [Logger],
+  providers: [
+    Logger,
+    // { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
+  ],
 })
 export class AppModule {}

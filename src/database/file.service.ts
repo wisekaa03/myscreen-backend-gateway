@@ -243,6 +243,19 @@ export class FileService {
     return [returnFiles, count];
   }
 
+  headS3Object = (
+    file: FileEntity,
+  ): Promise<PromiseResult<AWS.S3.HeadObjectOutput, AWS.AWSError>> =>
+    this.s3Service
+      .headObject({
+        Bucket: this.bucket,
+        Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
+      })
+      .on('error', (error) => {
+        this.logger.error(error, error.stack, FileService.name);
+      })
+      .promise();
+
   getS3Object = (
     file: FileEntity,
   ): AWS.Request<AWS.S3.GetObjectOutput, AWS.AWSError> =>
@@ -252,8 +265,21 @@ export class FileService {
         Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
       })
       .on('error', (error) => {
-        this.logger.error(error, FileService.name);
+        this.logger.error(error, error.stack, FileService.name);
       });
+
+  deleteS3Object = (
+    file: FileEntity,
+  ): Promise<PromiseResult<AWS.S3.DeleteObjectOutput, AWS.AWSError>> =>
+    this.s3Service
+      .deleteObject({
+        Bucket: this.bucket,
+        Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
+      })
+      .on('error', (error) => {
+        this.logger.error(error, error.stack, FileService.name);
+      })
+      .promise();
 
   /**
    * Get file from S3
@@ -263,6 +289,27 @@ export class FileService {
    * @param {string} id
    */
   async getFileS3(
+    user: UserEntity,
+    id: string,
+  ): Promise<AWS.Request<AWS.S3.GetObjectOutput, AWS.AWSError>> {
+    const file = await this.fileRepository.findOne({
+      where: { userId: user.id, id },
+    });
+    if (!file) {
+      throw new NotFoundException(`File '${id}' is not exists`);
+    }
+
+    return this.getS3Object(file);
+  }
+
+  /**
+   * TODO: Get file preview from S3
+   * @async
+   * @param {ExpressRequest} request
+   * @param {UserEntity} user
+   * @param {string} id
+   */
+  async getFilePreviewS3(
     response: ExpressResponse,
     user: UserEntity,
     id: string,
@@ -273,6 +320,8 @@ export class FileService {
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
+
+    // TODO: check file preview
 
     return this.getS3Object(file)
       .on(
@@ -299,60 +348,6 @@ export class FileService {
   }
 
   /**
-   * TODO: Get file preview from S3
-   * @async
-   * @param {ExpressRequest} request
-   * @param {UserEntity} user
-   * @param {string} id
-   */
-  async getFilePreviewS3(
-    response: ExpressResponse,
-    user: UserEntity,
-    id: string,
-  ): Promise<PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>> {
-    const file = await this.fileRepository.findOne({
-      where: { userId: user.id, id },
-    });
-
-    if (!file) {
-      throw new NotFoundException(`File '${id}' is not exists`);
-    }
-
-    // TODO: check file preview
-
-    const Key = `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`;
-    return this.s3Service
-      .getObject({
-        Bucket: this.bucket,
-        Key,
-      })
-      .on(
-        'httpHeaders',
-        (
-          statusCode: number,
-          headers: { [key: string]: string },
-          awsResponse: AWS.Response<AWS.S3.Types.GetObjectOutput, AWS.AWSError>,
-        ) => {
-          if (statusCode === 200) {
-            response.setHeader('Content-Length', headers['content-length']);
-            response.setHeader('Content-Type', headers['content-type']);
-            response.setHeader('Last-Modified', headers['last-modified']);
-            if (!response.headersSent) {
-              response.flushHeaders();
-            }
-            (
-              awsResponse.httpResponse.createUnbufferedStream() as Readable
-            ).pipe(response);
-          }
-        },
-      )
-      .on('error', (error) => {
-        this.logger.error(error, FileService.name);
-      })
-      .promise();
-  }
-
-  /**
    * Delete files
    * @async
    * @param {UserEntity} user
@@ -372,20 +367,11 @@ export class FileService {
       throw new NotFoundException(`Media '${id}' is not exists`);
     }
 
-    const Key = `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`;
-    await this.s3Service
-      .headObject({
-        Bucket: this.bucket,
-        Key,
-      })
-      .promise()
+    this.headS3Object(file)
       .then(() =>
-        this.s3Service
-          .deleteObject({ Bucket: this.bucket, Key })
-          .promise()
-          .catch((error) => {
-            this.logger.error('S3 Error deleteObject:', error);
-          }),
+        this.deleteS3Object(file).catch((error) => {
+          this.logger.error('S3 Error deleteObject:', error);
+        }),
       )
       .catch((error) => {
         this.logger.error('S3 Error headerObject:', error);

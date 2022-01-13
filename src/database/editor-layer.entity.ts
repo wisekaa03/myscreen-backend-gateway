@@ -125,4 +125,7 @@ export class EditorLayerEntity {
   })
   @IsDate()
   updatedAt!: Date;
+
+  // For path name
+  path!: string;
 }

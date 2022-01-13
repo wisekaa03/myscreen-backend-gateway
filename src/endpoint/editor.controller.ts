@@ -1,4 +1,7 @@
-import type { Request as ExpressRequest } from 'express';
+import type {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express';
 import {
   BadRequestException,
   Body,
@@ -15,8 +18,9 @@ import {
   Patch,
   Post,
   Put,
-  Req,
   UseGuards,
+  Req,
+  Res,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -415,13 +419,13 @@ export class EditorController {
     }
 
     const editorLayer = await this.editorService.findOneLayer({
-      where: { userId: user.id, id: layerId },
+      where: { id: layerId },
     });
     if (!editorLayer) {
       throw new NotFoundException(`Editor layer '${layerId}' is not found`);
     }
 
-    await this.editorService.deleteLayer(user, editorLayer);
+    await this.editorService.deleteLayer(editorLayer);
 
     return {
       status: Status.Success,
@@ -449,26 +453,22 @@ export class EditorController {
   })
   async postEditorFrame(
     @Req() { user }: ExpressRequest,
+    @Res() res: ExpressResponse,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Param('time', ParseIntPipe) time: number,
-  ): Promise<EditorGetResponse> {
-    const data = await this.editorService.findOne({
+  ): Promise<void> {
+    const editor = await this.editorService.findOne({
       where: {
         userId: user.id,
         id,
       },
     });
-    if (!data) {
+    if (!editor) {
       throw new NotFoundException('Editor not found');
     }
 
-    // TODO
-    throw new NotImplementedException();
-
-    // return {
-    //   status: Status.Success,
-    //   data,
-    // };
+    const capturedFrame = await this.editorService.captureFrame(editor, time);
+    capturedFrame.pipe(res);
   }
 
   @Get('/export/:editorId')

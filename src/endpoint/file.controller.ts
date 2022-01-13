@@ -1,8 +1,8 @@
+import { Readable } from 'node:stream';
 import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import type { PromiseResult } from 'aws-sdk/lib/request';
 import {
   BadRequestException,
   Body,
@@ -18,7 +18,7 @@ import {
   Post,
   Put,
   Req,
-  Response,
+  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -270,12 +270,28 @@ export class FileController {
   })
   async getFileS3(
     @Req() { user }: ExpressRequest,
-    @Response() response: ExpressResponse,
+    @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
-  ): Promise<PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>> {
-    return this.fileService.getFileS3(response, user, id).catch((error) => {
-      throw new NotFoundException(`S3 Error: ${error}`);
-    });
+  ): Promise<void> {
+    const getFileS3 = await this.fileService.getFileS3(user, id);
+    getFileS3
+      .on('httpHeaders', (statusCode, headers, awsResponse) => {
+        if (statusCode === 200) {
+          res.setHeader('Content-Length', headers['content-length']);
+          res.setHeader('Content-Type', headers['content-type']);
+          res.setHeader('Last-Modified', headers['last-modified']);
+          if (!res.headersSent) {
+            res.flushHeaders();
+          }
+          (awsResponse.httpResponse.createUnbufferedStream() as Readable).pipe(
+            res,
+          );
+        }
+      })
+      .promise()
+      .catch((error) => {
+        throw new NotFoundException(`S3 Error: ${error}`);
+      });
   }
 
   @Delete('/:fileId')
