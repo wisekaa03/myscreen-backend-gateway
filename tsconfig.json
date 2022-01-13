@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
+    "target": "ES2021",
     "module": "CommonJS",
+    "moduleResolution": "Node",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "target": "ES2021",
     "noEmit": false,
-    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "sourceMap": true,
     "outDir": "./dist",

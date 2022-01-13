@@ -9,7 +9,7 @@ export class PlaylistsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: PlaylistPartialRequest,
-    required: false,
+    required: true,
   })
   @IsDefined()
   @IsNotEmpty()
@@ -20,9 +20,11 @@ export class PlaylistsGetRequest {
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: false,
+    required: true,
   })
+  @IsDefined()
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<PlaylistPartialRequest>;
+  scope!: LimitRequest<PlaylistPartialRequest>;
 }

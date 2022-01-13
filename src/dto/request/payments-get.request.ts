@@ -10,20 +10,22 @@ export class PaymentsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: PaymentRequest,
-    required: false,
+    required: true,
   })
   @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => PaymentRequest)
-  where?: PaymentRequest;
+  where!: PaymentRequest;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: false,
+    required: true,
   })
+  @IsDefined()
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<PaymentEntity>;
+  scope!: LimitRequest<PaymentEntity>;
 }

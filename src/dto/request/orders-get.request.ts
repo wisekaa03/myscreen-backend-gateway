@@ -10,20 +10,22 @@ export class OrdersGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: OrderRequest,
-    required: false,
+    required: true,
   })
   @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => OrderRequest)
-  where?: OrderRequest;
+  where!: OrderRequest;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: false,
+    required: true,
   })
+  @IsDefined()
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<OrderEntity>;
+  scope!: LimitRequest<OrderEntity>;
 }

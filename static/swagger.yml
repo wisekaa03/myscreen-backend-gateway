@@ -1660,7 +1660,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.3.23
+  version: 2.3.24
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2291,6 +2291,9 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+      required:
+        - where
+        - scope
     PlaylistResponse:
       type: object
       properties:
@@ -2782,6 +2785,9 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+      required:
+        - where
+        - scope
     EditorLayerResponse:
       type: object
       properties:
@@ -3149,6 +3155,9 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+      required:
+        - where
+        - scope
     FileMonitorsResponse:
       type: object
       properties:
@@ -3347,6 +3356,9 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+      required:
+        - where
+        - scope
     FolderResponse:
       type: object
       properties:
@@ -3475,6 +3487,9 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+      required:
+        - where
+        - scope
     OrderResponse:
       type: object
       properties:
@@ -3542,6 +3557,9 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+      required:
+        - where
+        - scope
     PaymentResponse:
       type: object
       properties:
@@ -3628,6 +3646,9 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+      required:
+        - where
+        - scope
     PlaylistsGetResponse:
       type: object
       properties:

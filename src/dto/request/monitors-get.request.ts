@@ -9,20 +9,22 @@ export class MonitorsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: MonitorPartialRequest,
-    required: false,
+    required: true,
   })
   @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => MonitorPartialRequest)
-  where?: Partial<MonitorPartialRequest>;
+  where!: Partial<MonitorPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: false,
+    required: true,
   })
+  @IsDefined()
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<MonitorPartialRequest>;
+  scope!: LimitRequest<MonitorPartialRequest>;
 }

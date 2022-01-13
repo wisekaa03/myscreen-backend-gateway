@@ -9,20 +9,22 @@ export class EditorsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: EditorPartialRequest,
-    required: false,
+    required: true,
   })
   @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => EditorPartialRequest)
-  where?: Partial<EditorPartialRequest>;
+  where!: Partial<EditorPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: false,
+    required: true,
   })
+  @IsDefined()
+  @IsNotEmpty()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<EditorPartialRequest>;
+  scope!: LimitRequest<EditorPartialRequest>;
 }

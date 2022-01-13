@@ -23,7 +23,13 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
     cors: {
-      origin: '*',
+      origin: [
+        'https://cp.myscreen.ru',
+        'https://cp.dev.myscreen.ru',
+        'https://api.myscreen.ru',
+        'https://api.dev.myscreen.ru',
+        'http://localhost',
+      ],
       credentials: true,
     },
   });
