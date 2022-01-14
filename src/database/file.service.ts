@@ -140,7 +140,11 @@ export class FileService {
   @Transaction()
   async upload(
     user: UserEntity,
-    { folderId, category, monitorId }: FileUploadRequest,
+    {
+      folderId,
+      category = FileCategory.Media,
+      monitorId = undefined,
+    }: FileUploadRequest,
     files: Array<Express.Multer.File>,
     @TransactionRepository(FileEntity)
     fileRepository?: Repository<FileEntity>,
@@ -173,14 +177,15 @@ export class FileService {
     if (monitor && category === FileCategory.Media) {
       throw new NotFoundException("Found category: 'media' and monitorId");
     }
-
-    files.forEach((file) => {
-      if (!file?.media && category === FileCategory.Media) {
-        throw new BadRequestException(
-          `'${file.originalname}' has no media property, but the category specified 'media'`,
-        );
-      }
-    });
+    if (category === FileCategory.Media) {
+      files.forEach((file) => {
+        if (!file.media) {
+          throw new BadRequestException(
+            `'${file.originalname}' has no data in Ffprobe, but the category specified 'media'`,
+          );
+        }
+      });
+    }
 
     const filesPromises = files.flatMap((file) => {
       const [meta, videoType, extension] = this.metaInformation(file, category);

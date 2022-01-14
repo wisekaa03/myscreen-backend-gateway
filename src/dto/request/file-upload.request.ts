@@ -11,6 +11,7 @@ export class FileUploadRequest extends PickType(FileEntity, [
     type: 'string',
     format: 'uuid',
     description: 'Монитор',
+    required: false,
   })
   @IsUUID()
   monitorId?: string;
