@@ -34,6 +34,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     },
   });
   app.disable('x-powered-by');
+  app.disable('server');
   const logger = app.get(Logger);
   const httpAdaper = app.get(HttpAdapterHost);
   app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));

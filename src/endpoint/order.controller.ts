@@ -72,7 +72,7 @@ export class OrderController {
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'orders_get',
+    operationId: 'orders-get',
     summary: 'Получение списка заказов',
   })
   @ApiResponse({

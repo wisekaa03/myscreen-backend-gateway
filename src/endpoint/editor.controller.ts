@@ -422,8 +422,6 @@ export class EditorController {
       throw new NotFoundException('Editor not found');
     }
 
-    // TODO: изменение очереди слоя редактора
-
     const editorLayer = await this.editorService.findOneLayer({
       where: {
         id: layerId,
@@ -433,11 +431,12 @@ export class EditorController {
       throw new NotFoundException('Editor layer not found');
     }
 
+    // TODO: изменение очереди слоя редактора
+
     const update: Partial<EditorLayerEntity> = {
       ...editorLayer,
       ...body,
     };
-
     const data = await this.editorService.updateLayer(user, id, update);
     if (!data) {
       throw new InternalServerError();
