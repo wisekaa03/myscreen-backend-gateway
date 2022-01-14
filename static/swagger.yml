@@ -1703,7 +1703,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.5.3
+  version: 2.5.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2393,7 +2393,7 @@ components:
           type: string
           description: Тип файла
           enum:
-            &a60
+            &a61
             - video
             - image
             - audio
@@ -2403,7 +2403,7 @@ components:
           type: string
           description: В какую категорию относить файл
           enum:
-            &a61
+            &a62
             - ownership
             - photo
             - media
@@ -2415,7 +2415,7 @@ components:
         meta:
           description: Метаинформация
           example:
-            &a62
+            &a63
             duration: 200
             filesize: 20500
           allOf:
@@ -2910,6 +2910,7 @@ components:
         renderedFile:
           description: Обработанный файл
           allOf:
+            &a60
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -3140,18 +3141,17 @@ components:
     EditorRenderingStatusResponse:
       type: object
       properties:
-        id:
-          type: string
-          description: Идентификатор редактора
-          example: "12345678"
         renderingStatus:
           type: string
           description: Статус рендеринга
           enum: *a59
           example: initial
+        renderedFile:
+          description: Обработанный файл
+          allOf: *a60
       required:
-        - id
         - renderingStatus
+        - renderedFile
     EditorGetRenderingStatusResponse:
       type: object
       properties:
@@ -3184,12 +3184,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a60
+          enum: *a61
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a61
+          enum: *a62
           example: media
     FilesGetRequest:
       type: object
@@ -3236,12 +3236,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a60
+          enum: *a61
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a61
+          enum: *a62
           example: media
         filesize:
           type: number
@@ -3249,7 +3249,7 @@ components:
           example: 210000
         meta:
           description: Метаинформация
-          example: *a62
+          example: *a63
           allOf:
             - $ref: "#/components/schemas/MediaMeta"
         userId:
@@ -3317,7 +3317,7 @@ components:
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a61
+          enum: *a62
           example: media
         monitorId:
           type: string

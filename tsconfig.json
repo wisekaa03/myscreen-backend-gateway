@@ -29,5 +29,6 @@
       ]
     }
   },
+  "include": ["src", "typings", "test"],
   "exclude": ["node_modules", "dist", "upload"]
 }

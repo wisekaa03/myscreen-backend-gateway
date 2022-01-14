@@ -89,6 +89,9 @@ export class EditorEntity {
   @IsEnum(RenderingStatus)
   renderingStatus!: RenderingStatus;
 
+  @Column({ nullable: true })
+  renderingError!: string;
+
   @ManyToOne(() => FileEntity, (file) => file.id, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',

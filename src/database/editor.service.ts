@@ -59,16 +59,12 @@ export class EditorService {
   ): Promise<[Array<EditorEntity>, number]> =>
     this.editorRepository.findAndCount({
       ...find,
-      relations: ['videoLayers', 'audioLayers'],
+      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
     });
 
   findOne = async (
     find: FindManyOptions<EditorEntity>,
-  ): Promise<EditorEntity | undefined> =>
-    this.editorRepository.findOne({
-      ...find,
-      relations: ['videoLayers', 'audioLayers'],
-    });
+  ): Promise<EditorEntity | undefined> => this.editorRepository.findOne(find);
 
   async update(
     user: UserEntity,
@@ -330,6 +326,7 @@ export class EditorService {
   async export(user: UserEntity, editor: EditorEntity): Promise<EditorEntity> {
     const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
     editlyConfig.outPath = path.resolve(mkdirPath, 'out.mp4');
+    editlyConfig.verbose = true;
     const editlyJSON = JSON.stringify(editlyConfig);
     const editlyPath = path.resolve(mkdirPath, 'editly.json');
 
@@ -342,7 +339,7 @@ export class EditorService {
               editlyPath,
             ]);
             childEditly.on('message', (message: Serializable) => {
-              this.logger.debug(message);
+              this.logger.log(message);
             });
             childEditly.on('error', (error: Error) => {
               this.logger.error(error);
@@ -356,7 +353,11 @@ export class EditorService {
                 ) {
                   resolve(editlyConfig.outPath);
                 }
-                reject(new Error('Not found outFile'));
+                reject(
+                  new Error(
+                    "outFile not found. There's a some error in editly",
+                  ),
+                );
               },
             );
           }),
@@ -414,6 +415,7 @@ export class EditorService {
         await this.editorRepository.save(
           this.editorRepository.create({
             ...editor,
+            renderingError: error.message,
             renderingStatus: RenderingStatus.Error,
           }),
         );

@@ -11,7 +11,6 @@ import {
   HttpCode,
   Logger,
   NotFoundException,
-  NotImplementedException,
   Param,
   ParseUUIDPipe,
   ParseIntPipe,
@@ -170,6 +169,7 @@ export class EditorController {
         userId: user.id,
         id,
       },
+      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
     });
     if (!data) {
       throw new NotFoundException('Editor not found');
@@ -516,6 +516,7 @@ export class EditorController {
         userId: user.id,
         id,
       },
+      relations: ['videoLayers', 'audioLayers'],
     });
     if (!editor) {
       throw new NotFoundException('Editor not found');
@@ -545,7 +546,7 @@ export class EditorController {
         userId: user.id,
         id,
       },
-      select: ['id', 'renderingStatus'],
+      select: ['id', 'renderingStatus', 'renderingError', 'renderedFile'],
     });
     if (!data) {
       throw new NotFoundException('Editor not found');
