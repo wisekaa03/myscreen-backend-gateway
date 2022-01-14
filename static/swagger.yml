@@ -1703,7 +1703,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.5.4
+  version: 2.5.5
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3141,6 +3141,10 @@ components:
     EditorRenderingStatusResponse:
       type: object
       properties:
+        id:
+          type: string
+          description: Идентификатор редактора
+          example: "12345678"
         renderingStatus:
           type: string
           description: Статус рендеринга
@@ -3150,6 +3154,7 @@ components:
           description: Обработанный файл
           allOf: *a60
       required:
+        - id
         - renderingStatus
         - renderedFile
     EditorGetRenderingStatusResponse:
