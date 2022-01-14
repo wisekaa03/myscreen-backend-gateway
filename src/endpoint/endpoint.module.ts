@@ -16,6 +16,7 @@ import { PaymentController } from './payment.controller';
 import { PaymentLogController } from './log.controller';
 import { UptimeController } from './uptime.controller';
 import { PlaylistController } from './playlist.controller';
+import { RootController } from './root.controller';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PlaylistController } from './playlist.controller';
   ],
 
   controllers: [
+    RootController,
     AuthController,
     MonitorController,
     EditorController,

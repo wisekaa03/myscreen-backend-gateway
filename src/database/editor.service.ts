@@ -343,6 +343,7 @@ export class EditorService {
             );
             childEditly.stdout?.on('data', (message: Buffer) => {
               const msg = message.toString();
+              // TODO: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
               this.logger.log(`Editly: ${msg}`);
             });
             childEditly.stderr?.on('data', (message: Buffer) => {

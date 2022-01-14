@@ -37,7 +37,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   const logger = app.get(Logger);
   const httpAdaper = app.get(HttpAdapterHost);
   app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
-  app.setGlobalPrefix(apiPath);
+  app.setGlobalPrefix(apiPath, { exclude: ['/'] });
   app.useLogger(logger);
   app.useGlobalPipes(
     new ValidationPipe({
