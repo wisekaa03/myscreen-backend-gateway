@@ -64,6 +64,7 @@ export class MonitorEntity {
       street: 'Krasnaya',
       house: 122,
     },
+    required: false,
   })
   @IsObject()
   address!: Record<string, string | number>;
@@ -83,6 +84,7 @@ export class MonitorEntity {
   @ApiProperty({
     description: 'Стоимость показов',
     example: { of1s: 0, show100: 0 },
+    required: false,
   })
   @IsObject()
   price!: Record<string, number>;
