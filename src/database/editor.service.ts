@@ -5,7 +5,7 @@ import {
   ReadStream,
 } from 'node:fs';
 import path from 'node:path';
-import child from 'node:child_process';
+import child, { fork } from 'node:child_process';
 import util from 'node:util';
 import {
   Injectable,
@@ -254,6 +254,13 @@ export class EditorService {
     return `${hours}:${minutes}:${seconds}`;
   };
 
+  /**
+   * Capture one frame from Clips
+   * @async
+   * @param {EditorEntity} editor Editor entity
+   * @param {number} time Time in seconds
+   * @returns {ReadStream} The read stream
+   */
   async captureFrame(editor: EditorEntity, time: number): Promise<ReadStream> {
     const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, false);
     let outPath = path.resolve(mkdirPath, `frame_${time}.jpg`);
@@ -261,21 +268,19 @@ export class EditorService {
 
     let startTime = 0;
     const clip = clips.find(({ duration = 1 }) => {
-      if (startTime <= time && startTime + duration >= time) return true;
+      if (startTime <= time && startTime + duration >= time) {
+        return true;
+      }
       startTime += duration;
       return false;
     });
 
-    // TODO: bhf
-    // assert(clip, 'No clip found at requested time');
+    if (!clip || typeof clip !== 'object') {
+      this.logger.error('No clip found at requested time');
+      throw new NotAcceptableException('No clip found at requested time');
+    }
 
-    if (
-      !(
-        typeof clip === 'object' &&
-        typeof clip.layers === 'object' &&
-        Array.isArray(clip.layers)
-      )
-    ) {
+    if (!(typeof clip.layers === 'object' && Array.isArray(clip.layers))) {
       throw new NotAcceptableException('Layers not exists');
     }
 
@@ -312,6 +317,12 @@ export class EditorService {
     });
   }
 
+  /**
+   * Start Export
+   * @async
+   * @param {EditorEntity} editor Editor entity
+   * @returns {EditorEntity} Result
+   */
   async export(editor: EditorEntity): Promise<EditorEntity> {
     const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
     editlyConfig.outPath = path.resolve(mkdirPath, 'out.mp4');
@@ -326,14 +337,35 @@ export class EditorService {
       );
 
       (async () => {
-        // eslint-disable-next-line no-debugger
-        debugger;
+        const editlyJSON = JSON.stringify(editlyConfig);
+        const editlyPath = path.resolve(mkdirPath, 'editly.json');
+        await fs.writeFile(editlyPath, editlyJSON);
+        const childEditly = fork('node_modules/.bin/editly', [
+          '--json',
+          editlyPath,
+        ]);
+        childEditly.on('message', async (message: string) => {
+          this.logger.debug(message);
+        });
+        childEditly.on('error', async () => {
+          throw new Error('Not found outFile');
+        });
+        childEditly.on('close', async () => {
+          if (!(await fs.access(editlyConfig.outPath).catch(() => false))) {
+            throw new Error('Not found outFile');
+          }
 
-        // TODO
+          await this.editorRepository.save(
+            this.editorRepository.create({
+              ...editor,
+              renderingStatus: RenderingStatus.Ready,
+            }),
+          );
+        });
       })();
 
       return editorUpdated;
-    } catch (error) {
+    } catch (error: unknown | Error) {
       this.editorRepository.save(
         this.editorRepository.create({
           ...editor,

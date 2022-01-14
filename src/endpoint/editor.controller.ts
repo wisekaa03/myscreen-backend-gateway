@@ -46,6 +46,7 @@ import {
   EditorLayerGetResponse,
   EditorLayerUpdateRequest,
   EditorGetRenderingStatusResponse,
+  EditorLayerMoveRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -328,7 +329,6 @@ export class EditorController {
 
     const editorLayer = await this.editorService.findOneLayer({
       where: {
-        userId: user.id,
         id: layerId,
       },
     });
@@ -371,12 +371,66 @@ export class EditorController {
 
     const editorLayer = await this.editorService.findOneLayer({
       where: {
-        userId: user.id,
         id: layerId,
       },
     });
     if (!editorLayer) {
+      throw new NotFoundException('Editor layer not found');
+    }
+
+    const update: Partial<EditorLayerEntity> = {
+      ...editorLayer,
+      ...body,
+    };
+
+    const data = await this.editorService.updateLayer(user, id, update);
+    if (!data) {
+      throw new InternalServerError();
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Put('/layer/:editorId/:layerId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'editor-layer-move',
+    summary: 'Изменить очередь слоя редактора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: EditorLayerGetResponse,
+  })
+  async moveEditorLayer(
+    @Req() { user }: ExpressRequest,
+    @Param('editorId', ParseUUIDPipe) id: string,
+    @Param('layerId', ParseUUIDPipe) layerId: string,
+    @Body() body: EditorLayerMoveRequest,
+  ): Promise<EditorLayerGetResponse> {
+    const editor = await this.editorService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+      relations: ['videoLayers', 'audioLayers'],
+    });
+    if (!editor) {
       throw new NotFoundException('Editor not found');
+    }
+
+    // TODO: изменение очереди слоя редактора
+
+    const editorLayer = await this.editorService.findOneLayer({
+      where: {
+        id: layerId,
+      },
+    });
+    if (!editorLayer) {
+      throw new NotFoundException('Editor layer not found');
     }
 
     const update: Partial<EditorLayerEntity> = {

@@ -729,6 +729,41 @@ paths:
         "503": *a20
       tags: *a21
       security: *a22
+    put:
+      operationId: editor-layer-move
+      summary: Изменить очередь слоя редактора
+      parameters:
+        - name: editorId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: layerId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditorLayerMoveRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EditorLayerGetResponse"
+        "400": *a15
+        "401": *a16
+        "403": *a17
+        "404": *a18
+        "500": *a19
+        "503": *a20
+      tags: *a21
+      security: *a22
     delete:
       operationId: editor-layer-delete
       summary: Удаление слоя редактора
@@ -1660,7 +1695,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.4.1
+  version: 2.4.2
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2798,11 +2833,11 @@ components:
         index:
           type: number
           description: Индекс файла
-          example: "3"
+          example: "1"
         duration:
           type: number
           description: Длительность
-          example: "0"
+          example: "10"
         cutFrom:
           type: number
           description: С какой секунды начать вырезать клип
@@ -2810,7 +2845,7 @@ components:
         cutTo:
           type: number
           description: До какой секунды вырезать клип
-          example: "0"
+          example: "10"
         start:
           type: number
           description: С какой секунды начинать воспроизводить клип
@@ -3011,11 +3046,11 @@ components:
         index:
           type: number
           description: Индекс файла
-          example: "3"
+          example: "1"
         duration:
           type: number
           description: Длительность
-          example: "0"
+          example: "10"
         cutFrom:
           type: number
           description: С какой секунды начать вырезать клип
@@ -3023,7 +3058,7 @@ components:
         cutTo:
           type: number
           description: До какой секунды вырезать клип
-          example: "0"
+          example: "10"
         start:
           type: number
           description: С какой секунды начинать воспроизводить клип
@@ -3068,11 +3103,11 @@ components:
         index:
           type: number
           description: Индекс файла
-          example: "3"
+          example: "1"
         duration:
           type: number
           description: Длительность
-          example: "0"
+          example: "10"
         cutFrom:
           type: number
           description: С какой секунды начать вырезать клип
@@ -3080,7 +3115,7 @@ components:
         cutTo:
           type: number
           description: До какой секунды вырезать клип
-          example: "0"
+          example: "10"
         start:
           type: number
           description: С какой секунды начинать воспроизводить клип
@@ -3090,6 +3125,14 @@ components:
           description: ""
           example: "1"
           default: 1
+    EditorLayerMoveRequest:
+      type: object
+      properties:
+        moveIndex:
+          type: number
+          description: Изменение индекса
+      required:
+        - moveIndex
     EditorRenderingStatusResponse:
       type: object
       properties:

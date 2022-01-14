@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { IsDefined, IsUUID } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsUUID } from 'class-validator';
 
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 
@@ -14,7 +14,9 @@ export class EditorLayerCreateRequest extends OmitType(EditorLayerEntity, [
     type: 'string',
     format: 'uuid',
     isArray: false,
+    required: true,
   })
+  @IsNotEmpty()
   @IsDefined()
   @IsUUID()
   file!: string;

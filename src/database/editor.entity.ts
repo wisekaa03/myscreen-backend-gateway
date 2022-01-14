@@ -109,9 +109,6 @@ export class EditorEntity {
   totalDuration!: number;
 
   @ManyToMany(() => EditorLayerEntity, (layer) => layer.videoLayers, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
     nullable: true,
   })
   @JoinTable()
@@ -124,9 +121,6 @@ export class EditorEntity {
   videoLayers!: EditorLayerEntity[];
 
   @ManyToMany(() => EditorLayerEntity, (layer) => layer.audioLayers, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
     nullable: true,
   })
   @JoinTable()

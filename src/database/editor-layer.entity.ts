@@ -26,19 +26,25 @@ export class EditorLayerEntity {
   id!: string;
 
   @ManyToMany(() => EditorEntity, (editor) => editor.videoLayers, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
     nullable: true,
   })
-  videoLayers?: EditorEntity[];
+  videoLayers!: EditorEntity[];
 
   @ManyToMany(() => EditorEntity, (editor) => editor.audioLayers, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
     nullable: true,
   })
-  audioLayers?: EditorEntity[];
+  audioLayers!: EditorEntity[];
 
   @Column({ type: 'integer' })
   @ApiProperty({
     description: 'Индекс файла',
-    example: '3',
+    example: '1',
     required: true,
   })
   @IsNumber()
@@ -48,10 +54,11 @@ export class EditorLayerEntity {
   @Column({ type: 'numeric' })
   @ApiProperty({
     description: 'Длительность',
-    example: '0',
+    example: '10',
     required: true,
   })
   @IsNumber()
+  @Min(1)
   duration!: number;
 
   @Column({ type: 'numeric' })
@@ -66,10 +73,11 @@ export class EditorLayerEntity {
   @Column({ type: 'numeric' })
   @ApiProperty({
     description: 'До какой секунды вырезать клип',
-    example: '0',
+    example: '10',
     required: true,
   })
   @IsNumber()
+  @Min(1)
   cutTo!: number;
 
   @Column({ type: 'numeric' })
