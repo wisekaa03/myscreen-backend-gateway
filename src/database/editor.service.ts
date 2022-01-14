@@ -381,11 +381,11 @@ export class EditorService {
         });
         const files: Array<Express.Multer.File> = [
           {
-            originalname: outPath.substring(outPath.lastIndexOf('/')),
+            originalname: outPath.substring(outPath.lastIndexOf('/') + 1),
             encoding: 'utf8',
             mimetype: 'video/mp4',
             destination: outPath.substring(0, outPath.lastIndexOf('/')),
-            filename: outPath.substring(outPath.lastIndexOf('/')),
+            filename: outPath.substring(outPath.lastIndexOf('/') + 1),
             size,
             path: outPath,
             hash: 'render',
