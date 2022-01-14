@@ -347,12 +347,17 @@ export class EditorService {
               this.logger.error(error);
               reject(error);
             });
-            childEditly.on('close', async () => {
-              if (!(await fs.access(editlyConfig.outPath).catch(() => false))) {
+            childEditly.on(
+              'exit',
+              async (/* code: number | null, signal: NodeJS.Signals | null */) => {
+                if (
+                  !(await fs.access(editlyConfig.outPath).catch(() => true))
+                ) {
+                  resolve(editlyConfig.outPath);
+                }
                 reject(new Error('Not found outFile'));
-              }
-              resolve(editlyConfig.outPath);
-            });
+              },
+            );
           }),
       )
       .then(async (outPath: string) => {
