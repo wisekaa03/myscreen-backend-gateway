@@ -266,6 +266,20 @@ export class FileController {
           },
         },
       },
+      'image/jpeg': {
+        encoding: {
+          image_jpeg: {
+            contentType: 'image/jpeg',
+          },
+        },
+      },
+      'image/png': {
+        encoding: {
+          image_png: {
+            contentType: 'image/png',
+          },
+        },
+      },
     },
   })
   async getFileS3(

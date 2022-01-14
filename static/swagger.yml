@@ -1050,6 +1050,14 @@ paths:
               encoding:
                 video_mp4:
                   contentType: video/mp4
+            image/jpeg:
+              encoding:
+                image_jpeg:
+                  contentType: image/jpeg
+            image/png:
+              encoding:
+                image_png:
+                  contentType: image/png
         "400": *a23
         "401": *a24
         "403": *a25
@@ -1695,7 +1703,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.4.2
+  version: 2.4.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3322,7 +3330,6 @@ components:
       required:
         - folderId
         - category
-        - monitorId
     FilesUploadResponse:
       type: object
       properties:

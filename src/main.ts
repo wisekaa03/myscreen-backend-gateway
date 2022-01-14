@@ -84,7 +84,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     customSiteTitle: description,
     customCss:
       // ".swagger-ui .topbar { display: none }",
-      ".swagger-ui .topbar img { content: url('/logo-44x40.png') } .swagger-ui .topbar a::after { margin-left: 10px; content: 'MyScreen' }",
+      ".swagger-ui .topbar img { content: url('/favicon.ico') } .swagger-ui .topbar a::after { margin-left: 10px; content: 'MyScreen' }",
   };
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   writeFile(
