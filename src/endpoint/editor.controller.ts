@@ -583,7 +583,7 @@ export class EditorController {
       throw new NotFoundException('Editor not found');
     }
 
-    const data = await this.editorService.export(editor);
+    const data = await this.editorService.export(user, editor);
 
     return {
       status: Status.Success,

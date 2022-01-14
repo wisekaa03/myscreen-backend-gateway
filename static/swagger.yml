@@ -1703,7 +1703,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.4.3
+  version: 2.5.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2916,6 +2916,10 @@ components:
           description: Статус рендеринга
           enum: *a59
           example: initial
+        renderedFile:
+          type: string
+          description: Обработанный файл
+          format: uuid
         keepSourceAudio:
           type: boolean
           description: ""
@@ -2951,6 +2955,7 @@ components:
         - height
         - fps
         - renderingStatus
+        - renderedFile
         - keepSourceAudio
         - totalDuration
         - createdAt

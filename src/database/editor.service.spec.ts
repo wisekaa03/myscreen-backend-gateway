@@ -5,6 +5,7 @@ import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorEntity } from './editor.entity';
 import { EditorService } from './editor.service';
 import { FileService } from './file.service';
+import { FolderService } from './folder.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -28,6 +29,10 @@ describe(EditorService.name, () => {
         ConfigService,
         {
           provide: FileService,
+          useClass: mockRepository,
+        },
+        {
+          provide: FolderService,
           useClass: mockRepository,
         },
         {

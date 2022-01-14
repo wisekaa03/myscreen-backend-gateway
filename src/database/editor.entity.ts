@@ -23,6 +23,7 @@ import {
 import { RenderingStatus } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
+import { FileEntity } from './file.entity';
 
 @Entity('editor')
 export class EditorEntity {
@@ -87,6 +88,21 @@ export class EditorEntity {
   })
   @IsEnum(RenderingStatus)
   renderingStatus!: RenderingStatus;
+
+  @ManyToOne(() => FileEntity, (file) => file.id, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    nullable: true,
+    eager: true,
+  })
+  @JoinColumn()
+  @ApiProperty({
+    description: 'Обработанный файл',
+    type: 'string',
+    format: 'uuid',
+  })
+  renderedFile!: FileEntity;
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({
