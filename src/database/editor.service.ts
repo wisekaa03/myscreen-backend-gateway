@@ -406,7 +406,6 @@ export class EditorService {
             renderingStatus: RenderingStatus.Error,
           }),
         );
-        throw new NotAcceptableException(error);
       });
 
     return this.editorRepository.save(
