@@ -338,8 +338,11 @@ export class EditorService {
               '--json',
               editlyPath,
             ]);
-            childEditly.on('message', (message: Serializable) => {
-              this.logger.log(message);
+            childEditly.on('stdin', (message: string) => {
+              this.logger.debug(message);
+            });
+            childEditly.on('stderr', (message: string) => {
+              this.logger.debug(message);
             });
             childEditly.on('error', (error: Error) => {
               this.logger.error(error);
