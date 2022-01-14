@@ -21,6 +21,7 @@ import {
   FindManyOptions,
   Repository,
 } from 'typeorm';
+import { ffprobe } from 'media-probe';
 import editly from 'editly';
 
 import { FileCategory, RenderingStatus } from '@/enums';
@@ -369,19 +370,29 @@ export class EditorService {
         if (!folder) {
           folder = await this.folderService.update({ name: 'Rendered', user });
         }
+        const media = await ffprobe(outPath, {
+          showFormat: true,
+          showStreams: true,
+          showFrames: false,
+          showPackets: false,
+          showPrograms: false,
+          countFrames: false,
+          countPackets: false,
+        });
         const files: Array<Express.Multer.File> = [
           {
-            fieldname: '',
-            hash: '',
             originalname: outPath.substring(outPath.lastIndexOf('/')),
             encoding: 'utf8',
             mimetype: 'video/mp4',
             destination: outPath.substring(0, outPath.lastIndexOf('/')),
             filename: outPath.substring(outPath.lastIndexOf('/')),
             size,
-            stream: createReadStream(outPath),
             path: outPath,
-            buffer: Buffer.from([]),
+            hash: 'render',
+            media,
+            fieldname: null as unknown as string,
+            stream: null as unknown as ReadStream,
+            buffer: null as unknown as Buffer,
           },
         ];
         const [filesSaved] = await this.fileService.upload(
