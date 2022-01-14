@@ -79,11 +79,12 @@ export class PlaylistEntity {
   @JoinTable()
   @ApiProperty({
     description: 'Файлы',
+    type: 'array',
     isArray: true,
     allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
   @IsUUID('all', { each: true })
-  files!: FileEntity[];
+  files?: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

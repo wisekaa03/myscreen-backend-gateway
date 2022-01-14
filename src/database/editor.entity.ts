@@ -100,7 +100,7 @@ export class EditorEntity {
   @ApiProperty({
     description: 'Обработанный файл',
     type: 'string',
-    format: 'uuid',
+    allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
   renderedFile!: FileEntity;
 

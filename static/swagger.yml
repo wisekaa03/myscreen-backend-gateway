@@ -2337,44 +2337,6 @@ components:
       required:
         - where
         - scope
-    PlaylistResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор плэйлиста
-          example: "1234567"
-          format: uuid
-        name:
-          type: string
-          description: Имя плэйлиста
-          example: имя плэйлиста
-        description:
-          type: string
-          description: Описание плэйлиста
-          example: описание плэйлиста
-        files:
-          description: Файлы
-          allOf:
-            - $ref: "#/components/schemas/FileResponse"
-          items:
-            type: array
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-      required:
-        - id
-        - name
-        - files
-        - createdAt
-        - updatedAt
     MediaMeta:
       type: object
       properties:
@@ -2486,6 +2448,43 @@ components:
         - userId
         - createdAt
         - updatedAt
+    PlaylistResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор плэйлиста
+          example: "1234567"
+          format: uuid
+        name:
+          type: string
+          description: Имя плэйлиста
+          example: имя плэйлиста
+        description:
+          type: string
+          description: Описание плэйлиста
+          example: описание плэйлиста
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+        files:
+          description: Файлы
+          type: array
+          items:
+            $ref: "#/components/schemas/FileResponse"
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+        - files
     MonitorPlaylistResponse:
       type: object
       properties:
@@ -2917,9 +2916,9 @@ components:
           enum: *a59
           example: initial
         renderedFile:
-          type: string
           description: Обработанный файл
-          format: uuid
+          allOf:
+            - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
           description: ""
