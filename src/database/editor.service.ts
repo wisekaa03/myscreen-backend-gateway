@@ -326,7 +326,7 @@ export class EditorService {
   async export(user: UserEntity, editor: EditorEntity): Promise<EditorEntity> {
     const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
     editlyConfig.outPath = path.resolve(mkdirPath, 'out.mp4');
-    editlyConfig.verbose = true;
+    // editlyConfig.verbose = true;
     const editlyJSON = JSON.stringify(editlyConfig);
     const editlyPath = path.resolve(mkdirPath, 'editly.json');
 
@@ -334,18 +334,23 @@ export class EditorService {
       .then(
         () =>
           new Promise<string>((resolve, reject) => {
-            const childEditly = child.fork('node_modules/.bin/editly', [
-              '--json',
-              editlyPath,
-            ]);
-            childEditly.on('stdin', (message: string) => {
-              this.logger.debug(message);
+            const childEditly = child.fork(
+              'node_modules/.bin/editly',
+              ['--json', editlyPath],
+              {
+                silent: true,
+              },
+            );
+            childEditly.stdout?.on('data', (message: Buffer) => {
+              const msg = message.toString();
+              this.logger.log(`Editly: ${msg}`);
             });
-            childEditly.on('stderr', (message: string) => {
-              this.logger.debug(message);
+            childEditly.stderr?.on('data', (message: Buffer) => {
+              const msg = message.toString();
+              this.logger.error(msg);
             });
             childEditly.on('error', (error: Error) => {
-              this.logger.error(error);
+              this.logger.error(error.message, error.stack);
               reject(error);
             });
             childEditly.on(
@@ -412,6 +417,8 @@ export class EditorService {
             renderedFile: filesSaved[0],
           }),
         );
+
+        this.logger.log(`'${files}' has been writed to database`);
       })
       .catch(async (error: Error) => {
         this.logger.error(error);
