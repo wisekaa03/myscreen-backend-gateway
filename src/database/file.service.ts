@@ -142,7 +142,7 @@ export class FileService {
   async upload(
     user: UserEntity,
     {
-      folderId = undefined,
+      folderId: folderIdp = undefined,
       category = FileCategory.Media,
       monitorId = undefined,
     }: FileUploadRequest,
@@ -150,17 +150,22 @@ export class FileService {
     @TransactionRepository(FileEntity)
     fileRepository?: Repository<FileEntity>,
   ): Promise<[Array<FileEntity>, number]> {
+    if (!fileRepository) {
+      throw new NotFoundException('TypeOrm transaction');
+    }
+
     let folder: FolderEntity | undefined;
-    if (!folderId) {
+    if (!folderIdp) {
       folder = await this.folderService.rootFolder(user);
     } else {
       folder = await this.folderService.findOne({
-        where: { userId: user.id, id: folderId },
+        where: { userId: user.id, id: folderIdp },
       });
     }
     if (!folder) {
-      throw new NotFoundException(`Folder '${folderId}' not found`);
+      throw new NotFoundException(`Folder '${folderIdp}' not found`);
     }
+    const folderId = folder.id;
 
     let monitor: MonitorEntity | undefined;
     if (!monitorId && category !== FileCategory.Media) {
@@ -214,7 +219,7 @@ export class FileService {
 
       const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
       return [
-        fileRepository?.save(fileRepository?.create(media)),
+        fileRepository.save(fileRepository.create(media)),
         this.s3Service
           .upload({
             Bucket: this.bucket,
