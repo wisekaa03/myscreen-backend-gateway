@@ -4,6 +4,8 @@ import { Response as ExpressResponse } from 'express';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   Logger,
   NotFoundException,
@@ -18,6 +20,7 @@ import {
   DeepPartial,
   Transaction,
   TransactionRepository,
+  DeleteResult,
 } from 'typeorm';
 
 // import { isAWSError } from '@/shared/is-aws-error';
@@ -39,6 +42,7 @@ export class FileService {
 
   constructor(
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => FolderService))
     private readonly folderService: FolderService,
     private readonly monitorService: MonitorService,
     @InjectS3()
@@ -58,12 +62,15 @@ export class FileService {
    */
   find = async (
     find: FindManyOptions<FileEntity>,
+    relations = true,
   ): Promise<[FileEntity[], number]> =>
     this.fileRepository.findAndCount({
       ...find,
-      loadRelationIds: {
-        relations: ['monitors'],
-      },
+      loadRelationIds: relations
+        ? {
+            relations: ['monitors'],
+          }
+        : undefined,
     });
 
   /**
@@ -75,12 +82,15 @@ export class FileService {
    */
   findOne = async (
     find: FindManyOptions<FileEntity>,
+    relations = true,
   ): Promise<FileEntity | undefined> =>
     this.fileRepository.findOne({
       ...find,
-      loadRelationIds: {
-        relations: ['monitors'],
-      },
+      loadRelationIds: relations
+        ? {
+            relations: ['monitors'],
+          }
+        : undefined,
     });
 
   /**
@@ -151,7 +161,7 @@ export class FileService {
     fileRepository?: Repository<FileEntity>,
   ): Promise<[Array<FileEntity>, number]> {
     if (!fileRepository) {
-      throw new NotFoundException('TypeOrm transaction');
+      throw new ServiceUnavailableException('TypeOrm transaction');
     }
 
     let folder: FolderEntity | undefined;
@@ -367,22 +377,14 @@ export class FileService {
    * Delete files
    * @async
    * @param {UserEntity} user
-   * @param {string} id
+   * @param {string} id File ID
    */
   @Transaction()
   async delete(
-    user: UserEntity,
-    id: string,
+    file: FileEntity,
     @TransactionRepository(FileEntity)
     fileRepository: Repository<FileEntity> = this.fileRepository,
-  ): Promise<FileEntity> {
-    const file = await fileRepository.findOne({
-      where: { userId: user.id, id },
-    });
-    if (!file) {
-      throw new NotFoundException(`Media '${id}' is not exists`);
-    }
-
+  ): Promise<DeleteResult> {
     this.headS3Object(file)
       .then(() =>
         this.deleteS3Object(file).catch((error) => {
@@ -393,7 +395,7 @@ export class FileService {
         this.logger.error('S3 Error headerObject:', error);
       });
 
-    return fileRepository.remove(file);
+    return fileRepository.delete(file);
   }
 
   /**

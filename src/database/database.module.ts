@@ -58,6 +58,7 @@ import { RefreshTokenService } from './refreshtoken.service';
   providers: [
     Logger,
     EditorService,
+    FileService,
     FolderService,
     FileService,
     MonitorService,
@@ -70,8 +71,8 @@ import { RefreshTokenService } from './refreshtoken.service';
 
   exports: [
     EditorService,
-    FolderService,
     FileService,
+    FolderService,
     MonitorService,
     OrderService,
     PaymentService,

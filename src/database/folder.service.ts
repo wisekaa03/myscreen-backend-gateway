@@ -1,12 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
   type FindOneOptions,
   type FindManyOptions,
   DeleteResult,
+  Transaction,
+  TransactionRepository,
 } from 'typeorm';
 
+import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 import { UserEntity } from './user.entity';
 
@@ -15,6 +18,8 @@ export class FolderService {
   private logger = new Logger(FolderService.name);
 
   constructor(
+    @Inject(forwardRef(() => FileService))
+    private readonly fileService: FileService,
     @InjectRepository(FolderEntity)
     private readonly folderRepository: Repository<FolderEntity>,
   ) {}
@@ -28,24 +33,47 @@ export class FolderService {
     find: FindOneOptions<FolderEntity>,
   ): Promise<FolderEntity | undefined> => this.folderRepository.findOne(find);
 
-  rootFolder = async (user: UserEntity): Promise<FolderEntity> =>
-    this.folderRepository.save(
+  rootFolder = async (user: UserEntity): Promise<FolderEntity> => {
+    const folder = await this.folderRepository.findOne({
+      userId: user.id,
+      name: '<Корень>',
+    });
+
+    return this.folderRepository.save(
       this.folderRepository.create({
+        ...folder,
         userId: user.id,
         name: '<Корень>',
         parentFolderId: null,
       }),
     );
+  };
 
   update = async (folder: Partial<FolderEntity>): Promise<FolderEntity> =>
     this.folderRepository.save(this.folderRepository.create(folder));
 
-  delete = async (
+  @Transaction()
+  async delete(
     user: UserEntity,
     folder: FolderEntity,
-  ): Promise<DeleteResult> =>
-    this.folderRepository.delete({
+    @TransactionRepository(FolderEntity)
+    folderRepository: Repository<FolderEntity> = this.folderRepository,
+  ): Promise<DeleteResult> {
+    const [files] = await this.fileService.find(
+      {
+        where: { userId: user.id, folderId: folder.id },
+      },
+      false,
+    );
+
+    const filesPromises = files.map((file) =>
+      this.fileService.deleteS3Object(file),
+    );
+    await Promise.all(filesPromises);
+
+    return folderRepository.delete({
       id: folder.id,
       userId: user.id,
     });
+  }
 }

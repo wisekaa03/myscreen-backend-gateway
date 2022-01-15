@@ -80,7 +80,7 @@ export class FolderEntity {
   @IsUUID()
   parentFolderId!: string | null;
 
-  @OneToMany(() => FileEntity, (file) => file.id, {
+  @OneToMany(() => FileEntity, (file) => file.folder, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     cascade: true,

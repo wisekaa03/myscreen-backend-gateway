@@ -83,10 +83,7 @@ export class FileEntity {
   @IsUUID()
   id!: string;
 
-  @ManyToOne(() => FolderEntity, (folder) => folder.id, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
+  @ManyToOne(() => FolderEntity, (folder) => folder.files, {
     eager: false,
   })
   @JoinColumn({ name: 'folderId' })

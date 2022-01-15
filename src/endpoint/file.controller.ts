@@ -321,9 +321,16 @@ export class FileController {
   })
   async deleteFile(
     @Req() { user }: ExpressRequest,
-    @Param('fileId', ParseUUIDPipe) fileId: string,
+    @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
-    const success = await this.fileService.delete(user, fileId);
+    const file = await this.fileService.findOne({
+      where: { userId: user.id, id },
+    });
+    if (!file) {
+      throw new NotFoundException(`Media '${id}' is not exists`);
+    }
+
+    const success = await this.fileService.delete(file);
 
     if (success) {
       return {
