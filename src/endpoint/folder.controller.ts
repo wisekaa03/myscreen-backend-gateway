@@ -121,18 +121,13 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { name, parentFolderId }: FolderCreateRequest,
   ): Promise<FolderGetResponse> {
-    let parentFolder: FolderEntity | undefined;
-    if (!parentFolderId) {
-      parentFolder = await this.folderService.rootFolder(user);
-    } else {
-      parentFolder = await this.folderService.findOne({
-        where: { userId: user.id, id: parentFolderId },
-      });
-      if (!parentFolder) {
-        throw new BadRequestException(
-          `Folder '${parentFolderId}' is not exists`,
-        );
-      }
+    const parentFolder = parentFolderId
+      ? await this.folderService.findOne({
+          where: { userId: user.id, id: parentFolderId },
+        })
+      : await this.folderService.rootFolder(user);
+    if (!parentFolder) {
+      throw new BadRequestException(`Folder '${parentFolderId}' is not exists`);
     }
 
     return {
