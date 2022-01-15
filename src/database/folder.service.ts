@@ -28,6 +28,15 @@ export class FolderService {
     find: FindOneOptions<FolderEntity>,
   ): Promise<FolderEntity | undefined> => this.folderRepository.findOne(find);
 
+  rootFolder = async (user: UserEntity): Promise<FolderEntity> =>
+    this.folderRepository.save(
+      this.folderRepository.create({
+        userId: user.id,
+        name: '<Корень>',
+        parentFolderId: null,
+      }),
+    );
+
   update = async (folder: Partial<FolderEntity>): Promise<FolderEntity> =>
     this.folderRepository.save(this.folderRepository.create(folder));
 

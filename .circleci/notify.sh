@@ -13,9 +13,9 @@ fi
 if [ "$1" == "start" ]; then
 	TYPE="Starting"
 elif [ "$1" == "end" ]; then
-   TYPE="Finished"
+  TYPE="Finished"
 else
-   TYPE="[ERRORED](${CIRCLE_BUILD_URL})"
+  TYPE="[ERRORED](${CIRCLE_BUILD_URL})"
 fi
 
 ORIGIN_URL=`git config --get remote.origin.url`; \

@@ -92,7 +92,7 @@ export class FileEntity {
   @JoinColumn({ name: 'folderId' })
   folder!: FolderEntity;
 
-  @Column({ nullable: true })
+  @Column()
   @ApiProperty({
     description: 'Папка',
     type: 'string',
@@ -102,7 +102,7 @@ export class FileEntity {
   @IsDefined()
   @IsNotEmpty()
   @IsUUID()
-  folderId!: string;
+  folderId?: string;
 
   @Column()
   @ApiProperty({
@@ -159,7 +159,7 @@ export class FileEntity {
   @IsDefined()
   @IsNotEmpty()
   @IsEnum(FileCategory)
-  category!: FileCategory;
+  category?: FileCategory;
 
   @Column({ type: 'integer' })
   @ApiProperty({

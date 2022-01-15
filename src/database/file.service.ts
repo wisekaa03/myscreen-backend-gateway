@@ -29,6 +29,7 @@ import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
 import { MonitorService } from './monitor.service';
 import { MonitorEntity } from './monitor.entity';
+import { FolderEntity } from './folder.entity';
 
 @Injectable()
 export class FileService {
@@ -141,7 +142,7 @@ export class FileService {
   async upload(
     user: UserEntity,
     {
-      folderId,
+      folderId = undefined,
       category = FileCategory.Media,
       monitorId = undefined,
     }: FileUploadRequest,
@@ -149,9 +150,14 @@ export class FileService {
     @TransactionRepository(FileEntity)
     fileRepository?: Repository<FileEntity>,
   ): Promise<[Array<FileEntity>, number]> {
-    const folder = await this.folderService.findOne({
-      where: { userId: user.id, id: folderId },
-    });
+    let folder: FolderEntity | undefined;
+    if (!folderId) {
+      folder = await this.folderService.rootFolder(user);
+    } else {
+      folder = await this.folderService.findOne({
+        where: { userId: user.id, id: folderId },
+      });
+    }
     if (!folder) {
       throw new NotFoundException(`Folder '${folderId}' not found`);
     }

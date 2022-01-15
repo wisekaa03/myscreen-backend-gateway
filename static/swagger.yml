@@ -1703,7 +1703,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.5.6
+  version: 2.5.7
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3328,9 +3328,6 @@ components:
           type: string
           format: uuid
           description: Монитор
-      required:
-        - folderId
-        - category
     FilesUploadResponse:
       type: object
       properties:

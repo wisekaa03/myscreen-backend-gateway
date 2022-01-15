@@ -40,6 +40,7 @@ import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { FolderService } from '@/database/folder.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { FolderEntity } from '@/database/folder.entity';
 
 @ApiResponse({
   status: 400,
@@ -120,20 +121,16 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { name, parentFolderId }: FolderCreateRequest,
   ): Promise<FolderGetResponse> {
+    let parentFolder: FolderEntity | undefined;
     if (!parentFolderId) {
-      const parentFolder = await this.folderService.findOne({
-        where: { userId: user.id, name, parentFolderId: null },
-      });
-      if (parentFolder) {
-        throw new BadRequestException(`Folder '${name}' exists`);
-      }
+      parentFolder = await this.folderService.rootFolder(user);
     } else {
-      const parentFolder = await this.folderService.findOne({
+      parentFolder = await this.folderService.findOne({
         where: { userId: user.id, id: parentFolderId },
       });
       if (!parentFolder) {
         throw new BadRequestException(
-          `Parent folder '${parentFolderId}' is not exists`,
+          `Folder '${parentFolderId}' is not exists`,
         );
       }
     }
@@ -143,7 +140,7 @@ export class FolderController {
       data: await this.folderService.update({
         userId: user.id,
         name,
-        parentFolderId,
+        parentFolderId: parentFolder.id,
       }),
     };
   }
