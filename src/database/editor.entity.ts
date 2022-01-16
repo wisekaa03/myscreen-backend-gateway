@@ -109,9 +109,8 @@ export class EditorEntity {
   renderingError!: string | null;
 
   @ManyToOne(() => FileEntity, (file) => file.id, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
+    onUpdate: 'NO ACTION',
+    onDelete: 'NO ACTION',
     nullable: true,
     eager: true,
   })
