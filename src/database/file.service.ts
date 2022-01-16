@@ -239,7 +239,9 @@ export class FileService {
           })
           .promise()
           .then(() => {
-            this.logger.debug(`The file '${file.path}' has been writed on S3`);
+            this.logger.debug(
+              `The file '${file.path}' has been uploaded on S3`,
+            );
           })
           .catch((error) => {
             this.logger.error('S3 Error: upload', error);

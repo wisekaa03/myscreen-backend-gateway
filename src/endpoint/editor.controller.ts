@@ -243,7 +243,10 @@ export class EditorController {
       throw new NotFoundException(`Editor '${id}' is not found`);
     }
 
-    await this.editorService.delete(user, editor);
+    const { affected } = await this.editorService.delete(user, editor);
+    if (!affected) {
+      throw new NotFoundException('This editor is not exists');
+    }
 
     return {
       status: Status.Success,
@@ -293,7 +296,7 @@ export class EditorController {
 
     const data = await this.editorService.updateLayer(user, id, update);
     if (!data) {
-      throw new InternalServerError();
+      throw new NotFoundException('This editor layer is not exists');
     }
 
     return {
@@ -334,7 +337,7 @@ export class EditorController {
       },
     });
     if (!editorLayer) {
-      throw new InternalServerError();
+      throw new NotFoundException('This editor layer is not exists');
     }
 
     return {
@@ -386,7 +389,7 @@ export class EditorController {
 
     const data = await this.editorService.updateLayer(user, id, update);
     if (!data) {
-      throw new InternalServerError();
+      throw new NotFoundException('This editor layer is not exists');
     }
 
     return {
@@ -440,7 +443,7 @@ export class EditorController {
     };
     const data = await this.editorService.updateLayer(user, id, update);
     if (!data) {
-      throw new InternalServerError();
+      throw new NotFoundException('This editor layer is not exists');
     }
 
     return {
@@ -479,7 +482,10 @@ export class EditorController {
       throw new NotFoundException(`Editor layer '${layerId}' is not found`);
     }
 
-    await this.editorService.deleteLayer(editorLayer);
+    const { affected } = await this.editorService.deleteLayer(editorLayer);
+    if (!affected) {
+      throw new NotFoundException('This editor layer is not exists');
+    }
 
     return {
       status: Status.Success,

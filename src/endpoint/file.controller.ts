@@ -314,7 +314,7 @@ export class FileController {
       })
       .promise()
       .then(() => {
-        this.logger.debug(`The file ${file.originalName} has been uploaded`);
+        this.logger.debug(`The file ${file.originalName} has been downloaded`);
       })
       .catch((error) => {
         throw new NotFoundException(`S3 Error: ${error}`);
@@ -343,14 +343,13 @@ export class FileController {
       throw new NotFoundException(`Media '${id}' is not exists`);
     }
 
-    const success = await this.fileService.delete(file);
-
-    if (success) {
-      return {
-        status: Status.Success,
-      };
+    const { affected } = await this.fileService.delete(file);
+    if (!affected) {
+      throw new NotFoundException('This file is not exists');
     }
 
-    throw new NotFoundException('This file is not exists');
+    return {
+      status: Status.Success,
+    };
   }
 }

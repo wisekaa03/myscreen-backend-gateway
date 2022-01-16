@@ -212,7 +212,10 @@ export class FolderController {
       throw new NotFoundException(`Folder '${id}' is not found`);
     }
 
-    await this.folderService.delete(user, folder);
+    const { affected } = await this.folderService.delete(user, folder);
+    if (!affected) {
+      throw new NotFoundException('This folder is not exists');
+    }
 
     return {
       status: Status.Success,

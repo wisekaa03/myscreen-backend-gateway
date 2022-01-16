@@ -6,6 +6,7 @@ import {
   Get,
   HttpCode,
   Logger,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -207,10 +208,13 @@ export class UserController {
     }
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new NotFoundException('This user is not exists');
     }
 
-    await this.userService.delete(user);
+    const { affected } = await this.userService.delete(user);
+    if (!affected) {
+      throw new NotFoundException('This user is not exists');
+    }
 
     return {
       status: Status.Success,
