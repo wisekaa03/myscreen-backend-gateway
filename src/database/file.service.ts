@@ -238,6 +238,9 @@ export class FileService {
             Body: createReadStream(file.path),
           })
           .promise()
+          .then(() => {
+            this.logger.debug(`The file '${file.path}' has been writed on S3`);
+          })
           .catch((error) => {
             this.logger.error('S3 Error: upload', error);
             throw new ServiceUnavailableException(error);
@@ -298,27 +301,6 @@ export class FileService {
       .promise();
 
   /**
-   * Get file from S3
-   * @async
-   * @param {ExpressRequest} request
-   * @param {UserEntity} user
-   * @param {string} id
-   */
-  async getFileS3(
-    user: UserEntity,
-    id: string,
-  ): Promise<AWS.Request<AWS.S3.GetObjectOutput, AWS.AWSError>> {
-    const file = await this.fileRepository.findOne({
-      where: { userId: user.id, id },
-    });
-    if (!file) {
-      throw new NotFoundException(`File '${id}' is not exists`);
-    }
-
-    return this.getS3Object(file);
-  }
-
-  /**
    * TODO: Get file preview from S3
    * @async
    * @param {ExpressRequest} request
@@ -372,12 +354,22 @@ export class FileService {
   async delete(file: FileEntity): Promise<DeleteResult> {
     this.headS3Object(file)
       .then(() =>
-        this.deleteS3Object(file).catch((error) => {
-          this.logger.error('S3 Error deleteObject:', error);
-        }),
+        this.deleteS3Object(file)
+          .then((value) => {
+            this.logger.debug(
+              `The file has been deleted: ${
+                value.$response.data?.DeleteMarker || true
+              }`,
+            );
+          })
+          .catch((error) => {
+            this.logger.error(
+              `S3 Error deleteObject: ${JSON.stringify(error)}`,
+            );
+          }),
       )
       .catch((error) => {
-        this.logger.error('S3 Error headerObject:', error);
+        this.logger.error(`S3 Error headerObject: ${JSON.stringify(error)}`);
       });
 
     return this.fileRepository.delete(file.id);
