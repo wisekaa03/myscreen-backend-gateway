@@ -287,7 +287,17 @@ export class FileController {
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
-    const getFileS3 = await this.fileService.getFileS3(user, id);
+    const file = await this.fileService.findOne(
+      {
+        where: { userId: user.id, id },
+      },
+      false,
+    );
+    if (!file) {
+      throw new NotFoundException(`File '${id}' is not exists`);
+    }
+
+    const getFileS3 = this.fileService.getS3Object(file);
     getFileS3
       .on('httpHeaders', (statusCode, headers, awsResponse) => {
         if (statusCode === 200) {
@@ -303,6 +313,9 @@ export class FileController {
         }
       })
       .promise()
+      .then(() => {
+        this.logger.debug(`The file ${file.originalName} has been uploaded`);
+      })
       .catch((error) => {
         throw new NotFoundException(`S3 Error: ${error}`);
       });
