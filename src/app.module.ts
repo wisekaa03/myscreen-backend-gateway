@@ -18,6 +18,7 @@ import { EndpointModule } from '@/endpoint/endpoint.module';
     LoggerModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
         pinoHttp: {
+          level: configService.get<pino.LevelWithSilent>('LOG_LEVEL', 'debug'),
           transport: {
             targets: [
               {

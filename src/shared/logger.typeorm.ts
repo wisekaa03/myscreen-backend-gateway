@@ -20,7 +20,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     } else {
       parameters = param;
     }
-    this.logger.debug({ message, parameters });
+    this.logger.debug(message, parameters);
   };
 
   /**
@@ -40,11 +40,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     } else {
       parameters = param;
     }
-    this.logger.error({
-      message,
-      error,
-      parameters,
-    });
+    this.logger.error(message, error, parameters);
   };
 
   /**
@@ -55,24 +51,19 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     query: string,
     parameters?: unknown[],
     // queryRunner?: QueryRunner,
-  ): void =>
-    this.logger.debug({ message: `Time is slow: ${time}`, parameters });
+  ): void => this.logger.debug(`Time is slow: ${time}`, parameters);
 
   /**
    * Logs events from the schema build process.
    */
   logSchemaBuild = (message: string /* queryRunner?: QueryRunner */): void =>
-    this.logger.debug({
-      message,
-    });
+    this.logger.debug(message);
 
   /**
    * Logs events from the migrations run process.
    */
   logMigration = (message: string /* queryRunner?: QueryRunner */): void =>
-    this.logger.debug({
-      message,
-    });
+    this.logger.debug(message);
 
   /**
    * Perform logging using given logger, or by default to the console.
