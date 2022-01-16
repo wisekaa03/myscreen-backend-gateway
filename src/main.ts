@@ -33,13 +33,14 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
       credentials: true,
     },
   });
+  const logger = app.get(Logger);
+  app.useLogger(logger);
+  app.flushLogs();
   app.disable('x-powered-by');
   app.disable('server');
-  const logger = app.get(Logger);
   const httpAdaper = app.get(HttpAdapterHost);
   app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
   app.setGlobalPrefix(apiPath, { exclude: ['/'] });
-  app.useLogger(logger);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
