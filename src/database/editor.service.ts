@@ -375,7 +375,9 @@ export class EditorService {
         );
         childEditly.stdout?.on('data', async (message: Buffer) => {
           const msg = message.toString();
-          this.logger.debug(`Editly: ${msg}`);
+          this.logger.debug(
+            `Editly on '${renderEditor.id}/name=${renderEditor.name}': ${msg}`,
+          );
           // TODO: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
           const percent = msg.match(/(\d+%)/g);
           if (Array.isArray(percent) && percent.length > 0) {
