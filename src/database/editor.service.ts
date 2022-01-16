@@ -338,15 +338,12 @@ export class EditorService {
       return editor;
     }
 
-    await this.editorRepository.save(
-      this.editorRepository.create({
-        id: editor.id,
-        totalDuration: this.calculateDuration(editor.videoLayers),
-        renderingStatus: RenderingStatus.Pending,
-        renderingError: null,
-        renderingPercent: 0,
-      }),
-    );
+    await this.editorRepository.update(editor.id, {
+      totalDuration: this.calculateDuration(editor.videoLayers),
+      renderingStatus: RenderingStatus.Pending,
+      renderingError: null,
+      renderingPercent: 0,
+    });
     editor = await this.editorRepository.findOne(editor.id, {
       relations: ['videoLayers', 'audioLayers', 'renderedFile'],
     });
@@ -355,12 +352,9 @@ export class EditorService {
     }
     if (editor.renderedFile) {
       await this.fileService.delete(editor.renderedFile);
-      await this.editorRepository.save(
-        this.editorRepository.create({
-          id: editor.id,
-          renderedFile: null,
-        }),
-      );
+      await this.editorRepository.update(editor.id, {
+        renderedFile: null,
+      });
       editor = await this.editorRepository.findOne(editor.id, {
         relations: ['videoLayers', 'audioLayers', 'renderedFile'],
       });
@@ -391,12 +385,9 @@ export class EditorService {
           // TODO: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
           const percent = msg.match(/(\d+%)/g);
           if (Array.isArray(percent) && percent.length > 0) {
-            await this.editorRepository.save(
-              this.editorRepository.create({
-                id: renderEditor.id,
-                renderingPercent: parseInt(percent[percent.length - 1], 10),
-              }),
-            );
+            await this.editorRepository.update(renderEditor.id, {
+              renderingPercent: parseInt(percent[percent.length - 1], 10),
+            });
           }
         });
         childEditly.stderr?.on('data', (message: Buffer) => {
@@ -420,14 +411,11 @@ export class EditorService {
         );
       }).catch(async (error) => {
         this.logger.error(error);
-        await this.editorRepository.save(
-          this.editorRepository.create({
-            id: renderEditor.id,
-            renderingError: error.message,
-            renderingStatus: RenderingStatus.Error,
-            renderingPercent: null,
-          }),
-        );
+        await this.editorRepository.update(renderEditor.id, {
+          renderingError: error.message,
+          renderingStatus: RenderingStatus.Error,
+          renderingPercent: null,
+        });
       });
 
       if (!outPath) {
@@ -481,28 +469,22 @@ export class EditorService {
         files,
       );
 
-      await this.editorRepository.save(
-        this.editorRepository.create({
-          id: renderEditor.id,
-          renderingStatus: RenderingStatus.Ready,
-          renderedFile: filesSaved[0],
-          renderingPercent: 100,
-          renderingError: null,
-        }),
-      );
+      await this.editorRepository.update(renderEditor.id, {
+        renderingStatus: RenderingStatus.Ready,
+        renderedFile: filesSaved[0],
+        renderingPercent: 100,
+        renderingError: null,
+      });
 
       this.logger.log(`'${JSON.stringify(files)}' has been writed to database`);
     })(editor).catch(async (error) => {
       this.logger.error(error);
       if (editor) {
-        await this.editorRepository.save(
-          this.editorRepository.create({
-            id: editor.id,
-            renderingError: error.message,
-            renderingStatus: RenderingStatus.Error,
-            renderingPercent: null,
-          }),
-        );
+        await this.editorRepository.update(editor.id, {
+          renderingError: error.message,
+          renderingStatus: RenderingStatus.Error,
+          renderingPercent: null,
+        });
       }
     });
 
