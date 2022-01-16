@@ -277,22 +277,15 @@ export class FileService {
         Bucket: this.bucket,
         Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
       })
-      .on('error', (error) => {
-        this.logger.error(error, error.stack, FileService.name);
-      })
       .promise();
 
   getS3Object = (
     file: FileEntity,
   ): AWS.Request<AWS.S3.GetObjectOutput, AWS.AWSError> =>
-    this.s3Service
-      .getObject({
-        Bucket: this.bucket,
-        Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
-      })
-      .on('error', (error) => {
-        this.logger.error(error, error.stack, FileService.name);
-      });
+    this.s3Service.getObject({
+      Bucket: this.bucket,
+      Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
+    });
 
   deleteS3Object = (
     file: FileEntity,
@@ -301,9 +294,6 @@ export class FileService {
       .deleteObject({
         Bucket: this.bucket,
         Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
-      })
-      .on('error', (error) => {
-        this.logger.error(error, error.stack, FileService.name);
       })
       .promise();
 

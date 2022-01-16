@@ -344,23 +344,17 @@ export class EditorService {
       renderingError: null,
       renderingPercent: 0,
     });
-    editor = await this.editorRepository.findOne(editor.id, {
-      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
-    });
-    if (!editor) {
-      throw new NotFoundException('Editor not found');
-    }
     if (editor.renderedFile) {
       await this.fileService.delete(editor.renderedFile);
       await this.editorRepository.update(editor.id, {
         renderedFile: null,
       });
-      editor = await this.editorRepository.findOne(editor.id, {
-        relations: ['videoLayers', 'audioLayers', 'renderedFile'],
-      });
-      if (!editor) {
-        throw new NotFoundException('Editor not found');
-      }
+    }
+    editor = await this.editorRepository.findOne(editor.id, {
+      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
+    });
+    if (!editor) {
+      throw new NotFoundException('Editor not found');
     }
 
     const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
@@ -432,11 +426,13 @@ export class EditorService {
           userId: user.id,
         },
       });
-      folder = await this.folderService.update({
-        name: '<Исполненные>',
-        parentFolderId: parentFolder.id,
-        userId: user.id,
-      });
+      if (!folder) {
+        folder = await this.folderService.update({
+          name: '<Исполненные>',
+          parentFolderId: parentFolder.id,
+          userId: user.id,
+        });
+      }
       const media = await ffprobe(outPath, {
         showFormat: true,
         showStreams: true,
