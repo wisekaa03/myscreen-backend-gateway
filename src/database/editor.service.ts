@@ -425,19 +425,11 @@ export class EditorService {
       const { size } = await fs.stat(outPath);
 
       const parentFolder = await this.folderService.rootFolder(user);
-      let folder = await this.folderService.findOne({
-        where: {
-          name: '<Исполненные>',
-          parentFolderId: parentFolder.id,
-          userId: user.id,
-        },
+      const folder = await this.folderService.update({
+        name: '<Исполненные>',
+        parentFolderId: parentFolder.id,
+        userId: user.id,
       });
-      if (!folder) {
-        folder = await this.folderService.update({
-          name: '<Исполненные>',
-          userId: user.id,
-        });
-      }
       const media = await ffprobe(outPath, {
         showFormat: true,
         showStreams: true,
