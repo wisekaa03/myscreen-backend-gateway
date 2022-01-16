@@ -425,7 +425,14 @@ export class EditorService {
       const { size } = await fs.stat(outPath);
 
       const parentFolder = await this.folderService.rootFolder(user);
-      const folder = await this.folderService.update({
+      let folder = await this.folderService.findOne({
+        where: {
+          name: '<Исполненные>',
+          parentFolderId: parentFolder.id,
+          userId: user.id,
+        },
+      });
+      folder = await this.folderService.update({
         name: '<Исполненные>',
         parentFolderId: parentFolder.id,
         userId: user.id,
