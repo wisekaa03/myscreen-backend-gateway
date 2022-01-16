@@ -5,6 +5,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsString,
   IsUUID,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -89,8 +90,23 @@ export class EditorEntity {
   @IsEnum(RenderingStatus)
   renderingStatus!: RenderingStatus;
 
-  @Column({ nullable: true })
-  renderingError!: string;
+  @Column({
+    type: 'integer',
+    default: null,
+    nullable: true,
+  })
+  @ApiProperty({
+    type: 'integer',
+    description: 'Процент рендеринга',
+    example: '0',
+    required: false,
+  })
+  @IsNumber()
+  renderingPercent!: number | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  @IsString()
+  renderingError!: string | null;
 
   @ManyToOne(() => FileEntity, (file) => file.id, {
     onUpdate: 'CASCADE',
@@ -105,7 +121,7 @@ export class EditorEntity {
     type: 'string',
     allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
-  renderedFile!: FileEntity;
+  renderedFile!: FileEntity | null;
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({

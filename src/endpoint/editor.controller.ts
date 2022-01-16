@@ -46,6 +46,7 @@ import {
   EditorLayerUpdateRequest,
   EditorGetRenderingStatusResponse,
   EditorLayerMoveRequest,
+  EditorExportRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -545,7 +546,13 @@ export class EditorController {
         userId: user.id,
         id,
       },
-      select: ['id', 'renderingStatus', 'renderingError', 'renderedFile'],
+      select: [
+        'id',
+        'renderingStatus',
+        'renderingPercent',
+        'renderingError',
+        'renderedFile',
+      ],
     });
     if (!data) {
       throw new NotFoundException('Editor not found');
@@ -571,19 +578,9 @@ export class EditorController {
   async postEditorExport(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
+    @Body() { rerender }: EditorExportRequest,
   ): Promise<EditorGetResponse> {
-    const editor = await this.editorService.findOne({
-      where: {
-        userId: user.id,
-        id,
-      },
-      relations: ['videoLayers', 'audioLayers'],
-    });
-    if (!editor) {
-      throw new NotFoundException('Editor not found');
-    }
-
-    const data = await this.editorService.export(user, editor);
+    const data = await this.editorService.export(user, id, rerender);
 
     return {
       status: Status.Success,

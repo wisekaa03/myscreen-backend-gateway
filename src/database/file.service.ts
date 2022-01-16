@@ -379,12 +379,7 @@ export class FileService {
    * @param {UserEntity} user
    * @param {string} id File ID
    */
-  @Transaction()
-  async delete(
-    file: FileEntity,
-    @TransactionRepository(FileEntity)
-    fileRepository: Repository<FileEntity> = this.fileRepository,
-  ): Promise<DeleteResult> {
+  async delete(file: FileEntity): Promise<DeleteResult> {
     this.headS3Object(file)
       .then(() =>
         this.deleteS3Object(file).catch((error) => {
@@ -395,7 +390,7 @@ export class FileService {
         this.logger.error('S3 Error headerObject:', error);
       });
 
-    return fileRepository.delete(file);
+    return this.fileRepository.delete(file.id);
   }
 
   /**
