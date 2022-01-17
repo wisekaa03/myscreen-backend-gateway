@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  ForbiddenException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
@@ -49,12 +44,12 @@ export class AuthService {
     fingerprint?: string,
   ): Promise<[Partial<UserEntity>, AuthenticationPayload]> {
     if (!email || !password) {
-      throw new UnauthorizedException('Password mismatched', password);
+      throw new ForbiddenException('Password mismatched', password);
     }
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Password mismatched', password);
+      throw new ForbiddenException('Password mismatched', password);
     }
     if (!user.verified) {
       throw new ForbiddenException('You have to respond to our email', email);
@@ -64,7 +59,7 @@ export class AuthService {
       ? this.userService.validateCredentials(user, password)
       : false;
     if (!valid) {
-      throw new UnauthorizedException('Password mismatched', password);
+      throw new ForbiddenException('Password mismatched', password);
     }
 
     const [token, refresh] = await Promise.all([
@@ -209,10 +204,10 @@ export class AuthService {
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     if (user.verified) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
     if (user.emailConfirmKey === verifyToken) {

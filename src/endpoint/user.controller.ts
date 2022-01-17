@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   Logger,
@@ -10,7 +11,6 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -100,7 +100,7 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
     await this.userService.update(user, { disabled: true });
@@ -126,7 +126,7 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
     await this.userService.update(user, { disabled: false });
@@ -151,7 +151,7 @@ export class UserController {
   ): Promise<UserGetResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     const { password, ...data } = user;
 
@@ -178,7 +178,7 @@ export class UserController {
   ): Promise<UserGetResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
     return {

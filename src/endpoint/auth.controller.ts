@@ -1,13 +1,13 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   Logger,
   Patch,
   Post,
   Req,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -95,7 +95,7 @@ export class AuthController {
     @Req() { user }: ExpressRequest,
   ): Promise<UserGetResponse> {
     if (!user) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     const data = userEntityToUser(user);
 
@@ -282,7 +282,7 @@ export class AuthController {
   })
   async disable(@Req() { user }: ExpressRequest): Promise<SuccessResponse> {
     if (!user) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     await this.userService.update(user, { disabled: true });
 

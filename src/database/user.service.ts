@@ -5,7 +5,6 @@ import {
   PreconditionFailedException,
   ForbiddenException,
   BadRequestException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -120,7 +119,7 @@ export class UserService {
     const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
-    if (process.env.NODE_END !== 'production') {
+    if (process.env.NODE_ENV !== 'production') {
       return this.userRepository.save(this.userRepository.create(user));
     }
 
@@ -196,7 +195,7 @@ export class UserService {
 
     const user = await this.userRepository.findOne({ email });
     if (!user) {
-      throw new UnauthorizedException('User not exists', email);
+      throw new ForbiddenException('User not exists', email);
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
