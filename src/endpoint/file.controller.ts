@@ -304,6 +304,10 @@ export class FileController {
           res.setHeader('Content-Length', headers['content-length']);
           res.setHeader('Content-Type', headers['content-type']);
           res.setHeader('Last-Modified', headers['last-modified']);
+          res.setHeader(
+            'Content-Disposition',
+            `attachment;filename=${file.originalName}`,
+          );
           if (!res.headersSent) {
             res.flushHeaders();
           }
