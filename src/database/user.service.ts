@@ -123,13 +123,19 @@ export class UserService {
       return this.userRepository.save(this.userRepository.create(user));
     }
 
-    const savedUser = await Promise.all([
+    const [saved] = await Promise.all([
       this.userRepository.save(this.userRepository.create(user)),
-      this.mailService.sendWelcomeMessage(email),
-      this.mailService.sendVerificationCode(email, confirmUrl),
-    ]).then(([saved]) => saved);
+      this.mailService.sendWelcomeMessage(email).catch((error) => {
+        this.logger.error(error);
+      }),
+      this.mailService
+        .sendVerificationCode(email, confirmUrl)
+        .catch((error) => {
+          this.logger.error(error);
+        }),
+    ]);
 
-    return savedUser;
+    return saved;
   }
 
   /**

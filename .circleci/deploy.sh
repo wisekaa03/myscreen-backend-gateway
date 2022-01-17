@@ -45,6 +45,7 @@ function load_env() {
 
   echo "MAILGUN_API_KEY=$MAIL_API_KEY" >>.env
   echo "MAILGUN_API_DOMAIN=$MAIL_API_DOMAIN" >>.env
+  echo "MAILGUN_API_HOST=$MAILGUN_API_HOST" >>.env
 
   echo "Environments was loaded!"
 }
