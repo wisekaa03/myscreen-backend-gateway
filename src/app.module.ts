@@ -10,6 +10,7 @@ import { MailModule } from '@/mail/mail.module';
 import { DatabaseModule } from '@/database/database.module';
 import { AuthModule } from '@/auth/auth.module';
 import { EndpointModule } from '@/endpoint/endpoint.module';
+import { EventsModule } from '@/websocket/events.module';
 // import { LoggingInterceptor } from '@/intercept/logging.interceptor';
 
 @Module({
@@ -54,6 +55,8 @@ import { EndpointModule } from '@/endpoint/endpoint.module';
     DatabaseModule,
     AuthModule,
     EndpointModule,
+
+    EventsModule,
   ],
   providers: [
     Logger,

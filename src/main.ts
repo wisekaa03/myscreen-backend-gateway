@@ -12,6 +12,11 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
 
+import {
+  AsyncApiDocumentBuilder,
+  AsyncApiModule,
+  AsyncServerObject,
+} from 'nestjs-asyncapi';
 import { version, author, homepage, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ExceptionsFilter } from './exception/exceptions.filter';
@@ -19,9 +24,11 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 (async () => {
   const configService = new ConfigService();
   const apiPath = configService.get<string>('API_PATH', '/api/v2');
+  const wsPath = configService.get<string>('WS_PATH', '/api/v2/ws');
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
+    autoFlushLogs: true,
     cors: {
       origin: [
         'https://cp.myscreen.ru',
@@ -38,8 +45,8 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   app.flushLogs();
   app.disable('x-powered-by');
   app.disable('server');
-  const httpAdaper = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
+  const httpAdaperHost = app.get(HttpAdapterHost);
+  app.useGlobalFilters(new ExceptionsFilter(httpAdaperHost.httpAdapter));
   app.setGlobalPrefix(apiPath, { exclude: ['/'] });
   app.useGlobalPipes(
     new ValidationPipe({
@@ -85,22 +92,59 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     },
     customSiteTitle: description,
     customCss:
-      // ".swagger-ui .topbar { display: none }",
       ".swagger-ui .topbar img { content: url('/favicon.ico') } .swagger-ui .topbar a::after { margin-left: 10px; content: 'MyScreen' }",
   };
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  writeFile(
-    pathResolve(__dirname, '../../static', 'swagger.yml'),
-    yamlStringify(swaggerDocument),
-    () => {
-      logger.log('The swagger.yml file has been writed', NestApplication.name);
-    },
-  );
+  (async () => {
+    writeFile(
+      pathResolve(__dirname, '../../static', 'swagger.yml'),
+      yamlStringify(swaggerDocument),
+      () => {
+        logger.debug(
+          'The swagger.yml file has been writed',
+          NestApplication.name,
+        );
+      },
+    );
+  })();
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
+  const asyncApiServer: AsyncServerObject = {
+    url: 'ws://localhost:4001',
+    protocol: 'socket.io',
+    protocolVersion: '4',
+    description:
+      'Allows you to connect using the websocket protocol to our Socket.io server.',
+    security: [{ 'user-password': [] }],
+    variables: {
+      port: {
+        description: 'Secure connection (TLS) is available through port 443.',
+        default: '443',
+      },
+    },
+    bindings: {},
+  };
+
+  const asyncApiOptions = new AsyncApiDocumentBuilder()
+    .setTitle(description)
+    .setDescription(description)
+    .setVersion(version)
+    .setDefaultContentType('application/json')
+    // .addBearerAuth({
+    //   type: 'http',
+    //   description: 'Токен авторизации',
+    //   name: 'token',
+    // })
+    .addSecurity('user-password', { type: 'userPassword' })
+    .addServer('file', asyncApiServer)
+    .build();
+  const asyncapiDocument = AsyncApiModule.createDocument(app, asyncApiOptions);
+  await AsyncApiModule.setup(wsPath, app, asyncapiDocument);
+
   await app.listen(configService.get<number>('PORT', 3000));
+  const url = await app.getUrl();
   logger.warn(
-    `Server version ${version} started on ${await app.getUrl()}`,
+    `Server version ${version} started on ${`${url}${apiPath}`}, ${`${url}${wsPath}`}`,
     NestApplication.name,
   );
 })();
