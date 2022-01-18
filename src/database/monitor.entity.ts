@@ -178,12 +178,11 @@ export class MonitorEntity {
   @IsUUID()
   userId!: string;
 
-  @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    cascade: true,
+  @ManyToOne(() => PlaylistEntity, (playlist) => playlist.monitors, {
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
+    nullable: true,
   })
-  @JoinColumn()
   playlist?: PlaylistEntity | null;
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {

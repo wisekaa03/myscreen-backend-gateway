@@ -23,6 +23,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 
 (async () => {
   const configService = new ConfigService();
+  const port = configService.get<number>('PORT', 3000);
   const apiPath = configService.get<string>('API_PATH', '/api/v2');
   const wsPath = configService.get<string>('WS_PATH', '/api/v2/ws');
 
@@ -110,18 +111,17 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
   const asyncApiServer: AsyncServerObject = {
-    url: 'ws://localhost:4001',
+    url: `ws://localhost:${port}`,
     protocol: 'socket.io',
     protocolVersion: '4',
-    description:
-      'Allows you to connect using the websocket protocol to our Socket.io server.',
+    description,
     security: [{ 'user-password': [] }],
-    variables: {
-      port: {
-        description: 'Secure connection (TLS) is available through port 443.',
-        default: '443',
-      },
-    },
+    // variables: {
+    //   port: {
+    //     description: 'Secure connection (TLS) is available through port 443.',
+    //     default: '443',
+    //   },
+    // },
     bindings: {},
   };
 
@@ -129,6 +129,8 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .setTitle(description)
     .setDescription(description)
     .setVersion(version)
+    .setExternalDoc(description, homepage)
+    .setContact(author.name, author.url, author.email)
     .setDefaultContentType('application/json')
     // .addBearerAuth({
     //   type: 'http',
@@ -136,12 +138,21 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     //   name: 'token',
     // })
     .addSecurity('user-password', { type: 'userPassword' })
+    .addTag('auth', 'Аутентификация пользователя')
+    .addTag('user', 'Пользователи (только администратор)')
+    .addTag('folder', 'Папки')
+    .addTag('file', 'Файлы')
+    .addTag('playlist', 'Плейлисты')
+    .addTag('monitor', 'Мониторы')
+    .addTag('editor', 'Редакторы')
+    .addTag('order', 'Заказы')
+    .addTag('payment', 'Оплата')
     .addServer('file', asyncApiServer)
     .build();
   const asyncapiDocument = AsyncApiModule.createDocument(app, asyncApiOptions);
   await AsyncApiModule.setup(wsPath, app, asyncapiDocument);
 
-  await app.listen(configService.get<number>('PORT', 3000));
+  await app.listen(port);
   const url = await app.getUrl();
   logger.warn(
     `Server version ${version} started on ${`${url}${apiPath}`}, ${`${url}${wsPath}`}`,

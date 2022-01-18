@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger, UnauthorizedException } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -14,9 +14,11 @@ import type { IncomingMessage } from 'http';
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
-import { LoginRequest } from '@/dto';
+import { FileRequest, LoginRequest } from '@/dto';
 
-@AsyncApiService()
+@AsyncApiService({
+  serviceName: 'file',
+})
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -25,11 +27,11 @@ import { LoginRequest } from '@/dto';
   transports: ['websocket'],
   namespace: 'file',
 })
-export class EventsGateway implements OnGatewayConnection {
+export class FileGatewayProvider implements OnGatewayConnection {
   @WebSocketServer()
   server!: Server;
 
-  private logger = new Logger(EventsGateway.name);
+  private logger = new Logger(FileGatewayProvider.name);
 
   handleConnection(client: Socket, ...[req]: IncomingMessage[]) {
     const ip = req.headers['x-forwarded-for'] || req.socket?.remoteAddress;
@@ -40,20 +42,15 @@ export class EventsGateway implements OnGatewayConnection {
     client.send(JSON.stringify({ event: 'connected' }));
   }
 
-  @SubscribeMessage('ping')
-  handlePing(@MessageBody() data: number): WsResponse<boolean> {
-    return { event: 'pong', data: !!(data % 2) };
-  }
-
-  @SubscribeMessage('message')
+  @SubscribeMessage('file/get-s3')
   @AsyncApiSub({
-    channel: 'message',
-    summary: 'Send test packet',
-    description: 'method is used for test purposes',
+    channel: 'file',
+    description: 'Скачивание медиа',
+    tags: [{ name: 'file' }],
     message: {
       name: 'test packet',
       payload: {
-        type: LoginRequest,
+        type: String,
       },
     },
   })
@@ -62,8 +59,6 @@ export class EventsGateway implements OnGatewayConnection {
     @MessageBody() data: unknown,
   ): Observable<WsResponse<number>> {
     this.logger.log(`data from client ${client.id} : ${JSON.stringify(data)}`);
-    return from([1, 2, 3]).pipe(
-      map((item) => ({ event: 'message', data: item })),
-    );
+    throw new UnauthorizedException();
   }
 }

@@ -336,7 +336,7 @@ paths:
   /api/v2/monitor/playlist:
     patch:
       operationId: monitors-playlist-create
-      summary: Создание связки плэйлиста и мониторов
+      summary: Создание связки плэйлиста и монитора
       parameters: []
       requestBody:
         required: true
@@ -361,7 +361,7 @@ paths:
       security: *a14
     delete:
       operationId: monitors-playlist-delete
-      summary: Удаление связки плэйлиста и мониторов
+      summary: Удаление связки плэйлиста и монитора
       parameters: []
       requestBody:
         required: true
@@ -858,6 +858,12 @@ paths:
           in: path
           schema:
             type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditorExportRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -979,7 +985,7 @@ paths:
       tags: *a29
       security: *a30
   "/api/v2/file/{fileId}":
-    get:
+    post:
       operationId: file-get
       summary: Получить файл
       parameters:
@@ -1033,7 +1039,7 @@ paths:
         "503": *a28
       tags: *a29
       security: *a30
-    post:
+    get:
       operationId: file-get-s3
       summary: Скачивание медиа
       parameters:
@@ -1703,7 +1709,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.5.7
+  version: 2.7.2
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2464,6 +2470,12 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
+        monitors:
+          description: Мониторы
+          allOf:
+            - $ref: "#/components/schemas/MonitorResponse"
+          items:
+            type: array
         createdAt:
           format: date-time
           type: string
@@ -2482,6 +2494,7 @@ components:
       required:
         - id
         - name
+        - monitors
         - createdAt
         - updatedAt
         - files
@@ -2907,6 +2920,10 @@ components:
           description: Статус рендеринга
           enum: *a59
           example: initial
+        renderingPercent:
+          type: integer
+          description: Процент рендеринга
+          example: "0"
         renderedFile:
           description: Обработанный файл
           allOf:
@@ -3174,6 +3191,14 @@ components:
       required:
         - status
         - data
+    EditorExportRequest:
+      type: object
+      properties:
+        rerender:
+          type: boolean
+          description: Перезапустить рендеринг
+          default: false
+          example: false
     FilePartialRequest:
       type: object
       properties:

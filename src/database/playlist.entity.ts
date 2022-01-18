@@ -15,6 +15,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -22,6 +23,7 @@ import {
 
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
 
 @Entity('playlist')
 @Unique('IDX_userId_name', ['userId', 'name'])
@@ -85,6 +87,20 @@ export class PlaylistEntity {
   })
   @IsUUID('all', { each: true })
   files?: FileEntity[];
+
+  @OneToMany(() => MonitorEntity, (monitor) => monitor.playlist, {
+    onDelete: 'SET NULL',
+    onUpdate: 'SET NULL',
+    nullable: true,
+    eager: true,
+  })
+  @ApiProperty({
+    description: 'Мониторы',
+    type: 'array',
+    isArray: true,
+    allOf: [{ $ref: '#/components/schemas/MonitorResponse' }],
+  })
+  monitors?: MonitorEntity[] | null;
 
   @CreateDateColumn()
   @ApiProperty({

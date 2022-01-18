@@ -145,7 +145,7 @@ export class MonitorController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitors-playlist-create',
-    summary: 'Создание связки плэйлиста и мониторов',
+    summary: 'Создание связки плэйлиста и монитора',
   })
   @ApiResponse({
     status: 200,
@@ -198,7 +198,7 @@ export class MonitorController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitors-playlist-delete',
-    summary: 'Удаление связки плэйлиста и мониторов',
+    summary: 'Удаление связки плэйлиста и монитора',
   })
   @ApiResponse({
     status: 200,
@@ -342,7 +342,11 @@ export class MonitorController {
     if (!monitor) {
       throw new NotFoundException(`Monitor '${id}' is not found`);
     }
-    await this.monitorService.delete(user, monitor);
+
+    const { affected } = await this.monitorService.delete(user, monitor);
+    if (!affected) {
+      throw new NotFoundException('This monitor is not exists');
+    }
 
     return {
       status: Status.Success,

@@ -7,6 +7,7 @@ import {
   Get,
   HttpCode,
   Logger,
+  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -138,7 +139,7 @@ export class PlaylistController {
       where: { id: In(body.files), userId: user.id },
     });
     if (!Array.isArray(files) || body.files.length !== files.length) {
-      throw new NotFoundError('Files specified does not exist');
+      throw new NotFoundException('Files specified does not exist');
     }
 
     const data = await this.playlistService
@@ -175,7 +176,7 @@ export class PlaylistController {
       where: { userId: user.id, id },
     });
     if (!data) {
-      throw new NotFoundError(`Playlist '${id}' not found`);
+      throw new NotFoundException(`Playlist '${id}' not found`);
     }
 
     return {
@@ -206,7 +207,7 @@ export class PlaylistController {
         where: { id: In(body.files), userId: user.id },
       });
       if (!Array.isArray(files) || body.files.length !== files.length) {
-        throw new NotFoundError('Files specified does not exist');
+        throw new NotFoundException('Files specified does not exist');
       }
     }
 
@@ -245,9 +246,13 @@ export class PlaylistController {
       where: { userId: user.id, id },
     });
     if (!data) {
-      throw new NotFoundError(`Playlist '${id}' not found`);
+      throw new NotFoundException(`Playlist '${id}' not found`);
     }
-    await this.playlistService.delete(user, data);
+
+    const { affected } = await this.playlistService.delete(user, data);
+    if (!affected) {
+      throw new NotFoundException('This playlist is not exists');
+    }
 
     return {
       status: Status.Success,
