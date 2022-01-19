@@ -4,6 +4,7 @@ import { stringify as yamlStringify } from 'yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
+import { WsAdapter } from '@nestjs/platform-ws';
 import {
   SwaggerModule,
   DocumentBuilder,
@@ -36,23 +37,27 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     },
   });
   const logger = app.get(Logger);
-  app.useLogger(logger);
+  app.disable('x-powered-by').disable('server');
+  app
+    .useStaticAssets(pathResolve(__dirname, '../..', 'static'), {
+      dotfiles: 'deny',
+    })
+    .setGlobalPrefix(apiPath, { exclude: ['/'] })
+    .useGlobalFilters(
+      new ExceptionsFilter(app.get(HttpAdapterHost).httpAdapter),
+    )
+    .useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        forbidUnknownValues: true,
+        skipUndefinedProperties: true,
+        stopAtFirstError: true,
+      }),
+    )
+    .useWebSocketAdapter(new WsAdapter(app))
+    .useLogger(logger);
   app.flushLogs();
-  app.disable('x-powered-by');
-  app.disable('server');
-  const httpAdaperHost = app.get(HttpAdapterHost);
-  app.useGlobalFilters(new ExceptionsFilter(httpAdaperHost.httpAdapter));
-  app.setGlobalPrefix(apiPath, { exclude: ['/'] });
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      forbidUnknownValues: true,
-      skipUndefinedProperties: true,
-      stopAtFirstError: true,
-    }),
-  );
-  app.useStaticAssets(pathResolve(__dirname, '../..', 'static'));
 
   const swaggerConfig = new DocumentBuilder()
     .addBearerAuth({
