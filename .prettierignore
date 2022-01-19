@@ -2,5 +2,6 @@
 dist
 docker
 node_modules
+static
 templates
 upload

@@ -1,11 +1,11 @@
 ignores: [
-  "@nestjs/schematics",
-  "@nestjs/platform-socket.io",
+  "debug",
   "dotenv",
   "multer",
+  "@nestjs/schematics",
+  "@types/debug",
   "@types/multer",
   "@types/passport",
   "@types/validator",
-  "ts-node",
   "depcheck"
 ]

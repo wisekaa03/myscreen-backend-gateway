@@ -55,6 +55,6 @@ module.exports = {
     '<rootDir>/static/',
     '<rootDir>/template/',
     '<rootDir>/test/',
-    '<rootDir>/e2e/',
+    '<rootDir>/upload/',
   ],
 };
