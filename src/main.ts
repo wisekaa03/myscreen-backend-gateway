@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs';
+import { writeFile } from 'node:fs/promises';
 import { resolve as pathResolve } from 'node:path';
 import { stringify as yamlStringify } from 'yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
@@ -12,11 +12,6 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
 
-import {
-  AsyncApiDocumentBuilder,
-  AsyncApiModule,
-  AsyncServerObject,
-} from 'nestjs-asyncapi';
 import { version, author, homepage, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ExceptionsFilter } from './exception/exceptions.filter';
@@ -24,8 +19,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 (async () => {
   const configService = new ConfigService();
   const port = configService.get<number>('PORT', 3000);
-  const apiPath = configService.get<string>('API_PATH', '/api/v2');
-  const wsPath = configService.get<string>('WS_PATH', '/api/v2/ws');
+  const apiPath = configService.get<string>('API_PATH', '/api/v2/');
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
@@ -100,62 +94,19 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     writeFile(
       pathResolve(__dirname, '../../static', 'swagger.yml'),
       yamlStringify(swaggerDocument),
-      () => {
-        logger.debug(
-          'The swagger.yml file has been writed',
-          NestApplication.name,
-        );
-      },
-    );
+    ).then(() => {
+      logger.debug(
+        'The file swagger.yml has been writed',
+        NestApplication.name,
+      );
+    });
   })();
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
-
-  const asyncApiServer: AsyncServerObject = {
-    url: `ws://localhost:${port}`,
-    protocol: 'socket.io',
-    protocolVersion: '4',
-    description,
-    security: [{ 'user-password': [] }],
-    // variables: {
-    //   port: {
-    //     description: 'Secure connection (TLS) is available through port 443.',
-    //     default: '443',
-    //   },
-    // },
-    bindings: {},
-  };
-
-  const asyncApiOptions = new AsyncApiDocumentBuilder()
-    .setTitle(description)
-    .setDescription(description)
-    .setVersion(version)
-    .setExternalDoc(description, homepage)
-    .setContact(author.name, author.url, author.email)
-    .setDefaultContentType('application/json')
-    // .addBearerAuth({
-    //   type: 'http',
-    //   description: 'Токен авторизации',
-    //   name: 'token',
-    // })
-    .addSecurity('user-password', { type: 'userPassword' })
-    .addTag('auth', 'Аутентификация пользователя')
-    .addTag('user', 'Пользователи (только администратор)')
-    .addTag('folder', 'Папки')
-    .addTag('file', 'Файлы')
-    .addTag('playlist', 'Плейлисты')
-    .addTag('monitor', 'Мониторы')
-    .addTag('editor', 'Редакторы')
-    .addTag('order', 'Заказы')
-    .addTag('payment', 'Оплата')
-    .addServer('file', asyncApiServer)
-    .build();
-  const asyncapiDocument = AsyncApiModule.createDocument(app, asyncApiOptions);
-  await AsyncApiModule.setup(wsPath, app, asyncapiDocument);
 
   await app.listen(port);
   const url = await app.getUrl();
   logger.warn(
-    `Server version ${version} started on ${`${url}${apiPath}`}, ${`${url}${wsPath}`}`,
+    `Server version ${version} started on ${`${url}${apiPath}`}`,
     NestApplication.name,
   );
 })();

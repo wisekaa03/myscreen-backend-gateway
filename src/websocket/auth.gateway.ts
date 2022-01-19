@@ -13,18 +13,13 @@ import type { Socket } from 'socket.io-client';
 import type { IncomingMessage } from 'http';
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
 import { LoginRequest } from '@/dto';
 
-@AsyncApiService({
-  serviceName: 'auth',
-})
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
-  path: '/api/v2/ws', // TODO
-  transports: ['websocket'],
+  // transports: ['websocket'],
   namespace: 'auth',
 })
 export class AuthGatewayProvider implements OnGatewayConnection {
@@ -42,18 +37,7 @@ export class AuthGatewayProvider implements OnGatewayConnection {
     client.send(JSON.stringify({ event: 'connected' }));
   }
 
-  @SubscribeMessage('auth/login')
-  @AsyncApiSub({
-    channel: 'auth',
-    description: 'Авторизация пользователя',
-    tags: [{ name: 'auth' }],
-    message: {
-      name: 'test packet',
-      payload: {
-        type: LoginRequest,
-      },
-    },
-  })
+  @SubscribeMessage('login')
   handleEvent(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: unknown,

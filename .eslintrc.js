@@ -37,5 +37,6 @@ module.exports = {
     'operator-linebreak': 0,
     'import/extensions': 0,
     'no-underscore-dangle': 0,
+    '@typescript-eslint/brace-style': 0,
   },
 };

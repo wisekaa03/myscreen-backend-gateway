@@ -3,6 +3,6 @@ import { AuthGatewayProvider } from './auth.gateway';
 import { FileGatewayProvider } from './file.gateway';
 
 @Module({
-  providers: [AuthGatewayProvider, FileGatewayProvider],
+  providers: [AuthGatewayProvider],
 })
 export class EventsModule {}

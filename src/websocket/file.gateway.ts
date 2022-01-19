@@ -13,17 +13,12 @@ import type { Socket } from 'socket.io-client';
 import type { IncomingMessage } from 'http';
 import { from, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AsyncApiService, AsyncApiSub } from 'nestjs-asyncapi';
 import { FileRequest, LoginRequest } from '@/dto';
 
-@AsyncApiService({
-  serviceName: 'file',
-})
 @WebSocketGateway({
   cors: {
     origin: '*',
   },
-  path: '/api/v2/ws', // TODO
   transports: ['websocket'],
   namespace: 'file',
 })
@@ -43,17 +38,6 @@ export class FileGatewayProvider implements OnGatewayConnection {
   }
 
   @SubscribeMessage('file/get-s3')
-  @AsyncApiSub({
-    channel: 'file',
-    description: 'Скачивание медиа',
-    tags: [{ name: 'file' }],
-    message: {
-      name: 'test packet',
-      payload: {
-        type: String,
-      },
-    },
-  })
   handleEvent(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: unknown,
