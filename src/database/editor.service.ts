@@ -9,6 +9,7 @@ import child from 'node:child_process';
 import util from 'node:util';
 import {
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotAcceptableException,
   NotFoundException,
@@ -70,12 +71,15 @@ export class EditorService {
     user: UserEntity,
     update: Partial<EditorEntity>,
   ): Promise<EditorEntity> {
-    const order: DeepPartial<EditorEntity> = {
+    const updated: DeepPartial<EditorEntity> = {
+      videoLayers: [],
+      audioLayers: [],
+      renderedFile: null,
       ...update,
       userId: user.id,
     };
 
-    return this.editorRepository.save(this.editorRepository.create(order));
+    return this.editorRepository.save(this.editorRepository.create(updated));
   }
 
   delete = async (

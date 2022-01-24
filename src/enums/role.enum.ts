@@ -4,6 +4,7 @@ export enum UserRoleEnum {
   Administrator = 'administrator',
 }
 
-export const UserRole = Object.values(UserRoleEnum).filter(
-  (user) => user !== UserRoleEnum.Administrator,
-);
+export const UserRole = Object.values(UserRoleEnum);
+// .filter(
+//   (user) => user !== UserRoleEnum.Administrator,
+// );

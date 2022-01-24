@@ -47,7 +47,7 @@ export class EditorEntity {
   @IsNotEmpty()
   name!: string;
 
-  @Column({ type: 'numeric', default: 1920 })
+  @Column({ type: 'integer', default: 1920 })
   @ApiProperty({
     description: 'Ширина редактора',
     example: '1920',
@@ -56,7 +56,7 @@ export class EditorEntity {
   @IsNumber()
   width!: number;
 
-  @Column({ type: 'numeric', default: 1080 })
+  @Column({ type: 'integer', default: 1080 })
   @ApiProperty({
     description: 'Высота редактора',
     example: '1080',
@@ -65,7 +65,7 @@ export class EditorEntity {
   @IsNumber()
   height!: number;
 
-  @Column({ type: 'numeric', default: 24 })
+  @Column({ type: 'integer', default: 24 })
   @ApiProperty({
     description: 'Фреймрейт',
     type: 'integer',
@@ -131,7 +131,7 @@ export class EditorEntity {
   @IsBoolean()
   keepSourceAudio!: boolean;
 
-  @Column({ type: 'numeric', default: 0, nullable: true })
+  @Column({ type: 'integer', default: 0, nullable: true })
   @ApiProperty({
     description: 'Общее время',
     type: 'integer',

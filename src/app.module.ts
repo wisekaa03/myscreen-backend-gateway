@@ -52,11 +52,11 @@ import { EventsModule } from '@/websocket/events.module';
       inject: [ConfigService],
     }),
 
+    EventsModule,
+
     DatabaseModule,
     AuthModule,
     EndpointModule,
-
-    EventsModule,
   ],
   providers: [
     Logger,

@@ -51,7 +51,7 @@ export class EditorLayerEntity {
   @Min(1)
   index!: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'decimal', default: 0.0 })
   @ApiProperty({
     description: 'Длительность',
     example: '10',
@@ -61,7 +61,7 @@ export class EditorLayerEntity {
   @Min(1)
   duration!: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'decimal', default: 0.0 })
   @ApiProperty({
     description: 'С какой секунды начать вырезать клип',
     example: '0',
@@ -70,7 +70,7 @@ export class EditorLayerEntity {
   @IsNumber()
   cutFrom!: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'decimal', default: 0.0 })
   @ApiProperty({
     description: 'До какой секунды вырезать клип',
     example: '10',
@@ -80,7 +80,7 @@ export class EditorLayerEntity {
   @Min(1)
   cutTo!: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'integer', default: 0 })
   @ApiProperty({
     description: 'С какой секунды начинать воспроизводить клип',
     example: '0',
@@ -89,7 +89,7 @@ export class EditorLayerEntity {
   @IsNumber()
   start!: number;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'integer', default: 0.0 })
   @ApiProperty({
     description: '', // DEBUG: непонятно
     example: '1',
