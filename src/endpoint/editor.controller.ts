@@ -584,9 +584,9 @@ export class EditorController {
   async postEditorExport(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
-    @Body() { rerender }: EditorExportRequest,
+    @Body() body?: EditorExportRequest,
   ): Promise<EditorGetResponse> {
-    const data = await this.editorService.export(user, id, rerender);
+    const data = await this.editorService.export(user, id, body?.rerender);
 
     return {
       status: Status.Success,

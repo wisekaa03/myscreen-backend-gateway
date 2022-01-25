@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
 export class EditorExportRequest {
   @ApiProperty({
@@ -8,6 +8,6 @@ export class EditorExportRequest {
     default: false,
     example: false,
   })
-  @IsDefined()
+  @IsOptional()
   rerender?: boolean;
 }

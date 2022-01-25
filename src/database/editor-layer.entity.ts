@@ -1,4 +1,4 @@
-import { IsDate, IsNumber, IsUUID, Min, Max } from 'class-validator';
+import { IsDate, IsUUID, Min, Max, IsInt } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -44,59 +44,65 @@ export class EditorLayerEntity {
   @Column({ type: 'integer' })
   @ApiProperty({
     description: 'Индекс файла',
-    example: '1',
+    type: 'integer',
+    example: 1,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   @Min(1)
   index!: number;
 
-  @Column({ type: 'decimal', default: 0.0 })
+  @Column({ type: 'integer', default: 0 })
   @ApiProperty({
+    type: 'number',
     description: 'Длительность',
-    example: '10',
+    example: 10,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   @Min(1)
   duration!: number;
 
-  @Column({ type: 'decimal', default: 0.0 })
+  @Column({ type: 'integer', default: 0 })
   @ApiProperty({
+    type: 'number',
     description: 'С какой секунды начать вырезать клип',
-    example: '0',
+    example: 0,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   cutFrom!: number;
 
-  @Column({ type: 'decimal', default: 0.0 })
+  @Column({ type: 'integer', default: 0 })
   @ApiProperty({
+    type: 'number',
     description: 'До какой секунды вырезать клип',
-    example: '10',
+    example: 10,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   @Min(1)
   cutTo!: number;
 
   @Column({ type: 'integer', default: 0 })
   @ApiProperty({
     description: 'С какой секунды начинать воспроизводить клип',
-    example: '0',
+    type: 'integer',
+    example: 0,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   start!: number;
 
   @Column({ type: 'integer', default: 0.0 })
   @ApiProperty({
     description: '', // DEBUG: непонятно
-    example: '1',
+    type: 'integer',
+    example: 1,
     default: 1,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   @Min(0)
   @Max(1)
   mixVolume!: number;

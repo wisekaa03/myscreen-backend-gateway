@@ -1,4 +1,5 @@
-import { Logger, UnauthorizedException } from '@nestjs/common';
+import { isJWT, isString, length } from 'class-validator';
+import { ForbiddenException, Logger } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -12,8 +13,8 @@ import {
 import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { from, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { LoginRequest } from '@/dto';
+// import { map } from 'rxjs/operators';
+// import { LoginRequest } from '@/dto';
 import { WebSocketClient } from './interface/websocket-client';
 
 @WebSocketGateway({
@@ -60,22 +61,46 @@ export class EventGateway
     }
   }
 
-  @SubscribeMessage('auth')
-  handleEvent(
+  @SubscribeMessage('auth/code')
+  handleEventCode(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() data: unknown,
-  ): WsResponse<string> {
-    const value = this.clients.get(client);
-    if (value) {
-      this.logger.log(
-        `Data from client '${value.ip}:${value.port}', websocket-key: '${
-          value.key
-        }' : ${JSON.stringify(data)}`,
-      );
+    @MessageBody() code: unknown,
+  ): Observable<WsResponse<string>> {
+    if (isString(code) && length(code, 11, 11)) {
+      const value = this.clients.get(client);
+      if (value) {
+        this.logger.debug(
+          `Data from client ip='${value.ip}:${value.port}' websocket-key='${value.key}': code=${code}`,
+        );
+        this.clients.set(client, { ...value, code });
 
-      return { event: 'auth', data: value.key };
+        return from([{ event: 'auth/code', data: 'authorized' }]);
+      }
     }
 
-    throw new UnauthorizedException();
+    throw new ForbiddenException();
+  }
+
+  @SubscribeMessage('auth/token')
+  handleEventToken(
+    @ConnectedSocket() client: WebSocket,
+    @MessageBody() token: unknown,
+  ): Observable<WsResponse<string>> {
+    if (isString(token) && isJWT(token)) {
+      const value = this.clients.get(client);
+      if (value) {
+        this.logger.debug(
+          `Data from client ip='${value.ip}:${value.port}' websocket-key='${value.key}': token=${token}`,
+        );
+
+        // TODO
+
+        this.clients.set(client, { ...value, token });
+
+        return from([{ event: 'auth/token', data: 'authorized' }]);
+      }
+    }
+
+    throw new ForbiddenException();
   }
 }

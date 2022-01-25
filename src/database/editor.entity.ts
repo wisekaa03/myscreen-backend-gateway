@@ -3,6 +3,7 @@ import {
   IsDate,
   IsDefined,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -50,19 +51,21 @@ export class EditorEntity {
   @Column({ type: 'integer', default: 1920 })
   @ApiProperty({
     description: 'Ширина редактора',
-    example: '1920',
+    type: 'integer',
+    example: 1920,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   width!: number;
 
   @Column({ type: 'integer', default: 1080 })
   @ApiProperty({
     description: 'Высота редактора',
-    example: '1080',
+    type: 'integer',
+    example: 1080,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   height!: number;
 
   @Column({ type: 'integer', default: 24 })
@@ -72,7 +75,7 @@ export class EditorEntity {
     example: 24,
     required: true,
   })
-  @IsNumber()
+  @IsInt()
   fps!: number;
 
   @Column({
@@ -98,7 +101,7 @@ export class EditorEntity {
   @ApiProperty({
     type: 'integer',
     description: 'Процент рендеринга',
-    example: '0',
+    example: 0,
     required: false,
   })
   @IsNumber()

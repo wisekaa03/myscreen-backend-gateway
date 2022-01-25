@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Get,
   HttpCode,
+  Ip,
   Logger,
   Patch,
   Post,
@@ -139,12 +140,10 @@ export class AuthController {
     type: AuthResponse,
   })
   async login(
-    @Req() req: ExpressRequest,
+    @Ip() fingerprint: string,
     @Body() { email, password }: LoginRequest,
   ): Promise<AuthResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
-    const fingerprint = req?.ip;
-
     const [data, payload] = await this.authService.login(
       email,
       password,
@@ -187,12 +186,10 @@ export class AuthController {
     type: AuthRefreshResponse,
   })
   async refresh(
-    @Req() req: ExpressRequest,
+    @Ip() fingerprint: string,
     @Body() { refreshToken }: AuthRefreshRequest,
   ): Promise<AuthRefreshResponse> {
     // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
-    const fingerprint = req?.ip;
-
     const payload = await this.authService.createAccessTokenFromRefreshToken(
       refreshToken,
       fingerprint,

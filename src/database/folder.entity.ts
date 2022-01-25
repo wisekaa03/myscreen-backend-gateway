@@ -14,10 +14,10 @@ import {
 import {
   IsUUID,
   MinLength,
-  IsAlphanumeric,
   IsNotEmpty,
   IsDate,
   IsDefined,
+  IsString,
 } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from './file.entity';
@@ -41,7 +41,7 @@ export class FolderEntity {
   })
   @IsDefined()
   @IsNotEmpty()
-  @IsAlphanumeric()
+  @IsString()
   @MinLength(1)
   name!: string;
 
