@@ -41,7 +41,7 @@ export class EditorLayerEntity {
   })
   audioLayers!: EditorEntity[];
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'integer', default: 1 })
   @ApiProperty({
     description: 'Индекс файла',
     type: 'integer',
@@ -52,7 +52,7 @@ export class EditorLayerEntity {
   @Min(1)
   index!: number;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'integer', default: 10 })
   @ApiProperty({
     type: 'number',
     description: 'Длительность',
@@ -73,7 +73,7 @@ export class EditorLayerEntity {
   @IsInt()
   cutFrom!: number;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'integer', default: 10 })
   @ApiProperty({
     type: 'number',
     description: 'До какой секунды вырезать клип',
@@ -94,7 +94,7 @@ export class EditorLayerEntity {
   @IsInt()
   start!: number;
 
-  @Column({ type: 'integer', default: 0.0 })
+  @Column({ type: 'integer', default: 1 })
   @ApiProperty({
     description: '', // DEBUG: непонятно
     type: 'integer',

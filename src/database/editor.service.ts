@@ -9,7 +9,6 @@ import child from 'node:child_process';
 import util from 'node:util';
 import {
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotAcceptableException,
   NotFoundException,
@@ -107,12 +106,20 @@ export class EditorService {
    * @param {EditorLayerEntity} update Editor layer entity
    * @returns {EditorLayerEntity | undefined} Result
    */
-  updateLayer = async (
+  async updateLayer(
     user: UserEntity,
     id: string,
     update: Partial<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity | undefined> =>
-    this.editorLayerRepository.save(this.editorLayerRepository.create(update));
+  ): Promise<EditorLayerEntity | undefined> {
+    if (update && update.cutFrom && update.cutTo) {
+      if (update.cutFrom > update.cutTo) {
+        throw new NotAcceptableException('cutFrom must be less than cutTo');
+      }
+    }
+    return this.editorLayerRepository.save(
+      this.editorLayerRepository.create(update),
+    );
+  }
 
   /**
    * Delete layer
@@ -154,18 +161,21 @@ export class EditorService {
     }
 
     if (await this.fileService.headS3Object(file)) {
-      const writeStram = this.fileService
-        .getS3Object(file)
-        .createReadStream()
-        .pipe(createWriteStream(filePath));
       await new Promise<void>((resolve, reject) => {
-        writeStram.on('end', resolve).on('error', (error) => {
-          this.logger.error(error, error.stack);
-          reject(error);
-        });
+        this.fileService
+          .getS3Object(file)
+          .createReadStream()
+          .pipe(createWriteStream(filePath))
+          .on('finish', () => resolve())
+          .on('error', (error) => {
+            this.logger.error(error, error.stack);
+            reject(error);
+          });
+      }).catch((error) => {
+        throw new NotFoundException(error);
       });
     } else {
-      throw new NotFoundException();
+      throw new NotFoundException(`S3 error '${file.name}': Not found`);
     }
 
     return layer;
