@@ -510,4 +510,51 @@ export class EditorService {
 
     return editor;
   }
+
+  /**
+   * Move Index of layers
+   * @async
+   * @param {EditorEntity} editor Editor entity
+   * @param {string} layerId Editor layer id
+   * @param {number} moveIndex Move index
+   * @return {*} {EditorLayerEntity}
+   * @memberof EditorService
+   */
+  async moveIndex(
+    editor: EditorEntity,
+    layerId: string,
+    moveIndex: number,
+  ): Promise<void> {
+    // TODO: разобраться
+
+    let layer = editor.videoLayers.find((l) => l.id === layerId);
+    if (layer) {
+      const oldIndex = layer.index;
+      const layerMove = editor.videoLayers.find((l) => l.index === moveIndex);
+      layer.index = moveIndex;
+      if (layerMove) {
+        layerMove.index = oldIndex;
+        /* await */ this.editorLayerRepository.save([layer, layerMove]);
+      } else {
+        /* await */ this.editorLayerRepository.save(layer);
+      }
+      return;
+    }
+
+    layer = editor.audioLayers.find((l) => l.id === layerId);
+    if (layer) {
+      const oldIndex = layer.index;
+      const layerMove = editor.audioLayers.find((l) => l.index === moveIndex);
+      layer.index = moveIndex;
+      if (layerMove) {
+        layerMove.index = oldIndex;
+        /* await */ this.editorLayerRepository.save([layer, layerMove]);
+      } else {
+        /* await */ this.editorLayerRepository.save(layer);
+      }
+      return;
+    }
+
+    throw new NotFoundException();
+  }
 }

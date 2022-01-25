@@ -49,11 +49,10 @@ import {
   EditorExportRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
-import { Status } from '@/enums/status.enum';
+import { VideoType, Status } from '@/enums';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
-import { VideoType } from '@/enums';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 
 @ApiResponse({
@@ -406,14 +405,14 @@ export class EditorController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: EditorLayerGetResponse,
+    type: SuccessResponse,
   })
   async moveEditorLayer(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
-    @Body() body: EditorLayerMoveRequest,
-  ): Promise<EditorLayerGetResponse> {
+    @Body() { moveIndex }: EditorLayerMoveRequest,
+  ): Promise<SuccessResponse> {
     const editor = await this.editorService.findOne({
       where: {
         userId: user.id,
@@ -425,29 +424,10 @@ export class EditorController {
       throw new NotFoundException('Editor not found');
     }
 
-    const editorLayer = await this.editorService.findOneLayer({
-      where: {
-        id: layerId,
-      },
-    });
-    if (!editorLayer) {
-      throw new NotFoundException('Editor layer not found');
-    }
-
-    // TODO: изменение очереди слоя редактора
-
-    const update: Partial<EditorLayerEntity> = {
-      ...editorLayer,
-      ...body,
-    };
-    const data = await this.editorService.updateLayer(user, id, update);
-    if (!data) {
-      throw new NotFoundException('This editor layer is not exists');
-    }
+    /* await */ this.editorService.moveIndex(editor, layerId, moveIndex);
 
     return {
       status: Status.Success,
-      data,
     };
   }
 

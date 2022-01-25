@@ -1,14 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-import { IsNotEmpty, IsNumber } from 'class-validator';
+import { IsInt, Min, IsNotEmpty } from 'class-validator';
 
 export class EditorLayerMoveRequest {
   @ApiProperty({
     description: 'Изменение индекса',
-    type: 'number',
+    type: 'integer',
+    example: 1,
+    default: 1,
     required: true,
   })
   @IsNotEmpty()
-  @IsNumber()
+  @IsInt()
+  @Min(1)
   moveIndex!: number;
 }

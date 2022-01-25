@@ -48,6 +48,7 @@ export class EditorLayerEntity {
     description: 'Индекс файла',
     type: 'integer',
     example: 1,
+    default: 1,
     required: true,
   })
   @IsInt()
