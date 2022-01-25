@@ -116,9 +116,18 @@ export class EditorService {
         throw new NotAcceptableException('cutFrom must be less than cutTo');
       }
     }
-    return this.editorLayerRepository.save(
+    const create = await this.editorLayerRepository.save(
       this.editorLayerRepository.create(update),
     );
+
+    return this.editorLayerRepository
+      .findOneOrFail(create.id)
+      .then((value) => ({
+        ...value,
+        duration: parseFloat(value.duration as unknown as string),
+        cutFrom: parseFloat(value.cutFrom as unknown as string),
+        cutTo: parseFloat(value.cutTo as unknown as string),
+      }));
   }
 
   /**
@@ -218,8 +227,8 @@ export class EditorService {
             layers: layers.map(
               ({
                 id,
-                videoLayers: _,
-                audioLayers: __,
+                video: _,
+                audio: __,
                 duration: ___,
                 file: ____,
                 createdAt: _____,
@@ -235,8 +244,8 @@ export class EditorService {
         audioTracks: audioLayers.map(
           ({
             id,
-            videoLayers: _,
-            audioLayers: __,
+            video: _,
+            audio: __,
             duration: ___,
             file: ____,
             createdAt: _____,

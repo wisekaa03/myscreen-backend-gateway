@@ -134,17 +134,17 @@ export class EditorEntity {
   @IsBoolean()
   keepSourceAudio!: boolean;
 
-  @Column({ type: 'integer', default: 0, nullable: true })
+  @Column({ type: 'numeric', default: 0, nullable: true })
   @ApiProperty({
     description: 'Общее время',
-    type: 'integer',
+    type: 'numeric',
     example: 0,
     required: true,
   })
   @IsNumber()
   totalDuration!: number;
 
-  @ManyToMany(() => EditorLayerEntity, (layer) => layer.videoLayers, {
+  @ManyToMany(() => EditorLayerEntity, (layer) => layer.video, {
     nullable: true,
   })
   @JoinTable()
@@ -156,7 +156,7 @@ export class EditorEntity {
   })
   videoLayers!: EditorLayerEntity[];
 
-  @ManyToMany(() => EditorLayerEntity, (layer) => layer.audioLayers, {
+  @ManyToMany(() => EditorLayerEntity, (layer) => layer.audio, {
     nullable: true,
   })
   @JoinTable()

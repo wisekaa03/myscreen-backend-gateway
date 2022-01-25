@@ -1,4 +1,4 @@
-import { IsDate, IsUUID, Min, Max, IsInt } from 'class-validator';
+import { IsDate, IsUUID, Min, Max, IsInt, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   Column,
@@ -30,16 +30,18 @@ export class EditorLayerEntity {
     onDelete: 'CASCADE',
     cascade: true,
     nullable: true,
+    eager: false,
   })
-  videoLayers!: EditorEntity[];
+  video!: EditorEntity[];
 
   @ManyToMany(() => EditorEntity, (editor) => editor.audioLayers, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
     cascade: true,
     nullable: true,
+    eager: false,
   })
-  audioLayers!: EditorEntity[];
+  audio!: EditorEntity[];
 
   @Column({ type: 'integer', default: 1 })
   @ApiProperty({
@@ -52,35 +54,38 @@ export class EditorLayerEntity {
   @Min(1)
   index!: number;
 
-  @Column({ type: 'integer', default: 10 })
+  @Column({ type: 'numeric', default: 10.0 })
   @ApiProperty({
     type: 'number',
     description: 'Длительность',
     example: 10,
+    default: 10,
     required: true,
   })
-  @IsInt()
+  @IsNumber()
   @Min(1)
   duration!: number;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'numeric', default: 0.0 })
   @ApiProperty({
     type: 'number',
     description: 'С какой секунды начать вырезать клип',
     example: 0,
+    default: 0,
     required: true,
   })
-  @IsInt()
+  @IsNumber()
   cutFrom!: number;
 
-  @Column({ type: 'integer', default: 10 })
+  @Column({ type: 'numeric', default: 10 })
   @ApiProperty({
     type: 'number',
     description: 'До какой секунды вырезать клип',
     example: 10,
+    default: 10,
     required: true,
   })
-  @IsInt()
+  @IsNumber()
   @Min(1)
   cutTo!: number;
 
@@ -88,6 +93,7 @@ export class EditorLayerEntity {
   @ApiProperty({
     description: 'С какой секунды начинать воспроизводить клип',
     type: 'integer',
+    default: 0,
     example: 0,
     required: true,
   })

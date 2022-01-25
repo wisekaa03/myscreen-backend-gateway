@@ -287,11 +287,10 @@ export class EditorController {
       ...body,
       file,
     };
-
     if (file.videoType === VideoType.Audio) {
-      update.audioLayers = [editor];
+      update.audio = [editor];
     } else {
-      update.videoLayers = [editor];
+      update.video = [editor];
     }
 
     const data = await this.editorService.updateLayer(user, id, update);

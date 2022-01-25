@@ -2851,17 +2851,21 @@ components:
           type: number
           description: Длительность
           example: 10
+          default: 10
         cutFrom:
           type: number
           description: С какой секунды начать вырезать клип
           example: 0
+          default: 0
         cutTo:
           type: number
           description: До какой секунды вырезать клип
           example: 10
+          default: 10
         start:
           type: integer
           description: С какой секунды начинать воспроизводить клип
+          default: 0
           example: 0
         mixVolume:
           type: integer
@@ -2935,7 +2939,7 @@ components:
           description: ""
           example: true
         totalDuration:
-          type: integer
+          type: numeric
           description: Общее время
           example: 0
         createdAt:
@@ -3074,17 +3078,21 @@ components:
           type: number
           description: Длительность
           example: 10
+          default: 10
         cutFrom:
           type: number
           description: С какой секунды начать вырезать клип
           example: 0
+          default: 0
         cutTo:
           type: number
           description: До какой секунды вырезать клип
           example: 10
+          default: 10
         start:
           type: integer
           description: С какой секунды начинать воспроизводить клип
+          default: 0
           example: 0
         mixVolume:
           type: integer
@@ -3131,17 +3139,21 @@ components:
           type: number
           description: Длительность
           example: 10
+          default: 10
         cutFrom:
           type: number
           description: С какой секунды начать вырезать клип
           example: 0
+          default: 0
         cutTo:
           type: number
           description: До какой секунды вырезать клип
           example: 10
+          default: 10
         start:
           type: integer
           description: С какой секунды начинать воспроизводить клип
+          default: 0
           example: 0
         mixVolume:
           type: integer
