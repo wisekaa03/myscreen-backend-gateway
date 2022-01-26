@@ -1,6 +1,8 @@
 import { IsDate, IsUUID, Min, Max, IsInt, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  AfterLoad,
+  AfterUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -153,4 +155,12 @@ export class EditorLayerEntity {
 
   // For path name
   path!: string;
+
+  @AfterLoad()
+  @AfterUpdate()
+  after() {
+    this.duration = parseFloat(this.duration as unknown as string);
+    this.cutFrom = parseFloat(this.cutFrom as unknown as string);
+    this.cutTo = parseFloat(this.cutTo as unknown as string);
+  }
 }

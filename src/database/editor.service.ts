@@ -101,12 +101,7 @@ export class EditorService {
     if (typeof relations === 'string') {
       where.relations = relations;
     }
-    return this.editorLayerRepository.findOneOrFail(where).then((value) => ({
-      ...value,
-      duration: parseFloat(value.duration as unknown as string),
-      cutFrom: parseFloat(value.cutFrom as unknown as string),
-      cutTo: parseFloat(value.cutTo as unknown as string),
-    }));
+    return this.editorLayerRepository.findOne(where);
   }
 
   /**
@@ -131,14 +126,7 @@ export class EditorService {
       this.editorLayerRepository.create(update),
     );
 
-    return this.editorLayerRepository
-      .findOneOrFail(create.id)
-      .then((value) => ({
-        ...value,
-        duration: parseFloat(value.duration as unknown as string),
-        cutFrom: parseFloat(value.cutFrom as unknown as string),
-        cutTo: parseFloat(value.cutTo as unknown as string),
-      }));
+    return this.editorLayerRepository.findOne(create.id);
   }
 
   /**

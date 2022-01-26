@@ -11,6 +11,8 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  AfterLoad,
+  AfterUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -198,4 +200,10 @@ export class EditorEntity {
   })
   @IsDate()
   updatedAt!: Date;
+
+  @AfterLoad()
+  @AfterUpdate()
+  after() {
+    this.totalDuration = parseFloat(this.totalDuration as unknown as string);
+  }
 }
