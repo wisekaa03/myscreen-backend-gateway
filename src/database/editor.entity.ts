@@ -137,7 +137,7 @@ export class EditorEntity {
   @Column({ type: 'numeric', default: 0, nullable: true })
   @ApiProperty({
     description: 'Общее время',
-    type: 'numeric',
+    type: 'number',
     example: 0,
     required: true,
   })

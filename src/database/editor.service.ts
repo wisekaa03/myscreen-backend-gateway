@@ -90,13 +90,24 @@ export class EditorService {
       userId: user.id,
     });
 
-  findOneLayer = async (
+  async findOneLayer(
     find: FindManyOptions<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity | undefined> =>
-    this.editorLayerRepository.findOne({
-      ...find,
-      relations: ['videoLayers', 'audioLayers', 'file'],
-    });
+    relations: boolean | string[] = true,
+  ): Promise<EditorLayerEntity | undefined> {
+    const where = find;
+    if (typeof relations === 'boolean' && relations === true) {
+      where.relations = ['video', 'audio', 'file'];
+    }
+    if (typeof relations === 'string') {
+      where.relations = relations;
+    }
+    return this.editorLayerRepository.findOneOrFail(where).then((value) => ({
+      ...value,
+      duration: parseFloat(value.duration as unknown as string),
+      cutFrom: parseFloat(value.cutFrom as unknown as string),
+      cutTo: parseFloat(value.cutTo as unknown as string),
+    }));
+  }
 
   /**
    * Update layer

@@ -1709,7 +1709,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.9
+  version: 2.7.10
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2940,7 +2940,7 @@ components:
           description: ""
           example: true
         totalDuration:
-          type: numeric
+          type: number
           description: Общее время
           example: 0
         createdAt:

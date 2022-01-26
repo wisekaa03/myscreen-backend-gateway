@@ -454,9 +454,12 @@ export class EditorController {
       throw new NotFoundException(`Editor '${id}' is not found`);
     }
 
-    const editorLayer = await this.editorService.findOneLayer({
-      where: { id: layerId },
-    });
+    const editorLayer = await this.editorService.findOneLayer(
+      {
+        where: { id: layerId },
+      },
+      false,
+    );
     if (!editorLayer) {
       throw new NotFoundException(`Editor layer '${layerId}' is not found`);
     }
