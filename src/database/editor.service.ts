@@ -69,7 +69,7 @@ export class EditorService {
   async update(
     user: UserEntity,
     update: Partial<EditorEntity>,
-  ): Promise<EditorEntity> {
+  ): Promise<EditorEntity | undefined> {
     const updated: DeepPartial<EditorEntity> = {
       videoLayers: [],
       audioLayers: [],
@@ -78,7 +78,10 @@ export class EditorService {
       userId: user.id,
     };
 
-    return this.editorRepository.save(this.editorRepository.create(updated));
+    const editor = await this.editorRepository.save(
+      this.editorRepository.create(updated),
+    );
+    return this.findOne({ where: { id: editor.id } });
   }
 
   delete = async (

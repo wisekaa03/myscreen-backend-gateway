@@ -143,6 +143,10 @@ export class EditorController {
     @Body() body: EditorCreateRequest,
   ): Promise<EditorGetResponse> {
     const data = await this.editorService.update(user, body);
+    if (!data) {
+      throw new NotFoundException('Editor not found');
+    }
+
     return {
       status: Status.Success,
       data,
