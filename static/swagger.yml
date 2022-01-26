@@ -925,25 +925,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500":
+        "409":
           &a27
+          description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "500":
+          &a28
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
         "503":
-          &a28
+          &a29
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
       tags:
-        &a29
+        &a30
         - file
       security:
-        &a30
+        &a31
         - bearer: []
     put:
       operationId: files-upload
@@ -980,10 +987,11 @@ paths:
         "401": *a24
         "403": *a25
         "404": *a26
-        "500": *a27
-        "503": *a28
-      tags: *a29
-      security: *a30
+        "409": *a27
+        "500": *a28
+        "503": *a29
+      tags: *a30
+      security: *a31
   "/api/v2/file/{fileId}":
     post:
       operationId: file-get
@@ -1005,10 +1013,11 @@ paths:
         "401": *a24
         "403": *a25
         "404": *a26
-        "500": *a27
-        "503": *a28
-      tags: *a29
-      security: *a30
+        "409": *a27
+        "500": *a28
+        "503": *a29
+      tags: *a30
+      security: *a31
     patch:
       operationId: file-update
       summary: Изменить файл
@@ -1035,10 +1044,11 @@ paths:
         "401": *a24
         "403": *a25
         "404": *a26
-        "500": *a27
-        "503": *a28
-      tags: *a29
-      security: *a30
+        "409": *a27
+        "500": *a28
+        "503": *a29
+      tags: *a30
+      security: *a31
     get:
       operationId: file-get-s3
       summary: Скачивание медиа
@@ -1068,10 +1078,11 @@ paths:
         "401": *a24
         "403": *a25
         "404": *a26
-        "500": *a27
-        "503": *a28
-      tags: *a29
-      security: *a30
+        "409": *a27
+        "500": *a28
+        "503": *a29
+      tags: *a30
+      security: *a31
     delete:
       operationId: file-delete
       summary: Удаление файла
@@ -1092,10 +1103,11 @@ paths:
         "401": *a24
         "403": *a25
         "404": *a26
-        "500": *a27
-        "503": *a28
-      tags: *a29
-      security: *a30
+        "409": *a27
+        "500": *a28
+        "503": *a29
+      tags: *a30
+      security: *a31
   /api/v2/folder:
     post:
       operationId: folders-get
@@ -1115,45 +1127,45 @@ paths:
               schema:
                 $ref: "#/components/schemas/FoldersGetResponse"
         "400":
-          &a31
+          &a32
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
         "401":
-          &a32
+          &a33
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
         "403":
-          &a33
+          &a34
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
         "404":
-          &a34
+          &a35
           description: Ошибка папки
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
         "500":
-          &a35
+          &a36
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
       tags:
-        &a36
+        &a37
         - folder
       security:
-        &a37
+        &a38
         - bearer: []
     put:
       operationId: folder-create
@@ -1172,13 +1184,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
-        "400": *a31
-        "401": *a32
-        "403": *a33
-        "404": *a34
-        "500": *a35
-      tags: *a36
-      security: *a37
+        "400": *a32
+        "401": *a33
+        "403": *a34
+        "404": *a35
+        "500": *a36
+      tags: *a37
+      security: *a38
   "/api/v2/folder/{folderId}":
     get:
       operationId: folder-get
@@ -1196,13 +1208,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
-        "400": *a31
-        "401": *a32
-        "403": *a33
-        "404": *a34
-        "500": *a35
-      tags: *a36
-      security: *a37
+        "400": *a32
+        "401": *a33
+        "403": *a34
+        "404": *a35
+        "500": *a36
+      tags: *a37
+      security: *a38
     patch:
       operationId: folder-update
       summary: Изменение информации о папке
@@ -1225,13 +1237,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
-        "400": *a31
-        "401": *a32
-        "403": *a33
-        "404": *a34
-        "500": *a35
-      tags: *a36
-      security: *a37
+        "400": *a32
+        "401": *a33
+        "403": *a34
+        "404": *a35
+        "500": *a36
+      tags: *a37
+      security: *a38
     delete:
       operationId: folder-delete
       summary: Удаление папки
@@ -1248,13 +1260,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *a31
-        "401": *a32
-        "403": *a33
-        "404": *a34
-        "500": *a35
-      tags: *a36
-      security: *a37
+        "400": *a32
+        "401": *a33
+        "403": *a34
+        "404": *a35
+        "500": *a36
+      tags: *a37
+      security: *a38
   /api/v2/user:
     get:
       operationId: users-get
@@ -1268,38 +1280,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/UsersGetResponse"
         "400":
-          &a38
+          &a39
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
         "401":
-          &a39
+          &a40
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
         "403":
-          &a40
+          &a41
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
         "500":
-          &a41
+          &a42
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
       tags:
-        &a42
+        &a43
         - user
       security:
-        &a43
+        &a44
         - bearer: []
   "/api/v2/user/disable/{userId}":
     patch:
@@ -1318,12 +1330,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *a38
-        "401": *a39
-        "403": *a40
-        "500": *a41
-      tags: *a42
-      security: *a43
+        "400": *a39
+        "401": *a40
+        "403": *a41
+        "500": *a42
+      tags: *a43
+      security: *a44
   "/api/v2/user/enable/{userId}":
     patch:
       operationId: user-enable
@@ -1341,12 +1353,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *a38
-        "401": *a39
-        "403": *a40
-        "500": *a41
-      tags: *a42
-      security: *a43
+        "400": *a39
+        "401": *a40
+        "403": *a41
+        "500": *a42
+      tags: *a43
+      security: *a44
   "/api/v2/user/{userId}":
     get:
       operationId: user-get
@@ -1364,12 +1376,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserGetResponse"
-        "400": *a38
-        "401": *a39
-        "403": *a40
-        "500": *a41
-      tags: *a42
-      security: *a43
+        "400": *a39
+        "401": *a40
+        "403": *a41
+        "500": *a42
+      tags: *a43
+      security: *a44
     patch:
       operationId: user-update
       summary: Изменение информации о пользователе (только администратор)
@@ -1392,12 +1404,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserGetResponse"
-        "400": *a38
-        "401": *a39
-        "403": *a40
-        "500": *a41
-      tags: *a42
-      security: *a43
+        "400": *a39
+        "401": *a40
+        "403": *a41
+        "500": *a42
+      tags: *a43
+      security: *a44
     delete:
       operationId: user-delete
       summary: Удаление аккаунта пользователя (только администратор)
@@ -1414,12 +1426,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *a38
-        "401": *a39
-        "403": *a40
-        "500": *a41
-      tags: *a42
-      security: *a43
+        "400": *a39
+        "401": *a40
+        "403": *a41
+        "500": *a42
+      tags: *a43
+      security: *a44
   /api/v2/order:
     post:
       operationId: orders-get
@@ -1555,52 +1567,52 @@ paths:
               schema:
                 $ref: "#/components/schemas/PlaylistsGetResponse"
         "400":
-          &a44
+          &a45
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
         "401":
-          &a45
+          &a46
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
         "403":
-          &a46
+          &a47
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
         "404":
-          &a47
+          &a48
           description: Ошибка медиа
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
         "500":
-          &a48
+          &a49
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
         "503":
-          &a49
+          &a50
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
       tags:
-        &a50
+        &a51
         - playlist
       security:
-        &a51
+        &a52
         - bearer: []
     put:
       operationId: playlist-create
@@ -1619,14 +1631,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *a44
-        "401": *a45
-        "403": *a46
-        "404": *a47
-        "500": *a48
-        "503": *a49
-      tags: *a50
-      security: *a51
+        "400": *a45
+        "401": *a46
+        "403": *a47
+        "404": *a48
+        "500": *a49
+        "503": *a50
+      tags: *a51
+      security: *a52
   "/api/v2/playlist/{playlistId}":
     get:
       operationId: playlist-get
@@ -1644,14 +1656,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *a44
-        "401": *a45
-        "403": *a46
-        "404": *a47
-        "500": *a48
-        "503": *a49
-      tags: *a50
-      security: *a51
+        "400": *a45
+        "401": *a46
+        "403": *a47
+        "404": *a48
+        "500": *a49
+        "503": *a50
+      tags: *a51
+      security: *a52
     patch:
       operationId: playlist-update
       summary: Обновление плэйлиста
@@ -1674,14 +1686,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *a44
-        "401": *a45
-        "403": *a46
-        "404": *a47
-        "500": *a48
-        "503": *a49
-      tags: *a50
-      security: *a51
+        "400": *a45
+        "401": *a46
+        "403": *a47
+        "404": *a48
+        "500": *a49
+        "503": *a50
+      tags: *a51
+      security: *a52
     delete:
       operationId: playlist-delete
       summary: Удаление плэйлиста
@@ -1698,18 +1710,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *a44
-        "401": *a45
-        "403": *a46
-        "404": *a47
-        "500": *a48
-        "503": *a49
-      tags: *a50
-      security: *a51
+        "400": *a45
+        "401": *a46
+        "403": *a47
+        "404": *a48
+        "500": *a49
+        "503": *a50
+      tags: *a51
+      security: *a52
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.10
+  version: 2.7.11
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -1908,7 +1920,7 @@ components:
           type: string
           description: Роль пользователя
           enum:
-            &a52
+            &a53
             - monitor-owner
             - advertiser
             - administrator
@@ -1997,7 +2009,7 @@ components:
         role:
           type: string
           description: Роль пользователя
-          enum: *a52
+          enum: *a53
           example: advertiser
     LoginRequest:
       type: object
@@ -2108,7 +2120,7 @@ components:
         role:
           type: string
           description: Роль пользователя
-          enum: *a52
+          enum: *a53
           example: advertiser
       required:
         - email
@@ -2245,7 +2257,7 @@ components:
           type: object
           description: Адрес монитора
           example:
-            &a53
+            &a54
             city: Krasnodar
             country: Russia
             street: Krasnaya
@@ -2254,7 +2266,7 @@ components:
           type: string
           description: Категория
           enum:
-            &a54
+            &a55
             - АЗС
             - Торговый центр
             - Коммерческий центр
@@ -2269,14 +2281,14 @@ components:
           type: object
           description: Стоимость показов
           example:
-            &a55
+            &a56
             of1s: 0
             show100: 0
         orientation:
           type: string
           description: Ориентация экрана
           enum:
-            &a56
+            &a57
             - Horizontal
             - Vertical
           example: Horizontal
@@ -2284,7 +2296,7 @@ components:
           type: object
           description: Модель и прочие характеристики монитора
           example:
-            &a57
+            &a58
             model: Samsung
             resolution: 0
             angle: 0
@@ -2302,7 +2314,7 @@ components:
           type: string
           description: Подключен
           enum:
-            &a58
+            &a59
             - offline
             - online
           example: offline
@@ -2400,7 +2412,7 @@ components:
           type: string
           description: Тип файла
           enum:
-            &a61
+            &a62
             - video
             - image
             - audio
@@ -2410,7 +2422,7 @@ components:
           type: string
           description: В какую категорию относить файл
           enum:
-            &a62
+            &a63
             - ownership
             - photo
             - media
@@ -2422,7 +2434,7 @@ components:
         meta:
           description: Метаинформация
           example:
-            &a63
+            &a64
             duration: 200
             filesize: 20500
           allOf:
@@ -2513,25 +2525,25 @@ components:
         address:
           type: object
           description: Адрес монитора
-          example: *a53
+          example: *a54
         category:
           type: string
           description: Категория
-          enum: *a54
+          enum: *a55
           example: АЗС
         price:
           type: object
           description: Стоимость показов
-          example: *a55
+          example: *a56
         orientation:
           type: string
           description: Ориентация экрана
-          enum: *a56
+          enum: *a57
           example: Horizontal
         monitorInfo:
           type: object
           description: Модель и прочие характеристики монитора
-          example: *a57
+          example: *a58
         attached:
           type: boolean
           description: Присоединен
@@ -2543,7 +2555,7 @@ components:
         status:
           type: string
           description: Подключен
-          enum: *a58
+          enum: *a59
           example: offline
         lastSeen:
           format: date-time
@@ -2623,25 +2635,25 @@ components:
         address:
           type: object
           description: Адрес монитора
-          example: *a53
+          example: *a54
         category:
           type: string
           description: Категория
-          enum: *a54
+          enum: *a55
           example: АЗС
         price:
           type: object
           description: Стоимость показов
-          example: *a55
+          example: *a56
         orientation:
           type: string
           description: Ориентация экрана
-          enum: *a56
+          enum: *a57
           example: Horizontal
         monitorInfo:
           type: object
           description: Модель и прочие характеристики монитора
-          example: *a57
+          example: *a58
         code:
           type: string
           description: Идентификатор устройства
@@ -2649,7 +2661,7 @@ components:
         status:
           type: string
           description: Подключен
-          enum: *a58
+          enum: *a59
           example: offline
         latitude:
           type: number
@@ -2682,25 +2694,25 @@ components:
         address:
           type: object
           description: Адрес монитора
-          example: *a53
+          example: *a54
         category:
           type: string
           description: Категория
-          enum: *a54
+          enum: *a55
           example: АЗС
         price:
           type: object
           description: Стоимость показов
-          example: *a55
+          example: *a56
         orientation:
           type: string
           description: Ориентация экрана
-          enum: *a56
+          enum: *a57
           example: Horizontal
         monitorInfo:
           type: object
           description: Модель и прочие характеристики монитора
-          example: *a57
+          example: *a58
         attached:
           type: boolean
           description: Присоединен
@@ -2712,7 +2724,7 @@ components:
         status:
           type: string
           description: Подключен
-          enum: *a58
+          enum: *a59
           example: offline
         lastSeen:
           format: date-time
@@ -2816,7 +2828,7 @@ components:
           type: string
           description: Статус рендеринга
           enum:
-            &a59
+            &a60
             - initial
             - ready
             - pending
@@ -2924,7 +2936,7 @@ components:
         renderingStatus:
           type: string
           description: Статус рендеринга
-          enum: *a59
+          enum: *a60
           example: initial
         renderingPercent:
           type: integer
@@ -2933,7 +2945,7 @@ components:
         renderedFile:
           description: Обработанный файл
           allOf:
-            &a60
+            &a61
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -3183,11 +3195,11 @@ components:
         renderingStatus:
           type: string
           description: Статус рендеринга
-          enum: *a59
+          enum: *a60
           example: initial
         renderedFile:
           description: Обработанный файл
-          allOf: *a60
+          allOf: *a61
       required:
         - id
         - renderingStatus
@@ -3217,6 +3229,30 @@ components:
           description: Перезапустить рендеринг
           default: false
           example: false
+    ConflictError:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - success
+            - error
+          example: error
+          description: Статус операции
+        statusCode:
+          type: number
+          example: 409
+        code:
+          type: string
+          example: server-error.10000
+        message:
+          type: string
+          example: Conflict exists
+      required:
+        - status
+        - statusCode
+        - code
+        - message
     FilePartialRequest:
       type: object
       properties:
@@ -3232,12 +3268,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a61
+          enum: *a62
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a62
+          enum: *a63
           example: media
     FilesGetRequest:
       type: object
@@ -3284,12 +3320,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a61
+          enum: *a62
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a62
+          enum: *a63
           example: media
         filesize:
           type: number
@@ -3297,7 +3333,7 @@ components:
           example: 210000
         meta:
           description: Метаинформация
-          example: *a63
+          example: *a64
           allOf:
             - $ref: "#/components/schemas/MediaMeta"
         userId:
@@ -3365,7 +3401,7 @@ components:
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a62
+          enum: *a63
           example: media
         monitorId:
           type: string

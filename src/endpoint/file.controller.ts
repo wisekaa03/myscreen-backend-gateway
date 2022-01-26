@@ -50,6 +50,7 @@ import {
   FileUploadRequest,
   FileUploadRequestBody,
   FileUpdateRequest,
+  ConflictError,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -75,6 +76,11 @@ import { FileService } from '@/database/file.service';
   status: 404,
   description: 'Ошибка медиа',
   type: NotFoundError,
+})
+@ApiResponse({
+  status: 409,
+  description: 'Ответ для конфликта файлов',
+  type: ConflictError,
 })
 @ApiResponse({
   status: 500,

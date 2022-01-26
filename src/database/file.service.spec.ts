@@ -8,6 +8,7 @@ import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
 import { MonitorService } from './monitor.service';
+import { EditorService } from './editor.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -39,6 +40,10 @@ describe(FileService.name, () => {
         },
         {
           provide: FolderService,
+          useClass: mockRepository,
+        },
+        {
+          provide: EditorService,
           useClass: mockRepository,
         },
         {

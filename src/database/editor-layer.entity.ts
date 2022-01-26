@@ -129,6 +129,10 @@ export class EditorLayerEntity {
   })
   file!: FileEntity;
 
+  @Column()
+  @IsUUID()
+  fileId!: string;
+
   @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',

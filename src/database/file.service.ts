@@ -4,6 +4,7 @@ import { Response as ExpressResponse } from 'express';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import {
   BadRequestException,
+  ConflictException,
   forwardRef,
   Inject,
   Injectable,
@@ -27,6 +28,7 @@ import {
 import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
+import { EditorService } from '@/database/editor.service';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
@@ -45,6 +47,8 @@ export class FileService {
     @Inject(forwardRef(() => FolderService))
     private readonly folderService: FolderService,
     private readonly monitorService: MonitorService,
+    @Inject(forwardRef(() => EditorService))
+    private readonly editorService: EditorService,
     @InjectS3()
     private readonly s3Service: S3,
     @InjectRepository(FileEntity)
@@ -354,6 +358,16 @@ export class FileService {
    * @param {string} id File ID
    */
   async delete(file: FileEntity): Promise<DeleteResult> {
+    const editorLayerFile = await this.editorService.findOneLayer(
+      {
+        where: { fileId: file.id },
+      },
+      false,
+    );
+    if (editorLayerFile) {
+      throw new ConflictException();
+    }
+
     this.headS3Object(file)
       .then(() =>
         this.deleteS3Object(file)
