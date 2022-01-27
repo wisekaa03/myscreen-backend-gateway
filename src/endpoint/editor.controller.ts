@@ -272,7 +272,7 @@ export class EditorController {
     @Param('editorId', ParseUUIDPipe) id: string,
     @Body() body: EditorLayerCreateRequest,
   ): Promise<EditorLayerGetResponse> {
-    const editor = await this.editorService.findOne({
+    let editor = await this.editorService.findOne({
       where: { id, userId: user.id },
     });
     if (!editor) {
@@ -284,6 +284,10 @@ export class EditorController {
     });
     if (!file) {
       throw new NotFoundException(`The file ${body.file} is not found`);
+    }
+
+    if (body.duration !== body.cutTo - body.cutFrom) {
+      throw new BadRequestException('Duration must be cutTo - cutFrom');
     }
 
     const update: Partial<EditorLayerEntity> = {
@@ -299,6 +303,13 @@ export class EditorController {
     const result = await this.editorService.updateLayer(user, id, update);
     if (!result) {
       throw new NotFoundException('This editor layer is not exists');
+    }
+    editor = await this.editorService.findOne({
+      where: { id, userId: user.id },
+      relations: ['videoLayers', 'audioLayers'],
+    });
+    if (!editor) {
+      throw new NotFoundException(`The editor ${id} is not found`);
     }
     await this.editorService.moveIndex(editor, result.id, result.index);
     const data = await this.editorService.findOneLayer({
