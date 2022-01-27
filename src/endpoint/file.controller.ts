@@ -252,6 +252,8 @@ export class FileController {
           (awsResponse.httpResponse.createUnbufferedStream() as Readable).pipe(
             res,
           );
+        } else {
+          throw new NotFoundException(awsResponse.error);
         }
       })
       .promise()
