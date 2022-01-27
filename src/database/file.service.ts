@@ -109,7 +109,7 @@ export class FileService {
     fileEntity: FileEntity,
     update: Partial<FileEntity>,
     @TransactionRepository(FileEntity)
-    fileRepository?: Repository<FileEntity>,
+    fileRepository: Repository<FileEntity> = this.fileRepository,
   ): Promise<FileEntity | undefined> {
     if (update.folderId !== fileEntity.folderId) {
       const s3Name = getS3Name(fileEntity.originalName);
@@ -117,7 +117,7 @@ export class FileService {
       const CopySource = `${fileEntity.folderId}/${fileEntity.hash}-${s3Name}`;
 
       return Promise.all([
-        fileRepository?.save(fileRepository?.create(update)),
+        fileRepository.save(fileRepository.create(update)),
         this.s3Service
           .copyObject({
             Bucket: this.bucket,
@@ -142,7 +142,7 @@ export class FileService {
       ]).then(([updated]) => updated);
     }
 
-    return fileRepository?.save(this.fileRepository.create(update));
+    return fileRepository.save(this.fileRepository.create(update));
   }
 
   /**
@@ -336,6 +336,8 @@ export class FileService {
             (
               awsResponse.httpResponse.createUnbufferedStream() as Readable
             ).pipe(response);
+          } else {
+            throw new NotFoundException(`File '${id}' not found in S3`);
           }
         },
       )
