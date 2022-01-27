@@ -311,7 +311,7 @@ export class EditorController {
     if (!editor) {
       throw new NotFoundException(`The editor ${id} is not found`);
     }
-    await this.editorService.moveIndex(editor, result.id, result.index);
+    await this.editorService.correctLayers(editor);
     const data = await this.editorService.findOneLayer({
       where: {
         id: result.id,
@@ -415,6 +415,8 @@ export class EditorController {
       throw new NotFoundException('This editor layer is not exists');
     }
 
+    /* await */ this.editorService.correctLayers(editor);
+
     return {
       status: Status.Success,
       data,
@@ -508,6 +510,8 @@ export class EditorController {
     if (!affected) {
       throw new NotFoundException('This editor layer is not exists');
     }
+
+    /* await */ this.editorService.correctLayers(editor);
 
     return {
       status: Status.Success,

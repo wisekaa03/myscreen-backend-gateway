@@ -513,7 +513,58 @@ export class EditorService {
     return editor;
   }
 
-  correctedLayers(
+  async correctLayers(editor: EditorEntity): Promise<void> {
+    let start = 0;
+    let moveIndexLocal = 1;
+    let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
+    const correctedVideoLayers = layers.reduce((accLayers, value) => {
+      const duration = value.cutTo - value.cutFrom;
+      start += duration;
+      const result = accLayers.concat({
+        id: value.id,
+        index: moveIndexLocal,
+        cutFrom: value.cutFrom,
+        cutTo: value.cutTo,
+        duration,
+        start,
+      });
+      moveIndexLocal += 1;
+      return result;
+    }, [] as Partial<EditorLayerEntity>[]);
+
+    start = 0;
+    moveIndexLocal = 1;
+    layers = editor.audioLayers.sort((v1, v2) => v1.index - v2.index);
+    const correctedAudioLayers = layers.reduce((accLayers, value) => {
+      const duration = value.cutTo - value.cutFrom;
+      start += duration;
+      const result = accLayers.concat({
+        id: value.id,
+        index: moveIndexLocal,
+        cutFrom: value.cutFrom,
+        cutTo: value.cutTo,
+        duration,
+        start,
+      });
+      moveIndexLocal += 1;
+      return result;
+    }, [] as Partial<EditorLayerEntity>[]);
+
+    const layersPromises = correctedVideoLayers.map((value) =>
+      this.editorLayerRepository.save(this.editorLayerRepository.create(value)),
+    );
+    layersPromises.concat(
+      correctedAudioLayers.map((value) =>
+        this.editorLayerRepository.save(
+          this.editorLayerRepository.create(value),
+        ),
+      ),
+    );
+
+    /* await */ Promise.all(layersPromises);
+  }
+
+  moveLayers(
     layers: EditorLayerEntity[],
     layerId: string,
     moveIndex: number,
@@ -557,7 +608,7 @@ export class EditorService {
         ...value,
         start,
       });
-      start += value.duration ? value.duration : 0;
+      start += value?.duration || 0;
       return result;
     }, [] as Partial<EditorLayerEntity>[]);
   }
@@ -587,7 +638,7 @@ export class EditorService {
       throw new NotFoundException('layerId is not in editor layers');
     }
 
-    const correctedLayers = this.correctedLayers(layers, layerId, moveIndex);
+    const correctedLayers = this.moveLayers(layers, layerId, moveIndex);
     const layersPromises = correctedLayers.map((value) =>
       this.editorLayerRepository.save(this.editorLayerRepository.create(value)),
     );
