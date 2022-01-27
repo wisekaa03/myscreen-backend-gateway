@@ -400,7 +400,7 @@ export class EditorController {
     };
   }
 
-  @Put('/layer/:editorId/:layerId')
+  @Put('/layer/:editorId/:layerId/:moveIndex')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-layer-move',
@@ -415,7 +415,7 @@ export class EditorController {
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
-    @Body() { moveIndex }: EditorLayerMoveRequest,
+    @Param('moveIndex', ParseIntPipe) moveIndex: number,
   ): Promise<SuccessResponse> {
     const editor = await this.editorService.findOne({
       where: {
@@ -426,6 +426,15 @@ export class EditorController {
     });
     if (!editor) {
       throw new NotFoundException('Editor not found');
+    }
+    // const video = editor.videoLayers.find((layer) => layer.id === layerId);
+    // const audio = editor.audioLayers.find((layer) => layer.id === layerId);
+    if (
+      moveIndex < 1 &&
+      (editor.videoLayers.length > moveIndex ||
+        editor.audioLayers.length > moveIndex)
+    ) {
+      throw new BadRequestException();
     }
 
     /* await */ this.editorService.moveIndex(editor, layerId, moveIndex);

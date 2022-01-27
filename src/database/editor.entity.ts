@@ -110,6 +110,11 @@ export class EditorEntity {
   renderingPercent!: number | null;
 
   @Column({ type: 'varchar', nullable: true })
+  @ApiProperty({
+    type: 'string',
+    description: 'Ошибка рендеринга',
+    required: false,
+  })
   @IsString()
   renderingError!: string | null;
 

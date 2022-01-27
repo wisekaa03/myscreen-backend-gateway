@@ -4,6 +4,7 @@ import { EditorEntity } from '@/database/editor.entity';
 export class EditorRenderingStatusResponse extends PickType(EditorEntity, [
   'id',
   'renderingStatus',
+  'renderingPercent',
   'renderingError',
   'renderedFile',
 ]) {}

@@ -729,9 +729,9 @@ paths:
         "503": *a20
       tags: *a21
       security: *a22
-    put:
-      operationId: editor-layer-move
-      summary: Изменить очередь слоя редактора
+    delete:
+      operationId: editor-layer-delete
+      summary: Удаление слоя редактора
       parameters:
         - name: editorId
           required: true
@@ -743,12 +743,6 @@ paths:
           in: path
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/EditorLayerMoveRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -764,9 +758,10 @@ paths:
         "503": *a20
       tags: *a21
       security: *a22
-    delete:
-      operationId: editor-layer-delete
-      summary: Удаление слоя редактора
+  "/api/v2/editor/layer/{editorId}/{layerId}/{moveIndex}":
+    put:
+      operationId: editor-layer-move
+      summary: Изменить очередь слоя редактора
       parameters:
         - name: editorId
           required: true
@@ -778,6 +773,11 @@ paths:
           in: path
           schema:
             type: string
+        - name: moveIndex
+          required: true
+          in: path
+          schema:
+            type: number
       responses:
         "200":
           description: Успешный ответ
@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.13
+  version: 2.7.14
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2942,6 +2942,9 @@ components:
           type: integer
           description: Процент рендеринга
           example: 0
+        renderingError:
+          type: string
+          description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
           allOf:
@@ -3175,16 +3178,6 @@ components:
           description: ""
           example: 1
           default: 1
-    EditorLayerMoveRequest:
-      type: object
-      properties:
-        moveIndex:
-          type: integer
-          description: Изменение индекса
-          example: 1
-          default: 1
-      required:
-        - moveIndex
     EditorRenderingStatusResponse:
       type: object
       properties:
@@ -3197,6 +3190,13 @@ components:
           description: Статус рендеринга
           enum: *a60
           example: initial
+        renderingPercent:
+          type: integer
+          description: Процент рендеринга
+          example: 0
+        renderingError:
+          type: string
+          description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
           allOf: *a61
