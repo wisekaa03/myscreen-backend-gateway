@@ -163,7 +163,7 @@ export class FileService {
     files: Array<Express.Multer.File>,
     @TransactionRepository(FileEntity)
     fileRepository?: Repository<FileEntity>,
-  ): Promise<[Array<FileEntity>, number]> {
+  ): Promise<Array<FileEntity>> {
     if (!fileRepository) {
       throw new ServiceUnavailableException('TypeOrm transaction');
     }
@@ -212,7 +212,7 @@ export class FileService {
       });
     }
 
-    const filesPromises = files.flatMap((file) => {
+    const filesPromises = files.map((file) => {
       const [meta, videoType, extension] = this.metaInformation(file, category);
 
       const media: DeepPartial<FileEntity> = {
@@ -231,39 +231,30 @@ export class FileService {
         monitors: monitorId ? [{ id: monitorId }] : [],
       };
 
+      return fileRepository.save(fileRepository.create(media));
+    });
+    const returnFiles = await Promise.all(filesPromises);
+
+    const s3Promises = files.map(async (file) => {
       const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
-      return [
-        fileRepository.save(fileRepository.create(media)),
-        this.s3Service
+      try {
+        const promise = await this.s3Service
           .upload({
             Bucket: this.bucket,
             Key,
             ContentType: file.mimetype,
             Body: createReadStream(file.path),
           })
-          .promise()
-          .then(() => {
-            this.logger.debug(
-              `The file '${file.path}' has been uploaded on S3`,
-            );
-          })
-          .catch((error) => {
-            this.logger.error('S3 Error: upload', error);
-            throw new ServiceUnavailableException(error);
-          }),
-      ];
+          .promise();
+        this.logger.debug(
+          `The file '${file.path}' has been uploaded on S3 '${promise.Key}'`,
+        );
+      } catch (error) {
+        this.logger.error('S3 Error: upload', error);
+        throw new ServiceUnavailableException(error);
+      }
     });
-
-    let count = 0;
-    const returnFiles = await Promise.all(filesPromises).then((data) =>
-      data.reduce((results, result) => {
-        if (result instanceof FileEntity) {
-          count += 1;
-          return results.concat(result);
-        }
-        return results;
-      }, [] as Array<FileEntity>),
-    );
+    await Promise.all(s3Promises);
 
     files.forEach((file) =>
       unlink(file.path, (err: NodeJS.ErrnoException | null) => {
@@ -275,7 +266,7 @@ export class FileService {
       }),
     );
 
-    return [returnFiles, count];
+    return returnFiles;
   }
 
   headS3Object = (

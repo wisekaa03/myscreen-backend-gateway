@@ -178,11 +178,11 @@ export class FileController {
     } catch (err) {
       throw new BadRequestException('The param must be a string');
     }
-    const [data, count] = await this.fileService.upload(user, param, files);
+    const data = await this.fileService.upload(user, param, files);
 
     return {
       status: Status.Success,
-      count,
+      count: data.length,
       data,
     };
   }
