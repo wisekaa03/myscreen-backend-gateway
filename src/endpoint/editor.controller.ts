@@ -489,7 +489,7 @@ export class EditorController {
     @Param('editorId', ParseUUIDPipe) id: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
   ): Promise<SuccessResponse> {
-    const editor = await this.editorService.findOne({
+    let editor = await this.editorService.findOne({
       where: { userId: user.id, id },
     });
     if (!editor) {
@@ -511,6 +511,13 @@ export class EditorController {
       throw new NotFoundException('This editor layer is not exists');
     }
 
+    editor = await this.editorService.findOne({
+      where: { userId: user.id, id },
+      relations: ['videoLayers', 'audioLayers'],
+    });
+    if (!editor) {
+      throw new NotFoundException(`Editor '${id}' is not found`);
+    }
     /* await */ this.editorService.correctLayers(editor);
 
     return {
