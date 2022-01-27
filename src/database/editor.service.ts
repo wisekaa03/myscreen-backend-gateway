@@ -519,7 +519,6 @@ export class EditorService {
     let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
     const correctedVideoLayers = layers.reduce((accLayers, value) => {
       const duration = value.cutTo - value.cutFrom;
-      start += duration;
       const result = accLayers.concat({
         id: value.id,
         index: moveIndexLocal,
@@ -528,6 +527,7 @@ export class EditorService {
         duration,
         start,
       });
+      start += duration;
       moveIndexLocal += 1;
       return result;
     }, [] as Partial<EditorLayerEntity>[]);
