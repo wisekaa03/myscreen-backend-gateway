@@ -993,6 +993,40 @@ paths:
       tags: *a30
       security: *a31
   "/api/v2/file/{fileId}":
+    get:
+      operationId: file-get-s3
+      summary: Скачивание медиа
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            video/mp4:
+              encoding:
+                video_mp4:
+                  contentType: video/mp4
+            image/jpeg:
+              encoding:
+                image_jpeg:
+                  contentType: image/jpeg
+            image/png:
+              encoding:
+                image_png:
+                  contentType: image/png
+        "400": *a23
+        "401": *a24
+        "403": *a25
+        "404": *a26
+        "409": *a27
+        "500": *a28
+        "503": *a29
+      tags: *a30
+      security: *a31
     post:
       operationId: file-get
       summary: Получить файл
@@ -1040,40 +1074,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FileGetResponse"
-        "400": *a23
-        "401": *a24
-        "403": *a25
-        "404": *a26
-        "409": *a27
-        "500": *a28
-        "503": *a29
-      tags: *a30
-      security: *a31
-    get:
-      operationId: file-get-s3
-      summary: Скачивание медиа
-      parameters:
-        - name: fileId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Успешный ответ
-          content:
-            video/mp4:
-              encoding:
-                video_mp4:
-                  contentType: video/mp4
-            image/jpeg:
-              encoding:
-                image_jpeg:
-                  contentType: image/jpeg
-            image/png:
-              encoding:
-                image_png:
-                  contentType: image/png
         "400": *a23
         "401": *a24
         "403": *a25
@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.15
+  version: 2.7.16
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev

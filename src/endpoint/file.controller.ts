@@ -187,74 +187,6 @@ export class FileController {
     };
   }
 
-  @Post('/:fileId')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'file-get',
-    summary: 'Получить файл',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: FileGetResponse,
-  })
-  async getFileDB(
-    @Req() { user }: ExpressRequest,
-    @Param('fileId', ParseUUIDPipe) id: string,
-  ): Promise<FileGetResponse> {
-    const data = await this.fileService.findOne({
-      where: {
-        userId: user.id,
-        id,
-      },
-    });
-    if (!data) {
-      throw new NotFoundException('File not found');
-    }
-
-    return {
-      status: Status.Success,
-      data,
-    };
-  }
-
-  @Patch('/:fileId')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'file-update',
-    summary: 'Изменить файл',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: FileGetResponse,
-  })
-  async updateFileDB(
-    @Req() { user }: ExpressRequest,
-    @Param('fileId', ParseUUIDPipe) id: string,
-    @Body() update: FileUpdateRequest,
-  ): Promise<FileGetResponse> {
-    const file = await this.fileService.findOne({
-      where: {
-        userId: user.id,
-        id,
-      },
-    });
-    if (!file) {
-      throw new NotFoundException('File not found');
-    }
-
-    const data = await this.fileService.update(file, { ...file, ...update });
-    if (!data) {
-      throw new BadRequestException('File exists and not exists ?');
-    }
-
-    return {
-      status: Status.Success,
-      data,
-    };
-  }
-
   @Get('/:fileId')
   @HttpCode(200)
   @ApiOperation({
@@ -329,6 +261,74 @@ export class FileController {
       .catch((error) => {
         throw new NotFoundException(`S3 Error: ${error}`);
       });
+  }
+
+  @Post('/:fileId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'file-get',
+    summary: 'Получить файл',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: FileGetResponse,
+  })
+  async getFileDB(
+    @Req() { user }: ExpressRequest,
+    @Param('fileId', ParseUUIDPipe) id: string,
+  ): Promise<FileGetResponse> {
+    const data = await this.fileService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+    });
+    if (!data) {
+      throw new NotFoundException('File not found');
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Patch('/:fileId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'file-update',
+    summary: 'Изменить файл',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: FileGetResponse,
+  })
+  async updateFileDB(
+    @Req() { user }: ExpressRequest,
+    @Param('fileId', ParseUUIDPipe) id: string,
+    @Body() update: FileUpdateRequest,
+  ): Promise<FileGetResponse> {
+    const file = await this.fileService.findOne({
+      where: {
+        userId: user.id,
+        id,
+      },
+    });
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    const data = await this.fileService.update(file, { ...file, ...update });
+    if (!data) {
+      throw new BadRequestException('File exists and not exists ?');
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
   }
 
   @Delete('/:fileId')

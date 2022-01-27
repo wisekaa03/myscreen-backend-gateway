@@ -427,14 +427,18 @@ export class EditorController {
     if (!editor) {
       throw new NotFoundException('Editor not found');
     }
-    // const video = editor.videoLayers.find((layer) => layer.id === layerId);
-    // const audio = editor.audioLayers.find((layer) => layer.id === layerId);
+    if (moveIndex < 1) {
+      throw new BadRequestException(
+        'moveIndex must be greater or equal than 1',
+      );
+    }
     if (
-      moveIndex < 1 &&
-      (editor.videoLayers.length > moveIndex ||
-        editor.audioLayers.length > moveIndex)
+      editor.videoLayers.length > moveIndex ||
+      editor.audioLayers.length > moveIndex
     ) {
-      throw new BadRequestException();
+      throw new BadRequestException(
+        'moveIndex must be less than editor layers',
+      );
     }
 
     /* await */ this.editorService.moveIndex(editor, layerId, moveIndex);
