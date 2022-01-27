@@ -296,7 +296,17 @@ export class EditorController {
       update.video = [editor];
     }
 
-    const data = await this.editorService.updateLayer(user, id, update);
+    const result = await this.editorService.updateLayer(user, id, update);
+    if (!result) {
+      throw new NotFoundException('This editor layer is not exists');
+    }
+    await this.editorService.moveIndex(editor, result.id, result.index);
+    const data = await this.editorService.findOneLayer({
+      where: {
+        id: result.id,
+      },
+      relations: ['file'],
+    });
     if (!data) {
       throw new NotFoundException('This editor layer is not exists');
     }
@@ -433,8 +443,10 @@ export class EditorController {
       );
     }
     if (
-      editor.videoLayers.length > moveIndex ||
-      editor.audioLayers.length > moveIndex
+      !(
+        editor.videoLayers.length >= moveIndex ||
+        editor.audioLayers.length >= moveIndex
+      )
     ) {
       throw new BadRequestException(
         'moveIndex must be less than editor layers',

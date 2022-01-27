@@ -401,7 +401,7 @@ export class EditorService {
         childEditly.stdout?.on('data', async (message: Buffer) => {
           const msg = message.toString();
           this.logger.debug(
-            `Editly on '${renderEditor.id}/name=${renderEditor.name}': ${msg}`,
+            `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
           );
           // TODO: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
           const percent = msg.match(/(\d+%)/g);
@@ -513,8 +513,57 @@ export class EditorService {
     return editor;
   }
 
+  correctedLayers(
+    layers: EditorLayerEntity[],
+    layerId: string,
+    moveIndex: number,
+  ): Partial<EditorLayerEntity>[] {
+    let moveIndexLocal = 1;
+    const resultLayer = layers
+      .reduce((accLayers, value) => {
+        if (value.id === layerId) {
+          const duration = value.cutTo - value.cutFrom;
+          const result = accLayers.concat({
+            id: value.id,
+            index: moveIndex,
+            cutFrom: value.cutFrom,
+            cutTo: value.cutTo,
+            duration,
+            start: value.start,
+          });
+          return result;
+        }
+
+        const duration = value.cutTo - value.cutFrom;
+        if (moveIndexLocal === moveIndex) {
+          moveIndexLocal = moveIndex + 1;
+        }
+        const result = accLayers.concat({
+          id: value.id,
+          index: moveIndexLocal,
+          cutFrom: value.cutFrom,
+          cutTo: value.cutTo,
+          duration,
+          start: value.start,
+        });
+        moveIndexLocal += 1;
+        return result;
+      }, [] as Partial<EditorLayerEntity>[])
+      .sort((v1, v2) => (v1.index || 1) - (v2.index || 1));
+
+    let start = 0;
+    return resultLayer.reduce((accLayers, value) => {
+      const result = accLayers.concat({
+        ...value,
+        start,
+      });
+      start += value.duration ? value.duration : 0;
+      return result;
+    }, [] as Partial<EditorLayerEntity>[]);
+  }
+
   /**
-   * Index layer: index = index.length, start = index.length + duration = cutFrom - cutTo
+   * Move layer index
    *
    * @async
    * @param {EditorEntity} editor Editor entity
@@ -528,21 +577,21 @@ export class EditorService {
     layerId: string,
     moveIndex: number,
   ): Promise<void> {
-    let layers = editor.videoLayers;
+    let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
     let layer = layers.find((l) => l.id === layerId);
     if (!layer) {
-      layers = editor.audioLayers;
+      layers = editor.audioLayers.sort((v1, v2) => v1.index - v2.index);
       layer = layers.find((l) => l.id === layerId);
     }
     if (!layer) {
       throw new NotFoundException('layerId is not in editor layers');
     }
 
-    const layersPromise = layers.reduce(
-      (accLayers, value) => accLayers.concat(value),
-      [] as EditorLayerEntity[],
+    const correctedLayers = this.correctedLayers(layers, layerId, moveIndex);
+    const layersPromises = correctedLayers.map((value) =>
+      this.editorLayerRepository.save(this.editorLayerRepository.create(value)),
     );
 
-    throw new NotFoundException();
+    /* await */ Promise.all(layersPromises);
   }
 }

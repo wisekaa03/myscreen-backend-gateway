@@ -39,7 +39,7 @@ export class ExceptionsFilter extends BaseExceptionFilter {
           (response as Record<string, string>).details;
       }
 
-      this.logger.error(`${exception.message}. ${response}`, exception.stack);
+      this.logger.error(exception.message, exception.stack);
 
       if (exception instanceof UnauthorizedException) {
         exceptionRule = new UnauthorizedError(exception.message);
