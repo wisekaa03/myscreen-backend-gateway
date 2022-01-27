@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.14
+  version: 2.7.15
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2985,6 +2985,8 @@ components:
         - height
         - fps
         - renderingStatus
+        - renderingPercent
+        - renderingError
         - renderedFile
         - keepSourceAudio
         - totalDuration
@@ -3203,6 +3205,8 @@ components:
       required:
         - id
         - renderingStatus
+        - renderingPercent
+        - renderingError
         - renderedFile
     EditorGetRenderingStatusResponse:
       type: object

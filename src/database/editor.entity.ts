@@ -104,7 +104,7 @@ export class EditorEntity {
     type: 'integer',
     description: 'Процент рендеринга',
     example: 0,
-    required: false,
+    required: true,
   })
   @IsNumber()
   renderingPercent!: number | null;
@@ -113,7 +113,7 @@ export class EditorEntity {
   @ApiProperty({
     type: 'string',
     description: 'Ошибка рендеринга',
-    required: false,
+    required: true,
   })
   @IsString()
   renderingError!: string | null;
