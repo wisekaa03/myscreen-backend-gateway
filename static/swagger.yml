@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.29
+  version: 2.7.30
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2242,6 +2242,59 @@ components:
         - statusCode
         - code
         - message
+    Address:
+      type: object
+      properties:
+        country:
+          type: string
+          description: Страна
+          example: Россия
+        city:
+          type: string
+          description: Город
+          example: Краснодар
+        street:
+          type: string
+          description: Улица
+          example: Красная
+        house:
+          type: number
+          description: Дом
+          example: 1
+    MonitorPrice:
+      type: object
+      properties:
+        of1s:
+          type: number
+          description: Стоимость показа 1 секунды
+          example: 1
+        show100:
+          type: number
+          description: Стоимость 100 показов в день
+          example: 100
+    MonitorInfo:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Модель
+          example: Samsung
+        resolution:
+          type: number
+          description: Разрешение
+          example: 0
+        angle:
+          type: number
+          description: Угол обзора
+          example: 0
+        matrix:
+          type: number
+          description: Тип матрицы
+          example: 0
+        brightness:
+          type: number
+          description: Яркость
+          example: 0
     MonitorPartialRequest:
       type: object
       properties:
@@ -2254,7 +2307,6 @@ components:
           description: Имя
           example: имя монитора
         address:
-          type: object
           description: Адрес монитора
           example:
             &a54
@@ -2262,6 +2314,8 @@ components:
             country: Russia
             street: Krasnaya
             house: 122
+          allOf:
+            - $ref: "#/components/schemas/Address"
         category:
           type: string
           description: Категория
@@ -2278,12 +2332,13 @@ components:
             - STELLA
           example: GAS_STATION
         price:
-          type: object
           description: Стоимость показов
           example:
             &a56
             of1s: 0
             show100: 0
+          allOf:
+            - $ref: "#/components/schemas/MonitorPrice"
         orientation:
           type: string
           description: Ориентация экрана
@@ -2293,7 +2348,6 @@ components:
             - Vertical
           example: Horizontal
         monitorInfo:
-          type: object
           description: Модель и прочие характеристики монитора
           example:
             &a58
@@ -2302,6 +2356,8 @@ components:
             angle: 0
             matrix: 0
             brightness: 0
+          allOf:
+            - $ref: "#/components/schemas/MonitorInfo"
         attached:
           type: boolean
           description: Присоединен
@@ -2523,27 +2579,30 @@ components:
           description: Имя
           example: имя монитора
         address:
-          type: object
           description: Адрес монитора
           example: *a54
+          allOf:
+            - $ref: "#/components/schemas/Address"
         category:
           type: string
           description: Категория
           enum: *a55
           example: GAS_STATION
         price:
-          type: object
           description: Стоимость показов
           example: *a56
+          allOf:
+            - $ref: "#/components/schemas/MonitorPrice"
         orientation:
           type: string
           description: Ориентация экрана
           enum: *a57
           example: Horizontal
         monitorInfo:
-          type: object
           description: Модель и прочие характеристики монитора
           example: *a58
+          allOf:
+            - $ref: "#/components/schemas/MonitorInfo"
         attached:
           type: boolean
           description: Присоединен
@@ -2633,27 +2692,30 @@ components:
           description: Имя
           example: имя монитора
         address:
-          type: object
           description: Адрес монитора
           example: *a54
+          allOf:
+            - $ref: "#/components/schemas/Address"
         category:
           type: string
           description: Категория
           enum: *a55
           example: GAS_STATION
         price:
-          type: object
           description: Стоимость показов
           example: *a56
+          allOf:
+            - $ref: "#/components/schemas/MonitorPrice"
         orientation:
           type: string
           description: Ориентация экрана
           enum: *a57
           example: Horizontal
         monitorInfo:
-          type: object
           description: Модель и прочие характеристики монитора
           example: *a58
+          allOf:
+            - $ref: "#/components/schemas/MonitorInfo"
         code:
           type: string
           description: Идентификатор устройства
@@ -2692,27 +2754,30 @@ components:
           description: Имя
           example: имя монитора
         address:
-          type: object
           description: Адрес монитора
           example: *a54
+          allOf:
+            - $ref: "#/components/schemas/Address"
         category:
           type: string
           description: Категория
           enum: *a55
           example: GAS_STATION
         price:
-          type: object
           description: Стоимость показов
           example: *a56
+          allOf:
+            - $ref: "#/components/schemas/MonitorPrice"
         orientation:
           type: string
           description: Ориентация экрана
           enum: *a57
           example: Horizontal
         monitorInfo:
-          type: object
           description: Модель и прочие характеристики монитора
           example: *a58
+          allOf:
+            - $ref: "#/components/schemas/MonitorInfo"
         attached:
           type: boolean
           description: Присоединен

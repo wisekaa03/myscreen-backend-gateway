@@ -6,9 +6,11 @@ import {
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
-  IsObject,
+  IsNumber,
+  IsString,
   IsUUID,
   Length,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -23,6 +25,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { Type } from 'class-transformer';
 
 import {
   MonitorCategoryEnum,
@@ -32,6 +35,100 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { FileEntity } from './file.entity';
+
+export class Address {
+  @ApiProperty({
+    description: 'Страна',
+    example: 'Россия',
+    required: false,
+  })
+  @IsString()
+  country?: string;
+
+  @ApiProperty({
+    description: 'Город',
+    example: 'Краснодар',
+    required: false,
+  })
+  @IsString()
+  city?: string;
+
+  @ApiProperty({
+    description: 'Улица',
+    example: 'Красная',
+    required: false,
+  })
+  @IsString()
+  street?: string;
+
+  @ApiProperty({
+    description: 'Дом',
+    example: 1,
+    required: false,
+  })
+  @IsNumber()
+  house?: number;
+}
+
+export class MonitorPrice {
+  @ApiProperty({
+    description: 'Стоимость показа 1 секунды',
+    example: 1,
+    required: false,
+  })
+  @IsNumber()
+  of1s?: number;
+
+  @ApiProperty({
+    description: 'Стоимость 100 показов в день',
+    example: 100,
+    required: false,
+  })
+  @IsNumber()
+  show100?: number;
+}
+
+export class MonitorInfo {
+  @ApiProperty({
+    description: 'Модель',
+    example: 'Samsung',
+    required: false,
+  })
+  @IsString()
+  model?: string;
+
+  @ApiProperty({
+    description: 'Разрешение',
+    example: 0,
+    required: false,
+  })
+  @IsNumber()
+  resolution?: 0;
+
+  @ApiProperty({
+    description: 'Угол обзора',
+    example: 0,
+    required: false,
+  })
+  @IsNumber()
+  angle?: 0;
+
+  @ApiProperty({
+    description: 'Тип матрицы',
+    example: 0,
+    required: false,
+  })
+  @IsNumber()
+  matrix?: 0;
+
+  @ApiProperty({
+    description: 'Яркость',
+    example: 0,
+    required: false,
+  })
+  @IsNumber()
+  brightness?: 0;
+}
 
 @Entity('monitor')
 @Unique('IDX_user_name', ['user', 'name'])
@@ -57,6 +154,7 @@ export class MonitorEntity {
   // TODO: transformer functions
   @Column({ type: 'json' })
   @ApiProperty({
+    type: Address,
     description: 'Адрес монитора',
     example: {
       city: 'Krasnodar',
@@ -66,8 +164,9 @@ export class MonitorEntity {
     },
     required: false,
   })
-  @IsObject()
-  address!: Record<string, string | number>;
+  @ValidateNested()
+  @Type(() => Address)
+  address!: Address;
 
   @Column({ type: 'enum', enum: MonitorCategoryEnum })
   @ApiProperty({
@@ -82,12 +181,14 @@ export class MonitorEntity {
   // TODO: transformer functions
   @Column({ type: 'json' })
   @ApiProperty({
+    type: MonitorPrice,
     description: 'Стоимость показов',
     example: { of1s: 0, show100: 0 },
     required: false,
   })
-  @IsObject()
-  price!: Record<string, number>;
+  @ValidateNested()
+  @Type(() => MonitorPrice)
+  price!: MonitorPrice;
 
   @Column({ type: 'enum', enum: MonitorOrientation })
   @ApiProperty({
@@ -102,6 +203,7 @@ export class MonitorEntity {
   // TODO: transformer functions
   @Column({ type: 'json' })
   @ApiProperty({
+    type: MonitorInfo,
     description: 'Модель и прочие характеристики монитора',
     example: {
       model: 'Samsung',
@@ -111,8 +213,9 @@ export class MonitorEntity {
       brightness: 0,
     },
   })
-  @IsObject()
-  monitorInfo!: Record<string, string | number>;
+  @ValidateNested()
+  @Type(() => MonitorInfo)
+  monitorInfo!: MonitorInfo;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
