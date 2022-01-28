@@ -60,9 +60,9 @@ export class PlaylistEntity {
   description!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
+    cascade: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    cascade: true,
     eager: false,
   })
   @JoinColumn()
@@ -73,9 +73,9 @@ export class PlaylistEntity {
   userId!: string;
 
   @ManyToMany(() => FileEntity, (file) => file.playlists, {
+    cascade: true,
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
-    cascade: true,
     eager: true,
   })
   @JoinTable()
@@ -89,9 +89,9 @@ export class PlaylistEntity {
   files?: FileEntity[];
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.playlist, {
-    onDelete: 'SET NULL',
-    onUpdate: 'SET NULL',
     nullable: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
     eager: true,
   })
   @ApiProperty({

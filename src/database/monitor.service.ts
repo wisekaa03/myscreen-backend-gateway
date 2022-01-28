@@ -21,16 +21,16 @@ export class MonitorService {
     find: FindManyOptions<MonitorEntity>,
   ): Promise<[Array<MonitorEntity>, number]> =>
     this.monitorRepository.findAndCount({
-      ...find,
       relations: ['files', 'playlist'],
+      ...find,
     });
 
   findOne = async (
     find: FindManyOptions<MonitorEntity>,
   ): Promise<MonitorEntity | undefined> =>
     this.monitorRepository.findOne({
-      ...find,
       relations: ['files', 'playlist'],
+      ...find,
     });
 
   async update(

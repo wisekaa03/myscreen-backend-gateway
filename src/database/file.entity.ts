@@ -177,9 +177,9 @@ export class FileEntity {
   meta!: MediaMeta;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
+    cascade: true,
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
-    cascade: true,
     eager: false,
   })
   @JoinColumn({ name: 'userId' })
@@ -199,11 +199,15 @@ export class FileEntity {
   preview?: FilePreviewEntity[];
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.files, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
     nullable: true,
   })
   playlists?: PlaylistEntity[];
 
   @ManyToMany(() => MonitorEntity, (monitor) => monitor.files, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
     nullable: true,
   })
   monitors?: MonitorEntity[];
