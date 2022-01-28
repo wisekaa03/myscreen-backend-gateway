@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.26
+  version: 2.7.27
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2876,7 +2876,7 @@ components:
           example: 10
           default: 10
         start:
-          type: integer
+          type: number
           description: С какой секунды начинать воспроизводить клип
           default: 0
           example: 0
@@ -3109,7 +3109,7 @@ components:
           example: 10
           default: 10
         start:
-          type: integer
+          type: number
           description: С какой секунды начинать воспроизводить клип
           default: 0
           example: 0
@@ -3171,7 +3171,7 @@ components:
           example: 10
           default: 10
         start:
-          type: integer
+          type: number
           description: С какой секунды начинать воспроизводить клип
           default: 0
           example: 0

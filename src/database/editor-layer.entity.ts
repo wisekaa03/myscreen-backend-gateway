@@ -92,10 +92,10 @@ export class EditorLayerEntity {
   @Min(1)
   cutTo!: number;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'numeric', default: 0 })
   @ApiProperty({
     description: 'С какой секунды начинать воспроизводить клип',
-    type: 'integer',
+    type: 'number',
     default: 0,
     example: 0,
     required: true,
@@ -159,6 +159,7 @@ export class EditorLayerEntity {
   @AfterLoad()
   @AfterUpdate()
   after() {
+    this.start = parseFloat(this.start as unknown as string);
     this.duration = parseFloat(this.duration as unknown as string);
     this.cutFrom = parseFloat(this.cutFrom as unknown as string);
     this.cutTo = parseFloat(this.cutTo as unknown as string);

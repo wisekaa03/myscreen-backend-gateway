@@ -50,6 +50,6 @@ describe(UserController.name, () => {
     expect(roles).toStrictEqual([UserRoleEnum.Administrator]);
   });
 
-  // TODO: should inspect:
-  // TODO: - users, user, userUpdate, disableUser, enableUser, deleteUser
+  // DEBUG: should inspect:
+  // DEBUG: - users, user, userUpdate, disableUser, enableUser, deleteUser
 });
