@@ -66,8 +66,16 @@ export class Address {
     example: 1,
     required: false,
   })
-  @IsNumber()
-  house?: number;
+  @IsString()
+  house?: string;
+
+  @ApiProperty({
+    description: 'Комната',
+    example: 1,
+    required: false,
+  })
+  @IsString()
+  room?: string;
 }
 
 export class MonitorPrice {
