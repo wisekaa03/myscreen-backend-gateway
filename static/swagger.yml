@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.31
+  version: 2.7.32
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2258,8 +2258,12 @@ components:
           description: Улица
           example: Красная
         house:
-          type: number
+          type: string
           description: Дом
+          example: 1
+        room:
+          type: string
+          description: Комната
           example: 1
     MonitorPrice:
       type: object
@@ -2280,17 +2284,17 @@ components:
           description: Модель
           example: Samsung
         resolution:
-          type: number
+          type: string
           description: Разрешение
-          example: 0
+          example: 3840x2190
         angle:
           type: number
           description: Угол обзора
           example: 0
         matrix:
-          type: number
+          type: string
           description: Тип матрицы
-          example: 0
+          example: IPS
         brightness:
           type: number
           description: Яркость

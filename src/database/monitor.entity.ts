@@ -107,11 +107,11 @@ export class MonitorInfo {
 
   @ApiProperty({
     description: 'Разрешение',
-    example: 0,
+    example: '3840x2190',
     required: false,
   })
-  @IsNumber()
-  resolution?: 0;
+  @IsString()
+  resolution?: string;
 
   @ApiProperty({
     description: 'Угол обзора',
@@ -119,15 +119,15 @@ export class MonitorInfo {
     required: false,
   })
   @IsNumber()
-  angle?: 0;
+  angle?: number;
 
   @ApiProperty({
     description: 'Тип матрицы',
-    example: 0,
+    example: 'IPS',
     required: false,
   })
-  @IsNumber()
-  matrix?: 0;
+  @IsString()
+  matrix?: string;
 
   @ApiProperty({
     description: 'Яркость',
@@ -135,7 +135,7 @@ export class MonitorInfo {
     required: false,
   })
   @IsNumber()
-  brightness?: 0;
+  brightness?: number;
 }
 
 @Entity('monitor')
