@@ -143,7 +143,7 @@ export class AuthController {
     @Ip() fingerprint: string,
     @Body() { email, password }: LoginRequest,
   ): Promise<AuthResponse> {
-    // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
+    // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const [data, payload] = await this.authService.login(
       email,
       password,
@@ -189,7 +189,7 @@ export class AuthController {
     @Ip() fingerprint: string,
     @Body() { refreshToken }: AuthRefreshRequest,
   ): Promise<AuthRefreshResponse> {
-    // TODO: нужно ли нам это, fingerprint ? я считаю что нужно :)
+    // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const payload = await this.authService.createAccessTokenFromRefreshToken(
       refreshToken,
       fingerprint,
