@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.28
+  version: 2.7.29
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2267,16 +2267,16 @@ components:
           description: Категория
           enum:
             &a55
-            - АЗС
-            - Торговый центр
-            - Коммерческий центр
-            - Муниципальное учреждение
-            - Учебное заведение
-            - Торговая точка
-            - Уличный монитор
-            - Витрина
-            - Стелла
-          example: АЗС
+            - GAS_STATION
+            - MALL
+            - COMMERCIAL_CENTRE
+            - MUNICIPAL_INSTITUTION
+            - EDUCATIONAL_INSTITUTION
+            - RETAIL_SHOP
+            - STREET_MONITOR
+            - SHOWCASE
+            - STELLA
+          example: GAS_STATION
         price:
           type: object
           description: Стоимость показов
@@ -2530,7 +2530,7 @@ components:
           type: string
           description: Категория
           enum: *a55
-          example: АЗС
+          example: GAS_STATION
         price:
           type: object
           description: Стоимость показов
@@ -2640,7 +2640,7 @@ components:
           type: string
           description: Категория
           enum: *a55
-          example: АЗС
+          example: GAS_STATION
         price:
           type: object
           description: Стоимость показов
@@ -2699,7 +2699,7 @@ components:
           type: string
           description: Категория
           enum: *a55
-          example: АЗС
+          example: GAS_STATION
         price:
           type: object
           description: Стоимость показов
