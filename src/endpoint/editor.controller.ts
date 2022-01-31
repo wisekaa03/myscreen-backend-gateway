@@ -272,7 +272,11 @@ export class EditorController {
     @Param('editorId', ParseUUIDPipe) id: string,
     @Body() body: EditorLayerCreateRequest,
   ): Promise<EditorLayerGetResponse> {
-    let editor = await this.editorService.findOne({
+    if (body.duration !== body.cutTo - body.cutFrom) {
+      throw new BadRequestException('Duration must be cutTo - cutFrom');
+    }
+
+    const editor = await this.editorService.findOne({
       where: { id, userId: user.id },
     });
     if (!editor) {
@@ -284,10 +288,6 @@ export class EditorController {
     });
     if (!file) {
       throw new NotFoundException(`The file ${body.file} is not found`);
-    }
-
-    if (body.duration !== body.cutTo - body.cutFrom) {
-      throw new BadRequestException('Duration must be cutTo - cutFrom');
     }
 
     const update: Partial<EditorLayerEntity> = {
@@ -304,14 +304,7 @@ export class EditorController {
     if (!result) {
       throw new NotFoundException('This editor layer is not exists');
     }
-    editor = await this.editorService.findOne({
-      where: { id, userId: user.id },
-      relations: ['videoLayers', 'audioLayers'],
-    });
-    if (!editor) {
-      throw new NotFoundException(`The editor ${id} is not found`);
-    }
-    await this.editorService.correctLayers(editor);
+    await this.editorService.correctLayers(user, editor.id);
     const data = await this.editorService.findOneLayer({
       where: {
         id: result.id,
@@ -386,7 +379,7 @@ export class EditorController {
     @Param('layerId', ParseUUIDPipe) layerId: string,
     @Body() body: EditorLayerUpdateRequest,
   ): Promise<EditorLayerGetResponse> {
-    let editor = await this.editorService.findOne({
+    const editor = await this.editorService.findOne({
       where: {
         userId: user.id,
         id,
@@ -414,17 +407,7 @@ export class EditorController {
       throw new NotFoundException('This editor layer is not exists');
     }
 
-    editor = await this.editorService.findOne({
-      where: {
-        userId: user.id,
-        id,
-      },
-      relations: ['videoLayers', 'audioLayers'],
-    });
-    if (!editor) {
-      throw new NotFoundException('Editor not found');
-    }
-    await this.editorService.correctLayers(editor);
+    await this.editorService.correctLayers(user, editor.id);
 
     return {
       status: Status.Success,
@@ -445,37 +428,16 @@ export class EditorController {
   })
   async moveEditorLayer(
     @Req() { user }: ExpressRequest,
-    @Param('editorId', ParseUUIDPipe) id: string,
+    @Param('editorId', ParseUUIDPipe) editorId: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
     @Param('moveIndex', ParseIntPipe) moveIndex: number,
   ): Promise<SuccessResponse> {
-    const editor = await this.editorService.findOne({
-      where: {
-        userId: user.id,
-        id,
-      },
-      relations: ['videoLayers', 'audioLayers'],
-    });
-    if (!editor) {
-      throw new NotFoundException('Editor not found');
-    }
-    if (moveIndex < 1) {
-      throw new BadRequestException(
-        'moveIndex must be greater or equal than 1',
-      );
-    }
-    if (
-      !(
-        editor.videoLayers.length >= moveIndex ||
-        editor.audioLayers.length >= moveIndex
-      )
-    ) {
-      throw new BadRequestException(
-        'moveIndex must be less than editor layers',
-      );
-    }
-
-    await this.editorService.moveIndex(editor, layerId, moveIndex);
+    /* await */ this.editorService.moveIndex(
+      user,
+      editorId,
+      layerId,
+      moveIndex,
+    );
 
     return {
       status: Status.Success,
@@ -498,7 +460,7 @@ export class EditorController {
     @Param('editorId', ParseUUIDPipe) id: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
   ): Promise<SuccessResponse> {
-    let editor = await this.editorService.findOne({
+    const editor = await this.editorService.findOne({
       where: { userId: user.id, id },
     });
     if (!editor) {
@@ -520,14 +482,7 @@ export class EditorController {
       throw new NotFoundException('This editor layer is not exists');
     }
 
-    editor = await this.editorService.findOne({
-      where: { userId: user.id, id },
-      relations: ['videoLayers', 'audioLayers'],
-    });
-    if (!editor) {
-      throw new NotFoundException(`Editor '${id}' is not found`);
-    }
-    await this.editorService.correctLayers(editor);
+    await this.editorService.correctLayers(user, editor.id);
 
     return {
       status: Status.Success,

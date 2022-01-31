@@ -532,119 +532,51 @@ export class EditorService {
     return editor;
   }
 
-  async correctLayers(editor: EditorEntity): Promise<void> {
+  async correctLayers(user: UserEntity, id: string): Promise<void> {
+    const editor = await this.editorRepository.findOne({
+      where: { id, userId: user.id },
+      relations: ['videoLayers', 'audioLayers'],
+    });
+    if (!editor) {
+      throw new NotFoundException(`The editor ${id} is not found`);
+    }
+
     let start = 0;
-    // let moveIndexLocal = 1;
     let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
-    const correctedVideoLayers = layers.reduce((accLayers, value) => {
+    const correctedVideoLayers = layers.map((value) => {
       const duration = this.calcDuration(value);
-      const result = accLayers.concat({
-        id: value.id,
-        // index: moveIndexLocal,
-        cutFrom: value.cutFrom,
-        cutTo: value.cutTo,
+      const layer = {
         duration,
         start,
-      });
+      };
       start += duration;
-      // moveIndexLocal += 1;
-      return result;
-    }, [] as Partial<EditorLayerEntity>[]);
+      return this.editorLayerRepository.update(value.id, layer);
+    });
+
+    const editorPromise = this.editorRepository.update(editor.id, {
+      renderingStatus: RenderingStatus.Initial,
+      renderingPercent: null,
+      renderingError: null,
+      totalDuration: start,
+    });
 
     start = 0;
-    // moveIndexLocal = 1;
     layers = editor.audioLayers.sort((v1, v2) => v1.index - v2.index);
-    const correctedAudioLayers = layers.reduce((accLayers, value) => {
+    const correctedAudioLayers = layers.map((value) => {
       const duration = this.calcDuration(value);
-      const result = accLayers.concat({
-        id: value.id,
-        // index: moveIndexLocal,
-        cutFrom: value.cutFrom,
-        cutTo: value.cutTo,
+      const layer = {
         duration,
         start,
-      });
+      };
       start += duration;
-      // moveIndexLocal += 1;
-      return result;
-    }, [] as Partial<EditorLayerEntity>[]);
+      return this.editorLayerRepository.update(value.id, layer);
+    });
 
-    const layersPromises = correctedVideoLayers
-      .map((value) =>
-        this.editorLayerRepository.save(
-          this.editorLayerRepository.create(value),
-        ),
-      )
-      .concat(
-        correctedAudioLayers.map((value) =>
-          this.editorLayerRepository.save(
-            this.editorLayerRepository.create(value),
-          ),
-        ),
-      );
-
-    const editorPromise = this.editorRepository.save(
-      this.editorRepository.create({
-        ...editor,
-        renderingStatus: RenderingStatus.Initial,
-        renderingPercent: null,
-        renderingError: null,
-        totalDuration: this.calcTotalDuration(correctedVideoLayers),
-      }),
-    );
-
-    await Promise.all([...layersPromises, editorPromise]);
-  }
-
-  moveLayers(
-    layers: EditorLayerEntity[],
-    layerId: string,
-    moveIndex: number,
-  ): [Partial<EditorLayerEntity>[], number] {
-    let moveIndexLocal = 1;
-    const resultLayer = layers
-      .reduce((accLayers, value) => {
-        if (value.id === layerId) {
-          const duration = this.calcDuration(value);
-          const result = accLayers.concat({
-            id: value.id,
-            index: moveIndex,
-            cutFrom: value.cutFrom,
-            cutTo: value.cutTo,
-            duration,
-            start: value.start,
-          });
-          return result;
-        }
-
-        const duration = this.calcDuration(value);
-        if (moveIndexLocal === moveIndex) {
-          moveIndexLocal = moveIndex + 1;
-        }
-        const result = accLayers.concat({
-          id: value.id,
-          index: moveIndexLocal,
-          cutFrom: value.cutFrom,
-          cutTo: value.cutTo,
-          duration,
-          start: value.start,
-        });
-        moveIndexLocal += 1;
-        return result;
-      }, [] as Partial<EditorLayerEntity>[])
-      .sort((v1, v2) => (v1.index || 1) - (v2.index || 1));
-
-    let start = 0;
-    const resultLayers = resultLayer.reduce((accLayers, value) => {
-      const result = accLayers.concat({
-        ...value,
-        start,
-      });
-      start += value?.duration || 0;
-      return result;
-    }, [] as Partial<EditorLayerEntity>[]);
-
-    return [resultLayers, start];
+    await Promise.all([
+      editorPromise,
+      ...correctedVideoLayers,
+      ...correctedAudioLayers,
+    ]);
   }
 
   /**
@@ -658,10 +590,37 @@ export class EditorService {
    * @memberof EditorService
    */
   async moveIndex(
-    editor: EditorEntity,
+    user: UserEntity,
+    editorId: string,
     layerId: string,
     moveIndex: number,
   ): Promise<void> {
+    const editor = await this.editorRepository.findOne({
+      where: {
+        userId: user.id,
+        editorId,
+      },
+      relations: ['videoLayers', 'audioLayers'],
+    });
+    if (!editor) {
+      throw new NotFoundException('Editor not found');
+    }
+    if (moveIndex < 1) {
+      throw new BadRequestException(
+        'moveIndex must be greater or equal than 1',
+      );
+    }
+    if (
+      !(
+        editor.videoLayers.length >= moveIndex ||
+        editor.audioLayers.length >= moveIndex
+      )
+    ) {
+      throw new BadRequestException(
+        'moveIndex must be less than editor layers',
+      );
+    }
+
     let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
     let layer = layers.find((l) => l.id === layerId);
     if (!layer) {
@@ -672,24 +631,35 @@ export class EditorService {
       throw new NotFoundException('layerId is not in editor layers');
     }
 
-    const [correctedLayers, start] = this.moveLayers(
-      layers,
-      layerId,
-      moveIndex,
-    );
-    const layersPromises = correctedLayers.map((value) =>
-      this.editorLayerRepository.save(this.editorLayerRepository.create(value)),
-    );
-    const editorPromise = this.editorRepository.save(
-      this.editorRepository.create({
-        ...editor,
-        renderingStatus: RenderingStatus.Initial,
-        renderingPercent: null,
-        renderingError: null,
-        totalDuration: start,
-      }),
-    );
+    let moveIndexLocal = 1;
+    const resultLayer = layers.map((value) => {
+      if (value.id === layerId) {
+        const duration = this.calcDuration(value);
+        const result = {
+          index: moveIndex,
+          duration,
+        };
+        return this.editorLayerRepository.update(value.id, result);
+      }
 
-    /* await */ Promise.all([...layersPromises, editorPromise]);
+      const duration = this.calcDuration(value);
+      if (moveIndexLocal === moveIndex) {
+        moveIndexLocal = moveIndex + 1;
+      }
+      const result = {
+        index: moveIndexLocal,
+        duration,
+      };
+      moveIndexLocal += 1;
+      return this.editorLayerRepository.update(value.id, result);
+    }, [] as Promise<EditorLayerEntity>[]);
+
+    const editorPromise = this.editorRepository.update(editor.id, {
+      renderingStatus: RenderingStatus.Initial,
+      renderingPercent: null,
+      renderingError: null,
+    });
+
+    await Promise.all([editorPromise, ...resultLayer]);
   }
 }
