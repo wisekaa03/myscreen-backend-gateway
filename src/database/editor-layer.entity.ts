@@ -105,7 +105,7 @@ export class EditorLayerEntity {
 
   @Column({ type: 'integer', default: 1 })
   @ApiProperty({
-    description: '', // DEBUG: непонятно
+    description: 'Аудио дорожка из видео, 0-выключен, 1-включен',
     type: 'integer',
     example: 1,
     default: 1,

@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.39
+  version: 2.7.40
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2950,7 +2950,7 @@ components:
           example: 0
         mixVolume:
           type: integer
-          description: ""
+          description: Аудио дорожка из видео, 0-выключен, 1-включен
           example: 1
           default: 1
         createdAt:
@@ -3183,7 +3183,7 @@ components:
           example: 0
         mixVolume:
           type: integer
-          description: ""
+          description: Аудио дорожка из видео, 0-выключен, 1-включен
           example: 1
           default: 1
         file:
@@ -3245,7 +3245,7 @@ components:
           example: 0
         mixVolume:
           type: integer
-          description: ""
+          description: Аудио дорожка из видео, 0-выключен, 1-включен
           example: 1
           default: 1
     EditorRenderingStatusResponse:

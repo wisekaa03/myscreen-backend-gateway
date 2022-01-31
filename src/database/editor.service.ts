@@ -10,6 +10,7 @@ import util from 'node:util';
 import {
   Injectable,
   Logger,
+  BadRequestException,
   NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
@@ -142,16 +143,15 @@ export class EditorService {
     id: string,
     update: Partial<EditorLayerEntity>,
   ): Promise<EditorLayerEntity | undefined> {
-    if (update && update.cutFrom && update.cutTo) {
+    if (update.cutFrom !== undefined && update.cutTo !== undefined) {
       if (update.cutFrom > update.cutTo) {
-        throw new NotAcceptableException('cutFrom must be less than cutTo');
+        throw new BadRequestException('cutFrom must be less than cutTo');
       }
     }
-    const create = await this.editorLayerRepository.save(
+
+    return this.editorLayerRepository.save(
       this.editorLayerRepository.create(update),
     );
-
-    return this.editorLayerRepository.findOne(create.id);
   }
 
   /**
@@ -517,7 +517,7 @@ export class EditorService {
         renderingError: null,
       });
 
-      this.logger.log(`'${JSON.stringify(files)}' has been writed to database`);
+      this.logger.log(`Export writed to database: ${JSON.stringify(files)}`);
     })(editor).catch(async (error) => {
       this.logger.error(error);
       if (editor) {
