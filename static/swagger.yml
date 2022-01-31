@@ -2544,11 +2544,10 @@ components:
           description: Описание плэйлиста
           example: описание плэйлиста
         monitors:
+          type: array
           description: Мониторы
-          allOf:
-            - $ref: "#/components/schemas/MonitorResponse"
           items:
-            type: array
+            $ref: "#/components/schemas/MonitorResponse"
         createdAt:
           format: date-time
           type: string

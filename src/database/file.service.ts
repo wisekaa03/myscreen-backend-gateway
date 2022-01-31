@@ -358,12 +358,11 @@ export class FileService {
       const errorMsg = (['video', 'audio'] as Array<'video' | 'audio'>)
         .map((type) =>
           editorLayerFile.flatMap((layer) =>
-            layer[type].flatMap((editor) => ` [${editor.id}] ${editor.name}`),
+            layer[type].flatMap((editor) => editor.name),
           ),
         )
-        .filter((e) => e.length > 0)
-        .join(', ');
-      throw new ConflictException(`This file is used in editors:${errorMsg}`);
+        .filter((e) => e.length > 0);
+      throw new ConflictException(JSON.stringify(errorMsg));
     }
 
     this.headS3Object(file)

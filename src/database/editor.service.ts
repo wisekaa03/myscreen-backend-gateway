@@ -416,6 +416,7 @@ export class EditorService {
           const msg = message.toString();
           this.logger.debug(
             `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
+            'Editly',
           );
           // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
           const percent = msg.match(/(\d+%)/g);
@@ -427,10 +428,10 @@ export class EditorService {
         });
         childEditly.stderr?.on('data', (message: Buffer) => {
           const msg = message.toString();
-          this.logger.error(msg);
+          this.logger.error(msg, undefined, 'Editly');
         });
         childEditly.on('error', (error: Error) => {
-          this.logger.error(error.message, error.stack);
+          this.logger.error(error.message, error.stack, 'Editly');
           reject(error);
         });
         childEditly.on(

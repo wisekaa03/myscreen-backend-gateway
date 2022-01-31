@@ -82,8 +82,7 @@ export class PlaylistEntity {
   @ApiProperty({
     description: 'Файлы',
     type: 'array',
-    isArray: true,
-    allOf: [{ $ref: '#/components/schemas/FileResponse' }],
+    items: { $ref: '#/components/schemas/FileResponse' },
   })
   @IsUUID('all', { each: true })
   files?: FileEntity[];
@@ -97,8 +96,7 @@ export class PlaylistEntity {
   @ApiProperty({
     description: 'Мониторы',
     type: 'array',
-    isArray: true,
-    allOf: [{ $ref: '#/components/schemas/MonitorResponse' }],
+    items: { $ref: '#/components/schemas/MonitorResponse' },
   })
   monitors?: MonitorEntity[] | null;
 
