@@ -351,14 +351,19 @@ export class FileService {
    * @param {string} id File ID
    */
   async delete(file: FileEntity): Promise<DeleteResult> {
-    const editorLayerFile = await this.editorService.findOneLayer(
-      {
-        where: { fileId: file.id },
-      },
-      false,
-    );
-    if (editorLayerFile) {
-      throw new ConflictException();
+    const editorLayerFile = await this.editorService.findLayer({
+      where: { fileId: file.id },
+    });
+    if (Array.isArray(editorLayerFile) && editorLayerFile.length > 0) {
+      const errorMsg = (['video', 'audio'] as Array<'video' | 'audio'>)
+        .map((type) =>
+          editorLayerFile.flatMap((layer) =>
+            layer[type].flatMap((editor) => ` [${editor.id}] ${editor.name}`),
+          ),
+        )
+        .filter((e) => e.length > 0)
+        .join(', ');
+      throw new ConflictException(`This file is used in editors:${errorMsg}`);
     }
 
     this.headS3Object(file)

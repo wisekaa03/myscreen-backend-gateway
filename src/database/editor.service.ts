@@ -58,8 +58,8 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
   ): Promise<[Array<EditorEntity>, number]> =>
     this.editorRepository.findAndCount({
-      ...find,
       relations: ['videoLayers', 'audioLayers', 'renderedFile'],
+      ...find,
     });
 
   findOne = async (
@@ -92,6 +92,20 @@ export class EditorService {
       id: editor.id,
       userId: user.id,
     });
+
+  async findLayer(
+    find: FindManyOptions<EditorLayerEntity>,
+    relations: boolean | string[] = true,
+  ): Promise<EditorLayerEntity[] | undefined> {
+    const where = find;
+    if (typeof relations === 'boolean' && relations === true) {
+      where.relations = ['video', 'audio', 'file'];
+    }
+    if (typeof relations === 'string') {
+      where.relations = relations;
+    }
+    return this.editorLayerRepository.find(where);
+  }
 
   async findOneLayer(
     find: FindManyOptions<EditorLayerEntity>,

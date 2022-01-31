@@ -119,7 +119,7 @@ export class EditorEntity {
   renderingError!: string | null;
 
   @ManyToOne(() => FileEntity, (file) => file.id, {
-    onDelete: 'SET NULL',
+    onDelete: 'CASCADE',
     nullable: true,
     eager: true,
   })
