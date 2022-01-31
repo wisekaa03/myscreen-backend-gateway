@@ -354,7 +354,7 @@ export class FileService {
    * @param {string} id File ID
    */
   async delete(file: FileEntity): Promise<DeleteResult> {
-    const [editorFiles, playlistFiles, monitorFiles] = await Promise.all([
+    const [editorFiles, playlistFiles] = await Promise.all([
       this.editorService.find({
         where:
           `"EditorEntity"."renderedFileId"='${file.id}'` +
@@ -364,14 +364,10 @@ export class FileService {
       this.playlistService.find({
         where: `"PlaylistEntity__files"."id"='${file.id}'`,
       }),
-      this.monitorService.find({
-        where: `"MonitorEntity__files"."id"='${file.id}'`,
-      }),
     ]);
     if (
       (Array.isArray(editorFiles) && editorFiles.length > 0) ||
-      (Array.isArray(playlistFiles) && playlistFiles.length > 0) ||
-      (Array.isArray(monitorFiles) && monitorFiles.length > 0)
+      (Array.isArray(playlistFiles) && playlistFiles.length > 0)
     ) {
       const errorMsg = {} as {
         editor: { id: string; name: string }[] | null;
@@ -388,12 +384,6 @@ export class FileService {
         errorMsg.playlist = playlistFiles.map((playlist) => ({
           id: playlist.id,
           name: playlist.name,
-        }));
-      }
-      if (Array.isArray(monitorFiles) && monitorFiles.length > 0) {
-        errorMsg.monitor = monitorFiles.map((monitor) => ({
-          id: monitor.id,
-          name: monitor.name,
         }));
       }
       throw new ConflictException(
