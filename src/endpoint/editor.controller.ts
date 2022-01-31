@@ -112,7 +112,7 @@ export class EditorController {
     @Req() { user }: ExpressRequest,
     @Body() { where, scope }: EditorsGetRequest,
   ): Promise<EditorsGetResponse> {
-    const [data, count] = await this.editorService.find({
+    const [data, count] = await this.editorService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: {
         userId: user.id,

@@ -35,6 +35,7 @@ import { UserEntity } from './user.entity';
 import { MonitorService } from './monitor.service';
 import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
+import { PlaylistService } from './playlist.service';
 
 @Injectable()
 export class FileService {
@@ -49,6 +50,8 @@ export class FileService {
     private readonly monitorService: MonitorService,
     @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
+    @Inject(forwardRef(() => PlaylistService))
+    private readonly playlistService: PlaylistService,
     @InjectS3()
     private readonly s3Service: S3,
     @InjectRepository(FileEntity)
@@ -351,18 +354,37 @@ export class FileService {
    * @param {string} id File ID
    */
   async delete(file: FileEntity): Promise<DeleteResult> {
-    const editorLayerFile = await this.editorService.findLayer({
-      where: { fileId: file.id },
-    });
-    if (Array.isArray(editorLayerFile) && editorLayerFile.length > 0) {
-      const errorMsg = (['video', 'audio'] as Array<'video' | 'audio'>)
-        .map((type) =>
-          editorLayerFile.flatMap((layer) =>
-            layer[type].flatMap((editor) => editor.name),
-          ),
-        )
-        .filter((e) => e.length > 0);
-      throw new ConflictException(JSON.stringify(errorMsg));
+    const [editorFiles, playlistFiles] = await Promise.all([
+      this.editorService.find({
+        where:
+          `"EditorEntity"."renderedFileId"='${file.id}'` +
+          ` OR "EditorEntity__videoLayers"."fileId"='${file.id}'` +
+          ` OR "EditorEntity__audioLayers"."fileId"='${file.id}'`,
+      }),
+      this.playlistService.find({
+        where: `"PlaylistEntity__files"."id"='${file.id}'`,
+      }),
+    ]);
+    if (editorFiles && playlistFiles) {
+      const errorMsg = { pairedEditor: null, pairedPlaylist: null } as {
+        pairedEditor: { id: string; name: string }[] | null;
+        pairedPlaylist: string[] | null;
+      };
+      if (Array.isArray(editorFiles) && editorFiles.length > 0) {
+        errorMsg.pairedEditor = editorFiles.map((editor) => ({
+          id: editor.id,
+          name: editor.name,
+        }));
+      }
+      if (Array.isArray(playlistFiles) && playlistFiles.length > 0) {
+        errorMsg.pairedPlaylist = playlistFiles
+          .flatMap((playlist) => playlist.name)
+          .filter((e) => e.length > 0);
+      }
+      throw new ConflictException(
+        errorMsg,
+        'Файл, который Вы пытаетесь удалить используется в редакторе или в плэйлисте',
+      );
     }
 
     this.headS3Object(file)

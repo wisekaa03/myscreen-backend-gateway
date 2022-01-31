@@ -5,12 +5,13 @@ import { Status } from '@/enums/status.enum';
 /* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
 // @ts-ignore
 export class ConflictError extends ConflictException {
-  constructor(message?: string) {
+  constructor(message?: string, data?: Record<string, unknown>) {
     super({
       status: Status.Error,
       statusCode: 409,
       code: 'server-error.10000',
       message: message ?? 'Conflict exists',
+      data,
     });
   }
 

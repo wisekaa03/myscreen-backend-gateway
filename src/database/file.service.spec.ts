@@ -9,6 +9,7 @@ import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
 import { MonitorService } from './monitor.service';
 import { EditorService } from './editor.service';
+import { PlaylistService } from './playlist.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -48,6 +49,10 @@ describe(FileService.name, () => {
         },
         {
           provide: MonitorService,
+          useClass: mockRepository,
+        },
+        {
+          provide: PlaylistService,
           useClass: mockRepository,
         },
       ],

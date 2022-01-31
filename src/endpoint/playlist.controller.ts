@@ -102,7 +102,7 @@ export class PlaylistController {
     @Req() { user }: ExpressRequest,
     @Body() { where, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
-    const [data, count] = await this.playlistService.find({
+    const [data, count] = await this.playlistService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: {
         userId: user.id,

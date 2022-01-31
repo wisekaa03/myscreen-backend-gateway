@@ -19,8 +19,16 @@ export class PlaylistService {
 
   find = async (
     find: FindManyOptions<PlaylistEntity>,
+  ): Promise<PlaylistEntity[]> =>
+    this.playlistEntity.find({ relations: ['files'], ...find });
+
+  findAndCount = async (
+    find: FindManyOptions<PlaylistEntity>,
   ): Promise<[Array<PlaylistEntity>, number]> =>
-    this.playlistEntity.findAndCount({ ...find, relations: ['files'] });
+    this.playlistEntity.findAndCount({
+      relations: ['files'],
+      ...find,
+    });
 
   findOne = async (
     find: FindManyOptions<PlaylistEntity>,

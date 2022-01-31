@@ -56,6 +56,14 @@ export class EditorService {
 
   find = async (
     find: FindManyOptions<EditorEntity>,
+  ): Promise<Array<EditorEntity>> =>
+    this.editorRepository.find({
+      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
+      ...find,
+    });
+
+  findAndCount = async (
+    find: FindManyOptions<EditorEntity>,
   ): Promise<[Array<EditorEntity>, number]> =>
     this.editorRepository.findAndCount({
       relations: ['videoLayers', 'audioLayers', 'renderedFile'],

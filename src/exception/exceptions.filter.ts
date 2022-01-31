@@ -33,12 +33,6 @@ export class ExceptionsFilter extends BaseExceptionFilter {
 
     if (exception instanceof HttpException) {
       let response = exception.getResponse();
-      if (typeof response === 'object') {
-        response =
-          (response as Record<string, string | Array<string>>).message ??
-          (response as Record<string, string>).details;
-      }
-
       this.logger.error(exception.message, exception.stack);
 
       if (exception instanceof UnauthorizedException) {
@@ -59,7 +53,10 @@ export class ExceptionsFilter extends BaseExceptionFilter {
       } else if (exception instanceof InternalServerErrorException) {
         exceptionRule = new InternalServerError(exception.message);
       } else if (exception instanceof ConflictException) {
-        exceptionRule = new ConflictError(exception.message);
+        exceptionRule = new ConflictError(
+          exception.message,
+          response as Record<string, any>,
+        );
       }
     } else if (exception instanceof Error) {
       this.logger.error(
