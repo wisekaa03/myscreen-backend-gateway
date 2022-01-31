@@ -424,7 +424,7 @@ export class EditorController {
     if (!editor) {
       throw new NotFoundException('Editor not found');
     }
-    /* await */ this.editorService.correctLayers(editor);
+    await this.editorService.correctLayers(editor);
 
     return {
       status: Status.Success,
@@ -475,7 +475,7 @@ export class EditorController {
       );
     }
 
-    /* await */ this.editorService.moveIndex(editor, layerId, moveIndex);
+    await this.editorService.moveIndex(editor, layerId, moveIndex);
 
     return {
       status: Status.Success,
@@ -527,7 +527,7 @@ export class EditorController {
     if (!editor) {
       throw new NotFoundException(`Editor '${id}' is not found`);
     }
-    /* await */ this.editorService.correctLayers(editor);
+    await this.editorService.correctLayers(editor);
 
     return {
       status: Status.Success,

@@ -166,18 +166,15 @@ export class EditorService {
       id: editorLayer.id,
     });
 
-  performDurationTrim = (layer: EditorLayerEntity): number => {
+  calcDuration = (layer: Partial<EditorLayerEntity>): number => {
     if (layer.cutTo !== undefined && layer.cutFrom !== undefined) {
       return layer.cutTo - layer.cutFrom;
     }
-    return layer.duration;
+    return layer.duration || 0;
   };
 
-  calculateDuration = (layers: EditorLayerEntity[]): number =>
-    layers.reduce(
-      (duration, layer) => duration + this.performDurationTrim(layer),
-      0,
-    );
+  calcTotalDuration = (video: Partial<EditorLayerEntity>[]): number =>
+    video.reduce((duration, layer) => duration + this.calcDuration(layer), 0);
 
   prepareFile = async (
     mkdirPath: string,
@@ -235,7 +232,7 @@ export class EditorService {
 
     const { keepSourceAudio, videoLayers, audioLayers, width, height, fps } =
       editor;
-    const duration = this.calculateDuration(videoLayers);
+    const duration = this.calcTotalDuration(videoLayers);
 
     return [
       mkdirPath,
@@ -386,7 +383,7 @@ export class EditorService {
     }
 
     await this.editorRepository.update(editor.id, {
-      totalDuration: this.calculateDuration(editor.videoLayers),
+      totalDuration: this.calcTotalDuration(editor.videoLayers),
       renderingStatus: RenderingStatus.Pending,
       renderingError: null,
       renderingPercent: 0,
@@ -406,11 +403,10 @@ export class EditorService {
 
     const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
     editlyConfig.outPath = path.resolve(mkdirPath, 'out.mp4');
-    // editlyConfig.verbose = true;
     const editlyJSON = JSON.stringify(editlyConfig);
     const editlyPath = path.resolve(mkdirPath, 'editly.json');
-
     await fs.writeFile(editlyPath, editlyJSON);
+
     (async (renderEditor: EditorEntity) => {
       const outPath = await new Promise<string>((resolve, reject) => {
         const childEditly = child.fork(
@@ -538,38 +534,38 @@ export class EditorService {
 
   async correctLayers(editor: EditorEntity): Promise<void> {
     let start = 0;
-    let moveIndexLocal = 1;
+    // let moveIndexLocal = 1;
     let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
     const correctedVideoLayers = layers.reduce((accLayers, value) => {
-      const duration = value.cutTo - value.cutFrom;
+      const duration = this.calcDuration(value);
       const result = accLayers.concat({
         id: value.id,
-        index: moveIndexLocal,
+        // index: moveIndexLocal,
         cutFrom: value.cutFrom,
         cutTo: value.cutTo,
         duration,
         start,
       });
       start += duration;
-      moveIndexLocal += 1;
+      // moveIndexLocal += 1;
       return result;
     }, [] as Partial<EditorLayerEntity>[]);
 
     start = 0;
-    moveIndexLocal = 1;
+    // moveIndexLocal = 1;
     layers = editor.audioLayers.sort((v1, v2) => v1.index - v2.index);
     const correctedAudioLayers = layers.reduce((accLayers, value) => {
-      const duration = value.cutTo - value.cutFrom;
+      const duration = this.calcDuration(value);
       const result = accLayers.concat({
         id: value.id,
-        index: moveIndexLocal,
+        // index: moveIndexLocal,
         cutFrom: value.cutFrom,
         cutTo: value.cutTo,
         duration,
         start,
       });
-      moveIndexLocal += 1;
       start += duration;
+      // moveIndexLocal += 1;
       return result;
     }, [] as Partial<EditorLayerEntity>[]);
 
@@ -593,11 +589,11 @@ export class EditorService {
         renderingStatus: RenderingStatus.Initial,
         renderingPercent: null,
         renderingError: null,
-        totalDuration: start,
+        totalDuration: this.calcTotalDuration(correctedVideoLayers),
       }),
     );
 
-    /* await */ Promise.all([...layersPromises, editorPromise]);
+    await Promise.all([...layersPromises, editorPromise]);
   }
 
   moveLayers(
@@ -609,7 +605,7 @@ export class EditorService {
     const resultLayer = layers
       .reduce((accLayers, value) => {
         if (value.id === layerId) {
-          const duration = value.cutTo - value.cutFrom;
+          const duration = this.calcDuration(value);
           const result = accLayers.concat({
             id: value.id,
             index: moveIndex,
@@ -621,7 +617,7 @@ export class EditorService {
           return result;
         }
 
-        const duration = value.cutTo - value.cutFrom;
+        const duration = this.calcDuration(value);
         if (moveIndexLocal === moveIndex) {
           moveIndexLocal = moveIndex + 1;
         }
