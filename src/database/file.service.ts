@@ -368,7 +368,7 @@ export class FileService {
     if (editorFiles && playlistFiles) {
       const errorMsg = { pairedEditor: null, pairedPlaylist: null } as {
         pairedEditor: { id: string; name: string }[] | null;
-        pairedPlaylist: string[] | null;
+        pairedPlaylist: { id: string; name: string }[] | null;
       };
       if (Array.isArray(editorFiles) && editorFiles.length > 0) {
         errorMsg.pairedEditor = editorFiles.map((editor) => ({
@@ -377,9 +377,10 @@ export class FileService {
         }));
       }
       if (Array.isArray(playlistFiles) && playlistFiles.length > 0) {
-        errorMsg.pairedPlaylist = playlistFiles
-          .flatMap((playlist) => playlist.name)
-          .filter((e) => e.length > 0);
+        errorMsg.pairedPlaylist = playlistFiles.map((playlist) => ({
+          id: playlist.id,
+          name: playlist.name,
+        }));
       }
       throw new ConflictException(
         errorMsg,
