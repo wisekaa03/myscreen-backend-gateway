@@ -354,7 +354,7 @@ export class FileService {
    * @param {string} id File ID
    */
   async delete(file: FileEntity): Promise<DeleteResult> {
-    const [editorFiles, playlistFiles] = await Promise.all([
+    const [editorFiles, playlistFiles, monitorFiles] = await Promise.all([
       this.editorService.find({
         where:
           `"EditorEntity"."renderedFileId"='${file.id}'` +
@@ -364,25 +364,36 @@ export class FileService {
       this.playlistService.find({
         where: `"PlaylistEntity__files"."id"='${file.id}'`,
       }),
+      this.monitorService.find({
+        where: `"MonitorEntity__files"."id"='${file.id}'`,
+      }),
     ]);
     if (
       (Array.isArray(editorFiles) && editorFiles.length > 0) ||
-      (Array.isArray(playlistFiles) && playlistFiles.length > 0)
+      (Array.isArray(playlistFiles) && playlistFiles.length > 0) ||
+      (Array.isArray(monitorFiles) && monitorFiles.length > 0)
     ) {
-      const errorMsg = { pairedEditor: null, pairedPlaylist: null } as {
-        pairedEditor: { id: string; name: string }[] | null;
-        pairedPlaylist: { id: string; name: string }[] | null;
+      const errorMsg = {} as {
+        editor: { id: string; name: string }[] | null;
+        playlist: { id: string; name: string }[] | null;
+        monitor: { id: string; name: string }[] | null;
       };
       if (Array.isArray(editorFiles) && editorFiles.length > 0) {
-        errorMsg.pairedEditor = editorFiles.map((editor) => ({
+        errorMsg.editor = editorFiles.map((editor) => ({
           id: editor.id,
           name: editor.name,
         }));
       }
       if (Array.isArray(playlistFiles) && playlistFiles.length > 0) {
-        errorMsg.pairedPlaylist = playlistFiles.map((playlist) => ({
+        errorMsg.playlist = playlistFiles.map((playlist) => ({
           id: playlist.id,
           name: playlist.name,
+        }));
+      }
+      if (Array.isArray(monitorFiles) && monitorFiles.length > 0) {
+        errorMsg.monitor = monitorFiles.map((monitor) => ({
+          id: monitor.id,
+          name: monitor.name,
         }));
       }
       throw new ConflictException(

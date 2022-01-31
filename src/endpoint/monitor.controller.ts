@@ -101,7 +101,7 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { where, scope }: MonitorsGetRequest,
   ): Promise<MonitorsGetResponse> {
-    const [data, count] = await this.monitorService.find({
+    const [data, count] = await this.monitorService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: {
         userId: user.id,
