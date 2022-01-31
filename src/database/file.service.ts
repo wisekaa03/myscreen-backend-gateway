@@ -365,7 +365,10 @@ export class FileService {
         where: `"PlaylistEntity__files"."id"='${file.id}'`,
       }),
     ]);
-    if (editorFiles && playlistFiles) {
+    if (
+      (Array.isArray(editorFiles) && editorFiles.length > 0) ||
+      (Array.isArray(playlistFiles) && playlistFiles.length > 0)
+    ) {
       const errorMsg = { pairedEditor: null, pairedPlaylist: null } as {
         pairedEditor: { id: string; name: string }[] | null;
         pairedPlaylist: { id: string; name: string }[] | null;
