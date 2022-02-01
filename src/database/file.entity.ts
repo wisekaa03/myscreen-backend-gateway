@@ -30,6 +30,7 @@ import { PlaylistEntity } from '@/database/playlist.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
+import { FolderResponse } from '@/dto';
 
 export class MediaMeta {
   @ApiProperty({
@@ -84,31 +85,21 @@ export class FileEntity {
   id!: string;
 
   @ManyToOne(() => FolderEntity, (folder) => folder.files, {
-    eager: false,
+    eager: true,
   })
   @JoinColumn({ name: 'folderId' })
   folder!: FolderEntity;
 
-  @Column()
+  @Column(/* { select: false } */)
   @ApiProperty({
-    description: 'Папка',
+    description: 'Идентификатор папки',
     type: 'string',
     format: 'uuid',
     required: true,
   })
-  @IsDefined()
   @IsNotEmpty()
   @IsUUID()
   folderId?: string;
-
-  @Column()
-  @ApiProperty({
-    description: 'Изначальное имя файла',
-    example: 'foo.mp4',
-  })
-  @IsDefined()
-  @IsNotEmpty()
-  originalName!: string;
 
   @Column()
   @ApiProperty({
@@ -165,12 +156,12 @@ export class FileEntity {
   })
   filesize!: number;
 
-  @Column({ type: 'json', nullable: true })
+  @Column({ select: false, type: 'json', nullable: true })
   @ApiProperty({
     description: 'Метаинформация',
     type: MediaMeta,
     example: { duration: 200, filesize: 20500 },
-    required: true,
+    required: false,
   })
   @ValidateNested()
   @Type(() => MediaMeta)
@@ -185,18 +176,21 @@ export class FileEntity {
   @JoinColumn({ name: 'userId' })
   user!: UserEntity;
 
-  @Column({ nullable: true })
-  @ApiProperty({
-    description: 'Идентификатор пользователя',
-    type: 'string',
-    format: 'uuid',
-    required: true,
-  })
-  @IsUUID()
+  @Column({ select: false, nullable: true })
   userId!: string;
 
-  @OneToMany(() => FilePreviewEntity, (filePreview) => filePreview.file)
-  preview?: FilePreviewEntity[];
+  @OneToMany(() => FilePreviewEntity, (filePreview) => filePreview.file, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: true,
+  })
+  @ApiProperty({
+    description: 'Превью',
+    type: 'array',
+    items: { $ref: '#/components/schemas/FilePreviewResponse' },
+  })
+  previews!: FilePreviewEntity[];
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.files, {
     onDelete: 'CASCADE',

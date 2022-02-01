@@ -1,7 +1,6 @@
 import {
   IsBoolean,
   IsDate,
-  IsDefined,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -46,7 +45,6 @@ export class EditorEntity {
     example: 'имя редактора',
     required: true,
   })
-  @IsDefined()
   @IsNotEmpty()
   name!: string;
 
@@ -184,7 +182,7 @@ export class EditorEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column()
+  @Column({ select: false })
   @IsUUID()
   userId!: string;
 

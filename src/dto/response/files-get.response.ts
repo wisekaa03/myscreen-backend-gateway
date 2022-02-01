@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { FileMonitorsResponse } from '@/dto/response';
+import { FileResponse } from '@/dto/response';
 
 export class FilesGetResponse {
   @ApiProperty({
@@ -17,9 +17,9 @@ export class FilesGetResponse {
 
   @ApiProperty({
     description: 'Файлы',
-    type: FileMonitorsResponse,
+    type: FileResponse,
     isArray: true,
     required: true,
   })
-  data!: FileMonitorsResponse[];
+  data!: FileResponse[];
 }

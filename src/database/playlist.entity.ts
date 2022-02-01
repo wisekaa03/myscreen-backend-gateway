@@ -68,7 +68,7 @@ export class PlaylistEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column()
+  @Column({ select: false })
   @IsUUID()
   userId!: string;
 

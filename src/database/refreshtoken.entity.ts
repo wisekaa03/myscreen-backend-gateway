@@ -27,7 +27,7 @@ export class RefreshTokenEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column()
+  @Column({ select: false })
   @IsUUID()
   userId!: string;
 

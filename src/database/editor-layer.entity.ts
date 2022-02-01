@@ -131,7 +131,7 @@ export class EditorLayerEntity {
   })
   file!: FileEntity;
 
-  @Column()
+  @Column({ select: false })
   @IsUUID()
   fileId!: string;
 

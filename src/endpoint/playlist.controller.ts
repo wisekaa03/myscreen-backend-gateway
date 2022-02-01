@@ -203,7 +203,7 @@ export class PlaylistController {
   ): Promise<PlaylistGetResponse> {
     let files: FileEntity[] | undefined;
     if (Array.isArray(body.files) && body.files.length > 0) {
-      [files] = await this.fileService.find({
+      files = await this.fileService.find({
         where: { id: In(body.files), userId: user.id },
       });
       if (!Array.isArray(files) || body.files.length !== files.length) {

@@ -1,4 +1,5 @@
-import { createReadStream, unlink } from 'node:fs';
+import { createReadStream, unlink, promises as fs } from 'node:fs';
+import path from 'node:path';
 import { Readable } from 'node:stream';
 import { Response as ExpressResponse } from 'express';
 import { PromiseResult } from 'aws-sdk/lib/request';
@@ -28,6 +29,7 @@ import {
 import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
+import { FfMpegPreview } from '@/shared/ffmpeg';
 import { EditorService } from '@/database/editor.service';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FolderService } from './folder.service';
@@ -67,18 +69,38 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {[FileEntity[], number]} Результат
    */
-  find = async (
+  async find(
     find: FindManyOptions<FileEntity>,
-    relations = true,
-  ): Promise<[FileEntity[], number]> =>
-    this.fileRepository.findAndCount({
-      ...find,
-      loadRelationIds: relations
-        ? {
-            relations: ['monitors'],
-          }
-        : undefined,
-    });
+    relations: boolean | string[] = true,
+  ): Promise<Array<FileEntity>> {
+    const conditional = find;
+    if (typeof relations === 'boolean' && relations === true) {
+      conditional.relations = ['monitors', 'playlists'];
+    } else if (typeof relations === 'object' && Array.isArray(relations)) {
+      conditional.relations = relations;
+    }
+    return this.fileRepository.find(conditional);
+  }
+
+  /**
+   * Get files
+   *
+   * @async
+   * @param {FindManyOptions<FileEntity>} find
+   * @returns {[FileEntity[], number]} Результат
+   */
+  async findAndCount(
+    find: FindManyOptions<FileEntity>,
+    relations: boolean | string[] = true,
+  ): Promise<[Array<FileEntity>, number]> {
+    const conditional = find;
+    if (typeof relations === 'boolean' && relations === true) {
+      conditional.relations = ['monitors', 'playlists'];
+    } else if (typeof relations === 'object' && Array.isArray(relations)) {
+      conditional.relations = relations;
+    }
+    return this.fileRepository.findAndCount(conditional);
+  }
 
   /**
    * Get file
@@ -87,18 +109,18 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {FileEntity} Результат
    */
-  findOne = async (
+  async findOne(
     find: FindManyOptions<FileEntity>,
-    relations = true,
-  ): Promise<FileEntity | undefined> =>
-    this.fileRepository.findOne({
-      ...find,
-      loadRelationIds: relations
-        ? {
-            relations: ['monitors'],
-          }
-        : undefined,
-    });
+    relations: boolean | string[] = true,
+  ): Promise<FileEntity | undefined> {
+    const conditional = find;
+    if (typeof relations === 'boolean' && relations === true) {
+      conditional.relations = ['monitors', 'playlists'];
+    } else if (typeof relations === 'object' && Array.isArray(relations)) {
+      conditional.relations = relations;
+    }
+    return this.fileRepository.findOne(conditional);
+  }
 
   /**
    * Update file
@@ -109,15 +131,15 @@ export class FileService {
    */
   @Transaction()
   async update(
-    fileEntity: FileEntity,
+    file: FileEntity,
     update: Partial<FileEntity>,
     @TransactionRepository(FileEntity)
     fileRepository: Repository<FileEntity> = this.fileRepository,
   ): Promise<FileEntity | undefined> {
-    if (update.folderId !== fileEntity.folderId) {
-      const s3Name = getS3Name(fileEntity.originalName);
-      const Key = `${update.folderId}/${fileEntity.hash}-${s3Name}`;
-      const CopySource = `${fileEntity.folderId}/${fileEntity.hash}-${s3Name}`;
+    if (update.folderId !== file.folder.id) {
+      const s3Name = getS3Name(file.name);
+      const Key = `${update.folderId}/${file.hash}-${s3Name}`;
+      const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
 
       return Promise.all([
         fileRepository.save(fileRepository.create(update)),
@@ -145,7 +167,7 @@ export class FileService {
       ]).then(([updated]) => updated);
     }
 
-    return fileRepository.save(this.fileRepository.create(update));
+    return fileRepository.save(fileRepository.create(update));
   }
 
   /**
@@ -215,13 +237,15 @@ export class FileService {
       });
     }
 
-    const filesPromises = files.map((file) => {
-      const [meta, videoType, extension] = this.metaInformation(file, category);
+    const filesPromises = files.map(async (file) => {
+      const [meta, videoType, extension, previews] = await this.metaInformation(
+        file,
+        category,
+      );
 
       const media: DeepPartial<FileEntity> = {
         userId: user.id,
         folderId,
-        originalName: file.originalname,
         name: file.originalname,
         filesize: meta.filesize,
         meta,
@@ -229,9 +253,12 @@ export class FileService {
         category,
         extension,
         hash: file.hash,
-        // TODO: доделать preview
-        preview: [],
-        monitors: monitorId ? [{ id: monitorId }] : [],
+        previews: [
+          {
+            preview: previews[0],
+          },
+        ],
+        monitors: monitorId ? [{ id: monitorId }] : undefined,
       };
 
       return fileRepository.save(fileRepository.create(media));
@@ -278,7 +305,7 @@ export class FileService {
     this.s3Service
       .headObject({
         Bucket: this.bucket,
-        Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
+        Key: `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`,
       })
       .promise();
 
@@ -287,7 +314,7 @@ export class FileService {
   ): AWS.Request<AWS.S3.GetObjectOutput, AWS.AWSError> =>
     this.s3Service.getObject({
       Bucket: this.bucket,
-      Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
+      Key: `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`,
     });
 
   deleteS3Object = (
@@ -296,7 +323,7 @@ export class FileService {
     this.s3Service
       .deleteObject({
         Bucket: this.bucket,
-        Key: `${file.folderId}/${file.hash}-${getS3Name(file.originalName)}`,
+        Key: `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`,
       })
       .promise();
 
@@ -318,8 +345,6 @@ export class FileService {
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
-
-    // TODO: check file preview
 
     return this.getS3Object(file)
       .on(
@@ -420,10 +445,10 @@ export class FileService {
    * @param {Express.Multer.File} file The file
    * @return {[MediaMeta, VideoType]} [MediaMeta, VideType]
    */
-  metaInformation(
+  async metaInformation(
     file: Express.Multer.File,
     category: FileCategory,
-  ): [MediaMeta, VideoType, string] {
+  ): Promise<[MediaMeta, VideoType, string, string[]]> {
     const [mime] = file.mimetype.split('/');
     const extension = file.originalname.slice(
       file.originalname.lastIndexOf('.') + 1,
@@ -431,7 +456,7 @@ export class FileService {
     const type =
       Object.values(VideoType).find((t) => t === mime) ?? VideoType.Other;
 
-    if (file?.media) {
+    if (file.media) {
       const {
         media: { format: mediaFormat, streams },
       } = file;
@@ -453,9 +478,22 @@ export class FileService {
         },
       };
 
-      return [meta, type, extension];
+      const preview = [];
+      if (type === VideoType.Image) {
+        const outPath = path.resolve(
+          `${file.destination}/${file.filename}-preview.jpg`,
+        );
+        const { stdout, stderr } = await FfMpegPreview(file.path, outPath);
+        if (stderr) {
+          throw new BadRequestException();
+        }
+
+        preview.push(await fs.readFile(outPath, { encoding: 'base64' }));
+      }
+
+      return [meta, type, extension, preview];
     }
 
-    return [{ filesize: file.size }, type, extension];
+    return [{ filesize: file.size }, type, extension, []];
   }
 }

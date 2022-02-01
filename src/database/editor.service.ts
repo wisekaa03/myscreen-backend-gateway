@@ -106,28 +106,26 @@ export class EditorService {
     find: FindManyOptions<EditorLayerEntity>,
     relations: boolean | string[] = true,
   ): Promise<EditorLayerEntity[] | undefined> {
-    const where = find;
+    const conditional = find;
     if (typeof relations === 'boolean' && relations === true) {
-      where.relations = ['video', 'audio', 'file'];
+      conditional.relations = ['video', 'audio', 'file'];
+    } else if (typeof relations === 'object' && Array.isArray(relations)) {
+      conditional.relations = relations;
     }
-    if (typeof relations === 'string') {
-      where.relations = relations;
-    }
-    return this.editorLayerRepository.find(where);
+    return this.editorLayerRepository.find(conditional);
   }
 
   async findOneLayer(
     find: FindManyOptions<EditorLayerEntity>,
     relations: boolean | string[] = true,
   ): Promise<EditorLayerEntity | undefined> {
-    const where = find;
+    const conditional = find;
     if (typeof relations === 'boolean' && relations === true) {
-      where.relations = ['video', 'audio', 'file'];
+      conditional.relations = ['video', 'audio', 'file'];
+    } else if (typeof relations === 'object' && Array.isArray(relations)) {
+      conditional.relations = relations;
     }
-    if (typeof relations === 'string') {
-      where.relations = relations;
-    }
-    return this.editorLayerRepository.findOne(where);
+    return this.editorLayerRepository.findOne(conditional);
   }
 
   /**
@@ -181,7 +179,7 @@ export class EditorService {
     layer: EditorLayerEntity,
   ): Promise<EditorLayerEntity> => {
     const { file } = layer;
-    const fileName = `${file.id}-${file.originalName}`;
+    const fileName = `${file.id}-${file.name}`;
     const filePath = path.resolve(mkdirPath, fileName);
     // eslint-disable-next-line no-param-reassign
     layer.path = filePath;
@@ -402,7 +400,7 @@ export class EditorService {
     }
 
     const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
-    editlyConfig.outPath = path.resolve(mkdirPath, 'out.mp4');
+    editlyConfig.outPath = path.resolve(mkdirPath, `${editor.name}-out.mp4`);
     const editlyJSON = JSON.stringify(editlyConfig);
     const editlyPath = path.resolve(mkdirPath, 'editly.json');
     await fs.writeFile(editlyPath, editlyJSON);
@@ -574,8 +572,8 @@ export class EditorService {
 
     await Promise.all([
       editorPromise,
-      ...correctedVideoLayers,
-      ...correctedAudioLayers,
+      correctedVideoLayers,
+      correctedAudioLayers,
     ]);
   }
 
@@ -660,6 +658,6 @@ export class EditorService {
       renderingError: null,
     });
 
-    await Promise.all([editorPromise, ...resultLayer]);
+    await Promise.all([editorPromise, resultLayer]);
   }
 }

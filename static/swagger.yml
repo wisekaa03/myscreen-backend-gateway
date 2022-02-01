@@ -1721,7 +1721,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.7.41
+  version: 2.8.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2440,6 +2440,130 @@ components:
           description: Параметры видео, картинки или аудио
       required:
         - filesize
+    FolderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        name:
+          type: string
+          description: Наименование папки
+          example: bar
+        parentFolderId:
+          type: string
+          description: Родительская папка
+          format: uuid
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - name
+        - createdAt
+        - updatedAt
+    FilePreviewResponse:
+      type: object
+      properties:
+        preview:
+          type: string
+          description: Превью
+      required:
+        - preview
+    MonitorResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор монитора
+          format: uuid
+        name:
+          type: string
+          description: Имя
+          example: имя монитора
+        address:
+          description: Адрес монитора
+          example: *a54
+          allOf:
+            - $ref: "#/components/schemas/Address"
+        category:
+          type: string
+          description: Категория
+          enum: *a55
+          example: GAS_STATION
+        price:
+          description: Стоимость показов
+          example: *a56
+          allOf:
+            - $ref: "#/components/schemas/MonitorPrice"
+        orientation:
+          type: string
+          description: Ориентация экрана
+          enum: *a57
+          example: Horizontal
+        monitorInfo:
+          description: Модель и прочие характеристики монитора
+          example: *a58
+          allOf:
+            - $ref: "#/components/schemas/MonitorInfo"
+        attached:
+          type: boolean
+          description: Присоединен
+          example: false
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
+        status:
+          type: string
+          description: Подключен
+          enum: *a59
+          example: offline
+        lastSeen:
+          format: date-time
+          type: string
+          description: Последний раз виден
+          example: null
+        latitude:
+          type: number
+          description: Широта
+          example: "45.0448400"
+        longitude:
+          type: number
+          description: Долгота
+          example: "38.9760300"
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+      required:
+        - id
+        - name
+        - category
+        - orientation
+        - monitorInfo
+        - attached
+        - code
+        - status
+        - lastSeen
+        - latitude
+        - longitude
+        - createdAt
+        - updatedAt
     FileResponse:
       type: object
       properties:
@@ -2448,14 +2572,6 @@ components:
           description: Идентификатор файла
           example: "1234567"
           format: uuid
-        folderId:
-          type: string
-          description: Папка
-          format: uuid
-        originalName:
-          type: string
-          description: Изначальное имя файла
-          example: foo.mp4
         name:
           type: string
           description: Имя файла
@@ -2472,7 +2588,7 @@ components:
           type: string
           description: Тип файла
           enum:
-            &a62
+            &a63
             - video
             - image
             - audio
@@ -2482,7 +2598,7 @@ components:
           type: string
           description: В какую категорию относить файл
           enum:
-            &a63
+            &a62
             - ownership
             - photo
             - media
@@ -2494,15 +2610,10 @@ components:
         meta:
           description: Метаинформация
           example:
-            &a64
             duration: 200
             filesize: 20500
           allOf:
             - $ref: "#/components/schemas/MediaMeta"
-        userId:
-          type: string
-          description: Идентификатор пользователя
-          format: uuid
         createdAt:
           format: date-time
           type: string
@@ -2513,20 +2624,37 @@ components:
           type: string
           description: Время изменения
           example: 2021-01-01T10:00:00.147Z
+        folder:
+          description: Папка
+          allOf:
+            - $ref: "#/components/schemas/FolderResponse"
+        previews:
+          description: Превью
+          type: array
+          items:
+            $ref: "#/components/schemas/FilePreviewResponse"
+        monitors:
+          description: Мониторы
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorResponse"
+        playlists:
+          description: Плэйлисты
+          type: array
+          items:
+            $ref: "#/components/schemas/PlaylistResponse"
       required:
         - id
-        - folderId
-        - originalName
         - name
         - extension
         - hash
         - videoType
         - category
         - filesize
-        - meta
-        - userId
         - createdAt
         - updatedAt
+        - folder
+        - previews
     PlaylistResponse:
       type: object
       properties:
@@ -2745,92 +2873,6 @@ components:
         - status
         - latitude
         - longitude
-    MonitorResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор монитора
-          format: uuid
-        name:
-          type: string
-          description: Имя
-          example: имя монитора
-        address:
-          description: Адрес монитора
-          example: *a54
-          allOf:
-            - $ref: "#/components/schemas/Address"
-        category:
-          type: string
-          description: Категория
-          enum: *a55
-          example: GAS_STATION
-        price:
-          description: Стоимость показов
-          example: *a56
-          allOf:
-            - $ref: "#/components/schemas/MonitorPrice"
-        orientation:
-          type: string
-          description: Ориентация экрана
-          enum: *a57
-          example: Horizontal
-        monitorInfo:
-          description: Модель и прочие характеристики монитора
-          example: *a58
-          allOf:
-            - $ref: "#/components/schemas/MonitorInfo"
-        attached:
-          type: boolean
-          description: Присоединен
-          example: false
-        code:
-          type: string
-          description: Идентификатор устройства
-          example: 111-111-111
-        status:
-          type: string
-          description: Подключен
-          enum: *a59
-          example: offline
-        lastSeen:
-          format: date-time
-          type: string
-          description: Последний раз виден
-          example: null
-        latitude:
-          type: number
-          description: Широта
-          example: "45.0448400"
-        longitude:
-          type: number
-          description: Долгота
-          example: "38.9760300"
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-      required:
-        - id
-        - name
-        - category
-        - orientation
-        - monitorInfo
-        - attached
-        - code
-        - status
-        - lastSeen
-        - latitude
-        - longitude
-        - createdAt
-        - updatedAt
     MonitorCreateResponse:
       type: object
       properties:
@@ -3325,6 +3367,22 @@ components:
         - statusCode
         - code
         - message
+    FileUploadRequest:
+      type: object
+      properties:
+        folderId:
+          type: string
+          description: Идентификатор папки
+          format: uuid
+        category:
+          type: string
+          description: В какую категорию относить файл
+          enum: *a62
+          example: media
+        monitorId:
+          type: string
+          format: uuid
+          description: Монитор
     FilePartialRequest:
       type: object
       properties:
@@ -3335,17 +3393,17 @@ components:
           format: uuid
         folderId:
           type: string
-          description: Папка
+          description: Идентификатор папки
           format: uuid
         videoType:
           type: string
           description: Тип файла
-          enum: *a62
+          enum: *a63
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a63
+          enum: *a62
           example: media
     FilesGetRequest:
       type: object
@@ -3361,86 +3419,6 @@ components:
       required:
         - where
         - scope
-    FileMonitorsResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор файла
-          example: "1234567"
-          format: uuid
-        folderId:
-          type: string
-          description: Папка
-          format: uuid
-        originalName:
-          type: string
-          description: Изначальное имя файла
-          example: foo.mp4
-        name:
-          type: string
-          description: Имя файла
-          example: foo.mp4
-        extension:
-          type: string
-          description: Расширение файла
-          example: mp4
-        hash:
-          type: string
-          description: Hash файла
-          example: 2b0439011a3a215ae1756bfc342e5bbc
-        videoType:
-          type: string
-          description: Тип файла
-          enum: *a62
-          example: video
-        category:
-          type: string
-          description: В какую категорию относить файл
-          enum: *a63
-          example: media
-        filesize:
-          type: number
-          description: Размер файла
-          example: 210000
-        meta:
-          description: Метаинформация
-          example: *a64
-          allOf:
-            - $ref: "#/components/schemas/MediaMeta"
-        userId:
-          type: string
-          description: Идентификатор пользователя
-          format: uuid
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-        monitors:
-          description: Мониторы
-          type: array
-          items:
-            $ref: "#/components/schemas/MonitorResponse"
-      required:
-        - id
-        - folderId
-        - originalName
-        - name
-        - extension
-        - hash
-        - videoType
-        - category
-        - filesize
-        - meta
-        - userId
-        - createdAt
-        - updatedAt
     FilesGetResponse:
       type: object
       properties:
@@ -3458,27 +3436,11 @@ components:
           description: Файлы
           type: array
           items:
-            $ref: "#/components/schemas/FileMonitorsResponse"
+            $ref: "#/components/schemas/FileResponse"
       required:
         - status
         - count
         - data
-    FileUploadRequest:
-      type: object
-      properties:
-        folderId:
-          type: string
-          description: Папка
-          format: uuid
-        category:
-          type: string
-          description: В какую категорию относить файл
-          enum: *a63
-          example: media
-        monitorId:
-          type: string
-          format: uuid
-          description: Монитор
     FilesUploadResponse:
       type: object
       properties:
@@ -3496,7 +3458,7 @@ components:
           description: Файлы
           type: array
           items:
-            $ref: "#/components/schemas/FileMonitorsResponse"
+            $ref: "#/components/schemas/FileResponse"
       required:
         - status
         - count
@@ -3514,7 +3476,7 @@ components:
         data:
           description: Файл
           allOf:
-            - $ref: "#/components/schemas/FileMonitorsResponse"
+            - $ref: "#/components/schemas/FileResponse"
       required:
         - status
         - data
@@ -3523,7 +3485,7 @@ components:
       properties:
         folderId:
           type: string
-          description: Папка
+          description: Идентификатор папки
           format: uuid
         name:
           type: string
@@ -3558,36 +3520,6 @@ components:
       required:
         - where
         - scope
-    FolderResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор файла
-          format: uuid
-        name:
-          type: string
-          description: Наименование папки
-          example: bar
-        parentFolderId:
-          type: string
-          description: Родительская папка
-          format: uuid
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-      required:
-        - id
-        - name
-        - createdAt
-        - updatedAt
     FoldersGetResponse:
       type: object
       properties:

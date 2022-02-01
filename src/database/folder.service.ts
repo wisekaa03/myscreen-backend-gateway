@@ -59,7 +59,7 @@ export class FolderService {
     @TransactionRepository(FolderEntity)
     folderRepository: Repository<FolderEntity> = this.folderRepository,
   ): Promise<DeleteResult> {
-    const [files] = await this.fileService.find(
+    const files = await this.fileService.find(
       {
         where: { userId: user.id, folderId: folder.id },
       },

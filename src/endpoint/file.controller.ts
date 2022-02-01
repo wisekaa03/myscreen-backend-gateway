@@ -10,6 +10,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpException,
   Logger,
   NotFoundException,
   Param,
@@ -51,6 +52,7 @@ import {
   FileUploadRequestBody,
   FileUpdateRequest,
   ConflictError,
+  FilePreviewResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -94,6 +96,8 @@ import { FileService } from '@/database/file.service';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
+@ApiExtraModels(FilePreviewResponse)
+@ApiExtraModels(FileUploadRequest)
 @ApiTags('file')
 @Controller('file')
 export class FileController {
@@ -116,10 +120,10 @@ export class FileController {
     @Req() { user }: ExpressRequest,
     @Body() { where, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
-    const [data, count] = await this.fileService.find({
+    const [data, count] = await this.fileService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: {
-        user,
+        userId: user.id,
         ...where,
       },
     });
@@ -143,7 +147,6 @@ export class FileController {
     type: FilesUploadResponse,
   })
   @ApiConsumes('multipart/form-data')
-  @ApiExtraModels(FileUploadRequest)
   @ApiBody({
     schema: {
       type: 'object',
@@ -244,7 +247,7 @@ export class FileController {
           res.setHeader('Last-Modified', headers['last-modified']);
           res.setHeader(
             'Content-Disposition',
-            `attachment;filename=${encodeURIComponent(file.originalName)}`,
+            `attachment;filename=${encodeURIComponent(file.name)}`,
           );
           if (!res.headersSent) {
             res.flushHeaders();
@@ -253,15 +256,24 @@ export class FileController {
             res,
           );
         } else {
-          throw new NotFoundException(awsResponse.error);
+          throw new HttpException(
+            awsResponse.error || awsResponse.httpResponse.statusMessage,
+            awsResponse.httpResponse.statusCode,
+          );
         }
       })
       .promise()
       .then(() => {
-        this.logger.debug(`The file ${file.originalName} has been downloaded`);
+        this.logger.debug(`The file ${file.name} has been downloaded`);
       })
-      .catch((error) => {
-        throw new NotFoundException(`S3 Error: ${error}`);
+      .catch((error: unknown) => {
+        this.logger.error(`S3 Error: ${JSON.stringify(error)}`, error);
+        if (error instanceof HttpException) {
+          res.writeHead(error.getStatus(), error.message || 'Not Found');
+        } else {
+          res.writeHead(404, 'Not Found');
+        }
+        res.send();
       });
   }
 

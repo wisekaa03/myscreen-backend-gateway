@@ -18,6 +18,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiExtraModels,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -35,12 +36,12 @@ import {
   NotFoundError,
   FolderUpdateRequest,
   SuccessResponse,
+  FolderResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { FolderService } from '@/database/folder.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
-import { FolderEntity } from '@/database/folder.entity';
 
 @ApiResponse({
   status: 400,
@@ -67,6 +68,7 @@ import { FolderEntity } from '@/database/folder.entity';
   description: 'Ошибка сервера',
   type: InternalServerError,
 })
+@ApiExtraModels(FolderResponse)
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @ApiTags('folder')

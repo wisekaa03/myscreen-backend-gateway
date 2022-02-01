@@ -2,69 +2,36 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsDate,
-  IsDefined,
-  IsNotEmpty,
-  IsString,
-  IsUUID,
-} from 'class-validator';
-
 import { FileEntity } from './file.entity';
 
 @Entity('file_preview')
 export class FilePreviewEntity {
   @PrimaryGeneratedColumn('uuid')
-  @ApiProperty({
-    description: 'Идентификатор файла',
-    example: '1234567',
-    format: 'uuid',
-  })
-  @IsUUID()
   id!: string;
 
-  @ManyToOne(() => FileEntity, (file) => file.preview)
+  @ManyToOne(() => FileEntity, (file) => file.id)
+  @JoinColumn()
+  @Index()
   file!: FileEntity;
 
-  @Column()
+  @Column({ type: 'varchar' })
   @ApiProperty({
-    description: 'Hash файла',
-    example: '2b0439011a3a215ae1756bfc342e5bbc',
-  })
-  @IsString()
-  // @IsHash()
-  hash!: string;
-
-  @Column()
-  @ApiProperty({
+    description: 'Превью',
     type: 'string',
-    description: 'Предпросмотр',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  name!: string;
+  preview!: string;
 
-  @CreateDateColumn()
-  @ApiProperty({
-    description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
-  })
-  @IsDate()
+  @CreateDateColumn({ select: false })
   createdAt!: Date;
 
-  @UpdateDateColumn()
-  @ApiProperty({
-    description: 'Время изменения',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
-  })
-  @IsDate()
+  @UpdateDateColumn({ select: false })
   updatedAt!: Date;
 }

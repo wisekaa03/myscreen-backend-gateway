@@ -10,6 +10,7 @@ describe('isAWSError', () => {
       isAWSError({
         region: 'us-east-1',
         code: 200,
+        message: 'Body message',
         retryDelay: 10,
       }),
     ).toBe(true);
