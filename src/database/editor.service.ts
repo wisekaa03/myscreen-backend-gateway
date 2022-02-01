@@ -188,7 +188,8 @@ export class EditorService {
       return layer;
     }
 
-    if (await this.fileService.headS3Object(file)) {
+    const fileExistS3 = await this.fileService.headS3Object(file);
+    if (fileExistS3.$response.data) {
       await new Promise<void>((resolve, reject) => {
         this.fileService
           .getS3Object(file)
@@ -401,6 +402,12 @@ export class EditorService {
 
     const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
     editlyConfig.outPath = path.resolve(mkdirPath, `${editor.name}-out.mp4`);
+    editlyConfig.customOutputArgs = [
+      '-fflags',
+      'nobuffer',
+      '-flags',
+      'low_delay',
+    ];
     const editlyJSON = JSON.stringify(editlyConfig);
     const editlyPath = path.resolve(mkdirPath, 'editly.json');
     await fs.writeFile(editlyPath, editlyJSON);
@@ -540,14 +547,17 @@ export class EditorService {
     }
 
     let start = 0;
+    let index = 1;
     let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
     const correctedVideoLayers = layers.map((value) => {
       const duration = this.calcDuration(value);
       const layer = {
         duration,
         start,
+        index,
       };
       start += duration;
+      index += 1;
       return this.editorLayerRepository.update(value.id, layer);
     });
 
@@ -559,14 +569,17 @@ export class EditorService {
     });
 
     start = 0;
+    index = 1;
     layers = editor.audioLayers.sort((v1, v2) => v1.index - v2.index);
     const correctedAudioLayers = layers.map((value) => {
       const duration = this.calcDuration(value);
       const layer = {
         duration,
         start,
+        index,
       };
       start += duration;
+      index += 1;
       return this.editorLayerRepository.update(value.id, layer);
     });
 
