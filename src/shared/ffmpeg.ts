@@ -22,6 +22,7 @@ export async function FfMpegPreview(
   if (type === VideoType.Video) {
     return exec(
       `node_modules/ffmpeg-static/ffmpeg -i ${filename} -v error` +
+        '-an' +
         ' -vframes 10' +
         ` -vf scale="100:74" -y ${outPath}`,
     );
