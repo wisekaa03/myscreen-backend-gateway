@@ -14,17 +14,17 @@ export async function FfMpegPreview(
 ): Promise<{ stderr: string; stdout: string }> {
   if (type === VideoType.Image) {
     return exec(
-      `node_modules/ffmpeg-static/ffmpeg -i ${filename} -v error` +
-        ` -vf scale="100:74" -y ${outPath}`,
+      `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -v error` +
+        ` -vf scale="100:74" -y "${outPath}"`,
     );
   }
 
   if (type === VideoType.Video) {
     return exec(
-      `node_modules/ffmpeg-static/ffmpeg -i ${filename} -v error` +
+      `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -v error` +
         ' -an' +
         ' -vframes 10' +
-        ` -vf scale="100:74" -y ${outPath}`,
+        ` -vf scale="100:74" -y "${outPath}"`,
     );
   }
 
