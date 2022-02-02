@@ -58,6 +58,7 @@ import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { FileService } from '@/database/file.service';
+import { VideoType } from '@/enums';
 
 @ApiResponse({
   status: 400,
@@ -306,6 +307,78 @@ export class FileController {
       status: Status.Success,
       data,
     };
+  }
+
+  @Get('/:fileId/preview')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'file-get-preview',
+    summary: 'Получить файл превью',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    content: {
+      'video/mp4': {
+        encoding: {
+          video_mp4: {
+            contentType: 'video/mp4',
+          },
+        },
+      },
+      'image/jpeg': {
+        encoding: {
+          image_jpeg: {
+            contentType: 'image/jpeg',
+          },
+        },
+      },
+      'image/png': {
+        encoding: {
+          image_png: {
+            contentType: 'image/png',
+          },
+        },
+      },
+    },
+  })
+  async getFilePreview(
+    @Req() { user }: ExpressRequest,
+    @Res() res: ExpressResponse,
+    @Param('fileId', ParseUUIDPipe) id: string,
+  ): Promise<void> {
+    const file = await this.fileService.findOne(
+      {
+        where: {
+          userId: user.id,
+          id,
+        },
+      },
+      ['preview'],
+    );
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    try {
+      const buffer = file.preview?.preview;
+      if (file.videoType === VideoType.Video) {
+        res.setHeader('Content-Type', 'video/mp4');
+      } else if (file.videoType === VideoType.Image) {
+        res.setHeader('Content-Type', 'image/jpeg');
+      } else {
+        res.setHeader('Content-Type', 'application/octet-stream');
+      }
+      res.setHeader('Content-Length', buffer?.length);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment;filename=${encodeURIComponent(`preview-${file.name}`)};`,
+      );
+      res.write(buffer);
+      res.end();
+    } catch (error: unknown) {
+      throw new NotFoundException(error);
+    }
   }
 
   @Patch('/:fileId')

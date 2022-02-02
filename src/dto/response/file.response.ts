@@ -10,7 +10,7 @@ import { FolderEntity } from '@/database/folder.entity';
 export class FileResponse extends OmitType(FileEntity, [
   'monitors',
   'playlists',
-  'previews',
+  'preview',
   'folder',
   'folderId',
 ]) {
@@ -24,10 +24,9 @@ export class FileResponse extends OmitType(FileEntity, [
   @ApiProperty({
     description: 'Превью',
     type: FilePreviewResponse,
-    required: true,
-    isArray: true,
+    required: false,
   })
-  previews?: FilePreviewEntity[];
+  preview?: FilePreviewEntity;
 
   @ApiProperty({
     description: 'Мониторы',

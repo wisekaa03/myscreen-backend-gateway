@@ -1108,6 +1108,41 @@ paths:
         "503": *a29
       tags: *a30
       security: *a31
+  "/api/v2/file/{fileId}/preview":
+    get:
+      operationId: file-get-preview
+      summary: Получить файл превью
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            video/mp4:
+              encoding:
+                video_mp4:
+                  contentType: video/mp4
+            image/jpeg:
+              encoding:
+                image_jpeg:
+                  contentType: image/jpeg
+            image/png:
+              encoding:
+                image_png:
+                  contentType: image/png
+        "400": *a23
+        "401": *a24
+        "403": *a25
+        "404": *a26
+        "409": *a27
+        "500": *a28
+        "503": *a29
+      tags: *a30
+      security: *a31
   /api/v2/folder:
     post:
       operationId: folders-get
@@ -1721,7 +1756,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.8.2
+  version: 2.8.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2473,11 +2508,13 @@ components:
     FilePreviewResponse:
       type: object
       properties:
-        preview:
+        id:
           type: string
-          description: Превью
+          description: Идентификатор превью
+          example: "1234567"
+          format: uuid
       required:
-        - preview
+        - id
     MonitorResponse:
       type: object
       properties:
@@ -2628,11 +2665,10 @@ components:
           description: Папка
           allOf:
             - $ref: "#/components/schemas/FolderResponse"
-        previews:
+        preview:
           description: Превью
-          type: array
-          items:
-            $ref: "#/components/schemas/FilePreviewResponse"
+          allOf:
+            - $ref: "#/components/schemas/FilePreviewResponse"
         monitors:
           description: Мониторы
           type: array
@@ -2654,7 +2690,6 @@ components:
         - createdAt
         - updatedAt
         - folder
-        - previews
     PlaylistResponse:
       type: object
       properties:

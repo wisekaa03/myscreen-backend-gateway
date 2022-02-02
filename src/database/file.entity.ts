@@ -5,7 +5,7 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
-  OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -30,7 +30,6 @@ import { PlaylistEntity } from '@/database/playlist.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
-import { FolderResponse } from '@/dto';
 
 export class MediaMeta {
   @ApiProperty({
@@ -90,7 +89,7 @@ export class FileEntity {
   @JoinColumn({ name: 'folderId' })
   folder!: FolderEntity;
 
-  @Column(/* { select: false } */)
+  @Column()
   @ApiProperty({
     description: 'Идентификатор папки',
     type: 'string',
@@ -179,18 +178,17 @@ export class FileEntity {
   @Column({ select: false, nullable: true })
   userId!: string;
 
-  @OneToMany(() => FilePreviewEntity, (filePreview) => filePreview.file, {
+  @OneToOne(() => FilePreviewEntity, (filePreview) => filePreview.file, {
+    cascade: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    cascade: true,
-    eager: true,
+    eager: false,
   })
   @ApiProperty({
     description: 'Превью',
-    type: 'array',
-    items: { $ref: '#/components/schemas/FilePreviewResponse' },
+    allOf: [{ $ref: '#/components/schemas/FilePreviewResponse' }],
   })
-  previews!: FilePreviewEntity[];
+  preview!: FilePreviewEntity;
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.files, {
     onDelete: 'CASCADE',

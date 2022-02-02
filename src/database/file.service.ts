@@ -236,7 +236,7 @@ export class FileService {
     }
 
     const filesPromises = files.map(async (file) => {
-      const [meta, videoType, extension, previews] = await this.metaInformation(
+      const [meta, videoType, extension, preview] = await this.metaInformation(
         file,
         category,
       );
@@ -251,15 +251,14 @@ export class FileService {
         category,
         extension,
         hash: file.hash,
-        previews: [
-          {
-            preview: previews[0],
-          },
-        ],
+        preview: {
+          preview: Buffer.from(`\\x${preview.toString('hex')}`),
+        },
         monitors: monitorId ? [{ id: monitorId }] : undefined,
       };
 
-      return fileRepository.save(fileRepository.create(media));
+      const update = await fileRepository.save(fileRepository.create(media));
+      return fileRepository.findOneOrFail(update.id);
     });
     const returnFiles = await Promise.all(filesPromises);
 
@@ -376,25 +375,27 @@ export class FileService {
       );
     }
 
-    this.headS3Object(file)
-      .then(() =>
-        this.deleteS3Object(file)
-          .then((value) => {
-            this.logger.debug(
-              `The file has been deleted: ${
-                value.$response.data?.DeleteMarker || true
-              }`,
-            );
-          })
-          .catch((error) => {
-            this.logger.error(
-              `S3 Error deleteObject: ${JSON.stringify(error)}`,
-            );
-          }),
-      )
-      .catch((error) => {
-        this.logger.error(`S3 Error headerObject: ${JSON.stringify(error)}`);
-      });
+    (async () => {
+      await this.headS3Object(file)
+        .then(() =>
+          this.deleteS3Object(file)
+            .then((value) => {
+              this.logger.debug(
+                `The file has been deleted: ${
+                  value.$response.data?.DeleteMarker || true
+                }`,
+              );
+            })
+            .catch((error) => {
+              this.logger.error(
+                `S3 Error deleteObject: ${JSON.stringify(error)}`,
+              );
+            }),
+        )
+        .catch((error) => {
+          this.logger.error(`S3 Error headerObject: ${JSON.stringify(error)}`);
+        });
+    })();
 
     return this.fileRepository.delete(file.id);
   }
@@ -402,12 +403,12 @@ export class FileService {
   /**
    * Meta information
    * @param {Express.Multer.File} file The file
-   * @return {[MediaMeta, VideoType]} [MediaMeta, VideType]
+   * @return {[MediaMeta, VideoType, string, Buffer]} [MediaMeta, VideType, extension, preview]
    */
   async metaInformation(
     file: Express.Multer.File,
     category: FileCategory,
-  ): Promise<[MediaMeta, VideoType, string, string[]]> {
+  ): Promise<[MediaMeta, VideoType, string, Buffer]> {
     const [mime] = file.mimetype.split('/');
     const extension = file.originalname.slice(
       file.originalname.lastIndexOf('.') + 1,
@@ -437,22 +438,44 @@ export class FileService {
         },
       };
 
-      const preview = [];
+      let preview: Buffer;
       if (type === VideoType.Image) {
         const outPath = path.resolve(
           `${file.destination}/${file.filename}-preview.jpg`,
         );
-        const { stderr } = await FfMpegPreview(file.path, outPath);
+        const { stderr } = await FfMpegPreview(
+          type,
+          file.media,
+          file.path,
+          outPath,
+        );
         if (stderr) {
           throw new BadRequestException();
         }
 
-        preview.push(await fs.readFile(outPath, { encoding: 'base64' }));
+        preview = await fs.readFile(outPath);
+      } else if (type === VideoType.Video) {
+        const outPath = path.resolve(
+          `${file.destination}/${file.filename}-preview.mp4`,
+        );
+        const { stderr } = await FfMpegPreview(
+          type,
+          file.media,
+          file.path,
+          outPath,
+        );
+        if (stderr) {
+          throw new BadRequestException();
+        }
+
+        preview = await fs.readFile(outPath);
+      } else {
+        preview = Buffer.alloc(0);
       }
 
       return [meta, type, extension, preview];
     }
 
-    return [{ filesize: file.size }, type, extension, []];
+    return [{ filesize: file.size }, type, extension, Buffer.alloc(0)];
   }
 }

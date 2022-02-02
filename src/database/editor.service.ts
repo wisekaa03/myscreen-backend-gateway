@@ -13,6 +13,7 @@ import {
   BadRequestException,
   NotAcceptableException,
   NotFoundException,
+  HttpException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -188,8 +189,7 @@ export class EditorService {
       return layer;
     }
 
-    const fileExistS3 = await this.fileService.headS3Object(file);
-    if (fileExistS3.$response.data) {
+    if (await this.fileService.headS3Object(file)) {
       await new Promise<void>((resolve, reject) => {
         this.fileService
           .getS3Object(file)
@@ -387,154 +387,170 @@ export class EditorService {
       renderingError: null,
       renderingPercent: 0,
     });
-    if (editor.renderedFile) {
-      await this.fileService.delete(editor.renderedFile);
-      await this.editorRepository.update(editor.id, {
-        renderedFile: null,
-      });
-    }
-    editor = await this.editorRepository.findOne(editor.id, {
-      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
-    });
-    if (!editor) {
-      throw new NotFoundException('Editor not found');
-    }
 
-    const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
-    editlyConfig.outPath = path.resolve(mkdirPath, `${editor.name}-out.mp4`);
-    editlyConfig.customOutputArgs = [
-      '-fflags',
-      'nobuffer',
-      '-flags',
-      'low_delay',
-    ];
-    const editlyJSON = JSON.stringify(editlyConfig);
-    const editlyPath = path.resolve(mkdirPath, 'editly.json');
-    await fs.writeFile(editlyPath, editlyJSON);
-
-    (async (renderEditor: EditorEntity) => {
-      const outPath = await new Promise<string>((resolve, reject) => {
-        const childEditly = child.fork(
-          'node_modules/.bin/editly',
-          ['--json', editlyPath],
-          {
-            silent: true,
-          },
-        );
-        childEditly.stdout?.on('data', async (message: Buffer) => {
-          const msg = message.toString();
-          this.logger.debug(
-            `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
-            'Editly',
-          );
-          // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
-          const percent = msg.match(/(\d+%)/g);
-          if (Array.isArray(percent) && percent.length > 0) {
-            await this.editorRepository.update(renderEditor.id, {
-              renderingPercent: parseInt(percent[percent.length - 1], 10),
-            });
-          }
-        });
-        childEditly.stderr?.on('data', (message: Buffer) => {
-          const msg = message.toString();
-          this.logger.error(msg, undefined, 'Editly');
-        });
-        childEditly.on('error', (error: Error) => {
-          this.logger.error(error.message, error.stack, 'Editly');
-          reject(error);
-        });
-        childEditly.on(
-          'exit',
-          async (/* code: number | null, signal: NodeJS.Signals | null */) => {
-            if (!(await fs.access(editlyConfig.outPath).catch(() => true))) {
-              resolve(editlyConfig.outPath);
-            }
-            reject(
-              new Error("outFile not found. There's a some error in editly"),
-            );
-          },
-        );
-      }).catch(async (error) => {
-        this.logger.error(error);
-        await this.editorRepository.update(renderEditor.id, {
-          renderingError: error.message,
-          renderingStatus: RenderingStatus.Error,
-          renderingPercent: null,
-        });
-      });
-
-      if (!outPath) {
-        return;
-      }
-
-      const { size } = await fs.stat(outPath);
-
-      const parentFolder = await this.folderService.rootFolder(user);
-      let folder = await this.folderService.findOne({
-        where: {
-          name: '<Исполненные>',
-          parentFolderId: parentFolder.id,
-          userId: user.id,
-        },
-      });
-      if (!folder) {
-        folder = await this.folderService.update({
-          name: '<Исполненные>',
-          parentFolderId: parentFolder.id,
-          userId: user.id,
+    try {
+      if (editor.renderedFile) {
+        await this.fileService.delete(editor.renderedFile);
+        await this.editorRepository.update(editor.id, {
+          renderedFile: null,
         });
       }
-      const media = await ffprobe(outPath, {
-        showFormat: true,
-        showStreams: true,
-        showFrames: false,
-        showPackets: false,
-        showPrograms: false,
-        countFrames: false,
-        countPackets: false,
+      editor = await this.editorRepository.findOne(editor.id, {
+        relations: ['videoLayers', 'audioLayers', 'renderedFile'],
       });
-      const files: Array<Express.Multer.File> = [
-        {
-          originalname: outPath.substring(outPath.lastIndexOf('/') + 1),
-          encoding: 'utf8',
-          mimetype: 'video/mp4',
-          destination: outPath.substring(0, outPath.lastIndexOf('/')),
-          filename: outPath.substring(outPath.lastIndexOf('/') + 1),
-          size,
-          path: outPath,
-          hash: 'render',
-          media,
-          fieldname: null as unknown as string,
-          stream: null as unknown as ReadStream,
-          buffer: null as unknown as Buffer,
-        },
+      if (!editor) {
+        throw new NotFoundException('Editor not found');
+      }
+
+      const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
+      editlyConfig.outPath = path.resolve(mkdirPath, `${editor.name}-out.mp4`);
+      editlyConfig.customOutputArgs = [
+        '-fflags',
+        'nobuffer',
+        '-flags',
+        'low_delay',
       ];
-      const filesSaved = await this.fileService.upload(
-        user,
-        { folderId: folder.id, category: FileCategory.Media },
-        files,
-      );
+      const editlyJSON = JSON.stringify(editlyConfig);
+      const editlyPath = path.resolve(mkdirPath, 'editly.json');
+      await fs.writeFile(editlyPath, editlyJSON);
 
-      await this.editorRepository.update(renderEditor.id, {
-        renderingStatus: RenderingStatus.Ready,
-        renderedFile: filesSaved[0],
-        renderingPercent: 100,
-        renderingError: null,
+      (async (renderEditor: EditorEntity) => {
+        const outPath = await new Promise<string>((resolve, reject) => {
+          const childEditly = child.fork(
+            'node_modules/.bin/editly',
+            ['--json', editlyPath],
+            {
+              silent: true,
+            },
+          );
+          childEditly.stdout?.on('data', async (message: Buffer) => {
+            const msg = message.toString();
+            this.logger.debug(
+              `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
+              'Editly',
+            );
+            // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
+            const percent = msg.match(/(\d+%)/g);
+            if (Array.isArray(percent) && percent.length > 0) {
+              await this.editorRepository.update(renderEditor.id, {
+                renderingPercent: parseInt(percent[percent.length - 1], 10),
+              });
+            }
+          });
+          childEditly.stderr?.on('data', (message: Buffer) => {
+            const msg = message.toString();
+            this.logger.error(msg, undefined, 'Editly');
+          });
+          childEditly.on('error', (error: Error) => {
+            this.logger.error(error.message, error.stack, 'Editly');
+            reject(error);
+          });
+          childEditly.on(
+            'exit',
+            async (/* code: number | null, signal: NodeJS.Signals | null */) => {
+              if (!(await fs.access(editlyConfig.outPath).catch(() => true))) {
+                resolve(editlyConfig.outPath);
+              }
+              reject(
+                new Error("outFile not found. There's a some error in editly"),
+              );
+            },
+          );
+        }).catch(async (error) => {
+          this.logger.error(error);
+          await this.editorRepository.update(renderEditor.id, {
+            renderingError: error.message,
+            renderingStatus: RenderingStatus.Error,
+            renderingPercent: null,
+          });
+        });
+
+        if (!outPath) {
+          return;
+        }
+
+        const { size } = await fs.stat(outPath);
+
+        const parentFolder = await this.folderService.rootFolder(user);
+        let folder = await this.folderService.findOne({
+          where: {
+            name: '<Исполненные>',
+            parentFolderId: parentFolder.id,
+            userId: user.id,
+          },
+        });
+        if (!folder) {
+          folder = await this.folderService.update({
+            name: '<Исполненные>',
+            parentFolderId: parentFolder.id,
+            userId: user.id,
+          });
+        }
+        const media = await ffprobe(outPath, {
+          showFormat: true,
+          showStreams: true,
+          showFrames: false,
+          showPackets: false,
+          showPrograms: false,
+          countFrames: false,
+          countPackets: false,
+        });
+        const files: Array<Express.Multer.File> = [
+          {
+            originalname: outPath.substring(outPath.lastIndexOf('/') + 1),
+            encoding: 'utf8',
+            mimetype: 'video/mp4',
+            destination: outPath.substring(0, outPath.lastIndexOf('/')),
+            filename: outPath.substring(outPath.lastIndexOf('/') + 1),
+            size,
+            path: outPath,
+            hash: 'render',
+            media,
+            fieldname: null as unknown as string,
+            stream: null as unknown as ReadStream,
+            buffer: null as unknown as Buffer,
+          },
+        ];
+        const filesSaved = await this.fileService.upload(
+          user,
+          { folderId: folder.id, category: FileCategory.Media },
+          files,
+        );
+
+        await this.editorRepository.update(renderEditor.id, {
+          renderingStatus: RenderingStatus.Ready,
+          renderedFile: filesSaved[0],
+          renderingPercent: 100,
+          renderingError: null,
+        });
+
+        this.logger.log(`Export writed to database: ${JSON.stringify(files)}`);
+      })(editor).catch(async (error) => {
+        this.logger.error(error);
+        if (editor) {
+          await this.editorRepository.update(editor.id, {
+            renderingError: error.message,
+            renderingStatus: RenderingStatus.Error,
+            renderingPercent: null,
+          });
+        }
       });
 
-      this.logger.log(`Export writed to database: ${JSON.stringify(files)}`);
-    })(editor).catch(async (error) => {
-      this.logger.error(error);
+      return editor;
+    } catch (error: unknown) {
       if (editor) {
         await this.editorRepository.update(editor.id, {
-          renderingError: error.message,
           renderingStatus: RenderingStatus.Error,
-          renderingPercent: null,
+          renderingError: (error as any).toString(),
+          renderingPercent: 0,
         });
       }
-    });
 
-    return editor;
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new Error(error as any);
+    }
   }
 
   async correctLayers(user: UserEntity, id: string): Promise<void> {
