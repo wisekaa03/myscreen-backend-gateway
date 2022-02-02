@@ -1,4 +1,6 @@
 import { Readable } from 'node:stream';
+import path from 'node:path';
+import { createWriteStream, promises as fs } from 'node:fs';
 import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
@@ -35,6 +37,7 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
 
 import {
   BadRequestError,
@@ -52,11 +55,11 @@ import {
   FileUploadRequestBody,
   FileUpdateRequest,
   ConflictError,
-  FilePreviewResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { FfMpegPreview } from '@/shared/ffmpeg';
 import { FileService } from '@/database/file.service';
 import { VideoType } from '@/enums';
 
@@ -103,7 +106,10 @@ import { VideoType } from '@/enums';
 export class FileController {
   logger = new Logger(FileController.name);
 
-  constructor(private readonly fileService: FileService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly fileService: FileService,
+  ) {}
 
   @Post('/')
   @HttpCode(200)
@@ -352,23 +358,91 @@ export class FileController {
           userId: user.id,
           id,
         },
+        select: [
+          'id',
+          'userId',
+          'hash',
+          'meta',
+          'videoType',
+          'name',
+          'duration',
+          'width',
+          'height',
+          'folderId',
+        ],
       },
-      ['preview'],
+      ['preview', 'folder'],
     );
     if (!file) {
       throw new NotFoundException('File not found');
     }
 
     try {
-      const buffer = file.preview?.preview;
-      if (file.videoType === VideoType.Video) {
-        res.setHeader('Content-Type', 'video/mp4');
-      } else if (file.videoType === VideoType.Image) {
-        res.setHeader('Content-Type', 'image/jpeg');
-      } else {
-        res.setHeader('Content-Type', 'application/octet-stream');
+      let buffer = file.preview?.preview;
+      if (!buffer) {
+        const downloadDir = path.resolve(
+          this.configService.get<string>('FILES_UPLOAD', 'upload'),
+          file.folder.id,
+        );
+        await fs.mkdir(downloadDir, { recursive: true });
+        const filename = path.resolve(downloadDir, file.name);
+        const filenameStream = createWriteStream(filename);
+        let outPath = path.resolve(downloadDir, `${file.name}-preview`);
+
+        if (file.videoType === VideoType.Video) {
+          res.setHeader('Content-Type', 'video/mp4');
+          outPath += '.mp4';
+        } else if (file.videoType === VideoType.Image) {
+          res.setHeader('Content-Type', 'image/jpeg');
+          outPath += '.jpg';
+        } else {
+          res.setHeader('Content-Type', 'application/octet-stream');
+        }
+
+        const getFileS3 = this.fileService.getS3Object(file);
+        await getFileS3
+          .on('httpHeaders', (statusCode, headers, awsResponse) => {
+            if (statusCode === 200) {
+              (
+                awsResponse.httpResponse.createUnbufferedStream() as Readable
+              ).pipe(filenameStream);
+            } else {
+              throw new HttpException(
+                awsResponse.error || awsResponse.httpResponse.statusMessage,
+                awsResponse.httpResponse.statusCode,
+              );
+            }
+          })
+          .promise()
+          .then(() => {
+            this.logger.debug(`The file ${file.name} has been downloaded`);
+          });
+
+        const { stderr } = await FfMpegPreview(
+          file.videoType,
+          file.meta.info!,
+          filename,
+          outPath,
+        );
+        if (stderr) {
+          throw new BadRequestException();
+        }
+
+        buffer = await fs.readFile(outPath);
+        Promise.all([
+          this.fileService.update(file, {
+            duration: file.meta.duration,
+            width: file.meta.width,
+            height: file.meta.height,
+          }),
+          this.fileService.updatePreview({
+            file,
+            preview: Buffer.from(`\\x${buffer.toString('hex')}`),
+          }),
+        ]);
       }
-      res.setHeader('Content-Length', buffer?.length);
+
+      res.setHeader('Content-Length', buffer.length);
       res.setHeader(
         'Content-Disposition',
         `attachment;filename=${encodeURIComponent(`preview-${file.name}`)};`,

@@ -206,7 +206,7 @@ export class FileEntity {
     onUpdate: 'CASCADE',
     eager: false,
   })
-  preview!: FilePreviewEntity;
+  preview?: FilePreviewEntity | Partial<FilePreviewEntity>;
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.files, {
     onDelete: 'CASCADE',

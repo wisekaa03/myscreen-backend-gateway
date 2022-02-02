@@ -30,6 +30,7 @@ import { getS3Name } from '@/shared/get-name';
 import { FfMpegPreview } from '@/shared/ffmpeg';
 import { EditorService } from '@/database/editor.service';
 import { FileEntity, MediaMeta } from './file.entity';
+import { FilePreviewEntity } from './file-preview.entity';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
 import { MonitorService } from './monitor.service';
@@ -56,6 +57,8 @@ export class FileService {
     private readonly s3Service: S3,
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
+    @InjectRepository(FilePreviewEntity)
+    private readonly filePreviewRepository: Repository<FilePreviewEntity>,
   ) {
     this.bucket = configService.get<string>('AWS_BUCKET', 'myscreen-media');
   }
@@ -134,7 +137,7 @@ export class FileService {
     @TransactionRepository(FileEntity)
     fileRepository: Repository<FileEntity> = this.fileRepository,
   ): Promise<FileEntity | undefined> {
-    if (update.folderId !== file.folder.id) {
+    if (update.folderId !== undefined && update.folderId !== file.folder.id) {
       const s3Name = getS3Name(file.name);
       const Key = `${update.folderId}/${file.hash}-${s3Name}`;
       const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
@@ -165,7 +168,17 @@ export class FileService {
       ]).then(([updated]) => updated);
     }
 
-    return fileRepository.save(fileRepository.create(update));
+    return fileRepository.save(
+      fileRepository.create({ ...file, update } as Partial<FileEntity>),
+    );
+  }
+
+  async updatePreview(
+    update: Partial<FilePreviewEntity>,
+  ): Promise<FilePreviewEntity> {
+    return this.filePreviewRepository.save(
+      this.filePreviewRepository.create(update),
+    );
   }
 
   /**
@@ -243,7 +256,7 @@ export class FileService {
 
       const media: DeepPartial<FileEntity> = {
         userId: user.id,
-        folderId,
+        folder,
         name: file.originalname,
         filesize: meta.filesize,
         duration: meta.duration,
@@ -403,6 +416,45 @@ export class FileService {
     return this.fileRepository.delete(file.id);
   }
 
+  async preview(type: VideoType, file: Express.Multer.File): Promise<Buffer> {
+    let preview: Buffer;
+    if (type === VideoType.Image) {
+      const outPath = path.resolve(
+        `${file.destination}/${file.filename}-preview.jpg`,
+      );
+      const { stderr } = await FfMpegPreview(
+        type,
+        file.media!,
+        file.path,
+        outPath,
+      );
+      if (stderr) {
+        throw new BadRequestException();
+      }
+
+      preview = await fs.readFile(outPath);
+    } else if (type === VideoType.Video) {
+      const outPath = path.resolve(
+        `${file.destination}/${file.filename}-preview.mp4`,
+      );
+      const { stderr } = await FfMpegPreview(
+        type,
+        file.media!,
+        file.path,
+        outPath,
+      );
+      if (stderr) {
+        throw new BadRequestException();
+      }
+
+      preview = await fs.readFile(outPath);
+    } else {
+      preview = Buffer.alloc(0);
+    }
+
+    return preview;
+  }
+
   /**
    * Meta information
    * @param {Express.Multer.File} file The file
@@ -441,40 +493,7 @@ export class FileService {
         },
       };
 
-      let preview: Buffer;
-      if (type === VideoType.Image) {
-        const outPath = path.resolve(
-          `${file.destination}/${file.filename}-preview.jpg`,
-        );
-        const { stderr } = await FfMpegPreview(
-          type,
-          file.media,
-          file.path,
-          outPath,
-        );
-        if (stderr) {
-          throw new BadRequestException();
-        }
-
-        preview = await fs.readFile(outPath);
-      } else if (type === VideoType.Video) {
-        const outPath = path.resolve(
-          `${file.destination}/${file.filename}-preview.mp4`,
-        );
-        const { stderr } = await FfMpegPreview(
-          type,
-          file.media,
-          file.path,
-          outPath,
-        );
-        if (stderr) {
-          throw new BadRequestException();
-        }
-
-        preview = await fs.readFile(outPath);
-      } else {
-        preview = Buffer.alloc(0);
-      }
+      const preview = await this.preview(type, file);
 
       return [meta, type, extension, preview];
     }

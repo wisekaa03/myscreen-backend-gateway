@@ -6,6 +6,7 @@ import { S3_MODULE_CONNECTION } from 'nestjs-s3/dist/s3.constants';
 
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
+import { FilePreviewEntity } from './file-preview.entity';
 import { FileService } from './file.service';
 import { MonitorService } from './monitor.service';
 import { EditorService } from './editor.service';
@@ -33,6 +34,10 @@ describe(FileService.name, () => {
         ConfigService,
         {
           provide: getRepositoryToken(FileEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(FilePreviewEntity),
           useClass: mockRepository,
         },
         {

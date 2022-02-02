@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getS3ConnectionToken } from 'nestjs-s3';
-import { S3_MODULE_CONNECTION } from 'nestjs-s3/dist/s3.constants';
+import { ConfigService } from '@nestjs/config';
 
 import { JwtAuthGuard } from '@/guards';
 import { FileService } from '@/database/file.service';
@@ -25,6 +24,10 @@ describe(FileController.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [FileController],
       providers: [
+        {
+          provide: ConfigService,
+          useClass: mockRepository,
+        },
         {
           provide: FileService,
           useClass: mockRepository,
