@@ -1,4 +1,6 @@
 import {
+  AfterLoad,
+  AfterUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -155,6 +157,14 @@ export class FileEntity {
   })
   filesize!: number;
 
+  @Column({ type: 'numeric', default: 0 })
+  @ApiProperty({
+    description: 'Продолжительность',
+    type: 'number',
+    example: 10,
+  })
+  duration!: number;
+
   @Column({ select: false, type: 'json', nullable: true })
   @ApiProperty({
     description: 'Метаинформация',
@@ -221,4 +231,10 @@ export class FileEntity {
   })
   @IsDate()
   updatedAt!: Date;
+
+  @AfterLoad()
+  @AfterUpdate()
+  after() {
+    this.duration = parseFloat(this.duration as unknown as string);
+  }
 }

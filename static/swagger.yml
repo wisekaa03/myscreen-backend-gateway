@@ -1756,7 +1756,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.8.5
+  version: 2.8.6
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2644,6 +2644,10 @@ components:
           type: number
           description: Размер файла
           example: 210000
+        duration:
+          type: number
+          description: Продолжительность
+          example: 10
         meta:
           description: Метаинформация
           example:
@@ -2687,6 +2691,7 @@ components:
         - videoType
         - category
         - filesize
+        - duration
         - createdAt
         - updatedAt
         - folder

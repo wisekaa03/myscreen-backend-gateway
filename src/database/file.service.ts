@@ -246,6 +246,7 @@ export class FileService {
         folderId,
         name: file.originalname,
         filesize: meta.filesize,
+        duration: meta.duration,
         meta,
         videoType,
         category,
