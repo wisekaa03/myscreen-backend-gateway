@@ -247,6 +247,8 @@ export class FileService {
         name: file.originalname,
         filesize: meta.filesize,
         duration: meta.duration,
+        width: meta.width,
+        height: meta.height,
         meta,
         videoType,
         category,

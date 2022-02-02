@@ -97,7 +97,6 @@ import { VideoType } from '@/enums';
 })
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
-@ApiExtraModels(FilePreviewResponse)
 @ApiExtraModels(FileUploadRequest)
 @ApiTags('file')
 @Controller('file')

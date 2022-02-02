@@ -22,13 +22,6 @@ export class FileResponse extends OmitType(FileEntity, [
   folder?: FolderEntity;
 
   @ApiProperty({
-    description: 'Превью',
-    type: FilePreviewResponse,
-    required: false,
-  })
-  preview?: FilePreviewEntity;
-
-  @ApiProperty({
     description: 'Мониторы',
     type: () => MonitorResponse,
     required: false,

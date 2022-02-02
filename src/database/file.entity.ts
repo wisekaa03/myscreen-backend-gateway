@@ -155,25 +155,37 @@ export class FileEntity {
     description: 'Размер файла',
     example: 210000,
   })
+  @IsNotEmpty()
   filesize!: number;
 
   @Column({ type: 'numeric', default: 0 })
   @ApiProperty({
-    description: 'Продолжительность',
+    description: 'Продолжительность видео',
     type: 'number',
     example: 10,
   })
+  @IsNotEmpty()
   duration!: number;
 
-  @Column({ select: false, type: 'json', nullable: true })
+  @Column({ type: 'integer', default: 0 })
   @ApiProperty({
-    description: 'Метаинформация',
-    type: MediaMeta,
-    example: { duration: 200, filesize: 20500 },
-    required: false,
+    description: 'Размер по горизонтали',
+    example: 1024,
+    required: true,
   })
-  @ValidateNested()
-  @Type(() => MediaMeta)
+  @IsNotEmpty()
+  width!: number;
+
+  @Column({ type: 'integer', default: 0 })
+  @ApiProperty({
+    description: 'Размер по вертикали',
+    example: 1024,
+    required: true,
+  })
+  @IsNotEmpty()
+  height!: number;
+
+  @Column({ select: false, type: 'json', nullable: true })
   meta!: MediaMeta;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -193,10 +205,6 @@ export class FileEntity {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     eager: false,
-  })
-  @ApiProperty({
-    description: 'Превью',
-    allOf: [{ $ref: '#/components/schemas/FilePreviewResponse' }],
   })
   preview!: FilePreviewEntity;
 

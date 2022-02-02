@@ -1756,7 +1756,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.8.6
+  version: 2.8.7
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2451,30 +2451,6 @@ components:
       required:
         - where
         - scope
-    MediaMeta:
-      type: object
-      properties:
-        duration:
-          type: number
-          description: Длительность
-          example: "200"
-        width:
-          type: number
-          description: Размер по горизонтали
-          example: "200"
-        height:
-          type: number
-          description: Размер по вертикали
-          example: "200"
-        filesize:
-          type: number
-          description: Размер файла
-          example: "20500"
-        info:
-          type: object
-          description: Параметры видео, картинки или аудио
-      required:
-        - filesize
     FolderResponse:
       type: object
       properties:
@@ -2505,16 +2481,6 @@ components:
         - name
         - createdAt
         - updatedAt
-    FilePreviewResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор превью
-          example: "1234567"
-          format: uuid
-      required:
-        - id
     MonitorResponse:
       type: object
       properties:
@@ -2646,15 +2612,16 @@ components:
           example: 210000
         duration:
           type: number
-          description: Продолжительность
+          description: Продолжительность видео
           example: 10
-        meta:
-          description: Метаинформация
-          example:
-            duration: 200
-            filesize: 20500
-          allOf:
-            - $ref: "#/components/schemas/MediaMeta"
+        width:
+          type: number
+          description: Размер по горизонтали
+          example: 1024
+        height:
+          type: number
+          description: Размер по вертикали
+          example: 1024
         createdAt:
           format: date-time
           type: string
@@ -2669,10 +2636,6 @@ components:
           description: Папка
           allOf:
             - $ref: "#/components/schemas/FolderResponse"
-        preview:
-          description: Превью
-          allOf:
-            - $ref: "#/components/schemas/FilePreviewResponse"
         monitors:
           description: Мониторы
           type: array
@@ -2692,6 +2655,8 @@ components:
         - category
         - filesize
         - duration
+        - width
+        - height
         - createdAt
         - updatedAt
         - folder
