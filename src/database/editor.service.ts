@@ -231,7 +231,6 @@ export class EditorService {
 
     const { keepSourceAudio, videoLayers, audioLayers, width, height, fps } =
       editor;
-    const duration = this.calcTotalDuration(videoLayers);
 
     return [
       mkdirPath,
@@ -243,7 +242,7 @@ export class EditorService {
         loopAudio: true,
         clips: [
           {
-            duration,
+            duration: this.calcTotalDuration(videoLayers),
             layers: layers.map(
               ({
                 id,
@@ -390,10 +389,10 @@ export class EditorService {
 
     try {
       if (editor.renderedFile) {
-        await this.fileService.delete(editor.renderedFile);
         await this.editorRepository.update(editor.id, {
           renderedFile: null,
         });
+        await this.fileService.delete(editor.renderedFile);
       }
       editor = await this.editorRepository.findOne(editor.id, {
         relations: ['videoLayers', 'audioLayers', 'renderedFile'],

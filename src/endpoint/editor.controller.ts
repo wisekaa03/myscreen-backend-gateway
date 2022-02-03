@@ -241,6 +241,7 @@ export class EditorController {
   ): Promise<SuccessResponse> {
     const editor = await this.editorService.findOne({
       where: { userId: user.id, id },
+      select: ['id', 'userId'],
     });
     if (!editor) {
       throw new NotFoundException(`Editor '${id}' is not found`);
