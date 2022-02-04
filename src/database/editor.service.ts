@@ -133,14 +133,14 @@ export class EditorService {
   }
 
   /**
-   * Update layer
+   * Create layer
    * @async
-   * @param {UserEntity} user User entity
-   * @param {number} editorId Editor entity id
+   * @param {string} userId User ID
+   * @param {number} editorId Editor ID
    * @param {EditorLayerEntity} update Editor layer entity
    * @returns {EditorLayerEntity | undefined} Result
    */
-  async updateLayer(
+  async createLayer(
     userId: string,
     editorId: string,
     update: Partial<EditorLayerEntity>,
@@ -168,6 +168,32 @@ export class EditorService {
     await this.moveIndex(userId, editorId, layer.id, update.index);
 
     return this.editorLayerRepository.findOne(layer.id, {
+      relations: ['file'],
+    });
+  }
+
+  /**
+   * Update layer
+   * @async
+   * @param {UserEntity} user User entity
+   * @param {number} editorId Editor ID
+   * @param {number} layerId Editor Layer ID
+   * @param {EditorLayerEntity} update Editor layer entity
+   * @returns {EditorLayerEntity | undefined} Result
+   */
+  async updateLayer(
+    userId: string,
+    editorId: string,
+    layerId: string,
+    update: Partial<EditorLayerEntity>,
+  ): Promise<EditorLayerEntity | undefined> {
+    await this.editorLayerRepository.update(layerId, update);
+
+    if (update.index) {
+      await this.moveIndex(userId, editorId, layerId, update.index);
+    }
+
+    return this.editorLayerRepository.findOne(layerId, {
       relations: ['file'],
     });
   }

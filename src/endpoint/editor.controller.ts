@@ -290,17 +290,17 @@ export class EditorController {
       throw new NotFoundException(`The file ${body.file} is not found`);
     }
 
-    const update: Partial<EditorLayerEntity> = {
+    const create: Partial<EditorLayerEntity> = {
       ...body,
       file,
     };
     if (file.videoType === VideoType.Audio) {
-      update.audio = [editor];
+      create.audio = [editor];
     } else {
-      update.video = [editor];
+      create.video = [editor];
     }
 
-    const data = await this.editorService.updateLayer(userId, editorId, update);
+    const data = await this.editorService.createLayer(userId, editorId, create);
     if (!data) {
       throw new NotFoundException('This editor layer is not exists');
     }
@@ -386,10 +386,12 @@ export class EditorController {
       throw new NotFoundException('Editor layer not found');
     }
 
-    const data = await this.editorService.updateLayer(userId, editorId, {
-      id: layerId,
-      ...body,
-    });
+    const data = await this.editorService.updateLayer(
+      userId,
+      editorId,
+      layerId,
+      body,
+    );
     if (!data) {
       throw new NotFoundException('This editor layer is not exists');
     }
