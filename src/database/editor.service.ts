@@ -711,6 +711,7 @@ export class EditorService {
       renderingStatus: RenderingStatus.Initial,
       renderingPercent: null,
       renderingError: null,
+      totalDuration: this.calcTotalDuration(editor.videoLayers),
     });
 
     await Promise.all([editorPromise, resultLayer]);

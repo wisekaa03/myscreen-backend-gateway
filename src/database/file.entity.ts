@@ -158,16 +158,16 @@ export class FileEntity {
   @IsNotEmpty()
   filesize!: number;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', nullable: true, default: null })
   @ApiProperty({
     description: 'Продолжительность видео',
     type: 'number',
     example: 10,
   })
   @IsNotEmpty()
-  duration!: number;
+  duration?: number;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'integer', default: 1024 })
   @ApiProperty({
     description: 'Размер по горизонтали',
     example: 1024,
@@ -176,7 +176,7 @@ export class FileEntity {
   @IsNotEmpty()
   width!: number;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'integer', default: 1024 })
   @ApiProperty({
     description: 'Размер по вертикали',
     example: 1024,
@@ -243,6 +243,6 @@ export class FileEntity {
   @AfterLoad()
   @AfterUpdate()
   after() {
-    this.duration = parseFloat(this.duration as unknown as string);
+    this.duration = parseFloat(`${this.duration || 0}`);
   }
 }

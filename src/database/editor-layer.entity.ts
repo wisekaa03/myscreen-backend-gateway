@@ -159,9 +159,9 @@ export class EditorLayerEntity {
   @AfterLoad()
   @AfterUpdate()
   after() {
-    this.start = parseFloat(this.start as unknown as string);
-    this.duration = parseFloat(this.duration as unknown as string);
-    this.cutFrom = parseFloat(this.cutFrom as unknown as string);
-    this.cutTo = parseFloat(this.cutTo as unknown as string);
+    this.start = parseFloat(`${this.start || 0}`);
+    this.duration = parseFloat(`${this.duration || 0}`);
+    this.cutFrom = parseFloat(`${this.cutFrom}`);
+    this.cutTo = parseFloat(`${this.cutTo}`);
   }
 }

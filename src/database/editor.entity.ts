@@ -207,6 +207,6 @@ export class EditorEntity {
   @AfterLoad()
   @AfterUpdate()
   after() {
-    this.totalDuration = parseFloat(this.totalDuration as unknown as string);
+    this.totalDuration = parseFloat(`${this.totalDuration || 0}`);
   }
 }

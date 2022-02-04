@@ -175,7 +175,7 @@ export class FileService {
     }
 
     return fileRepository.save(
-      fileRepository.create({ ...file, update } as Partial<FileEntity>),
+      fileRepository.create({ id: file.id, ...update }),
     );
   }
 
@@ -484,7 +484,7 @@ export class FileService {
       const { filename, ...format } = mediaFormat ?? {};
       const meta: MediaMeta = {
         filesize: Number(file.media.format?.size) || file.size,
-        duration: Number(file.media.format?.duration),
+        duration: parseFloat(`${file.media.format?.duration || 0}`),
         width:
           Number(file.media.format?.width) ||
           Number(file.media.streams?.[0].width) ||
