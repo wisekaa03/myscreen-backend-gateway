@@ -386,7 +386,10 @@ export class EditorController {
       throw new NotFoundException('Editor layer not found');
     }
 
-    const data = await this.editorService.updateLayer(userId, editorId, body);
+    const data = await this.editorService.updateLayer(userId, editorId, {
+      id: layerId,
+      ...body,
+    });
     if (!data) {
       throw new NotFoundException('This editor layer is not exists');
     }
