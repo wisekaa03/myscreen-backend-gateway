@@ -27,7 +27,6 @@ import { ffprobe } from 'media-probe';
 import editly from 'editly';
 
 import { FileCategory, RenderingStatus } from '@/enums';
-import { UserEntity } from './user.entity';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';
@@ -77,7 +76,7 @@ export class EditorService {
   ): Promise<EditorEntity | undefined> => this.editorRepository.findOne(find);
 
   async update(
-    user: UserEntity,
+    userId: string,
     update: Partial<EditorEntity>,
   ): Promise<EditorEntity | undefined> {
     const updated: DeepPartial<EditorEntity> = {
@@ -85,7 +84,7 @@ export class EditorService {
       audioLayers: [],
       renderedFile: null,
       ...update,
-      userId: user.id,
+      userId,
     };
 
     const editor = await this.editorRepository.save(
@@ -95,12 +94,12 @@ export class EditorService {
   }
 
   delete = async (
-    user: UserEntity,
+    userId: string,
     editor: EditorEntity,
   ): Promise<DeleteResult> =>
     this.editorRepository.delete({
       id: editor.id,
-      userId: user.id,
+      userId,
     });
 
   async findLayer(
@@ -108,10 +107,12 @@ export class EditorService {
     relations: boolean | string[] = true,
   ): Promise<EditorLayerEntity[] | undefined> {
     const conditional = find;
-    if (typeof relations === 'boolean' && relations === true) {
-      conditional.relations = ['video', 'audio', 'file'];
-    } else if (typeof relations === 'object' && Array.isArray(relations)) {
-      conditional.relations = relations;
+    if (!find.relations) {
+      if (typeof relations === 'boolean' && relations === true) {
+        conditional.relations = ['video', 'audio', 'file'];
+      } else if (typeof relations === 'object' && Array.isArray(relations)) {
+        conditional.relations = relations;
+      }
     }
     return this.editorLayerRepository.find(conditional);
   }
@@ -121,10 +122,12 @@ export class EditorService {
     relations: boolean | string[] = true,
   ): Promise<EditorLayerEntity | undefined> {
     const conditional = find;
-    if (typeof relations === 'boolean' && relations === true) {
-      conditional.relations = ['video', 'audio', 'file'];
-    } else if (typeof relations === 'object' && Array.isArray(relations)) {
-      conditional.relations = relations;
+    if (!find.relations) {
+      if (typeof relations === 'boolean' && relations === true) {
+        conditional.relations = ['video', 'audio', 'file'];
+      } else if (typeof relations === 'object' && Array.isArray(relations)) {
+        conditional.relations = relations;
+      }
     }
     return this.editorLayerRepository.findOne(conditional);
   }
@@ -133,37 +136,61 @@ export class EditorService {
    * Update layer
    * @async
    * @param {UserEntity} user User entity
-   * @param {number} id Editor entity id
+   * @param {number} editorId Editor entity id
    * @param {EditorLayerEntity} update Editor layer entity
    * @returns {EditorLayerEntity | undefined} Result
    */
   async updateLayer(
-    user: UserEntity,
-    id: string,
+    userId: string,
+    editorId: string,
     update: Partial<EditorLayerEntity>,
   ): Promise<EditorLayerEntity | undefined> {
-    if (update.cutFrom !== undefined && update.cutTo !== undefined) {
-      if (update.cutFrom > update.cutTo) {
-        throw new BadRequestException('cutFrom must be less than cutTo');
-      }
+    if (update.index === undefined) {
+      throw new BadRequestException('index must exists');
+    }
+    if (update.cutFrom === undefined) {
+      throw new BadRequestException('cutFrom must exists');
+    }
+    if (update.cutTo === undefined) {
+      throw new BadRequestException('cutTo must exists');
+    }
+    if (update.cutFrom > update.cutTo) {
+      throw new BadRequestException('cutFrom must be less than cutTo');
+    }
+    if (update.duration !== update.cutTo - update.cutFrom) {
+      throw new BadRequestException('Duration must be cutTo - cutFrom');
     }
 
-    return this.editorLayerRepository.save(
+    const layer = await this.editorLayerRepository.save(
       this.editorLayerRepository.create(update),
     );
+
+    await this.moveIndex(userId, editorId, layer.id, update.index);
+
+    return this.editorLayerRepository.findOne(layer.id, {
+      relations: ['file'],
+    });
   }
 
   /**
    * Delete layer
    * @async
-   * @param {UserEntity} user User entity
-   * @param {EditorLayerEntity} update Editor layer entity
+   * @param {string} userId User ID
+   * @param {EditorEntity} editorID Editor ID
+   * @param {EditorLayerEntity} editorLayer Editor layer entity
    * @returns {DeleteResult} Result
    */
-  deleteLayer = async (editorLayer: EditorLayerEntity): Promise<DeleteResult> =>
-    this.editorLayerRepository.delete({
-      id: editorLayer.id,
-    });
+  async deleteLayer(
+    userId: string,
+    editorId: string,
+    editorLayerId: string,
+  ): Promise<DeleteResult> {
+    const result = await this.editorLayerRepository.delete(editorLayerId);
+
+    await this.correctLayers(userId, editorId);
+
+    return result;
+  }
 
   calcDuration = (layer: Partial<EditorLayerEntity>): number => {
     if (layer.cutTo !== undefined && layer.cutFrom !== undefined) {
@@ -361,12 +388,12 @@ export class EditorService {
   /**
    * Start Export
    * @async
-   * @param {UserEntity} user The user entity
+   * @param {string} userId The user ID
    * @param {string} id Editor ID
    * @returns {EditorEntity} Result
    */
   async export(
-    user: UserEntity,
+    userId: string,
     id: string,
     rerender = false,
   ): Promise<EditorEntity> {
@@ -470,19 +497,19 @@ export class EditorService {
 
         const { size } = await fs.stat(outPath);
 
-        const parentFolder = await this.folderService.rootFolder(user);
+        const parentFolder = await this.folderService.rootFolder(userId);
         let folder = await this.folderService.findOne({
           where: {
             name: '<Исполненные>',
             parentFolderId: parentFolder.id,
-            userId: user.id,
+            userId,
           },
         });
         if (!folder) {
           folder = await this.folderService.update({
             name: '<Исполненные>',
             parentFolderId: parentFolder.id,
-            userId: user.id,
+            userId,
           });
         }
         const media = await ffprobe(outPath, {
@@ -511,7 +538,7 @@ export class EditorService {
           },
         ];
         const filesSaved = await this.fileService.upload(
-          user,
+          userId,
           { folderId: folder.id, category: FileCategory.Media },
           files,
         );
@@ -552,13 +579,13 @@ export class EditorService {
     }
   }
 
-  async correctLayers(user: UserEntity, id: string): Promise<void> {
+  async correctLayers(userId: string, editorId: string): Promise<void> {
     const editor = await this.editorRepository.findOne({
-      where: { id, userId: user.id },
+      where: { id: editorId, userId },
       relations: ['videoLayers', 'audioLayers'],
     });
     if (!editor) {
-      throw new NotFoundException(`The editor ${id} is not found`);
+      throw new NotFoundException(`The editor ${editorId} is not found`);
     }
 
     let start = 0;
@@ -616,15 +643,15 @@ export class EditorService {
    * @memberof EditorService
    */
   async moveIndex(
-    user: UserEntity,
+    userId: string,
     editorId: string,
     layerId: string,
     moveIndex: number,
   ): Promise<void> {
     const editor = await this.editorRepository.findOne({
       where: {
-        userId: user.id,
-        editorId,
+        userId,
+        id: editorId,
       },
       relations: ['videoLayers', 'audioLayers'],
     });

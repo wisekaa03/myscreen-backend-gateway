@@ -103,7 +103,7 @@ export class UserController {
       throw new ForbiddenException();
     }
 
-    await this.userService.update(user, { disabled: true });
+    await this.userService.update(user.id, { disabled: true });
 
     return {
       status: Status.Success,
@@ -129,7 +129,7 @@ export class UserController {
       throw new ForbiddenException();
     }
 
-    await this.userService.update(user, { disabled: false });
+    await this.userService.update(user.id, { disabled: false });
 
     return {
       status: Status.Success,
@@ -184,7 +184,7 @@ export class UserController {
     return {
       status: Status.Success,
       data: await this.userService
-        .update(user, update)
+        .update(user.id, update)
         .then(({ password, ...data }) => data),
     };
   }

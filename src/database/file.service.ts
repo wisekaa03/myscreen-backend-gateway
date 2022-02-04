@@ -75,10 +75,12 @@ export class FileService {
     relations: boolean | string[] = true,
   ): Promise<Array<FileEntity>> {
     const conditional = find;
-    if (typeof relations === 'boolean' && relations === true) {
-      conditional.relations = ['monitors', 'playlists'];
-    } else if (typeof relations === 'object' && Array.isArray(relations)) {
-      conditional.relations = relations;
+    if (!find.relations) {
+      if (typeof relations === 'boolean' && relations === true) {
+        conditional.relations = ['monitors', 'playlists'];
+      } else if (typeof relations === 'object' && Array.isArray(relations)) {
+        conditional.relations = relations;
+      }
     }
     return this.fileRepository.find(conditional);
   }
@@ -95,10 +97,12 @@ export class FileService {
     relations: boolean | string[] = true,
   ): Promise<[Array<FileEntity>, number]> {
     const conditional = find;
-    if (typeof relations === 'boolean' && relations === true) {
-      conditional.relations = ['monitors', 'playlists'];
-    } else if (typeof relations === 'object' && Array.isArray(relations)) {
-      conditional.relations = relations;
+    if (!find.relations) {
+      if (typeof relations === 'boolean' && relations === true) {
+        conditional.relations = ['monitors', 'playlists'];
+      } else if (typeof relations === 'object' && Array.isArray(relations)) {
+        conditional.relations = relations;
+      }
     }
     return this.fileRepository.findAndCount(conditional);
   }
@@ -115,10 +119,12 @@ export class FileService {
     relations: boolean | string[] = true,
   ): Promise<FileEntity | undefined> {
     const conditional = find;
-    if (typeof relations === 'boolean' && relations === true) {
-      conditional.relations = ['monitors', 'playlists'];
-    } else if (typeof relations === 'object' && Array.isArray(relations)) {
-      conditional.relations = relations;
+    if (!find.relations) {
+      if (typeof relations === 'boolean' && relations === true) {
+        conditional.relations = ['monitors', 'playlists'];
+      } else if (typeof relations === 'object' && Array.isArray(relations)) {
+        conditional.relations = relations;
+      }
     }
     return this.fileRepository.findOne(conditional);
   }
@@ -184,13 +190,13 @@ export class FileService {
   /**
    * Upload files
    * @async
-   * @param {UserEntity} user
+   * @param {string} userId
    * @param {string} folderId
    * @param {Array<Express.Multer.File>} files
    */
   @Transaction()
   async upload(
-    user: UserEntity,
+    userId: string,
     {
       folderId: folderIdp = undefined,
       category = FileCategory.Media,
@@ -206,10 +212,10 @@ export class FileService {
 
     let folder: FolderEntity | undefined;
     if (!folderIdp) {
-      folder = await this.folderService.rootFolder(user);
+      folder = await this.folderService.rootFolder(userId);
     } else {
       folder = await this.folderService.findOne({
-        where: { userId: user.id, id: folderIdp },
+        where: { userId, id: folderIdp },
       });
     }
     if (!folder) {
@@ -226,7 +232,7 @@ export class FileService {
     }
     if (monitorId) {
       monitor = await this.monitorService.findOne({
-        where: { userId: user.id, id: monitorId },
+        where: { userId, id: monitorId },
       });
       if (!monitor) {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
@@ -255,7 +261,7 @@ export class FileService {
       );
 
       const media: DeepPartial<FileEntity> = {
-        userId: user.id,
+        userId,
         folder,
         name: file.originalname,
         filesize: meta.filesize,

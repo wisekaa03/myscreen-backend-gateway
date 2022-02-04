@@ -49,9 +49,14 @@ export class UserService {
    * @returns {UserEntity} Результат
    */
   async update(
-    user: UserEntity,
+    userId: string,
     update: Partial<UserEntity>,
   ): Promise<UserEntity> {
+    const user = await this.userRepository.findOne(userId);
+    if (!user) {
+      throw new ForbiddenException();
+    }
+
     if (typeof update.email !== 'undefined' && user.email !== update.email) {
       const emailConfirmKey = genKey();
 

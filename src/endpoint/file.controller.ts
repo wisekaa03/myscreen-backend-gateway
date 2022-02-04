@@ -123,13 +123,13 @@ export class FileController {
     type: FilesGetResponse,
   })
   async getFiles(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { where, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
     const [data, count] = await this.fileService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: {
-        userId: user.id,
+        userId,
         ...where,
       },
     });
@@ -173,7 +173,7 @@ export class FileController {
   })
   @UseInterceptors(FilesInterceptor('files'))
   async uploadFiles(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() body: FileUploadRequestBody,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<FilesUploadResponse> {
@@ -187,7 +187,7 @@ export class FileController {
     } catch (err) {
       throw new BadRequestException('The param must be a string');
     }
-    const data = await this.fileService.upload(user, param, files);
+    const data = await this.fileService.upload(userId, param, files);
 
     return {
       status: Status.Success,
@@ -230,13 +230,13 @@ export class FileController {
     },
   })
   async getFileS3(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
     const file = await this.fileService.findOne(
       {
-        where: { userId: user.id, id },
+        where: { userId, id },
       },
       false,
     );
@@ -295,12 +295,12 @@ export class FileController {
     type: FileGetResponse,
   })
   async getFileDB(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<FileGetResponse> {
     const data = await this.fileService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id,
       },
     });
@@ -348,14 +348,14 @@ export class FileController {
     },
   })
   async getFilePreview(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
     const file = await this.fileService.findOne(
       {
         where: {
-          userId: user.id,
+          userId,
           id,
         },
         select: [
@@ -466,13 +466,13 @@ export class FileController {
     type: FileGetResponse,
   })
   async updateFileDB(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) id: string,
     @Body() update: FileUpdateRequest,
   ): Promise<FileGetResponse> {
     const file = await this.fileService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id,
       },
     });
@@ -503,11 +503,11 @@ export class FileController {
     type: SuccessResponse,
   })
   async deleteFile(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
     const file = await this.fileService.findOne({
-      where: { userId: user.id, id },
+      where: { userId, id },
     });
     if (!file) {
       throw new NotFoundException(`Media '${id}' is not exists`);

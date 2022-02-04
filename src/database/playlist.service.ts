@@ -36,11 +36,11 @@ export class PlaylistService {
     this.playlistEntity.findOne({ ...find, relations: ['files'] });
 
   async update(
-    user: UserEntity,
+    userId: string,
     update: Partial<PlaylistEntity>,
   ): Promise<PlaylistEntity> {
     const playlist: DeepPartial<PlaylistEntity> = {
-      userId: user.id,
+      userId,
       ...update,
     };
 
@@ -48,9 +48,9 @@ export class PlaylistService {
   }
 
   async delete(
-    user: UserEntity,
+    userId: string,
     playlist: PlaylistEntity,
   ): Promise<DeleteResult> {
-    return this.playlistEntity.delete({ id: playlist.id, userId: user.id });
+    return this.playlistEntity.delete({ id: playlist.id, userId });
   }
 }

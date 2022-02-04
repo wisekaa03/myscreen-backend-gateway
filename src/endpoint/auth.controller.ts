@@ -93,16 +93,16 @@ export class AuthController {
     type: UserGetResponse,
   })
   async authorization(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
   ): Promise<UserGetResponse> {
-    if (!user) {
+    const user = await this.userService.findById(userId);
+    if (user === undefined) {
       throw new ForbiddenException();
     }
-    const data = userEntityToUser(user);
 
     return {
       status: Status.Success,
-      data,
+      data: userEntityToUser(user),
     };
   }
 
@@ -120,10 +120,10 @@ export class AuthController {
     type: UserGetResponse,
   })
   async update(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() update: UserUpdateRequest,
   ): Promise<UserGetResponse> {
-    const data = await this.userService.update(user, update);
+    const data = await this.userService.update(userId, update);
 
     return {
       status: Status.Success,
@@ -277,11 +277,10 @@ export class AuthController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async disable(@Req() { user }: ExpressRequest): Promise<SuccessResponse> {
-    if (!user) {
-      throw new ForbiddenException();
-    }
-    await this.userService.update(user, { disabled: true });
+  async disable(
+    @Req() { user: { id: userId } }: ExpressRequest,
+  ): Promise<SuccessResponse> {
+    await this.userService.update(userId, { disabled: true });
 
     return {
       status: Status.Success,

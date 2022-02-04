@@ -6,6 +6,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import type { MyscreenJwtPayload } from '@/shared/jwt.payload';
 import { UserService } from '@/database/user.service';
 import type { UserEntity } from '@/database/user.entity';
+import { UserRoleEnum } from '@/enums';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -23,16 +24,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: MyscreenJwtPayload): Promise<UserEntity | null> {
-    // DEBUG: из базы данных брать это дело все - слишком накладно ?
-    const user = payload.sub
-      ? await this.userService.findById(payload.sub)
-      : null;
-
-    if (!user) {
+  async validate(
+    payload: MyscreenJwtPayload,
+  ): Promise<{ id: string; role: UserRoleEnum[] } | null> {
+    const id = payload.sub;
+    if (!id) {
       return null;
     }
 
-    return user;
+    const role = payload.aud;
+    if (!role) {
+      return null;
+    }
+
+    return { id, role };
   }
 }

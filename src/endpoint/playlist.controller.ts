@@ -99,13 +99,13 @@ export class PlaylistController {
     type: PlaylistsGetResponse,
   })
   async getPlaylists(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { where, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
     const [data, count] = await this.playlistService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: {
-        userId: user.id,
+        userId,
         ...where,
       },
     });
@@ -129,21 +129,21 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   async createPlaylists(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() body: PlaylistCreateRequest,
   ): Promise<PlaylistGetResponse> {
     if (!(Array.isArray(body.files) && body.files.length > 0)) {
       throw new BadRequestException('There should be Files');
     }
     const [files] = await this.fileService.find({
-      where: { id: In(body.files), userId: user.id },
+      where: { id: In(body.files), userId },
     });
     if (!Array.isArray(files) || body.files.length !== files.length) {
       throw new NotFoundException('Files specified does not exist');
     }
 
     const data = await this.playlistService
-      .update(user, {
+      .update(userId, {
         ...body,
         files,
       })
@@ -169,11 +169,11 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   async getPlaylist(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
   ): Promise<PlaylistGetResponse> {
     const data = await this.playlistService.findOne({
-      where: { userId: user.id, id },
+      where: { userId, id },
     });
     if (!data) {
       throw new NotFoundException(`Playlist '${id}' not found`);
@@ -197,14 +197,14 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   async updatePlaylists(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
     @Body() body: PlaylistUpdateRequest,
   ): Promise<PlaylistGetResponse> {
     let files: FileEntity[] | undefined;
     if (Array.isArray(body.files) && body.files.length > 0) {
       files = await this.fileService.find({
-        where: { id: In(body.files), userId: user.id },
+        where: { id: In(body.files), userId },
       });
       if (!Array.isArray(files) || body.files.length !== files.length) {
         throw new NotFoundException('Files specified does not exist');
@@ -212,7 +212,7 @@ export class PlaylistController {
     }
 
     const data = await this.playlistService
-      .update(user, {
+      .update(userId, {
         id,
         ...body,
         files,
@@ -239,17 +239,17 @@ export class PlaylistController {
     type: SuccessResponse,
   })
   async deletePlaylist(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
     const data = await this.playlistService.findOne({
-      where: { userId: user.id, id },
+      where: { userId, id },
     });
     if (!data) {
       throw new NotFoundException(`Playlist '${id}' not found`);
     }
 
-    const { affected } = await this.playlistService.delete(user, data);
+    const { affected } = await this.playlistService.delete(userId, data);
     if (!affected) {
       throw new NotFoundException('This playlist is not exists');
     }

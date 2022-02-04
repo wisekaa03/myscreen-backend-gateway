@@ -98,13 +98,13 @@ export class MonitorController {
     type: MonitorsGetResponse,
   })
   async getMonitors(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { where, scope }: MonitorsGetRequest,
   ): Promise<MonitorsGetResponse> {
     const [data, count] = await this.monitorService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: {
-        userId: user.id,
+        userId,
         ...where,
       },
     });
@@ -128,10 +128,10 @@ export class MonitorController {
     type: MonitorCreateResponse,
   })
   async createMonitors(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() monitor: MonitorRequest,
   ): Promise<MonitorCreateResponse> {
-    const data = await this.monitorService.update(user, monitor).catch(() => {
+    const data = await this.monitorService.update(userId, monitor).catch(() => {
       throw new BadRequestException(`Монитор '${monitor.name}' уже существует`);
     });
 
@@ -153,7 +153,7 @@ export class MonitorController {
     type: MonitorsGetResponse,
   })
   async createMonitorPlaylist(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<MonitorsGetResponse> {
     if (!Array.isArray(attach.monitors) || attach.monitors.length < 1) {
@@ -161,7 +161,7 @@ export class MonitorController {
     }
     const playlist = await this.playlistService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id: attach.playlistId,
       },
     });
@@ -172,7 +172,7 @@ export class MonitorController {
     const dataPromise = attach.monitors.map(async (monitorId) => {
       const monitor = await this.monitorService.findOne({
         where: {
-          userId: user.id,
+          userId,
           id: monitorId,
         },
       });
@@ -180,7 +180,7 @@ export class MonitorController {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
 
-      return this.monitorService.update(user, {
+      return this.monitorService.update(userId, {
         ...monitor,
         playlist,
       });
@@ -206,7 +206,7 @@ export class MonitorController {
     type: MonitorsGetResponse,
   })
   async deleteMonitorPlaylist(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<MonitorsGetResponse> {
     if (attach.monitors.length === 0) {
@@ -214,7 +214,7 @@ export class MonitorController {
     }
     const playlist = await this.playlistService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id: attach.playlistId,
       },
     });
@@ -225,7 +225,7 @@ export class MonitorController {
     const dataPromise = attach.monitors.map(async (monitorId) => {
       const monitor = await this.monitorService.findOne({
         where: {
-          userId: user.id,
+          userId,
           id: monitorId,
         },
       });
@@ -237,7 +237,7 @@ export class MonitorController {
           `Monitor '${monitorId}' is not playing playlist '${playlist.id}'`,
         );
       }
-      return this.monitorService.update(user, {
+      return this.monitorService.update(userId, {
         ...monitor,
         playlist: null,
       });
@@ -263,12 +263,12 @@ export class MonitorController {
     type: MonitorGetResponse,
   })
   async getMonitor(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
     const data = await this.monitorService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id,
       },
     });
@@ -294,20 +294,20 @@ export class MonitorController {
     type: MonitorGetResponse,
   })
   async updateMonitor(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
     @Body() update: MonitorRequest,
   ): Promise<MonitorGetResponse> {
     const monitor = await this.monitorService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id,
       },
     });
     if (!monitor) {
       throw new NotFoundException(`Monitor ${id} is not found`);
     }
-    const data = await this.monitorService.update(user, {
+    const data = await this.monitorService.update(userId, {
       ...update,
       id,
     });
@@ -330,12 +330,12 @@ export class MonitorController {
     type: SuccessResponse,
   })
   async deleteMonitor(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
     const monitor = await this.monitorService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id,
       },
     });
@@ -343,7 +343,7 @@ export class MonitorController {
       throw new NotFoundException(`Monitor '${id}' is not found`);
     }
 
-    const { affected } = await this.monitorService.delete(user, monitor);
+    const { affected } = await this.monitorService.delete(userId, monitor);
     if (!affected) {
       throw new NotFoundException('This monitor is not exists');
     }

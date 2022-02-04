@@ -89,6 +89,7 @@ export class AuthService {
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
       subject: String(user.id),
+      audience: [user.role],
       expiresIn: this.accessTokenExpires,
     };
 
@@ -211,7 +212,7 @@ export class AuthService {
     }
 
     if (user.emailConfirmKey === verifyToken) {
-      await this.userService.update(user, {
+      await this.userService.update(user.id, {
         emailConfirmKey: null,
         verified: true,
       });

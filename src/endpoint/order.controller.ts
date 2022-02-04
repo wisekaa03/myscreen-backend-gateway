@@ -81,13 +81,13 @@ export class OrderController {
     type: OrdersGetResponse,
   })
   async getOrders(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { where, scope }: OrdersGetRequest,
   ): Promise<OrdersGetResponse> {
     const [data, count] = await this.orderService.find({
       ...paginationQueryToConfig(scope),
       where: {
-        userId: user.id,
+        userId,
         ...where,
       },
     });

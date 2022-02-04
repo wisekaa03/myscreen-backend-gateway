@@ -42,24 +42,21 @@ export class MonitorService {
     });
 
   async update(
-    user: UserEntity,
+    userId: string,
     monitor: Partial<MonitorEntity>,
   ): Promise<MonitorEntity> {
     const order: DeepPartial<MonitorEntity> = {
-      userId: user.id,
+      userId,
       ...monitor,
     };
 
     return this.monitorRepository.save(this.monitorRepository.create(order));
   }
 
-  async delete(
-    user: UserEntity,
-    monitor: MonitorEntity,
-  ): Promise<DeleteResult> {
+  async delete(userId: string, monitor: MonitorEntity): Promise<DeleteResult> {
     return this.monitorRepository.delete({
       id: monitor.id,
-      userId: user.id,
+      userId,
     });
   }
 }

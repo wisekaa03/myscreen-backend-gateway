@@ -33,16 +33,16 @@ export class FolderService {
     find: FindOneOptions<FolderEntity>,
   ): Promise<FolderEntity | undefined> => this.folderRepository.findOne(find);
 
-  rootFolder = async (user: UserEntity): Promise<FolderEntity> => {
+  rootFolder = async (userId: string): Promise<FolderEntity> => {
     const folder = await this.folderRepository.findOne({
-      userId: user.id,
+      userId,
       name: '<Корень>',
     });
 
     return this.folderRepository.save(
       this.folderRepository.create({
         ...folder,
-        userId: user.id,
+        userId,
         name: '<Корень>',
         parentFolderId: null,
       }),
@@ -54,14 +54,14 @@ export class FolderService {
 
   @Transaction()
   async delete(
-    user: UserEntity,
+    userId: string,
     folder: FolderEntity,
     @TransactionRepository(FolderEntity)
     folderRepository: Repository<FolderEntity> = this.folderRepository,
   ): Promise<DeleteResult> {
     const files = await this.fileService.find(
       {
-        where: { userId: user.id, folderId: folder.id },
+        where: { userId, folderId: folder.id },
       },
       false,
     );
@@ -73,7 +73,7 @@ export class FolderService {
 
     return folderRepository.delete({
       id: folder.id,
-      userId: user.id,
+      userId,
     });
   }
 }
