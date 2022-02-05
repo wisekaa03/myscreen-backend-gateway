@@ -55,25 +55,50 @@ export class EditorService {
     );
   }
 
-  find = async (
+  async find(
     find: FindManyOptions<EditorEntity>,
-  ): Promise<Array<EditorEntity>> =>
-    this.editorRepository.find({
-      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
-      ...find,
-    });
+    relations: boolean | string[] = true,
+  ): Promise<Array<EditorEntity>> {
+    const conditional = find;
+    if (!find.relations) {
+      if (typeof relations === 'boolean' && relations === true) {
+        conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
+      } else if (typeof relations === 'object' && Array.isArray(relations)) {
+        conditional.relations = relations;
+      }
+    }
+    return this.editorRepository.find(conditional);
+  }
 
-  findAndCount = async (
+  async findAndCount(
     find: FindManyOptions<EditorEntity>,
-  ): Promise<[Array<EditorEntity>, number]> =>
-    this.editorRepository.findAndCount({
-      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
-      ...find,
-    });
+    relations: boolean | string[] = true,
+  ): Promise<[Array<EditorEntity>, number]> {
+    const conditional = find;
+    if (!find.relations) {
+      if (typeof relations === 'boolean' && relations === true) {
+        conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
+      } else if (typeof relations === 'object' && Array.isArray(relations)) {
+        conditional.relations = relations;
+      }
+    }
+    return this.editorRepository.findAndCount(conditional);
+  }
 
-  findOne = async (
+  async findOne(
     find: FindManyOptions<EditorEntity>,
-  ): Promise<EditorEntity | undefined> => this.editorRepository.findOne(find);
+    relations: boolean | string[] = true,
+  ): Promise<EditorEntity | undefined> {
+    const conditional = find;
+    if (!find.relations) {
+      if (typeof relations === 'boolean' && relations === true) {
+        conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
+      } else if (typeof relations === 'object' && Array.isArray(relations)) {
+        conditional.relations = relations;
+      }
+    }
+    return this.editorRepository.findOne(conditional);
+  }
 
   async update(
     userId: string,
@@ -114,6 +139,9 @@ export class EditorService {
         conditional.relations = relations;
       }
     }
+    if (!find.order) {
+      conditional.order = { index: 'ASC', start: 'ASC' };
+    }
     return this.editorLayerRepository.find(conditional);
   }
 
@@ -128,6 +156,9 @@ export class EditorService {
       } else if (typeof relations === 'object' && Array.isArray(relations)) {
         conditional.relations = relations;
       }
+    }
+    if (!find.order) {
+      conditional.order = { index: 'ASC', start: 'ASC' };
     }
     return this.editorLayerRepository.findOne(conditional);
   }
