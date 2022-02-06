@@ -1,10 +1,17 @@
-import { createReadStream, unlink, promises as fs } from 'node:fs';
+import {
+  createReadStream,
+  unlink,
+  promises as fs,
+  createWriteStream,
+} from 'node:fs';
+import { Readable } from 'node:stream';
 import path from 'node:path';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import {
   BadRequestException,
   ConflictException,
   forwardRef,
+  HttpException,
   Inject,
   Injectable,
   Logger,
@@ -32,7 +39,6 @@ import { EditorService } from '@/database/editor.service';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
 import { FolderService } from './folder.service';
-import { UserEntity } from './user.entity';
 import { MonitorService } from './monitor.service';
 import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
@@ -420,6 +426,69 @@ export class FileService {
     })();
 
     return this.fileRepository.delete(file.id);
+  }
+
+  async previewFile(file: FileEntity): Promise<Buffer> {
+    const downloadDir = path.resolve(
+      this.configService.get<string>('FILES_UPLOAD', 'upload'),
+      file.folder.id,
+    );
+    await fs.mkdir(downloadDir, { recursive: true });
+    const filename = path.resolve(downloadDir, file.name);
+    let outPath = path.resolve(
+      downloadDir,
+      `${file.name.split('.')[0]}-preview`,
+    );
+    outPath += file.videoType === VideoType.Video ? '.mp4' : '.jpg';
+
+    if (await fs.access(outPath).catch(() => true)) {
+      const filenameStream = createWriteStream(filename);
+      await this.getS3Object(file)
+        .on('httpHeaders', (statusCode, headers, awsResponse) => {
+          if (statusCode === 200) {
+            (
+              awsResponse.httpResponse.createUnbufferedStream() as Readable
+            ).pipe(filenameStream);
+          } else {
+            throw new HttpException(
+              awsResponse.error || awsResponse.httpResponse.statusMessage,
+              awsResponse.httpResponse.statusCode,
+            );
+          }
+        })
+        .promise()
+        .then(() => {
+          this.logger.debug(`The file ${file.name} has been downloaded`);
+        });
+    }
+
+    const { stderr } = await FfMpegPreview(
+      file.videoType,
+      file.meta.info!,
+      filename,
+      outPath,
+    );
+    if (stderr) {
+      throw new BadRequestException();
+    }
+
+    const buffer = await fs.readFile(outPath);
+    await Promise.all([
+      this.fileRepository.update(file.id, {
+        duration: file.meta.duration,
+        width: file.meta.width,
+        height: file.meta.height,
+      }),
+      this.filePreviewRepository.save(
+        this.filePreviewRepository.create({
+          ...file.preview,
+          file,
+          preview: Buffer.from(`\\x${buffer.toString('hex')}`),
+        }),
+      ),
+    ]);
+
+    return buffer;
   }
 
   async preview(type: VideoType, file: Express.Multer.File): Promise<Buffer> {
