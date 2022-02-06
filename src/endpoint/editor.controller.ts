@@ -460,6 +460,7 @@ export class EditorController {
       where: { id: layerId },
       select: ['id'],
       relations: [],
+      order: {},
     });
     if (!editorLayer) {
       throw new NotFoundException(`Editor layer '${layerId}' is not found`);

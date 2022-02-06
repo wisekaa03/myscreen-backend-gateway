@@ -208,10 +208,10 @@ export class EditorEntity {
   @AfterUpdate()
   after() {
     this.totalDuration = parseFloat(`${this.totalDuration || 0}`);
-    if (this.videoLayers?.length > 0) {
+    if (Array.isArray(this.videoLayers) && this.videoLayers.length > 0) {
       this.videoLayers = this.videoLayers.sort((a, b) => a.index - b.index);
     }
-    if (this.audioLayers?.length > 0) {
+    if (Array.isArray(this.audioLayers) && this.audioLayers.length > 0) {
       this.audioLayers = this.audioLayers.sort((a, b) => a.index - b.index);
     }
   }
