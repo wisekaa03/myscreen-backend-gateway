@@ -176,14 +176,27 @@ export class EditorService {
     editorId: string,
     update: Partial<EditorLayerEntity>,
   ): Promise<EditorLayerEntity | undefined> {
+    if (update.file === undefined) {
+      throw new BadRequestException('file must exists');
+    }
+    if (update.duration === undefined && update.file) {
+      // eslint-disable-next-line no-param-reassign
+      update.duration = parseFloat(
+        `${update.file.duration || update.file.meta.duration}`,
+      );
+    }
     if (update.index === undefined) {
-      throw new BadRequestException('index must exists');
+      const editor = await this.editorRepository.findOneOrFail(editorId);
+      // eslint-disable-next-line no-param-reassign
+      update.index = editor.videoLayers.length;
     }
     if (update.cutFrom === undefined) {
-      throw new BadRequestException('cutFrom must exists');
+      // eslint-disable-next-line no-param-reassign
+      update.cutFrom = 0;
     }
     if (update.cutTo === undefined) {
-      throw new BadRequestException('cutTo must exists');
+      // eslint-disable-next-line no-param-reassign
+      update.cutTo = update.duration || 0;
     }
     if (update.cutFrom > update.cutTo) {
       throw new BadRequestException('cutFrom must be less than cutTo');

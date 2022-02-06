@@ -1756,7 +1756,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.9.7
+  version: 2.9.8
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3238,12 +3238,6 @@ components:
           description: Файл
           format: uuid
       required:
-        - index
-        - duration
-        - cutFrom
-        - cutTo
-        - start
-        - mixVolume
         - file
     EditorLayerGetResponse:
       type: object

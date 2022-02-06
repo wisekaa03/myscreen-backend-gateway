@@ -283,7 +283,7 @@ export class EditorController {
     }
     const file = await this.fileService.findOne({
       where: { id: body.file, userId },
-      select: ['id', 'userId', 'videoType'],
+      select: ['id', 'userId', 'videoType', 'meta', 'duration'],
       relations: [],
     });
     if (!file) {
