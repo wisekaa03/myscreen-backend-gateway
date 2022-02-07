@@ -241,8 +241,8 @@ export class FileController {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
 
-    const getFileS3 = this.fileService.getS3Object(file);
-    getFileS3
+    await this.fileService
+      .getS3Object(file)
       .on('httpHeaders', (statusCode, headers, awsResponse) => {
         if (statusCode === 200) {
           res.setHeader('Content-Length', headers['content-length']);
