@@ -25,7 +25,7 @@ export class RefreshTokenService {
   }
 
   async create(
-    user: UserEntity,
+    userId: string,
     fingerprint?: string,
     refreshToken?: string,
   ): Promise<RefreshTokenEntity> {
@@ -36,7 +36,7 @@ export class RefreshTokenService {
 
     const refreshTokenExist = await this.refreshTokenEntity.findOne({
       where: {
-        userId: user.id,
+        userId,
         fingerprint,
         isRevoked: false,
         expires: MoreThan(new Date(Date.now())),
@@ -45,7 +45,7 @@ export class RefreshTokenService {
 
     const token: DeepPartial<RefreshTokenEntity> = {
       ...refreshTokenExist,
-      userId: user.id,
+      userId,
       isRevoked: false,
       fingerprint,
       expires,

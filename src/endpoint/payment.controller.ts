@@ -25,10 +25,11 @@ import {
   ServiceUnavailableError,
   UnauthorizedError,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PaymentService } from '@/database/payment.service';
+import { UserRoleEnum } from '@/enums';
 
 @ApiResponse({
   status: 400,
@@ -60,7 +61,12 @@ import { PaymentService } from '@/database/payment.service';
   description: 'Ошибка сервера',
   type: ServiceUnavailableError,
 })
-@UseGuards(JwtAuthGuard)
+@Roles(
+  UserRoleEnum.Administrator,
+  UserRoleEnum.Advertiser,
+  UserRoleEnum.MonitorOwner,
+)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('payment')
 @Controller('payment')

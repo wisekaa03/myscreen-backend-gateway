@@ -65,7 +65,7 @@ export class AuthService {
 
     const [token, refresh] = await Promise.all([
       this.generateAccessToken(user),
-      this.generateRefreshToken(user, fingerprint),
+      this.generateRefreshToken(user.id, fingerprint),
     ]);
     const payload = this.buildResponsePayload(token, refresh);
 
@@ -98,12 +98,12 @@ export class AuthService {
   }
 
   async generateRefreshToken(
-    user: UserEntity,
+    userId: string,
     fingerprint?: string,
     refreshToken?: string,
   ): Promise<string> {
     const refreshTokenUpdated = await this.refreshTokenService.create(
-      user,
+      userId,
       fingerprint,
       refreshToken,
     );
@@ -111,7 +111,7 @@ export class AuthService {
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
       expiresIn: this.refreshTokenExpires,
-      subject: String(user.id),
+      subject: String(userId),
       jwtid: String(refreshTokenUpdated.id),
     };
 
@@ -149,17 +149,18 @@ export class AuthService {
 
     const [token, refreshTokenUpdated] = await Promise.all([
       this.generateAccessToken(user),
-      this.generateRefreshToken(user, fingerprint, refreshToken),
+      this.generateRefreshToken(user.id, fingerprint, refreshToken),
     ]);
 
     return this.buildResponsePayload(token, refreshTokenUpdated);
   }
 
   async createMonitorAccessToken(
+    monitorId: string,
     fingerprint: string,
   ): Promise<AuthenticationPayload> {
     const token = await this.generateAccessToken({
-      id: 'monitor',
+      id: monitorId,
       role: UserRoleEnum.Monitor,
     } as UserEntity);
 
@@ -181,7 +182,7 @@ export class AuthService {
   private async getUserFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
   ): Promise<UserEntity | undefined> {
-    const { sub } = payload;
+    const { sub, aud } = payload;
 
     if (!sub) {
       throw new ForbiddenException(
@@ -189,7 +190,7 @@ export class AuthService {
       );
     }
 
-    return this.userService.findById(sub);
+    return this.userService.findById(sub, aud);
   }
 
   private async getStoredTokenFromRefreshTokenPayload(

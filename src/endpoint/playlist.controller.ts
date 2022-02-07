@@ -38,12 +38,13 @@ import {
   SuccessResponse,
   PlaylistUpdateRequest,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
+import { UserRoleEnum } from '@/enums';
 
 @ApiResponse({
   status: 400,
@@ -75,7 +76,12 @@ import { FileService } from '@/database/file.service';
   description: 'Ошибка сервера',
   type: ServiceUnavailableError,
 })
-@UseGuards(JwtAuthGuard)
+@Roles(
+  UserRoleEnum.Administrator,
+  UserRoleEnum.Advertiser,
+  UserRoleEnum.MonitorOwner,
+)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('playlist')
 @Controller('playlist')

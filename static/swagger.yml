@@ -245,8 +245,14 @@ paths:
   /api/v2/auth/monitor:
     post:
       operationId: monitor
-      summary: Токен монитора
+      summary: Авторизация монитора
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthMonitorRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -1774,7 +1780,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.10.2
+  version: 2.10.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2252,6 +2258,15 @@ components:
       required:
         - verify
         - password
+    AuthMonitorRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Используется для обозначения монитора
+          example: 123-456-789
+      required:
+        - code
     ForbiddenError:
       type: object
       properties:

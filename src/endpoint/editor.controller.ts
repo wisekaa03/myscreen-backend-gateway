@@ -45,11 +45,10 @@ import {
   EditorLayerGetResponse,
   EditorLayerUpdateRequest,
   EditorGetRenderingStatusResponse,
-  EditorLayerMoveRequest,
   EditorExportRequest,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards';
-import { VideoType, Status } from '@/enums';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { VideoType, Status, UserRoleEnum } from '@/enums';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
@@ -85,7 +84,12 @@ import { EditorLayerEntity } from '@/database/editor-layer.entity';
   description: 'Ошибка сервера',
   type: ServiceUnavailableError,
 })
-@UseGuards(JwtAuthGuard)
+@Roles(
+  UserRoleEnum.Administrator,
+  UserRoleEnum.Advertiser,
+  UserRoleEnum.MonitorOwner,
+)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('editor')
 @Controller('editor')

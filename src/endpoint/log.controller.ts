@@ -1,7 +1,7 @@
 import { Controller, Logger, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
   BadRequestError,
   ForbiddenError,
@@ -9,6 +9,7 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from '@/dto';
+import { UserRoleEnum } from '@/enums';
 
 @ApiResponse({
   status: 400,
@@ -35,7 +36,12 @@ import {
   description: 'Ошибка сервера',
   type: InternalServerError,
 })
-@UseGuards(JwtAuthGuard)
+@Roles(
+  UserRoleEnum.Administrator,
+  UserRoleEnum.Advertiser,
+  UserRoleEnum.MonitorOwner,
+)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('log')
 @Controller('log')

@@ -37,6 +37,7 @@ import {
   SuccessResponse,
   userEntityToUser,
   UserGetResponse,
+  AuthMonitorRequest,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { Status, UserRoleEnum } from '@/enums';
@@ -94,9 +95,9 @@ export class AuthController {
     type: UserGetResponse,
   })
   async authorization(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
   ): Promise<UserGetResponse> {
-    const user = await this.userService.findById(userId);
+    const user = await this.userService.findById(userId, role);
     if (user === undefined) {
       throw new ForbiddenException();
     }
@@ -300,15 +301,19 @@ export class AuthController {
 
   @Post('/monitor')
   @HttpCode(200)
-  @ApiOperation({ operationId: 'monitor', summary: 'Токен монитора' })
+  @ApiOperation({ operationId: 'monitor', summary: 'Авторизация монитора' })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: AuthRefreshResponse,
   })
-  async monitor(@Ip() fingerprint: string): Promise<AuthRefreshResponse> {
+  async monitor(
+    @Ip() fingerprint: string,
+    @Body() { code }: AuthMonitorRequest,
+  ): Promise<AuthRefreshResponse> {
     // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const payload = await this.authService.createMonitorAccessToken(
+      code,
       fingerprint,
     );
 

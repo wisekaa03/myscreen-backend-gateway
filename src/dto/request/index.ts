@@ -42,3 +42,4 @@ export * from './editor-partial.request';
 export * from './editors-get.request';
 export * from './editor-get.request';
 export * from './editor-export.request';
+export * from './auth-monitor.request';

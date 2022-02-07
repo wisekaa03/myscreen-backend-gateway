@@ -1,4 +1,5 @@
 import { createHmac } from 'crypto';
+import { isString, length } from 'class-validator';
 import {
   Injectable,
   Logger,
@@ -243,11 +244,12 @@ export class UserService {
 
   async findById(
     id: string,
+    role?: UserRoleEnum[],
     disabled = false,
   ): Promise<(UserEntity & Partial<UserSizeEntity>) | undefined> {
-    if (id === 'monitor') {
+    if (role?.includes(UserRoleEnum.Monitor)) {
       return {
-        id: 'monitor',
+        id,
         role: UserRoleEnum.Monitor,
         email: '',
         disabled: false,

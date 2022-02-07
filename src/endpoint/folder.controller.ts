@@ -38,10 +38,11 @@ import {
   SuccessResponse,
   FolderResponse,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { FolderService } from '@/database/folder.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { UserRoleEnum } from '@/enums';
 
 @ApiResponse({
   status: 400,
@@ -69,7 +70,12 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
   type: InternalServerError,
 })
 @ApiExtraModels(FolderResponse)
-@UseGuards(JwtAuthGuard)
+@Roles(
+  UserRoleEnum.Administrator,
+  UserRoleEnum.Advertiser,
+  UserRoleEnum.MonitorOwner,
+)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('folder')
 @Controller('folder')

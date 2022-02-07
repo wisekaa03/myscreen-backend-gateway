@@ -38,11 +38,12 @@ import {
   SuccessResponse,
   UnauthorizedError,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { MonitorService } from '@/database/monitor.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
+import { UserRoleEnum } from '@/enums';
 
 @ApiResponse({
   status: 400,
@@ -74,7 +75,12 @@ import { PlaylistService } from '@/database/playlist.service';
   description: 'Ошибка сервера',
   type: ServiceUnavailableError,
 })
-@UseGuards(JwtAuthGuard)
+@Roles(
+  UserRoleEnum.Administrator,
+  UserRoleEnum.Advertiser,
+  UserRoleEnum.MonitorOwner,
+)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('monitor')
 @Controller('monitor')

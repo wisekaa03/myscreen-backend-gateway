@@ -54,11 +54,11 @@ import {
   FileUpdateRequest,
   ConflictError,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { FileService } from '@/database/file.service';
-import { VideoType } from '@/enums';
+import { UserRoleEnum, VideoType } from '@/enums';
 
 @ApiResponse({
   status: 400,
@@ -95,7 +95,12 @@ import { VideoType } from '@/enums';
   description: 'Ошибка сервера',
   type: ServiceUnavailableError,
 })
-@UseGuards(JwtAuthGuard)
+@Roles(
+  UserRoleEnum.Administrator,
+  UserRoleEnum.Advertiser,
+  UserRoleEnum.MonitorOwner,
+)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiExtraModels(FileUploadRequest)
 @ApiTags('file')
