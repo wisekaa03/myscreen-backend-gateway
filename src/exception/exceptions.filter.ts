@@ -32,16 +32,17 @@ export class ExceptionsFilter extends BaseExceptionFilter {
     let exceptionRule: unknown;
 
     if (exception instanceof HttpException) {
-      let response = exception.getResponse();
+      const response = exception.getResponse();
       this.logger.error(exception.message, exception.stack);
 
       if (exception instanceof UnauthorizedException) {
         exceptionRule = new UnauthorizedError(exception.message);
       } else if (exception instanceof BadRequestException) {
-        if (Array.isArray(response)) {
-          response = `${response.join(', ')}.`;
+        let message = response as string;
+        if (typeof response !== 'string') {
+          message = `${(response as any)?.message?.join(', ')}.`;
         }
-        exceptionRule = new BadRequestError(response.toString());
+        exceptionRule = new BadRequestError(message);
       } else if (exception instanceof ForbiddenException) {
         exceptionRule = new ForbiddenError(exception.message);
       } else if (exception instanceof NotFoundException) {

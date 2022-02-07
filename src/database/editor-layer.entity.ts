@@ -100,7 +100,8 @@ export class EditorLayerEntity {
     example: 0,
     required: true,
   })
-  @IsInt()
+  @IsNumber()
+  @Min(0)
   start!: number;
 
   @Column({ type: 'integer', default: 1 })
