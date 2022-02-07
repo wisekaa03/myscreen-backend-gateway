@@ -39,9 +39,10 @@ import {
   UserGetResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
-import { Status } from '@/enums';
+import { Status, UserRoleEnum } from '@/enums';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
+import { Roles, RolesGuard } from '@/guards';
 
 @ApiResponse({
   status: 400,
@@ -108,7 +109,12 @@ export class AuthController {
 
   @Patch('/')
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Advertiser,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'auth-update',
@@ -266,7 +272,12 @@ export class AuthController {
 
   @Patch('/disable')
   @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Advertiser,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'disable',
@@ -284,6 +295,26 @@ export class AuthController {
 
     return {
       status: Status.Success,
+    };
+  }
+
+  @Post('/monitor')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'monitor', summary: 'Токен монитора' })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: AuthRefreshResponse,
+  })
+  async monitor(@Ip() fingerprint: string): Promise<AuthRefreshResponse> {
+    // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
+    const payload = await this.authService.createMonitorAccessToken(
+      fingerprint,
+    );
+
+    return {
+      status: Status.Success,
+      payload,
     };
   }
 }

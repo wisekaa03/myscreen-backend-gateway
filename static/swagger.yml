@@ -242,6 +242,24 @@ paths:
       tags: *a6
       security:
         - bearer: []
+  /api/v2/auth/monitor:
+    post:
+      operationId: monitor
+      summary: Токен монитора
+      parameters: []
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthRefreshResponse"
+        "400": *a1
+        "401": *a2
+        "412": *a3
+        "500": *a4
+        "503": *a5
+      tags: *a6
   /api/v2/monitor:
     post:
       operationId: monitors-get
@@ -1756,7 +1774,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.10.1
+  version: 2.10.2
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev

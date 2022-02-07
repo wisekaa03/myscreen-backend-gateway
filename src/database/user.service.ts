@@ -16,6 +16,7 @@ import {
 } from 'typeorm';
 
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
+import { UserRoleEnum } from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
@@ -244,6 +245,18 @@ export class UserService {
     id: string,
     disabled = false,
   ): Promise<(UserEntity & Partial<UserSizeEntity>) | undefined> {
+    if (id === 'monitor') {
+      return {
+        id: 'monitor',
+        role: UserRoleEnum.Monitor,
+        email: '',
+        disabled: false,
+        verified: true,
+        isDemoUser: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    }
     return this.userSizeRepository.findOne({
       id,
       disabled,

@@ -13,6 +13,7 @@ import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
 import { decodeMailToken } from '@/shared/mail-token';
+import { UserRoleEnum } from '@/enums';
 
 @Injectable()
 export class AuthService {
@@ -152,6 +153,17 @@ export class AuthService {
     ]);
 
     return this.buildResponsePayload(token, refreshTokenUpdated);
+  }
+
+  async createMonitorAccessToken(
+    fingerprint: string,
+  ): Promise<AuthenticationPayload> {
+    const token = await this.generateAccessToken({
+      id: 'monitor',
+      role: UserRoleEnum.Monitor,
+    } as UserEntity);
+
+    return this.buildResponsePayload(token);
   }
 
   private async decodeRefreshToken(token: string): Promise<MyscreenJwtPayload> {
