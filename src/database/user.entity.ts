@@ -112,10 +112,15 @@ export class UserEntity {
   @IsString()
   company?: string;
 
-  @Column({ type: 'enum', enum: UserRoleEnum })
+  @Column({
+    type: 'enum',
+    enum: UserRoleEnum,
+    default: UserRoleEnum.Advertiser,
+  })
   @ApiProperty({
     description: 'Роль пользователя',
-    enum: UserRole,
+    enum: UserRoleEnum,
+    enumName: 'UserRoleResponse',
     example: UserRoleEnum.Advertiser,
     required: true,
   })

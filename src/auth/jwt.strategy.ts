@@ -5,7 +5,6 @@ import { PassportStrategy } from '@nestjs/passport';
 
 import type { MyscreenJwtPayload } from '@/shared/jwt.payload';
 import { UserService } from '@/database/user.service';
-import type { UserEntity } from '@/database/user.entity';
 import { UserRoleEnum } from '@/enums';
 
 @Injectable()

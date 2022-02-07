@@ -5,10 +5,12 @@ import {
   ViewColumn,
   ViewEntity,
 } from 'typeorm';
+
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 
 @ViewEntity({
+  materialized: true,
   expression: (connection: Connection) =>
     connection
       .createQueryBuilder()

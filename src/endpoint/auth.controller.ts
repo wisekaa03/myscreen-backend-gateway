@@ -39,7 +39,7 @@ import {
   UserGetResponse,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
-import { Status } from '@/enums/status.enum';
+import { Status } from '@/enums';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 

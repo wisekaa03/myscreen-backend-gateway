@@ -1756,7 +1756,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.9.10
+  version: 2.10.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -1910,6 +1910,13 @@ components:
         - statusCode
         - code
         - message
+    UserRoleResponse:
+      type: string
+      enum:
+        - monitor
+        - monitor-owner
+        - advertiser
+        - administrator
     UserResponse:
       type: object
       properties:
@@ -1952,14 +1959,9 @@ components:
           description: Компания
           example: ACME corporation
         role:
-          type: string
           description: Роль пользователя
-          enum:
-            &a53
-            - monitor-owner
-            - advertiser
-            - administrator
           example: advertiser
+          $ref: "#/components/schemas/UserRoleResponse"
         verified:
           type: boolean
           description: EMail подтвержден
@@ -2005,6 +2007,11 @@ components:
       required:
         - status
         - data
+    UserRoleRequest:
+      type: string
+      enum:
+        - monitor-owner
+        - advertiser
     UserUpdateRequest:
       type: object
       properties:
@@ -2042,10 +2049,9 @@ components:
           description: Компания
           example: ACME corporation
         role:
-          type: string
           description: Роль пользователя
-          enum: *a53
           example: advertiser
+          $ref: "#/components/schemas/UserRoleRequest"
     LoginRequest:
       type: object
       properties:
@@ -2153,10 +2159,9 @@ components:
           description: Компания
           example: ACME corporation
         role:
-          type: string
           description: Роль пользователя
-          enum: *a53
           example: advertiser
+          $ref: "#/components/schemas/UserRoleRequest"
       required:
         - email
         - password
@@ -2348,7 +2353,7 @@ components:
         address:
           description: Адрес монитора
           example:
-            &a54
+            &a53
             city: Krasnodar
             country: Russia
             street: Krasnaya
@@ -2359,7 +2364,7 @@ components:
           type: string
           description: Категория
           enum:
-            &a55
+            &a54
             - GAS_STATION
             - MALL
             - COMMERCIAL_CENTRE
@@ -2373,7 +2378,7 @@ components:
         price:
           description: Стоимость показов
           example:
-            &a56
+            &a55
             of1s: 0
             show100: 0
           allOf:
@@ -2382,14 +2387,14 @@ components:
           type: string
           description: Ориентация экрана
           enum:
-            &a57
+            &a56
             - Horizontal
             - Vertical
           example: Horizontal
         monitorInfo:
           description: Модель и прочие характеристики монитора
           example:
-            &a58
+            &a57
             model: Samsung
             resolution: 0
             angle: 0
@@ -2409,7 +2414,7 @@ components:
           type: string
           description: Подключен
           enum:
-            &a59
+            &a58
             - offline
             - online
           example: offline
@@ -2494,27 +2499,27 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *a54
+          example: *a53
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
           type: string
           description: Категория
-          enum: *a55
+          enum: *a54
           example: GAS_STATION
         price:
           description: Стоимость показов
-          example: *a56
+          example: *a55
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
           type: string
           description: Ориентация экрана
-          enum: *a57
+          enum: *a56
           example: Horizontal
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *a58
+          example: *a57
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -2528,7 +2533,7 @@ components:
         status:
           type: string
           description: Подключен
-          enum: *a59
+          enum: *a58
           example: offline
         lastSeen:
           format: date-time
@@ -2591,7 +2596,7 @@ components:
           type: string
           description: Тип файла
           enum:
-            &a63
+            &a62
             - video
             - image
             - audio
@@ -2601,7 +2606,7 @@ components:
           type: string
           description: В какую категорию относить файл
           enum:
-            &a62
+            &a61
             - ownership
             - photo
             - media
@@ -2716,27 +2721,27 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *a54
+          example: *a53
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
           type: string
           description: Категория
-          enum: *a55
+          enum: *a54
           example: GAS_STATION
         price:
           description: Стоимость показов
-          example: *a56
+          example: *a55
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
           type: string
           description: Ориентация экрана
-          enum: *a57
+          enum: *a56
           example: Horizontal
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *a58
+          example: *a57
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -2750,7 +2755,7 @@ components:
         status:
           type: string
           description: Подключен
-          enum: *a59
+          enum: *a58
           example: offline
         lastSeen:
           format: date-time
@@ -2829,27 +2834,27 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *a54
+          example: *a53
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
           type: string
           description: Категория
-          enum: *a55
+          enum: *a54
           example: GAS_STATION
         price:
           description: Стоимость показов
-          example: *a56
+          example: *a55
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
           type: string
           description: Ориентация экрана
-          enum: *a57
+          enum: *a56
           example: Horizontal
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *a58
+          example: *a57
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         code:
@@ -2859,7 +2864,7 @@ components:
         status:
           type: string
           description: Подключен
-          enum: *a59
+          enum: *a58
           example: offline
         latitude:
           type: number
@@ -2943,7 +2948,7 @@ components:
           type: string
           description: Статус рендеринга
           enum:
-            &a60
+            &a59
             - initial
             - ready
             - pending
@@ -3051,7 +3056,7 @@ components:
         renderingStatus:
           type: string
           description: Статус рендеринга
-          enum: *a60
+          enum: *a59
           example: initial
         renderingPercent:
           type: integer
@@ -3063,7 +3068,7 @@ components:
         renderedFile:
           description: Обработанный файл
           allOf:
-            &a61
+            &a60
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -3299,7 +3304,7 @@ components:
         renderingStatus:
           type: string
           description: Статус рендеринга
-          enum: *a60
+          enum: *a59
           example: initial
         renderingPercent:
           type: integer
@@ -3310,7 +3315,7 @@ components:
           description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
-          allOf: *a61
+          allOf: *a60
       required:
         - id
         - renderingStatus
@@ -3376,7 +3381,7 @@ components:
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a62
+          enum: *a61
           example: media
         monitorId:
           type: string
@@ -3397,12 +3402,12 @@ components:
         videoType:
           type: string
           description: Тип файла
-          enum: *a63
+          enum: *a62
           example: video
         category:
           type: string
           description: В какую категорию относить файл
-          enum: *a62
+          enum: *a61
           example: media
     FilesGetRequest:
       type: object
