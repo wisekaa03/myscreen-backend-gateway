@@ -11,7 +11,7 @@ export class EditorResponse extends OmitType(EditorEntity, [
     description: 'Видео слой',
     type: () => EditorLayerResponse,
     isArray: true,
-    required: true,
+    required: false,
   })
   videoLayers?: EditorLayerEntity[];
 
@@ -19,7 +19,7 @@ export class EditorResponse extends OmitType(EditorEntity, [
     description: 'Аудио слой',
     type: () => EditorLayerResponse,
     isArray: true,
-    required: true,
+    required: false,
   })
   audioLayers?: EditorLayerEntity[];
 }

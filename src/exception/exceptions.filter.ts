@@ -40,7 +40,11 @@ export class ExceptionsFilter extends BaseExceptionFilter {
       } else if (exception instanceof BadRequestException) {
         let message = response as string;
         if (typeof response !== 'string') {
-          message = `${(response as any)?.message?.join(', ')}.`;
+          if (typeof (response as any).message !== 'string') {
+            message = `${(response as any)?.message?.join(', ')}.`;
+          } else {
+            message = (response as any).message;
+          }
         }
         exceptionRule = new BadRequestError(message);
       } else if (exception instanceof ForbiddenException) {

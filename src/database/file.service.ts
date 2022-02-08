@@ -76,17 +76,10 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {[FileEntity[], number]} Результат
    */
-  async find(
-    find: FindManyOptions<FileEntity>,
-    relations: boolean | string[] = true,
-  ): Promise<Array<FileEntity>> {
+  async find(find: FindManyOptions<FileEntity>): Promise<Array<FileEntity>> {
     const conditional = find;
     if (!find.relations) {
-      if (typeof relations === 'boolean' && relations === true) {
-        conditional.relations = ['monitors', 'playlists'];
-      } else if (typeof relations === 'object' && Array.isArray(relations)) {
-        conditional.relations = relations;
-      }
+      conditional.relations = ['monitors', 'playlists'];
     }
     return this.fileRepository.find(conditional);
   }
@@ -100,15 +93,10 @@ export class FileService {
    */
   async findAndCount(
     find: FindManyOptions<FileEntity>,
-    relations: boolean | string[] = true,
   ): Promise<[Array<FileEntity>, number]> {
     const conditional = find;
     if (!find.relations) {
-      if (typeof relations === 'boolean' && relations === true) {
-        conditional.relations = ['monitors', 'playlists'];
-      } else if (typeof relations === 'object' && Array.isArray(relations)) {
-        conditional.relations = relations;
-      }
+      conditional.relations = ['monitors', 'playlists'];
     }
     return this.fileRepository.findAndCount(conditional);
   }
@@ -122,15 +110,10 @@ export class FileService {
    */
   async findOne(
     find: FindManyOptions<FileEntity>,
-    relations: boolean | string[] = true,
   ): Promise<FileEntity | undefined> {
     const conditional = find;
     if (!find.relations) {
-      if (typeof relations === 'boolean' && relations === true) {
-        conditional.relations = ['monitors', 'playlists'];
-      } else if (typeof relations === 'object' && Array.isArray(relations)) {
-        conditional.relations = relations;
-      }
+      conditional.relations = ['monitors', 'playlists'];
     }
     return this.fileRepository.findOne(conditional);
   }

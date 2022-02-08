@@ -99,7 +99,7 @@ export class FolderController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { scope, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
-    const [data, count] = await this.folderService.find({
+    const [data, count] = await this.folderService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: {
         userId,
@@ -117,7 +117,7 @@ export class FolderController {
   @Put('/')
   @HttpCode(201)
   @ApiOperation({
-    operationId: 'folder-create',
+    operationId: 'create',
     summary: 'Создание новой папки',
   })
   @ApiResponse({
@@ -151,7 +151,7 @@ export class FolderController {
   @Get('/:folderId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'folder-get',
+    operationId: 'get',
     summary: 'Получение информации о папке',
   })
   @ApiResponse({
@@ -179,7 +179,7 @@ export class FolderController {
   @Patch('/:folderId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'folder-update',
+    operationId: 'update',
     summary: 'Изменение информации о папке',
   })
   @ApiResponse({
@@ -201,7 +201,7 @@ export class FolderController {
   @Delete('/:folderId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'folder-delete',
+    operationId: 'delete',
     summary: 'Удаление папки',
   })
   @ApiResponse({

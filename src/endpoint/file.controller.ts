@@ -37,6 +37,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 
+import { FindConditions, FindManyOptions } from 'typeorm';
 import {
   BadRequestError,
   UnauthorizedError,
@@ -59,6 +60,7 @@ import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { FileService } from '@/database/file.service';
 import { UserRoleEnum, VideoType } from '@/enums';
+import { FileEntity } from '@/database/file.entity';
 
 @ApiResponse({
   status: 400,
@@ -146,7 +148,7 @@ export class FileController {
   @Put('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'files-upload',
+    operationId: 'upload',
     summary: 'Загрузка файлов',
   })
   @ApiResponse({
@@ -199,9 +201,16 @@ export class FileController {
   }
 
   @Get('/:fileId')
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'file-get-s3',
+    operationId: 'download',
     summary: 'Скачивание медиа',
   })
   @ApiResponse({
@@ -232,16 +241,17 @@ export class FileController {
     },
   })
   async getFileS3(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
-    const file = await this.fileService.findOne(
-      {
-        where: { userId, id },
-      },
-      false,
-    );
+    const where: FindConditions<FileEntity> = {
+      id,
+    };
+    if (!role.includes(UserRoleEnum.Monitor)) {
+      where.userId = userId;
+    }
+    const file = await this.fileService.findOne({ where });
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
@@ -288,7 +298,7 @@ export class FileController {
   @Post('/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'file-get',
+    operationId: 'get',
     summary: 'Получить файл',
   })
   @ApiResponse({
@@ -319,7 +329,7 @@ export class FileController {
   @Get('/:fileId/preview')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'file-get-preview',
+    operationId: 'download-preview',
     summary: 'Получить файл превью',
   })
   @ApiResponse({
@@ -354,27 +364,25 @@ export class FileController {
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<void> {
-    const file = await this.fileService.findOne(
-      {
-        where: {
-          userId,
-          id: fileId,
-        },
-        select: [
-          'id',
-          'userId',
-          'hash',
-          'meta',
-          'videoType',
-          'name',
-          'duration',
-          'width',
-          'height',
-          'folderId',
-        ],
+    const file = await this.fileService.findOne({
+      where: {
+        userId,
+        id: fileId,
       },
-      ['preview', 'folder'],
-    );
+      select: [
+        'id',
+        'userId',
+        'hash',
+        'meta',
+        'videoType',
+        'name',
+        'duration',
+        'width',
+        'height',
+        'folderId',
+      ],
+      relations: ['preview', 'folder'],
+    });
     if (!file) {
       throw new NotFoundException('File not found');
     }
@@ -409,7 +417,7 @@ export class FileController {
   @Patch('/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'file-update',
+    operationId: 'update',
     summary: 'Изменить файл',
   })
   @ApiResponse({
@@ -446,7 +454,7 @@ export class FileController {
   @Delete('/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'file-delete',
+    operationId: 'delete',
     summary: 'Удаление файла',
   })
   @ApiResponse({

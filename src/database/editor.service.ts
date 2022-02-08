@@ -26,7 +26,7 @@ import {
 import { ffprobe } from 'media-probe';
 import editly from 'editly';
 
-import { FileCategory, RenderingStatus } from '@/enums';
+import { FileCategory, RenderingStatus, VideoType } from '@/enums';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';
@@ -57,45 +57,30 @@ export class EditorService {
 
   async find(
     find: FindManyOptions<EditorEntity>,
-    relations: boolean | string[] = true,
   ): Promise<Array<EditorEntity>> {
     const conditional = find;
     if (!find.relations) {
-      if (typeof relations === 'boolean' && relations === true) {
-        conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
-      } else if (typeof relations === 'object' && Array.isArray(relations)) {
-        conditional.relations = relations;
-      }
+      conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
     return this.editorRepository.find(conditional);
   }
 
   async findAndCount(
     find: FindManyOptions<EditorEntity>,
-    relations: boolean | string[] = true,
   ): Promise<[Array<EditorEntity>, number]> {
     const conditional = find;
     if (!find.relations) {
-      if (typeof relations === 'boolean' && relations === true) {
-        conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
-      } else if (typeof relations === 'object' && Array.isArray(relations)) {
-        conditional.relations = relations;
-      }
+      conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
     return this.editorRepository.findAndCount(conditional);
   }
 
   async findOne(
     find: FindManyOptions<EditorEntity>,
-    relations: boolean | string[] = true,
   ): Promise<EditorEntity | undefined> {
     const conditional = find;
     if (!find.relations) {
-      if (typeof relations === 'boolean' && relations === true) {
-        conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
-      } else if (typeof relations === 'object' && Array.isArray(relations)) {
-        conditional.relations = relations;
-      }
+      conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
     return this.editorRepository.findOne(conditional);
   }
@@ -118,26 +103,19 @@ export class EditorService {
     return this.editorRepository.findOne({ where: { id: editor.id } });
   }
 
-  delete = async (
-    userId: string,
-    editor: EditorEntity,
-  ): Promise<DeleteResult> =>
-    this.editorRepository.delete({
+  async delete(userId: string, editor: EditorEntity): Promise<DeleteResult> {
+    return this.editorRepository.delete({
       id: editor.id,
       userId,
     });
+  }
 
   async findLayer(
     find: FindManyOptions<EditorLayerEntity>,
-    relations: boolean | string[] = true,
   ): Promise<EditorLayerEntity[] | undefined> {
     const conditional = find;
     if (!find.relations) {
-      if (typeof relations === 'boolean' && relations === true) {
-        conditional.relations = ['video', 'audio', 'file'];
-      } else if (typeof relations === 'object' && Array.isArray(relations)) {
-        conditional.relations = relations;
-      }
+      conditional.relations = ['video', 'audio', 'file'];
     }
     if (!find.order) {
       conditional.order = { index: 'ASC', start: 'ASC' };
@@ -147,15 +125,10 @@ export class EditorService {
 
   async findOneLayer(
     find: FindManyOptions<EditorLayerEntity>,
-    relations: boolean | string[] = true,
   ): Promise<EditorLayerEntity | undefined> {
     const conditional = find;
     if (!find.relations) {
-      if (typeof relations === 'boolean' && relations === true) {
-        conditional.relations = ['video', 'audio', 'file'];
-      } else if (typeof relations === 'object' && Array.isArray(relations)) {
-        conditional.relations = relations;
-      }
+      conditional.relations = ['video', 'audio', 'file'];
     }
     if (!find.order) {
       conditional.order = { index: 'ASC', start: 'ASC' };
@@ -272,10 +245,10 @@ export class EditorService {
   calcTotalDuration = (video: Partial<EditorLayerEntity>[]): number =>
     video.reduce((duration, layer) => duration + this.calcDuration(layer), 0);
 
-  prepareFile = async (
+  async prepareFile(
     mkdirPath: string,
     layer: EditorLayerEntity,
-  ): Promise<EditorLayerEntity> => {
+  ): Promise<EditorLayerEntity> {
     const { file } = layer;
     const fileName = `${file.id}-${file.name}`;
     const filePath = path.resolve(mkdirPath, fileName);
@@ -305,7 +278,7 @@ export class EditorService {
     }
 
     return layer;
-  };
+  }
 
   async prepareAssets(
     editor: EditorEntity,
@@ -346,14 +319,26 @@ export class EditorService {
                 video: _,
                 audio: __,
                 duration: ___,
-                file: ____,
                 createdAt: _____,
                 updatedAt: ______,
                 ...layer
-              }) => ({
-                type: 'video',
-                ...layer,
-              }),
+              }) => {
+                const { file, ...clip } = layer;
+                if (file.videoType === VideoType.Image) {
+                  return {
+                    type: 'image',
+                    resizeMode: 'contain',
+                    zoomDirection: null,
+                    duration: this.calcDuration(layer),
+                    ...clip,
+                  };
+                }
+                return {
+                  type: 'video',
+                  duration: this.calcDuration(layer),
+                  ...clip,
+                };
+              },
             ),
           },
         ],
@@ -473,7 +458,10 @@ export class EditorService {
     if (!editor) {
       throw new NotFoundException('Editor not found');
     }
-    if (!rerender && editor.renderingStatus === RenderingStatus.Pending) {
+    if (
+      (!rerender && editor.renderingStatus === RenderingStatus.Pending) ||
+      editor.renderingStatus === RenderingStatus.Error
+    ) {
       return editor;
     }
 
@@ -500,11 +488,12 @@ export class EditorService {
 
       const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
       editlyConfig.outPath = path.resolve(mkdirPath, `${editor.name}-out.mp4`);
+      // editlyConfig.verbose = true;
       editlyConfig.customOutputArgs = [
-        '-fflags',
-        'nobuffer',
-        '-flags',
-        'low_delay',
+        // '-fflags',
+        // 'nobuffer',
+        // '-flags',
+        // 'low_delay',
       ];
       const editlyJSON = JSON.stringify(editlyConfig);
       const editlyPath = path.resolve(mkdirPath, 'editly.json');
@@ -632,7 +621,8 @@ export class EditorService {
         }
       });
 
-      return editor;
+      const { videoLayers, audioLayers, ...other } = editor;
+      return other as EditorEntity;
     } catch (error: unknown) {
       if (editor) {
         await this.editorRepository.update(editor.id, {

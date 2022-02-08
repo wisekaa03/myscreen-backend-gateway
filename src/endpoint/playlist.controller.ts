@@ -126,7 +126,7 @@ export class PlaylistController {
   @Put('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'playlist-create',
+    operationId: 'create',
     summary: 'Создание плэйлиста',
   })
   @ApiResponse({
@@ -166,7 +166,7 @@ export class PlaylistController {
   @Get('/:playlistId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'playlist-get',
+    operationId: 'get',
     summary: 'Получение плэйлиста',
   })
   @ApiResponse({
@@ -194,7 +194,7 @@ export class PlaylistController {
   @Patch('/:playlistId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'playlist-update',
+    operationId: 'update',
     summary: 'Обновление плэйлиста',
   })
   @ApiResponse({
@@ -236,7 +236,7 @@ export class PlaylistController {
   @Delete('/:playlistId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'playlist-delete',
+    operationId: 'delete',
     summary: 'Удаление плэйлиста',
   })
   @ApiResponse({

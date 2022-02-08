@@ -11,7 +11,6 @@ import {
 
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
-import { UserEntity } from './user.entity';
 
 @Injectable()
 export class FolderService {
@@ -24,16 +23,23 @@ export class FolderService {
     private readonly folderRepository: Repository<FolderEntity>,
   ) {}
 
-  find = async (
+  async find(find: FindManyOptions<FolderEntity>): Promise<FolderEntity[]> {
+    return this.folderRepository.find(find);
+  }
+
+  async findAndCount(
     find: FindManyOptions<FolderEntity>,
-  ): Promise<[FolderEntity[], number]> =>
-    this.folderRepository.findAndCount(find);
+  ): Promise<[FolderEntity[], number]> {
+    return this.folderRepository.findAndCount(find);
+  }
 
-  findOne = async (
+  async findOne(
     find: FindOneOptions<FolderEntity>,
-  ): Promise<FolderEntity | undefined> => this.folderRepository.findOne(find);
+  ): Promise<FolderEntity | undefined> {
+    return this.folderRepository.findOne(find);
+  }
 
-  rootFolder = async (userId: string): Promise<FolderEntity> => {
+  async rootFolder(userId: string): Promise<FolderEntity> {
     const folder = await this.folderRepository.findOne({
       userId,
       name: '<Корень>',
@@ -47,10 +53,11 @@ export class FolderService {
         parentFolderId: null,
       }),
     );
-  };
+  }
 
-  update = async (folder: Partial<FolderEntity>): Promise<FolderEntity> =>
-    this.folderRepository.save(this.folderRepository.create(folder));
+  async update(folder: Partial<FolderEntity>): Promise<FolderEntity> {
+    return this.folderRepository.save(this.folderRepository.create(folder));
+  }
 
   @Transaction()
   async delete(
@@ -59,12 +66,10 @@ export class FolderService {
     @TransactionRepository(FolderEntity)
     folderRepository: Repository<FolderEntity> = this.folderRepository,
   ): Promise<DeleteResult> {
-    const files = await this.fileService.find(
-      {
-        where: { userId, folderId: folder.id },
-      },
-      false,
-    );
+    const files = await this.fileService.find({
+      where: { userId, folderId: folder.id },
+      relations: [],
+    });
 
     const filesPromises = files.map((file) =>
       this.fileService.deleteS3Object(file),

@@ -2,7 +2,7 @@ openapi: 3.0.0
 paths:
   /api/v2/auth:
     get:
-      operationId: auth-get
+      operationId: get
       summary: Проверяет, авторизован ли пользователь и выдает о пользователе полную
         информацию
       parameters: []
@@ -54,7 +54,7 @@ paths:
       security:
         - bearer: []
     patch:
-      operationId: auth-update
+      operationId: update
       summary: Изменение аккаунта пользователя
       parameters: []
       requestBody:
@@ -333,7 +333,7 @@ paths:
         &a14
         - bearer: []
     put:
-      operationId: monitor-create
+      operationId: create
       summary: Создание монитора
       parameters: []
       requestBody:
@@ -359,7 +359,7 @@ paths:
       security: *a14
   /api/v2/monitor/playlist:
     patch:
-      operationId: monitors-playlist-create
+      operationId: playlist-create
       summary: Создание связки плэйлиста и монитора
       parameters: []
       requestBody:
@@ -384,7 +384,7 @@ paths:
       tags: *a13
       security: *a14
     delete:
-      operationId: monitors-playlist-delete
+      operationId: playlist-delete
       summary: Удаление связки плэйлиста и монитора
       parameters: []
       requestBody:
@@ -410,7 +410,7 @@ paths:
       security: *a14
   "/api/v2/monitor/{monitorId}":
     get:
-      operationId: monitor-get
+      operationId: get
       summary: Получение монитора
       parameters:
         - name: monitorId
@@ -434,7 +434,7 @@ paths:
       tags: *a13
       security: *a14
     patch:
-      operationId: monitor-update
+      operationId: update
       summary: Изменение монитора
       parameters:
         - name: monitorId
@@ -464,7 +464,7 @@ paths:
       tags: *a13
       security: *a14
     delete:
-      operationId: monitor-delete
+      operationId: delete
       summary: Удаление монитора
       parameters:
         - name: monitorId
@@ -554,7 +554,7 @@ paths:
         &a22
         - bearer: []
     put:
-      operationId: editor-create
+      operationId: create
       summary: Создание редактора
       parameters: []
       requestBody:
@@ -580,7 +580,7 @@ paths:
       security: *a22
   "/api/v2/editor/{editorId}":
     get:
-      operationId: editor-get
+      operationId: get
       summary: Получение редактора
       parameters:
         - name: editorId
@@ -604,7 +604,7 @@ paths:
       tags: *a21
       security: *a22
     patch:
-      operationId: editor-update
+      operationId: update
       summary: Изменить редактор
       parameters:
         - name: editorId
@@ -634,7 +634,7 @@ paths:
       tags: *a21
       security: *a22
     delete:
-      operationId: editor-delete
+      operationId: delete
       summary: Удаление редактора
       parameters:
         - name: editorId
@@ -659,7 +659,7 @@ paths:
       security: *a22
   "/api/v2/editor/layer/{editorId}":
     put:
-      operationId: editor-layer-create
+      operationId: layer-create
       summary: Создание слоя редактора
       parameters:
         - name: editorId
@@ -690,7 +690,7 @@ paths:
       security: *a22
   "/api/v2/editor/layer/{editorId}/{layerId}":
     get:
-      operationId: editor-layer-get
+      operationId: layer-get
       summary: Получение слоя редактора
       parameters:
         - name: editorId
@@ -719,7 +719,7 @@ paths:
       tags: *a21
       security: *a22
     patch:
-      operationId: editor-layer-update
+      operationId: layer-update
       summary: Изменить слой редактора
       parameters:
         - name: editorId
@@ -754,7 +754,7 @@ paths:
       tags: *a21
       security: *a22
     delete:
-      operationId: editor-layer-delete
+      operationId: layer-delete
       summary: Удаление слоя редактора
       parameters:
         - name: editorId
@@ -784,7 +784,7 @@ paths:
       security: *a22
   "/api/v2/editor/layer/{editorId}/{layerId}/{moveIndex}":
     put:
-      operationId: editor-layer-move
+      operationId: layer-move
       summary: Изменить очередь слоя редактора
       parameters:
         - name: editorId
@@ -819,7 +819,7 @@ paths:
       security: *a22
   "/api/v2/editor/frame/{editorId}/{time}":
     post:
-      operationId: editor-frame-get
+      operationId: frame-get
       summary: Получение кадра из редактора
       parameters:
         - name: editorId
@@ -850,7 +850,7 @@ paths:
       security: *a22
   "/api/v2/editor/export/{editorId}":
     get:
-      operationId: editor-get-export
+      operationId: export-status
       summary: Узнать статус экспорта видео из редактора
       parameters:
         - name: editorId
@@ -874,7 +874,7 @@ paths:
       tags: *a21
       security: *a22
     post:
-      operationId: editor-export
+      operationId: export
       summary: Экспорт видео из редактора
       parameters:
         - name: editorId
@@ -977,7 +977,7 @@ paths:
         &a31
         - bearer: []
     put:
-      operationId: files-upload
+      operationId: upload
       summary: Загрузка файлов
       parameters: []
       requestBody:
@@ -1018,7 +1018,7 @@ paths:
       security: *a31
   "/api/v2/file/{fileId}":
     get:
-      operationId: file-get-s3
+      operationId: download
       summary: Скачивание медиа
       parameters:
         - name: fileId
@@ -1052,7 +1052,7 @@ paths:
       tags: *a30
       security: *a31
     post:
-      operationId: file-get
+      operationId: get
       summary: Получить файл
       parameters:
         - name: fileId
@@ -1077,7 +1077,7 @@ paths:
       tags: *a30
       security: *a31
     patch:
-      operationId: file-update
+      operationId: update
       summary: Изменить файл
       parameters:
         - name: fileId
@@ -1108,7 +1108,7 @@ paths:
       tags: *a30
       security: *a31
     delete:
-      operationId: file-delete
+      operationId: delete
       summary: Удаление файла
       parameters:
         - name: fileId
@@ -1134,7 +1134,7 @@ paths:
       security: *a31
   "/api/v2/file/{fileId}/preview":
     get:
-      operationId: file-get-preview
+      operationId: download-preview
       summary: Получить файл превью
       parameters:
         - name: fileId
@@ -1227,7 +1227,7 @@ paths:
         &a38
         - bearer: []
     put:
-      operationId: folder-create
+      operationId: create
       summary: Создание новой папки
       parameters: []
       requestBody:
@@ -1252,7 +1252,7 @@ paths:
       security: *a38
   "/api/v2/folder/{folderId}":
     get:
-      operationId: folder-get
+      operationId: get
       summary: Получение информации о папке
       parameters:
         - name: folderId
@@ -1275,7 +1275,7 @@ paths:
       tags: *a37
       security: *a38
     patch:
-      operationId: folder-update
+      operationId: update
       summary: Изменение информации о папке
       parameters:
         - name: folderId
@@ -1304,7 +1304,7 @@ paths:
       tags: *a37
       security: *a38
     delete:
-      operationId: folder-delete
+      operationId: delete
       summary: Удаление папки
       parameters:
         - name: folderId
@@ -1374,7 +1374,7 @@ paths:
         - bearer: []
   "/api/v2/user/disable/{userId}":
     patch:
-      operationId: user-disable
+      operationId: disable
       summary: Скрытие аккаунта пользователя (только администратор)
       parameters:
         - name: userId
@@ -1397,7 +1397,7 @@ paths:
       security: *a44
   "/api/v2/user/enable/{userId}":
     patch:
-      operationId: user-enable
+      operationId: enable
       summary: Открытие аккаунта пользователя (только администратор)
       parameters:
         - name: userId
@@ -1420,7 +1420,7 @@ paths:
       security: *a44
   "/api/v2/user/{userId}":
     get:
-      operationId: user-get
+      operationId: get
       summary: Получение информации о пользователе (только администратор)
       parameters:
         - name: userId
@@ -1442,7 +1442,7 @@ paths:
       tags: *a43
       security: *a44
     patch:
-      operationId: user-update
+      operationId: update
       summary: Изменение информации о пользователе (только администратор)
       parameters:
         - name: userId
@@ -1470,7 +1470,7 @@ paths:
       tags: *a43
       security: *a44
     delete:
-      operationId: user-delete
+      operationId: delete
       summary: Удаление аккаунта пользователя (только администратор)
       parameters:
         - name: userId
@@ -1674,7 +1674,7 @@ paths:
         &a52
         - bearer: []
     put:
-      operationId: playlist-create
+      operationId: create
       summary: Создание плэйлиста
       parameters: []
       requestBody:
@@ -1700,7 +1700,7 @@ paths:
       security: *a52
   "/api/v2/playlist/{playlistId}":
     get:
-      operationId: playlist-get
+      operationId: get
       summary: Получение плэйлиста
       parameters:
         - name: playlistId
@@ -1724,7 +1724,7 @@ paths:
       tags: *a51
       security: *a52
     patch:
-      operationId: playlist-update
+      operationId: update
       summary: Обновление плэйлиста
       parameters:
         - name: playlistId
@@ -1754,7 +1754,7 @@ paths:
       tags: *a51
       security: *a52
     delete:
-      operationId: playlist-delete
+      operationId: delete
       summary: Удаление плэйлиста
       parameters:
         - name: playlistId
@@ -1780,7 +1780,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.10.3
+  version: 2.10.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3145,8 +3145,6 @@ components:
         - totalDuration
         - createdAt
         - updatedAt
-        - videoLayers
-        - audioLayers
     EditorsGetResponse:
       type: object
       properties:

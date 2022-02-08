@@ -23,6 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { FindConditions, FindManyOptions } from 'typeorm';
 import {
   BadRequestError,
   ForbiddenError,
@@ -44,6 +45,7 @@ import { MonitorService } from '@/database/monitor.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
 import { UserRoleEnum } from '@/enums';
+import { MonitorEntity } from '@/database/monitor.entity';
 
 @ApiResponse({
   status: 400,
@@ -94,6 +96,13 @@ export class MonitorController {
 
   @Post('/')
   @HttpCode(200)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     operationId: 'monitors-get',
     summary: 'Получение списка мониторов',
@@ -104,16 +113,20 @@ export class MonitorController {
     type: MonitorsGetResponse,
   })
   async getMonitors(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
     @Body() { where, scope }: MonitorsGetRequest,
   ): Promise<MonitorsGetResponse> {
-    const [data, count] = await this.monitorService.findAndCount({
+    const conditional: FindManyOptions<MonitorEntity> = {
       ...paginationQueryToConfig(scope),
-      where: {
-        userId,
-        ...where,
-      },
-    });
+      where,
+    };
+    if (role.includes(UserRoleEnum.Monitor)) {
+      // добавляем то, что содержится у нас в userId: code.
+      (conditional.where as FindConditions<MonitorEntity>).code = userId;
+    } else {
+      (conditional.where as FindConditions<MonitorEntity>).userId = userId;
+    }
+    const [data, count] = await this.monitorService.findAndCount(conditional);
 
     return {
       status: Status.Success,
@@ -125,7 +138,7 @@ export class MonitorController {
   @Put('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitor-create',
+    operationId: 'create',
     summary: 'Создание монитора',
   })
   @ApiResponse({
@@ -150,7 +163,7 @@ export class MonitorController {
   @Patch('/playlist')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitors-playlist-create',
+    operationId: 'playlist-create',
     summary: 'Создание связки плэйлиста и монитора',
   })
   @ApiResponse({
@@ -203,7 +216,7 @@ export class MonitorController {
   @Delete('/playlist')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitors-playlist-delete',
+    operationId: 'playlist-delete',
     summary: 'Удаление связки плэйлиста и монитора',
   })
   @ApiResponse({
@@ -260,7 +273,7 @@ export class MonitorController {
   @Get('/:monitorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitor-get',
+    operationId: 'get',
     summary: 'Получение монитора',
   })
   @ApiResponse({
@@ -291,7 +304,7 @@ export class MonitorController {
   @Patch('/:monitorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitor-update',
+    operationId: 'update',
     summary: 'Изменение монитора',
   })
   @ApiResponse({
@@ -327,7 +340,7 @@ export class MonitorController {
   @Delete('/:monitorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitor-delete',
+    operationId: 'delete',
     summary: 'Удаление монитора',
   })
   @ApiResponse({

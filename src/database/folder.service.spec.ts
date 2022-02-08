@@ -1,10 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { FileService } from './file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
-import { UserEntity } from './user.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -44,15 +42,19 @@ describe(FolderService.name, () => {
     expect(folderService).toBeDefined();
   });
 
-  it('returns findFolder', async () => {
+  it('returns folder.findOne', async () => {
     expect(await folderService.findOne({})).toStrictEqual([]);
   });
 
-  it('returns findFolders', async () => {
-    expect(await folderService.find({})).toStrictEqual([]);
+  // it('returns folder.find', async () => {
+  //   expect(await folderService.find({})).toStrictEqual([]);
+  // });
+
+  it('returns folder.findAndCount', async () => {
+    expect(await folderService.findAndCount({})).toStrictEqual([]);
   });
 
-  it('returns updateFolder', async () => {
+  it('returns folder.update', async () => {
     expect(await folderService.update({})).toStrictEqual([]);
   });
 
