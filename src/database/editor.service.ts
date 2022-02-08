@@ -309,48 +309,44 @@ export class EditorService {
         fps,
         keepSourceAudio,
         loopAudio: true,
-        clips: layers.map(
-          ({
-            id,
-            video: _,
-            audio: __,
-            duration: ___,
-            createdAt: ____,
-            updatedAt: _____,
-            ...layer
-          }) => {
-            const { file, ...clip } = layer;
-            if (file.videoType === VideoType.Image) {
-              return {
-                duration: this.calcDuration(layer),
-                layers: [
-                  {
-                    type: 'image',
-                    resizeMode: 'contain',
-                    zoomDirection: null,
-                    ...clip,
-                  },
-                ],
-              };
-            }
+        clips: layers.map((layer) => {
+          const duration = this.calcDuration(layer);
+          if (layer.file.videoType === VideoType.Image) {
             return {
-              duration: this.calcDuration(layer),
-              layers: [{ type: 'video', ...clip }],
+              duration,
+              layers: [
+                {
+                  type: 'image',
+                  resizeMode: 'contain',
+                  zoomDirection: null,
+                  path: layer.path,
+                },
+              ],
+              transition: {
+                duration: 0,
+              },
             };
-          },
-        ),
-        audioTracks: audioLayers.map(
-          ({
-            id,
-            video: _,
-            audio: __,
-            duration: ___,
-            file: ____,
-            createdAt: _____,
-            updatedAt: ______,
-            ...layer
-          }) => ({ type: 'audio', ...layer }),
-        ),
+          }
+          return {
+            duration,
+            layers: [
+              {
+                type: 'video',
+                path: layer.path,
+                cutFrom: layer.cutFrom,
+                cutTo: layer.cutTo,
+                mixVolume: layer.mixVolume,
+              },
+            ],
+          };
+        }),
+        audioTracks: audioLayers.map((layer) => ({
+          type: 'audio',
+          path: layer.path,
+          cutFrom: layer.cutFrom,
+          cutTo: layer.cutTo,
+          mixVolume: layer.mixVolume,
+        })),
         outPath: mkdirPath,
       },
     ];
@@ -455,9 +451,14 @@ export class EditorService {
     if (!editor) {
       throw new NotFoundException('Editor not found');
     }
-    if (editor.renderingStatus === RenderingStatus.Pending && !rerender) {
-      const { videoLayers, audioLayers, ...other } = editor;
-      return other as EditorEntity;
+    if (!rerender) {
+      if (
+        editor.renderingStatus !== RenderingStatus.Initial &&
+        editor.renderingStatus !== RenderingStatus.Error
+      ) {
+        const { videoLayers, audioLayers, ...other } = editor;
+        return other as EditorEntity;
+      }
     }
 
     await this.editorRepository.update(editor.id, {
@@ -490,63 +491,67 @@ export class EditorService {
         // '-flags',
         // 'low_delay',
       ];
-      const editlyJSON = JSON.stringify(editlyConfig);
-      const editlyPath = path.join(mkdirPath, 'editly.json');
-      await fs.writeFile(editlyPath, editlyJSON);
 
       (async (renderEditor: EditorEntity) => {
-        const outPath = await new Promise<string>((resolve, reject) => {
-          const childEditly = child.fork(
-            'node_modules/.bin/editly',
-            ['--json', editlyPath],
-            {
-              silent: true,
-            },
-          );
-          childEditly.stdout?.on('data', async (message: Buffer) => {
-            const msg = message.toString();
-            this.logger.debug(
-              `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
-              'Editly',
-            );
-            // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
-            const percent = msg.match(/(\d+%)/g);
-            if (Array.isArray(percent) && percent.length > 0) {
-              await this.editorRepository.update(renderEditor.id, {
-                renderingPercent: parseInt(percent[percent.length - 1], 10),
-              });
-            }
-          });
-          childEditly.stderr?.on('data', (message: Buffer) => {
-            const msg = message.toString();
-            this.logger.error(msg, undefined, 'Editly');
-          });
-          childEditly.on('error', (error: Error) => {
-            this.logger.error(error.message, error.stack, 'Editly');
-            reject(error);
-          });
-          childEditly.on(
-            'exit',
-            async (/* code: number | null, signal: NodeJS.Signals | null */) => {
-              if (!(await fs.access(editlyConfig.outPath).catch(() => true))) {
-                resolve(editlyConfig.outPath);
-              }
-              reject(
-                new Error("outFile not found. There's a some error in editly"),
-              );
-            },
-          );
-        }).catch(async (error) => {
-          this.logger.error(error);
-          await this.editorRepository.update(renderEditor.id, {
-            renderingError: error.message,
-            renderingStatus: RenderingStatus.Error,
-            renderingPercent: null,
-          });
-        });
+        const editlyJSON = JSON.stringify(editlyConfig);
+        const editlyPath = path.join(mkdirPath, 'editly.json');
+        await fs.writeFile(editlyPath, editlyJSON);
 
-        if (!outPath) {
-          return;
+        let outPath: string | Error;
+        if (0) {
+          await editly(editlyConfig);
+          outPath = editlyConfig.outPath;
+        } else {
+          outPath = await new Promise<string>((resolve, reject) => {
+            const childEditly = child.fork(
+              'node_modules/.bin/editly',
+              ['--json', editlyPath],
+              {
+                silent: true,
+              },
+            );
+            childEditly.stdout?.on('data', async (message: Buffer) => {
+              const msg = message.toString();
+              this.logger.debug(
+                `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
+                'Editly',
+              );
+              // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
+              const percent = msg.match(/(\d+%)/g);
+              if (Array.isArray(percent) && percent.length > 0) {
+                await this.editorRepository.update(renderEditor.id, {
+                  renderingPercent: parseInt(percent[percent.length - 1], 10),
+                });
+              }
+            });
+            childEditly.stderr?.on('data', (message: Buffer) => {
+              const msg = message.toString();
+              this.logger.error(msg, undefined, 'Editly');
+            });
+            childEditly.on('error', (error: Error) => {
+              this.logger.error(error.message, error.stack, 'Editly');
+              reject(error);
+            });
+            childEditly.on(
+              'exit',
+              (/* code: number | null, signal: NodeJS.Signals | null */) => {
+                fs.access(editlyConfig.outPath)
+                  .then(() => {
+                    resolve(editlyConfig.outPath);
+                  })
+                  .catch(() => {
+                    reject(
+                      new Error(
+                        "outFile not found. There's a some error in editly",
+                      ),
+                    );
+                  });
+              },
+            );
+          }).catch((error) => new Error(error));
+        }
+        if (outPath instanceof Error) {
+          throw outPath;
         }
 
         const { size } = await fs.stat(outPath);

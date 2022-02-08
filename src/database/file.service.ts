@@ -412,17 +412,14 @@ export class FileService {
   }
 
   async previewFile(file: FileEntity): Promise<Buffer> {
-    const downloadDir = path.resolve(
+    const downloadDir = path.join(
       this.configService.get<string>('FILES_UPLOAD', 'upload'),
       file.folder.id,
     );
     await fs.mkdir(downloadDir, { recursive: true });
-    const filename = path.resolve(downloadDir, file.name);
-    let outPath = path.resolve(
-      downloadDir,
-      `${file.name.split('.')[0]}-preview`,
-    );
-    outPath += file.videoType === VideoType.Video ? '.mp4' : '.jpg';
+    const filename = path.join(downloadDir, file.name);
+    let outPath = path.join(downloadDir, `${file.name.split('.')[0]}-preview`);
+    outPath += file.videoType === VideoType.Video ? '.webm' : '.jpg';
 
     if (await fs.access(outPath).catch(() => true)) {
       const filenameStream = createWriteStream(filename);
@@ -477,7 +474,7 @@ export class FileService {
   async preview(type: VideoType, file: Express.Multer.File): Promise<Buffer> {
     let preview: Buffer;
     if (type === VideoType.Image) {
-      const outPath = path.resolve(
+      const outPath = path.join(
         `${file.destination}/${file.filename}-preview.jpg`,
       );
       const { stderr } = await FfMpegPreview(
@@ -492,8 +489,8 @@ export class FileService {
 
       preview = await fs.readFile(outPath);
     } else if (type === VideoType.Video) {
-      const outPath = path.resolve(
-        `${file.destination}/${file.filename}-preview.mp4`,
+      const outPath = path.join(
+        `${file.destination}/${file.filename}-preview.webm`,
       );
       const { stderr } = await FfMpegPreview(
         type,
