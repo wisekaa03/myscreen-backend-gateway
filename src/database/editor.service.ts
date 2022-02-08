@@ -250,8 +250,7 @@ export class EditorService {
     layer: EditorLayerEntity,
   ): Promise<EditorLayerEntity> {
     const { file } = layer;
-    const fileName = `${file.id}-${file.name}`;
-    const filePath = path.resolve(mkdirPath, fileName);
+    const filePath = path.join(mkdirPath, file.name);
     // eslint-disable-next-line no-param-reassign
     layer.path = filePath;
 
@@ -284,7 +283,7 @@ export class EditorService {
     editor: EditorEntity,
     audio: boolean,
   ): Promise<[string, editly.Config]> {
-    const mkdirPath = path.resolve(this.tempDirectory, editor.id);
+    const mkdirPath = path.join(this.tempDirectory, editor.id);
     await fs.mkdir(mkdirPath, { recursive: true });
 
     const videoLayersPromise = editor.videoLayers.map(
@@ -310,38 +309,36 @@ export class EditorService {
         fps,
         keepSourceAudio,
         loopAudio: true,
-        clips: [
-          {
-            duration: this.calcTotalDuration(videoLayers),
-            layers: layers.map(
-              ({
-                id,
-                video: _,
-                audio: __,
-                duration: ___,
-                createdAt: _____,
-                updatedAt: ______,
-                ...layer
-              }) => {
-                const { file, ...clip } = layer;
-                if (file.videoType === VideoType.Image) {
-                  return {
+        clips: layers.map(
+          ({
+            id,
+            video: _,
+            audio: __,
+            duration: ___,
+            createdAt: ____,
+            updatedAt: _____,
+            ...layer
+          }) => {
+            const { file, ...clip } = layer;
+            if (file.videoType === VideoType.Image) {
+              return {
+                duration: this.calcDuration(layer),
+                layers: [
+                  {
                     type: 'image',
                     resizeMode: 'contain',
                     zoomDirection: null,
-                    duration: this.calcDuration(layer),
                     ...clip,
-                  };
-                }
-                return {
-                  type: 'video',
-                  duration: this.calcDuration(layer),
-                  ...clip,
-                };
-              },
-            ),
+                  },
+                ],
+              };
+            }
+            return {
+              duration: this.calcDuration(layer),
+              layers: [{ type: 'video', ...clip }],
+            };
           },
-        ],
+        ),
         audioTracks: audioLayers.map(
           ({
             id,
@@ -458,11 +455,9 @@ export class EditorService {
     if (!editor) {
       throw new NotFoundException('Editor not found');
     }
-    if (
-      (!rerender && editor.renderingStatus === RenderingStatus.Pending) ||
-      editor.renderingStatus === RenderingStatus.Error
-    ) {
-      return editor;
+    if (editor.renderingStatus === RenderingStatus.Pending && !rerender) {
+      const { videoLayers, audioLayers, ...other } = editor;
+      return other as EditorEntity;
     }
 
     await this.editorRepository.update(editor.id, {
@@ -487,7 +482,7 @@ export class EditorService {
       }
 
       const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
-      editlyConfig.outPath = path.resolve(mkdirPath, `${editor.name}-out.mp4`);
+      editlyConfig.outPath = path.join(mkdirPath, `${editor.name}-out.mp4`);
       // editlyConfig.verbose = true;
       editlyConfig.customOutputArgs = [
         // '-fflags',
@@ -496,7 +491,7 @@ export class EditorService {
         // 'low_delay',
       ];
       const editlyJSON = JSON.stringify(editlyConfig);
-      const editlyPath = path.resolve(mkdirPath, 'editly.json');
+      const editlyPath = path.join(mkdirPath, 'editly.json');
       await fs.writeFile(editlyPath, editlyJSON);
 
       (async (renderEditor: EditorEntity) => {
