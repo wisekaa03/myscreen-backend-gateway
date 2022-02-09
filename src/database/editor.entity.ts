@@ -81,13 +81,13 @@ export class EditorEntity {
   @Column({
     type: 'enum',
     enum: RenderingStatus,
-    enumName: 'RenderingStatus',
     default: RenderingStatus.Initial,
     nullable: true,
   })
   @ApiProperty({
     description: 'Статус рендеринга',
     enum: RenderingStatus,
+    enumName: 'RenderingStatus',
     example: RenderingStatus.Initial,
     required: true,
   })

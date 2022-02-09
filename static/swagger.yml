@@ -1780,7 +1780,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.10.10
+  version: 2.10.11
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2925,6 +2925,13 @@ components:
       required:
         - status
         - data
+    RenderingStatus:
+      type: string
+      enum:
+        - initial
+        - ready
+        - pending
+        - error
     EditorPartialRequest:
       type: object
       properties:
@@ -2937,15 +2944,9 @@ components:
           description: Имя редактора
           example: имя редактора
         renderingStatus:
-          type: string
           description: Статус рендеринга
-          enum:
-            &a56
-            - initial
-            - ready
-            - pending
-            - error
           example: initial
+          $ref: "#/components/schemas/RenderingStatus"
     EditorsGetRequest:
       type: object
       properties:
@@ -3046,10 +3047,9 @@ components:
           description: Фреймрейт
           example: 24
         renderingStatus:
-          type: string
           description: Статус рендеринга
-          enum: *a56
           example: initial
+          $ref: "#/components/schemas/RenderingStatus"
         renderingPercent:
           type: integer
           description: Процент рендеринга
@@ -3060,7 +3060,7 @@ components:
         renderedFile:
           description: Обработанный файл
           allOf:
-            &a57
+            &a56
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -3285,10 +3285,9 @@ components:
           description: Идентификатор редактора
           example: "12345678"
         renderingStatus:
-          type: string
           description: Статус рендеринга
-          enum: *a56
           example: initial
+          $ref: "#/components/schemas/RenderingStatus"
         renderingPercent:
           type: integer
           description: Процент рендеринга
@@ -3298,7 +3297,7 @@ components:
           description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
-          allOf: *a57
+          allOf: *a56
       required:
         - id
         - renderingStatus
