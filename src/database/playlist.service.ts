@@ -8,7 +8,6 @@ import {
 } from 'typeorm';
 
 import { PlaylistEntity } from './playlist.entity';
-import { UserEntity } from './user.entity';
 
 @Injectable()
 export class PlaylistService {

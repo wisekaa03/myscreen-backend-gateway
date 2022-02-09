@@ -194,8 +194,8 @@ export class EditorService {
    * @async
    * @param {UserEntity} user User entity
    * @param {number} editorId Editor ID
-   * @param {number} layerId Editor Layer ID
-   * @param {EditorLayerEntity} update Editor layer entity
+   * @param {EditorLayerEntity} layer Editor layer entity
+   * @param {Partial<EditorLayerEntity>} update Update editor layer
    * @returns {EditorLayerEntity | undefined} Result
    */
   async updateLayer(
@@ -206,9 +206,9 @@ export class EditorService {
   ): Promise<EditorLayerEntity | undefined> {
     await this.editorLayerRepository.update(layer.id, update);
 
-    if (update.index) {
+    if (update.index !== undefined) {
       await this.moveIndex(userId, editorId, layer.id, update.index);
-    } else if (update.duration) {
+    } else if (update.duration !== undefined) {
       await this.moveIndex(userId, editorId, layer.id, layer.index);
     }
 
@@ -782,6 +782,6 @@ export class EditorService {
       totalDuration: this.calcTotalDuration(editor.videoLayers),
     });
 
-    await Promise.all([editorPromise, resultLayer]);
+    await Promise.all([resultLayer, editorPromise]);
   }
 }

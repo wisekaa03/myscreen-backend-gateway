@@ -138,7 +138,7 @@ export class MonitorController {
   @Put('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'create',
+    operationId: 'monitor-create',
     summary: 'Создание монитора',
   })
   @ApiResponse({
@@ -163,7 +163,7 @@ export class MonitorController {
   @Patch('/playlist')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'playlist-create',
+    operationId: 'monitor-playlist-create',
     summary: 'Создание связки плэйлиста и монитора',
   })
   @ApiResponse({
@@ -216,7 +216,7 @@ export class MonitorController {
   @Delete('/playlist')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'playlist-delete',
+    operationId: 'monitor-playlist-delete',
     summary: 'Удаление связки плэйлиста и монитора',
   })
   @ApiResponse({
@@ -273,7 +273,7 @@ export class MonitorController {
   @Get('/:monitorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'get',
+    operationId: 'monitor-get',
     summary: 'Получение монитора',
   })
   @ApiResponse({
@@ -304,7 +304,7 @@ export class MonitorController {
   @Patch('/:monitorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'update',
+    operationId: 'monitor-update',
     summary: 'Изменение монитора',
   })
   @ApiResponse({
@@ -340,7 +340,7 @@ export class MonitorController {
   @Delete('/:monitorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'delete',
+    operationId: 'monitor-delete',
     summary: 'Удаление монитора',
   })
   @ApiResponse({

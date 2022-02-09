@@ -37,7 +37,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 
-import { FindConditions, FindManyOptions } from 'typeorm';
+import type { FindConditions } from 'typeorm';
 import {
   BadRequestError,
   UnauthorizedError,
@@ -148,7 +148,7 @@ export class FileController {
   @Put('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'upload',
+    operationId: 'file-upload',
     summary: 'Загрузка файлов',
   })
   @ApiResponse({
@@ -210,7 +210,7 @@ export class FileController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'download',
+    operationId: 'file-download',
     summary: 'Скачивание медиа',
   })
   @ApiResponse({
@@ -298,7 +298,7 @@ export class FileController {
   @Post('/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'get',
+    operationId: 'file-get',
     summary: 'Получить файл',
   })
   @ApiResponse({
@@ -329,7 +329,7 @@ export class FileController {
   @Get('/:fileId/preview')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'download-preview',
+    operationId: 'file-download-preview',
     summary: 'Получить файл превью',
   })
   @ApiResponse({
@@ -417,7 +417,7 @@ export class FileController {
   @Patch('/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'update',
+    operationId: 'file-update',
     summary: 'Изменить файл',
   })
   @ApiResponse({
@@ -454,7 +454,7 @@ export class FileController {
   @Delete('/:fileId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'delete',
+    operationId: 'file-delete',
     summary: 'Удаление файла',
   })
   @ApiResponse({

@@ -85,7 +85,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'get',
+    operationId: 'auth-get',
     summary:
       'Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию',
   })
@@ -118,7 +118,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'update',
+    operationId: 'auth-update',
     summary: 'Изменение аккаунта пользователя',
   })
   @ApiResponse({
@@ -140,7 +140,10 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(200)
-  @ApiOperation({ operationId: 'login', summary: 'Авторизация пользователя' })
+  @ApiOperation({
+    operationId: 'auth-login',
+    summary: 'Авторизация пользователя',
+  })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
@@ -167,7 +170,7 @@ export class AuthController {
   @Post('register')
   @HttpCode(201)
   @ApiOperation({
-    operationId: 'register',
+    operationId: 'auth-register',
     summary: 'Регистрация пользователя',
   })
   @ApiResponse({
@@ -186,7 +189,7 @@ export class AuthController {
 
   @Post('/refresh')
   @HttpCode(200)
-  @ApiOperation({ operationId: 'refresh', summary: 'Обновление токена' })
+  @ApiOperation({ operationId: 'auth-refresh', summary: 'Обновление токена' })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
@@ -211,7 +214,7 @@ export class AuthController {
   @Post('/email-verify')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'email-verify',
+    operationId: 'auth-email-verify',
     summary: 'Подтвердить email пользователя',
   })
   @ApiResponse({
@@ -232,7 +235,7 @@ export class AuthController {
   @Post('/reset-password')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'reset-password',
+    operationId: 'auth-reset-password',
     summary: 'Отправить на почту пользователю разрешение на смену пароля',
   })
   @ApiResponse({
@@ -253,7 +256,7 @@ export class AuthController {
   @Post('/reset-password-verify')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'reset-password-verify',
+    operationId: 'auth-reset-password-verify',
     summary: 'Меняет пароль пользователя по приглашению из почты',
   })
   @ApiResponse({
@@ -281,7 +284,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'disable',
+    operationId: 'auth-disable',
     summary: 'Скрытие аккаунта пользователя',
   })
   @ApiResponse({
@@ -301,7 +304,10 @@ export class AuthController {
 
   @Post('/monitor')
   @HttpCode(200)
-  @ApiOperation({ operationId: 'monitor', summary: 'Авторизация монитора' })
+  @ApiOperation({
+    operationId: 'auth-monitor',
+    summary: 'Авторизация монитора',
+  })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
