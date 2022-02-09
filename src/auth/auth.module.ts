@@ -9,9 +9,8 @@ import { JwtStrategy } from './jwt.strategy';
 
 @Module({
   imports: [
-    PassportModule,
     JwtModule.registerAsync({
-      useFactory: (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_ACCESS_TOKEN'),
         signOptions: {
           algorithm: 'HS256',
@@ -20,7 +19,7 @@ import { JwtStrategy } from './jwt.strategy';
       }),
       inject: [ConfigService],
     }),
-
+    PassportModule,
     DatabaseModule,
   ],
 

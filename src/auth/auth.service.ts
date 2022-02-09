@@ -207,6 +207,10 @@ export class AuthService {
     return this.refreshTokenService.find(tokenId);
   }
 
+  async verify(token: string): Promise<MyscreenJwtPayload> {
+    return this.jwtService.verifyAsync(token);
+  }
+
   /**
    * Проверяет почту на соответствие
    * @async

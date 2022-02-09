@@ -10,7 +10,7 @@ import { MailModule } from '@/mail/mail.module';
 import { DatabaseModule } from '@/database/database.module';
 import { AuthModule } from '@/auth/auth.module';
 import { EndpointModule } from '@/endpoint/endpoint.module';
-import { EventsModule } from '@/websocket/events.module';
+import { WSModule } from '@/websocket/ws.module';
 // import { LoggingInterceptor } from '@/intercept/logging.interceptor';
 
 @Module({
@@ -46,17 +46,15 @@ import { EventsModule } from '@/websocket/events.module';
       inject: [ConfigService],
     }),
 
+    AuthModule,
     MailModule,
     S3Module.forRootAsync({
       useClass: S3ModuleOptionsClass,
       inject: [ConfigService],
     }),
-
-    EventsModule,
-
     DatabaseModule,
-    AuthModule,
     EndpointModule,
+    WSModule,
   ],
   providers: [
     Logger,

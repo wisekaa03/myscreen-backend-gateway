@@ -14,8 +14,10 @@ import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { from, Observable } from 'rxjs';
 // import { map } from 'rxjs/operators';
+
 // import { LoginRequest } from '@/dto';
 import { WebSocketClient } from './interface/websocket-client';
+import { AuthService } from '@/auth/auth.service';
 
 @WebSocketGateway({
   cors: {
@@ -23,17 +25,22 @@ import { WebSocketClient } from './interface/websocket-client';
   },
   path: '/ws',
 })
-export class EventGateway
+export class WSGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
 {
+  constructor(private readonly authService: AuthService) {}
+
   @WebSocketServer()
   server!: Server;
 
-  private logger = new Logger(EventGateway.name);
+  private logger = new Logger(WSGateway.name);
 
   clients = new Map<WebSocket, WebSocketClient>();
 
-  handleConnection(client: WebSocket, ...[req]: IncomingMessage[]): void {
+  async handleConnection(
+    client: WebSocket,
+    ...[req]: IncomingMessage[]
+  ): Promise<void> {
     const value: WebSocketClient = {
       ip:
         (req.headers['x-forwarded-for'] as string) ||
@@ -46,7 +53,12 @@ export class EventGateway
       `New connection: '${value.ip}:${value.port}', websocket-key: '${value.key}'`,
     );
     this.clients.set(client, value);
-    client.send(JSON.stringify({ event: 'connected' }));
+    if (req.headers.authorization !== undefined) {
+      this.authService.verify(req.headers.authorization);
+      client.send(JSON.stringify({ event: 'connected' }));
+      return;
+    }
+    client.close();
   }
 
   handleDisconnect(client: WebSocket): void {
