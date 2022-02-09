@@ -201,16 +201,18 @@ export class EditorService {
   async updateLayer(
     userId: string,
     editorId: string,
-    layerId: string,
+    layer: EditorLayerEntity,
     update: Partial<EditorLayerEntity>,
   ): Promise<EditorLayerEntity | undefined> {
-    await this.editorLayerRepository.update(layerId, update);
+    await this.editorLayerRepository.update(layer.id, update);
 
     if (update.index) {
-      await this.moveIndex(userId, editorId, layerId, update.index);
+      await this.moveIndex(userId, editorId, layer.id, update.index);
+    } else if (update.duration) {
+      await this.moveIndex(userId, editorId, layer.id, layer.index);
     }
 
-    return this.editorLayerRepository.findOne(layerId, {
+    return this.editorLayerRepository.findOne(layer.id, {
       relations: ['file'],
     });
   }
@@ -239,7 +241,9 @@ export class EditorService {
     if (layer.cutTo !== undefined && layer.cutFrom !== undefined) {
       return layer.cutTo - layer.cutFrom;
     }
-    return layer.duration || 0;
+    return (
+      layer.duration || layer.file?.duration || layer.file?.meta.duration || 0
+    );
   };
 
   calcTotalDuration = (video: Partial<EditorLayerEntity>[]): number =>
@@ -745,24 +749,28 @@ export class EditorService {
     }
 
     let moveIndexLocal = 1;
+    let start = 0;
     const resultLayer = layers.map((value) => {
+      const duration = this.calcDuration(value);
       if (value.id === layerId) {
-        const duration = this.calcDuration(value);
         const result = {
           index: moveIndex,
           duration,
+          start,
         };
+        start += duration;
         return this.editorLayerRepository.update(value.id, result);
       }
 
-      const duration = this.calcDuration(value);
       if (moveIndexLocal === moveIndex) {
         moveIndexLocal = moveIndex + 1;
       }
       const result = {
         index: moveIndexLocal,
         duration,
+        start,
       };
+      start += duration;
       moveIndexLocal += 1;
       return this.editorLayerRepository.update(value.id, result);
     }, [] as Promise<EditorLayerEntity>[]);

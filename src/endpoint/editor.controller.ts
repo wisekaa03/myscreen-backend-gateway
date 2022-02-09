@@ -393,7 +393,7 @@ export class EditorController {
     const data = await this.editorService.updateLayer(
       userId,
       editorId,
-      layerId,
+      editorLayer,
       body,
     );
     if (!data) {

@@ -139,9 +139,9 @@ export class PlaylistController {
     @Body() body: PlaylistCreateRequest,
   ): Promise<PlaylistGetResponse> {
     if (!(Array.isArray(body.files) && body.files.length > 0)) {
-      throw new BadRequestException('There should be Files');
+      throw new BadRequestException('Files must exist');
     }
-    const [files] = await this.fileService.find({
+    const files = await this.fileService.find({
       where: { id: In(body.files), userId },
     });
     if (!Array.isArray(files) || body.files.length !== files.length) {
