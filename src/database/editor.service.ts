@@ -690,9 +690,9 @@ export class EditorService {
     });
 
     await Promise.all([
-      editorPromise,
       correctedVideoLayers,
       correctedAudioLayers,
+      editorPromise,
     ]);
   }
 
@@ -738,42 +738,49 @@ export class EditorService {
       );
     }
 
-    let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
-    let layer = layers.find((l) => l.id === layerId);
-    if (!layer) {
-      layers = editor.audioLayers.sort((v1, v2) => v1.index - v2.index);
-      layer = layers.find((l) => l.id === layerId);
-    }
-    if (!layer) {
-      throw new NotFoundException('layerId is not in editor layers');
+    let layers = editor.videoLayers;
+    if (!layers.find((l) => l.id === layerId)) {
+      layers = editor.audioLayers;
+      if (!layers.find((l) => l.id === layerId)) {
+        throw new NotFoundException('layerId is not in editor layers');
+      }
     }
 
     let moveIndexLocal = 1;
-    let start = 0;
-    const resultLayer = layers.map((value) => {
-      const duration = this.calcDuration(value);
-      if (value.id === layerId) {
-        const result = {
-          index: moveIndex,
-          duration,
-          start,
-        };
-        start += duration;
-        return this.editorLayerRepository.update(value.id, result);
-      }
+    const layersBefore = layers
+      .map((value) => {
+        const duration = this.calcDuration(value);
+        if (value.id === layerId) {
+          return {
+            id: value.id,
+            index: moveIndex,
+            duration,
+          };
+        }
 
-      if (moveIndexLocal === moveIndex) {
-        moveIndexLocal = moveIndex + 1;
-      }
+        if (moveIndexLocal === moveIndex) {
+          moveIndexLocal = moveIndex + 1;
+        }
+        const result = {
+          id: value.id,
+          index: moveIndexLocal,
+          duration,
+        };
+        moveIndexLocal += 1;
+        return result;
+      }, [])
+      .sort((a, b) => a.index - b.index);
+
+    let start = 0;
+    const layerPromises = layersBefore.map((value) => {
       const result = {
-        index: moveIndexLocal,
-        duration,
+        duration: value.duration,
+        index: value.index,
         start,
       };
-      start += duration;
-      moveIndexLocal += 1;
+      start += value.duration;
       return this.editorLayerRepository.update(value.id, result);
-    }, [] as Promise<EditorLayerEntity>[]);
+    });
 
     const editorPromise = this.editorRepository.update(editor.id, {
       renderingStatus: RenderingStatus.Initial,
@@ -782,6 +789,6 @@ export class EditorService {
       totalDuration: this.calcTotalDuration(editor.videoLayers),
     });
 
-    await Promise.all([resultLayer, editorPromise]);
+    await Promise.all([layerPromises, editorPromise]);
   }
 }
