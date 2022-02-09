@@ -7,6 +7,7 @@ export class FilesUploadResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
+    enumName: 'Status',
     example: Status.Success,
     required: true,
   })

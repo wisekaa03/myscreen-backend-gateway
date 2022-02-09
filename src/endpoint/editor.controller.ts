@@ -572,13 +572,13 @@ export class EditorController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: EditorGetResponse,
+    type: EditorGetRenderingStatusResponse,
   })
   async postEditorExport(
     @Req() { user: { id: userId } }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Body() body?: EditorExportRequest,
-  ): Promise<EditorGetResponse> {
+  ): Promise<EditorGetRenderingStatusResponse> {
     const data = await this.editorService.export(userId, id, body?.rerender);
 
     return {

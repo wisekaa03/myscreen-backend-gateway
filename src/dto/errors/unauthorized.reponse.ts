@@ -16,6 +16,7 @@ export class UnauthorizedError extends UnauthorizedException {
 
   @ApiProperty({
     enum: Status,
+    enumName: 'Status',
     example: Status.Error,
     description: 'Статус операции',
     required: true,

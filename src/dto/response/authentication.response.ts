@@ -26,6 +26,7 @@ export class AuthResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
+    enumName: 'Status',
     example: Status.Success,
     required: true,
   })
@@ -50,6 +51,7 @@ export class AuthRefreshResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
+    enumName: 'Status',
     example: Status.Success,
     required: true,
   })

@@ -16,6 +16,7 @@ export class ServiceUnavailableError extends ServiceUnavailableException {
 
   @ApiProperty({
     enum: Status,
+    enumName: 'Status',
     example: Status.Error,
     description: 'Статус операции',
     required: true,

@@ -11,15 +11,15 @@ export class EditorResponse extends OmitType(EditorEntity, [
     description: 'Видео слой',
     type: () => EditorLayerResponse,
     isArray: true,
-    required: false,
+    required: true,
   })
-  videoLayers?: EditorLayerEntity[];
+  videoLayers!: EditorLayerEntity[];
 
   @ApiProperty({
     description: 'Аудио слой',
     type: () => EditorLayerResponse,
     isArray: true,
-    required: false,
+    required: true,
   })
-  audioLayers?: EditorLayerEntity[];
+  audioLayers!: EditorLayerEntity[];
 }

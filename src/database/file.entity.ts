@@ -132,6 +132,7 @@ export class FileEntity {
   @ApiProperty({
     description: 'Тип файла',
     enum: VideoType,
+    enumName: 'VideoType',
     example: VideoType.Video,
     required: true,
   })
@@ -142,6 +143,7 @@ export class FileEntity {
   @ApiProperty({
     description: 'В какую категорию относить файл',
     enum: FileCategory,
+    enumName: 'FileCategory',
     example: FileCategory.Media,
     required: true,
   })

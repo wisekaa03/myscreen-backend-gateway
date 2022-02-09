@@ -894,7 +894,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/EditorGetResponse"
+                $ref: "#/components/schemas/EditorGetRenderingStatusResponse"
         "400": *a15
         "401": *a16
         "403": *a17
@@ -1780,7 +1780,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.10.9
+  version: 2.10.10
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -1814,16 +1814,18 @@ components:
       description: Токен авторизации
       name: token
   schemas:
+    Status:
+      type: string
+      enum:
+        - success
+        - error
     BadRequestError:
       type: object
       properties:
         status:
-          type: string
-          enum:
-            - success
-            - error
           example: error
           description: Статус операции
+          $ref: "#/components/schemas/Status"
         statusCode:
           type: number
           example: 400
@@ -1842,12 +1844,9 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum:
-            - success
-            - error
           example: error
           description: Статус операции
+          $ref: "#/components/schemas/Status"
         statusCode:
           type: number
           example: 401
@@ -1866,12 +1865,9 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum:
-            - success
-            - error
           example: error
           description: Статус операции
+          $ref: "#/components/schemas/Status"
         statusCode:
           type: number
           example: 412
@@ -1890,12 +1886,9 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum:
-            - success
-            - error
           example: error
           description: Статус операции
+          $ref: "#/components/schemas/Status"
         statusCode:
           type: number
           example: 500
@@ -1914,12 +1907,9 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum:
-            - success
-            - error
           example: error
           description: Статус операции
+          $ref: "#/components/schemas/Status"
         statusCode:
           type: number
           example: 503
@@ -2018,12 +2008,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Пользователь
           allOf:
@@ -2119,12 +2106,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         payload:
           description: Возвращаемый токен
           allOf:
@@ -2203,12 +2187,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         payload:
           description: Возвращаемый токен
           allOf:
@@ -2228,12 +2209,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
       required:
         - status
     ResetPasswordInvitationRequest:
@@ -2271,12 +2249,9 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum:
-            - success
-            - error
           example: error
           description: Статус операции
+          $ref: "#/components/schemas/Status"
         statusCode:
           type: number
           example: 403
@@ -2295,12 +2270,9 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum:
-            - success
-            - error
           example: error
           description: Статус операции
+          $ref: "#/components/schemas/Status"
         statusCode:
           type: number
           example: 404
@@ -2338,6 +2310,18 @@ components:
           type: string
           description: Комната
           example: 1
+    MonitorCategory:
+      type: string
+      enum:
+        - GAS_STATION
+        - MALL
+        - COMMERCIAL_CENTRE
+        - MUNICIPAL_INSTITUTION
+        - EDUCATIONAL_INSTITUTION
+        - RETAIL_SHOP
+        - STREET_MONITOR
+        - SHOWCASE
+        - STELLA
     MonitorPrice:
       type: object
       properties:
@@ -2349,6 +2333,11 @@ components:
           type: number
           description: Стоимость 100 показов в день
           example: 100
+    MonitorOrientation:
+      type: string
+      enum:
+        - Horizontal
+        - Vertical
     MonitorInfo:
       type: object
       properties:
@@ -2372,6 +2361,11 @@ components:
           type: number
           description: Яркость
           example: 0
+    MonitorStatus:
+      type: string
+      enum:
+        - offline
+        - online
     MonitorPartialRequest:
       type: object
       properties:
@@ -2394,40 +2388,25 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
-          type: string
           description: Категория
-          enum:
-            &a54
-            - GAS_STATION
-            - MALL
-            - COMMERCIAL_CENTRE
-            - MUNICIPAL_INSTITUTION
-            - EDUCATIONAL_INSTITUTION
-            - RETAIL_SHOP
-            - STREET_MONITOR
-            - SHOWCASE
-            - STELLA
           example: GAS_STATION
+          $ref: "#/components/schemas/MonitorCategory"
         price:
           description: Стоимость показов
           example:
-            &a55
+            &a54
             of1s: 0
             show100: 0
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
-          type: string
           description: Ориентация экрана
-          enum:
-            &a56
-            - Horizontal
-            - Vertical
           example: Horizontal
+          $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
           example:
-            &a57
+            &a55
             model: Samsung
             resolution: 0
             angle: 0
@@ -2444,13 +2423,9 @@ components:
           description: Идентификатор устройства
           example: 111-111-111
         status:
-          type: string
           description: Подключен
-          enum:
-            &a58
-            - offline
-            - online
           example: offline
+          $ref: "#/components/schemas/MonitorStatus"
         latitude:
           type: number
           description: Широта
@@ -2489,6 +2464,19 @@ components:
       required:
         - where
         - scope
+    VideoType:
+      type: string
+      enum:
+        - video
+        - image
+        - audio
+        - other
+    FileCategory:
+      type: string
+      enum:
+        - ownership
+        - photo
+        - media
     FolderResponse:
       type: object
       properties:
@@ -2536,23 +2524,21 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
-          type: string
           description: Категория
-          enum: *a54
           example: GAS_STATION
+          $ref: "#/components/schemas/MonitorCategory"
         price:
           description: Стоимость показов
-          example: *a55
+          example: *a54
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
-          type: string
           description: Ориентация экрана
-          enum: *a56
           example: Horizontal
+          $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *a57
+          example: *a55
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -2564,10 +2550,9 @@ components:
           description: Идентификатор устройства
           example: 111-111-111
         status:
-          type: string
           description: Подключен
-          enum: *a58
           example: offline
+          $ref: "#/components/schemas/MonitorStatus"
         lastSeen:
           format: date-time
           type: string
@@ -2626,24 +2611,13 @@ components:
           description: Hash файла
           example: 2b0439011a3a215ae1756bfc342e5bbc
         videoType:
-          type: string
           description: Тип файла
-          enum:
-            &a62
-            - video
-            - image
-            - audio
-            - other
           example: video
+          $ref: "#/components/schemas/VideoType"
         category:
-          type: string
           description: В какую категорию относить файл
-          enum:
-            &a61
-            - ownership
-            - photo
-            - media
           example: media
+          $ref: "#/components/schemas/FileCategory"
         filesize:
           type: number
           description: Размер файла
@@ -2758,23 +2732,21 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
-          type: string
           description: Категория
-          enum: *a54
           example: GAS_STATION
+          $ref: "#/components/schemas/MonitorCategory"
         price:
           description: Стоимость показов
-          example: *a55
+          example: *a54
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
-          type: string
           description: Ориентация экрана
-          enum: *a56
           example: Horizontal
+          $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *a57
+          example: *a55
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -2786,10 +2758,9 @@ components:
           description: Идентификатор устройства
           example: 111-111-111
         status:
-          type: string
           description: Подключен
-          enum: *a58
           example: offline
+          $ref: "#/components/schemas/MonitorStatus"
         lastSeen:
           format: date-time
           type: string
@@ -2840,12 +2811,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество мониторов
@@ -2871,23 +2839,21 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
-          type: string
           description: Категория
-          enum: *a54
           example: GAS_STATION
+          $ref: "#/components/schemas/MonitorCategory"
         price:
           description: Стоимость показов
-          example: *a55
+          example: *a54
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
-          type: string
           description: Ориентация экрана
-          enum: *a56
           example: Horizontal
+          $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *a57
+          example: *a55
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         code:
@@ -2895,10 +2861,9 @@ components:
           description: Идентификатор устройства
           example: 111-111-111
         status:
-          type: string
           description: Подключен
-          enum: *a58
           example: offline
+          $ref: "#/components/schemas/MonitorStatus"
         latitude:
           type: number
           description: Широта
@@ -2920,12 +2885,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Монитор
           allOf:
@@ -2953,12 +2915,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Монитор
           allOf:
@@ -2981,7 +2940,7 @@ components:
           type: string
           description: Статус рендеринга
           enum:
-            &a59
+            &a56
             - initial
             - ready
             - pending
@@ -3089,7 +3048,7 @@ components:
         renderingStatus:
           type: string
           description: Статус рендеринга
-          enum: *a59
+          enum: *a56
           example: initial
         renderingPercent:
           type: integer
@@ -3101,7 +3060,7 @@ components:
         renderedFile:
           description: Обработанный файл
           allOf:
-            &a60
+            &a57
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -3145,16 +3104,15 @@ components:
         - totalDuration
         - createdAt
         - updatedAt
+        - videoLayers
+        - audioLayers
     EditorsGetResponse:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество оплат
@@ -3200,12 +3158,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Редактор
           allOf:
@@ -3279,12 +3234,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Слой редактора
           allOf:
@@ -3335,7 +3287,7 @@ components:
         renderingStatus:
           type: string
           description: Статус рендеринга
-          enum: *a59
+          enum: *a56
           example: initial
         renderingPercent:
           type: integer
@@ -3346,7 +3298,7 @@ components:
           description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
-          allOf: *a60
+          allOf: *a57
       required:
         - id
         - renderingStatus
@@ -3357,12 +3309,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Редактор
           allOf:
@@ -3382,12 +3331,9 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum:
-            - success
-            - error
           example: error
           description: Статус операции
+          $ref: "#/components/schemas/Status"
         statusCode:
           type: number
           example: 409
@@ -3410,10 +3356,9 @@ components:
           description: Идентификатор папки
           format: uuid
         category:
-          type: string
           description: В какую категорию относить файл
-          enum: *a61
           example: media
+          $ref: "#/components/schemas/FileCategory"
         monitorId:
           type: string
           format: uuid
@@ -3431,15 +3376,13 @@ components:
           description: Идентификатор папки
           format: uuid
         videoType:
-          type: string
           description: Тип файла
-          enum: *a62
           example: video
+          $ref: "#/components/schemas/VideoType"
         category:
-          type: string
           description: В какую категорию относить файл
-          enum: *a61
           example: media
+          $ref: "#/components/schemas/FileCategory"
     FilesGetRequest:
       type: object
       properties:
@@ -3458,12 +3401,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество файлов
@@ -3480,12 +3420,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество файлов
@@ -3502,12 +3439,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Файл
           allOf:
@@ -3559,12 +3493,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество папок
@@ -3595,12 +3526,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Папки
           allOf:
@@ -3621,12 +3549,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Пользователи
           type: array
@@ -3687,12 +3612,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество заказов
@@ -3767,12 +3689,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество оплат
@@ -3819,12 +3738,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество плэйлистов
@@ -3861,12 +3777,9 @@ components:
       type: object
       properties:
         status:
-          type: string
           description: Статус операции
-          enum:
-            - success
-            - error
           example: success
+          $ref: "#/components/schemas/Status"
         data:
           description: Плэйлист
           allOf:

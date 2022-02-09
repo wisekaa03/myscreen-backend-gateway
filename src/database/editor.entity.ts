@@ -81,6 +81,7 @@ export class EditorEntity {
   @Column({
     type: 'enum',
     enum: RenderingStatus,
+    enumName: 'RenderingStatus',
     default: RenderingStatus.Initial,
     nullable: true,
   })

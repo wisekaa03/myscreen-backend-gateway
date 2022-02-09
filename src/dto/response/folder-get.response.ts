@@ -7,6 +7,7 @@ export class FolderGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
+    enumName: 'Status',
     example: Status.Success,
     required: true,
   })

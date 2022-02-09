@@ -17,6 +17,7 @@ export class ConflictError extends ConflictException {
 
   @ApiProperty({
     enum: Status,
+    enumName: 'Status',
     example: Status.Error,
     description: 'Статус операции',
     required: true,
