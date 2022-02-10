@@ -147,6 +147,10 @@ export class AuthService {
       throw new ForbiddenException(`User '${user.email}' is disabled`);
     }
 
+    if (user.role === UserRoleEnum.Monitor) {
+      return this.createMonitorToken(user.id, fingerprint);
+    }
+
     const [token, refreshTokenUpdated] = await Promise.all([
       this.generateAccessToken(user),
       this.generateRefreshToken(user.id, fingerprint, refreshToken),
@@ -164,6 +168,7 @@ export class AuthService {
       expiresIn: this.refreshTokenExpires,
       subject: String(monitorId),
       jwtid: String(monitorId),
+      issuer: 'false',
     };
 
     return this.jwtService.signAsync({}, opts);
@@ -199,7 +204,7 @@ export class AuthService {
   private async getUserFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
   ): Promise<UserEntity | undefined> {
-    const { sub, aud } = payload;
+    const { sub, iss } = payload;
 
     if (!sub) {
       throw new ForbiddenException(
@@ -207,20 +212,27 @@ export class AuthService {
       );
     }
 
-    return this.userService.findById(sub, aud);
+    if (iss === 'false') {
+      return this.userService.findById(sub, [UserRoleEnum.Monitor]);
+    }
+    return this.userService.findById(sub);
   }
 
   private async getStoredTokenFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
   ): Promise<RefreshTokenEntity | null> {
-    const { jti: tokenId, aud: role } = payload;
+    const { jti: tokenId, iss } = payload;
     if (!tokenId) {
       throw new ForbiddenException(
         `Token ${JSON.stringify(payload)} malformed`,
       );
     }
 
-    return this.refreshTokenService.find(tokenId, role);
+    if (iss === 'false') {
+      return this.refreshTokenService.find(tokenId, true);
+    }
+
+    return this.refreshTokenService.find(tokenId);
   }
 
   async verify(token: string): Promise<MyscreenJwtPayload> {

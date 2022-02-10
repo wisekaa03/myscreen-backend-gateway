@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { type DeepPartial, MoreThan, Repository } from 'typeorm';
 
-import { UserRoleEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 
@@ -16,8 +15,8 @@ export class RefreshTokenService {
     private readonly configService: ConfigService,
   ) {}
 
-  async find(id: string, roles?: UserRoleEnum[]): Promise<RefreshTokenEntity> {
-    if (roles?.includes(UserRoleEnum.Monitor)) {
+  async find(id: string, fromMonitor = false): Promise<RefreshTokenEntity> {
+    if (fromMonitor) {
       return {
         id,
         expires: new Date(
