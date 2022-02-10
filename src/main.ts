@@ -26,16 +26,16 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     bufferLogs: true,
     autoFlushLogs: true,
     cors: {
-      origin: '*',
-      // [
-      //   'https://cp.myscreen.ru',
-      //   'https://cp.dev.myscreen.ru',
-      //   'https://api.myscreen.ru',
-      //   'https://api.dev.myscreen.ru',
-      //   'http://localhost:3000',
-      //   'http://localhost:3001',
-      // ],
+      origin: [
+        'https://cp.myscreen.ru',
+        'https://cp.dev.myscreen.ru',
+        'https://api.myscreen.ru',
+        'https://api.dev.myscreen.ru',
+        'http://localhost:3000',
+        'http://localhost:3001',
+      ],
       credentials: true,
+      maxAge: 7200, // in seconds, 2 hours
     },
   });
   const logger = app.get(Logger);

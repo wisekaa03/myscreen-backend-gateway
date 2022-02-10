@@ -291,17 +291,18 @@ export class MonitorController {
     type: MonitorGetResponse,
   })
   async getMonitor(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
-    const data = await this.monitorService.findOne({
-      where: {
-        userId,
-        id,
-      },
-    });
+    const conditional: FindManyOptions<MonitorEntity> = {};
+    if (role.includes(UserRoleEnum.Monitor)) {
+      conditional.where = { id: userId };
+    } else {
+      conditional.where = { userId, id };
+    }
+    const data = await this.monitorService.findOne(conditional);
     if (!data) {
-      throw new NotFoundException(`Monitor ${id} not found`);
+      throw new NotFoundException(`Monitor '${id}' not found`);
     }
 
     return {
