@@ -91,7 +91,7 @@ export class PlaylistEntity {
     nullable: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    eager: true,
+    eager: false,
   })
   @ApiProperty({
     description: 'Мониторы',

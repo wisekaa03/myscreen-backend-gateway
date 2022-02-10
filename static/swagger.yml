@@ -364,7 +364,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/MonitorCreateResponse"
+                $ref: "#/components/schemas/MonitorGetResponse"
         "400": *a8
         "401": *a9
         "403": *a10
@@ -495,6 +495,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
+        "400": *a8
+        "401": *a9
+        "403": *a10
+        "404": *a11
+        "500": *a12
+        "503": *a13
+      tags: *a14
+      security: *a15
+  "/api/v2/monitor/{monitorId}/playlist":
+    get:
+      operationId: monitor-get-playlist
+      summary: Получение плэйлиста монитора
+      parameters:
+        - name: monitorId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlaylistGetResponse"
         "400": *a8
         "401": *a9
         "403": *a10
@@ -1796,7 +1821,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.10.16
+  version: 2.10.17
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2523,89 +2548,6 @@ components:
         - name
         - createdAt
         - updatedAt
-    MonitorResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор монитора
-          format: uuid
-        name:
-          type: string
-          description: Имя
-          example: имя монитора
-        address:
-          description: Адрес монитора
-          example: *a54
-          allOf:
-            - $ref: "#/components/schemas/Address"
-        category:
-          description: Категория
-          example: GAS_STATION
-          $ref: "#/components/schemas/MonitorCategory"
-        price:
-          description: Стоимость показов
-          example: *a55
-          allOf:
-            - $ref: "#/components/schemas/MonitorPrice"
-        orientation:
-          description: Ориентация экрана
-          example: Horizontal
-          $ref: "#/components/schemas/MonitorOrientation"
-        monitorInfo:
-          description: Модель и прочие характеристики монитора
-          example: *a56
-          allOf:
-            - $ref: "#/components/schemas/MonitorInfo"
-        attached:
-          type: boolean
-          description: Присоединен
-          example: false
-        code:
-          type: string
-          description: Идентификатор устройства
-          example: 111-111-111
-        status:
-          description: Подключен
-          example: offline
-          $ref: "#/components/schemas/MonitorStatus"
-        lastSeen:
-          format: date-time
-          type: string
-          description: Последний раз виден
-          example: null
-        latitude:
-          type: number
-          description: Широта
-          example: "45.0448400"
-        longitude:
-          type: number
-          description: Долгота
-          example: "38.9760300"
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-      required:
-        - id
-        - name
-        - category
-        - orientation
-        - monitorInfo
-        - attached
-        - code
-        - status
-        - lastSeen
-        - latitude
-        - longitude
-        - createdAt
-        - updatedAt
     FileResponse:
       type: object
       properties:
@@ -2731,7 +2673,7 @@ components:
         - createdAt
         - updatedAt
         - files
-    MonitorPlaylistResponse:
+    MonitorResponse:
       type: object
       properties:
         id:
@@ -2837,7 +2779,7 @@ components:
           description: Мониторы
           type: array
           items:
-            $ref: "#/components/schemas/MonitorPlaylistResponse"
+            $ref: "#/components/schemas/MonitorResponse"
       required:
         - status
         - count
@@ -2897,7 +2839,7 @@ components:
         - status
         - latitude
         - longitude
-    MonitorCreateResponse:
+    MonitorGetResponse:
       type: object
       properties:
         status:
@@ -2927,7 +2869,7 @@ components:
       required:
         - playlistId
         - monitors
-    MonitorGetResponse:
+    PlaylistGetResponse:
       type: object
       properties:
         status:
@@ -2935,9 +2877,9 @@ components:
           example: success
           $ref: "#/components/schemas/Status"
         data:
-          description: Монитор
+          description: Плэйлист
           allOf:
-            - $ref: "#/components/schemas/MonitorPlaylistResponse"
+            - $ref: "#/components/schemas/PlaylistResponse"
       required:
         - status
         - data
@@ -3788,20 +3730,6 @@ components:
       required:
         - name
         - files
-    PlaylistGetResponse:
-      type: object
-      properties:
-        status:
-          description: Статус операции
-          example: success
-          $ref: "#/components/schemas/Status"
-        data:
-          description: Плэйлист
-          allOf:
-            - $ref: "#/components/schemas/PlaylistResponse"
-      required:
-        - status
-        - data
     PlaylistUpdateRequest:
       type: object
       properties:

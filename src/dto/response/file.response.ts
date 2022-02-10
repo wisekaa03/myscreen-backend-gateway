@@ -2,8 +2,6 @@ import { ApiProperty, OmitType } from '@nestjs/swagger';
 
 import { FileEntity } from '@/database/file.entity';
 import { MonitorResponse, PlaylistResponse } from '@/dto/response';
-import { FilePreviewEntity } from '@/database/file-preview.entity';
-import { FilePreviewResponse } from './file-preview.response';
 import { FolderResponse } from './folder.response';
 import { FolderEntity } from '@/database/folder.entity';
 

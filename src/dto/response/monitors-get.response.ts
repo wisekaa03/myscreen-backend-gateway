@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { MonitorPlaylistResponse } from './monitor-playlist.response';
+import { MonitorResponse } from './monitor.response';
 
 export class MonitorsGetResponse {
   @ApiProperty({
@@ -18,9 +18,9 @@ export class MonitorsGetResponse {
 
   @ApiProperty({
     description: 'Мониторы',
-    type: MonitorPlaylistResponse,
+    type: MonitorResponse,
     isArray: true,
     required: true,
   })
-  data!: MonitorPlaylistResponse[];
+  data!: MonitorResponse[];
 }

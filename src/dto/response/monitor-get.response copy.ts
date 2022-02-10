@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '@/enums/status.enum';
 import { MonitorResponse } from './monitor.response';
 
-export class MonitorCreateResponse {
+export class MonitorGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,

@@ -23,18 +23,18 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { FindConditions, FindManyOptions } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
 import {
   BadRequestError,
   ForbiddenError,
   InternalServerError,
-  MonitorCreateResponse,
   MonitorGetResponse,
   MonitorRequest,
   MonitorsGetRequest,
   MonitorsGetResponse,
   MonitorsPlaylistAttachRequest,
   NotFoundError,
+  PlaylistGetResponse,
   ServiceUnavailableError,
   SuccessResponse,
   UnauthorizedError,
@@ -144,12 +144,12 @@ export class MonitorController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: MonitorCreateResponse,
+    type: MonitorGetResponse,
   })
   async createMonitors(
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() monitor: MonitorRequest,
-  ): Promise<MonitorCreateResponse> {
+  ): Promise<MonitorGetResponse> {
     const monitorEntity = await this.monitorService.findOne({
       where: { code: monitor.code },
     });
@@ -308,6 +308,50 @@ export class MonitorController {
     return {
       status: Status.Success,
       data,
+    };
+  }
+
+  @Get('/:monitorId/playlist')
+  @HttpCode(200)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiOperation({
+    operationId: 'monitor-get-playlist',
+    summary: 'Получение плэйлиста монитора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: PlaylistGetResponse,
+  })
+  async getMonitorPlaylist(
+    @Req() { user: { id: userId, role } }: ExpressRequest,
+    @Param('monitorId', ParseUUIDPipe) id: string,
+  ): Promise<PlaylistGetResponse> {
+    const conditional: FindManyOptions<MonitorEntity> = {
+      relations: ['playlist'],
+    };
+    if (role.includes(UserRoleEnum.Monitor)) {
+      conditional.where = { id: userId };
+    } else {
+      conditional.where = { userId, id };
+    }
+    const data = await this.monitorService.findOne(conditional);
+    if (!data) {
+      throw new NotFoundException(`Monitor '${id}' not found`);
+    }
+    if (!data.playlist) {
+      throw new NotFoundException(`Have no playlist in monitor '${id}'`);
+    }
+
+    return {
+      status: Status.Success,
+      data: data.playlist,
     };
   }
 
