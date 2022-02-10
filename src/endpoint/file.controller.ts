@@ -406,6 +406,7 @@ export class FileController {
         res.setHeader('Content-Length', buffer.length);
       }
 
+      res.setHeader('Cache-Control', 'private, max-age=31536000');
       if (file.videoType === VideoType.Video) {
         res.setHeader('Content-Type', 'video/mp4');
       } else if (file.videoType === VideoType.Image) {
