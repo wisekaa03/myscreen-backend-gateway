@@ -281,6 +281,13 @@ export class MonitorController {
 
   @Get('/:monitorId')
   @HttpCode(200)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     operationId: 'monitor-get',
     summary: 'Получение монитора',
