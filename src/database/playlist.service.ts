@@ -16,23 +16,30 @@ export class PlaylistService {
     private readonly playlistEntity: Repository<PlaylistEntity>,
   ) {}
 
-  find = async (
-    find: FindManyOptions<PlaylistEntity>,
-  ): Promise<PlaylistEntity[]> =>
-    this.playlistEntity.find({ relations: ['files'], ...find });
-
-  findAndCount = async (
-    find: FindManyOptions<PlaylistEntity>,
-  ): Promise<[Array<PlaylistEntity>, number]> =>
-    this.playlistEntity.findAndCount({
-      relations: ['files'],
+  async find(find: FindManyOptions<PlaylistEntity>): Promise<PlaylistEntity[]> {
+    return this.playlistEntity.find({
+      relations: ['files', 'monitors'],
       ...find,
     });
+  }
 
-  findOne = async (
+  async findAndCount(
     find: FindManyOptions<PlaylistEntity>,
-  ): Promise<PlaylistEntity | undefined> =>
-    this.playlistEntity.findOne({ ...find, relations: ['files'] });
+  ): Promise<[Array<PlaylistEntity>, number]> {
+    return this.playlistEntity.findAndCount({
+      relations: ['files', 'monitors'],
+      ...find,
+    });
+  }
+
+  async findOne(
+    find: FindManyOptions<PlaylistEntity>,
+  ): Promise<PlaylistEntity | undefined> {
+    return this.playlistEntity.findOne({
+      relations: ['files', 'monitors'],
+      ...find,
+    });
+  }
 
   async update(
     userId: string,

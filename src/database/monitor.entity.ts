@@ -293,8 +293,7 @@ export class MonitorEntity {
   userId!: string;
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.monitors, {
-    cascade: true,
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
     nullable: true,
   })

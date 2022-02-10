@@ -89,7 +89,7 @@ export class PlaylistEntity {
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.playlist, {
     nullable: true,
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
     onUpdate: 'CASCADE',
     eager: false,
   })
