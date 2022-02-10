@@ -259,6 +259,7 @@ export class UserService {
         updatedAt: new Date(),
       };
     }
+
     return this.userSizeRepository.findOne({
       id,
       disabled,

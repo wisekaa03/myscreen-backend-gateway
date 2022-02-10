@@ -155,16 +155,33 @@ export class AuthService {
     return this.buildResponsePayload(token, refreshTokenUpdated);
   }
 
-  async createMonitorAccessToken(
+  async createMonitorRefreshToken(
+    monitorId: string,
+    fingerprint: string,
+  ): Promise<string> {
+    const opts: JwtSignOptions = {
+      ...JWT_BASE_OPTIONS,
+      expiresIn: this.refreshTokenExpires,
+      subject: String(monitorId),
+      jwtid: String(monitorId),
+    };
+
+    return this.jwtService.signAsync({}, opts);
+  }
+
+  async createMonitorToken(
     monitorId: string,
     fingerprint: string,
   ): Promise<AuthenticationPayload> {
-    const token = await this.generateAccessToken({
-      id: monitorId,
-      role: UserRoleEnum.Monitor,
-    } as UserEntity);
+    const [token, refreshToken] = await Promise.all([
+      this.generateAccessToken({
+        id: monitorId,
+        role: UserRoleEnum.Monitor,
+      } as UserEntity),
+      this.createMonitorRefreshToken(monitorId, fingerprint),
+    ]);
 
-    return this.buildResponsePayload(token);
+    return this.buildResponsePayload(token, refreshToken);
   }
 
   private async decodeRefreshToken(token: string): Promise<MyscreenJwtPayload> {
@@ -196,15 +213,14 @@ export class AuthService {
   private async getStoredTokenFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
   ): Promise<RefreshTokenEntity | null> {
-    const tokenId = payload.jti;
-
+    const { jti: tokenId, aud: role } = payload;
     if (!tokenId) {
       throw new ForbiddenException(
         `Token ${JSON.stringify(payload)} malformed`,
       );
     }
 
-    return this.refreshTokenService.find(tokenId);
+    return this.refreshTokenService.find(tokenId, role);
   }
 
   async verify(token: string): Promise<MyscreenJwtPayload> {

@@ -332,7 +332,7 @@ export class AuthController {
     }
 
     // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
-    const payload = await this.authService.createMonitorAccessToken(
+    const payload = await this.authService.createMonitorToken(
       monitor.id,
       fingerprint,
     );
