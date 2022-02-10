@@ -61,6 +61,7 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { FileService } from '@/database/file.service';
 import { UserRoleEnum, VideoType } from '@/enums';
 import { FileEntity } from '@/database/file.entity';
+import { MonitorService } from '@/database/monitor.service';
 
 @ApiResponse({
   status: 400,
@@ -79,7 +80,7 @@ import { FileEntity } from '@/database/file.entity';
 })
 @ApiResponse({
   status: 404,
-  description: 'Ошибка медиа',
+  description: 'Ошибка файлов',
   type: NotFoundError,
 })
 @ApiResponse({
@@ -113,6 +114,7 @@ export class FileController {
   constructor(
     private readonly configService: ConfigService,
     private readonly fileService: FileService,
+    private readonly monitorService: MonitorService,
   ) {}
 
   @Post('/')
@@ -248,10 +250,18 @@ export class FileController {
     const where: FindConditions<FileEntity> = {
       id,
     };
-    if (!role.includes(UserRoleEnum.Monitor)) {
+    let file: FileEntity | undefined;
+    if (role.includes(UserRoleEnum.Monitor)) {
+      const monitor = await this.monitorService.findOne({
+        where: { id: userId },
+      });
+      if (monitor && monitor.playlist && monitor.playlist.files) {
+        file = monitor.playlist.files.find((f) => f.id === id);
+      }
+    } else {
       where.userId = userId;
+      file = await this.fileService.findOne({ where });
     }
-    const file = await this.fileService.findOne({ where });
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
@@ -265,7 +275,7 @@ export class FileController {
           res.setHeader('Last-Modified', headers['last-modified']);
           res.setHeader(
             'Content-Disposition',
-            `attachment;filename=${encodeURIComponent(file.name)}`,
+            `attachment;filename=${encodeURIComponent(file?.name || '')}`,
           );
           if (!res.headersSent) {
             res.flushHeaders();
@@ -282,7 +292,7 @@ export class FileController {
       })
       .promise()
       .then(() => {
-        this.logger.debug(`The file ${file.name} has been downloaded`);
+        this.logger.debug(`The file '${file?.name}' has been downloaded`);
       })
       .catch((error: unknown) => {
         this.logger.error(`S3 Error: ${JSON.stringify(error)}`, error);

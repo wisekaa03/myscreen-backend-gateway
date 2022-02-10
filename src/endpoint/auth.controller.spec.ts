@@ -4,6 +4,7 @@ import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { JwtAuthGuard } from '@/guards';
 import { AuthController } from './auth.controller';
+import { MonitorService } from '@/database/monitor.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -30,6 +31,10 @@ describe(AuthController.name, () => {
         },
         {
           provide: AuthService,
+          useClass: mockRepository,
+        },
+        {
+          provide: MonitorService,
           useClass: mockRepository,
         },
       ],

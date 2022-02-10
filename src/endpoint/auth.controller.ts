@@ -6,6 +6,7 @@ import {
   HttpCode,
   Ip,
   Logger,
+  NotFoundException,
   Patch,
   Post,
   Req,
@@ -38,11 +39,13 @@ import {
   userEntityToUser,
   UserGetResponse,
   AuthMonitorRequest,
+  NotFoundError,
 } from '@/dto';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { Status, UserRoleEnum } from '@/enums';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
+import { MonitorService } from '@/database/monitor.service';
 import { Roles, RolesGuard } from '@/guards';
 
 @ApiResponse({
@@ -54,6 +57,11 @@ import { Roles, RolesGuard } from '@/guards';
   status: 401,
   description: 'Ответ для незарегистрированного пользователя',
   type: UnauthorizedError,
+})
+@ApiResponse({
+  status: 404,
+  description: 'Монитор не найден',
+  type: NotFoundError,
 })
 @ApiResponse({
   status: 412,
@@ -77,6 +85,7 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
+    private readonly monitorService: MonitorService,
     private readonly userService: UserService,
   ) {}
 
@@ -317,9 +326,14 @@ export class AuthController {
     @Ip() fingerprint: string,
     @Body() { code }: AuthMonitorRequest,
   ): Promise<AuthRefreshResponse> {
+    const monitor = await this.monitorService.findOne({ where: { code } });
+    if (!monitor) {
+      throw new NotFoundException('This monitor does not exist');
+    }
+
     // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const payload = await this.authService.createMonitorAccessToken(
-      code,
+      monitor.id,
       fingerprint,
     );
 

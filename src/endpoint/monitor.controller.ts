@@ -64,7 +64,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 })
 @ApiResponse({
   status: 404,
-  description: 'Ошибка монитора',
+  description: 'Монитор не найден',
   type: NotFoundError,
 })
 @ApiResponse({
@@ -121,10 +121,10 @@ export class MonitorController {
       where,
     };
     if (role.includes(UserRoleEnum.Monitor)) {
-      // добавляем то, что содержится у нас в userId: code.
-      (conditional.where as FindConditions<MonitorEntity>).code = userId;
+      // добавляем то, что содержится у нас в userId: monitorId.
+      conditional.where = { id: userId };
     } else {
-      (conditional.where as FindConditions<MonitorEntity>).userId = userId;
+      conditional.where = { userId };
     }
     const [data, count] = await this.monitorService.findAndCount(conditional);
 
@@ -150,6 +150,15 @@ export class MonitorController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() monitor: MonitorRequest,
   ): Promise<MonitorCreateResponse> {
+    const monitorEntity = await this.monitorService.findOne({
+      where: { code: monitor.code },
+    });
+    if (monitorEntity) {
+      throw new BadRequestException(
+        `Монитор '${monitorEntity.name}'/'${monitorEntity.code}' уже существует`,
+      );
+    }
+
     const data = await this.monitorService.update(userId, monitor).catch(() => {
       throw new BadRequestException(`Монитор '${monitor.name}' уже существует`);
     });

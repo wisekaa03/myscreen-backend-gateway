@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtAuthGuard } from '@/guards';
 import { FileService } from '@/database/file.service';
 import { FileController } from './file.controller';
+import { MonitorService } from '@/database/monitor.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -30,6 +31,10 @@ describe(FileController.name, () => {
         },
         {
           provide: FileService,
+          useClass: mockRepository,
+        },
+        {
+          provide: MonitorService,
           useClass: mockRepository,
         },
       ],

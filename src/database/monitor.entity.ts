@@ -235,7 +235,7 @@ export class MonitorEntity {
   @IsBoolean()
   attached?: boolean;
 
-  @Column()
+  @Column({ unique: true })
   @ApiProperty({
     description: 'Идентификатор устройства',
     example: '111-111-111',

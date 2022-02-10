@@ -8,7 +8,6 @@ import {
 } from 'typeorm';
 
 import { MonitorEntity } from './monitor.entity';
-import { UserEntity } from './user.entity';
 
 @Injectable()
 export class MonitorService {
@@ -17,29 +16,32 @@ export class MonitorService {
     private readonly monitorRepository: Repository<MonitorEntity>,
   ) {}
 
-  find = async (
+  async find(
     find: FindManyOptions<MonitorEntity>,
-  ): Promise<Array<MonitorEntity>> =>
-    this.monitorRepository.find({
+  ): Promise<Array<MonitorEntity>> {
+    return this.monitorRepository.find({
       relations: ['files', 'playlist'],
       ...find,
     });
+  }
 
-  findAndCount = async (
+  async findAndCount(
     find: FindManyOptions<MonitorEntity>,
-  ): Promise<[Array<MonitorEntity>, number]> =>
-    this.monitorRepository.findAndCount({
+  ): Promise<[Array<MonitorEntity>, number]> {
+    return this.monitorRepository.findAndCount({
       relations: ['files', 'playlist'],
       ...find,
     });
+  }
 
-  findOne = async (
+  async findOne(
     find: FindManyOptions<MonitorEntity>,
-  ): Promise<MonitorEntity | undefined> =>
-    this.monitorRepository.findOne({
+  ): Promise<MonitorEntity | undefined> {
+    return this.monitorRepository.findOne({
       relations: ['files', 'playlist'],
       ...find,
     });
+  }
 
   async update(
     userId: string,
