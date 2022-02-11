@@ -84,7 +84,7 @@ function deploy() {
   SSH_COMMAND+="find $2/upload -type f -atime +7 -delete && "
 
   # Run command
-  SSH_COMMAND+="pm2 restart pm2.js"
+  SSH_COMMAND+="pm2 restart ecosystem.config.js"
 
   bash -c "$SSH_PARAMS -t circleci@$1 \"$SSH_COMMAND\""
 }
