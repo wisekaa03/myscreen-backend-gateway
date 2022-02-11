@@ -29,7 +29,7 @@ export class ExceptionsFilter extends BaseExceptionFilter {
   logger = new Logger(ExceptionsFilter.name);
 
   catch(exception: unknown, host: ArgumentsHost) {
-    let exceptionRule: unknown;
+    let exceptionRule: Error | undefined;
 
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
@@ -70,6 +70,12 @@ export class ExceptionsFilter extends BaseExceptionFilter {
         'ExceptionsFilter: TypeORM',
       );
       exceptionRule = new InternalServerError();
+    } else {
+      this.logger.error(
+        (exception as any)?.message || (exception as any).toString(),
+        (exception as any)?.stack || exception,
+        'ExceptionsFilter: Unknown',
+      );
     }
 
     super.catch(exceptionRule || exception, host);
