@@ -596,26 +596,24 @@ export class EditorService {
           countPackets: false,
         });
         const fileOutParse = path.parse(outPath);
-        const files: Array<Express.Multer.File> = [
-          {
-            originalname: fileOutParse.name,
-            encoding: 'utf8',
-            mimetype: 'video/mp4',
-            destination: fileOutParse.dir,
-            filename: fileOutParse.name,
-            size,
-            path: outPath,
-            hash: 'render',
-            media,
-            fieldname: null as unknown as string,
-            stream: null as unknown as ReadStream,
-            buffer: null as unknown as Buffer,
-          },
-        ];
+        const files: Express.Multer.File = {
+          originalname: fileOutParse.base,
+          encoding: 'utf8',
+          mimetype: 'video/mp4',
+          destination: fileOutParse.dir,
+          filename: fileOutParse.base,
+          size,
+          path: outPath,
+          hash: 'render',
+          media,
+          fieldname: null as unknown as string,
+          stream: null as unknown as ReadStream,
+          buffer: null as unknown as Buffer,
+        };
         const filesSaved = await this.fileService.upload(
           userId,
           { folderId: folder.id, category: FileCategory.Media },
-          files,
+          [files],
         );
 
         await this.editorRepository.update(renderEditor.id, {
@@ -737,16 +735,6 @@ export class EditorService {
     if (moveIndex < 1) {
       throw new BadRequestException(
         'moveIndex must be greater or equal than 1',
-      );
-    }
-    if (
-      !(
-        editor.videoLayers.length >= moveIndex ||
-        editor.audioLayers.length >= moveIndex
-      )
-    ) {
-      throw new BadRequestException(
-        'moveIndex must be less than editor layers',
       );
     }
 

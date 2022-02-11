@@ -429,7 +429,7 @@ export class FileController {
         res.setHeader(
           'Content-Disposition',
           `attachment;filename=${encodeURIComponent(
-            `${fileParse.name}-preview.${fileParse.ext}`,
+            `${fileParse.name}-preview${fileParse.ext}`,
           )};`,
         );
       }

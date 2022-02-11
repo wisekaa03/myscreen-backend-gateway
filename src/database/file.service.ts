@@ -350,8 +350,7 @@ export class FileService {
     const [editorFiles, playlistFiles] = await Promise.all([
       this.editorService.find({
         where:
-          `"EditorEntity"."renderedFileId"='${file.id}'` +
-          ` OR "EditorEntity__videoLayers"."fileId"='${file.id}'` +
+          `"EditorEntity__videoLayers"."fileId"='${file.id}'` +
           ` OR "EditorEntity__audioLayers"."fileId"='${file.id}'`,
       }),
       this.playlistService.find({
@@ -359,8 +358,10 @@ export class FileService {
       }),
     ]);
     if (
-      (Array.isArray(editorFiles) && editorFiles.length > 0) ||
-      (Array.isArray(playlistFiles) && playlistFiles.length > 0)
+      (editorFiles && Array.isArray(editorFiles) && editorFiles.length > 0) ||
+      (playlistFiles &&
+        Array.isArray(playlistFiles) &&
+        playlistFiles.length > 0)
     ) {
       const errorMsg = {} as {
         editor: { id: string; name: string }[] | null;
@@ -508,7 +509,7 @@ export class FileService {
     file: Express.Multer.File,
   ): Promise<[MediaMeta, VideoType, string, Buffer]> {
     const [mime] = file.mimetype.split('/');
-    const extension = path.parse(file.originalname).ext;
+    const extension = path.parse(file.originalname).ext.slice(1);
     const type =
       Object.values(VideoType).find((t) => t === mime) ?? VideoType.Other;
 
