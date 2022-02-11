@@ -38,6 +38,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 
 import type { FindConditions } from 'typeorm';
+import path from 'node:path';
 import {
   BadRequestError,
   UnauthorizedError,
@@ -352,10 +353,10 @@ export class FileController {
     status: 200,
     description: 'Успешный ответ',
     content: {
-      'video/mp4': {
+      'video/webm': {
         encoding: {
-          video_mp4: {
-            contentType: 'video/mp4',
+          video_webm: {
+            contentType: 'video/webm',
           },
         },
       },
@@ -363,13 +364,6 @@ export class FileController {
         encoding: {
           image_jpeg: {
             contentType: 'image/jpeg',
-          },
-        },
-      },
-      'image/png': {
-        encoding: {
-          image_png: {
-            contentType: 'image/png',
           },
         },
       },
@@ -409,21 +403,36 @@ export class FileController {
         buffer = await this.fileService.previewFile(file);
       } else {
         this.fileService.previewFile(file);
-        res.setHeader('Content-Length', buffer.length);
       }
 
+      res.setHeader('Content-Length', buffer.length);
       res.setHeader('Cache-Control', 'private, max-age=31536000');
+      const fileParse = path.parse(file.name);
       if (file.videoType === VideoType.Video) {
-        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('Content-Type', 'video/webm');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment;filename=${encodeURIComponent(
+            `${fileParse.name}-preview.webm`,
+          )};`,
+        );
       } else if (file.videoType === VideoType.Image) {
         res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment;filename=${encodeURIComponent(
+            `${fileParse.name}-preview.jpeg`,
+          )};`,
+        );
       } else {
         res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment;filename=${encodeURIComponent(
+            `${fileParse.name}-preview.${fileParse.ext}`,
+          )};`,
+        );
       }
-      res.setHeader(
-        'Content-Disposition',
-        `attachment;filename=${encodeURIComponent(`preview-${file.name}`)};`,
-      );
       res.write(buffer);
       res.end();
     } catch (error: unknown) {

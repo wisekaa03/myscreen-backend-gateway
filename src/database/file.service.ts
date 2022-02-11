@@ -246,7 +246,6 @@ export class FileService {
     const filesPromises = files.map(async (file) => {
       const [meta, videoType, extension, preview] = await this.metaInformation(
         file,
-        category,
       );
 
       const media: DeepPartial<FileEntity> = {
@@ -393,7 +392,7 @@ export class FileService {
             .then((value) => {
               this.logger.debug(
                 `The file has been deleted: ${
-                  value.$response.data?.DeleteMarker || true
+                  value.$response.data?.DeleteMarker || false
                 }`,
               );
             })
@@ -412,13 +411,16 @@ export class FileService {
   }
 
   async previewFile(file: FileEntity): Promise<Buffer> {
-    const downloadDir = path.join(
-      this.configService.get<string>('FILES_UPLOAD', 'upload'),
-      file.folder.id,
+    const downloadDir = this.configService.get<string>(
+      'FILES_UPLOAD',
+      'upload',
     );
     await fs.mkdir(downloadDir, { recursive: true });
     const filename = path.join(downloadDir, file.name);
-    let outPath = path.join(downloadDir, `${file.name.split('.')[0]}-preview`);
+    let outPath = path.join(
+      downloadDir,
+      `${path.parse(file.name).name}-preview`,
+    );
     outPath += file.videoType === VideoType.Video ? '.webm' : '.jpg';
 
     if (await fs.access(outPath).catch(() => true)) {
@@ -444,45 +446,37 @@ export class FileService {
 
     const { stderr } = await FfMpegPreview(
       file.videoType,
-      file.meta.info!,
+      file.meta,
       filename,
       outPath,
     );
     if (stderr) {
       throw new BadRequestException();
     }
-
-    const buffer = await fs.readFile(outPath);
-    await Promise.all([
-      this.fileRepository.update(file.id, {
-        duration: file.meta.duration,
-        width: file.meta.width,
-        height: file.meta.height,
-      }),
+    return fs.readFile(outPath).then((buffer) => {
       this.filePreviewRepository.save(
         this.filePreviewRepository.create({
           ...file.preview,
           file,
           preview: Buffer.from(`\\x${buffer.toString('hex')}`),
         }),
-      ),
-    ]);
+      );
 
-    return buffer;
+      return buffer;
+    });
   }
 
-  async preview(type: VideoType, file: Express.Multer.File): Promise<Buffer> {
+  async preview(
+    type: VideoType,
+    file: Express.Multer.File,
+    meta: MediaMeta,
+  ): Promise<Buffer> {
     let preview: Buffer;
     if (type === VideoType.Image) {
       const outPath = path.join(
-        `${file.destination}/${file.filename}-preview.jpg`,
+        `${file.destination}/${path.parse(file.filename).name}-preview.jpg`,
       );
-      const { stderr } = await FfMpegPreview(
-        type,
-        file.media!,
-        file.path,
-        outPath,
-      );
+      const { stderr } = await FfMpegPreview(type, meta, file.path, outPath);
       if (stderr) {
         throw new BadRequestException();
       }
@@ -490,14 +484,9 @@ export class FileService {
       preview = await fs.readFile(outPath);
     } else if (type === VideoType.Video) {
       const outPath = path.join(
-        `${file.destination}/${file.filename}-preview.webm`,
+        `${file.destination}/${path.parse(file.filename).name}-preview.webm`,
       );
-      const { stderr } = await FfMpegPreview(
-        type,
-        file.media!,
-        file.path,
-        outPath,
-      );
+      const { stderr } = await FfMpegPreview(type, meta, file.path, outPath);
       if (stderr) {
         throw new BadRequestException();
       }
@@ -517,12 +506,9 @@ export class FileService {
    */
   async metaInformation(
     file: Express.Multer.File,
-    category: FileCategory,
   ): Promise<[MediaMeta, VideoType, string, Buffer]> {
     const [mime] = file.mimetype.split('/');
-    const extension = file.originalname.slice(
-      file.originalname.lastIndexOf('.') + 1,
-    );
+    const extension = path.parse(file.originalname).ext;
     const type =
       Object.values(VideoType).find((t) => t === mime) ?? VideoType.Other;
 
@@ -533,7 +519,13 @@ export class FileService {
       const { filename, ...format } = mediaFormat ?? {};
       const meta: MediaMeta = {
         filesize: Number(file.media.format?.size) || file.size,
-        duration: parseFloat(`${file.media.format?.duration || 0}`),
+        duration: parseFloat(
+          `${
+            file.media.format?.duration ||
+            file.media.streams?.[0]?.duration ||
+            0
+          }`,
+        ),
         width:
           Number(file.media.format?.width) ||
           Number(file.media.streams?.[0].width) ||
@@ -548,7 +540,7 @@ export class FileService {
         },
       };
 
-      const preview = await this.preview(type, file);
+      const preview = await this.preview(type, file, meta);
 
       return [meta, type, extension, preview];
     }

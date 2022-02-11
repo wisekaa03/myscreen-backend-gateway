@@ -1,14 +1,15 @@
 import child from 'node:child_process';
 import util from 'node:util';
-import type { FfprobeData } from 'media-probe';
+import path from 'node:path';
 
+import { MediaMeta } from '@/database/file.entity';
 import { VideoType } from '@/enums';
 
 const exec = util.promisify(child.exec);
 
 export async function FfMpegPreview(
   type: VideoType,
-  media: FfprobeData,
+  meta: MediaMeta,
   filename: string,
   outPath: string,
 ): Promise<{ stderr: string; stdout: string }> {
@@ -20,12 +21,23 @@ export async function FfMpegPreview(
   }
 
   if (type === VideoType.Video) {
-    return exec(
+    const duration = Math.floor(meta.duration || 0);
+    const frameInterval = Math.floor(duration / 6); // 6 - Number of frames
+    const filenameParsed = path.parse(filename);
+    const outPattern = path.join(
+      filenameParsed.dir,
+      `${filenameParsed.name}-preview-%04d.jpg`,
+    );
+
+    await exec(
       `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -v error` +
         ' -an' +
-        ' -vf scale="100:74"' +
-        // ' -vf select=""' +
-        ` -y "${outPath}"`,
+        ` -vf scale="100:74",fps="1/${frameInterval}"` +
+        ` -y "${outPattern}"`,
+    );
+
+    return exec(
+      `node_modules/ffmpeg-static/ffmpeg -framerate 1/0.6 -i "${outPattern}" -v error -y "${outPath}"`,
     );
   }
 

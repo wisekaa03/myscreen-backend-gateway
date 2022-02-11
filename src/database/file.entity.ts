@@ -22,9 +22,7 @@ import {
   IsNumber,
   IsString,
   IsUUID,
-  ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 
 import { FileCategory, VideoType } from '@/enums';
 import { FolderEntity } from '@/database/folder.entity';

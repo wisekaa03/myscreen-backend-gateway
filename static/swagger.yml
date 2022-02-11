@@ -1187,18 +1187,14 @@ paths:
         "200":
           description: Успешный ответ
           content:
-            video/mp4:
+            video/webm:
               encoding:
-                video_mp4:
-                  contentType: video/mp4
+                video_webm:
+                  contentType: video/webm
             image/jpeg:
               encoding:
                 image_jpeg:
                   contentType: image/jpeg
-            image/png:
-              encoding:
-                image_png:
-                  contentType: image/png
         "400": *a24
         "401": *a25
         "403": *a26
@@ -1821,7 +1817,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.10.21
+  version: 2.10.22
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev

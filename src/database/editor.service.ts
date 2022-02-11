@@ -287,26 +287,26 @@ export class EditorService {
     editor: EditorEntity,
     audio: boolean,
   ): Promise<[string, editly.Config]> {
-    const mkdirPath = path.join(this.tempDirectory, editor.id);
-    await fs.mkdir(mkdirPath, { recursive: true });
+    await fs.mkdir(this.tempDirectory, { recursive: true });
 
     const videoLayersPromise = editor.videoLayers.map(
-      async (layer: EditorLayerEntity) => this.prepareFile(mkdirPath, layer),
+      async (layer: EditorLayerEntity) =>
+        this.prepareFile(this.tempDirectory, layer),
     );
     const layers = await Promise.all(videoLayersPromise);
 
     if (audio) {
       const audioLayersPromise = editor.audioLayers.map(
-        async (layer: EditorLayerEntity) => this.prepareFile(mkdirPath, layer),
+        async (layer: EditorLayerEntity) =>
+          this.prepareFile(this.tempDirectory, layer),
       );
       await Promise.all(audioLayersPromise);
     }
 
-    const { keepSourceAudio, videoLayers, audioLayers, width, height, fps } =
-      editor;
+    const { keepSourceAudio, audioLayers, width, height, fps } = editor;
 
     return [
-      mkdirPath,
+      this.tempDirectory,
       {
         width,
         height,
@@ -342,6 +342,9 @@ export class EditorService {
                 mixVolume: layer.mixVolume,
               },
             ],
+            transition: {
+              duration: 0,
+            },
           };
         }),
         audioTracks: audioLayers.map((layer) => ({
@@ -351,7 +354,7 @@ export class EditorService {
           cutTo: layer.cutTo,
           mixVolume: layer.mixVolume,
         })),
-        outPath: mkdirPath,
+        outPath: path.join(this.tempDirectory, editor.id),
       },
     ];
   }
@@ -449,8 +452,8 @@ export class EditorService {
     id: string,
     rerender = false,
   ): Promise<EditorEntity> {
-    let editor = await this.editorRepository.findOne(id, {
-      relations: ['videoLayers'],
+    const editor = await this.editorRepository.findOne(id, {
+      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
     });
     if (!editor) {
       throw new NotFoundException('Editor not found');
@@ -477,28 +480,36 @@ export class EditorService {
         await this.editorRepository.update(editor.id, {
           renderedFile: null,
         });
-        await this.fileService.delete(editor.renderedFile);
-      }
-      editor = await this.editorRepository.findOne(editor.id, {
-        relations: ['videoLayers', 'audioLayers', 'renderedFile'],
-      });
-      if (!editor) {
-        throw new NotFoundException('Editor not found');
+        /* await */ this.fileService.delete(editor.renderedFile);
       }
 
       const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
-      editlyConfig.outPath = path.join(mkdirPath, `${editor.name}-out.mp4`);
+      await fs.mkdir(editlyConfig.outPath, { recursive: true });
+      editlyConfig.outPath = path.join(
+        mkdirPath,
+        `${path.parse(editor.name).name}-out.mp4`,
+      );
       // editlyConfig.verbose = true;
       editlyConfig.customOutputArgs = [
-        // '-fflags',
-        // 'nobuffer',
-        // '-flags',
-        // 'low_delay',
+        '-c:v',
+        'libx264',
+        '-preset',
+        'slow',
+        '-crf',
+        '20',
+        '-c:a',
+        'aac',
+        '-b:a',
+        '160k',
+        '-vf',
+        'format=yuv420p',
+        '-movflags',
+        '+faststart',
       ];
 
       (async (renderEditor: EditorEntity) => {
         const editlyJSON = JSON.stringify(editlyConfig);
-        const editlyPath = path.join(mkdirPath, 'editly.json');
+        const editlyPath = path.join(mkdirPath, editor.id, 'editly.json');
         await fs.writeFile(editlyPath, editlyJSON);
 
         let outPath: string | Error;
@@ -584,13 +595,14 @@ export class EditorService {
           countFrames: false,
           countPackets: false,
         });
+        const fileOutParse = path.parse(outPath);
         const files: Array<Express.Multer.File> = [
           {
-            originalname: outPath.substring(outPath.lastIndexOf('/') + 1),
+            originalname: fileOutParse.name,
             encoding: 'utf8',
             mimetype: 'video/mp4',
-            destination: outPath.substring(0, outPath.lastIndexOf('/')),
-            filename: outPath.substring(outPath.lastIndexOf('/') + 1),
+            destination: fileOutParse.dir,
+            filename: fileOutParse.name,
             size,
             path: outPath,
             hash: 'render',

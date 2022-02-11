@@ -20,6 +20,7 @@ import {
   UseGuards,
   Req,
   Res,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -555,6 +556,9 @@ export class EditorController {
     });
     if (!data) {
       throw new NotFoundException('Editor not found');
+    }
+    if (data.renderingError) {
+      throw new InternalServerErrorException(data.renderingError);
     }
 
     return {
