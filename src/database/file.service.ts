@@ -454,6 +454,8 @@ export class FileService {
     if (stderr) {
       throw new BadRequestException();
     }
+    // TODO: сделать что-нибудь с preview файлами
+
     return fs.readFile(outPath).then((buffer) => {
       this.filePreviewRepository.save(
         this.filePreviewRepository.create({

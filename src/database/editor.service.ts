@@ -624,6 +624,22 @@ export class EditorService {
         });
 
         this.logger.log(`Export writed to database: ${JSON.stringify(files)}`);
+
+        // Удаляем все
+        const deleteLayer = editlyConfig.clips.map(async (clip) =>
+          (clip.layers as any)?.[0]?.path
+            ? fs.unlink((clip.layers as any)[0].path)
+            : undefined,
+        );
+        if (editlyConfig.audioTracks) {
+          deleteLayer.concat(
+            editlyConfig.audioTracks.map(async (track) =>
+              fs.unlink(track.path),
+            ),
+          );
+        }
+        deleteLayer.concat(fs.unlink(outPath));
+        await Promise.allSettled(deleteLayer);
       })(editor).catch(async (error) => {
         this.logger.error(error);
         if (editor) {
