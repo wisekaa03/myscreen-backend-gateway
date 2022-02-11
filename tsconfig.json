@@ -29,6 +29,6 @@
       ]
     }
   },
-  "include": ["src", "typings", "test", "./jest.config.js"],
+  "include": ["src", "typings", "test", "./jest.config.js", "./pm2.js"],
   "exclude": ["node_modules", "dist", "upload"]
 }

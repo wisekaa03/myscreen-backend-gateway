@@ -68,6 +68,7 @@ function deploy() {
     --include="upload/***" \
     --include="node_modules/***" \
     --include=".env" \
+    --include="pm2.js" \
     --include="package.json" \
     --include="yarn.lock" \
     --exclude='*'
@@ -83,7 +84,7 @@ function deploy() {
   SSH_COMMAND+="find $2/upload -type f -atime +7 -delete && "
 
   # Run command
-  SSH_COMMAND+="pm2 restart api --update-env"
+  SSH_COMMAND+="pm2 restart pm2.js"
 
   bash -c "$SSH_PARAMS -t circleci@$1 \"$SSH_COMMAND\""
 }
