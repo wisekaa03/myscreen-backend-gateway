@@ -113,7 +113,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   await app.listen(port);
   const url = await app.getUrl();
   logger.warn(
-    `Server version ${version} started on ${`${url}${apiPath}`}`,
+    `Server version ${version} started in ${process.env.NODE_ENV} mode on ${url}${apiPath}`,
     NestApplication.name,
   );
 })();
