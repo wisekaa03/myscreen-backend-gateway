@@ -584,6 +584,9 @@ export class EditorController {
     @Body() body?: EditorExportRequest,
   ): Promise<EditorGetRenderingStatusResponse> {
     const data = await this.editorService.export(userId, id, body?.rerender);
+    if (!data) {
+      throw new InternalServerErrorException();
+    }
 
     return {
       status: Status.Success,

@@ -445,13 +445,14 @@ export class EditorService {
    * @async
    * @param {string} userId The user ID
    * @param {string} id Editor ID
+   * @param {boolean} rerender Re-render
    * @returns {EditorEntity} Result
    */
   async export(
     userId: string,
     id: string,
     rerender = false,
-  ): Promise<EditorEntity> {
+  ): Promise<EditorEntity | undefined> {
     const editor = await this.editorRepository.findOne(id, {
       relations: ['videoLayers', 'audioLayers', 'renderedFile'],
     });
@@ -468,28 +469,39 @@ export class EditorService {
       }
     }
 
-    await this.editorRepository.update(editor.id, {
-      totalDuration: this.calcTotalDuration(editor.videoLayers),
-      renderingStatus: RenderingStatus.Pending,
-      renderingError: null,
-      renderingPercent: 0,
-    });
-
     try {
+      await this.editorRepository.update(editor.id, {
+        totalDuration: this.calcTotalDuration(editor.videoLayers),
+        renderingStatus: RenderingStatus.Pending,
+        renderingError: null,
+        renderingPercent: 0,
+      });
+
       if (editor.renderedFile) {
         await this.editorRepository.update(editor.id, {
           renderedFile: null,
         });
-        /* await */ this.fileService.delete(editor.renderedFile);
+        /* await */ this.fileService
+          .delete(editor.renderedFile)
+          .catch((reason) => {
+            this.logger.error(`Delete from editor failed: ${reason}`);
+            throw reason;
+          });
       }
 
       const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
-      await fs.mkdir(editlyConfig.outPath, { recursive: true });
+      await fs
+        .mkdir(editlyConfig.outPath, { recursive: true })
+        .catch((reason) => {
+          this.logger.error(
+            `Mkdir '${editlyConfig.outPath}' failed: ${reason}`,
+          );
+          throw reason;
+        });
       editlyConfig.outPath = path.join(
         mkdirPath,
         `${path.parse(editor.name).name}-out.mp4`,
       );
-      // editlyConfig.verbose = true;
       editlyConfig.customOutputArgs = [
         '-c:v',
         'libx264',
@@ -510,7 +522,10 @@ export class EditorService {
       (async (renderEditor: EditorEntity) => {
         const editlyJSON = JSON.stringify(editlyConfig);
         const editlyPath = path.join(mkdirPath, editor.id, 'editly.json');
-        await fs.writeFile(editlyPath, editlyJSON);
+        await fs.writeFile(editlyPath, editlyJSON).catch((reason) => {
+          this.logger.error(`Write to ${editlyPath} failed: ${reason}`);
+          throw reason;
+        });
 
         let outPath: string | Error;
         if (0) {
@@ -541,7 +556,7 @@ export class EditorService {
             });
             childEditly.stderr?.on('data', (message: Buffer) => {
               const msg = message.toString();
-              this.logger.error(msg, undefined, 'Editly');
+              this.logger.debug(msg, undefined, 'Editly');
             });
             childEditly.on('error', (error: Error) => {
               this.logger.error(error.message, error.stack, 'Editly');
@@ -551,40 +566,28 @@ export class EditorService {
               'exit',
               (/* code: number | null, signal: NodeJS.Signals | null */) => {
                 fs.access(editlyConfig.outPath)
-                  .then(() => {
-                    resolve(editlyConfig.outPath);
-                  })
-                  .catch(() => {
-                    reject(
-                      new Error(
-                        "outFile not found. There's a some error in editly",
-                      ),
-                    );
-                  });
+                  .then(() => resolve(editlyConfig.outPath))
+                  .catch((error: Error) => reject(error));
               },
             );
-          }).catch((error) => new Error(error));
-        }
-        if (outPath instanceof Error) {
-          throw outPath;
+          });
         }
 
         const { size } = await fs.stat(outPath);
 
-        const parentFolder = await this.folderService.rootFolder(userId);
-        let folder = await this.folderService.findOne({
-          where: {
-            name: '<Исполненные>',
-            parentFolderId: parentFolder.id,
-            userId,
-          },
-        });
+        const folder = await this.folderService
+          .rootFolder(userId)
+          .then((parentFolder) =>
+            this.folderService.findOne({
+              where: {
+                name: '<Исполненные>',
+                parentFolderId: parentFolder.id,
+                userId,
+              },
+            }),
+          );
         if (!folder) {
-          folder = await this.folderService.update({
-            name: '<Исполненные>',
-            parentFolderId: parentFolder.id,
-            userId,
-          });
+          throw new Error('The database has run out of space (?)');
         }
         const media = await ffprobe(outPath, {
           showFormat: true,
@@ -628,44 +631,48 @@ export class EditorService {
         // Удаляем все
         const deleteLayer = editlyConfig.clips.map(async (clip) =>
           (clip.layers as any)?.[0]?.path
-            ? fs.unlink((clip.layers as any)[0].path)
+            ? fs.unlink((clip.layers as any)[0].path).catch(() => {
+                this.logger.error(
+                  `Not deleted: ${(clip.layers as any)?.[0]?.path}`,
+                );
+              })
             : undefined,
         );
         if (editlyConfig.audioTracks) {
           deleteLayer.concat(
             editlyConfig.audioTracks.map(async (track) =>
-              fs.unlink(track.path),
+              fs.unlink(track.path).catch(() => {
+                this.logger.error(`Not deleted: ${track.path}`);
+              }),
             ),
           );
         }
         deleteLayer.concat(fs.unlink(outPath));
         await Promise.allSettled(deleteLayer);
-      })(editor).catch(async (error) => {
+      })(editor).catch((error) => {
         this.logger.error(error);
-        if (editor) {
-          await this.editorRepository.update(editor.id, {
-            renderingError: error.message,
-            renderingStatus: RenderingStatus.Error,
-            renderingPercent: null,
-          });
-        }
+        this.editorRepository.update(editor.id, {
+          renderingError: error?.message || error,
+          renderingStatus: RenderingStatus.Error,
+          renderingPercent: null,
+        });
       });
 
       const { videoLayers, audioLayers, ...other } = editor;
       return other as EditorEntity;
     } catch (error: unknown) {
-      if (editor) {
-        await this.editorRepository.update(editor.id, {
-          renderingStatus: RenderingStatus.Error,
-          renderingError: (error as any).toString(),
-          renderingPercent: 0,
-        });
+      let renderingError: string;
+      if (error instanceof Error) {
+        renderingError = error.message;
+      } else {
+        renderingError = error as string;
       }
-
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      throw new Error(error as any);
+      await this.editorRepository.update(editor.id, {
+        renderingStatus: RenderingStatus.Error,
+        renderingError,
+        renderingPercent: 0,
+      });
+      return undefined;
     }
   }
 
