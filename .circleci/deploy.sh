@@ -68,7 +68,7 @@ function deploy() {
     --include="upload/***" \
     --include="node_modules/***" \
     --include=".env" \
-    --include="pm2.js" \
+    --include="ecosystem.config.js" \
     --include="package.json" \
     --include="yarn.lock" \
     --exclude='*'
