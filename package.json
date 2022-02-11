@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.10.20",
+  "version": "2.10.21",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -38,6 +38,7 @@
     "**/**/chokidar": ">=3.5.3",
     "**/**/debug": ">=4.3.3",
     "**/**/dotenv": ">=16.0.0",
+    "**/**/dotenv-expand": ">=8.0.1",
     "**/**/execa": "^5.1.1",
     "**/**/express": ">=4.17.2",
     "**/**/fabric": ">=5.0.0",
@@ -59,7 +60,7 @@
   },
   "dependencies": {
     "@nestjs/common": "^8.2.6",
-    "@nestjs/config": "^1.1.6",
+    "@nestjs/config": "^1.1.7",
     "@nestjs/core": "^8.2.6",
     "@nestjs/jwt": "^8.0.0",
     "@nestjs/mapped-types": "^1.0.1",

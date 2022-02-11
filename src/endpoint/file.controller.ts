@@ -270,7 +270,13 @@ export class FileController {
       .getS3Object(file)
       .on('httpHeaders', (statusCode, headers, awsResponse) => {
         if (statusCode === 200) {
-          res.setHeader('Content-Length', headers['content-length']);
+          res.setHeader(
+            'Content-Length',
+            headers['content-length'] ||
+              String(file?.filesize) ||
+              String(file?.meta.filesize),
+          );
+          res.setHeader('Cache-Control', 'private, max-age=31536000');
           res.setHeader('Content-Type', headers['content-type']);
           res.setHeader('Last-Modified', headers['last-modified']);
           res.setHeader(
