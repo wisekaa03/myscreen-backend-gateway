@@ -13,7 +13,6 @@ import {
   BadRequestException,
   NotAcceptableException,
   NotFoundException,
-  HttpException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -613,42 +612,47 @@ export class EditorService {
           stream: null as unknown as ReadStream,
           buffer: null as unknown as Buffer,
         };
-        const filesSaved = await this.fileService.upload(
-          userId,
-          { folderId: folder.id, category: FileCategory.Media },
-          [files],
-        );
-
-        await this.editorRepository.update(renderEditor.id, {
-          renderingStatus: RenderingStatus.Ready,
-          renderedFile: filesSaved[0],
-          renderingPercent: 100,
-          renderingError: null,
-        });
+        await this.fileService
+          .upload(
+            userId,
+            { folderId: folder.id, category: FileCategory.Media },
+            [files],
+          )
+          .then((value) => {
+            this.editorRepository.update(renderEditor.id, {
+              renderingStatus: RenderingStatus.Ready,
+              renderedFile: value?.[0],
+              renderingPercent: 100,
+              renderingError: null,
+            });
+          })
+          .catch((reason) => {
+            this.logger.error(`Can't write to out file: ${reason}`);
+          });
 
         this.logger.log(`Export writed to database: ${JSON.stringify(files)}`);
 
-        // Удаляем все
-        const deleteLayer = editlyConfig.clips.map(async (clip) =>
-          (clip.layers as any)?.[0]?.path
-            ? fs.unlink((clip.layers as any)[0].path).catch(() => {
-                this.logger.error(
-                  `Not deleted: ${(clip.layers as any)?.[0]?.path}`,
-                );
-              })
-            : undefined,
-        );
-        if (editlyConfig.audioTracks) {
-          deleteLayer.concat(
-            editlyConfig.audioTracks.map(async (track) =>
-              fs.unlink(track.path).catch(() => {
-                this.logger.error(`Not deleted: ${track.path}`);
-              }),
-            ),
-          );
-        }
-        deleteLayer.concat(fs.unlink(outPath));
-        await Promise.allSettled(deleteLayer);
+        // // Удаляем все
+        // const deleteLayer = editlyConfig.clips.map(async (clip) =>
+        //   (clip.layers as any)?.[0]?.path
+        //     ? fs.unlink((clip.layers as any)[0].path).catch(() => {
+        //         this.logger.error(
+        //           `Not deleted: ${(clip.layers as any)?.[0]?.path}`,
+        //         );
+        //       })
+        //     : undefined,
+        // );
+        // if (editlyConfig.audioTracks) {
+        //   deleteLayer.concat(
+        //     editlyConfig.audioTracks.map(async (track) =>
+        //       fs.unlink(track.path).catch(() => {
+        //         this.logger.error(`Not deleted: ${track.path}`);
+        //       }),
+        //     ),
+        //   );
+        // }
+        // deleteLayer.concat(fs.unlink(outPath));
+        // await Promise.allSettled(deleteLayer);
       })(editor).catch((error) => {
         this.logger.error(error);
         this.editorRepository.update(editor.id, {

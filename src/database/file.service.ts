@@ -14,6 +14,7 @@ import {
   HttpException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   Logger,
   NotFoundException,
   ServiceUnavailableException,
@@ -424,7 +425,7 @@ export class FileService {
     );
     outPath += file.videoType === VideoType.Video ? '.webm' : '.jpg';
 
-    if (await fs.access(outPath).catch(() => true)) {
+    if (!(await fs.access(outPath).catch(() => true))) {
       const filenameStream = createWriteStream(filename);
       await this.getS3Object(file)
         .on('httpHeaders', (statusCode, headers, awsResponse) => {
@@ -445,15 +446,11 @@ export class FileService {
         });
     }
 
-    const { stderr } = await FfMpegPreview(
-      file.videoType,
-      file.meta,
-      filename,
-      outPath,
+    await FfMpegPreview(file.videoType, file.meta, filename, outPath).catch(
+      (reason) => {
+        throw new InternalServerErrorException(reason);
+      },
     );
-    if (stderr) {
-      throw new BadRequestException();
-    }
     // TODO: сделать что-нибудь с preview файлами
 
     return fs.readFile(outPath).then((buffer) => {
@@ -479,20 +476,18 @@ export class FileService {
       const outPath = path.join(
         `${file.destination}/${path.parse(file.filename).name}-preview.jpg`,
       );
-      const { stderr } = await FfMpegPreview(type, meta, file.path, outPath);
-      if (stderr) {
-        throw new BadRequestException();
-      }
+      await FfMpegPreview(type, meta, file.path, outPath).catch((reason) => {
+        throw new InternalServerErrorException(reason);
+      });
 
       preview = await fs.readFile(outPath);
     } else if (type === VideoType.Video) {
       const outPath = path.join(
         `${file.destination}/${path.parse(file.filename).name}-preview.webm`,
       );
-      const { stderr } = await FfMpegPreview(type, meta, file.path, outPath);
-      if (stderr) {
-        throw new BadRequestException();
-      }
+      await FfMpegPreview(type, meta, file.path, outPath).catch((reason) => {
+        throw new InternalServerErrorException(reason);
+      });
 
       preview = await fs.readFile(outPath);
     } else {
