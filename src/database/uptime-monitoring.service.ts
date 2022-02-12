@@ -12,15 +12,17 @@ export class UptimeMonitoringService {
     private readonly uptimeMonitoringEntity: Repository<UptimeMonitoringEntity>,
   ) {}
 
-  find = async (
+  async find(
     find: FindManyOptions<UptimeMonitoringEntity>,
-  ): Promise<[Array<UptimeMonitoringEntity>, number]> =>
-    this.uptimeMonitoringEntity.findAndCount(find);
+  ): Promise<[Array<UptimeMonitoringEntity>, number]> {
+    return this.uptimeMonitoringEntity.findAndCount(find);
+  }
 
-  findOne = async (
+  async findOne(
     find: FindManyOptions<UptimeMonitoringEntity>,
-  ): Promise<UptimeMonitoringEntity | undefined> =>
-    this.uptimeMonitoringEntity.findOne(find);
+  ): Promise<UptimeMonitoringEntity | undefined> {
+    return this.uptimeMonitoringEntity.findOne(find);
+  }
 
   async create(user: UserEntity): Promise<UptimeMonitoringEntity> {
     const uptimeMonitoring: DeepPartial<UptimeMonitoringEntity> = {

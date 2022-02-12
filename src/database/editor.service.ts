@@ -248,7 +248,7 @@ export class EditorService {
   calcTotalDuration = (video: Partial<EditorLayerEntity>[]): number =>
     video.reduce((duration, layer) => duration + this.calcDuration(layer), 0);
 
-  async prepareFile(
+  private async prepareFile(
     mkdirPath: string,
     layer: EditorLayerEntity,
   ): Promise<EditorLayerEntity> {
@@ -282,7 +282,7 @@ export class EditorService {
     return layer;
   }
 
-  async prepareAssets(
+  private async prepareAssets(
     editor: EditorEntity,
     audio: boolean,
   ): Promise<[string, editly.Config]> {
@@ -680,7 +680,7 @@ export class EditorService {
     }
   }
 
-  async correctLayers(userId: string, editorId: string): Promise<void> {
+  private async correctLayers(userId: string, editorId: string): Promise<void> {
     const editor = await this.editorRepository.findOne({
       where: { id: editorId, userId },
       relations: ['videoLayers', 'audioLayers'],
@@ -737,10 +737,10 @@ export class EditorService {
    * Move layer index
    *
    * @async
-   * @param {EditorEntity} editor Editor entity
+   * @param {string} userId User ID
+   * @param {string} editorId Editor ID
    * @param {string} layerId Editor layer id
    * @param {number} moveIndex Move index
-   * @return {*} {EditorLayerEntity}
    * @memberof EditorService
    */
   async moveIndex(

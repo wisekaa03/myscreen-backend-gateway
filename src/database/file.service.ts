@@ -75,7 +75,7 @@ export class FileService {
    *
    * @async
    * @param {FindManyOptions<FileEntity>} find
-   * @returns {[FileEntity[], number]} Результат
+   * @returns {Array<FileEntity>} {Array<FileEntity>} Результат
    */
   async find(find: FindManyOptions<FileEntity>): Promise<Array<FileEntity>> {
     const conditional = find;
@@ -90,7 +90,7 @@ export class FileService {
    *
    * @async
    * @param {FindManyOptions<FileEntity>} find
-   * @returns {[FileEntity[], number]} Результат
+   * @returns {[Array<FileEntity>, number]} {[Array<FileEntity>, number]} Результат
    */
   async findAndCount(
     find: FindManyOptions<FileEntity>,
@@ -107,7 +107,7 @@ export class FileService {
    *
    * @async
    * @param {FindManyOptions<FileEntity>} find
-   * @returns {FileEntity} Результат
+   * @returns {FileEntity} {FileEntity | undefined} Результат
    */
   async findOne(
     find: FindManyOptions<FileEntity>,
@@ -123,8 +123,9 @@ export class FileService {
    * Update file
    *
    * @async
-   * @param {FindManyOptions<FileEntity>} find
-   * @returns {FileEntity} Результат
+   * @param {FileEntity} file File repository
+   * @param {Partial<FileEntity>} {Partial<FileEntity>} File repository
+   * @returns {FileEntity | undefined} {FileEntity | undefined} Результат
    */
   @Transaction()
   async update(
@@ -169,20 +170,12 @@ export class FileService {
     );
   }
 
-  async updatePreview(
-    update: Partial<FilePreviewEntity>,
-  ): Promise<FilePreviewEntity> {
-    return this.filePreviewRepository.save(
-      this.filePreviewRepository.create(update),
-    );
-  }
-
   /**
    * Upload files
    * @async
-   * @param {string} userId
-   * @param {string} folderId
-   * @param {Array<Express.Multer.File>} files
+   * @param {string} userId User ID
+   * @param {FileUploadRequest} {FileUploadRequest} File upload request
+   * @param {Array<Express.Multer.File>} {Array<Express.Multer.File>} files The Express files
    */
   @Transaction()
   async upload(
@@ -307,6 +300,11 @@ export class FileService {
     return returnFiles;
   }
 
+  /**
+   * Head request
+   * @param {FileEntity} {FileEntity} file
+   * @returns {} {PromiseResult<AWS.S3.HeadObjectOutput, AWS.AWSError>} S3 headers
+   */
   headS3Object(
     file: FileEntity,
   ): Promise<PromiseResult<AWS.S3.HeadObjectOutput, AWS.AWSError>> {
@@ -319,6 +317,11 @@ export class FileService {
       .promise();
   }
 
+  /**
+   * Get S3 object
+   * @param {FileEntity} {FileEntity} file
+   * @returns {} {PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>} S3 object
+   */
   getS3Object(
     file: FileEntity,
   ): AWS.Request<AWS.S3.GetObjectOutput, AWS.AWSError> {
@@ -329,6 +332,11 @@ export class FileService {
     });
   }
 
+  /**
+   * Delete S3 object
+   * @param {FileEntity} {FileEntity} file
+   * @returns {} {PromiseResult<AWS.S3.DeleteObjectOutput, AWS.AWSError>} S3 object
+   */
   deleteS3Object(
     file: FileEntity,
   ): Promise<PromiseResult<AWS.S3.DeleteObjectOutput, AWS.AWSError>> {
@@ -344,8 +352,8 @@ export class FileService {
   /**
    * Delete files
    * @async
-   * @param {UserEntity} user
-   * @param {string} id File ID
+   * @param {FileEntity} file File entity
+   * @param {DeleteResult} {DeleteResult}
    */
   async delete(file: FileEntity): Promise<DeleteResult> {
     const [editorFiles, playlistFiles] = await Promise.all([
@@ -499,10 +507,10 @@ export class FileService {
 
   /**
    * Meta information
-   * @param {Express.Multer.File} file The file
-   * @return {[MediaMeta, VideoType, string, Buffer]} [MediaMeta, VideType, extension, preview]
+   * @param {Express.Multer.File} file Express File
+   * @return {[MediaMeta, VideoType, string, Buffer]} [MediaMeta, VideoType, string, Buffer]
    */
-  async metaInformation(
+  private async metaInformation(
     file: Express.Multer.File,
   ): Promise<[MediaMeta, VideoType, string, Buffer]> {
     const [mime] = file.mimetype.split('/');

@@ -12,14 +12,17 @@ export class OrderService {
     private readonly orderRepository: Repository<OrderEntity>,
   ) {}
 
-  find = async (
+  async find(
     find: FindManyOptions<OrderEntity>,
-  ): Promise<[Array<OrderEntity>, number]> =>
-    this.orderRepository.findAndCount(find);
+  ): Promise<[Array<OrderEntity>, number]> {
+    return this.orderRepository.findAndCount(find);
+  }
 
-  findOne = async (
+  async findOne(
     find: FindManyOptions<OrderEntity>,
-  ): Promise<OrderEntity | undefined> => this.orderRepository.findOne(find);
+  ): Promise<OrderEntity | undefined> {
+    return this.orderRepository.findOne(find);
+  }
 
   async create(user: UserEntity): Promise<OrderEntity> {
     const order: DeepPartial<OrderEntity> = {

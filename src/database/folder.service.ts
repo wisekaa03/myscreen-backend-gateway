@@ -40,6 +40,7 @@ export class FolderService {
   }
 
   async rootFolder(userId: string): Promise<FolderEntity> {
+    // TODO: рассмотреть upsert
     const folder = await this.folderRepository.findOne({
       userId,
       name: '<Корень>',

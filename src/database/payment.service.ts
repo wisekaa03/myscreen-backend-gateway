@@ -12,14 +12,17 @@ export class PaymentService {
     private readonly paymentRepository: Repository<PaymentEntity>,
   ) {}
 
-  find = async (
+  async find(
     find: FindManyOptions<PaymentEntity>,
-  ): Promise<[Array<PaymentEntity>, number]> =>
-    this.paymentRepository.findAndCount(find);
+  ): Promise<[Array<PaymentEntity>, number]> {
+    return this.paymentRepository.findAndCount(find);
+  }
 
-  findOne = async (
+  async findOne(
     find: FindManyOptions<PaymentEntity>,
-  ): Promise<PaymentEntity | undefined> => this.paymentRepository.findOne(find);
+  ): Promise<PaymentEntity | undefined> {
+    return this.paymentRepository.findOne(find);
+  }
 
   async create(user: UserEntity): Promise<PaymentEntity> {
     const order: DeepPartial<PaymentEntity> = {

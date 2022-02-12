@@ -46,8 +46,8 @@ export class UserService {
   /**
    * Изменяет пользователя
    * @async
-   * @param {UserEntity} user Пользователь
-   * @param {Partial<UserEntity>} update Изменения
+   * @param {string} userId User ID
+   * @param {Partial<UserEntity>} {Partial<UserEntity>} update Изменения
    * @returns {UserEntity} Результат
    */
   async update(
@@ -83,8 +83,8 @@ export class UserService {
   /**
    * Удаляет пользователя
    * @async
-   * @param {UserEntity} create
-   * @returns {DeleteResult} Результат
+   * @param {UserEntity} user User entity
+   * @returns {DeleteResult} {DeleteResult} Результат
    */
   async delete(user: UserEntity): Promise<DeleteResult> {
     return this.userRepository.delete(user.id);
@@ -198,7 +198,7 @@ export class UserService {
    * @async
    * @param {string} forgotPasswordToken
    * @param {string} password
-   * @returns {SuccessResponse} Результат
+   * @returns {UserEntity} {UserEntity} Результат
    */
   async forgotPasswordVerify(
     forgotPasswordToken: string,
