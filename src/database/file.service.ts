@@ -423,7 +423,7 @@ export class FileService {
     );
     outPath += file.videoType === VideoType.Video ? '.webm' : '.jpg';
 
-    if (!(await fs.access(outPath).catch(() => true))) {
+    if (await fs.access(outPath).catch(() => true)) {
       const filenameStream = createWriteStream(filename);
       await this.getS3Object(file)
         .on('httpHeaders', (statusCode, headers, awsResponse) => {
