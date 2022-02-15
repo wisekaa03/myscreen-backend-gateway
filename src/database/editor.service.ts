@@ -503,19 +503,19 @@ export class EditorService {
       );
       editlyConfig.customOutputArgs = [
         '-c:v',
-        'libx264',
+        'libx264', // Video Codec: libx264, an H.264 encoder
         '-preset',
-        'slow',
+        'slow', // Slow x264 encoding preset. Default preset is medium. Use the slowest preset that you have patience for.
         '-crf',
-        '20',
+        '20', // CRF value of 20 which will result in a high quality output. Default value is 23. A lower value is a higher quality. Use the highest value that gives an acceptable quality.
         '-c:a',
-        'aac',
+        'aac', // Audio Codec: AAC
         '-b:a',
-        '160k',
+        '160k', // Encodes the audio with a bitrate of 160k.
         '-vf',
-        'format=yuv420p',
+        'format=yuv420p', // Chooses YUV 4:2:0 chroma-subsampling which is recommended for H.264 compatibility
         '-movflags',
-        '+faststart',
+        '+faststart', // Is an option for MP4 output that move some data to the beginning of the file after encoding is finished. This allows the video to begin playing faster if it is watched via progressive download playback.
       ];
 
       (async (renderEditor: EditorEntity) => {
@@ -527,7 +527,7 @@ export class EditorService {
         });
 
         let outPath: string | Error;
-        if (0) {
+        if (false) {
           await editly(editlyConfig);
           outPath = editlyConfig.outPath;
         } else {
@@ -576,11 +576,11 @@ export class EditorService {
 
         const folder = await this.folderService
           .rootFolder(userId)
-          .then((parentFolder) =>
+          .then((rootFolder) =>
             this.folderService.findOne({
               where: {
                 name: '<Исполненные>',
-                parentFolderId: parentFolder.id,
+                parentFolderId: rootFolder.id,
                 userId,
               },
             }),
@@ -619,18 +619,25 @@ export class EditorService {
             [files],
           )
           .then((value) => {
-            this.editorRepository.update(renderEditor.id, {
-              renderingStatus: RenderingStatus.Ready,
-              renderedFile: value?.[0],
-              renderingPercent: 100,
-              renderingError: null,
-            });
+            if (value[0]) {
+              this.editorRepository.update(renderEditor.id, {
+                renderingStatus: RenderingStatus.Ready,
+                renderedFile: value[0],
+                renderingPercent: 100,
+                renderingError: null,
+              });
+            } else {
+              throw new NotFoundException(
+                `Upload file not found: ${JSON.stringify(files)}`,
+              );
+            }
           })
           .catch((reason) => {
             this.logger.error(`Can't write to out file: ${reason}`);
+            throw reason;
           });
 
-        this.logger.log(`Export writed to database: ${JSON.stringify(files)}`);
+        this.logger.log(`Writed out file: ${JSON.stringify(files)}`);
 
         // // Удаляем все
         // const deleteLayer = editlyConfig.clips.map(async (clip) =>

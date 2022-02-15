@@ -287,16 +287,6 @@ export class FileService {
     });
     await Promise.all(s3Promises);
 
-    files.forEach((file) =>
-      unlink(file.path, (err: NodeJS.ErrnoException | null) => {
-        if (err) {
-          this.logger.error(`${file.path} was NOT deleted: ${err}`);
-        } else {
-          this.logger.debug(`${file.path} was deleted`);
-        }
-      }),
-    );
-
     return returnFiles;
   }
 
