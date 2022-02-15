@@ -1,5 +1,4 @@
 import child from 'node:child_process';
-import { promises as fs } from 'node:fs';
 import util from 'node:util';
 import path from 'node:path';
 import { Logger } from '@nestjs/common';
@@ -18,7 +17,7 @@ export async function FfMpegPreview(
   const logger = new Logger('FFMpeg');
   if (type === VideoType.Image) {
     await exec(
-      `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -v error` +
+      `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ` -vf scale="100:74" -y "${outPath}"`,
     ).catch((reason) => {
       logger.error(`FfMpeg: ${reason}`);
@@ -36,7 +35,7 @@ export async function FfMpegPreview(
     );
 
     await exec(
-      `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -v error` +
+      `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ' -an' +
         ` -vf scale="100:74",fps="1/${frameInterval}"` +
         ` -y "${outPattern}"`,
@@ -46,7 +45,7 @@ export async function FfMpegPreview(
     });
 
     await exec(
-      `node_modules/ffmpeg-static/ffmpeg -framerate 1/0.6 -i "${outPattern}" -v error -y "${outPath}"`,
+      `node_modules/ffmpeg-static/ffmpeg -framerate 1/0.6 -i "${outPattern}" -q:v 10 -v error -y "${outPath}"`,
     ).catch((reason) => {
       logger.error(`FfMpeg: ${reason}`);
       throw reason;
