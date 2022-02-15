@@ -564,7 +564,7 @@ export class EditorService {
             childEditly.on(
               'exit',
               (/* code: number | null, signal: NodeJS.Signals | null */) => {
-                fs.access(editlyConfig.outPath)
+                fs.access(path.resolve(editlyConfig.outPath))
                   .then(() => resolve(editlyConfig.outPath))
                   .catch((error: Error) => reject(error));
               },
