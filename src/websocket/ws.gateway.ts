@@ -52,9 +52,10 @@ export class WSGateway
     this.logger.debug(
       `New connection: '${value.ip}:${value.port}', websocket-key: '${value.key}'`,
     );
-    this.clients.set(client, value);
-    if (req.headers.authorization !== undefined) {
-      this.authService.verify(req.headers.authorization);
+    if (true && req.headers.authorization !== undefined) {
+      await this.authService.verify(req.headers.authorization);
+      this.clients.set(client, value);
+
       client.send(JSON.stringify({ event: 'connected' }));
       return;
     }
