@@ -1,10 +1,11 @@
 import { Module, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
-import { AuthModule } from '@/auth/auth.module';
 
 import { MulterModuleOptionsClass } from '@/shared/multer-module-options-class';
+import { AuthModule } from '@/auth/auth.module';
 import { DatabaseModule } from '@/database/database.module';
+import { WSModule } from '@/websocket/ws.module';
 import { AuthController } from './auth.controller';
 import { UserController } from './user.controller';
 import { FileController } from './file.controller';
@@ -26,6 +27,7 @@ import { RootController } from './root.controller';
     }),
     AuthModule,
     DatabaseModule,
+    WSModule,
   ],
 
   controllers: [

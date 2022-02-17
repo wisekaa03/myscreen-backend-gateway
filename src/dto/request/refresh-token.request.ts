@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty } from 'class-validator';
+import { Token } from '@/dto/interface';
 
 export class AuthRefreshRequest {
   @ApiProperty({
@@ -8,5 +9,5 @@ export class AuthRefreshRequest {
   })
   @IsDefined({ message: 'the refresh token is required' })
   @IsNotEmpty()
-  refreshToken!: string;
+  refreshToken!: Token;
 }

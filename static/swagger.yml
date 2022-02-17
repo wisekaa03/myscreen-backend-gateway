@@ -357,7 +357,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MonitorRequest"
+              $ref: "#/components/schemas/MonitorCreateRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -463,7 +463,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MonitorRequest"
+              $ref: "#/components/schemas/MonitorPartialRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -1817,7 +1817,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.11.0
+  version: 2.11.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2642,11 +2642,6 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
-        monitors:
-          type: array
-          description: Мониторы
-          items:
-            $ref: "#/components/schemas/MonitorResponse"
         createdAt:
           format: date-time
           type: string
@@ -2657,6 +2652,11 @@ components:
           type: string
           description: Время изменения
           example: 2021-01-01T10:00:00.147Z
+        monitors:
+          type: array
+          description: Мониторы
+          items:
+            $ref: "#/components/schemas/MonitorResponse"
         files:
           description: Файлы
           type: array
@@ -2665,9 +2665,9 @@ components:
       required:
         - id
         - name
-        - monitors
         - createdAt
         - updatedAt
+        - monitors
         - files
     MonitorResponse:
       type: object
@@ -2707,10 +2707,6 @@ components:
           type: boolean
           description: Присоединен
           example: false
-        code:
-          type: string
-          description: Идентификатор устройства
-          example: 111-111-111
         status:
           description: Подключен
           example: offline
@@ -2747,6 +2743,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FileResponse"
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
       required:
         - id
         - name
@@ -2754,13 +2754,13 @@ components:
         - orientation
         - monitorInfo
         - attached
-        - code
         - status
         - lastSeen
         - latitude
         - longitude
         - createdAt
         - updatedAt
+        - code
     MonitorsGetResponse:
       type: object
       properties:
@@ -2780,7 +2780,7 @@ components:
         - status
         - count
         - data
-    MonitorRequest:
+    MonitorCreateRequest:
       type: object
       properties:
         name:
@@ -2810,10 +2810,6 @@ components:
           example: *a56
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
-        code:
-          type: string
-          description: Идентификатор устройства
-          example: 111-111-111
         status:
           description: Подключен
           example: offline
@@ -2826,15 +2822,19 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
       required:
         - name
         - category
         - orientation
         - monitorInfo
-        - code
         - status
         - latitude
         - longitude
+        - code
     MonitorGetResponse:
       type: object
       properties:

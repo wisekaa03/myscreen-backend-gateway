@@ -4,7 +4,6 @@ import { stringify as yamlStringify } from 'yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
-import { WsAdapter } from '@nestjs/platform-ws';
 import {
   SwaggerModule,
   DocumentBuilder,
@@ -16,6 +15,7 @@ import { Logger } from 'nestjs-pino';
 import { version, author, homepage, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ExceptionsFilter } from './exception/exceptions.filter';
+import { WsAdapter } from '@/websocket/ws-adapter';
 
 (async () => {
   const configService = new ConfigService();

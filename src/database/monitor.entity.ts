@@ -17,6 +17,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
@@ -159,7 +160,6 @@ export class MonitorEntity {
   @IsNotEmpty()
   name!: string;
 
-  // TODO: transformer functions
   @Column({ type: 'json' })
   @ApiProperty({
     type: Address,
@@ -187,7 +187,6 @@ export class MonitorEntity {
   @IsEnum(MonitorCategoryEnum)
   category!: MonitorCategoryEnum;
 
-  // TODO: transformer functions
   @Column({ type: 'json' })
   @ApiProperty({
     type: MonitorPrice,
@@ -233,17 +232,18 @@ export class MonitorEntity {
     example: false,
   })
   @IsBoolean()
-  attached?: boolean;
+  attached!: boolean;
 
-  @Column({ unique: true })
+  @Column({ type: 'char', length: 11, nullable: true })
+  @Index()
   @ApiProperty({
+    type: 'string',
     description: 'Идентификатор устройства',
     example: '111-111-111',
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
   @Length(11, 11)
-  code!: string;
+  code!: string | null;
 
   @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
   @ApiProperty({

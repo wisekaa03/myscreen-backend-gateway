@@ -1,5 +1,5 @@
-import { isJWT, isString, length } from 'class-validator';
-import { ForbiddenException, Logger } from '@nestjs/common';
+import { isJWT, isString } from 'class-validator';
+import { Logger } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -9,15 +9,16 @@ import {
   MessageBody,
   ConnectedSocket,
   OnGatewayDisconnect,
+  WsException,
 } from '@nestjs/websockets';
 import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { from, Observable } from 'rxjs';
-// import { map } from 'rxjs/operators';
 
-// import { LoginRequest } from '@/dto';
-import { WebSocketClient } from './interface/websocket-client';
 import { AuthService } from '@/auth/auth.service';
+import { PlaylistEntity } from '@/database/playlist.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
+import { WebSocketClient } from './interface/websocket-client';
 
 @WebSocketGateway({
   cors: {
@@ -35,85 +36,99 @@ export class WSGateway
 
   private logger = new Logger(WSGateway.name);
 
-  clients = new Map<WebSocket, WebSocketClient>();
+  clients = new Map<string, WebSocketClient>();
 
   async handleConnection(
     client: WebSocket,
-    ...[req]: IncomingMessage[]
+    req: IncomingMessage,
   ): Promise<void> {
-    const value: WebSocketClient = {
-      ip:
-        (req.headers['x-forwarded-for'] as string) ||
-        req.socket?.remoteAddress ||
-        ':1',
-      port: req.socket?.remotePort || 0,
-      key: req.headers['sec-websocket-key'] || '',
-    };
-    this.logger.debug(
-      `New connection: '${value.ip}:${value.port}', websocket-key: '${value.key}'`,
-    );
-    if (true && req.headers.authorization !== undefined) {
-      await this.authService.verify(req.headers.authorization);
-      this.clients.set(client, value);
-
-      client.send(JSON.stringify({ event: 'connected' }));
+    // eslint-disable-next-line no-debugger
+    debugger;
+    if (req.headers['sec-websocket-key'] !== undefined) {
+      const value: WebSocketClient = {
+        ws: client,
+        ip:
+          (req.headers['x-forwarded-for'] as string) ||
+          req.socket?.remoteAddress ||
+          ':1',
+        port: req.socket?.remotePort || 0,
+        auth: false,
+      };
+      this.logger.debug(`New connection: '${value.ip}:${value.port}'`);
+      if (req.headers.authorization !== undefined) {
+        // Authentication through token
+        const token = req.headers.authorization.split(' ', 2).pop();
+        if (token) {
+          const { sub: code, aud: roles } = await this.authService
+            .jwtVerify(token)
+            .catch((error) => {
+              this.logger.error(error);
+              throw new WsException('Token exception');
+            });
+          this.clients.set(req.headers['sec-websocket-key'], {
+            ...value,
+            auth: true,
+            token,
+            code,
+            roles,
+          });
+          return;
+        }
+      }
+      this.clients.set(req.headers['sec-websocket-key'], {
+        ...value,
+        auth: false,
+      });
       return;
     }
     client.close();
   }
 
-  handleDisconnect(client: WebSocket): void {
-    const value = this.clients.get(client);
-    if (value !== undefined) {
-      this.logger.debug(
-        `Disconnect: '${value.ip}:${value.port}', websocket-key: '${value.key}'`,
-      );
-      this.clients.delete(client);
-    } else {
-      this.logger.debug("Disconnect: ???:???, websocket-key: '???'");
-    }
-  }
-
-  @SubscribeMessage('auth/code')
-  handleEventCode(
-    @ConnectedSocket() client: WebSocket,
-    @MessageBody() code: unknown,
-  ): Observable<WsResponse<string>> {
-    if (isString(code) && length(code, 11, 11)) {
-      const value = this.clients.get(client);
-      if (value) {
-        this.logger.debug(
-          `Data from client ip='${value.ip}:${value.port}' websocket-key='${value.key}': code=${code}`,
-        );
-        this.clients.set(client, { ...value, code });
-
-        return from([{ event: 'auth/code', data: 'authorized' }]);
-      }
-    }
-
-    throw new ForbiddenException();
+  handleDisconnect(client: WebSocket, ...req: any): void {
+    // eslint-disable-next-line no-debugger
+    debugger;
+    // const value = this.clients.get(client);
+    // if (value === undefined) {
+    //   this.logger.debug('Disconnect: ???:???');
+    //   return;
+    // }
+    // this.logger.debug(`Disconnect: '${value.ip}:${value.port}'`);
+    // this.clients.delete(client);
   }
 
   @SubscribeMessage('auth/token')
-  handleEventToken(
+  async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() token: unknown,
-  ): Observable<WsResponse<string>> {
-    if (isString(token) && isJWT(token)) {
-      const value = this.clients.get(client);
-      if (value) {
-        this.logger.debug(
-          `Data from client ip='${value.ip}:${value.port}' websocket-key='${value.key}': token=${token}`,
-        );
+  ): Promise<Observable<WsResponse<string>>> {
+    // eslint-disable-next-line no-debugger
+    debugger;
+    // if (isString(token) && isJWT(token)) {
+    //   const value = this.clients.get(client);
+    //   if (value) {
+    //     this.logger.debug(
+    //       `Data from client ip='${value.ip}:${value.port}': token='${token}'`,
+    //     );
+    //     const { sub: code, aud: roles } = await this.authService
+    //       .jwtVerify(token)
+    //       .catch((error) => {
+    //         this.logger.error(error);
+    //         throw new WsException('Token exception');
+    //       });
+    //     this.clients.set(client, { ...value, auth: true, token, code, roles });
 
-        // TODO
+    //     return from([{ event: 'auth/token', data: 'authorized' }]);
+    //   }
+    // }
+    throw new WsException('Token exception');
+  }
 
-        this.clients.set(client, { ...value, token });
-
-        return from([{ event: 'auth/token', data: 'authorized' }]);
-      }
-    }
-
-    throw new ForbiddenException();
+  async monitorPlaylist(
+    userId: string,
+    monitor: MonitorEntity,
+    playlist: PlaylistEntity,
+  ): Promise<void> {
+    // eslint-disable-next-line no-debugger
+    debugger;
   }
 }

@@ -4,8 +4,10 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
   HttpCode,
+  Inject,
   Logger,
   NotFoundException,
   Param,
@@ -30,6 +32,7 @@ import {
   InternalServerError,
   MonitorGetResponse,
   MonitorRequest,
+  MonitorPartialRequest,
   MonitorsGetRequest,
   MonitorsGetResponse,
   MonitorsPlaylistAttachRequest,
@@ -38,13 +41,14 @@ import {
   ServiceUnavailableError,
   SuccessResponse,
   UnauthorizedError,
+  MonitorCreateRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status } from '@/enums/status.enum';
+import { Status, UserRoleEnum } from '@/enums';
 import { MonitorService } from '@/database/monitor.service';
+import { WSGateway } from '@/websocket/ws.gateway';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
-import { UserRoleEnum } from '@/enums';
 import { MonitorEntity } from '@/database/monitor.entity';
 
 @ApiResponse({
@@ -92,6 +96,8 @@ export class MonitorController {
   constructor(
     private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
+    @Inject(forwardRef(() => WSGateway))
+    private readonly wsGateway: WSGateway,
   ) {}
 
   @Post('/')
@@ -148,7 +154,7 @@ export class MonitorController {
   })
   async createMonitors(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() monitor: MonitorRequest,
+    @Body() monitor: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
     const monitorEntity = await this.monitorService.findOne({
       where: { code: monitor.code },
@@ -198,21 +204,28 @@ export class MonitorController {
     }
 
     const dataPromise = attach.monitors.map(async (monitorId) => {
-      const monitor = await this.monitorService.findOne({
-        where: {
-          userId,
-          id: monitorId,
-        },
-      });
-      if (!monitor) {
-        throw new NotFoundException(`Monitor '${monitorId}' not found`);
-      }
+      const monitor = await this.monitorService
+        .findOne({
+          where: {
+            userId,
+            id: monitorId,
+          },
+        })
+        .then((monitorFound) => {
+          if (!monitorFound) {
+            throw new NotFoundException(`Monitor '${monitorId}' not found`);
+          }
+          return this.monitorService.update(userId, {
+            ...monitorFound,
+            playlist,
+          });
+        });
 
-      return this.monitorService.update(userId, {
-        ...monitor,
-        playlist,
-      });
+      /* await */ this.wsGateway.monitorPlaylist(userId, monitor, playlist);
+
+      return monitor;
     });
+
     const data = await Promise.all(dataPromise);
 
     return {
@@ -376,7 +389,7 @@ export class MonitorController {
   async updateMonitor(
     @Req() { user: { id: userId } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
-    @Body() update: MonitorRequest,
+    @Body() update: MonitorPartialRequest,
   ): Promise<MonitorGetResponse> {
     const monitor = await this.monitorService.findOne({
       where: {

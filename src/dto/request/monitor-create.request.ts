@@ -1,9 +1,9 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { Length } from 'class-validator';
+import { IsDefined, IsNotEmpty, Length } from 'class-validator';
 
 import { MonitorEntity } from '@/database/monitor.entity';
 
-export class MonitorRequest extends PickType(MonitorEntity, [
+export class MonitorCreateRequest extends PickType(MonitorEntity, [
   'address',
   'category',
   'latitude',
@@ -18,8 +18,10 @@ export class MonitorRequest extends PickType(MonitorEntity, [
     type: 'string',
     description: 'Идентификатор устройства',
     example: '111-111-111',
-    required: false,
+    required: true,
   })
+  @IsDefined()
+  @IsNotEmpty()
   @Length(11, 11)
-  code?: string;
+  code!: string;
 }
