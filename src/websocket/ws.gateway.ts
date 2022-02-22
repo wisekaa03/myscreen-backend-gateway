@@ -34,11 +34,11 @@ export class WSGateway
   constructor(private readonly authService: AuthService) {}
 
   @WebSocketServer()
-  server!: Server;
+  private server!: Server;
 
   private logger = new Logger(WSGateway.name);
 
-  clients = new Map<WebSocket, WebSocketClient>();
+  private clients = new Map<WebSocket, WebSocketClient>();
 
   async handleConnection(
     client: WebSocket,
@@ -54,26 +54,34 @@ export class WSGateway
         port: req.socket?.remotePort || 0,
         auth: false,
       };
-      this.logger.debug(`New connection: '${value.ip}:${value.port}'`);
       if (req.headers.authorization !== undefined) {
         // Authentication through token
         const token = req.headers.authorization.split(' ', 2).pop();
         if (token) {
-          const { sub: code, aud: roles } = await this.authService
+          const { sub: monitorId, aud: roles } = await this.authService
             .jwtVerify(token)
             .catch((error) => {
               this.logger.error(error);
               throw new WsException('Token exception');
             });
+          this.logger.debug(
+            `New connection from client ip='${value.ip}:${
+              value.port
+            }': auth=true, monitorId='${monitorId}', roles='${JSON.stringify(
+              roles,
+            )}'`,
+          );
           this.clients.set(client, {
             ...value,
             auth: true,
             token,
-            code,
+            monitorId,
             roles,
           });
           return;
         }
+      } else {
+        this.logger.debug(`New connection: '${value.ip}:${value.port}'`);
       }
       this.clients.set(client, {
         ...value,
@@ -102,16 +110,26 @@ export class WSGateway
     if (isJWT(token)) {
       const value = this.clients.get(client);
       if (value) {
-        this.logger.debug(
-          `Data from client ip='${value.ip}:${value.port}': token='${token}'`,
-        );
-        const { sub: code, aud: roles } = await this.authService
+        const { sub: monitorId, aud: roles } = await this.authService
           .jwtVerify(token)
           .catch((error) => {
             this.logger.error(error);
             throw new WsException('Token exception');
           });
-        this.clients.set(client, { ...value, auth: true, token, code, roles });
+        this.logger.debug(
+          `Data from client ip='${value.ip}:${
+            value.port
+          }': auth=true, monitorId='${monitorId}', roles='${JSON.stringify(
+            roles,
+          )}'`,
+        );
+        this.clients.set(client, {
+          ...value,
+          auth: true,
+          token,
+          monitorId,
+          roles,
+        });
 
         return from([{ event: 'auth/token', data: 'authorized' }]);
       }
@@ -120,11 +138,13 @@ export class WSGateway
   }
 
   async monitorPlaylist(
-    userId: string,
     monitor: MonitorEntity,
     playlist: PlaylistEntity,
   ): Promise<void> {
-    // eslint-disable-next-line no-debugger
-    debugger;
+    this.clients.forEach((value, client) => {
+      if (value.monitorId === monitor.id) {
+        client.send(JSON.stringify(playlist.files));
+      }
+    });
   }
 }

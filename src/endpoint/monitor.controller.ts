@@ -221,7 +221,7 @@ export class MonitorController {
           });
         });
 
-      /* await */ this.wsGateway.monitorPlaylist(userId, monitor, playlist);
+      /* await */ this.wsGateway.monitorPlaylist(monitor, playlist);
 
       return monitor;
     });

@@ -7,7 +7,7 @@ export interface WebSocketClient {
   ip: string;
   port: number;
   auth: boolean;
-  code?: string;
+  monitorId?: string;
   roles?: UserRoleEnum[];
   token?: Token;
 }
