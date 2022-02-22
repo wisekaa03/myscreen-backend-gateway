@@ -1,5 +1,5 @@
-import { isJWT, isString } from 'class-validator';
-import { Logger } from '@nestjs/common';
+import { isJWT } from 'class-validator';
+import { Logger, UseFilters } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -19,6 +19,7 @@ import { AuthService } from '@/auth/auth.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { WebSocketClient } from './interface/websocket-client';
+import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 
 @WebSocketGateway({
   cors: {
@@ -26,6 +27,7 @@ import { WebSocketClient } from './interface/websocket-client';
   },
   path: '/ws',
 })
+@UseFilters(WsExceptionsFilter)
 export class WSGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
 {
@@ -36,14 +38,12 @@ export class WSGateway
 
   private logger = new Logger(WSGateway.name);
 
-  clients = new Map<string, WebSocketClient>();
+  clients = new Map<WebSocket, WebSocketClient>();
 
   async handleConnection(
     client: WebSocket,
     req: IncomingMessage,
   ): Promise<void> {
-    // eslint-disable-next-line no-debugger
-    debugger;
     if (req.headers['sec-websocket-key'] !== undefined) {
       const value: WebSocketClient = {
         ws: client,
@@ -65,7 +65,7 @@ export class WSGateway
               this.logger.error(error);
               throw new WsException('Token exception');
             });
-          this.clients.set(req.headers['sec-websocket-key'], {
+          this.clients.set(client, {
             ...value,
             auth: true,
             token,
@@ -75,7 +75,7 @@ export class WSGateway
           return;
         }
       }
-      this.clients.set(req.headers['sec-websocket-key'], {
+      this.clients.set(client, {
         ...value,
         auth: false,
       });
@@ -85,41 +85,37 @@ export class WSGateway
   }
 
   handleDisconnect(client: WebSocket, ...req: any): void {
-    // eslint-disable-next-line no-debugger
-    debugger;
-    // const value = this.clients.get(client);
-    // if (value === undefined) {
-    //   this.logger.debug('Disconnect: ???:???');
-    //   return;
-    // }
-    // this.logger.debug(`Disconnect: '${value.ip}:${value.port}'`);
-    // this.clients.delete(client);
+    const value = this.clients.get(client);
+    if (value === undefined) {
+      this.logger.debug('Disconnect: ???:???');
+      return;
+    }
+    this.logger.debug(`Disconnect: '${value.ip}:${value.port}'`);
+    this.clients.delete(client);
   }
 
   @SubscribeMessage('auth/token')
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() token: unknown,
+    @MessageBody() token: string,
   ): Promise<Observable<WsResponse<string>>> {
-    // eslint-disable-next-line no-debugger
-    debugger;
-    // if (isString(token) && isJWT(token)) {
-    //   const value = this.clients.get(client);
-    //   if (value) {
-    //     this.logger.debug(
-    //       `Data from client ip='${value.ip}:${value.port}': token='${token}'`,
-    //     );
-    //     const { sub: code, aud: roles } = await this.authService
-    //       .jwtVerify(token)
-    //       .catch((error) => {
-    //         this.logger.error(error);
-    //         throw new WsException('Token exception');
-    //       });
-    //     this.clients.set(client, { ...value, auth: true, token, code, roles });
+    if (isJWT(token)) {
+      const value = this.clients.get(client);
+      if (value) {
+        this.logger.debug(
+          `Data from client ip='${value.ip}:${value.port}': token='${token}'`,
+        );
+        const { sub: code, aud: roles } = await this.authService
+          .jwtVerify(token)
+          .catch((error) => {
+            this.logger.error(error);
+            throw new WsException('Token exception');
+          });
+        this.clients.set(client, { ...value, auth: true, token, code, roles });
 
-    //     return from([{ event: 'auth/token', data: 'authorized' }]);
-    //   }
-    // }
+        return from([{ event: 'auth/token', data: 'authorized' }]);
+      }
+    }
     throw new WsException('Token exception');
   }
 

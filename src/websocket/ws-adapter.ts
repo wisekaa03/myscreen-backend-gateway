@@ -90,18 +90,18 @@ export class WsAdapter extends AbstractWsAdapter<
   public bindMessageHandlers(
     client: WebSocket.WebSocket,
     handlers: MessageMappingProperties[],
-    transform: (data: any) => Observable<any>,
+    transform: <T = string>(data: MessageEvent<T>) => Observable<unknown>,
   ): void {
     const close$ = fromEvent(client, CLOSE_EVENT).pipe(share(), first());
-    const source$ = fromEvent(client, 'message').pipe(
-      mergeMap((data) =>
-        this.bindMessageHandler(data, handlers, transform).pipe(
+    const source$ = fromEvent<MessageEvent<string>>(client, 'message').pipe(
+      mergeMap((buffer) =>
+        this.bindMessageHandler(buffer, handlers, transform).pipe(
           filter((result) => result),
         ),
       ),
       takeUntil(close$),
     );
-    const onMessage = (response: any) => {
+    const onMessage = (response: unknown) => {
       if (client.readyState !== ReadyState.OPEN_STATE) {
         return;
       }
@@ -111,9 +111,9 @@ export class WsAdapter extends AbstractWsAdapter<
   }
 
   public bindMessageHandler(
-    buffer: any,
+    buffer: MessageEvent<string>,
     handlers: MessageMappingProperties[],
-    transform: (data: unknown) => Observable<unknown>,
+    transform: <T = string>(data: MessageEvent<T>) => Observable<unknown>,
   ): Observable<any> {
     try {
       const message = JSON.parse(buffer.data);

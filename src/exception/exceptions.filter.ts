@@ -25,10 +25,10 @@ import {
 } from '@/dto';
 
 @Catch()
-export class ExceptionsFilter extends BaseExceptionFilter {
+export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   logger = new Logger(ExceptionsFilter.name);
 
-  catch(exception: unknown, host: ArgumentsHost) {
+  catch(exception: Error, host: ArgumentsHost) {
     let exceptionRule: Error | undefined;
 
     if (exception instanceof HttpException) {
