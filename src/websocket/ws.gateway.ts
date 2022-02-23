@@ -143,7 +143,7 @@ export class WSGateway
   ): Promise<void> {
     this.clients.forEach((value, client) => {
       if (value.monitorId === monitor.id) {
-        client.send(JSON.stringify(playlist.files));
+        client.send(JSON.stringify({ event: 'playlist', data: playlist }));
       }
     });
   }
