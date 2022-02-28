@@ -13,13 +13,14 @@ import {
 } from '@nestjs/websockets';
 import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
-import { from, Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 import { AuthService } from '@/auth/auth.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { WebSocketClient } from './interface/websocket-client';
+import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
+import { WebSocketClient } from './interface/websocket-client';
 
 @WebSocketGateway({
   cors: {
@@ -31,7 +32,10 @@ import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 export class WSGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
 {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly monitorService: MonitorService,
+  ) {}
 
   @WebSocketServer()
   private server!: Server;
@@ -62,23 +66,29 @@ export class WSGateway
             .jwtVerify(token)
             .catch((error) => {
               this.logger.error(error);
-              throw new WsException('Token exception');
+              throw new WsException('Not authorized');
             });
-          this.logger.debug(
-            `New connection from client ip='${value.ip}:${
-              value.port
-            }': auth=true, monitorId='${monitorId}', roles='${JSON.stringify(
+          if (monitorId && roles) {
+            this.logger.debug(
+              `New connection from client ip='${value.ip}:${
+                value.port
+              }': auth=true, monitorId='${monitorId}', roles='${JSON.stringify(
+                roles,
+              )}'`,
+            );
+            this.clients.set(client, {
+              ...value,
+              auth: true,
+              token,
+              monitorId,
               roles,
-            )}'`,
-          );
-          this.clients.set(client, {
-            ...value,
-            auth: true,
-            token,
-            monitorId,
-            roles,
-          });
-          return;
+            });
+            const playlist = await this.playlist(monitorId);
+            client.send(
+              JSON.stringify([{ event: 'playlist', data: playlist }]),
+            );
+            return;
+          }
         }
       } else {
         this.logger.debug(`New connection: '${value.ip}:${value.port}'`);
@@ -106,7 +116,7 @@ export class WSGateway
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() token: string,
-  ): Promise<Observable<WsResponse<string>>> {
+  ): Promise<Observable<WsResponse<string | PlaylistEntity | null>[]>> {
     if (isJWT(token)) {
       const value = this.clients.get(client);
       if (value) {
@@ -114,27 +124,42 @@ export class WSGateway
           .jwtVerify(token)
           .catch((error) => {
             this.logger.error(error);
-            throw new WsException('Token exception');
+            throw new WsException('Not authorized');
           });
-        this.logger.debug(
-          `Data from client ip='${value.ip}:${
-            value.port
-          }': auth=true, monitorId='${monitorId}', roles='${JSON.stringify(
+        if (monitorId && roles) {
+          this.logger.debug(
+            `Data from client ip='${value.ip}:${
+              value.port
+            }': auth=true, monitorId='${monitorId}', roles='${JSON.stringify(
+              roles,
+            )}'`,
+          );
+          this.clients.set(client, {
+            ...value,
+            auth: true,
+            token,
+            monitorId,
             roles,
-          )}'`,
-        );
-        this.clients.set(client, {
-          ...value,
-          auth: true,
-          token,
-          monitorId,
-          roles,
-        });
-
-        return from([{ event: 'auth/token', data: 'authorized' }]);
+          });
+          const playlist = await this.playlist(monitorId);
+          return of([
+            { event: 'auth/token', data: 'authorized' },
+            { event: 'playlist', data: playlist },
+          ]);
+        }
       }
     }
-    throw new WsException('Token exception');
+    throw new WsException('Not authorized');
+  }
+
+  private async playlist(monitorId: string): Promise<PlaylistEntity | null> {
+    const monitor = await this.monitorService.findOne({
+      where: { id: monitorId },
+    });
+    if (!monitor || monitor.playlist === undefined) {
+      return null;
+    }
+    return monitor.playlist;
   }
 
   async monitorPlaylist(
@@ -143,7 +168,7 @@ export class WSGateway
   ): Promise<void> {
     this.clients.forEach((value, client) => {
       if (value.monitorId === monitor.id) {
-        client.send(JSON.stringify({ event: 'playlist', data: playlist }));
+        client.send(JSON.stringify([{ event: 'playlist', data: playlist }]));
       }
     });
   }
