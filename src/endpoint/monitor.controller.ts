@@ -278,6 +278,9 @@ export class MonitorController {
           `Monitor '${monitorId}' is not playing playlist '${playlist.id}'`,
         );
       }
+
+      /* await */ this.wsGateway.monitorPlaylist(monitor, null);
+
       return this.monitorService.update(userId, {
         ...monitor,
         playlist: null,

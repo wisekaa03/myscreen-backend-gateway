@@ -227,6 +227,8 @@ export class PlaylistController {
         throw new BadRequestException(`Playlist create error: ${error}`);
       });
 
+    // TODO: ws fix
+
     return {
       status: Status.Success,
       data,
@@ -259,6 +261,8 @@ export class PlaylistController {
     if (!affected) {
       throw new NotFoundException('This playlist is not exists');
     }
+
+    // TODO: ws fix
 
     return {
       status: Status.Success,

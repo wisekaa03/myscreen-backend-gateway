@@ -164,7 +164,7 @@ export class WSGateway
 
   async monitorPlaylist(
     monitor: MonitorEntity,
-    playlist: PlaylistEntity,
+    playlist: PlaylistEntity | null,
   ): Promise<void> {
     this.clients.forEach((value, client) => {
       if (value.monitorId === monitor.id) {
