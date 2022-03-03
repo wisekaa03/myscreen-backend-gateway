@@ -574,17 +574,25 @@ export class EditorService {
 
         const folder = await this.folderService
           .rootFolder(userId)
-          .then((rootFolder) =>
-            this.folderService.findOne({
+          .then(async (rootFolder) => {
+            const renderedFolder = await this.folderService.findOne({
               where: {
                 name: '<Исполненные>',
                 parentFolderId: rootFolder.id,
                 userId,
               },
-            }),
-          );
+            });
+            return (
+              renderedFolder ||
+              this.folderService.update({
+                name: '<Исполненные>',
+                parentFolderId: rootFolder.id,
+                userId,
+              })
+            );
+          });
         if (!folder) {
-          throw new Error('The database has run out of space (?)');
+          throw new Error('The file system has run out of space ?');
         }
         const media = await ffprobe(outPath, {
           showFormat: true,
