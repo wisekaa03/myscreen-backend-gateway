@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.11.9",
+  "version": "2.11.10",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -36,7 +36,6 @@
     "node": ">=14.19.0"
   },
   "resolutions": {
-    "**/**/chokidar": ">=3.5.3",
     "**/**/debug": ">=4.3.3",
     "**/**/dotenv": ">=16.0.0",
     "**/**/body-parser": ">=1.19.2",
@@ -75,7 +74,7 @@
     "@nestjs/swagger": "^5.2.0",
     "@nestjs/typeorm": "^8.0.3",
     "@nestjs/websockets": "^8.4.0",
-    "aws-sdk": "^2.1085.0",
+    "aws-sdk": "^2.1087.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "debug": "^4.3.3",
@@ -99,18 +98,18 @@
     "pino": "^7.8.0",
     "pino-elasticsearch": "^6.2.0",
     "pino-http": "^6.6.0",
-    "pino-pretty": "^7.5.2",
+    "pino-pretty": "^7.5.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.4",
     "swagger-ui-express": "^4.3.0",
-    "typeorm": "^0.2.44",
+    "typeorm": "^0.2.45",
     "ws": "^8.5.0",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
     "@golevelup/ts-jest": "^0.3.2",
-    "@nestjs/cli": "^8.2.1",
+    "@nestjs/cli": "^8.2.2",
     "@nestjs/schematics": "^8.0.7",
     "@nestjs/testing": "^8.4.0",
     "@types/debug": "^4.1.7",
