@@ -11,6 +11,7 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -29,11 +30,13 @@ import {
   SuccessResponse,
   UsersGetResponse,
   UserGetResponse,
+  UsersGetRequest,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
 import { Status } from '@/enums/status.enum';
 import { UserRoleEnum } from '@/enums/role.enum';
 import { UserService } from '@/database/user.service';
+import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 
 @ApiResponse({
   status: 400,
@@ -65,7 +68,7 @@ export class UserController {
 
   constructor(private readonly userService: UserService) {}
 
-  @Get('/')
+  @Post('/')
   @ApiOperation({
     operationId: 'users-get',
     summary: 'Получение информации о пользователях (только администратор)',
@@ -75,12 +78,18 @@ export class UserController {
     description: 'Успешный ответ',
     type: UsersGetResponse,
   })
-  async users(): Promise<UsersGetResponse> {
+  async users(
+    @Body() { where, scope }: UsersGetRequest,
+  ): Promise<UsersGetResponse> {
+    const data = await this.userService
+      .findAll({
+        ...paginationQueryToConfig(scope),
+        where,
+      })
+      .then((user) => user.map(({ password, ...entity }) => entity));
     return {
       status: Status.Success,
-      data: await this.userService
-        .findAll(false)
-        .then((user) => user.map(({ password, ...data }) => data)),
+      data,
     };
   }
 

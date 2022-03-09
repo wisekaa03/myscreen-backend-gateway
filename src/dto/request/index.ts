@@ -7,6 +7,8 @@ export * from './reset-password-invitation.request';
 export * from './reset-password-verify.request';
 export * from './verify-email.request';
 export * from './user-update.request';
+export * from './users-get.request';
+export * from './user-partial.request';
 export * from './folder.request';
 export * from './folder-partial.request';
 export * from './folders-get.request';

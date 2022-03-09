@@ -160,7 +160,7 @@ export class MonitorEntity {
   @IsNotEmpty()
   name!: string;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'jsonb', default: {} })
   @ApiProperty({
     type: Address,
     description: 'Адрес монитора',
@@ -187,7 +187,7 @@ export class MonitorEntity {
   @IsEnum(MonitorCategoryEnum)
   category!: MonitorCategoryEnum;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'jsonb', default: {} })
   @ApiProperty({
     type: MonitorPrice,
     description: 'Стоимость показов',
@@ -210,7 +210,7 @@ export class MonitorEntity {
   orientation!: MonitorOrientation;
 
   // TODO: transformer functions
-  @Column({ type: 'json' })
+  @Column({ type: 'jsonb', default: {} })
   @ApiProperty({
     type: MonitorInfo,
     description: 'Модель и прочие характеристики монитора',

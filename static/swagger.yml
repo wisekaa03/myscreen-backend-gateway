@@ -1364,10 +1364,16 @@ paths:
       tags: *a38
       security: *a39
   /api/v2/user:
-    get:
+    post:
       operationId: users-get
       summary: Получение информации о пользователях (только администратор)
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsersGetRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -1817,7 +1823,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.11.11
+  version: 2.11.12
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3609,6 +3615,92 @@ components:
           example: bar
       required:
         - name
+    UserPartialRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор пользователя
+          format: uuid
+          example: "1234567"
+        email:
+          type: string
+          description: EMail пользователя
+          format: email
+          example: foo@bar.baz
+        surname:
+          type: string
+          description: Фамилия
+          example: Steve
+        name:
+          type: string
+          description: Имя
+          example: John
+        middleName:
+          type: string
+          description: Отчество
+          example: Doe
+        password:
+          type: string
+          example: Secret~12345678
+          description: Пароля пользователя (должен удовлетворять минимальным требованиям)
+          minLength: 8
+          maxLength: 30
+          pattern: |-
+            /((?=.*d)|(?=.*W+))(?![.
+            ])(?=.*[A-Z])(?=.*[a-z]).*$/
+        phoneNumber:
+          type: string
+          description: Телефон пользователя
+          example: "+78002000000"
+        city:
+          type: string
+          description: Город
+          example: Krasnodar
+        country:
+          type: string
+          description: Страна
+          example: RU
+        company:
+          type: string
+          description: Компания
+          example: ACME corporation
+        role:
+          description: Роль пользователя
+          example: advertiser
+          $ref: "#/components/schemas/UserRoleResponse"
+        verified:
+          type: boolean
+          description: EMail подтвержден
+          example: true
+        isDemoUser:
+          type: boolean
+          description: Демо пользователь
+          example: true
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: 2021-01-01T10:00:00.147Z
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: 2021-01-01T10:00:00.147Z
+    UsersGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          allOf:
+            - $ref: "#/components/schemas/UserPartialRequest"
+        scope:
+          description: Рамки для запроса
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+      required:
+        - where
+        - scope
     UsersGetResponse:
       type: object
       properties:

@@ -42,7 +42,7 @@ export class PaymentLogEntity {
   @JoinColumn()
   payment!: PaymentEntity;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: 'json', default: {}, nullable: true })
   log?: unknown;
 
   @CreateDateColumn()

@@ -1,5 +1,4 @@
 import { createHmac } from 'crypto';
-import { isString, length } from 'class-validator';
 import {
   Injectable,
   Logger,
@@ -11,9 +10,9 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
-  FindConditions,
   type DeleteResult,
   type DeepPartial,
+  FindManyOptions,
 } from 'typeorm';
 
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
@@ -224,12 +223,10 @@ export class UserService {
     );
   }
 
-  async findAll(includeDisabled = true): Promise<UserEntity[]> {
-    const where: FindConditions<UserEntity> = {};
-    if (includeDisabled) {
-      where.disabled = false;
-    }
-    return this.userSizeRepository.find({ where });
+  async findAll(find: FindManyOptions<UserEntity>): Promise<UserEntity[]> {
+    return this.userRepository.find({
+      ...find,
+    });
   }
 
   async findByEmail(

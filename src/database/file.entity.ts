@@ -185,7 +185,7 @@ export class FileEntity {
   @IsNotEmpty()
   height!: number;
 
-  @Column({ select: false, type: 'json', nullable: true })
+  @Column({ select: false, type: 'jsonb', nullable: true })
   meta!: MediaMeta;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
