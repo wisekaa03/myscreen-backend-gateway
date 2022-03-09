@@ -1817,7 +1817,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.11.10
+  version: 2.11.11
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2471,6 +2471,116 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
+    Order:
+      type: string
+      enum:
+        - ASC
+        - DESC
+    LimitOrderRequest:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/Order"
+        name:
+          $ref: "#/components/schemas/Order"
+        description:
+          $ref: "#/components/schemas/Order"
+        extension:
+          $ref: "#/components/schemas/Order"
+        width:
+          $ref: "#/components/schemas/Order"
+        height:
+          $ref: "#/components/schemas/Order"
+        folder:
+          $ref: "#/components/schemas/Order"
+        folderId:
+          $ref: "#/components/schemas/Order"
+        monitor:
+          $ref: "#/components/schemas/Order"
+        monitorId:
+          $ref: "#/components/schemas/Order"
+        videoType:
+          $ref: "#/components/schemas/Order"
+        filesize:
+          $ref: "#/components/schemas/Order"
+        category:
+          $ref: "#/components/schemas/Order"
+        duration:
+          $ref: "#/components/schemas/Order"
+        files:
+          $ref: "#/components/schemas/Order"
+        monitors:
+          $ref: "#/components/schemas/Order"
+        playlists:
+          $ref: "#/components/schemas/Order"
+        parentFolder:
+          $ref: "#/components/schemas/Order"
+        parentFolderId:
+          $ref: "#/components/schemas/Order"
+        email:
+          $ref: "#/components/schemas/Order"
+        surname:
+          $ref: "#/components/schemas/Order"
+        middleName:
+          $ref: "#/components/schemas/Order"
+        phoneNumber:
+          $ref: "#/components/schemas/Order"
+        city:
+          $ref: "#/components/schemas/Order"
+        country:
+          $ref: "#/components/schemas/Order"
+        company:
+          $ref: "#/components/schemas/Order"
+        role:
+          $ref: "#/components/schemas/Order"
+        verified:
+          $ref: "#/components/schemas/Order"
+        isDemoUser:
+          $ref: "#/components/schemas/Order"
+        countUsedSpace:
+          $ref: "#/components/schemas/Order"
+        address:
+          $ref: "#/components/schemas/Order"
+        price:
+          $ref: "#/components/schemas/Order"
+        orientation:
+          $ref: "#/components/schemas/Order"
+        monitorInfo:
+          $ref: "#/components/schemas/Order"
+        attached:
+          $ref: "#/components/schemas/Order"
+        code:
+          $ref: "#/components/schemas/Order"
+        status:
+          $ref: "#/components/schemas/Order"
+        longitude:
+          $ref: "#/components/schemas/Order"
+        latitude:
+          $ref: "#/components/schemas/Order"
+        renderingStatus:
+          $ref: "#/components/schemas/Order"
+        fps:
+          $ref: "#/components/schemas/Order"
+        renderingPercent:
+          $ref: "#/components/schemas/Order"
+        renderingError:
+          $ref: "#/components/schemas/Order"
+        renderedFile:
+          $ref: "#/components/schemas/Order"
+        renderedFileId:
+          $ref: "#/components/schemas/Order"
+        keepSourceAudio:
+          $ref: "#/components/schemas/Order"
+        totalDuration:
+          $ref: "#/components/schemas/Order"
+        videoLayers:
+          $ref: "#/components/schemas/Order"
+        audioLayers:
+          $ref: "#/components/schemas/Order"
+        createdAt:
+          $ref: "#/components/schemas/Order"
+        updatedAt:
+          $ref: "#/components/schemas/Order"
     LimitRequest:
       type: object
       properties:
@@ -2483,10 +2593,11 @@ components:
           description: Страница результатов
           example: 1
         order:
-          type: object
           description: Порядок результатов
           example:
             createdAt: DESC
+          allOf:
+            - $ref: "#/components/schemas/LimitOrderRequest"
     MonitorsGetRequest:
       type: object
       properties:

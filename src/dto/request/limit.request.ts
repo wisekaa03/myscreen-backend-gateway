@@ -1,13 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, Max, Min } from 'class-validator';
+import { Max, Min, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export type LimitOrderDirection = 'ASC' | 'DESC';
+import { LimitOrderRequest } from './limit-order.request';
 
-export type LimitOrderRequest<T> = {
-  [P in keyof T]?: LimitOrderDirection;
-};
-
-export class LimitRequest<T = any> {
+export class LimitRequest<T = Record<string, 'DESC' | 'ASC'>> {
   @ApiProperty({
     description: 'Лимит строк результатов',
     example: 20,
@@ -30,7 +27,9 @@ export class LimitRequest<T = any> {
     description: 'Порядок результатов',
     example: { createdAt: 'DESC' },
     required: false,
+    allOf: [{ $ref: '#/components/schemas/LimitOrderRequest' }],
   })
-  @IsObject()
-  order?: LimitOrderRequest<T>;
+  @ValidateNested()
+  @Type(() => LimitOrderRequest)
+  order?: LimitOrderRequest;
 }
