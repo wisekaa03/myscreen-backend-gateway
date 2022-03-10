@@ -85,7 +85,9 @@ export class UserController {
       ...paginationQueryToConfig(scope),
       where,
     });
-    const data = users.map(({ password, ...entity }) => entity);
+    const data = users.map(
+      ({ password, forgotConfirmKey, emailConfirmKey, ...entity }) => entity,
+    );
     return {
       status: Status.Success,
       count,

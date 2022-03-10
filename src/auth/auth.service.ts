@@ -191,7 +191,7 @@ export class AuthService {
 
   private async decodeRefreshToken(token: string): Promise<MyscreenJwtPayload> {
     try {
-      return await this.jwtService.verifyAsync(token);
+      return this.jwtService.verifyAsync(token);
     } catch (e) {
       if (e instanceof TokenExpiredError) {
         throw new ForbiddenException(`Token ${token} expired`);
