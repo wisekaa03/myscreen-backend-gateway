@@ -167,6 +167,29 @@ export class WSGateway
     throw new WsException('Not authorized');
   }
 
+  @SubscribeMessage('monitor')
+  async monitor(
+    @ConnectedSocket() client: WebSocket,
+    @MessageBody() data: { playlistPlayed: boolean },
+  ): Promise<void> {
+    const value = this.clients.get(client);
+    if (value) {
+      const monitor = await this.monitorService.findOne({
+        where: { id: value.monitorId },
+      });
+      if (!monitor) {
+        throw new WsException('Not authorized');
+      }
+      await this.monitorService.update(
+        monitor.userId,
+        Object.assign(monitor, {
+          playlistPlayed: data.playlistPlayed,
+        }),
+      );
+    }
+    throw new WsException('Not authorized');
+  }
+
   private async playlist(monitorId: string): Promise<PlaylistEntity | null> {
     const monitor = await this.monitorService.findOne({
       where: { id: monitorId },
@@ -183,12 +206,6 @@ export class WSGateway
     if (monitor.playlist === undefined) {
       return null;
     }
-    await this.monitorService.update(
-      monitor.userId,
-      Object.assign(monitor, {
-        playlistPlayed: true,
-      }),
-    );
     return monitor.playlist;
   }
 
@@ -205,7 +222,6 @@ export class WSGateway
       monitor.userId,
       Object.assign(monitor, {
         status: MonitorStatus.Online,
-        playlistPlayed: true,
       }),
     );
   }
