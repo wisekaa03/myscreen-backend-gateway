@@ -102,13 +102,24 @@ export class WSGateway
     client.close();
   }
 
-  handleDisconnect(client: WebSocket, ...req: any): void {
+  async handleDisconnect(client: WebSocket, ...req: any): Promise<void> {
     const value = this.clients.get(client);
     if (value === undefined) {
       this.logger.debug('Disconnect: ???:???');
       return;
     }
     this.logger.debug(`Disconnect: '${value.ip}:${value.port}'`);
+    const monitor = await this.monitorService.findOne({
+      where: { id: value.monitorId },
+    });
+    if (monitor) {
+      await this.monitorService.update(
+        monitor.userId,
+        Object.assign(monitor, { attached: false }),
+      );
+    } else {
+      this.logger.error(`Disconnect: '${value.monitorId}' is not monitor`);
+    }
     this.clients.delete(client);
   }
 
@@ -171,5 +182,9 @@ export class WSGateway
         client.send(JSON.stringify([{ event: 'playlist', data: playlist }]));
       }
     });
+    /* await */ this.monitorService.update(
+      monitor.userId,
+      Object.assign(monitor, { attached: !!playlist }),
+    );
   }
 }
