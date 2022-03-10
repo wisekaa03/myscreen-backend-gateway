@@ -26,6 +26,10 @@ import { ffprobe } from 'media-probe';
 import editly from 'editly';
 
 import { FileCategory, RenderingStatus, VideoType } from '@/enums';
+import {
+  findOrderByCaseInsensitive,
+  findOrderByCaseInsensitiveCount,
+} from '@/shared/select-order-case-insensitive';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';
@@ -56,22 +60,28 @@ export class EditorService {
 
   async find(
     find: FindManyOptions<EditorEntity>,
+    caseInsensitive = true,
   ): Promise<Array<EditorEntity>> {
     const conditional = find;
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
-    return this.editorRepository.find(conditional);
+    return caseInsensitive
+      ? findOrderByCaseInsensitive(this.editorRepository, conditional)
+      : this.editorRepository.find(conditional);
   }
 
   async findAndCount(
     find: FindManyOptions<EditorEntity>,
+    caseInsensitive = true,
   ): Promise<[Array<EditorEntity>, number]> {
     const conditional = find;
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
-    return this.editorRepository.findAndCount(conditional);
+    return caseInsensitive
+      ? findOrderByCaseInsensitiveCount(this.editorRepository, conditional)
+      : this.editorRepository.findAndCount(conditional);
   }
 
   async findOne(

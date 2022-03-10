@@ -7,6 +7,10 @@ import {
   Repository,
 } from 'typeorm';
 
+import {
+  findOrderByCaseInsensitive,
+  findOrderByCaseInsensitiveCount,
+} from '@/shared/select-order-case-insensitive';
 import { PlaylistEntity } from './playlist.entity';
 
 @Injectable()
@@ -16,20 +20,28 @@ export class PlaylistService {
     private readonly playlistEntity: Repository<PlaylistEntity>,
   ) {}
 
-  async find(find: FindManyOptions<PlaylistEntity>): Promise<PlaylistEntity[]> {
-    return this.playlistEntity.find({
-      relations: ['files', 'monitors'],
-      ...find,
-    });
+  async find(
+    find: FindManyOptions<PlaylistEntity>,
+    caseInsensitive = true,
+  ): Promise<PlaylistEntity[]> {
+    return caseInsensitive
+      ? findOrderByCaseInsensitive(this.playlistEntity, find)
+      : this.playlistEntity.find({
+          relations: ['files', 'monitors'],
+          ...find,
+        });
   }
 
   async findAndCount(
     find: FindManyOptions<PlaylistEntity>,
+    caseInsensitive = true,
   ): Promise<[Array<PlaylistEntity>, number]> {
-    return this.playlistEntity.findAndCount({
-      relations: ['files', 'monitors'],
-      ...find,
-    });
+    return caseInsensitive
+      ? findOrderByCaseInsensitiveCount(this.playlistEntity, find)
+      : this.playlistEntity.findAndCount({
+          relations: ['files', 'monitors'],
+          ...find,
+        });
   }
 
   async findOne(

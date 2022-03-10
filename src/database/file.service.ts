@@ -36,6 +36,10 @@ import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
 import { FfMpegPreview } from '@/shared/ffmpeg';
+import {
+  findOrderByCaseInsensitive,
+  findOrderByCaseInsensitiveCount,
+} from '@/shared/select-order-case-insensitive';
 import { EditorService } from '@/database/editor.service';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
@@ -77,12 +81,17 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {Array<FileEntity>} {Array<FileEntity>} Результат
    */
-  async find(find: FindManyOptions<FileEntity>): Promise<Array<FileEntity>> {
+  async find(
+    find: FindManyOptions<FileEntity>,
+    caseInsensitive = true,
+  ): Promise<Array<FileEntity>> {
     const conditional = find;
     if (!find.relations) {
       conditional.relations = ['monitors', 'playlists'];
     }
-    return this.fileRepository.find(conditional);
+    return caseInsensitive
+      ? findOrderByCaseInsensitive(this.fileRepository, conditional)
+      : this.fileRepository.find(conditional);
   }
 
   /**
@@ -94,12 +103,15 @@ export class FileService {
    */
   async findAndCount(
     find: FindManyOptions<FileEntity>,
+    caseInsensitive = true,
   ): Promise<[Array<FileEntity>, number]> {
     const conditional = find;
     if (!find.relations) {
       conditional.relations = ['monitors', 'playlists'];
     }
-    return this.fileRepository.findAndCount(conditional);
+    return caseInsensitive
+      ? findOrderByCaseInsensitiveCount(this.fileRepository, conditional)
+      : this.fileRepository.findAndCount(conditional);
   }
 
   /**

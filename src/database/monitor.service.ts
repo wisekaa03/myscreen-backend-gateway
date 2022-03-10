@@ -7,6 +7,10 @@ import {
   Repository,
 } from 'typeorm';
 
+import {
+  findOrderByCaseInsensitive,
+  findOrderByCaseInsensitiveCount,
+} from '@/shared/select-order-case-insensitive';
 import { MonitorEntity } from './monitor.entity';
 
 @Injectable()
@@ -18,20 +22,26 @@ export class MonitorService {
 
   async find(
     find: FindManyOptions<MonitorEntity>,
+    caseInsensitive = true,
   ): Promise<Array<MonitorEntity>> {
-    return this.monitorRepository.find({
-      relations: ['files', 'playlist'],
-      ...find,
-    });
+    return caseInsensitive
+      ? findOrderByCaseInsensitive(this.monitorRepository, find)
+      : this.monitorRepository.find({
+          relations: ['files', 'playlist'],
+          ...find,
+        });
   }
 
   async findAndCount(
     find: FindManyOptions<MonitorEntity>,
+    caseInsensitive = true,
   ): Promise<[Array<MonitorEntity>, number]> {
-    return this.monitorRepository.findAndCount({
-      relations: ['files', 'playlist'],
-      ...find,
-    });
+    return caseInsensitive
+      ? findOrderByCaseInsensitiveCount(this.monitorRepository, find)
+      : this.monitorRepository.findAndCount({
+          relations: ['files', 'playlist'],
+          ...find,
+        });
   }
 
   async findOne(

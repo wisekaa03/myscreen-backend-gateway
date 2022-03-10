@@ -21,6 +21,7 @@ import { MailService } from '@/mail/mail.service';
 import { genKey } from '@/shared/genKey';
 import { UserEntity } from './user.entity';
 import { UserSizeEntity } from './user.view.entity';
+import { findOrderByCaseInsensitive } from '@/shared/select-order-case-insensitive';
 
 @Injectable()
 export class UserService {
@@ -223,10 +224,13 @@ export class UserService {
     );
   }
 
-  async findAll(find: FindManyOptions<UserEntity>): Promise<UserEntity[]> {
-    return this.userRepository.find({
-      ...find,
-    });
+  async findAll(
+    find: FindManyOptions<UserEntity>,
+    caseInsensitive = true,
+  ): Promise<UserEntity[]> {
+    return caseInsensitive
+      ? findOrderByCaseInsensitive(this.userRepository, find)
+      : this.userRepository.find(find);
   }
 
   async findByEmail(

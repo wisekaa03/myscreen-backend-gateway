@@ -50,9 +50,9 @@ describe(FolderService.name, () => {
   //   expect(await folderService.find({})).toStrictEqual([]);
   // });
 
-  it('returns folder.findAndCount', async () => {
-    expect(await folderService.findAndCount({})).toStrictEqual([]);
-  });
+  // it('returns folder.findAndCount', async () => {
+  //   expect(await folderService.findAndCount({})).toStrictEqual([]);
+  // });
 
   it('returns folder.update', async () => {
     expect(await folderService.update({})).toStrictEqual([]);

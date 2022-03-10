@@ -18,12 +18,7 @@ export const paginationQueryToConfig = <T>(
     }
 
     if (scope.order) {
-      const order: ScopeOrder<T> = {};
-      Object.entries(scope.order).forEach(([id, orderBy]) => {
-        // @ts-ignore
-        order[id] = orderBy ?? 'ASC';
-      });
-      pagination.order = order;
+      pagination.order = scope.order;
     }
   }
 
