@@ -21,9 +21,15 @@ export const findOrderByCaseInsensitive = <T>(
         field === 'renderingStatus' ||
         field === 'role'
       ) {
-        qb.addOrderBy(`${qb.alias}.${field}`, order as 'ASC' | 'DESC');
+        qb.addOrderBy(
+          `${qb.alias}.${field}`,
+          order === 'DESC' ? 'DESC' : 'ASC',
+        );
       } else {
-        qb.addOrderBy(`LOWER(${qb.alias}.${field})`, order as 'ASC' | 'DESC');
+        qb.addOrderBy(
+          `LOWER(${qb.alias}.${field})`,
+          order === 'DESC' ? 'DESC' : 'ASC',
+        );
       }
     });
   }
@@ -51,9 +57,15 @@ export const findOrderByCaseInsensitiveCount = <T>(
         field === 'renderingStatus' ||
         field === 'role'
       ) {
-        qb.addOrderBy(`${qb.alias}.${field}`, order as 'ASC' | 'DESC');
+        qb.addOrderBy(
+          `${qb.alias}.${field}`,
+          order === 'DESC' ? 'DESC' : 'ASC',
+        );
       } else {
-        qb.addOrderBy(`LOWER(${qb.alias}.${field})`, order as 'ASC' | 'DESC');
+        qb.addOrderBy(
+          `LOWER(${qb.alias}.${field})`,
+          order === 'DESC' ? 'DESC' : 'ASC',
+        );
       }
     });
   }

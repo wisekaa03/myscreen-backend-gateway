@@ -26,7 +26,10 @@ export class MonitorService {
     caseInsensitive = true,
   ): Promise<Array<MonitorEntity>> {
     return caseInsensitive
-      ? findOrderByCaseInsensitive(this.monitorRepository, find)
+      ? findOrderByCaseInsensitive(this.monitorRepository, {
+          relations: ['files', 'playlist'],
+          ...find,
+        })
       : this.monitorRepository.find({
           relations: ['files', 'playlist'],
           ...find,
@@ -38,7 +41,10 @@ export class MonitorService {
     caseInsensitive = true,
   ): Promise<[Array<MonitorEntity>, number]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitiveCount(this.monitorRepository, find)
+      ? findOrderByCaseInsensitiveCount(this.monitorRepository, {
+          relations: ['files', 'playlist'],
+          ...find,
+        })
       : this.monitorRepository.findAndCount({
           relations: ['files', 'playlist'],
           ...find,

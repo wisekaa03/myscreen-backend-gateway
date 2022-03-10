@@ -25,7 +25,10 @@ export class PlaylistService {
     caseInsensitive = true,
   ): Promise<PlaylistEntity[]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitive(this.playlistEntity, find)
+      ? findOrderByCaseInsensitive(this.playlistEntity, {
+          relations: ['files', 'monitors'],
+          ...find,
+        })
       : this.playlistEntity.find({
           relations: ['files', 'monitors'],
           ...find,
@@ -37,7 +40,10 @@ export class PlaylistService {
     caseInsensitive = true,
   ): Promise<[Array<PlaylistEntity>, number]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitiveCount(this.playlistEntity, find)
+      ? findOrderByCaseInsensitiveCount(this.playlistEntity, {
+          relations: ['files', 'monitors'],
+          ...find,
+        })
       : this.playlistEntity.findAndCount({
           relations: ['files', 'monitors'],
           ...find,
