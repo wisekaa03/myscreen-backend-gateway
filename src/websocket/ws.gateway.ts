@@ -118,6 +118,7 @@ export class WSGateway
         monitor.userId,
         Object.assign(monitor, {
           status: MonitorStatus.Offline,
+          playlistPlayed: false,
         }),
       );
     } else {
@@ -182,6 +183,12 @@ export class WSGateway
     if (monitor.playlist === undefined) {
       return null;
     }
+    await this.monitorService.update(
+      monitor.userId,
+      Object.assign(monitor, {
+        playlistPlayed: true,
+      }),
+    );
     return monitor.playlist;
   }
 
@@ -198,6 +205,7 @@ export class WSGateway
       monitor.userId,
       Object.assign(monitor, {
         status: MonitorStatus.Online,
+        playlistPlayed: true,
       }),
     );
   }

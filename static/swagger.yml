@@ -1823,7 +1823,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.11.17
+  version: 2.11.18
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2477,6 +2477,10 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
+        playlistPlayed:
+          type: boolean
+          description: Проигрывается плэйлист
+          example: false
     Order:
       type: string
       enum:
@@ -2841,6 +2845,10 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
+        playlistPlayed:
+          type: boolean
+          description: Проигрывается плэйлист
+          example: false
         createdAt:
           format: date-time
           type: string
@@ -2875,6 +2883,7 @@ components:
         - lastSeen
         - latitude
         - longitude
+        - playlistPlayed
         - createdAt
         - updatedAt
         - code

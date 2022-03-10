@@ -299,6 +299,14 @@ export class MonitorEntity {
   })
   playlist?: PlaylistEntity | null;
 
+  @Column({ type: 'boolean', default: false })
+  @ApiProperty({
+    description: 'Проигрывается плэйлист',
+    example: false,
+  })
+  @IsBoolean()
+  playlistPlayed!: boolean;
+
   @ManyToMany(() => FileEntity, (file) => file.monitors, {
     cascade: true,
     onDelete: 'CASCADE',
