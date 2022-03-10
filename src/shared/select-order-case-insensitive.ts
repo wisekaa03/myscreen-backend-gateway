@@ -28,7 +28,11 @@ export const findOrderByCaseInsensitiveCount = <T>(
   );
   if (orderBy) {
     Object.entries(orderBy).forEach(([field, order]) => {
-      qb.addOrderBy(`LOWER(${qb.alias}.${field})`, order as 'ASC' | 'DESC');
+      if (field === 'createdAt' || field === 'updatedAt') {
+        qb.addOrderBy(`${qb.alias}.${field}`, order as 'ASC' | 'DESC');
+      } else {
+        qb.addOrderBy(`LOWER(${qb.alias}.${field})`, order as 'ASC' | 'DESC');
+      }
     });
   }
   return Promise.all([qb.getMany(), qb.getCount()]);
