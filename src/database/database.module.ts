@@ -1,4 +1,4 @@
-import { Module, Logger } from '@nestjs/common';
+import { Module, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -81,4 +81,10 @@ import { RefreshTokenService } from './refreshtoken.service';
     RefreshTokenService,
   ],
 })
-export class DatabaseModule {}
+export class DatabaseModule implements OnModuleInit {
+  constructor(private readonly monitorService: MonitorService) {}
+
+  async onModuleInit(): Promise<void> {
+    await this.monitorService.off();
+  }
+}

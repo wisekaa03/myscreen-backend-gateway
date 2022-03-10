@@ -65,6 +65,13 @@ export class MonitorService {
     return this.monitorRepository.save(this.monitorRepository.create(order));
   }
 
+  async off(): Promise<void> {
+    await this.monitorRepository.update(
+      { attached: true },
+      { attached: false },
+    );
+  }
+
   async delete(userId: string, monitor: MonitorEntity): Promise<DeleteResult> {
     return this.monitorRepository.delete({
       id: monitor.id,
