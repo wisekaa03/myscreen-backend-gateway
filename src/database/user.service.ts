@@ -273,10 +273,10 @@ export class UserService {
       };
     }
 
-    return this.userSizeRepository.findOne({
-      id,
-      disabled,
-    });
+    const conditions: FindManyOptions<UserEntity> = disabled
+      ? { where: { id } }
+      : { where: { id, disabled } };
+    return this.userSizeRepository.findOne(conditions);
   }
 
   validateCredentials = (user: UserEntity, password: string): boolean =>
