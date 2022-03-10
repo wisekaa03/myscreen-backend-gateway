@@ -118,7 +118,6 @@ export class WSGateway
         monitor.userId,
         Object.assign(monitor, {
           status: MonitorStatus.Offline,
-          playlistPlayed: false,
         }),
       );
     } else {
@@ -178,7 +177,7 @@ export class WSGateway
         where: { id: value.monitorId },
       });
       if (!monitor) {
-        throw new WsException('Not authorized');
+        throw new WsException('Not authorized. Not exist monitorId.');
       }
       await this.monitorService.update(
         monitor.userId,
@@ -187,7 +186,7 @@ export class WSGateway
         }),
       );
     }
-    throw new WsException('Not authorized');
+    throw new WsException('Not authorized.');
   }
 
   private async playlist(monitorId: string): Promise<PlaylistEntity | null> {
