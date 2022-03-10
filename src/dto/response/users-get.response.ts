@@ -15,6 +15,9 @@ export class UsersGetResponse {
   })
   status!: Status.Success;
 
+  @ApiProperty({ description: 'Количество пользователей' })
+  count!: number;
+
   @ApiProperty({
     description: 'Пользователи',
     type: UserResponse,

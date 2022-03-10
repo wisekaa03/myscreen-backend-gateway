@@ -15,13 +15,16 @@ import {
   FindManyOptions,
 } from 'typeorm';
 
-import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { UserRoleEnum } from '@/enums';
-import { MailService } from '@/mail/mail.service';
+import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { genKey } from '@/shared/genKey';
+import {
+  findOrderByCaseInsensitive,
+  findOrderByCaseInsensitiveCount,
+} from '@/shared/select-order-case-insensitive';
+import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserSizeEntity } from './user.view.entity';
-import { findOrderByCaseInsensitive } from '@/shared/select-order-case-insensitive';
 
 @Injectable()
 export class UserService {
@@ -224,13 +227,22 @@ export class UserService {
     );
   }
 
-  async findAll(
+  async find(
     find: FindManyOptions<UserEntity>,
     caseInsensitive = true,
   ): Promise<UserEntity[]> {
     return caseInsensitive
       ? findOrderByCaseInsensitive(this.userRepository, find)
       : this.userRepository.find(find);
+  }
+
+  async findAndCount(
+    find: FindManyOptions<UserEntity>,
+    caseInsensitive = true,
+  ): Promise<[UserEntity[], number]> {
+    return caseInsensitive
+      ? findOrderByCaseInsensitiveCount(this.userRepository, find)
+      : this.userRepository.findAndCount(find);
   }
 
   async findByEmail(

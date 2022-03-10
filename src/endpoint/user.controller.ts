@@ -81,14 +81,14 @@ export class UserController {
   async users(
     @Body() { where, scope }: UsersGetRequest,
   ): Promise<UsersGetResponse> {
-    const data = await this.userService
-      .findAll({
-        ...paginationQueryToConfig(scope),
-        where,
-      })
-      .then((user) => user.map(({ password, ...entity }) => entity));
+    const [users, count] = await this.userService.findAndCount({
+      ...paginationQueryToConfig(scope),
+      where,
+    });
+    const data = users.map(({ password, ...entity }) => entity);
     return {
       status: Status.Success,
+      count,
       data,
     };
   }

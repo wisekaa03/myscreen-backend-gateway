@@ -1823,7 +1823,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.11.21
+  version: 2.11.22
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3195,7 +3195,7 @@ components:
           $ref: "#/components/schemas/Status"
         count:
           type: number
-          description: Количество оплат
+          description: Количество редакторов
         data:
           description: Оплаты
           type: array
@@ -3717,6 +3717,9 @@ components:
           description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
+        count:
+          type: number
+          description: Количество пользователей
         data:
           description: Пользователи
           type: array
@@ -3724,6 +3727,7 @@ components:
             $ref: "#/components/schemas/UserResponse"
       required:
         - status
+        - count
         - data
     OrderRequest:
       type: object

@@ -11,7 +11,20 @@ export const findOrderByCaseInsensitive = <T>(
   );
   if (orderBy) {
     Object.entries(orderBy).forEach(([field, order]) => {
-      qb.addOrderBy(`LOWER(${qb.alias}.${field})`, order as 'ASC' | 'DESC');
+      if (
+        field === 'createdAt' ||
+        field === 'updatedAt' ||
+        field === 'category' ||
+        field === 'status' ||
+        field === 'address' ||
+        field === 'totalDuration' ||
+        field === 'renderingStatus' ||
+        field === 'role'
+      ) {
+        qb.addOrderBy(`${qb.alias}.${field}`, order as 'ASC' | 'DESC');
+      } else {
+        qb.addOrderBy(`LOWER(${qb.alias}.${field})`, order as 'ASC' | 'DESC');
+      }
     });
   }
   return qb.getMany();
@@ -35,7 +48,8 @@ export const findOrderByCaseInsensitiveCount = <T>(
         field === 'status' ||
         field === 'address' ||
         field === 'totalDuration' ||
-        field === 'renderingStatus'
+        field === 'renderingStatus' ||
+        field === 'role'
       ) {
         qb.addOrderBy(`${qb.alias}.${field}`, order as 'ASC' | 'DESC');
       } else {

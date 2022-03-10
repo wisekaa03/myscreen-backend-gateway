@@ -13,7 +13,7 @@ export class EditorsGetResponse {
   })
   status!: Status.Success;
 
-  @ApiProperty({ description: 'Количество оплат' })
+  @ApiProperty({ description: 'Количество редакторов' })
   count!: number;
 
   @ApiProperty({
