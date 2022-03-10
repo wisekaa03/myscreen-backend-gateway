@@ -339,7 +339,10 @@ export class AuthController {
       fingerprint,
     );
 
-    await this.monitorService.update(monitor.userId, { code: null });
+    await this.monitorService.update(
+      monitor.userId,
+      Object.assign(monitor, { code: null }),
+    );
 
     return {
       status: Status.Success,
