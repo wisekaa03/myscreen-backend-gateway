@@ -12,6 +12,7 @@ import {
   findOrderByCaseInsensitiveCount,
 } from '@/shared/select-order-case-insensitive';
 import { MonitorEntity } from './monitor.entity';
+import { MonitorStatus } from '@/enums';
 
 @Injectable()
 export class MonitorService {
@@ -65,10 +66,14 @@ export class MonitorService {
     return this.monitorRepository.save(this.monitorRepository.create(order));
   }
 
-  async off(): Promise<void> {
+  async attached(attached = true): Promise<void> {
+    await this.monitorRepository.update({ attached: true }, { attached });
+  }
+
+  async status(status = MonitorStatus.Online): Promise<void> {
     await this.monitorRepository.update(
-      { attached: true },
-      { attached: false },
+      { status: MonitorStatus.Offline },
+      { status },
     );
   }
 

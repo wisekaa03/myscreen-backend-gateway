@@ -326,7 +326,9 @@ export class AuthController {
     @Ip() fingerprint: string,
     @Body() { code }: AuthMonitorRequest,
   ): Promise<AuthRefreshResponse> {
-    const monitor = await this.monitorService.findOne({ where: { code } });
+    const monitor = await this.monitorService.findOne({
+      where: { attached: false, code },
+    });
     if (!monitor) {
       throw new NotFoundException('This monitor does not exist');
     }
@@ -336,6 +338,8 @@ export class AuthController {
       monitor.id,
       fingerprint,
     );
+
+    await this.monitorService.update(monitor.userId, { code: null });
 
     return {
       status: Status.Success,

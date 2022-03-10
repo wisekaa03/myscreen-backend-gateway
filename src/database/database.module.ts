@@ -2,6 +2,7 @@ import { Module, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { MonitorStatus } from '@/enums';
 import { TypeOrmOptionsClass } from '@/shared/typeorm.options';
 import { MailModule } from '@/mail/mail.module';
 import { EditorEntity } from './editor.entity';
@@ -85,6 +86,6 @@ export class DatabaseModule implements OnModuleInit {
   constructor(private readonly monitorService: MonitorService) {}
 
   async onModuleInit(): Promise<void> {
-    await this.monitorService.off();
+    await this.monitorService.status(MonitorStatus.Offline);
   }
 }

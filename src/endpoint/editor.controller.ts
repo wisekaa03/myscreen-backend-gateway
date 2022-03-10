@@ -424,6 +424,7 @@ export class EditorController {
     @Param('layerId', ParseUUIDPipe) layerId: string,
     @Param('moveIndex', ParseIntPipe) moveIndex: number,
   ): Promise<SuccessResponse> {
+    // TODO: catch error
     /* await */ this.editorService.moveIndex(
       userId,
       editorId,

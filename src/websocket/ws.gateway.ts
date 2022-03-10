@@ -21,6 +21,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { WebSocketClient } from './interface/websocket-client';
+import { MonitorStatus } from '@/enums';
 
 @WebSocketGateway({
   cors: {
@@ -115,7 +116,9 @@ export class WSGateway
     if (monitor) {
       await this.monitorService.update(
         monitor.userId,
-        Object.assign(monitor, { attached: false }),
+        Object.assign(monitor, {
+          status: MonitorStatus.Offline,
+        }),
       );
     } else {
       this.logger.error(`Disconnect: '${value.monitorId}' is not monitor`);
@@ -167,7 +170,16 @@ export class WSGateway
     const monitor = await this.monitorService.findOne({
       where: { id: monitorId },
     });
-    if (!monitor || monitor.playlist === undefined) {
+    if (!monitor) {
+      return null;
+    }
+    await this.monitorService.update(
+      monitor.userId,
+      Object.assign(monitor, {
+        status: MonitorStatus.Online,
+      }),
+    );
+    if (monitor.playlist === undefined) {
       return null;
     }
     return monitor.playlist;
@@ -182,9 +194,11 @@ export class WSGateway
         client.send(JSON.stringify([{ event: 'playlist', data: playlist }]));
       }
     });
-    /* await */ this.monitorService.update(
+    await this.monitorService.update(
       monitor.userId,
-      Object.assign(monitor, { attached: !!playlist }),
+      Object.assign(monitor, {
+        status: MonitorStatus.Online,
+      }),
     );
   }
 }
