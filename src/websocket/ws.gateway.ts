@@ -169,7 +169,7 @@ export class WSGateway
   @SubscribeMessage('monitor')
   async monitor(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() data: { playlistPlayed: boolean },
+    @MessageBody() data: string | Record<string, boolean>,
   ): Promise<Observable<WsResponse<string>[]>> {
     const value = this.clients.get(client);
     if (value) {
@@ -179,10 +179,20 @@ export class WSGateway
       if (!monitor) {
         throw new WsException('Not authorized. Not exist monitorId.');
       }
+      let dataObject: Record<string, boolean>;
+      if (typeof data === 'string') {
+        try {
+          dataObject = JSON.parse(data);
+        } catch (e) {
+          throw new WsException('Error in parsing data');
+        }
+      } else {
+        dataObject = data;
+      }
       await this.monitorService.update(
         monitor.userId,
         Object.assign(monitor, {
-          playlistPlayed: data.playlistPlayed,
+          playlistPlayed: dataObject.playlistPlayed,
         }),
       );
       return of([{ event: 'monitor', data: 'Ok' }]);
