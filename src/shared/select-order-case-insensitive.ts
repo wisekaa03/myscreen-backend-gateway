@@ -28,7 +28,15 @@ export const findOrderByCaseInsensitiveCount = <T>(
   );
   if (orderBy) {
     Object.entries(orderBy).forEach(([field, order]) => {
-      if (field === 'createdAt' || field === 'updatedAt') {
+      if (
+        field === 'createdAt' ||
+        field === 'updatedAt' ||
+        field === 'category' ||
+        field === 'status' ||
+        field === 'address' ||
+        field === 'totalDuration' ||
+        field === 'renderingStatus'
+      ) {
         qb.addOrderBy(`${qb.alias}.${field}`, order as 'ASC' | 'DESC');
       } else {
         qb.addOrderBy(`LOWER(${qb.alias}.${field})`, order as 'ASC' | 'DESC');
