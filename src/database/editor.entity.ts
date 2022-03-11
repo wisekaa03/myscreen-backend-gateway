@@ -21,6 +21,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Unique,
 } from 'typeorm';
 
 import { RenderingStatus } from '@/enums';
@@ -29,6 +30,7 @@ import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { FileEntity } from './file.entity';
 
 @Entity('editor')
+@Unique('IDX_editor_userId_name', ['userId', 'name'])
 export class EditorEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({

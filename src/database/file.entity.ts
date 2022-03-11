@@ -104,6 +104,7 @@ export class FileEntity {
   @ApiProperty({
     description: 'Имя файла',
     example: 'foo.mp4',
+    required: true,
   })
   @IsNotEmpty()
   name!: string;

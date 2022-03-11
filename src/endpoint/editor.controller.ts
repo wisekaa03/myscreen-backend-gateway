@@ -147,6 +147,12 @@ export class EditorController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() body: EditorCreateRequest,
   ): Promise<EditorGetResponse> {
+    const editor = await this.editorService.find({
+      where: { userId, name: body.name },
+    });
+    if (editor) {
+      throw new BadRequestException('This name is already taken');
+    }
     const data = await this.editorService.update(userId, body);
     if (!data) {
       throw new NotFoundException('Editor not found');

@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { FindManyOptions, FindOptionsUtils, Repository } from 'typeorm';
 
 export const findOrderByCaseInsensitive = <T>(
@@ -9,27 +10,19 @@ export const findOrderByCaseInsensitive = <T>(
     repository.createQueryBuilder(),
     withoutOrder,
   );
+  const columns = repository.metadata.ownColumns;
   if (orderBy) {
-    Object.entries(orderBy).forEach(([field, order]) => {
-      if (
-        field === 'createdAt' ||
-        field === 'updatedAt' ||
-        field === 'category' ||
-        field === 'status' ||
-        field === 'address' ||
-        field === 'totalDuration' ||
-        field === 'renderingStatus' ||
-        field === 'role'
-      ) {
-        qb.addOrderBy(
-          `${qb.alias}.${field}`,
-          order === 'DESC' ? 'DESC' : 'ASC',
-        );
+    Object.entries(orderBy).forEach(([field, direction]) => {
+      const column = columns.find(
+        (value) => value.databaseName === field,
+      )?.type;
+      const d = direction === 'DESC' ? 'DESC' : 'ASC';
+      // TODO: эх... разобраться с relations
+      if (column !== String || (find.relations && (find.take || find.skip))) {
+        qb.addOrderBy(`${qb.alias}.${field}`, d);
       } else {
-        qb.addOrderBy(
-          `LOWER(${qb.alias}.${field})`,
-          order === 'DESC' ? 'DESC' : 'ASC',
-        );
+        qb.addSelect(`LOWER(${qb.alias}.${field})`, `${field}_${d}`);
+        qb.addOrderBy(`"${field}_${d}"`, d);
       }
     });
   }
@@ -45,29 +38,23 @@ export const findOrderByCaseInsensitiveCount = <T>(
     repository.createQueryBuilder(),
     withoutOrder,
   );
+  const columns = repository.metadata.ownColumns;
   if (orderBy) {
-    Object.entries(orderBy).forEach(([field, order]) => {
-      if (
-        field === 'createdAt' ||
-        field === 'updatedAt' ||
-        field === 'category' ||
-        field === 'status' ||
-        field === 'address' ||
-        field === 'totalDuration' ||
-        field === 'renderingStatus' ||
-        field === 'role'
-      ) {
-        qb.addOrderBy(
-          `${qb.alias}.${field}`,
-          order === 'DESC' ? 'DESC' : 'ASC',
-        );
+    Object.entries(orderBy).forEach(([field, direction]) => {
+      const column = columns.find(
+        (value) => value.databaseName === field,
+      )?.type;
+      const d = direction === 'DESC' ? 'DESC' : 'ASC';
+      // TODO: эх... разобраться с relations
+      if (column !== String || (find.relations && (find.take || find.skip))) {
+        qb.addOrderBy(`${qb.alias}.${field}`, d);
       } else {
-        qb.addOrderBy(
-          `LOWER(${qb.alias}.${field})`,
-          order === 'DESC' ? 'DESC' : 'ASC',
-        );
+        qb.addSelect(`LOWER(${qb.alias}.${field})`, `${field}_${d}`);
+        qb.addOrderBy(`"${field}_${d}"`, d);
       }
     });
   }
-  return Promise.all([qb.getMany(), qb.getCount()]);
+  const logger = new Logger();
+  logger.debug(qb.getSql());
+  return Promise.all([qb.getMany(), 1]);
 };
