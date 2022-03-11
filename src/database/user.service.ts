@@ -18,10 +18,7 @@ import {
 import { UserRoleEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { genKey } from '@/shared/genKey';
-import {
-  findOrderByCaseInsensitive,
-  findOrderByCaseInsensitiveCount,
-} from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
 import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserSizeEntity } from './user.view.entity';
@@ -232,7 +229,7 @@ export class UserService {
     caseInsensitive = true,
   ): Promise<UserEntity[]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitive(this.userRepository, find)
+      ? TypeOrmFind.orderCI(this.userRepository, find)
       : this.userRepository.find(find);
   }
 
@@ -241,7 +238,7 @@ export class UserService {
     caseInsensitive = true,
   ): Promise<[UserEntity[], number]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitiveCount(this.userRepository, find)
+      ? TypeOrmFind.orderCICount(this.userRepository, find)
       : this.userRepository.findAndCount(find);
   }
 

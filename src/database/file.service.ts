@@ -36,10 +36,7 @@ import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
 import { FfMpegPreview } from '@/shared/ffmpeg';
-import {
-  findOrderByCaseInsensitive,
-  findOrderByCaseInsensitiveCount,
-} from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
 import { EditorService } from '@/database/editor.service';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
@@ -90,7 +87,7 @@ export class FileService {
       conditional.relations = ['monitors', 'playlists'];
     }
     return caseInsensitive
-      ? findOrderByCaseInsensitive(this.fileRepository, conditional)
+      ? TypeOrmFind.orderCI(this.fileRepository, conditional)
       : this.fileRepository.find(conditional);
   }
 
@@ -110,7 +107,7 @@ export class FileService {
       conditional.relations = ['monitors', 'playlists'];
     }
     return caseInsensitive
-      ? findOrderByCaseInsensitiveCount(this.fileRepository, conditional)
+      ? TypeOrmFind.orderCICount(this.fileRepository, conditional)
       : this.fileRepository.findAndCount(conditional);
   }
 

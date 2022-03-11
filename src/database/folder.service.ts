@@ -9,10 +9,7 @@ import {
   TransactionRepository,
 } from 'typeorm';
 
-import {
-  findOrderByCaseInsensitive,
-  findOrderByCaseInsensitiveCount,
-} from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 
@@ -32,7 +29,7 @@ export class FolderService {
     caseInsensitive = true,
   ): Promise<FolderEntity[]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitive(this.folderRepository, find)
+      ? TypeOrmFind.orderCI(this.folderRepository, find)
       : this.folderRepository.find(find);
   }
 
@@ -41,7 +38,7 @@ export class FolderService {
     caseInsensitive = true,
   ): Promise<[FolderEntity[], number]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitiveCount(this.folderRepository, find)
+      ? TypeOrmFind.orderCICount(this.folderRepository, find)
       : this.folderRepository.findAndCount(find);
   }
 

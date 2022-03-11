@@ -7,10 +7,7 @@ import {
   Repository,
 } from 'typeorm';
 
-import {
-  findOrderByCaseInsensitive,
-  findOrderByCaseInsensitiveCount,
-} from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
 import { PlaylistEntity } from './playlist.entity';
 
 @Injectable()
@@ -25,7 +22,7 @@ export class PlaylistService {
     caseInsensitive = true,
   ): Promise<PlaylistEntity[]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitive(this.playlistEntity, {
+      ? TypeOrmFind.orderCI(this.playlistEntity, {
           relations: ['files', 'monitors'],
           ...find,
         })
@@ -40,7 +37,7 @@ export class PlaylistService {
     caseInsensitive = true,
   ): Promise<[Array<PlaylistEntity>, number]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitiveCount(this.playlistEntity, {
+      ? TypeOrmFind.orderCICount(this.playlistEntity, {
           relations: ['files', 'monitors'],
           ...find,
         })

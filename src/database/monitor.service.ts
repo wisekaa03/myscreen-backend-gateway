@@ -7,10 +7,7 @@ import {
   Repository,
 } from 'typeorm';
 
-import {
-  findOrderByCaseInsensitive,
-  findOrderByCaseInsensitiveCount,
-} from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorStatus } from '@/enums';
 
@@ -26,7 +23,7 @@ export class MonitorService {
     caseInsensitive = true,
   ): Promise<Array<MonitorEntity>> {
     return caseInsensitive
-      ? findOrderByCaseInsensitive(this.monitorRepository, {
+      ? TypeOrmFind.orderCI(this.monitorRepository, {
           relations: ['files', 'playlist'],
           ...find,
         })
@@ -41,7 +38,7 @@ export class MonitorService {
     caseInsensitive = true,
   ): Promise<[Array<MonitorEntity>, number]> {
     return caseInsensitive
-      ? findOrderByCaseInsensitiveCount(this.monitorRepository, {
+      ? TypeOrmFind.orderCICount(this.monitorRepository, {
           relations: ['files', 'playlist'],
           ...find,
         })

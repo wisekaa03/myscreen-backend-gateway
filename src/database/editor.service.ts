@@ -26,10 +26,7 @@ import { ffprobe } from 'media-probe';
 import editly from 'editly';
 
 import { FileCategory, RenderingStatus, VideoType } from '@/enums';
-import {
-  findOrderByCaseInsensitive,
-  findOrderByCaseInsensitiveCount,
-} from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';
@@ -67,7 +64,7 @@ export class EditorService {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
     return caseInsensitive
-      ? findOrderByCaseInsensitive(this.editorRepository, conditional)
+      ? TypeOrmFind.orderCI(this.editorRepository, conditional)
       : this.editorRepository.find(conditional);
   }
 
@@ -80,7 +77,7 @@ export class EditorService {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
     return caseInsensitive
-      ? findOrderByCaseInsensitiveCount(this.editorRepository, conditional)
+      ? TypeOrmFind.orderCICount(this.editorRepository, conditional)
       : this.editorRepository.findAndCount(conditional);
   }
 
