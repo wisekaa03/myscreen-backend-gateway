@@ -256,7 +256,7 @@ export class FileService {
         folder,
         name: file.originalname,
         filesize: meta.filesize,
-        duration: meta.duration,
+        duration: meta.duration ?? 0,
         width: meta.width,
         height: meta.height,
         meta,
@@ -526,8 +526,8 @@ export class FileService {
         filesize: Number(file.media.format?.size) || file.size,
         duration: parseFloat(
           `${
-            file.media.format?.duration ||
-            file.media.streams?.[0]?.duration ||
+            file.media.format?.duration ??
+            file.media.streams?.[0]?.duration ??
             0
           }`,
         ),

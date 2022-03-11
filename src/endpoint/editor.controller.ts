@@ -150,7 +150,7 @@ export class EditorController {
     const editor = await this.editorService.find({
       where: { userId, name: body.name },
     });
-    if (editor) {
+    if (Array.isArray(editor) && editor.length > 0) {
       throw new BadRequestException('This name is already taken');
     }
     const data = await this.editorService.update(userId, body);
@@ -219,6 +219,15 @@ export class EditorController {
     });
     if (!editor) {
       throw new NotFoundException('Editor not found');
+    }
+    const editorFound = await this.editorService.find({
+      where: {
+        userId,
+        name: update.name,
+      },
+    });
+    if (Array.isArray(editorFound) && editorFound.length > 0) {
+      throw new NotFoundException('This name already taken');
     }
 
     const data = await this.editorService.update(userId, {

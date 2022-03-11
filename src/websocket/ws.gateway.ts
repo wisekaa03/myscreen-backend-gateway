@@ -197,7 +197,7 @@ export class WSGateway
       );
       return of([{ event: 'monitor', data: 'Ok' }]);
     }
-    throw new WsException('Not authorized.');
+    throw new WsException('Not authorized');
   }
 
   private async playlist(monitorId: string): Promise<PlaylistEntity | null> {

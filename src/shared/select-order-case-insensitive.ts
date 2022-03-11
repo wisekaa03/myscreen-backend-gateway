@@ -23,7 +23,7 @@ export class TypeOrmFind {
           (value) => value.databaseName === field,
         )?.type;
         const d = direction === 'DESC' ? 'DESC' : 'ASC';
-        // TODO: эх... разобраться с relations
+        // TODO: эх... разобраться с relations:  || (find.relations && (find.take || find.skip))
         if (column !== String || (find.relations && (find.take || find.skip))) {
           qb.addOrderBy(`${qb.alias}.${field}`, d);
         } else {

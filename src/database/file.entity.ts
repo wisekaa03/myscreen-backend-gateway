@@ -244,6 +244,6 @@ export class FileEntity {
   @AfterLoad()
   @AfterUpdate()
   after() {
-    this.duration = parseFloat(`${this.duration || 0}`);
+    this.duration = parseFloat(`${this.duration ?? 0}`);
   }
 }
