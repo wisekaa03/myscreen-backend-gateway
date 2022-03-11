@@ -1823,7 +1823,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.11.33
+  version: 2.11.34
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2461,14 +2461,18 @@ components:
           type: boolean
           description: Присоединен
           example: false
-        code:
-          type: string
-          description: Идентификатор устройства
-          example: 111-111-111
         status:
           description: Подключен
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
+        playlistPlayed:
+          type: boolean
+          description: Проигрывается плэйлист
+          example: false
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
         latitude:
           type: number
           description: Широта
@@ -2477,10 +2481,6 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
-        playlistPlayed:
-          type: boolean
-          description: Проигрывается плэйлист
-          example: false
     Order:
       type: string
       enum:
@@ -2832,6 +2832,10 @@ components:
           description: Подключен
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
+        playlistPlayed:
+          type: boolean
+          description: Проигрывается плэйлист
+          example: false
         lastSeen:
           format: date-time
           type: string
@@ -2845,10 +2849,6 @@ components:
           type: number
           description: Долгота
           example: "38.9760300"
-        playlistPlayed:
-          type: boolean
-          description: Проигрывается плэйлист
-          example: false
         createdAt:
           format: date-time
           type: string
@@ -2880,10 +2880,10 @@ components:
         - monitorInfo
         - attached
         - status
+        - playlistPlayed
         - lastSeen
         - latitude
         - longitude
-        - playlistPlayed
         - createdAt
         - updatedAt
         - code

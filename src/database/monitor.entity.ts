@@ -234,6 +234,24 @@ export class MonitorEntity {
   @IsBoolean()
   attached!: boolean;
 
+  @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
+  @ApiProperty({
+    description: 'Подключен',
+    enum: MonitorStatus,
+    enumName: 'MonitorStatus',
+    example: MonitorStatus.Offline,
+  })
+  @IsEnum(MonitorStatus)
+  status!: MonitorStatus;
+
+  @Column({ type: 'boolean', default: false })
+  @ApiProperty({
+    description: 'Проигрывается плэйлист',
+    example: false,
+  })
+  @IsBoolean()
+  playlistPlayed!: boolean;
+
   @Column({ type: 'char', length: 11, nullable: true })
   @Index()
   @ApiProperty({
@@ -244,16 +262,6 @@ export class MonitorEntity {
   })
   @Length(11, 11)
   code!: string | null;
-
-  @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
-  @ApiProperty({
-    description: 'Подключен',
-    enum: MonitorStatus,
-    enumName: 'MonitorStatus',
-    example: MonitorStatus.Offline,
-  })
-  @IsEnum(MonitorStatus)
-  status!: MonitorStatus;
 
   @Column({ nullable: true })
   @ApiProperty({
@@ -298,14 +306,6 @@ export class MonitorEntity {
     nullable: true,
   })
   playlist?: PlaylistEntity | null;
-
-  @Column({ type: 'boolean', default: false })
-  @ApiProperty({
-    description: 'Проигрывается плэйлист',
-    example: false,
-  })
-  @IsBoolean()
-  playlistPlayed!: boolean;
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {
     cascade: true,
