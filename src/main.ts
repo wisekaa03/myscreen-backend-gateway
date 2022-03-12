@@ -1,5 +1,5 @@
 import { writeFile } from 'node:fs/promises';
-import { resolve as pathResolve } from 'node:path';
+import { join as pathJoin } from 'node:path';
 import { stringify as yamlStringify } from 'yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
@@ -40,8 +40,9 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   });
   const logger = app.get(Logger);
   app.disable('x-powered-by').disable('server');
+  const staticAssets = pathJoin('static');
   app
-    .useStaticAssets(pathResolve(__dirname, '../..', 'static'), {
+    .useStaticAssets(staticAssets, {
       dotfiles: 'deny',
     })
     .setGlobalPrefix(apiPath, { exclude: ['/'] })
@@ -98,12 +99,10 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   };
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   (async () => {
-    writeFile(
-      pathResolve(__dirname, '../../static', 'swagger.yml'),
-      yamlStringify(swaggerDocument),
-    ).then(() => {
+    const swaggerYml = pathJoin(staticAssets, 'swagger.yml');
+    writeFile(swaggerYml, yamlStringify(swaggerDocument)).then(() => {
       logger.debug(
-        'The file swagger.yml has been writed',
+        `The file '${swaggerYml}' has been writed`,
         NestApplication.name,
       );
     });
