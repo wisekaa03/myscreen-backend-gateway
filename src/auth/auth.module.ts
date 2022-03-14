@@ -11,7 +11,7 @@ import { JwtStrategy } from './jwt.strategy';
   imports: [
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_ACCESS_TOKEN'),
+        secret: configService.get<string>('JWT_ACCESS_TOKEN', 'what ?'),
         signOptions: {
           algorithm: 'HS256',
           expiresIn: configService.get<string>('JWT_ACCESS_EXPIRES', '10min'),

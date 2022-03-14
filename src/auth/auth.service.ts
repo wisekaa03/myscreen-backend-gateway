@@ -23,6 +23,8 @@ export class AuthService {
 
   private refreshTokenExpires: string;
 
+  private secretAccessToken: string;
+
   constructor(
     private readonly userService: UserService,
     private readonly refreshTokenService: RefreshTokenService,
@@ -36,6 +38,10 @@ export class AuthService {
     this.refreshTokenExpires = this.configService.get<string>(
       'JWT_REFRESH_EXPIRES',
       '30days',
+    );
+    this.secretAccessToken = this.configService.get<string>(
+      'JWT_ACCESS_TOKEN',
+      'what ?',
     );
   }
 
@@ -191,7 +197,9 @@ export class AuthService {
 
   private async decodeRefreshToken(token: string): Promise<MyscreenJwtPayload> {
     try {
-      return this.jwtService.verifyAsync(token);
+      return this.jwtService.verifyAsync(token, {
+        ...JWT_BASE_OPTIONS,
+      });
     } catch (e) {
       if (e instanceof TokenExpiredError) {
         throw new ForbiddenException(`Token ${token} expired`);
@@ -236,7 +244,9 @@ export class AuthService {
   }
 
   async jwtVerify(token: string): Promise<MyscreenJwtPayload> {
-    return this.jwtService.verifyAsync(token);
+    return this.jwtService.verifyAsync(token, {
+      ...JWT_BASE_OPTIONS,
+    });
   }
 
   /**

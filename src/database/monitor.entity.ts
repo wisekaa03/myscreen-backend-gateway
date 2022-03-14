@@ -296,7 +296,7 @@ export class MonitorEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column({ select: false })
+  @Column()
   @IsUUID()
   userId!: string;
 

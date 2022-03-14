@@ -52,17 +52,17 @@ export class WSGateway
     value: WebSocketClient,
     token: string,
   ): Promise<PlaylistEntity | null | undefined> {
-    const { sub: monitorId, aud: roles } = await this.authService
+    const { sub: userId, aud: roles } = await this.authService
       .jwtVerify(token)
       .catch((error) => {
         this.logger.error(error);
         throw new WsException('Not authorized');
       });
-    if (monitorId && roles) {
+    if (userId && roles) {
       this.logger.debug(
         `Client ip='${value.ip}:${
           value.port
-        }': auth=true, user or monitor Id='${monitorId}', roles='${JSON.stringify(
+        }': auth=true, user or userId='${userId}', roles='${JSON.stringify(
           roles,
         )}'`,
       );
@@ -70,10 +70,10 @@ export class WSGateway
         ...value,
         auth: true,
         token,
-        monitorId,
+        userId,
         roles,
       });
-      return this.playlist(monitorId);
+      return this.playlist(userId);
     }
     return undefined;
   }
@@ -122,7 +122,7 @@ export class WSGateway
     }
     this.logger.debug(`Disconnect: '${value.ip}:${value.port}'`);
     const monitor = await this.monitorService.findOne({
-      where: { id: value.monitorId },
+      where: { id: value.userId },
     });
     if (monitor) {
       await this.monitorService.update(
@@ -132,7 +132,7 @@ export class WSGateway
         }),
       );
     } else {
-      this.logger.error(`Disconnect: '${value.monitorId}' is not monitor`);
+      this.logger.error(`Disconnect: '${value.userId}' is not monitor`);
     }
     this.clients.delete(client);
   }
@@ -159,11 +159,11 @@ export class WSGateway
   async monitor(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() data: string | Record<string, boolean>,
-  ): Promise<Observable<WsResponse<MonitorEntity>[]>> {
+  ): Promise<Observable<WsResponse<string>[]>> {
     const value = this.clients.get(client);
     if (value && value.auth) {
       const monitor = await this.monitorService.findOne({
-        where: { id: value.monitorId },
+        where: { id: value.userId },
       });
       if (!monitor) {
         throw new WsException('Not exist monitorId');
@@ -185,14 +185,14 @@ export class WSGateway
         }),
       );
       await this.changeMonitor(monitorUpdated);
-      return of([{ event: 'monitor', data: monitor }]);
+      return of([{ event: 'monitor', data: 'Ok' }]);
     }
     throw new WsException('Not authorized');
   }
 
   private async changeMonitor(monitor: MonitorEntity): Promise<void> {
     this.clients.forEach((value, client) => {
-      if (value.monitorId === monitor.userId) {
+      if (value.userId === monitor.userId) {
         client.send(JSON.stringify([{ event: 'monitor', data: monitor }]));
       }
     });
@@ -222,7 +222,7 @@ export class WSGateway
     playlist: PlaylistEntity | null,
   ): Promise<void> {
     this.clients.forEach((value, client) => {
-      if (value.monitorId === monitor.id) {
+      if (value.userId === monitor.id) {
         client.send(JSON.stringify([{ event: 'playlist', data: playlist }]));
       }
     });
