@@ -252,11 +252,9 @@ export class UserService {
 
   async findByEmail(
     email: string,
-    disabled = false,
   ): Promise<(UserEntity & Partial<UserSizeEntity>) | undefined> {
     return this.userSizeRepository.findOne({
-      email,
-      disabled,
+      where: { email },
     });
   }
 
