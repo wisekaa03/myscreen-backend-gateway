@@ -287,7 +287,13 @@ export class UserService {
       'hex',
     );
     this.logger.debug(
-      JSON.stringify({ userPassword: user.password, passwordSha256, password }),
+      JSON.stringify({
+        id: user.id,
+        email: user.email,
+        userPassword: user.password,
+        passwordSha256,
+        password,
+      }),
     );
     return passwordSha256 === user.password;
   };
