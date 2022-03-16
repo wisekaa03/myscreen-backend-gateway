@@ -159,7 +159,7 @@ export class WSGateway
           .catch((error) => {
             this.logger.error(error);
           });
-        /* await */ this.monitorStatus(monitor.id, MonitorStatus.Online);
+        /* await */ this.monitorStatus(monitor.id, MonitorStatus.Offline);
       }
     }
     this.clients.delete(client);
