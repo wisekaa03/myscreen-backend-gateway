@@ -223,6 +223,14 @@ export class UserService {
       if (!userUpdated) {
         throw new ForbiddenException('User not exists', email);
       }
+      this.logger.debug(
+        JSON.stringify({
+          userId: userUpdated.id,
+          userPassword: userUpdated.password,
+          passwordSha256,
+          password,
+        }),
+      );
       return userUpdated;
     }
 
