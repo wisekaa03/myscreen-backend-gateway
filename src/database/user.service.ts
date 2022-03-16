@@ -215,9 +215,6 @@ export class UserService {
       const passwordSha256 = createHmac('sha256', password.normalize()).digest(
         'hex',
       );
-      this.logger.debug(
-        `Password: ${JSON.stringify({ password, passwordSha256 })}`,
-      );
       await this.userRepository.update(user.id, {
         password: passwordSha256,
         forgotConfirmKey: null,
@@ -226,9 +223,6 @@ export class UserService {
       if (!userUpdated) {
         throw new ForbiddenException('User not exists', email);
       }
-      this.logger.debug(
-        `Password: ${JSON.stringify({ password: userUpdated.password })}`,
-      );
       return userUpdated;
     }
 
@@ -293,6 +287,9 @@ export class UserService {
   validateCredentials = (user: UserEntity, password: string): boolean => {
     const passwordSha256 = createHmac('sha256', password.normalize()).digest(
       'hex',
+    );
+    this.logger.debug(
+      JSON.stringify({ userPassword: user.password, passwordSha256, password }),
     );
     return passwordSha256 === user.password;
   };
