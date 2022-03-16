@@ -64,7 +64,7 @@ export class Address {
 
   @ApiProperty({
     description: 'Дом',
-    example: 1,
+    example: '1',
     required: false,
   })
   @IsString()
@@ -72,7 +72,7 @@ export class Address {
 
   @ApiProperty({
     description: 'Комната',
-    example: 1,
+    example: '1',
     required: false,
   })
   @IsString()
@@ -168,7 +168,8 @@ export class MonitorEntity {
       city: 'Krasnodar',
       country: 'Russia',
       street: 'Krasnaya',
-      house: 122,
+      house: '122',
+      room: '1',
     },
     required: false,
   })
@@ -216,9 +217,9 @@ export class MonitorEntity {
     description: 'Модель и прочие характеристики монитора',
     example: {
       model: 'Samsung',
-      resolution: 0,
+      resolution: '1920 x 1080 px',
       angle: 0,
-      matrix: 0,
+      matrix: 'IPS',
       brightness: 0,
     },
   })

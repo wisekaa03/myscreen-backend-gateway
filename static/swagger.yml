@@ -1823,7 +1823,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.12.13
+  version: 2.12.14
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2348,11 +2348,11 @@ components:
         house:
           type: string
           description: Дом
-          example: 1
+          example: "1"
         room:
           type: string
           description: Комната
-          example: 1
+          example: "1"
     MonitorCategory:
       type: string
       enum:
@@ -2427,7 +2427,8 @@ components:
             city: Krasnodar
             country: Russia
             street: Krasnaya
-            house: 122
+            house: "122"
+            room: "1"
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -2451,9 +2452,9 @@ components:
           example:
             &a56
             model: Samsung
-            resolution: 0
+            resolution: 1920 x 1080 px
             angle: 0
-            matrix: 0
+            matrix: IPS
             brightness: 0
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
@@ -2936,10 +2937,6 @@ components:
           example: *a56
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
-        status:
-          description: Подключен
-          example: offline
-          $ref: "#/components/schemas/MonitorStatus"
         latitude:
           type: number
           description: Широта
@@ -2957,7 +2954,6 @@ components:
         - category
         - orientation
         - monitorInfo
-        - status
         - latitude
         - longitude
         - code
