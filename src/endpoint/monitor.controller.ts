@@ -129,8 +129,10 @@ export class MonitorController {
     if (role.includes(UserRoleEnum.Monitor)) {
       // добавляем то, что содержится у нас в userId: monitorId.
       conditional.where = { id: userId };
-    } else {
+    } else if (role.includes(UserRoleEnum.MonitorOwner)) {
       conditional.where = { userId };
+    } else {
+      conditional.where = {};
     }
     const [data, count] = await this.monitorService.findAndCount(conditional);
 
@@ -142,6 +144,8 @@ export class MonitorController {
   }
 
   @Put('/')
+  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-create',
@@ -176,6 +180,8 @@ export class MonitorController {
   }
 
   @Patch('/playlist')
+  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-playlist-create',
@@ -237,6 +243,8 @@ export class MonitorController {
 
   @Delete('/playlist')
   @HttpCode(200)
+  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     operationId: 'monitor-playlist-delete',
     summary: 'Удаление связки плэйлиста и монитора',
@@ -379,6 +387,8 @@ export class MonitorController {
   }
 
   @Patch('/:monitorId')
+  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-update',
@@ -415,6 +425,8 @@ export class MonitorController {
   }
 
   @Delete('/:monitorId')
+  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-delete',
