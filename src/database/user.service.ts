@@ -215,6 +215,7 @@ export class UserService {
       const passwordSha256 = createHmac('sha256', password.normalize()).digest(
         'hex',
       );
+      this.logger.debug({ password, passwordSha256 });
       await this.userRepository.update(user.id, {
         password: passwordSha256,
         forgotConfirmKey: null,
@@ -223,6 +224,7 @@ export class UserService {
       if (!userUpdated) {
         throw new ForbiddenException('User not exists', email);
       }
+      this.logger.debug({ password: userUpdated.password });
       return userUpdated;
     }
 
