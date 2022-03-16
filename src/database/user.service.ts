@@ -212,10 +212,13 @@ export class UserService {
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
-      user.password = createHmac('sha256', password.normalize()).digest('hex');
-      user.forgotConfirmKey = null;
-
-      return this.userRepository.save(this.userRepository.create(user));
+      return this.userRepository.save(
+        this.userRepository.create({
+          ...user,
+          password: createHmac('sha256', password.normalize()).digest('hex'),
+          forgotConfirmKey: null,
+        }),
+      );
     }
 
     throw new ForbiddenException(
@@ -276,6 +279,10 @@ export class UserService {
     return this.userSizeRepository.findOne(conditions);
   }
 
-  validateCredentials = (user: UserEntity, password: string): boolean =>
-    createHmac('sha256', password.normalize()).digest('hex') === user.password;
+  validateCredentials = (user: UserEntity, password: string): boolean => {
+    const passwordSha256 = createHmac('sha256', password.normalize()).digest(
+      'hex',
+    );
+    return passwordSha256 === user.password;
+  };
 }
