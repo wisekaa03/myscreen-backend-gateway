@@ -10,7 +10,7 @@ import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 
 @ViewEntity({
-  materialized: true,
+  materialized: false,
   expression: (connection: Connection) =>
     connection
       .createQueryBuilder()
