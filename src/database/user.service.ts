@@ -206,7 +206,7 @@ export class UserService {
   ): Promise<UserEntity> {
     const [email, forgotPassword] = decodeMailToken(forgotPasswordToken);
 
-    const user = await this.userRepository.findOne({ email });
+    const user = await this.userRepository.findOne({ where: { email } });
     if (!user) {
       throw new ForbiddenException('User not exists', email);
     }
