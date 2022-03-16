@@ -261,10 +261,12 @@ export class WSGateway
     this.clients.forEach((client) => {
       if (!client.roles?.includes(UserRoleEnum.Monitor)) {
         client.ws.send(
-          JSON.stringify({
-            event: 'monitorStatus',
-            data: [{ id: monitorId, status }],
-          }),
+          JSON.stringify([
+            {
+              event: 'monitorStatus',
+              data: [{ id: monitorId, status }],
+            },
+          ]),
         );
       }
     });
