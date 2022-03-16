@@ -212,25 +212,22 @@ export class UserService {
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
-      const passwordSha256 = createHmac('sha256', password.normalize()).digest(
-        'hex',
-      );
       await this.userRepository.update(user.id, {
-        password: passwordSha256,
+        password: createHmac('sha256', password.normalize()).digest('hex'),
         forgotConfirmKey: null,
       });
       const userUpdated = await this.userRepository.findOne(user.id);
       if (!userUpdated) {
         throw new ForbiddenException('User not exists', email);
       }
-      this.logger.debug(
-        JSON.stringify({
-          userId: userUpdated.id,
-          userPassword: userUpdated.password,
-          passwordSha256,
-          password,
-        }),
-      );
+      // this.logger.debug(
+      //   JSON.stringify({
+      //     userId: userUpdated.id,
+      //     userPassword: userUpdated.password,
+      //     passwordSha256,
+      //     password,
+      //   }),
+      // );
       return userUpdated;
     }
 
@@ -294,15 +291,15 @@ export class UserService {
     const passwordSha256 = createHmac('sha256', password.normalize()).digest(
       'hex',
     );
-    this.logger.debug(
-      JSON.stringify({
-        id: user.id,
-        email: user.email,
-        userPassword: user.password,
-        passwordSha256,
-        password,
-      }),
-    );
+    // this.logger.debug(
+    //   JSON.stringify({
+    //     id: user.id,
+    //     email: user.email,
+    //     userPassword: user.password,
+    //     passwordSha256,
+    //     password,
+    //   }),
+    // );
     return passwordSha256 === user.password;
   };
 }
