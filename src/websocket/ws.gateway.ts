@@ -190,6 +190,7 @@ export class WSGateway
               .catch((error) => {
                 this.logger.error(error);
               });
+            /* await */ this.monitorStatus(monitor.id, MonitorStatus.Online);
           }
           return of([
             { event: 'auth/token', data: 'authorized' },
@@ -259,7 +260,7 @@ export class WSGateway
     status: MonitorStatus,
   ): Promise<void> {
     this.clients.forEach((client) => {
-      if (!client.roles?.includes(UserRoleEnum.Monitor)) {
+      if (client.auth && !client.roles?.includes(UserRoleEnum.Monitor)) {
         client.ws.send(
           JSON.stringify([
             {
