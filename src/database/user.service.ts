@@ -212,13 +212,18 @@ export class UserService {
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
-      return this.userRepository.save(
-        this.userRepository.create({
-          ...user,
-          password: createHmac('sha256', password.normalize()).digest('hex'),
-          forgotConfirmKey: null,
-        }),
+      const passwordSha256 = createHmac('sha256', password.normalize()).digest(
+        'hex',
       );
+      await this.userRepository.update(user.id, {
+        password: passwordSha256,
+        forgotConfirmKey: null,
+      });
+      const userUpdated = await this.userRepository.findOne(user.id);
+      if (!userUpdated) {
+        throw new ForbiddenException('User not exists', email);
+      }
+      return userUpdated;
     }
 
     throw new ForbiddenException(
