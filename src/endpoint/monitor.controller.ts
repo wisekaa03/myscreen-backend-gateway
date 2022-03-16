@@ -180,7 +180,11 @@ export class MonitorController {
   }
 
   @Patch('/playlist')
-  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  )
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -243,7 +247,11 @@ export class MonitorController {
 
   @Delete('/playlist')
   @HttpCode(200)
-  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  )
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     operationId: 'monitor-playlist-delete',
