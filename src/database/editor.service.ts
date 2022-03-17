@@ -534,7 +534,7 @@ export class EditorService {
         });
 
         let outPath: string | Error;
-        if (false) {
+        if (process.env.NODE_ENV !== 'production') {
           await editly(editlyConfig);
           outPath = editlyConfig.outPath;
         } else {

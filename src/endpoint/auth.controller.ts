@@ -323,7 +323,6 @@ export class AuthController {
     type: AuthRefreshResponse,
   })
   async monitor(
-    @Ip() fingerprint: string,
     @Body() { code }: AuthMonitorRequest,
   ): Promise<AuthRefreshResponse> {
     const monitor = await this.monitorService.findOne({
@@ -333,11 +332,7 @@ export class AuthController {
       throw new NotFoundException('This monitor does not exist');
     }
 
-    // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
-    const payload = await this.authService.createMonitorToken(
-      monitor.id,
-      fingerprint,
-    );
+    const payload = await this.authService.createMonitorToken(monitor.id);
 
     await this.monitorService.update(
       monitor.userId,

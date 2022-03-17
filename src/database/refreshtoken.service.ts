@@ -42,7 +42,6 @@ export class RefreshTokenService {
   async create(
     userId: string,
     fingerprint?: string,
-    refreshToken?: string,
   ): Promise<RefreshTokenEntity> {
     const expires = new Date(
       Date.now() +

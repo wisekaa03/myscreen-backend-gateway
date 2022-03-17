@@ -106,12 +106,10 @@ export class AuthService {
   async generateRefreshToken(
     userId: string,
     fingerprint?: string,
-    refreshToken?: string,
   ): Promise<string> {
     const refreshTokenUpdated = await this.refreshTokenService.create(
       userId,
       fingerprint,
-      refreshToken,
     );
 
     const opts: JwtSignOptions = {
@@ -154,21 +152,18 @@ export class AuthService {
     }
 
     if (user.role === UserRoleEnum.Monitor) {
-      return this.createMonitorToken(user.id, fingerprint);
+      return this.createMonitorToken(user.id);
     }
 
     const [token, refreshTokenUpdated] = await Promise.all([
       this.generateAccessToken(user),
-      this.generateRefreshToken(user.id, fingerprint, refreshToken),
+      this.generateRefreshToken(user.id, fingerprint),
     ]);
 
     return this.buildResponsePayload(token, refreshTokenUpdated);
   }
 
-  async createMonitorRefreshToken(
-    monitorId: string,
-    fingerprint: string,
-  ): Promise<string> {
+  async createMonitorRefreshToken(monitorId: string): Promise<string> {
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
       expiresIn: this.refreshTokenExpires,
@@ -180,16 +175,13 @@ export class AuthService {
     return this.jwtService.signAsync({}, opts);
   }
 
-  async createMonitorToken(
-    monitorId: string,
-    fingerprint: string,
-  ): Promise<AuthenticationPayload> {
+  async createMonitorToken(monitorId: string): Promise<AuthenticationPayload> {
     const [token, refreshToken] = await Promise.all([
       this.generateAccessToken({
         id: monitorId,
         role: UserRoleEnum.Monitor,
       } as UserEntity),
-      this.createMonitorRefreshToken(monitorId, fingerprint),
+      this.createMonitorRefreshToken(monitorId),
     ]);
 
     return this.buildResponsePayload(token, refreshToken);
@@ -197,7 +189,7 @@ export class AuthService {
 
   private async decodeRefreshToken(token: string): Promise<MyscreenJwtPayload> {
     try {
-      return this.jwtService.verifyAsync(token, {
+      return await this.jwtService.verifyAsync(token, {
         ...JWT_BASE_OPTIONS,
       });
     } catch (e) {

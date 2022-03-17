@@ -5,7 +5,7 @@ export enum Order {
   DESC = 'DESC',
 }
 
-export class LimitOrderRequest {
+export class LimitOrderRequest<T = Record<string, 'DESC' | 'ASC'>> {
   @ApiProperty({
     enum: Order,
     enumName: 'Order',

@@ -1,9 +1,4 @@
-import {
-  createReadStream,
-  unlink,
-  promises as fs,
-  createWriteStream,
-} from 'node:fs';
+import { createReadStream, promises as fs, createWriteStream } from 'node:fs';
 import { Readable } from 'node:stream';
 import path from 'node:path';
 import { PromiseResult } from 'aws-sdk/lib/request';

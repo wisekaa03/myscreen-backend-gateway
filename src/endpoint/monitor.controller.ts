@@ -31,7 +31,6 @@ import {
   ForbiddenError,
   InternalServerError,
   MonitorGetResponse,
-  MonitorRequest,
   MonitorPartialRequest,
   MonitorsGetRequest,
   MonitorsGetResponse,

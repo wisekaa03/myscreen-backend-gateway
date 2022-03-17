@@ -1,5 +1,4 @@
-import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsJSON, IsNotEmpty, IsUUID } from 'class-validator';
+import { PartialType, PickType } from '@nestjs/swagger';
 
 import { FileEntity } from '@/database/file.entity';
 

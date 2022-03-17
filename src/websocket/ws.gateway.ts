@@ -11,7 +11,6 @@ import {
   OnGatewayDisconnect,
   WsException,
 } from '@nestjs/websockets';
-import { In } from 'typeorm';
 import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { Observable, of } from 'rxjs';
@@ -137,7 +136,7 @@ export class WSGateway
     client.close();
   }
 
-  async handleDisconnect(client: WebSocket, ...req: any): Promise<void> {
+  async handleDisconnect(client: WebSocket /* , ...req: any */): Promise<void> {
     const value = this.clients.get(client);
     if (value === undefined) {
       this.logger.debug('Disconnect: ???:???');
