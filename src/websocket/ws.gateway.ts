@@ -60,11 +60,9 @@ export class WSGateway
       });
     if (userId && roles) {
       this.logger.debug(
-        `Client ip='${value.ip}:${
-          value.port
-        }': auth=true, userId/monitorId='${userId}', roles='${JSON.stringify(
-          roles,
-        )}'`,
+        `Client key='${
+          value.key
+        }', auth=true, userId='${userId}', roles='${JSON.stringify(roles)}'`,
       );
       const valueUpdated = {
         ...value,
@@ -86,6 +84,7 @@ export class WSGateway
     if (req.headers['sec-websocket-key'] !== undefined) {
       const value: WebSocketClient = {
         ws: client,
+        key: req.headers['sec-websocket-key'],
         ip:
           (req.headers['x-forwarded-for'] as string) ||
           req.socket?.remoteAddress ||
@@ -125,7 +124,7 @@ export class WSGateway
           return;
         }
       } else {
-        this.logger.debug(`New connection: '${value.ip}:${value.port}'`);
+        this.logger.debug(`New connection: key='${value.key}'`);
       }
       this.clients.set(client, {
         ...value,
@@ -142,7 +141,7 @@ export class WSGateway
       this.logger.debug('Disconnect: ???:???');
       return;
     }
-    this.logger.debug(`Disconnect: '${value.ip}:${value.port}'`);
+    this.logger.debug(`Disconnect: key='${value.key}'`);
     if (value.roles?.includes(UserRoleEnum.Monitor)) {
       const monitor = await this.monitorService.findOne({
         where: { id: value.userId },
