@@ -54,7 +54,7 @@ export class UserService {
     userId: string,
     update: Partial<UserEntity>,
   ): Promise<UserEntity> {
-    const user = await this.userRepository.findOne(userId);
+    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new ForbiddenException();
     }
@@ -109,7 +109,9 @@ export class UserService {
     }
 
     const existingUser = await this.userRepository.findOne({
-      email,
+      where: {
+        email,
+      },
     });
     if (existingUser) {
       throw new PreconditionFailedException('User exists', create.email);
@@ -175,7 +177,9 @@ export class UserService {
    * @returns {any} Результат
    */
   async forgotPasswordInvitation(email: string): Promise<any> {
-    const user = await this.userRepository.findOne({ email, disabled: false });
+    const user = await this.userRepository.findOne({
+      where: { email, disabled: false },
+    });
     if (!user) {
       throw new ForbiddenException('User not exists', email);
     }
@@ -216,7 +220,9 @@ export class UserService {
         password: createHmac('sha256', password.normalize()).digest('hex'),
         forgotConfirmKey: null,
       });
-      const userUpdated = await this.userRepository.findOne(user.id);
+      const userUpdated = await this.userRepository.findOne({
+        where: { id: user.id },
+      });
       if (!userUpdated) {
         throw new ForbiddenException('User not exists', email);
       }

@@ -197,20 +197,22 @@ export class FileService {
       throw new ServiceUnavailableException('TypeOrm transaction');
     }
 
-    let folder: FolderEntity | undefined;
+    let folder: FolderEntity | null = null;
     if (!folderIdp) {
       folder = await this.folderService.rootFolder(userId);
     } else {
-      folder = await this.folderService.findOne({
-        where: { userId, id: folderIdp },
-      });
-    }
-    if (!folder) {
-      throw new NotFoundException(`Folder '${folderIdp}' not found`);
+      // TODO: check typeorm 0.3.0
+      folder =
+        (await this.folderService.findOne({
+          where: { userId, id: folderIdp },
+        })) ?? null;
+      if (!folder) {
+        throw new NotFoundException(`Folder '${folderIdp}' not found`);
+      }
     }
     const folderId = folder.id;
 
-    let monitor: MonitorEntity | undefined;
+    let monitor: MonitorEntity | null = null;
     if (!monitorId && category !== FileCategory.Media) {
       throw new NotFoundException('monitorId is expected');
     }
@@ -218,9 +220,11 @@ export class FileService {
       throw new NotFoundException("Found category: 'media' and monitorId");
     }
     if (monitorId) {
-      monitor = await this.monitorService.findOne({
-        where: { userId, id: monitorId },
-      });
+      // TODO: check typeorm 0.3.0
+      monitor =
+        (await this.monitorService.findOne({
+          where: { userId, id: monitorId },
+        })) ?? null;
       if (!monitor) {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
@@ -248,7 +252,7 @@ export class FileService {
 
       const media: DeepPartial<FileEntity> = {
         userId,
-        folder,
+        folder: folder ?? undefined,
         name: file.originalname,
         filesize: meta.filesize,
         duration: meta.duration ?? 0,
@@ -266,7 +270,7 @@ export class FileService {
       };
 
       const update = await fileRepository.save(fileRepository.create(media));
-      return fileRepository.findOneOrFail(update.id);
+      return fileRepository.findOneOrFail({ where: { id: update.id } });
     });
     const returnFiles = await Promise.all(filesPromises);
 

@@ -84,11 +84,12 @@ export class EditorService {
   async findOne(
     find: FindManyOptions<EditorEntity>,
   ): Promise<EditorEntity | undefined> {
-    const conditional = find;
-    if (!find.relations) {
-      conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
-    }
-    return this.editorRepository.findOne(conditional);
+    return find.relations
+      ? this.editorRepository.findOne(find)
+      : this.editorRepository.findOne({
+          relations: ['videoLayers', 'audioLayers', 'renderedFile'],
+          ...find,
+        });
   }
 
   async update(
@@ -165,7 +166,9 @@ export class EditorService {
       );
     }
     if (update.index === undefined) {
-      const editor = await this.editorRepository.findOneOrFail(editorId);
+      const editor = await this.editorRepository.findOneOrFail({
+        where: { id: editorId },
+      });
       // eslint-disable-next-line no-param-reassign
       update.index = editor.videoLayers.length;
     }
@@ -190,8 +193,11 @@ export class EditorService {
 
     await this.moveIndex(userId, editorId, layer.id, update.index);
 
-    return this.editorLayerRepository.findOne(layer.id, {
+    return this.editorLayerRepository.findOne({
       relations: ['file'],
+      where: {
+        id: layer.id,
+      },
     });
   }
 
@@ -218,8 +224,11 @@ export class EditorService {
       await this.moveIndex(userId, editorId, layer.id, layer.index);
     }
 
-    return this.editorLayerRepository.findOne(layer.id, {
+    return this.editorLayerRepository.findOne({
       relations: ['file'],
+      where: {
+        id: layer.id,
+      },
     });
   }
 
@@ -459,8 +468,11 @@ export class EditorService {
     id: string,
     rerender = false,
   ): Promise<EditorEntity | undefined> {
-    const editor = await this.editorRepository.findOne(id, {
+    const editor = await this.editorRepository.findOne({
       relations: ['videoLayers', 'audioLayers', 'renderedFile'],
+      where: {
+        id,
+      },
     });
     if (!editor) {
       throw new NotFoundException('Editor not found');

@@ -36,8 +36,8 @@ import {
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
-
 import type { FindConditions } from 'typeorm';
+
 import path from 'node:path';
 import {
   BadRequestError,
@@ -251,17 +251,18 @@ export class FileController {
     const where: FindConditions<FileEntity> = {
       id,
     };
-    let file: FileEntity | undefined;
+    let file: FileEntity | null = null;
     if (role.includes(UserRoleEnum.Monitor)) {
       const monitor = await this.monitorService.findOne({
         where: { id: userId },
       });
       if (monitor && monitor.playlist && monitor.playlist.files) {
-        file = monitor.playlist.files.find((f) => f.id === id);
+        file = monitor.playlist.files.find((f) => f.id === id) ?? null;
       }
     } else {
       where.userId = userId;
-      file = await this.fileService.findOne({ where });
+      // TODO: check this on typeorm 0.3.0
+      file = (await this.fileService.findOne({ where })) ?? null;
     }
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);

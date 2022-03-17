@@ -107,7 +107,7 @@ export class AuthController {
     @Req() { user: { id: userId, role } }: ExpressRequest,
   ): Promise<UserGetResponse> {
     const user = await this.userService.findById(userId, role);
-    if (user === undefined) {
+    if (!user) {
       throw new ForbiddenException();
     }
 
