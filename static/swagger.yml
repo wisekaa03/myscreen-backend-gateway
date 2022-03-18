@@ -1823,7 +1823,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.12.18
+  version: 2.12.19
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2837,6 +2837,10 @@ components:
           type: boolean
           description: Проигрывается плэйлист
           example: false
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
         lastSeen:
           format: date-time
           type: string
@@ -2869,10 +2873,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FileResponse"
-        code:
-          type: string
-          description: Идентификатор устройства
-          example: 111-111-111
       required:
         - id
         - name
@@ -2882,12 +2882,12 @@ components:
         - attached
         - status
         - playlistPlayed
+        - code
         - lastSeen
         - latitude
         - longitude
         - createdAt
         - updatedAt
-        - code
     MonitorsGetResponse:
       type: object
       properties:

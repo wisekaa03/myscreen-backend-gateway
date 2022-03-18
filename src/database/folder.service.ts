@@ -5,8 +5,6 @@ import {
   type FindOneOptions,
   type FindManyOptions,
   DeleteResult,
-  Transaction,
-  TransactionRepository,
 } from 'typeorm';
 
 import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
@@ -68,26 +66,24 @@ export class FolderService {
     return this.folderRepository.save(this.folderRepository.create(folder));
   }
 
-  @Transaction()
-  async delete(
-    userId: string,
-    folder: FolderEntity,
-    @TransactionRepository(FolderEntity)
-    folderRepository: Repository<FolderEntity> = this.folderRepository,
-  ): Promise<DeleteResult> {
-    const files = await this.fileService.find({
-      where: { userId, folderId: folder.id },
-      relations: [],
-    });
+  async delete(userId: string, folder: FolderEntity): Promise<DeleteResult> {
+    return this.folderRepository.manager.transaction(
+      async (folderRepository) => {
+        const files = await this.fileService.find({
+          where: { userId, folderId: folder.id },
+          relations: [],
+        });
 
-    const filesPromises = files.map((file) =>
-      this.fileService.deleteS3Object(file),
+        const filesPromises = files.map((file) =>
+          this.fileService.deleteS3Object(file),
+        );
+        await Promise.allSettled(filesPromises);
+
+        return folderRepository.delete<FolderEntity>(FolderEntity, {
+          id: folder.id,
+          userId,
+        });
+      },
     );
-    await Promise.all(filesPromises);
-
-    return folderRepository.delete({
-      id: folder.id,
-      userId,
-    });
   }
 }

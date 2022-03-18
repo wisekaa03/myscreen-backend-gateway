@@ -21,8 +21,6 @@ import {
   Repository,
   FindManyOptions,
   DeepPartial,
-  Transaction,
-  TransactionRepository,
   DeleteResult,
 } from 'typeorm';
 
@@ -116,11 +114,12 @@ export class FileService {
   async findOne(
     find: FindManyOptions<FileEntity>,
   ): Promise<FileEntity | undefined> {
-    const conditional = find;
-    if (!find.relations) {
-      conditional.relations = ['monitors', 'playlists'];
-    }
-    return this.fileRepository.findOne(conditional);
+    return find.relations
+      ? this.fileRepository.findOne(find)
+      : this.fileRepository.findOne({
+          relations: ['monitors', 'playlists'],
+          ...find,
+        });
   }
 
   /**
@@ -131,47 +130,51 @@ export class FileService {
    * @param {Partial<FileEntity>} {Partial<FileEntity>} File repository
    * @returns {FileEntity | undefined} {FileEntity | undefined} Результат
    */
-  @Transaction()
   async update(
     file: FileEntity,
     update: Partial<FileEntity>,
-    @TransactionRepository(FileEntity)
-    fileRepository: Repository<FileEntity> = this.fileRepository,
   ): Promise<FileEntity | undefined> {
-    if (update.folderId !== undefined && update.folderId !== file.folder.id) {
-      const s3Name = getS3Name(file.name);
-      const Key = `${update.folderId}/${file.hash}-${s3Name}`;
-      const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
+    return this.fileRepository.manager.transaction(async (fileRepository) => {
+      if (update.folderId !== undefined && update.folderId !== file.folder.id) {
+        const s3Name = getS3Name(file.name);
+        const Key = `${update.folderId}/${file.hash}-${s3Name}`;
+        const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
 
-      return Promise.all([
-        fileRepository.save(fileRepository.create(update)),
-        this.s3Service
-          .copyObject({
-            Bucket: this.bucket,
-            Key,
-            CopySource: `${this.bucket}/${CopySource}`,
-            MetadataDirective: 'REPLACE',
-          })
-          .promise()
-          .then(() =>
-            this.s3Service
-              .deleteObject({ Bucket: this.bucket, Key: CopySource })
-              .promise()
-              .catch((error) => {
-                this.logger.error('S3 Error deleteObject:', error);
-                throw new Error(error);
-              }),
-          )
-          .catch((error) => {
-            this.logger.error('S3 Error copyObject:', error);
-            throw new Error(error);
-          }),
-      ]).then(([updated]) => updated);
-    }
+        return Promise.all([
+          fileRepository.save(
+            fileRepository.create<FileEntity>(FileEntity, update),
+          ),
+          this.s3Service
+            .copyObject({
+              Bucket: this.bucket,
+              Key,
+              CopySource: `${this.bucket}/${CopySource}`,
+              MetadataDirective: 'REPLACE',
+            })
+            .promise()
+            .then(() =>
+              this.s3Service
+                .deleteObject({ Bucket: this.bucket, Key: CopySource })
+                .promise()
+                .catch((error) => {
+                  this.logger.error('S3 Error deleteObject:', error);
+                  throw new Error(error);
+                }),
+            )
+            .catch((error) => {
+              this.logger.error('S3 Error copyObject:', error);
+              throw new Error(error);
+            }),
+        ]).then(([updated]) => updated);
+      }
 
-    return fileRepository.save(
-      fileRepository.create({ id: file.id, ...update }),
-    );
+      return fileRepository.save(
+        fileRepository.create<FileEntity>(FileEntity, {
+          ...update,
+          id: file.id,
+        }),
+      );
+    });
   }
 
   /**
@@ -181,7 +184,6 @@ export class FileService {
    * @param {FileUploadRequest} {FileUploadRequest} File upload request
    * @param {Array<Express.Multer.File>} {Array<Express.Multer.File>} files The Express files
    */
-  @Transaction()
   async upload(
     userId: string,
     {
@@ -190,112 +192,109 @@ export class FileService {
       monitorId = undefined,
     }: FileUploadRequest,
     files: Array<Express.Multer.File>,
-    @TransactionRepository(FileEntity)
-    fileRepository?: Repository<FileEntity>,
   ): Promise<Array<FileEntity>> {
-    if (!fileRepository) {
-      throw new ServiceUnavailableException('TypeOrm transaction');
-    }
-
-    let folder: FolderEntity | null = null;
-    if (!folderIdp) {
-      folder = await this.folderService.rootFolder(userId);
-    } else {
-      // TODO: check typeorm 0.3.0
-      folder =
-        (await this.folderService.findOne({
-          where: { userId, id: folderIdp },
-        })) ?? null;
-      if (!folder) {
-        throw new NotFoundException(`Folder '${folderIdp}' not found`);
+    return this.fileRepository.manager.transaction(async (fileRepository) => {
+      let folder: FolderEntity | null = null;
+      if (!folderIdp) {
+        folder = await this.folderService.rootFolder(userId);
+      } else {
+        folder =
+          (await this.folderService.findOne({
+            where: { userId, id: folderIdp },
+          })) ?? null;
+        if (!folder) {
+          throw new NotFoundException(`Folder '${folderIdp}' not found`);
+        }
       }
-    }
-    const folderId = folder.id;
+      const folderId = folder.id;
 
-    let monitor: MonitorEntity | null = null;
-    if (!monitorId && category !== FileCategory.Media) {
-      throw new NotFoundException('monitorId is expected');
-    }
-    if (monitorId && category === FileCategory.Media) {
-      throw new NotFoundException("Found category: 'media' and monitorId");
-    }
-    if (monitorId) {
-      // TODO: check typeorm 0.3.0
-      monitor =
-        (await this.monitorService.findOne({
-          where: { userId, id: monitorId },
-        })) ?? null;
-      if (!monitor) {
-        throw new NotFoundException(`Monitor '${monitorId}' not found`);
+      let monitor: MonitorEntity | null = null;
+      if (!monitorId && category !== FileCategory.Media) {
+        throw new NotFoundException('monitorId is expected');
       }
-    }
-    if (!monitor && category !== FileCategory.Media) {
-      throw new NotFoundException('monitorId is expected');
-    }
-    if (monitor && category === FileCategory.Media) {
-      throw new NotFoundException("Found category: 'media' and monitorId");
-    }
-    if (category === FileCategory.Media) {
-      files.forEach((file) => {
-        if (!file.media) {
-          throw new BadRequestException(
-            `'${file.originalname}' has no data in Ffprobe, but the category specified 'media'`,
+      if (monitorId && category === FileCategory.Media) {
+        throw new NotFoundException("Found category: 'media' and monitorId");
+      }
+      if (monitorId) {
+        monitor =
+          (await this.monitorService.findOne({
+            where: { userId, id: monitorId },
+          })) ?? null;
+        if (!monitor) {
+          throw new NotFoundException(`Monitor '${monitorId}' not found`);
+        }
+      }
+      if (!monitor && category !== FileCategory.Media) {
+        throw new NotFoundException('monitorId is expected');
+      }
+      if (monitor && category === FileCategory.Media) {
+        throw new NotFoundException("Found category: 'media' and monitorId");
+      }
+      if (category === FileCategory.Media) {
+        files.forEach((file) => {
+          if (!file.media) {
+            throw new BadRequestException(
+              `'${file.originalname}' has no data in Ffprobe, but the category specified 'media'`,
+            );
+          }
+        });
+      }
+
+      const filesPromises = files.map(async (file) => {
+        const [meta, videoType, extension, preview] =
+          await this.metaInformation(file);
+
+        const media: DeepPartial<FileEntity> = {
+          userId,
+          folder: folder ?? undefined,
+          name: file.originalname,
+          filesize: meta.filesize,
+          duration: meta.duration ?? 0,
+          width: meta.width,
+          height: meta.height,
+          meta,
+          videoType,
+          category,
+          extension,
+          hash: file.hash,
+          preview: {
+            preview: Buffer.from(`\\x${preview.toString('hex')}`),
+          },
+          monitors: monitorId ? [{ id: monitorId }] : undefined,
+        };
+
+        const update = await fileRepository.save(
+          fileRepository.create<FileEntity>(FileEntity, media),
+        );
+        return fileRepository.findOneOrFail<FileEntity>(FileEntity, {
+          where: { id: update.id },
+        });
+      });
+      const returnFiles = await Promise.all(filesPromises);
+
+      const s3Promises = files.map(async (file) => {
+        const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
+        try {
+          const promise = await this.s3Service
+            .upload({
+              Bucket: this.bucket,
+              Key,
+              ContentType: file.mimetype,
+              Body: createReadStream(file.path),
+            })
+            .promise();
+          this.logger.debug(
+            `The file '${file.path}' has been uploaded on S3 '${promise.Key}'`,
           );
+        } catch (error) {
+          this.logger.error('S3 Error: upload', error);
+          throw new ServiceUnavailableException(error);
         }
       });
-    }
+      await Promise.all(s3Promises);
 
-    const filesPromises = files.map(async (file) => {
-      const [meta, videoType, extension, preview] = await this.metaInformation(
-        file,
-      );
-
-      const media: DeepPartial<FileEntity> = {
-        userId,
-        folder: folder ?? undefined,
-        name: file.originalname,
-        filesize: meta.filesize,
-        duration: meta.duration ?? 0,
-        width: meta.width,
-        height: meta.height,
-        meta,
-        videoType,
-        category,
-        extension,
-        hash: file.hash,
-        preview: {
-          preview: Buffer.from(`\\x${preview.toString('hex')}`),
-        },
-        monitors: monitorId ? [{ id: monitorId }] : undefined,
-      };
-
-      const update = await fileRepository.save(fileRepository.create(media));
-      return fileRepository.findOneOrFail({ where: { id: update.id } });
+      return returnFiles;
     });
-    const returnFiles = await Promise.all(filesPromises);
-
-    const s3Promises = files.map(async (file) => {
-      const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
-      try {
-        const promise = await this.s3Service
-          .upload({
-            Bucket: this.bucket,
-            Key,
-            ContentType: file.mimetype,
-            Body: createReadStream(file.path),
-          })
-          .promise();
-        this.logger.debug(
-          `The file '${file.path}' has been uploaded on S3 '${promise.Key}'`,
-        );
-      } catch (error) {
-        this.logger.error('S3 Error: upload', error);
-        throw new ServiceUnavailableException(error);
-      }
-    });
-    await Promise.all(s3Promises);
-
-    return returnFiles;
   }
 
   /**
