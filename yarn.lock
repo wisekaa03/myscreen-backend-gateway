@@ -1077,10 +1077,10 @@
   dependencies:
     "@types/express" "*"
 
-"@types/node@*", "@types/node@^17.0.22":
-  version "17.0.22"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.22.tgz#38b6c4b9b2f3ed9f2e376cce42a298fb2375251e"
-  integrity sha512-8FwbVoG4fy+ykY86XCAclKZDORttqE5/s7dyWZKLXTdv3vRy5HozBEinG5IqhvPXXzIZEcTVbuHlQEI6iuwcmw==
+"@types/node@*", "@types/node@^17.0.23":
+  version "17.0.23"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.23.tgz#3b41a6e643589ac6442bdbd7a4a3ded62f33f7da"
+  integrity sha512-UxDxWn7dl97rKVeVS61vErvw086aCYhDLyvRQZ5Rk65rZKepaFdm53GeqXaKBuOhED4e9uWq34IC3TdSdJJ2Gw==
 
 "@types/node@^10.0.3":
   version "10.17.60"
@@ -1764,10 +1764,10 @@ atomic-sleep@^1.0.0:
   resolved "https://registry.yarnpkg.com/atomic-sleep/-/atomic-sleep-1.0.0.tgz#eb85b77a601fc932cfe432c5acd364a9e2c9075b"
   integrity sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==
 
-aws-sdk@^2.1098.0:
-  version "2.1098.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1098.0.tgz#54f8c1592b57e545c3d010f68dc70f5c2ee9ebb5"
-  integrity sha512-h81SAgqAxij1db9zbFAXEneaC1LNcx/xIIf13tF/IutdYOzd7mQ3lHFCgjp+fB1Msl8z73Vs0VGstyrhK7+zPw==
+aws-sdk@^2.1099.0:
+  version "2.1099.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1099.0.tgz#3bf9a1d3352895548cc3bf6513bae74ee03a1e6c"
+  integrity sha512-7pWBLU4q/obqkV+Vw6RrcRA2QJXX2i+CQ+OB88AtxoymvIq/vSGgJ72SrQDvzn1Bu1zIZKtTA+PTJkMQiLAh1w==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -2752,9 +2752,9 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.4.84:
-  version "1.4.90"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.90.tgz#4a518590f118828d54fff045728f547fef08143f"
-  integrity sha512-ZwKgSA0mQMyEhz+NR0F8dRzkrCLeHLzLkjx/CWf16+zV85hQ6meXPQbKanvhnpkYb7b2uJNj+enQJ/N877ND4Q==
+  version "1.4.91"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.91.tgz#842bbc97fd639abe7e46e7da530e3af5f6ca2831"
+  integrity sha512-Z7Jkc4+ouEg8F6RrrgLOs0kkJjI0cnyFQmnGVpln8pPifuKBNbUr37GMgJsCTSwy6Z9TK7oTwW33Oe+3aERYew==
 
 emittery@^0.8.1:
   version "0.8.1"
@@ -5363,10 +5363,10 @@ nestjs-mailgun@^2.0.20:
     reflect-metadata "^0.1.13"
     rxjs "^7.5.4"
 
-nestjs-pino@^2.5.0:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/nestjs-pino/-/nestjs-pino-2.5.0.tgz#3390237c8ec6d9a789a9480c045e4b5d39e3281d"
-  integrity sha512-Nb0fsGNQ0Qg/v3lUvxah8IzxKRjRd5fo1/+V2ZBbzciDzi4xjI6YqhwvF0rHQy2IMTAZmmrQNpzMgZk7lNeR4Q==
+nestjs-pino@^2.5.1:
+  version "2.5.1"
+  resolved "https://registry.yarnpkg.com/nestjs-pino/-/nestjs-pino-2.5.1.tgz#585329b5a471aa7632bc3b1d6b00722d0dc25db6"
+  integrity sha512-sjglwyvnv83MXalYogehs3uSPsc+DUJYXkEdERrzQgD02lwqZdExNL+jamhJpIA+NSNdyXVll8WwXMK1S+tBew==
 
 nestjs-s3@^1.0.1:
   version "1.0.1"
@@ -7233,7 +7233,7 @@ typedarray@^0.0.6:
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
   integrity sha1-hnrHTjhkGHsdPUfZlqeOxciDB3c=
 
-typeorm@~0.3.3:
+typeorm@^0.3.3:
   version "0.3.3"
   resolved "https://registry.yarnpkg.com/typeorm/-/typeorm-0.3.3.tgz#ada8d01c16a65bababd08222c81c682afa941f45"
   integrity sha512-01gesp6ikGMLGUxBDzEn4qcIiVW3gWzZsUPE6ETqzSRuHL4pCAWHvTPELN1agirBJrZNxhxiVFUXCmnPXYNfrg==
