@@ -1,21 +1,14 @@
 import { Logger } from '@nestjs/common';
-import {
-  FindManyOptions,
-  FindOptionsUtils,
-  Repository,
-  SelectQueryBuilder,
-} from 'typeorm';
+import { FindManyOptions, Repository, SelectQueryBuilder } from 'typeorm';
 
 export class TypeOrmFind {
-  private static findOrder = <T>(
-    repository: Repository<T>,
-    find: FindManyOptions<T>,
-  ): SelectQueryBuilder<T> => {
+  private static findOrder = <Entity>(
+    repository: Repository<Entity>,
+    find: FindManyOptions<Entity>,
+  ): SelectQueryBuilder<Entity> => {
     const { order: orderBy, ...withoutOrder } = find;
-    const qb = FindOptionsUtils.applyOptionsToQueryBuilder<T>(
-      repository.createQueryBuilder(),
-      withoutOrder,
-    );
+    const qb = repository.createQueryBuilder();
+    qb.setFindOptions(find);
     const columns = repository.metadata.ownColumns;
     if (orderBy) {
       Object.entries(orderBy).forEach(([field, direction]) => {
@@ -39,18 +32,18 @@ export class TypeOrmFind {
     return qb;
   };
 
-  static orderCI = <T>(
-    repository: Repository<T>,
-    find: FindManyOptions<T>,
-  ): Promise<T[]> => {
+  static findCI = <Entity>(
+    repository: Repository<Entity>,
+    find: FindManyOptions<Entity>,
+  ): Promise<Entity[]> => {
     const qb = this.findOrder(repository, find);
     return qb.getMany();
   };
 
-  static orderCICount = <T>(
-    repository: Repository<T>,
-    find: FindManyOptions<T>,
-  ): Promise<[T[], number]> => {
+  static findAndCountCI = <Entity>(
+    repository: Repository<Entity>,
+    find: FindManyOptions<Entity>,
+  ): Promise<[Entity[], number]> => {
     const qb = this.findOrder(repository, find);
     return Promise.all([qb.getMany(), qb.getCount()]);
   };

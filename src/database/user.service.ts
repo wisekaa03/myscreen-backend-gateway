@@ -248,7 +248,7 @@ export class UserService {
     caseInsensitive = true,
   ): Promise<UserEntity[]> {
     return caseInsensitive
-      ? TypeOrmFind.orderCI(this.userRepository, find)
+      ? TypeOrmFind.findCI(this.userRepository, find)
       : this.userRepository.find(find);
   }
 
@@ -257,13 +257,13 @@ export class UserService {
     caseInsensitive = true,
   ): Promise<[UserEntity[], number]> {
     return caseInsensitive
-      ? TypeOrmFind.orderCICount(this.userRepository, find)
+      ? TypeOrmFind.findAndCountCI(this.userRepository, find)
       : this.userRepository.findAndCount(find);
   }
 
   async findByEmail(
     email: string,
-  ): Promise<(UserEntity & Partial<UserSizeEntity>) | undefined> {
+  ): Promise<(UserEntity & Partial<UserSizeEntity>) | null> {
     return this.userSizeRepository.findOne({
       where: { email },
     });
@@ -273,7 +273,7 @@ export class UserService {
     id: string,
     role?: UserRoleEnum[],
     disabled = false,
-  ): Promise<(UserEntity & Partial<UserSizeEntity>) | undefined> {
+  ): Promise<(UserEntity & Partial<UserSizeEntity>) | null> {
     if (role?.includes(UserRoleEnum.Monitor)) {
       return {
         id,

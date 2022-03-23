@@ -80,7 +80,7 @@ export class FileService {
       conditional.relations = ['monitors', 'playlists'];
     }
     return caseInsensitive
-      ? TypeOrmFind.orderCI(this.fileRepository, conditional)
+      ? TypeOrmFind.findCI(this.fileRepository, conditional)
       : this.fileRepository.find(conditional);
   }
 
@@ -100,7 +100,7 @@ export class FileService {
       conditional.relations = ['monitors', 'playlists'];
     }
     return caseInsensitive
-      ? TypeOrmFind.orderCICount(this.fileRepository, conditional)
+      ? TypeOrmFind.findAndCountCI(this.fileRepository, conditional)
       : this.fileRepository.findAndCount(conditional);
   }
 
@@ -111,9 +111,7 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {FileEntity} {FileEntity | undefined} Результат
    */
-  async findOne(
-    find: FindManyOptions<FileEntity>,
-  ): Promise<FileEntity | undefined> {
+  async findOne(find: FindManyOptions<FileEntity>): Promise<FileEntity | null> {
     return find.relations
       ? this.fileRepository.findOne(find)
       : this.fileRepository.findOne({
@@ -355,12 +353,21 @@ export class FileService {
   async delete(file: FileEntity): Promise<DeleteResult> {
     const [editorFiles, playlistFiles] = await Promise.all([
       this.editorService.find({
-        where:
-          `"EditorEntity__videoLayers"."fileId"='${file.id}'` +
-          ` OR "EditorEntity__audioLayers"."fileId"='${file.id}'`,
+        where: [
+          {
+            videoLayers: {
+              fileId: file.id,
+            },
+          },
+          {
+            audioLayers: {
+              fileId: file.id,
+            },
+          },
+        ],
       }),
       this.playlistService.find({
-        where: `"PlaylistEntity__files"."id"='${file.id}'`,
+        where: { files: { id: file.id } },
       }),
     ]);
     if (

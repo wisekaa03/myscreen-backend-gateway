@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { FindOptionsWhere } from 'typeorm';
 
 import { LimitRequest } from './limit.request';
 import { FolderPartialRequest } from './folder-partial.request';
@@ -15,7 +16,7 @@ export class FoldersGetRequest {
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => FolderPartialRequest)
-  where!: Partial<FolderPartialRequest>;
+  where!: FindOptionsWhere<FolderPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',

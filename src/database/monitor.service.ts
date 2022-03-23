@@ -23,7 +23,7 @@ export class MonitorService {
     caseInsensitive = true,
   ): Promise<Array<MonitorEntity>> {
     return caseInsensitive
-      ? TypeOrmFind.orderCI(this.monitorRepository, {
+      ? TypeOrmFind.findCI(this.monitorRepository, {
           relations: ['files', 'playlist'],
           ...find,
         })
@@ -38,7 +38,7 @@ export class MonitorService {
     caseInsensitive = true,
   ): Promise<[Array<MonitorEntity>, number]> {
     return caseInsensitive
-      ? TypeOrmFind.orderCICount(this.monitorRepository, {
+      ? TypeOrmFind.findAndCountCI(this.monitorRepository, {
           relations: ['files', 'playlist'],
           ...find,
         })
@@ -50,7 +50,7 @@ export class MonitorService {
 
   async findOne(
     find: FindManyOptions<MonitorEntity>,
-  ): Promise<MonitorEntity | undefined> {
+  ): Promise<MonitorEntity | null> {
     return this.monitorRepository.findOne({
       relations: ['files', 'playlist'],
       ...find,

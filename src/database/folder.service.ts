@@ -27,7 +27,7 @@ export class FolderService {
     caseInsensitive = true,
   ): Promise<FolderEntity[]> {
     return caseInsensitive
-      ? TypeOrmFind.orderCI(this.folderRepository, find)
+      ? TypeOrmFind.findCI(this.folderRepository, find)
       : this.folderRepository.find(find);
   }
 
@@ -36,13 +36,13 @@ export class FolderService {
     caseInsensitive = true,
   ): Promise<[FolderEntity[], number]> {
     return caseInsensitive
-      ? TypeOrmFind.orderCICount(this.folderRepository, find)
+      ? TypeOrmFind.findAndCountCI(this.folderRepository, find)
       : this.folderRepository.findAndCount(find);
   }
 
   async findOne(
     find: FindOneOptions<FolderEntity>,
-  ): Promise<FolderEntity | undefined> {
+  ): Promise<FolderEntity | null> {
     return this.folderRepository.findOne(find);
   }
 

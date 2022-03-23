@@ -64,7 +64,7 @@ export class EditorService {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
     return caseInsensitive
-      ? TypeOrmFind.orderCI(this.editorRepository, conditional)
+      ? TypeOrmFind.findCI(this.editorRepository, conditional)
       : this.editorRepository.find(conditional);
   }
 
@@ -77,13 +77,13 @@ export class EditorService {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
     return caseInsensitive
-      ? TypeOrmFind.orderCICount(this.editorRepository, conditional)
+      ? TypeOrmFind.findAndCountCI(this.editorRepository, conditional)
       : this.editorRepository.findAndCount(conditional);
   }
 
   async findOne(
     find: FindManyOptions<EditorEntity>,
-  ): Promise<EditorEntity | undefined> {
+  ): Promise<EditorEntity | null> {
     return find.relations
       ? this.editorRepository.findOne(find)
       : this.editorRepository.findOne({
@@ -95,7 +95,7 @@ export class EditorService {
   async update(
     userId: string,
     update: Partial<EditorEntity>,
-  ): Promise<EditorEntity | undefined> {
+  ): Promise<EditorEntity | null> {
     const updated: DeepPartial<EditorEntity> = {
       videoLayers: [],
       audioLayers: [],
@@ -132,7 +132,7 @@ export class EditorService {
 
   async findOneLayer(
     find: FindManyOptions<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity | undefined> {
+  ): Promise<EditorLayerEntity | null> {
     const conditional = find;
     if (!find.relations) {
       conditional.relations = ['video', 'audio', 'file'];
@@ -155,7 +155,7 @@ export class EditorService {
     userId: string,
     editorId: string,
     update: Partial<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity | undefined> {
+  ): Promise<EditorLayerEntity | null> {
     if (update.file === undefined) {
       throw new BadRequestException('file must exists');
     }
@@ -215,7 +215,7 @@ export class EditorService {
     editorId: string,
     layer: EditorLayerEntity,
     update: Partial<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity | undefined> {
+  ): Promise<EditorLayerEntity | null> {
     await this.editorLayerRepository.update(layer.id, update);
 
     if (update.index !== undefined) {

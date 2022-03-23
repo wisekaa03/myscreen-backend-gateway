@@ -36,7 +36,7 @@ import {
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
-import type { FindConditions } from 'typeorm';
+import type { FindOptionsWhere } from 'typeorm';
 
 import path from 'node:path';
 import {
@@ -248,7 +248,7 @@ export class FileController {
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
-    const where: FindConditions<FileEntity> = {
+    const where: FindOptionsWhere<FileEntity> = {
       id,
     };
     let file: FileEntity | null = null;
@@ -261,8 +261,7 @@ export class FileController {
       }
     } else {
       where.userId = userId;
-      // TODO: check this on typeorm 0.3.0
-      file = (await this.fileService.findOne({ where })) ?? null;
+      file = await this.fileService.findOne({ where });
     }
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);

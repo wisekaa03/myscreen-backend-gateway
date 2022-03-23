@@ -22,7 +22,7 @@ export class PlaylistService {
     caseInsensitive = true,
   ): Promise<PlaylistEntity[]> {
     return caseInsensitive
-      ? TypeOrmFind.orderCI(this.playlistEntity, {
+      ? TypeOrmFind.findCI(this.playlistEntity, {
           relations: ['files', 'monitors'],
           ...find,
         })
@@ -37,7 +37,7 @@ export class PlaylistService {
     caseInsensitive = true,
   ): Promise<[Array<PlaylistEntity>, number]> {
     return caseInsensitive
-      ? TypeOrmFind.orderCICount(this.playlistEntity, {
+      ? TypeOrmFind.findAndCountCI(this.playlistEntity, {
           relations: ['files', 'monitors'],
           ...find,
         })
@@ -49,7 +49,7 @@ export class PlaylistService {
 
   async findOne(
     find: FindManyOptions<PlaylistEntity>,
-  ): Promise<PlaylistEntity | undefined> {
+  ): Promise<PlaylistEntity | null> {
     return this.playlistEntity.findOne({
       relations: ['files', 'monitors'],
       ...find,

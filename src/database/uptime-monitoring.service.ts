@@ -20,7 +20,7 @@ export class UptimeMonitoringService {
 
   async findOne(
     find: FindManyOptions<UptimeMonitoringEntity>,
-  ): Promise<UptimeMonitoringEntity | undefined> {
+  ): Promise<UptimeMonitoringEntity | null> {
     return this.uptimeMonitoringEntity.findOne(find);
   }
 

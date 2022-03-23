@@ -20,7 +20,7 @@ export class PaymentLogService {
 
   async findOne(
     find: FindManyOptions<PaymentLogEntity>,
-  ): Promise<PaymentLogEntity | undefined> {
+  ): Promise<PaymentLogEntity | null> {
     return this.paymentLogRepository.findOne(find);
   }
 

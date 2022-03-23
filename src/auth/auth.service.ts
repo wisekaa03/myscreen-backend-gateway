@@ -203,7 +203,7 @@ export class AuthService {
 
   private async getUserFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
-  ): Promise<UserEntity | undefined> {
+  ): Promise<UserEntity | null> {
     const { sub, iss } = payload;
 
     if (!sub) {

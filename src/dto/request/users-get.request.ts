@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { FindOptionsWhere } from 'typeorm';
 
 import { LimitRequest } from './limit.request';
 import { UserPartialRequest } from './user-partial.request';
@@ -15,7 +16,7 @@ export class UsersGetRequest {
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => UserPartialRequest)
-  where!: Partial<UserPartialRequest>;
+  where!: FindOptionsWhere<UserPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',

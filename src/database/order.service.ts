@@ -20,7 +20,7 @@ export class OrderService {
 
   async findOne(
     find: FindManyOptions<OrderEntity>,
-  ): Promise<OrderEntity | undefined> {
+  ): Promise<OrderEntity | null> {
     return this.orderRepository.findOne(find);
   }
 
