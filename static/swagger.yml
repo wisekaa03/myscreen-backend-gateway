@@ -1823,7 +1823,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.13.6
+  version: 2.14.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2474,14 +2474,9 @@ components:
           type: string
           description: Идентификатор устройства
           example: 111-111-111
-        latitude:
-          type: number
-          description: Широта
-          example: "45.0448400"
-        longitude:
-          type: number
-          description: Долгота
-          example: "38.9760300"
+        location:
+          type: string
+          example: '{"type":"Point","coordinates":[45.0448400, 38.9760300]}'
     Order:
       type: string
       enum:
@@ -2846,14 +2841,9 @@ components:
           type: string
           description: Последний раз виден
           example: null
-        latitude:
-          type: number
-          description: Широта
-          example: "45.0448400"
-        longitude:
-          type: number
-          description: Долгота
-          example: "38.9760300"
+        location:
+          type: string
+          example: '{"type":"Point","coordinates":[45.0448400, 38.9760300]}'
         createdAt:
           format: date-time
           type: string
@@ -2884,8 +2874,7 @@ components:
         - playlistPlayed
         - code
         - lastSeen
-        - latitude
-        - longitude
+        - location
         - createdAt
         - updatedAt
     MonitorsGetResponse:
@@ -2937,14 +2926,9 @@ components:
           example: *a56
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
-        latitude:
-          type: number
-          description: Широта
-          example: "45.0448400"
-        longitude:
-          type: number
-          description: Долгота
-          example: "38.9760300"
+        location:
+          type: string
+          example: '{"type":"Point","coordinates":[45.0448400, 38.9760300]}'
         code:
           type: string
           description: Идентификатор устройства
@@ -2954,8 +2938,7 @@ components:
         - category
         - orientation
         - monitorInfo
-        - latitude
-        - longitude
+        - location
         - code
     MonitorGetResponse:
       type: object

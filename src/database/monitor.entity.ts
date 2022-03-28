@@ -3,8 +3,6 @@ import {
   IsDate,
   IsDefined,
   IsEnum,
-  IsLatitude,
-  IsLongitude,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -26,6 +24,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { Point } from 'geojson';
 import { Type } from 'class-transformer';
 
 import {
@@ -272,21 +271,17 @@ export class MonitorEntity {
   @IsDate()
   lastSeen?: Date;
 
-  @Column({ type: 'float', nullable: true })
-  @ApiProperty({
-    description: 'Широта',
-    example: '45.0448400',
+  @Column({
+    type: 'geometry',
+    nullable: true,
+    srid: 4326,
+    spatialFeatureType: 'Point',
   })
-  @IsLatitude()
-  latitude?: number;
-
-  @Column({ type: 'float', nullable: true })
   @ApiProperty({
-    description: 'Долгота',
-    example: '38.9760300',
+    type: String,
+    example: '{"type":"Point","coordinates":[45.0448400, 38.9760300]}',
   })
-  @IsLongitude()
-  longitude?: number;
+  location?: Point;
 
   @ManyToOne(() => UserEntity, (user) => user.monitors, {
     onDelete: 'CASCADE',

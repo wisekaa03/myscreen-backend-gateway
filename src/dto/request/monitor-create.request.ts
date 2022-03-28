@@ -6,8 +6,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 export class MonitorCreateRequest extends PickType(MonitorEntity, [
   'address',
   'category',
-  'latitude',
-  'longitude',
+  'location',
   'monitorInfo',
   'name',
   'orientation',

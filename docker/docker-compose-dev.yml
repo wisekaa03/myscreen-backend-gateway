@@ -10,7 +10,7 @@ volumes:
 
 services:
   postgres:
-    image: postgres:13.5-alpine
+    image: postgis/postgis:14-master
     restart: always
     environment:
       POSTGRES_USER: postgres
