@@ -7,32 +7,33 @@ import {
 } from 'typeorm';
 
 import { FileEntity } from './file.entity';
-import { UserEntity } from './user.entity';
+import { FolderEntity } from './folder.entity';
 
 @ViewEntity({
   materialized: false,
   expression: (connection: DataSource) =>
     connection
       .createQueryBuilder()
-      .select('"user".*')
-      .from(UserEntity, 'user')
+      .select('"folder".*')
+      .from(FolderEntity, 'folder')
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<FileEntity>) =>
           qb
-            .select('"file"."userId"')
-            .addSelect('SUM("file"."filesize")', 'countUsedSpace')
-            .groupBy('"file"."userId"')
+            .select('"file"."folderId"')
+            .addSelect('COUNT("file"."id")', 'fileNumber')
+            .groupBy('"file"."folderId"')
             .from(FileEntity, 'file'),
         'file',
-        '"file"."userId" = "user"."id"',
+        '"file"."folderId" = "folder"."id"',
       ),
 })
-export class UserSizeEntity extends UserEntity {
+export class FolderFileNumberEntity extends FolderEntity {
   @ViewColumn()
   @ApiProperty({
-    description: 'Использованное место',
+    type: String,
+    description: 'Число файлов в папке',
     example: 0,
     required: false,
   })
-  countUsedSpace?: number;
+  fileNumber?: number;
 }

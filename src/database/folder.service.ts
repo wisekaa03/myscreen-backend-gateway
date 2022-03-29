@@ -5,11 +5,13 @@ import {
   type FindOneOptions,
   type FindManyOptions,
   DeleteResult,
+  In,
 } from 'typeorm';
 
 import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
+import { FolderFileNumberEntity } from './folder.view.entity';
 
 @Injectable()
 export class FolderService {
@@ -20,6 +22,8 @@ export class FolderService {
     private readonly fileService: FileService,
     @InjectRepository(FolderEntity)
     private readonly folderRepository: Repository<FolderEntity>,
+    @InjectRepository(FolderFileNumberEntity)
+    private readonly folderFilenumberRepository: Repository<FolderFileNumberEntity>,
   ) {}
 
   async find(
@@ -36,14 +40,14 @@ export class FolderService {
     caseInsensitive = true,
   ): Promise<[FolderEntity[], number]> {
     return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(this.folderRepository, find)
-      : this.folderRepository.findAndCount(find);
+      ? TypeOrmFind.findAndCountCI(this.folderFilenumberRepository, find)
+      : this.folderFilenumberRepository.findAndCount(find);
   }
 
   async findOne(
     find: FindOneOptions<FolderEntity>,
   ): Promise<FolderEntity | null> {
-    return this.folderRepository.findOne(find);
+    return this.folderFilenumberRepository.findOne(find);
   }
 
   async rootFolder(userId: string): Promise<FolderEntity> {
@@ -66,22 +70,22 @@ export class FolderService {
     return this.folderRepository.save(this.folderRepository.create(folder));
   }
 
-  async delete(userId: string, folder: FolderEntity): Promise<DeleteResult> {
+  async delete(userId: string, foldersId: string[]): Promise<DeleteResult> {
     return this.folderRepository.manager.transaction(
       async (folderRepository) => {
-        const files = await this.fileService.find({
-          where: { userId, folderId: folder.id },
-          relations: [],
-        });
-
-        const filesPromises = files.map((file) =>
-          this.fileService.deleteS3Object(file),
-        );
-        await Promise.allSettled(filesPromises);
+        const filesId = await this.fileService
+          .find({
+            where: { userId, folderId: In(foldersId) },
+            relations: [],
+            select: ['id'],
+          })
+          .then((files) => files.map((file) => file.id));
+        await this.fileService.deletePrep(filesId);
+        await this.fileService.delete(userId, filesId);
 
         return folderRepository.delete<FolderEntity>(FolderEntity, {
-          id: folder.id,
           userId,
+          id: In(foldersId),
         });
       },
     );

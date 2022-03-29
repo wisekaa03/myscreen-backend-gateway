@@ -55,6 +55,7 @@ import {
   FileUploadRequestBody,
   FileUpdateRequest,
   ConflictError,
+  FilesDeleteRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -481,6 +482,33 @@ export class FileController {
     };
   }
 
+  @Delete()
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'file-delete',
+    summary: 'Удаление файла',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deleteFiles(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Body() { filesId }: FilesDeleteRequest,
+  ): Promise<SuccessResponse> {
+    await this.fileService.deletePrep(filesId);
+
+    const { affected } = await this.fileService.delete(userId, filesId);
+    if (!affected) {
+      throw new NotFoundException('This file is not exists');
+    }
+
+    return {
+      status: Status.Success,
+    };
+  }
+
   @Delete('/:fileId')
   @HttpCode(200)
   @ApiOperation({
@@ -494,16 +522,11 @@ export class FileController {
   })
   async deleteFile(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Param('fileId', ParseUUIDPipe) id: string,
+    @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<SuccessResponse> {
-    const file = await this.fileService.findOne({
-      where: { userId, id },
-    });
-    if (!file) {
-      throw new NotFoundException(`Media '${id}' is not exists`);
-    }
+    await this.fileService.deletePrep([fileId]);
 
-    const { affected } = await this.fileService.delete(file);
+    const { affected } = await this.fileService.delete(userId, [fileId]);
     if (!affected) {
       throw new NotFoundException('This file is not exists');
     }

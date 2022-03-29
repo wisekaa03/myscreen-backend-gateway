@@ -3,6 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { FileService } from './file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
+import { FolderFileNumberEntity } from './folder.view.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -30,6 +31,10 @@ describe(FolderService.name, () => {
         },
         {
           provide: getRepositoryToken(FolderEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(FolderFileNumberEntity),
           useClass: mockRepository,
         },
       ],

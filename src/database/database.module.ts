@@ -10,6 +10,7 @@ import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorService } from './editor.service';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
+import { FolderFileNumberEntity } from './folder.view.entity';
 import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
 import { FilePreviewEntity } from './file-preview.entity';
@@ -42,6 +43,7 @@ import { RefreshTokenService } from './refreshtoken.service';
       EditorEntity,
       EditorLayerEntity,
       FolderEntity,
+      FolderFileNumberEntity,
       FileEntity,
       FilePreviewEntity,
       MonitorEntity,

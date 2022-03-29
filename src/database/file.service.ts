@@ -22,6 +22,7 @@ import {
   FindManyOptions,
   DeepPartial,
   DeleteResult,
+  In,
 } from 'typeorm';
 
 // import { isAWSError } from '@/shared/is-aws-error';
@@ -344,32 +345,27 @@ export class FileService {
       .promise();
   }
 
-  /**
-   * Delete files
-   * @async
-   * @param {FileEntity} file File entity
-   * @param {DeleteResult} {DeleteResult}
-   */
-  async delete(file: FileEntity): Promise<DeleteResult> {
+  async deletePrep(filesId: string[]): Promise<void> {
     const [editorFiles, playlistFiles] = await Promise.all([
       this.editorService.find({
         where: [
           {
             videoLayers: {
-              fileId: file.id,
+              fileId: In(filesId),
             },
           },
           {
             audioLayers: {
-              fileId: file.id,
+              fileId: In(filesId),
             },
           },
         ],
       }),
       this.playlistService.find({
-        where: { files: { id: file.id } },
+        where: { files: { id: In(filesId) } },
       }),
     ]);
+
     if (
       (editorFiles && Array.isArray(editorFiles) && editorFiles.length > 0) ||
       (playlistFiles &&
@@ -398,30 +394,50 @@ export class FileService {
         'Файл, который Вы пытаетесь удалить используется в редакторе или в плэйлисте',
       );
     }
+  }
 
-    (async () => {
-      await this.headS3Object(file)
-        .then(() =>
-          this.deleteS3Object(file)
-            .then((value) => {
-              this.logger.debug(
-                `The file has been deleted: ${
-                  value.$response.data?.DeleteMarker || false
-                }`,
-              );
-            })
-            .catch((error) => {
-              this.logger.error(
-                `S3 Error deleteObject: ${JSON.stringify(error)}`,
-              );
-            }),
-        )
-        .catch((error) => {
-          this.logger.error(`S3 Error headerObject: ${JSON.stringify(error)}`);
-        });
-    })();
+  /**
+   * Delete files
+   * @async
+   * @param {string} userId User ID
+   * @param {string} filesId Files ID
+   * @return {DeleteResult} {DeleteResult}
+   */
+  async delete(userId: string, filesId: string[]): Promise<DeleteResult> {
+    const files = await this.fileRepository.find({
+      where: { userId, id: In(filesId) },
+    });
 
-    return this.fileRepository.delete(file.id);
+    /* await */ Promise.allSettled(
+      files.map((file) =>
+        this.headS3Object(file)
+          .then(() =>
+            this.deleteS3Object(file)
+              .then((value) => {
+                this.logger.debug(
+                  `The file has been deleted: ${
+                    value.$response.data?.DeleteMarker || false
+                  }`,
+                );
+              })
+              .catch((error) => {
+                this.logger.error(
+                  `S3 Error deleteObject: ${JSON.stringify(error)}`,
+                );
+              }),
+          )
+          .catch((error) => {
+            this.logger.error(
+              `S3 Error headerObject: ${JSON.stringify(error)}`,
+            );
+          }),
+      ),
+    );
+
+    return this.fileRepository.delete({
+      id: In(files.map((file) => file.id)),
+      userId,
+    });
   }
 
   async previewFile(file: FileEntity): Promise<Buffer> {

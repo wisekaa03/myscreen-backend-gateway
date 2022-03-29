@@ -1057,6 +1057,32 @@ paths:
         "503": *a30
       tags: *a31
       security: *a32
+    delete:
+      operationId: file-delete
+      summary: Удаление файла
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilesDeleteRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a24
+        "401": *a25
+        "403": *a26
+        "404": *a27
+        "409": *a28
+        "500": *a29
+        "503": *a30
+      tags: *a31
+      security: *a32
   "/api/v2/file/{fileId}":
     get:
       operationId: file-download
@@ -1280,6 +1306,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
+        "400": *a33
+        "401": *a34
+        "403": *a35
+        "404": *a36
+        "500": *a37
+      tags: *a38
+      security: *a39
+    delete:
+      operationId: folders-delete
+      summary: Удаление папок
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FoldersDeleteRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
         "400": *a33
         "401": *a34
         "403": *a35
@@ -1823,7 +1873,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.14.2
+  version: 2.14.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3518,6 +3568,17 @@ components:
           type: string
           description: Имя файла
           example: foo.mp4
+    FilesDeleteRequest:
+      type: object
+      properties:
+        filesId:
+          description: Файлы для удаления
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+        - filesId
     FolderPartialRequest:
       type: object
       properties:
@@ -3603,6 +3664,17 @@ components:
           example: bar
       required:
         - name
+    FoldersDeleteRequest:
+      type: object
+      properties:
+        foldersId:
+          description: Папки для удаления
+          type: array
+          items:
+            type: string
+            format: uuid
+      required:
+        - foldersId
     UserPartialRequest:
       type: object
       properties:

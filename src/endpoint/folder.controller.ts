@@ -24,6 +24,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { In } from 'typeorm';
 import {
   BadRequestError,
   UnauthorizedError,
@@ -37,6 +38,7 @@ import {
   FolderUpdateRequest,
   SuccessResponse,
   FolderResponse,
+  FoldersDeleteRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -198,6 +200,31 @@ export class FolderController {
     };
   }
 
+  @Delete()
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'folders-delete',
+    summary: 'Удаление папок',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deleteFolders(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Body() { foldersId }: FoldersDeleteRequest,
+  ): Promise<SuccessResponse> {
+    const { affected } = await this.folderService.delete(userId, foldersId);
+    if (!affected) {
+      throw new NotFoundException('This folder is not exists');
+    }
+
+    return {
+      status: Status.Success,
+    };
+  }
+
   @Delete('/:folderId')
   @HttpCode(200)
   @ApiOperation({
@@ -211,16 +238,9 @@ export class FolderController {
   })
   async deleteFolder(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Param('folderId', ParseUUIDPipe) id: string,
+    @Param('folderId', ParseUUIDPipe) folderId: string,
   ): Promise<SuccessResponse> {
-    const folder = await this.folderService.findOne({
-      where: { userId, id },
-    });
-    if (!folder) {
-      throw new NotFoundException(`Folder '${id}' is not found`);
-    }
-
-    const { affected } = await this.folderService.delete(userId, folder);
+    const { affected } = await this.folderService.delete(userId, [folderId]);
     if (!affected) {
       throw new NotFoundException('This folder is not exists');
     }

@@ -500,7 +500,7 @@ export class EditorService {
           renderedFile: null,
         });
         /* await */ this.fileService
-          .delete(editor.renderedFile)
+          .delete(userId, [editor.renderedFile.id])
           .catch((reason) => {
             this.logger.error(`Delete from editor failed: ${reason}`);
             throw reason;
