@@ -1774,10 +1774,10 @@ atomic-sleep@^1.0.0:
   resolved "https://registry.yarnpkg.com/atomic-sleep/-/atomic-sleep-1.0.0.tgz#eb85b77a601fc932cfe432c5acd364a9e2c9075b"
   integrity sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==
 
-aws-sdk@^2.1102.0:
-  version "2.1102.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1102.0.tgz#00cceeb39966bf0000ff64d7fb237c38640618f5"
-  integrity sha512-MMOncE8IG3Dop3WPza6ryTAEz413ftn/MtDO7ouessb3ljlg5BfqRkTe/rhPH5svqEqJvlh7qHnK0VjgJwmLTQ==
+aws-sdk@^2.1103.0:
+  version "2.1103.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1103.0.tgz#b0c69b8fd0a31729860bd9218f3c691d06240fcb"
+  integrity sha512-naSAcfoLs55byP8djBHXgZQF3pcsgyX815HSPYjqkzmlukbE9mCVoguUp5rbqLYbLgcnMw4tp2N4ohpBB3voIg==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -2757,9 +2757,9 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.4.84:
-  version "1.4.98"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.98.tgz#1a9a0dec9792e78c5be1df052b6c74078d6b1b16"
-  integrity sha512-1IdsuSAnIGVxoYT1LkcUFb9MfjRxdHhCU9qiaDzhl1XvYgK9c8E2O9aJOPgGMQ68CSI8NxmLwrYhjvGauT8yuw==
+  version "1.4.100"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.100.tgz#da82de8a19a47ea3dcdf141dde85355942fbc4e7"
+  integrity sha512-pNrSE2naf8fizl6/Uxq8UbKb8hU9EiYW4OzCYswosXoLV5NTMOUVKECNzDaHiUubsPq/kAckOzZd7zd8S8CHVw==
 
 emittery@^0.8.1:
   version "0.8.1"
@@ -3946,10 +3946,10 @@ invariant@2.2.4:
   dependencies:
     loose-envify "^1.0.0"
 
-ioredis@^5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-5.0.1.tgz#31c792ce8d9486c6e3b02d85d96ec0758863edcd"
-  integrity sha512-/5MF5vnUQf1o3+sy/pnkce5K8zdSMTcTgpRUW5oGGT+mEsgd1r7YLRPZ+zWGb9hbZXE3BJCgphc2eESm+2d9KA==
+ioredis@^5.0.2:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-5.0.2.tgz#76bb83ef9757134d62270b9f45251518c55dfdb7"
+  integrity sha512-B8yZmqripQXllUUoeX8PhlzcsPiEGZToyD5f2gRzuMYHGOmX0RXh3TNdLIj+wcOs1+tk+W49D8qU9hkVohRFDw==
   dependencies:
     "@ioredis/commands" "^1.1.1"
     cluster-key-slot "^1.1.0"
