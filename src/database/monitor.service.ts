@@ -75,8 +75,18 @@ export class MonitorService {
 
   async status(status = MonitorStatus.Online): Promise<void> {
     await this.monitorRepository.update(
-      { status: MonitorStatus.Offline },
-      { status },
+      {
+        status:
+          status === MonitorStatus.Online
+            ? MonitorStatus.Offline
+            : MonitorStatus.Online,
+      },
+      {
+        status:
+          status === MonitorStatus.Online
+            ? MonitorStatus.Online
+            : MonitorStatus.Offline,
+      },
     );
   }
 

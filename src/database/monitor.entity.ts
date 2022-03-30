@@ -235,6 +235,7 @@ export class MonitorEntity {
   attached!: boolean;
 
   @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
+  @Index()
   @ApiProperty({
     description: 'Подключен',
     enum: MonitorStatus,
