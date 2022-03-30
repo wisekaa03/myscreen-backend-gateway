@@ -26,7 +26,7 @@ import { ffprobe } from 'media-probe';
 import editly from 'editly';
 
 import { FileCategory, RenderingStatus, VideoType } from '@/enums';
-import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/type-orm-find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';
@@ -59,7 +59,7 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
     caseInsensitive = true,
   ): Promise<Array<EditorEntity>> {
-    const conditional = find;
+    const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
@@ -72,7 +72,7 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
     caseInsensitive = true,
   ): Promise<[Array<EditorEntity>, number]> {
-    const conditional = find;
+    const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
@@ -85,10 +85,10 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
   ): Promise<EditorEntity | null> {
     return find.relations
-      ? this.editorRepository.findOne(find)
+      ? this.editorRepository.findOne(TypeOrmFind.Nullable(find))
       : this.editorRepository.findOne({
           relations: ['videoLayers', 'audioLayers', 'renderedFile'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         });
   }
 

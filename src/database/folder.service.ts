@@ -8,7 +8,7 @@ import {
   In,
 } from 'typeorm';
 
-import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/type-orm-find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderFileNumberEntity } from './folder.view.entity';
@@ -31,8 +31,8 @@ export class FolderService {
     caseInsensitive = true,
   ): Promise<FolderEntity[]> {
     return caseInsensitive
-      ? TypeOrmFind.findCI(this.folderRepository, find)
-      : this.folderRepository.find(find);
+      ? TypeOrmFind.findCI(this.folderRepository, TypeOrmFind.Nullable(find))
+      : this.folderRepository.find(TypeOrmFind.Nullable(find));
   }
 
   async findAndCount(
@@ -40,14 +40,19 @@ export class FolderService {
     caseInsensitive = true,
   ): Promise<[FolderEntity[], number]> {
     return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(this.folderFilenumberRepository, find)
-      : this.folderFilenumberRepository.findAndCount(find);
+      ? TypeOrmFind.findAndCountCI(
+          this.folderFilenumberRepository,
+          TypeOrmFind.Nullable(find),
+        )
+      : this.folderFilenumberRepository.findAndCount(
+          TypeOrmFind.Nullable(find),
+        );
   }
 
   async findOne(
     find: FindOneOptions<FolderEntity>,
   ): Promise<FolderEntity | null> {
-    return this.folderFilenumberRepository.findOne(find);
+    return this.folderFilenumberRepository.findOne(TypeOrmFind.Nullable(find));
   }
 
   async rootFolder(userId: string): Promise<FolderEntity> {

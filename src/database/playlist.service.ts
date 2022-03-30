@@ -7,7 +7,7 @@ import {
   Repository,
 } from 'typeorm';
 
-import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/type-orm-find';
 import { PlaylistEntity } from './playlist.entity';
 
 @Injectable()
@@ -24,11 +24,11 @@ export class PlaylistService {
     return caseInsensitive
       ? TypeOrmFind.findCI(this.playlistEntity, {
           relations: ['files', 'monitors'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         })
       : this.playlistEntity.find({
           relations: ['files', 'monitors'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         });
   }
 
@@ -39,11 +39,11 @@ export class PlaylistService {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.playlistEntity, {
           relations: ['files', 'monitors'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         })
       : this.playlistEntity.findAndCount({
           relations: ['files', 'monitors'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         });
   }
 
@@ -52,7 +52,7 @@ export class PlaylistService {
   ): Promise<PlaylistEntity | null> {
     return this.playlistEntity.findOne({
       relations: ['files', 'monitors'],
-      ...find,
+      ...TypeOrmFind.Nullable(find),
     });
   }
 

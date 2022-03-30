@@ -1,6 +1,7 @@
 import { Logger } from '@nestjs/common';
 import {
   FindManyOptions,
+  IsNull,
   ObjectLiteral,
   Repository,
   SelectQueryBuilder,
@@ -11,7 +12,7 @@ export class TypeOrmFind {
     repository: Repository<Entity>,
     find: FindManyOptions<Entity>,
   ): SelectQueryBuilder<Entity> => {
-    const { order: orderBy, ...withoutOrder } = find;
+    const { order: orderBy /* ...withoutOrder */ } = find;
     const qb = repository.createQueryBuilder();
     qb.setFindOptions(find);
     const columns = repository.metadata.ownColumns;
@@ -57,5 +58,35 @@ export class TypeOrmFind {
   ): Promise<[Entity[], number]> => {
     const qb = this.findOrder(repository, find);
     return Promise.all([qb.getMany(), qb.getCount()]);
+  };
+
+  static Nullable = <Entity extends ObjectLiteral>(
+    find: FindManyOptions<Entity>,
+  ): FindManyOptions<Entity> => {
+    if (find.where) {
+      const { where, ...data } = find;
+      let whereIsNull;
+      if (Array.isArray(where)) {
+        whereIsNull = where.map((whereField) =>
+          Object.entries(whereField).reduce(
+            (accWhere, [field, value]) =>
+              value === null
+                ? { ...accWhere, [field]: IsNull() }
+                : { ...accWhere, [field]: value },
+            {} as Record<string, any>,
+          ),
+        );
+      } else {
+        whereIsNull = Object.entries(where).reduce(
+          (accWhere, [field, value]) =>
+            value === null
+              ? { ...accWhere, [field]: IsNull() }
+              : { ...accWhere, [field]: value },
+          {} as Record<string, any>,
+        );
+      }
+      return { where: { ...whereIsNull }, ...data } as FindManyOptions<Entity>;
+    }
+    return find;
   };
 }

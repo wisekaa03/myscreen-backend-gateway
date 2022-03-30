@@ -7,7 +7,7 @@ import {
   Repository,
 } from 'typeorm';
 
-import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/type-orm-find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorStatus } from '@/enums';
 
@@ -25,11 +25,11 @@ export class MonitorService {
     return caseInsensitive
       ? TypeOrmFind.findCI(this.monitorRepository, {
           relations: ['files', 'playlist'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         })
       : this.monitorRepository.find({
           relations: ['files', 'playlist'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         });
   }
 
@@ -40,11 +40,11 @@ export class MonitorService {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.monitorRepository, {
           relations: ['files', 'playlist'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         })
       : this.monitorRepository.findAndCount({
           relations: ['files', 'playlist'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         });
   }
 
@@ -53,7 +53,7 @@ export class MonitorService {
   ): Promise<MonitorEntity | null> {
     return this.monitorRepository.findOne({
       relations: ['files', 'playlist'],
-      ...find,
+      ...TypeOrmFind.Nullable(find),
     });
   }
 

@@ -30,7 +30,7 @@ import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
 import { FfMpegPreview } from '@/shared/ffmpeg';
-import { TypeOrmFind } from '@/shared/select-order-case-insensitive';
+import { TypeOrmFind } from '@/shared/type-orm-find';
 import { EditorService } from '@/database/editor.service';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
@@ -76,7 +76,7 @@ export class FileService {
     find: FindManyOptions<FileEntity>,
     caseInsensitive = true,
   ): Promise<Array<FileEntity>> {
-    const conditional = find;
+    const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
       conditional.relations = ['monitors', 'playlists'];
     }
@@ -96,7 +96,7 @@ export class FileService {
     find: FindManyOptions<FileEntity>,
     caseInsensitive = true,
   ): Promise<[Array<FileEntity>, number]> {
-    const conditional = find;
+    const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
       conditional.relations = ['monitors', 'playlists'];
     }
@@ -114,10 +114,10 @@ export class FileService {
    */
   async findOne(find: FindManyOptions<FileEntity>): Promise<FileEntity | null> {
     return find.relations
-      ? this.fileRepository.findOne(find)
+      ? this.fileRepository.findOne(TypeOrmFind.Nullable(find))
       : this.fileRepository.findOne({
           relations: ['monitors', 'playlists'],
-          ...find,
+          ...TypeOrmFind.Nullable(find),
         });
   }
 
