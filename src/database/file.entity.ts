@@ -159,7 +159,7 @@ export class FileEntity {
   @IsNotEmpty()
   filesize!: number;
 
-  @Column({ type: 'numeric', nullable: true, default: null })
+  @Column({ type: 'numeric', nullable: true, default: 0 })
   @ApiProperty({
     description: 'Продолжительность видео',
     type: 'number',

@@ -26,7 +26,7 @@ export async function FfMpegPreview(
   }
 
   if (type === VideoType.Video) {
-    const duration = Math.floor(meta.duration || 0);
+    const duration = Math.floor(meta?.duration || 0);
     const frameInterval = Math.floor(duration / 6) || 1; // 6 - Number of frames
     const filenameParsed = path.parse(filename);
     const outPattern = path.join(
