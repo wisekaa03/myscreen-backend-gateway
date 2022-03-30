@@ -1,8 +1,13 @@
 import { Logger } from '@nestjs/common';
-import { FindManyOptions, Repository, SelectQueryBuilder } from 'typeorm';
+import {
+  FindManyOptions,
+  ObjectLiteral,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm';
 
 export class TypeOrmFind {
-  private static findOrder = <Entity>(
+  private static findOrder = <Entity extends ObjectLiteral>(
     repository: Repository<Entity>,
     find: FindManyOptions<Entity>,
   ): SelectQueryBuilder<Entity> => {
@@ -17,7 +22,13 @@ export class TypeOrmFind {
         )?.type;
         const d = direction === 'DESC' ? 'DESC' : 'ASC';
         // TODO: эх... разобраться с relations:  || (find.relations && (find.take || find.skip))
-        if (column !== String || (find.relations && (find.take || find.skip))) {
+        if (
+          column !== String ||
+          (find.relations &&
+            ((Array.isArray(find.relations) && find.relations.length > 0) ||
+              Object.keys(find.relations).length > 0) &&
+            (find.take || find.skip))
+        ) {
           qb.addOrderBy(`${qb.alias}.${field}`, d);
         } else {
           qb.addSelect(`LOWER(${qb.alias}.${field})`, `${field}_${d}`);
@@ -32,7 +43,7 @@ export class TypeOrmFind {
     return qb;
   };
 
-  static findCI = <Entity>(
+  static findCI = <Entity extends ObjectLiteral>(
     repository: Repository<Entity>,
     find: FindManyOptions<Entity>,
   ): Promise<Entity[]> => {
@@ -40,7 +51,7 @@ export class TypeOrmFind {
     return qb.getMany();
   };
 
-  static findAndCountCI = <Entity>(
+  static findAndCountCI = <Entity extends ObjectLiteral>(
     repository: Repository<Entity>,
     find: FindManyOptions<Entity>,
   ): Promise<[Entity[], number]> => {

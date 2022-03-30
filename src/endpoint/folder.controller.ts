@@ -24,7 +24,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { In } from 'typeorm';
 import {
   BadRequestError,
   UnauthorizedError,
