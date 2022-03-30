@@ -18,7 +18,7 @@ import {
 import { UserRoleEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { genKey } from '@/shared/genKey';
-import { TypeOrmFind } from '@/shared/type-orm-find';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserSizeEntity } from './user.view.entity';

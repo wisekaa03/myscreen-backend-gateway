@@ -8,7 +8,7 @@ import {
   In,
 } from 'typeorm';
 
-import { TypeOrmFind } from '@/shared/type-orm-find';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderFileNumberEntity } from './folder.view.entity';

@@ -30,7 +30,7 @@ import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
 import { FfMpegPreview } from '@/shared/ffmpeg';
-import { TypeOrmFind } from '@/shared/type-orm-find';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 import { EditorService } from '@/database/editor.service';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';

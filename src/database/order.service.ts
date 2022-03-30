@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 
-import { TypeOrmFind } from '@/shared/type-orm-find';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 import { OrderEntity } from './order.entity';
 import { UserEntity } from './user.entity';
 

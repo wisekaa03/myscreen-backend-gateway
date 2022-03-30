@@ -6,7 +6,7 @@ import type {
   TypeOrmModuleOptions,
 } from '@nestjs/typeorm';
 
-import { TypeOrmLogger } from './logger.typeorm';
+import { TypeOrmLogger } from './typeorm.logger';
 
 @Injectable()
 export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {

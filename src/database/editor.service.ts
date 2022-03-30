@@ -26,7 +26,7 @@ import { ffprobe } from 'media-probe';
 import editly from 'editly';
 
 import { FileCategory, RenderingStatus, VideoType } from '@/enums';
-import { TypeOrmFind } from '@/shared/type-orm-find';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';

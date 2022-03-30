@@ -12,15 +12,17 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     param?: unknown[],
     // queryRunner?: QueryRunner,
   ): void => {
-    let parameters: unknown[] | undefined;
+    let parameters: string;
     if (Array.isArray(param) && param.length > 0) {
-      parameters = param.map((field) =>
-        typeof field === 'string' ? field.slice(0, 50) : field,
-      );
+      parameters = ` ${JSON.stringify(
+        param.map((field) =>
+          typeof field === 'string' ? field.slice(0, 50) : field,
+        ),
+      )}`;
     } else {
-      parameters = param;
+      parameters = param ? ` ${JSON.stringify(param)}` : '';
     }
-    this.logger.debug(message, parameters);
+    this.logger.debug(`${message}${parameters}`);
   };
 
   /**
@@ -32,15 +34,17 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     param?: unknown[],
     // queryRunner?: QueryRunner,
   ): void => {
-    let parameters: unknown[] | undefined;
+    let parameters: string;
     if (Array.isArray(param) && param.length > 0) {
-      parameters = param.map((field) =>
-        typeof field === 'string' ? field.slice(0, 50) : field,
-      );
+      parameters = ` ${JSON.stringify(
+        param.map((field) =>
+          typeof field === 'string' ? field.slice(0, 50) : field,
+        ),
+      )}`;
     } else {
-      parameters = param;
+      parameters = param ? ` ${JSON.stringify(param)}` : '';
     }
-    this.logger.error(message, error, parameters);
+    this.logger.error(`${message}${parameters}`, error);
   };
 
   /**

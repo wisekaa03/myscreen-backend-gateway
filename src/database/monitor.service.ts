@@ -7,7 +7,7 @@ import {
   Repository,
 } from 'typeorm';
 
-import { TypeOrmFind } from '@/shared/type-orm-find';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorStatus } from '@/enums';
 
