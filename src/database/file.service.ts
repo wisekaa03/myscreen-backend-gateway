@@ -351,18 +351,56 @@ export class FileService {
         where: [
           {
             videoLayers: {
-              fileId: In(filesId),
+              file: {
+                id: In(filesId),
+              },
             },
           },
           {
             audioLayers: {
-              fileId: In(filesId),
+              file: {
+                id: In(filesId),
+              },
             },
           },
         ],
+        select: {
+          id: true,
+          name: true,
+          videoLayers: {
+            id: true,
+            file: {
+              id: true,
+            },
+          },
+          audioLayers: {
+            id: true,
+            file: {
+              id: true,
+            },
+          },
+        },
+        relations: {
+          videoLayers: {
+            file: true,
+          },
+          audioLayers: {
+            file: true,
+          },
+        },
+        loadEagerRelations: false,
       }),
       this.playlistService.find({
         where: { files: { id: In(filesId) } },
+        select: {
+          id: true,
+          name: true,
+          files: { id: true },
+        },
+        relations: {
+          files: true,
+        },
+        loadEagerRelations: false,
       }),
     ]);
 

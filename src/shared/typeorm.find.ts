@@ -76,15 +76,18 @@ export class TypeOrmFind {
             {} as Record<string, any>,
           ),
         );
-      } else {
-        whereIsNull = Object.entries(where).reduce(
-          (accWhere, [field, value]) =>
-            value === null
-              ? { ...accWhere, [field]: IsNull() }
-              : { ...accWhere, [field]: value },
-          {} as Record<string, any>,
-        );
+        return {
+          where: [...whereIsNull],
+          ...data,
+        } as FindManyOptions<Entity>;
       }
+      whereIsNull = Object.entries(where).reduce(
+        (accWhere, [field, value]) =>
+          value === null
+            ? { ...accWhere, [field]: IsNull() }
+            : { ...accWhere, [field]: value },
+        {} as Record<string, any>,
+      );
       return { where: { ...whereIsNull }, ...data } as FindManyOptions<Entity>;
     }
     return find;

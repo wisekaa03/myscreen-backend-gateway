@@ -214,6 +214,10 @@ export class FolderController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { foldersId }: FoldersDeleteRequest,
   ): Promise<SuccessResponse> {
+    const rootFolder = await this.folderService.rootFolder(userId);
+    if (foldersId.includes(rootFolder.id)) {
+      throw new BadRequestException('This is a root folder in a list');
+    }
     const { affected } = await this.folderService.delete(userId, foldersId);
     if (!affected) {
       throw new NotFoundException('This folder is not exists');
@@ -239,6 +243,10 @@ export class FolderController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) folderId: string,
   ): Promise<SuccessResponse> {
+    const rootFolder = await this.folderService.rootFolder(userId);
+    if (folderId === rootFolder.id) {
+      throw new BadRequestException('This is a root folder in a list');
+    }
     const { affected } = await this.folderService.delete(userId, [folderId]);
     if (!affected) {
       throw new NotFoundException('This folder is not exists');
