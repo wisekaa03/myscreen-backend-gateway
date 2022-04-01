@@ -77,10 +77,21 @@ export class FolderService {
   async delete(userId: string, foldersId: string[]): Promise<DeleteResult> {
     return this.folderRepository.manager.transaction(
       async (folderRepository) => {
+        const folderSubId = await folderRepository
+          .find<FolderEntity>(FolderEntity, {
+            where: { userId, parentFolderId: In(foldersId) },
+            relations: [],
+            loadEagerRelations: false,
+            select: ['id'],
+          })
+          .then((folders) => folders.map((folder) => folder.id));
+
+        const fullFolders = [...foldersId, ...folderSubId];
         const filesId = await this.fileService
           .find({
-            where: { userId, folderId: In(foldersId) },
+            where: { userId, folderId: In(fullFolders) },
             relations: [],
+            loadEagerRelations: false,
             select: ['id'],
           })
           .then((files) => files.map((file) => file.id));
@@ -89,7 +100,7 @@ export class FolderService {
 
         return folderRepository.delete<FolderEntity>(FolderEntity, {
           userId,
-          id: In(foldersId),
+          id: In(fullFolders),
         });
       },
     );
