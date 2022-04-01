@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  AfterLoad,
   DataSource,
   SelectQueryBuilder,
   ViewColumn,
@@ -25,15 +26,46 @@ import { FolderEntity } from './folder.entity';
             .from(FileEntity, 'file'),
         'file',
         '"file"."folderId" = "folder"."id"',
+      )
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<FolderEntity>) =>
+          qb
+            .select('"folder"."parentFolderId"', 'subParentFolderId')
+            .addSelect('COUNT("folder"."id")', 'folderNumber')
+            .groupBy('"subParentFolderId"')
+            .from(FolderEntity, 'folder'),
+        'folderSub',
+        '"folderSub"."subParentFolderId" = "folder"."id"',
       ),
 })
 export class FolderFileNumberEntity extends FolderEntity {
   @ViewColumn()
   @ApiProperty({
-    type: String,
+    type: Number,
     description: 'Число файлов в папке',
     example: 0,
     required: false,
   })
-  fileNumber?: number;
+  fileNumber?: number | null;
+
+  @ViewColumn()
+  @ApiProperty({
+    type: Number,
+    description: 'Число папок в папке',
+    example: 0,
+    required: false,
+  })
+  folderNumber?: number | null;
+
+  @AfterLoad()
+  after() {
+    this.fileNumber = parseInt(
+      (this.fileNumber as unknown as string) ?? '0',
+      10,
+    );
+    this.folderNumber = parseInt(
+      (this.folderNumber as unknown as string) ?? '0',
+      10,
+    );
+  }
 }
