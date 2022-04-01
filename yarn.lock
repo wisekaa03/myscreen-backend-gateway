@@ -5355,7 +5355,7 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^2.1.0:
+nestjs-mailgun@2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.1.0.tgz#d8efe36a75451c5a5106b292eae7917880dbf38d"
   integrity sha512-feVj1rkM1hRM87415c1my6eSdsfgpa6eFsBgLmfLjAru74uDqzn/C+gDmp/eUJsqFXWDtHWEXX62Nz1xS9sMoQ==
