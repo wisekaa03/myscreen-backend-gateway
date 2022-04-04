@@ -139,32 +139,29 @@ export class FileService {
         const Key = `${update.folderId}/${file.hash}-${s3Name}`;
         const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
 
-        return Promise.all([
-          fileRepository.save(
-            fileRepository.create<FileEntity>(FileEntity, update),
-          ),
-          this.s3Service
-            .copyObject({
-              Bucket: this.bucket,
-              Key,
-              CopySource: `${this.bucket}/${CopySource}`,
-              MetadataDirective: 'REPLACE',
-            })
-            .promise()
-            .then(() =>
-              this.s3Service
-                .deleteObject({ Bucket: this.bucket, Key: CopySource })
-                .promise()
-                .catch((error) => {
-                  this.logger.error('S3 Error deleteObject:', error);
-                  throw new Error(error);
-                }),
-            )
-            .catch((error) => {
-              this.logger.error('S3 Error copyObject:', error);
-              throw new Error(error);
-            }),
-        ]).then(([updated]) => updated);
+        await this.s3Service
+          .copyObject({
+            Bucket: this.bucket,
+            Key,
+            CopySource: `${this.bucket}/${CopySource}`,
+            MetadataDirective: 'REPLACE',
+          })
+          .promise()
+          .then(() =>
+            this.s3Service
+              .deleteObject({ Bucket: this.bucket, Key: CopySource })
+              .promise()
+              .catch((error) => {
+                this.logger.error('S3 Error deleteObject:', error);
+              }),
+          )
+          .catch((error) => {
+            this.logger.error('S3 Error copyObject:', error);
+          });
+
+        return fileRepository.save(
+          fileRepository.create<FileEntity>(FileEntity, update),
+        );
       }
 
       return fileRepository.save(
