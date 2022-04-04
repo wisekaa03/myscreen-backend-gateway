@@ -63,6 +63,8 @@ export class FolderFileNumberEntity extends FolderEntity {
       (this.folderNumber as unknown as string) ?? '0',
       10,
     );
+    this.fileNumber = undefined;
+    this.folderNumber = undefined;
     if (fileNumber > 0 || folderNumber > 0) {
       this.empty = false;
     } else {
