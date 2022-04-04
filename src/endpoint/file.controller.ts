@@ -215,7 +215,7 @@ export class FileController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-download',
-    summary: 'Скачивание медиа',
+    summary: 'Скачивание файла',
   })
   @ApiResponse({
     status: 200,

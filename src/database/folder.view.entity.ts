@@ -40,32 +40,28 @@ import { FolderEntity } from './folder.entity';
 })
 export class FolderFileNumberEntity extends FolderEntity {
   @ViewColumn()
-  @ApiProperty({
-    type: Number,
-    description: 'Число файлов в папке',
-    example: 0,
-    required: false,
-  })
   fileNumber?: number | null;
 
   @ViewColumn()
+  folderNumber?: number | null;
+
   @ApiProperty({
-    type: Number,
-    description: 'Число папок в папке',
-    example: 0,
+    type: Boolean,
+    description: 'Подчиненные в этой папке',
+    example: true,
     required: false,
   })
-  folderNumber?: number | null;
+  empty?: boolean;
 
   @AfterLoad()
   after() {
-    this.fileNumber = parseInt(
-      (this.fileNumber as unknown as string) ?? '0',
-      10,
-    );
-    this.folderNumber = parseInt(
-      (this.folderNumber as unknown as string) ?? '0',
-      10,
-    );
+    if (
+      parseInt((this.fileNumber as unknown as string) ?? '0', 10) > 0 &&
+      parseInt((this.folderNumber as unknown as string) ?? '0', 10) > 0
+    ) {
+      this.empty = false;
+    } else {
+      this.empty = true;
+    }
   }
 }

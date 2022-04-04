@@ -1086,7 +1086,7 @@ paths:
   "/api/v2/file/{fileId}":
     get:
       operationId: file-download
-      summary: Скачивание медиа
+      summary: Скачивание файла
       parameters:
         - name: fileId
           required: true
@@ -1873,7 +1873,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.14.16
+  version: 2.14.17
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2706,14 +2706,10 @@ components:
           type: string
           description: Время изменения
           example: 2021-01-01T10:00:00.147Z
-        fileNumber:
-          type: number
-          description: Число файлов в папке
-          example: 0
-        folderNumber:
-          type: number
-          description: Число папок в папке
-          example: 0
+        empty:
+          type: boolean
+          description: Подчиненные в этой папке
+          example: true
       required:
         - id
         - name
