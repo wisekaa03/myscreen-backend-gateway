@@ -1057,6 +1057,32 @@ paths:
         "503": *a30
       tags: *a31
       security: *a32
+    patch:
+      operationId: files-update
+      summary: Изменить файлы
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilesUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileGetResponse"
+        "400": *a24
+        "401": *a25
+        "403": *a26
+        "404": *a27
+        "409": *a28
+        "500": *a29
+        "503": *a30
+      tags: *a31
+      security: *a32
     delete:
       operationId: file-delete
       summary: Удаление файла
@@ -1897,7 +1923,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.14.21
+  version: 2.14.22
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2745,7 +2771,6 @@ components:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         name:
           type: string
@@ -3505,7 +3530,6 @@ components:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         folderId:
           type: string
@@ -3585,6 +3609,33 @@ components:
       required:
         - status
         - data
+    FileUpdatesRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        name:
+          type: string
+          description: Имя файла
+          example: foo.mp4
+        folderId:
+          type: string
+          description: Идентификатор папки
+          format: uuid
+      required:
+        - id
+    FilesUpdateRequest:
+      type: object
+      properties:
+        files:
+          description: Файлы
+          type: array
+          items:
+            $ref: "#/components/schemas/FileUpdatesRequest"
+      required:
+        - files
     FileUpdateRequest:
       type: object
       properties:

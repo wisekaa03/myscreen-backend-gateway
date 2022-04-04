@@ -36,7 +36,7 @@ import {
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
-import type { FindOptionsWhere } from 'typeorm';
+import { FindOptionsWhere, In } from 'typeorm';
 
 import path from 'node:path';
 import {
@@ -56,6 +56,8 @@ import {
   FileUpdateRequest,
   ConflictError,
   FilesDeleteRequest,
+  FileResponse,
+  FilesUpdateRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -443,6 +445,49 @@ export class FileController {
     } catch (error: unknown) {
       throw new NotFoundException(error);
     }
+  }
+
+  @Patch()
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'files-update',
+    summary: 'Изменить файлы',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: FileGetResponse,
+  })
+  async updateFilesDB(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Body() { files }: FilesUpdateRequest,
+  ): Promise<FilesGetResponse> {
+    const filesPromise = files.map(async (file) => {
+      const fileDB = await this.fileService.findOne({
+        where: {
+          userId,
+          id: file.id,
+        },
+      });
+
+      if (!fileDB) {
+        throw new NotFoundException(`Files '${file.id}' is not exists`);
+      }
+
+      return this.fileService.update(fileDB, {
+        ...fileDB,
+        folder: undefined,
+        ...file,
+      });
+    });
+
+    const data = await Promise.all(filesPromise);
+
+    return {
+      status: Status.Success,
+      count: data.length,
+      data,
+    };
   }
 
   @Patch('/:fileId')

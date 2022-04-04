@@ -132,7 +132,7 @@ export class FileService {
   async update(
     file: FileEntity,
     update: Partial<FileEntity>,
-  ): Promise<FileEntity | undefined> {
+  ): Promise<FileEntity> {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
       if (update.folderId !== undefined && update.folderId !== file.folder.id) {
         const s3Name = getS3Name(file.name);
