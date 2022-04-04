@@ -1,8 +1,40 @@
-import { PickType } from '@nestjs/swagger';
-import { FolderEntity } from '@/database/folder.entity';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MinLength,
+} from 'class-validator';
 
-export class FolderRequest extends PickType(FolderEntity, [
-  'id',
-  'name',
-  'parentFolderId',
-]) {}
+export class FolderRequest {
+  @ApiProperty({
+    description: 'Идентификатор файла',
+    format: 'uuid',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsUUID()
+  id!: string;
+
+  @ApiProperty({
+    description: 'Наименование папки',
+    type: 'string',
+    example: 'bar',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(1)
+  name?: string;
+
+  @ApiProperty({
+    description: 'Родительская папка',
+    type: 'string',
+    format: 'uuid',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID()
+  parentFolderId?: string;
+}

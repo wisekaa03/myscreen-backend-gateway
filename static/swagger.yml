@@ -1313,6 +1313,30 @@ paths:
         "500": *a37
       tags: *a38
       security: *a39
+    patch:
+      operationId: folders-update
+      summary: Изменение информации о папках
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FoldersUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderGetResponse"
+        "400": *a33
+        "401": *a34
+        "403": *a35
+        "404": *a36
+        "500": *a37
+      tags: *a38
+      security: *a39
     delete:
       operationId: folders-delete
       summary: Удаление папок
@@ -1873,7 +1897,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.14.17
+  version: 2.14.18
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3666,8 +3690,37 @@ components:
           type: string
           description: Наименование папки
           example: bar
+        parentFolderId:
+          type: string
+          description: Родительская папка
+          format: uuid
+    FolderRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        name:
+          type: string
+          description: Наименование папки
+          example: bar
+        parentFolderId:
+          type: string
+          description: Родительская папка
+          format: uuid
       required:
-        - name
+        - id
+    FoldersUpdateRequest:
+      type: object
+      properties:
+        folders:
+          description: Папки
+          type: array
+          items:
+            $ref: "#/components/schemas/FolderRequest"
+      required:
+        - folders
     FoldersDeleteRequest:
       type: object
       properties:

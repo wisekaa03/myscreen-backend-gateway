@@ -1,4 +1,5 @@
 import type { Request as ExpressRequest } from 'express';
+import { In } from 'typeorm';
 import {
   Controller,
   Logger,
@@ -38,9 +39,11 @@ import {
   SuccessResponse,
   FolderResponse,
   FoldersDeleteRequest,
+  FoldersUpdateRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
+import { FolderEntity } from '@/database/folder.entity';
 import { FolderService } from '@/database/folder.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { UserRoleEnum } from '@/enums';
@@ -191,11 +194,80 @@ export class FolderController {
   async updateFolder(
     @Req() { user: { id: userId } }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
-    @Body() { name }: FolderUpdateRequest,
+    @Body() { name, parentFolderId }: FolderUpdateRequest,
   ): Promise<FolderGetResponse> {
+    let parentFolder: FolderEntity | null | undefined;
+    if (parentFolderId) {
+      parentFolder = await this.folderService.findOne({
+        where: {
+          userId,
+          id: parentFolderId,
+        },
+      });
+      if (!parentFolder) {
+        throw new NotFoundException(`Folder '${parentFolderId}' is not exists`);
+      }
+    }
+
+    const data = await this.folderService.update({
+      userId,
+      id,
+      name,
+      parentFolder,
+    });
+
     return {
       status: Status.Success,
-      data: await this.folderService.update({ userId, id, name }),
+      data,
+    };
+  }
+
+  @Patch()
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'folders-update',
+    summary: 'Изменение информации о папках',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: FolderGetResponse,
+  })
+  async updateFolders(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Body() { folders }: FoldersUpdateRequest,
+  ): Promise<FoldersGetResponse> {
+    const parentFoldersId = folders.map((folder) => folder.id);
+    let parentFolders: FolderEntity[] | undefined;
+    if (parentFoldersId) {
+      parentFolders = await this.folderService.find({
+        where: {
+          userId,
+          id: In(parentFoldersId),
+        },
+      });
+      if (
+        !(
+          Array.isArray(parentFolders) &&
+          parentFolders.length === parentFoldersId.length
+        )
+      ) {
+        throw new NotFoundException(
+          `Folders '${parentFoldersId.join(', ')}' is not exists`,
+        );
+      }
+    }
+
+    const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
+      this.folderService.update({ id, name, userId, parentFolderId }),
+    );
+
+    const data = await Promise.all(foldersPromise);
+
+    return {
+      status: Status.Success,
+      count: data.length,
+      data,
     };
   }
 

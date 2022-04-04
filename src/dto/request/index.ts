@@ -13,6 +13,7 @@ export * from './folder.request';
 export * from './folder-partial.request';
 export * from './folders-get.request';
 export * from './folders-delete.request';
+export * from './folders-update.request';
 export * from './folder-create.request';
 export * from './folder-update.request';
 export * from './file.request';
