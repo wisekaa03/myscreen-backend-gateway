@@ -55,10 +55,15 @@ export class FolderFileNumberEntity extends FolderEntity {
 
   @AfterLoad()
   after() {
-    if (
-      parseInt((this.fileNumber as unknown as string) ?? '0', 10) > 0 &&
-      parseInt((this.folderNumber as unknown as string) ?? '0', 10) > 0
-    ) {
+    const fileNumber = parseInt(
+      (this.fileNumber as unknown as string) ?? '0',
+      10,
+    );
+    const folderNumber = parseInt(
+      (this.folderNumber as unknown as string) ?? '0',
+      10,
+    );
+    if (fileNumber > 0 || folderNumber > 0) {
       this.empty = false;
     } else {
       this.empty = true;
