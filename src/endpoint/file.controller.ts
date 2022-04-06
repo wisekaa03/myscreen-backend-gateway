@@ -534,7 +534,7 @@ export class FileController {
   @Delete()
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'file-delete',
+    operationId: 'files-delete',
     summary: 'Удаление файла',
   })
   @ApiResponse({

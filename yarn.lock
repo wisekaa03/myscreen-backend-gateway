@@ -5262,10 +5262,10 @@ ms@2.1.3, ms@^2.0.0, ms@^2.1.1, ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-multer-media@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.1.tgz#64dad7d5c77dc2fba95ae52b510a7a34b7cf01a4"
-  integrity sha512-hIQ88WIH9PaOorCfw3rvZdFiws5/XsRq+JatTYVWrkMdpyZyLDKXFx/LBec2Il7IUPAJRjfgiDdBQMnBc32iFw==
+multer-media@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.2.tgz#28408b8e0f8bf88018d470b8be976d94dafd004d"
+  integrity sha512-voGPEx+ar9REpyR1Koule2OY8OoOCfenwSVmxdk9nlek3eJfar1hBHpm6CgTcxfQykA7BX/1cnXGv3Rrf9sl7Q==
   dependencies:
     ffmpeg-static "^5.0.0"
     media-probe "^1.0.1"
@@ -5355,10 +5355,10 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^2.2.3:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.2.3.tgz#6960b0b829038f1ceb8ec43816a240ad7657b299"
-  integrity sha512-zKMSYifMFcyAnD2W+u615RFmKYIL1J1Yuni/DK4NOdhKgLRwFBe2vEqxuMJXY/mR14MaQLRKYt3AY6wu880Hvw==
+nestjs-mailgun@^2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.2.4.tgz#de0858a4bfd331910b4e3139f321118d5c803c09"
+  integrity sha512-WKnYbNg+naMB/uChd2b75CGJO/FS7xgA4krwpethxnLdxqpZrTtU0pyk0M8TT/s2511PN6A4f7aEppGz38q8FA==
   dependencies:
     form-data "^4.0.0"
     mailgun.js "^5.0.5"
