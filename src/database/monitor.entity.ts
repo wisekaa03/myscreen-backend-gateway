@@ -310,7 +310,7 @@ export class MonitorEntity {
   @IsOptional()
   @ValidateNested()
   @Type(() => PointClass)
-  location?: Point;
+  location?: Point | null;
 
   @ManyToOne(() => UserEntity, (user) => user.monitors, {
     onDelete: 'CASCADE',
