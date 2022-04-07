@@ -3,8 +3,11 @@ import {
   IsDate,
   IsDefined,
   IsEnum,
+  IsIn,
+  IsJSON,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   IsUUID,
   Length,
@@ -35,6 +38,27 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { FileEntity } from './file.entity';
+
+export class PointClass implements Point {
+  @ApiProperty({
+    type: 'string',
+    description: 'Point',
+    example: 'Point',
+    required: true,
+  })
+  @IsIn(['Point'])
+  type: 'Point' = 'Point';
+
+  @ApiProperty({
+    type: Number,
+    isArray: true,
+    description: '[ Долгота, Широта ]',
+    example: [38.97603, 45.04484],
+    required: true,
+  })
+  @IsNumber({}, { each: true })
+  coordinates: number[] = [];
+}
 
 export class Address {
   @ApiProperty({
@@ -266,6 +290,7 @@ export class MonitorEntity {
 
   @Column({ nullable: true })
   @ApiProperty({
+    type: Date,
     description: 'Последний раз виден',
     example: null,
   })
@@ -279,9 +304,12 @@ export class MonitorEntity {
     spatialFeatureType: 'Point',
   })
   @ApiProperty({
-    type: String,
-    example: '{"type":"Point","coordinates":[45.0448400, 38.9760300]}',
+    type: PointClass,
+    example: { type: 'Point', coordinates: [38.97603, 45.04484] },
   })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PointClass)
   location?: Point;
 
   @ManyToOne(() => UserEntity, (user) => user.monitors, {

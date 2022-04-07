@@ -1923,7 +1923,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.14.25
+  version: 2.14.26
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2509,6 +2509,24 @@ components:
       enum:
         - offline
         - online
+    PointClass:
+      type: object
+      properties:
+        type:
+          type: string
+          description: Point
+          example: Point
+        coordinates:
+          description: "[ Долгота, Широта ]"
+          example:
+            - 38.97603
+            - 45.04484
+          type: array
+          items:
+            type: number
+      required:
+        - type
+        - coordinates
     MonitorPartialRequest:
       type: object
       properties:
@@ -2575,8 +2593,14 @@ components:
           description: Идентификатор устройства
           example: 111-111-111
         location:
-          type: string
-          example: '{"type":"Point","coordinates":[45.0448400, 38.9760300]}'
+          example:
+            &a57
+            type: Point
+            coordinates:
+              - 38.97603
+              - 45.04484
+          allOf:
+            - $ref: "#/components/schemas/PointClass"
     Order:
       type: string
       enum:
@@ -2945,8 +2969,9 @@ components:
           description: Последний раз виден
           example: null
         location:
-          type: string
-          example: '{"type":"Point","coordinates":[45.0448400, 38.9760300]}'
+          example: *a57
+          allOf:
+            - $ref: "#/components/schemas/PointClass"
         createdAt:
           format: date-time
           type: string
@@ -3030,8 +3055,9 @@ components:
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         location:
-          type: string
-          example: '{"type":"Point","coordinates":[45.0448400, 38.9760300]}'
+          example: *a57
+          allOf:
+            - $ref: "#/components/schemas/PointClass"
         code:
           type: string
           description: Идентификатор устройства
@@ -3222,7 +3248,7 @@ components:
         renderedFile:
           description: Обработанный файл
           allOf:
-            &a57
+            &a58
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -3459,7 +3485,7 @@ components:
           description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
-          allOf: *a57
+          allOf: *a58
       required:
         - id
         - renderingStatus

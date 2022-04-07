@@ -1,4 +1,5 @@
 import type { Request as ExpressRequest } from 'express';
+import { FindManyOptions, TypeORMError } from 'typeorm';
 import {
   BadRequestException,
   Body,
@@ -25,7 +26,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { FindManyOptions } from 'typeorm';
 import {
   BadRequestError,
   ForbiddenError,
@@ -168,9 +168,13 @@ export class MonitorController {
       );
     }
 
-    const data = await this.monitorService.update(userId, monitor).catch(() => {
-      throw new BadRequestException(`Монитор '${monitor.name}' уже существует`);
-    });
+    const data = await this.monitorService
+      .update(userId, monitor)
+      .catch((error: TypeORMError) => {
+        throw new BadRequestException(
+          `Монитор '${monitor.name}' уже существует`,
+        );
+      });
 
     return {
       status: Status.Success,
