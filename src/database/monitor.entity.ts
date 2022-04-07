@@ -4,7 +4,6 @@ import {
   IsDefined,
   IsEnum,
   IsIn,
-  IsJSON,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -306,6 +305,7 @@ export class MonitorEntity {
   @ApiProperty({
     type: PointClass,
     example: { type: 'Point', coordinates: [38.97603, 45.04484] },
+    required: false,
   })
   @IsOptional()
   @ValidateNested()
