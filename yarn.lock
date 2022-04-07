@@ -6578,9 +6578,9 @@ socks@^2.6.1:
     smart-buffer "^4.2.0"
 
 sonic-boom@^2.2.0, sonic-boom@^2.2.1:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/sonic-boom/-/sonic-boom-2.6.0.tgz#8786fc78be07c18a90381acd816d1d4afe3537a2"
-  integrity sha512-6xYZFRmDEtxGqfOKcDQ4cPLrNa0SPEDI+wlzDAHowXE6YV42NeXqg9mP2KkiM8JVu3lHfZ2iQKYlGOz+kTpphg==
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/sonic-boom/-/sonic-boom-2.7.0.tgz#55c9390cc123ae4e42c044e822eb7e7246b01c9c"
+  integrity sha512-Ynxp0OGQG91wvDjCbFlRMHbSUmDq7dE/EgDeUJ/j+Q9x1FVkFry20cjLykxRSmlm3QS0B4JYAKE8239XKN4SHQ==
   dependencies:
     atomic-sleep "^1.0.0"
 

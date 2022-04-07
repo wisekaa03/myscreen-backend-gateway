@@ -1109,6 +1109,33 @@ paths:
         "503": *a30
       tags: *a31
       security: *a32
+  /api/v2/file/copy:
+    patch:
+      operationId: files-copy
+      summary: Скопировать файлы
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilesUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileGetResponse"
+        "400": *a24
+        "401": *a25
+        "403": *a26
+        "404": *a27
+        "409": *a28
+        "500": *a29
+        "503": *a30
+      tags: *a31
+      security: *a32
   "/api/v2/file/{fileId}":
     get:
       operationId: file-download
@@ -1380,6 +1407,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
+        "400": *a33
+        "401": *a34
+        "403": *a35
+        "404": *a36
+        "500": *a37
+      tags: *a38
+      security: *a39
+  /api/v2/folder/copy:
+    patch:
+      operationId: folders-copy
+      summary: Копирование папок
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FoldersUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FolderGetResponse"
         "400": *a33
         "401": *a34
         "403": *a35
@@ -1923,7 +1975,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.15.0
+  version: 2.15.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3619,20 +3671,6 @@ components:
         - status
         - count
         - data
-    FileGetResponse:
-      type: object
-      properties:
-        status:
-          description: Статус операции
-          example: success
-          $ref: "#/components/schemas/Status"
-        data:
-          description: Файл
-          allOf:
-            - $ref: "#/components/schemas/FileResponse"
-      required:
-        - status
-        - data
     FileUpdatesRequest:
       type: object
       properties:
@@ -3660,6 +3698,20 @@ components:
             $ref: "#/components/schemas/FileUpdatesRequest"
       required:
         - files
+    FileGetResponse:
+      type: object
+      properties:
+        status:
+          description: Статус операции
+          example: success
+          $ref: "#/components/schemas/Status"
+        data:
+          description: Файл
+          allOf:
+            - $ref: "#/components/schemas/FileResponse"
+      required:
+        - status
+        - data
     FileUpdateRequest:
       type: object
       properties:
@@ -3758,17 +3810,6 @@ components:
       required:
         - status
         - data
-    FolderUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Наименование папки
-          example: bar
-        parentFolderId:
-          type: string
-          description: Родительская папка
-          format: uuid
     FolderRequest:
       type: object
       properties:
@@ -3807,6 +3848,17 @@ components:
             format: uuid
       required:
         - foldersId
+    FolderUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Наименование папки
+          example: bar
+        parentFolderId:
+          type: string
+          description: Родительская папка
+          format: uuid
     UserPartialRequest:
       type: object
       properties:

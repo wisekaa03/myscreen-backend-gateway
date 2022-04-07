@@ -16,6 +16,7 @@ import {
   Patch,
   HttpCode,
   Put,
+  NotImplementedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -88,7 +89,7 @@ export class FolderController {
 
   constructor(private readonly folderService: FolderService) {}
 
-  @Post('/')
+  @Post()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'folders-get',
@@ -118,7 +119,7 @@ export class FolderController {
     };
   }
 
-  @Put('/')
+  @Put()
   @HttpCode(201)
   @ApiOperation({
     operationId: 'folder-create',
@@ -149,6 +150,136 @@ export class FolderController {
         name,
         parentFolderId: parentFolder.id,
       }),
+    };
+  }
+
+  @Patch()
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'folders-update',
+    summary: 'Изменение информации о папках',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: FolderGetResponse,
+  })
+  async updateFolders(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Body() { folders }: FoldersUpdateRequest,
+  ): Promise<FoldersGetResponse> {
+    const parentFoldersId = folders.map((folder) => folder.id);
+    let parentFolders: FolderEntity[] | undefined;
+    if (parentFoldersId) {
+      parentFolders = await this.folderService.find({
+        where: {
+          userId,
+          id: In(parentFoldersId),
+        },
+      });
+      if (
+        !(
+          Array.isArray(parentFolders) &&
+          parentFolders.length === parentFoldersId.length
+        )
+      ) {
+        throw new NotFoundException(
+          `Folders '${parentFoldersId.join(', ')}' is not exists`,
+        );
+      }
+    }
+
+    const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
+      this.folderService.update({ id, name, userId, parentFolderId }),
+    );
+
+    const data = await Promise.all(foldersPromise);
+
+    return {
+      status: Status.Success,
+      count: data.length,
+      data,
+    };
+  }
+
+  @Patch('/copy')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'folders-copy',
+    summary: 'Копирование папок',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: FolderGetResponse,
+  })
+  async copyFolders(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Body() { folders }: FoldersUpdateRequest,
+  ): Promise<FoldersGetResponse> {
+    if (process.env.NODE_ENV === '') {
+      throw new NotImplementedException();
+    }
+
+    const parentFoldersId = folders.map((folder) => folder.id);
+    let parentFolders: FolderEntity[] | undefined;
+    if (parentFoldersId) {
+      parentFolders = await this.folderService.find({
+        where: {
+          userId,
+          id: In(parentFoldersId),
+        },
+      });
+      if (
+        !(
+          Array.isArray(parentFolders) &&
+          parentFolders.length === parentFoldersId.length
+        )
+      ) {
+        throw new NotFoundException(
+          `Folders '${parentFoldersId.join(', ')}' is not exists`,
+        );
+      }
+    }
+
+    const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
+      this.folderService.update({ id, name, userId, parentFolderId }),
+    );
+    const data = await Promise.all(foldersPromise);
+
+    return {
+      status: Status.Success,
+      count: data.length,
+      data,
+    };
+  }
+
+  @Delete()
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'folders-delete',
+    summary: 'Удаление папок',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deleteFolders(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Body() { foldersId }: FoldersDeleteRequest,
+  ): Promise<SuccessResponse> {
+    const rootFolder = await this.folderService.rootFolder(userId);
+    if (foldersId.includes(rootFolder.id)) {
+      throw new BadRequestException('This is a root folder in a list');
+    }
+    const { affected } = await this.folderService.delete(userId, foldersId);
+    if (!affected) {
+      throw new NotFoundException('This folder is not exists');
+    }
+
+    return {
+      status: Status.Success,
     };
   }
 
@@ -219,84 +350,6 @@ export class FolderController {
     return {
       status: Status.Success,
       data,
-    };
-  }
-
-  @Patch()
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'folders-update',
-    summary: 'Изменение информации о папках',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: FolderGetResponse,
-  })
-  async updateFolders(
-    @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { folders }: FoldersUpdateRequest,
-  ): Promise<FoldersGetResponse> {
-    const parentFoldersId = folders.map((folder) => folder.id);
-    let parentFolders: FolderEntity[] | undefined;
-    if (parentFoldersId) {
-      parentFolders = await this.folderService.find({
-        where: {
-          userId,
-          id: In(parentFoldersId),
-        },
-      });
-      if (
-        !(
-          Array.isArray(parentFolders) &&
-          parentFolders.length === parentFoldersId.length
-        )
-      ) {
-        throw new NotFoundException(
-          `Folders '${parentFoldersId.join(', ')}' is not exists`,
-        );
-      }
-    }
-
-    const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
-      this.folderService.update({ id, name, userId, parentFolderId }),
-    );
-
-    const data = await Promise.all(foldersPromise);
-
-    return {
-      status: Status.Success,
-      count: data.length,
-      data,
-    };
-  }
-
-  @Delete()
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'folders-delete',
-    summary: 'Удаление папок',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: SuccessResponse,
-  })
-  async deleteFolders(
-    @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { foldersId }: FoldersDeleteRequest,
-  ): Promise<SuccessResponse> {
-    const rootFolder = await this.folderService.rootFolder(userId);
-    if (foldersId.includes(rootFolder.id)) {
-      throw new BadRequestException('This is a root folder in a list');
-    }
-    const { affected } = await this.folderService.delete(userId, foldersId);
-    if (!affected) {
-      throw new NotFoundException('This folder is not exists');
-    }
-
-    return {
-      status: Status.Success,
     };
   }
 
