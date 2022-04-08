@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.15.1",
+  "version": "2.15.2",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -47,8 +47,10 @@
     "**/**/inquirer": ">=8.2.2",
     "**/**/ky": ">=0.30.0",
     "**/**/ky-universal": ">=0.10.1",
+    "**/**/magic-string": ">=0.25.9",
     "**/**/multer": ">=1.4.4",
     "**/ky-universal/**/node-fetch": ">=3.2.3",
+    "**/**/node-gyp": ">=9.0.0",
     "**/**/npmlog": ">=6.0.1",
     "**/**/on-finished": ">=2.4.1",
     "**/**/readable-stream": ">=3.6.0",
@@ -78,7 +80,7 @@
     "@nestjs/swagger": "^5.2.1",
     "@nestjs/typeorm": "^8.0.3",
     "@nestjs/websockets": "^8.4.4",
-    "aws-sdk": "^2.1109.0",
+    "aws-sdk": "^2.1110.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "debug": "^4.3.4",
