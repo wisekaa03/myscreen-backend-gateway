@@ -342,6 +342,12 @@ export class FileService {
       .promise();
   }
 
+  async copy(userId: string, files: FileEntity[]): Promise<FileEntity[]> {
+    return this.fileRepository.manager.transaction(async (fileRepository) => {
+      throw new NotFoundException();
+    });
+  }
+
   async deletePrep(filesId: string[]): Promise<void> {
     const [editorFiles, playlistFiles] = await Promise.all([
       this.editorService.find({

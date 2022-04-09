@@ -1119,7 +1119,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/FilesUpdateRequest"
+              $ref: "#/components/schemas/FilesCopyRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -1424,7 +1424,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/FoldersUpdateRequest"
+              $ref: "#/components/schemas/FoldersCopyRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -1975,7 +1975,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.15.3
+  version: 2.15.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3712,6 +3712,25 @@ components:
       required:
         - status
         - data
+    FileCopyRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+      required:
+        - id
+    FilesCopyRequest:
+      type: object
+      properties:
+        files:
+          description: Файлы
+          type: array
+          items:
+            $ref: "#/components/schemas/FileCopyRequest"
+      required:
+        - files
     FileUpdateRequest:
       type: object
       properties:
@@ -3835,6 +3854,25 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FolderRequest"
+      required:
+        - folders
+    FolderCopyRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+      required:
+        - id
+    FoldersCopyRequest:
+      type: object
+      properties:
+        folders:
+          description: Папки
+          type: array
+          items:
+            $ref: "#/components/schemas/FolderCopyRequest"
       required:
         - folders
     FoldersDeleteRequest:

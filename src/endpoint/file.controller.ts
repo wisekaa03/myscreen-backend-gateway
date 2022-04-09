@@ -4,7 +4,7 @@ import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { FindOptionsWhere } from 'typeorm';
+import { FindOptionsWhere, In } from 'typeorm';
 import {
   BadRequestException,
   Body,
@@ -15,7 +15,6 @@ import {
   HttpException,
   Logger,
   NotFoundException,
-  NotImplementedException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -58,6 +57,7 @@ import {
   ConflictError,
   FilesDeleteRequest,
   FilesUpdateRequest,
+  FilesCopyRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -262,31 +262,17 @@ export class FileController {
   })
   async copyFiles(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { files }: FilesUpdateRequest,
+    @Body() { files }: FilesCopyRequest,
   ): Promise<FilesGetResponse> {
-    if (process.env.NODE_ENV === '') {
-      throw new NotImplementedException();
+    const filesIds = files.map((file) => file.id);
+    const filesCopy = await this.fileService.find({
+      where: { userId, id: In(filesIds) },
+    });
+    if (filesCopy.length !== files.length) {
+      throw new BadRequestError();
     }
 
-    const filesPromise = files.map(async (file) => {
-      const fileDB = await this.fileService.findOne({
-        where: {
-          userId,
-          id: file.id,
-        },
-      });
-
-      if (!fileDB) {
-        throw new NotFoundException(`Files '${file.id}' is not exists`);
-      }
-
-      return this.fileService.update(fileDB, {
-        ...fileDB,
-        folder: undefined,
-        ...file,
-      });
-    });
-    const data = await Promise.all(filesPromise);
+    const data = await this.fileService.copy(userId, filesCopy);
 
     return {
       status: Status.Success,

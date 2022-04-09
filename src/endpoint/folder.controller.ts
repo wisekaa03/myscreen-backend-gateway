@@ -16,7 +16,6 @@ import {
   Patch,
   HttpCode,
   Put,
-  NotImplementedException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -41,6 +40,7 @@ import {
   FolderResponse,
   FoldersDeleteRequest,
   FoldersUpdateRequest,
+  FoldersCopyRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -215,37 +215,17 @@ export class FolderController {
   })
   async copyFolders(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { folders }: FoldersUpdateRequest,
+    @Body() { folders }: FoldersCopyRequest,
   ): Promise<FoldersGetResponse> {
-    if (process.env.NODE_ENV === '') {
-      throw new NotImplementedException();
+    const foldersIds = folders.map((folder) => folder.id);
+    const foldersCopy = await this.folderService.find({
+      where: { userId, id: In(foldersIds) },
+    });
+    if (foldersCopy.length !== folders.length) {
+      throw new BadRequestError();
     }
 
-    const parentFoldersId = folders.map((folder) => folder.id);
-    let parentFolders: FolderEntity[] | undefined;
-    if (parentFoldersId) {
-      parentFolders = await this.folderService.find({
-        where: {
-          userId,
-          id: In(parentFoldersId),
-        },
-      });
-      if (
-        !(
-          Array.isArray(parentFolders) &&
-          parentFolders.length === parentFoldersId.length
-        )
-      ) {
-        throw new NotFoundException(
-          `Folders '${parentFoldersId.join(', ')}' is not exists`,
-        );
-      }
-    }
-
-    const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
-      this.folderService.update({ id, name, userId, parentFolderId }),
-    );
-    const data = await Promise.all(foldersPromise);
+    const data = await this.folderService.copy(userId, foldersCopy);
 
     return {
       status: Status.Success,

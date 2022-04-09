@@ -1,4 +1,10 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  NotImplementedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
@@ -72,6 +78,14 @@ export class FolderService {
 
   async update(folder: Partial<FolderEntity>): Promise<FolderEntity> {
     return this.folderRepository.save(this.folderRepository.create(folder));
+  }
+
+  async copy(userId: string, folders: FolderEntity[]): Promise<FolderEntity[]> {
+    return this.folderRepository.manager.transaction(
+      async (folderRepository) => {
+        throw new NotImplementedException();
+      },
+    );
   }
 
   async delete(userId: string, foldersId: string[]): Promise<DeleteResult> {
