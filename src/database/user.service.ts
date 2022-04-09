@@ -96,7 +96,7 @@ export class UserService {
    * @param {Partial<UserEntity>} create
    * @returns {UserEntity} Пользователь
    */
-  async create(create: Partial<UserEntity>): Promise<UserEntity> {
+  async register(create: Partial<UserEntity>): Promise<UserEntity> {
     const { email, password, role } = create;
     if (!email) {
       throw new BadRequestException();
@@ -107,6 +107,8 @@ export class UserService {
     if (!role) {
       throw new BadRequestException();
     }
+
+    // TODO: verify email domain
 
     const existingUser = await this.userRepository.findOne({
       where: {

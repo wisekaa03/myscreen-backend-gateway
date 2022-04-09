@@ -188,7 +188,7 @@ export class AuthController {
     type: UserGetResponse,
   })
   async register(@Body() body: RegisterRequest): Promise<UserGetResponse> {
-    const data = userEntityToUser(await this.userService.create(body));
+    const data = userEntityToUser(await this.userService.register(body));
 
     return {
       status: Status.Success,

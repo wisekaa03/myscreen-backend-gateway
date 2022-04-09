@@ -1741,10 +1741,10 @@ atomic-sleep@^1.0.0:
   resolved "https://registry.yarnpkg.com/atomic-sleep/-/atomic-sleep-1.0.0.tgz#eb85b77a601fc932cfe432c5acd364a9e2c9075b"
   integrity sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==
 
-aws-sdk@^2.1110.0:
-  version "2.1110.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1110.0.tgz#bb4fe12a7768957b8df275bcd5e4188f5b5a9393"
-  integrity sha512-qxHqzE2ikGNRzhajcmWIBuptML3LBwz9TMnS0jLQjXOP54fZYW6EEKy2Dy7MKjHKeo8QQy/EWtDdWfH9Fu5UIA==
+aws-sdk@^2.1111.0:
+  version "2.1111.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1111.0.tgz#02b1e5c530ef8140235ee7c48c710bb2dbd7dc84"
+  integrity sha512-WRyNcCckzmu1djTAWfR2r+BuI/PbuLrhG3oa+oH39v4NZ4EecYWFL1CoCPlC2kRUML4maSba5T4zlxjcNl7ELQ==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -2048,9 +2048,9 @@ camelcase@^6.2.0:
   integrity sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==
 
 caniuse-lite@^1.0.30001317:
-  version "1.0.30001325"
-  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001325.tgz#2b4ad19b77aa36f61f2eaf72e636d7481d55e606"
-  integrity sha512-sB1bZHjseSjDtijV1Hb7PB2Zd58Kyx+n/9EotvZ4Qcz2K3d0lWB8dB4nb8wN/TsOGFq3UuAm0zQZNQ4SoR7TrQ==
+  version "1.0.30001327"
+  resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001327.tgz#c1546d7d7bb66506f0ccdad6a7d07fc6d668c858"
+  integrity sha512-1/Cg4jlD9qjZzhbzkzEaAC2JHsP0WrOc8Rd/3a3LuajGzGWR/hD7TVyvq99VqmTy99eVh8Zkmdq213OgvgXx7w==
 
 canvas@^2.6.1, canvas@^2.8.0:
   version "2.9.1"
@@ -2963,10 +2963,10 @@ eslint-visitor-keys@^3.0.0, eslint-visitor-keys@^3.3.0:
   resolved "https://registry.yarnpkg.com/eslint-visitor-keys/-/eslint-visitor-keys-3.3.0.tgz#f6480fa6b1f30efe2d1968aa8ac745b862469826"
   integrity sha512-mQ+suqKJVyeuwGYHAdjMFqjCyfl8+Ldnxuyp3ldiMBFKkvytrXUZWaiPCEav8qDHKty44bD+qV1IP4T+w+xXRA==
 
-eslint@^8.12.0:
-  version "8.12.0"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-8.12.0.tgz#c7a5bd1cfa09079aae64c9076c07eada66a46e8e"
-  integrity sha512-it1oBL9alZg1S8UycLm5YDMAkIhtH6FtAzuZs6YvoGVldWjbS08BkAdb/ymP9LlAyq8koANu32U7Ib/w+UNh8Q==
+eslint@^8.13.0:
+  version "8.13.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-8.13.0.tgz#6fcea43b6811e655410f5626cfcf328016badcd7"
+  integrity sha512-D+Xei61eInqauAyTJ6C0q6x9mx7kTUC1KZ0m0LSEexR0V+e94K12LmWX076ZIsldwfQ2RONdaJe0re0TRGQbRQ==
   dependencies:
     "@eslint/eslintrc" "^1.2.1"
     "@humanwhocodes/config-array" "^0.9.2"
@@ -3911,10 +3911,10 @@ invariant@2.2.4:
   dependencies:
     loose-envify "^1.0.0"
 
-ioredis@^5.0.3:
-  version "5.0.3"
-  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-5.0.3.tgz#5a742a03128a9924f98b957c8721720b4165b3ab"
-  integrity sha512-hKxywVypoGGUJDyfnMufO0VNkuIaQufo2/PJ5SOYBKWgf4+gCnZEPaBPle615k08euY9/B9DKytVtwZROF7HaA==
+ioredis@^5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-5.0.4.tgz#0d4abfd818adfc5ef5029fddac4b8f503a1433b7"
+  integrity sha512-qFJw3MnPNsJF1lcIOP3vztbsasOXK3nDdNAgjQj7t7/Bn/w10PGchTOpqylQNxjzPbLoYDu34LjeJtSWiKBntQ==
   dependencies:
     "@ioredis/commands" "^1.1.1"
     cluster-key-slot "^1.1.0"
@@ -4940,10 +4940,10 @@ magic-string@0.25.7, magic-string@>=0.25.9, magic-string@^0.25.7:
   dependencies:
     sourcemap-codec "^1.4.8"
 
-mailgun.js@^5.0.5:
-  version "5.0.5"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-5.0.5.tgz#a17afab0622dcc74da30fa60fdb639452c0919c8"
-  integrity sha512-UkPLhLtE5vYiryKbOofkYD7MtqgQCfsTAbTNpqE/PJ0Mz88rIYj05wXvxtybREhMMD0t6jf8bzJUuLD7kwmOUA==
+mailgun.js@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-5.1.0.tgz#9391f409c4022bb4a7c898db292c0ad4e515acaf"
+  integrity sha512-wRZn+vJSialIYGMFAV9OEMmN2WHecnkHYq7LEA60gVcP8DxJnTGn015/ooo/blEwULHq3QaeXl7Rv83nJ+PUrQ==
   dependencies:
     base-64 "^1.0.0"
     bluebird "^3.7.2"
@@ -5308,13 +5308,13 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.2.4.tgz#de0858a4bfd331910b4e3139f321118d5c803c09"
-  integrity sha512-WKnYbNg+naMB/uChd2b75CGJO/FS7xgA4krwpethxnLdxqpZrTtU0pyk0M8TT/s2511PN6A4f7aEppGz38q8FA==
+nestjs-mailgun@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.3.0.tgz#c75df5bd4abb7d4604a8c330319a8e9a617e7c61"
+  integrity sha512-QzU1FYrt9MNqkiQAJrO49aWPDU37UDOGDCzF1IJjI0RoU4K2iev//DmIulY7dCmN650SJwZidEIlvuhZCx2K1Q==
   dependencies:
     form-data "^4.0.0"
-    mailgun.js "^5.0.5"
+    mailgun.js "^5.1.0"
     reflect-metadata "^0.1.13"
     rxjs "^7.5.5"
 
@@ -5870,11 +5870,12 @@ pino-std-serializers@>=5.2.0, pino-std-serializers@^4.0.0, pino-std-serializers@
   resolved "https://registry.yarnpkg.com/pino-std-serializers/-/pino-std-serializers-5.2.0.tgz#a94b02366dad92b3077aba263177497d3ca3bec3"
   integrity sha512-tnEZoW/OpiQoL0laBC0CWJ0HPeISW2lrjUK0twYjqdGnggM8ZYk1XG8ucvjMCV0R7kMxO7Z63a27UhpkQw7Rrg==
 
-pino@^7.5.0, pino@^7.9.2:
-  version "7.9.2"
-  resolved "https://registry.yarnpkg.com/pino/-/pino-7.9.2.tgz#0519ac79b9db17f0c63bb4267f7e8133f5c517ad"
-  integrity sha512-c8wmB2PuhdJurYPRl/eo3+PosHe7Ep6GZvBJFIrp9oV1YRZQ3qm3MujaEolaKUfwX8cDL96WKCWWMedB2drXqw==
+pino@^7.10.0, pino@^7.5.0:
+  version "7.10.0"
+  resolved "https://registry.yarnpkg.com/pino/-/pino-7.10.0.tgz#c621a3acf3b7aa50a6156c1b3989d1703666b2b1"
+  integrity sha512-T6R92jy/APDElEuOk0gqa4nds3ZgqFbHde2X0g8XorlyPlVGlr9T5KQphtp72a3ByKOdZMg/gM/0IprpGQfTWg==
   dependencies:
+    atomic-sleep "^1.0.0"
     fast-redact "^3.0.0"
     on-exit-leak-free "^0.2.0"
     pino-abstract-transport v0.5.0
@@ -5884,7 +5885,7 @@ pino@^7.5.0, pino@^7.9.2:
     real-require "^0.1.0"
     safe-stable-stringify "^2.1.0"
     sonic-boom "^2.2.1"
-    thread-stream "^0.15.0"
+    thread-stream "^0.15.1"
 
 pirates@^4.0.4:
   version "4.0.5"
@@ -6936,7 +6937,7 @@ thenify-all@^1.0.0:
   dependencies:
     any-promise "^1.0.0"
 
-thread-stream@^0.15.0:
+thread-stream@^0.15.1:
   version "0.15.1"
   resolved "https://registry.yarnpkg.com/thread-stream/-/thread-stream-0.15.1.tgz#5aba24a35aa5e9e4eb66173826443d7167b34b07"
   integrity sha512-SCnuIT27gc2h/F/RY2peuC7brgLy+1oXU+7yOIAITz1z5stDpXCF5rAoFcykjuK6ifbTlKAHL7Ccq8oc5Btv1w==
