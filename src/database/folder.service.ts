@@ -80,7 +80,11 @@ export class FolderService {
     return this.folderRepository.save(this.folderRepository.create(folder));
   }
 
-  async copy(userId: string, folders: FolderEntity[]): Promise<FolderEntity[]> {
+  async copy(
+    userId: string,
+    toFolder: string,
+    folders: FolderEntity[],
+  ): Promise<FolderEntity[]> {
     return this.folderRepository.manager.transaction(
       async (folderRepository) => {
         throw new NotImplementedException();

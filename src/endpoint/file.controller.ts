@@ -262,7 +262,7 @@ export class FileController {
   })
   async copyFiles(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { files }: FilesCopyRequest,
+    @Body() { toFolder, files }: FilesCopyRequest,
   ): Promise<FilesGetResponse> {
     const filesIds = files.map((file) => file.id);
     const filesCopy = await this.fileService.find({
@@ -272,7 +272,7 @@ export class FileController {
       throw new BadRequestError();
     }
 
-    const data = await this.fileService.copy(userId, filesCopy);
+    const data = await this.fileService.copy(userId, toFolder, filesCopy);
 
     return {
       status: Status.Success,

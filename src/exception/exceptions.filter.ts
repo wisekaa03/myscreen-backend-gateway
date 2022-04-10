@@ -11,6 +11,7 @@ import {
   NotFoundException,
   RequestTimeoutException,
   ConflictException,
+  NotImplementedException,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 
@@ -22,6 +23,7 @@ import {
   InternalServerError,
   NotFoundError,
   ConflictError,
+  NotImplementedError,
 } from '@/dto';
 
 @Catch()
@@ -57,6 +59,8 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         exceptionRule = new PreconditionFailedError(exception.message);
       } else if (exception instanceof InternalServerErrorException) {
         exceptionRule = new InternalServerError(exception.message);
+      } else if (exception instanceof NotImplementedException) {
+        exceptionRule = new NotImplementedError(exception.message);
       } else if (exception instanceof ConflictException) {
         exceptionRule = new ConflictError(
           exception.message,

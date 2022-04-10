@@ -12,6 +12,7 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  NotImplementedException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -342,9 +343,15 @@ export class FileService {
       .promise();
   }
 
-  async copy(userId: string, files: FileEntity[]): Promise<FileEntity[]> {
+  async copy(
+    userId: string,
+    toFolder: string,
+    originalFiles: FileEntity[],
+  ): Promise<FileEntity[]> {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
-      throw new NotFoundException();
+      // const filesPromises = originalFiles.map(() => {});
+
+      throw new NotImplementedException();
     });
   }
 

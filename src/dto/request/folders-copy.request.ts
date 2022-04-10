@@ -1,10 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { FolderCopyRequest } from './folder-copy.request';
 
 export class FoldersCopyRequest {
+  @ApiProperty({
+    description: 'Папка, куда копировать',
+    required: true,
+  })
+  @IsDefined()
+  @IsNotEmpty()
+  @IsUUID()
+  toFolder!: string;
+
   @ApiProperty({
     description: 'Папки',
     type: FolderCopyRequest,

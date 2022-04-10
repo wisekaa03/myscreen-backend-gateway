@@ -215,7 +215,7 @@ export class FolderController {
   })
   async copyFolders(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { folders }: FoldersCopyRequest,
+    @Body() { toFolder, folders }: FoldersCopyRequest,
   ): Promise<FoldersGetResponse> {
     const foldersIds = folders.map((folder) => folder.id);
     const foldersCopy = await this.folderService.find({
@@ -225,7 +225,7 @@ export class FolderController {
       throw new BadRequestError();
     }
 
-    const data = await this.folderService.copy(userId, foldersCopy);
+    const data = await this.folderService.copy(userId, toFolder, foldersCopy);
 
     return {
       status: Status.Success,

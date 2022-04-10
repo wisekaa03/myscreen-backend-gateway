@@ -1975,7 +1975,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.15.4
+  version: 2.15.5
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3724,12 +3724,16 @@ components:
     FilesCopyRequest:
       type: object
       properties:
+        toFolder:
+          type: string
+          description: Папка, куда копировать
         files:
           description: Файлы
           type: array
           items:
             $ref: "#/components/schemas/FileCopyRequest"
       required:
+        - toFolder
         - files
     FileUpdateRequest:
       type: object
@@ -3868,12 +3872,16 @@ components:
     FoldersCopyRequest:
       type: object
       properties:
+        toFolder:
+          type: string
+          description: Папка, куда копировать
         folders:
           description: Папки
           type: array
           items:
             $ref: "#/components/schemas/FolderCopyRequest"
       required:
+        - toFolder
         - folders
     FoldersDeleteRequest:
       type: object
