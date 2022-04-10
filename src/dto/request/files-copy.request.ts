@@ -7,6 +7,8 @@ import { FileCopyRequest } from './file-copy.request';
 export class FilesCopyRequest {
   @ApiProperty({
     description: 'Папка, куда копировать',
+    type: String,
+    format: 'uuid',
     required: true,
   })
   @IsDefined()

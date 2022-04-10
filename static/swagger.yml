@@ -1975,7 +1975,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.15.5
+  version: 2.15.6
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3727,6 +3727,7 @@ components:
         toFolder:
           type: string
           description: Папка, куда копировать
+          format: uuid
         files:
           description: Файлы
           type: array
@@ -3875,6 +3876,7 @@ components:
         toFolder:
           type: string
           description: Папка, куда копировать
+          format: uuid
         folders:
           description: Папки
           type: array
