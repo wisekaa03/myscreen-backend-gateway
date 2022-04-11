@@ -1975,7 +1975,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.15.7
+  version: 2.15.8
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2508,15 +2508,19 @@ components:
     MonitorCategory:
       type: string
       enum:
-        - GAS_STATION
+        - FOOD
+        - CAFES_AND_RESTAURANTS
+        - PHARMACY
+        - ATM
+        - HOTEL
+        - AUTO_REPAIR
+        - CAR_WASHING
+        - HOSPITALS
+        - CINEMAS
         - MALL
-        - COMMERCIAL_CENTRE
-        - MUNICIPAL_INSTITUTION
-        - EDUCATIONAL_INSTITUTION
-        - RETAIL_SHOP
-        - STREET_MONITOR
-        - SHOWCASE
-        - STELLA
+        - SAUNAS
+        - BEAUTY_SALONS
+        - GAS_STATION
     MonitorPrice:
       type: object
       properties:
