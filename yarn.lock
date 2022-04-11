@@ -4811,9 +4811,9 @@ levn@~0.3.0:
     type-check "~0.3.2"
 
 libphonenumber-js@^1.9.43:
-  version "1.9.50"
-  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.9.50.tgz#f5028a2c4cc47a69d69a0de3629afad97a613712"
-  integrity sha512-cCzQPChw2XbordcO2LKiw5Htx5leHVfFk/EXkxNHqJfFo7Fndcb1kF5wPJpc316vCJhhikedYnVysMh3Sc7Ocw==
+  version "1.9.51"
+  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.9.51.tgz#c2529e391bdf68d1e60e283419f58c9ad4de4185"
+  integrity sha512-MGidRDs7s2nUybwrB/UjZT4nPXZPYQZQTu/sF3/O2v/DocmD8N6G+a9kwDt2qm7DaOo35XRt7hAIbYL+ml942Q==
 
 libpq@^1.7.0:
   version "1.8.9"
@@ -4940,10 +4940,10 @@ magic-string@0.25.7, magic-string@>=0.25.9, magic-string@^0.25.7:
   dependencies:
     sourcemap-codec "^1.4.8"
 
-mailgun.js@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-5.1.0.tgz#9391f409c4022bb4a7c898db292c0ad4e515acaf"
-  integrity sha512-wRZn+vJSialIYGMFAV9OEMmN2WHecnkHYq7LEA60gVcP8DxJnTGn015/ooo/blEwULHq3QaeXl7Rv83nJ+PUrQ==
+mailgun.js@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-5.2.0.tgz#2ce17ff7f451516ca2b68ecce29023d8baf07cbf"
+  integrity sha512-RJmExa2AogohNvask1TYZ5+E+ro4Owadlh3BZKT2hb9XMaMOxh2m03RUM/r3TIrfN03gttqht9kD3J6vcv3IQQ==
   dependencies:
     base-64 "^1.0.0"
     bluebird "^3.7.2"
@@ -5308,13 +5308,13 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.3.0.tgz#c75df5bd4abb7d4604a8c330319a8e9a617e7c61"
-  integrity sha512-QzU1FYrt9MNqkiQAJrO49aWPDU37UDOGDCzF1IJjI0RoU4K2iev//DmIulY7dCmN650SJwZidEIlvuhZCx2K1Q==
+nestjs-mailgun@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.4.0.tgz#d55d5d9d280254021cce06cb956d224da666b07d"
+  integrity sha512-c1eEhDrMDBN3DSpoP1CCHhTCnRxuz3WvRm/Dn3iq5WmRyvOihANoILiQO4U5jlFBti1r8cHN7PhcpiVNbJzHvQ==
   dependencies:
     form-data "^4.0.0"
-    mailgun.js "^5.1.0"
+    mailgun.js "^5.2.0"
     reflect-metadata "^0.1.13"
     rxjs "^7.5.5"
 
