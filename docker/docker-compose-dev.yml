@@ -10,7 +10,7 @@ volumes:
 
 services:
   postgres:
-    image: postgis/postgis:14-master
+    image: postgis/postgis:14-3.2-alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -28,7 +28,7 @@ services:
       - "5432:5432"
 
   pgadmin4:
-    image: dpage/pgadmin4:6.7
+    image: dpage/pgadmin4:6.8
     restart: always
     environment:
       PGADMIN_LISTEN_PORT: 8080
