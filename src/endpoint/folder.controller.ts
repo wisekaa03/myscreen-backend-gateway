@@ -218,14 +218,38 @@ export class FolderController {
     @Body() { toFolder, folders }: FoldersCopyRequest,
   ): Promise<FoldersGetResponse> {
     const foldersIds = folders.map((folder) => folder.id);
+    const toFolderEntity = await this.folderService.findOne({
+      where: { userId, id: toFolder },
+    });
+    if (!toFolderEntity) {
+      throw new BadRequestError(`Folder ${toFolder} is not exist`);
+    }
     const foldersCopy = await this.folderService.find({
       where: { userId, id: In(foldersIds) },
+      relations: ['files'],
     });
     if (foldersCopy.length !== folders.length) {
-      throw new BadRequestError();
+      throw new BadRequestError('The number of folders does not match');
+    }
+    if (
+      foldersCopy.some((folderCopy) => folderCopy.parentFolderId === toFolder)
+    ) {
+      throw new BadRequestError('Copying to the same directory');
+    }
+    if (
+      foldersCopy.some(
+        (folderCopy) =>
+          folderCopy.parentFolderId !== foldersCopy[0].parentFolderId,
+      )
+    ) {
+      throw new BadRequestError('Copying multiple sources into one');
     }
 
-    const data = await this.folderService.copy(userId, toFolder, foldersCopy);
+    const data = await this.folderService.copy(
+      userId,
+      toFolderEntity,
+      foldersCopy,
+    );
 
     return {
       status: Status.Success,

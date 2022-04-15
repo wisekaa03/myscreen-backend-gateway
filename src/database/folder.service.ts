@@ -82,12 +82,33 @@ export class FolderService {
 
   async copy(
     userId: string,
-    toFolder: string,
-    folders: FolderEntity[],
+    toFolder: FolderEntity,
+    originalFolders: FolderEntity[],
   ): Promise<FolderEntity[]> {
     return this.folderRepository.manager.transaction(
       async (folderRepository) => {
-        throw new NotImplementedException();
+        const foldersPromise = originalFolders.map(async (folder) => {
+          const folderCopyCreate = {
+            ...folder,
+            userId,
+            parentFolder: toFolder,
+            parentFolderId: toFolder.id,
+            user: undefined,
+            files: undefined,
+            createdAt: undefined,
+            updatedAt: undefined,
+          };
+          const folderCopy = await folderRepository.save(
+            FolderEntity,
+            folderRepository.create(FolderEntity, folderCopyCreate),
+          );
+
+          await this.fileService.copy(userId, folderCopy, folder.files);
+
+          return folderCopy;
+        });
+
+        return Promise.all(foldersPromise);
       },
     );
   }
