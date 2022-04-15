@@ -343,15 +343,56 @@ export class FileService {
       .promise();
   }
 
+  /**
+   * Copy S3 object
+   * @param {FileEntity} {FileEntity} file
+   * @returns {} {PromiseResult<AWS.S3.CopyObjectOutput, AWS.AWSError>} S3 object copied
+   */
+  copyS3Object(
+    update: FolderEntity,
+    file: FileEntity,
+  ): Promise<PromiseResult<AWS.S3.CopyObjectOutput, AWS.AWSError>> {
+    const s3Name = getS3Name(file.name);
+    const Key = `${update.id}/${file.hash}-${s3Name}`;
+    const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
+
+    return this.s3Service
+      .copyObject({
+        Bucket: this.bucket,
+        Key,
+        CopySource: `${this.bucket}/${CopySource}`,
+        MetadataDirective: 'COPY',
+      })
+      .promise();
+  }
+
   async copy(
     userId: string,
-    toFolder: string,
+    toFolder: FolderEntity,
     originalFiles: FileEntity[],
   ): Promise<FileEntity[]> {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
-      // const filesPromises = originalFiles.map(() => {});
+      const filePromises = originalFiles.map(async (file) => {
+        await this.copyS3Object(toFolder, file);
+        const fileCopy = {
+          ...file,
+          userId,
+          folderId: toFolder.id,
+          folder: toFolder,
+          id: undefined,
+          preview: undefined,
+          playlists: undefined,
+          monitors: undefined,
+          createdAt: undefined,
+          updatedAt: undefined,
+        };
+        return fileRepository.save(
+          FileEntity,
+          fileRepository.create(FileEntity, fileCopy),
+        );
+      });
 
-      throw new NotImplementedException();
+      return Promise.all(filePromises);
     });
   }
 

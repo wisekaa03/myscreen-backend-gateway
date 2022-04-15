@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '@/guards';
 import { FileService } from '@/database/file.service';
 import { FileController } from './file.controller';
 import { MonitorService } from '@/database/monitor.service';
+import { FolderService } from '@/database/folder.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -31,6 +32,10 @@ describe(FileController.name, () => {
         },
         {
           provide: FileService,
+          useClass: mockRepository,
+        },
+        {
+          provide: FolderService,
           useClass: mockRepository,
         },
         {

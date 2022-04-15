@@ -66,6 +66,7 @@ import { FileService } from '@/database/file.service';
 import { UserRoleEnum, VideoType } from '@/enums';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorService } from '@/database/monitor.service';
+import { FolderService } from '@/database/folder.service';
 
 @ApiResponse({
   status: 400,
@@ -118,6 +119,7 @@ export class FileController {
   constructor(
     private readonly configService: ConfigService,
     private readonly fileService: FileService,
+    private readonly folderService: FolderService,
     private readonly monitorService: MonitorService,
   ) {}
 
@@ -271,8 +273,14 @@ export class FileController {
     if (filesCopy.length !== files.length) {
       throw new BadRequestError();
     }
+    const folder = await this.folderService.findOne({
+      where: { userId, id: toFolder },
+    });
+    if (!folder) {
+      throw new NotFoundException(`Folder '${toFolder}' is not exist`);
+    }
 
-    const data = await this.fileService.copy(userId, toFolder, filesCopy);
+    const data = await this.fileService.copy(userId, folder, filesCopy);
 
     return {
       status: Status.Success,
