@@ -361,19 +361,19 @@ export class FileService {
         Bucket: this.bucket,
         Key,
         CopySource: `${this.bucket}/${CopySource}`,
-        MetadataDirective: 'COPY',
+        MetadataDirective: 'REPLACE',
       })
       .promise();
   }
 
-  async copy(
+  copy(
     userId: string,
     toFolder: FolderEntity,
     originalFiles: FileEntity[],
   ): Promise<FileEntity[]> {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
       const filePromises = originalFiles.map(async (file) => {
-        await this.copyS3Object(toFolder, file);
+        /* await */ this.copyS3Object(toFolder, file);
         const fileCopy = {
           ...file,
           userId,

@@ -103,7 +103,7 @@ export class FolderService {
             folderRepository.create(FolderEntity, folderCopyCreate),
           );
 
-          await this.fileService.copy(userId, folderCopy, folder.files);
+          /* await */ this.fileService.copy(userId, folderCopy, folder.files);
 
           return folderCopy;
         });
