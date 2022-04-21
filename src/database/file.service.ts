@@ -12,7 +12,6 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  NotImplementedException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -45,7 +44,9 @@ import { PlaylistService } from './playlist.service';
 export class FileService {
   private logger = new Logger(FileService.name);
 
-  public bucket: string;
+  private bucket: string;
+
+  private region: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -63,6 +64,7 @@ export class FileService {
     @InjectRepository(FilePreviewEntity)
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
   ) {
+    this.region = configService.get<string>('AWS_REGION', 'ru-central1');
     this.bucket = configService.get<string>('AWS_BUCKET', 'myscreen-media');
   }
 
@@ -299,16 +301,20 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.HeadObjectOutput, AWS.AWSError>} S3 headers
    */
-  headS3Object(
+  async headS3Object(
     file: FileEntity,
   ): Promise<PromiseResult<AWS.S3.HeadObjectOutput, AWS.AWSError>> {
     const Key = `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`;
     return this.s3Service
       .headObject({
-        Bucket: this.bucket,
+        Bucket: `${this.bucket}`,
         Key,
       })
-      .promise();
+      .promise()
+      .then((fileUpdated) => {
+        this.logger.debug(`The file '${file.id}' head on S3 '${Key}'`);
+        return fileUpdated;
+      });
   }
 
   /**
@@ -331,7 +337,7 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.DeleteObjectOutput, AWS.AWSError>} S3 object
    */
-  deleteS3Object(
+  async deleteS3Object(
     file: FileEntity,
   ): Promise<PromiseResult<AWS.S3.DeleteObjectOutput, AWS.AWSError>> {
     const Key = `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`;
@@ -340,7 +346,15 @@ export class FileService {
         Bucket: this.bucket,
         Key,
       })
-      .promise();
+      .promise()
+      .then((value) => {
+        this.logger.debug(
+          `The file '${Key}' has been deleted on S3: ${
+            value.$response.data?.DeleteMarker || false
+          }`,
+        );
+        return value;
+      });
   }
 
   /**
@@ -348,7 +362,7 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.CopyObjectOutput, AWS.AWSError>} S3 object copied
    */
-  copyS3Object(
+  async copyS3Object(
     update: FolderEntity,
     file: FileEntity,
   ): Promise<PromiseResult<AWS.S3.CopyObjectOutput, AWS.AWSError>> {
@@ -360,10 +374,16 @@ export class FileService {
       .copyObject({
         Bucket: this.bucket,
         Key,
-        CopySource: `${this.bucket}/${CopySource}`,
+        CopySource,
         MetadataDirective: 'REPLACE',
       })
-      .promise();
+      .promise()
+      .then((fileUpdated) => {
+        this.logger.debug(
+          `The file has been copied on S3: from ${CopySource} to ${Key}`,
+        );
+        return fileUpdated;
+      });
   }
 
   async copy(
@@ -373,7 +393,9 @@ export class FileService {
   ): Promise<FileEntity[]> {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
       const filePromises = originalFiles.map(async (file) => {
-        /* await */ this.copyS3Object(toFolder, file);
+        await this.copyS3Object(toFolder, file).catch((error) => {
+          this.logger.error(`S3 Error copyObject: ${JSON.stringify(error)}`);
+        });
 
         const fileCopy = fileRepository.create(FileEntity, {
           ...file,
@@ -496,22 +518,14 @@ export class FileService {
     });
 
     /* await */ Promise.allSettled(
-      files.map((file) =>
+      files.map(async (file) =>
         this.headS3Object(file)
           .then(() =>
-            this.deleteS3Object(file)
-              .then((value) => {
-                this.logger.debug(
-                  `The file has been deleted: ${
-                    value.$response.data?.DeleteMarker || false
-                  }`,
-                );
-              })
-              .catch((error) => {
-                this.logger.error(
-                  `S3 Error deleteObject: ${JSON.stringify(error)}`,
-                );
-              }),
+            this.deleteS3Object(file).catch((error) => {
+              this.logger.error(
+                `S3 Error deleteObject: ${JSON.stringify(error)}`,
+              );
+            }),
           )
           .catch((error) => {
             this.logger.error(
