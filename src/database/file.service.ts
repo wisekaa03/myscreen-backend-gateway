@@ -366,7 +366,7 @@ export class FileService {
       .promise();
   }
 
-  copy(
+  async copy(
     userId: string,
     toFolder: FolderEntity,
     originalFiles: FileEntity[],
@@ -374,7 +374,8 @@ export class FileService {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
       const filePromises = originalFiles.map(async (file) => {
         /* await */ this.copyS3Object(toFolder, file);
-        const fileCopy = {
+
+        const fileCopy = fileRepository.create(FileEntity, {
           ...file,
           userId,
           folderId: toFolder.id,
@@ -385,11 +386,8 @@ export class FileService {
           monitors: undefined,
           createdAt: undefined,
           updatedAt: undefined,
-        };
-        return fileRepository.save(
-          FileEntity,
-          fileRepository.create(FileEntity, fileCopy),
-        );
+        });
+        return fileRepository.save(FileEntity, fileCopy);
       });
 
       return Promise.all(filePromises);

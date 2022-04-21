@@ -88,19 +88,20 @@ export class FolderService {
     return this.folderRepository.manager.transaction(
       async (folderRepository) => {
         const foldersPromise = originalFolders.map(async (folder) => {
-          const folderCopyCreate = {
+          const folderCopyCreate = folderRepository.create(FolderEntity, {
             ...folder,
             userId,
             parentFolder: toFolder,
             parentFolderId: toFolder.id,
+            id: undefined,
             user: undefined,
             files: undefined,
             createdAt: undefined,
             updatedAt: undefined,
-          };
+          });
           const folderCopy = await folderRepository.save(
             FolderEntity,
-            folderRepository.create(FolderEntity, folderCopyCreate),
+            folderCopyCreate,
           );
 
           /* await */ this.fileService.copy(userId, folderCopy, folder.files);
