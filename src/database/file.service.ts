@@ -140,7 +140,7 @@ export class FileService {
         const Key = `${update.folderId}/${file.hash}-${s3Name}`;
         const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
 
-        await this.s3Service
+        /* await */ this.s3Service
           .copyObject({
             Bucket: this.bucket,
             Key,
@@ -165,7 +165,7 @@ export class FileService {
         );
       }
 
-      return fileRepository.save(
+      return fileRepository.save<FileEntity>(
         fileRepository.create<FileEntity>(FileEntity, {
           ...update,
           id: file.id,
