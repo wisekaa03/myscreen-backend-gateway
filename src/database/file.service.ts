@@ -307,13 +307,15 @@ export class FileService {
     const Key = `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`;
     return this.s3Service
       .headObject({
-        Bucket: `${this.bucket}`,
+        Bucket: this.bucket,
         Key,
       })
       .promise()
-      .then((fileUpdated) => {
-        this.logger.debug(`The file '${file.id}' head on S3 '${Key}'`);
-        return fileUpdated;
+      .then((value) => {
+        this.logger.debug(
+          `The file '${file.id}' head on S3 '${Key}': ${JSON.stringify(value)}`,
+        );
+        return value;
       });
   }
 
@@ -350,7 +352,7 @@ export class FileService {
       .then((value) => {
         this.logger.debug(
           `The file '${Key}' has been deleted on S3: ${
-            value.$response.data?.DeleteMarker || false
+            value.$response.data?.DeleteMarker || true
           }`,
         );
         return value;
@@ -373,8 +375,8 @@ export class FileService {
     return this.s3Service
       .copyObject({
         Bucket: this.bucket,
+        CopySource: `/${this.bucket}/${CopySource}`,
         Key,
-        CopySource,
         MetadataDirective: 'REPLACE',
       })
       .promise()
@@ -518,21 +520,19 @@ export class FileService {
     });
 
     /* await */ Promise.allSettled(
-      files.map(async (file) =>
+      files.map(async (file) => {
         this.headS3Object(file)
-          .then(() =>
+          .then(() => {
             this.deleteS3Object(file).catch((error) => {
               this.logger.error(
                 `S3 Error deleteObject: ${JSON.stringify(error)}`,
               );
-            }),
-          )
+            });
+          })
           .catch((error) => {
-            this.logger.error(
-              `S3 Error headerObject: ${JSON.stringify(error)}`,
-            );
-          }),
-      ),
+            this.logger.error(`S3 Error headObject: ${JSON.stringify(error)}`);
+          });
+      }),
     );
 
     return this.fileRepository.delete({
