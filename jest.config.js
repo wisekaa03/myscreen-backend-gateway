@@ -2,7 +2,7 @@
 
 // const path = require('path');
 const { pathsToModuleNameMapper } = require('ts-jest');
-const { jsWithTs: tsjPreset } = require('ts-jest/presets');
+// const { jsWithTs: tsjPreset } = require('ts-jest/presets');
 // In the following statement, replace `./tsconfig` with the path to your `tsconfig` file
 // which contains the path mapping (ie the `compilerOptions.paths` option):
 const { compilerOptions } = require('./tsconfig');
@@ -15,12 +15,7 @@ const localPathMapper = {
   // '\\.(jpg|ico|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|css|scss|sass|less)(\\?.*)?$':
   //   '<rootDir>/apps/portal/__mocks__/fileMock.js',
 };
-// if (localPathMapper['^@public/(.*)$']) {
-//   delete localPathMapper['^@public/(.*)$'];
-// }
-// if (localPathMapper['^@images/(.*)$']) {
-//   delete localPathMapper['^@images/(.*)$'];
-// }
+// console.log(tsjPreset.transform);
 
 module.exports = {
   testTimeout: 180000,
@@ -40,7 +35,7 @@ module.exports = {
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: localPathMapper,
   transform: {
-    ...tsjPreset.transform,
+    '^.+\\.[tj]sx?$': 'ts-jest/legacy',
     // '.+\\.(css|styl|less|sass|scss|png|jpg|ttf|woff|woff2)(\\?.*)?$':
     //   'jest-transform-stub',
     // '^.+\\.svg$': 'jest-svg-transformer',
