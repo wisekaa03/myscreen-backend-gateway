@@ -170,7 +170,7 @@ export class MonitorController {
 
     const data = await this.monitorService
       .update(userId, monitor)
-      .catch((error: TypeORMError) => {
+      .catch((/* error: TypeORMError */) => {
         throw new BadRequestException(
           `Монитор '${monitor.name}' уже существует`,
         );

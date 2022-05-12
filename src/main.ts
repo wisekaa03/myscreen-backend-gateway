@@ -83,9 +83,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .addTag('editor', 'Редакторы')
     .addTag('order', 'Заказы')
     .addTag('payment', 'Оплата')
-
-    // .addTag('uptime', 'Путь для проверки аптайм мониторов')
-    // .addTag('log', 'Путь для манипуляция с логами')
+    .addTag('statistics', 'Cтатистика')
 
     .build();
 

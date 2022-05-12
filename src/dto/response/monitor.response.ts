@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Point } from 'geojson';
+// import { Point } from 'geojson';
 
 import { MonitorEntity } from '@/database/monitor.entity';
 import { FileEntity } from '@/database/file.entity';
