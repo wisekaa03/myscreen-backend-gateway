@@ -299,4 +299,12 @@ export class WSGateway
         this.logger.error(error);
       });
   }
+
+  statistics(userId: string): number {
+    const clients = [...this.clients.values()];
+    return clients.reduce(
+      (accValue, value) => (userId === value.userId ? accValue + 1 : accValue),
+      0,
+    );
+  }
 }

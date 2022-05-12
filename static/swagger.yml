@@ -1972,10 +1972,62 @@ paths:
         "503": *a51
       tags: *a52
       security: *a53
+  /api/v2/statistics:
+    get:
+      operationId: statistics
+      summary: Получение статистики
+      parameters: []
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StatisticsResponse"
+        "400":
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: Ошибка медиа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "503":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags:
+        - statistics
+      security:
+        - bearer: []
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.15.23
+  version: 2.16.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2190,6 +2242,10 @@ components:
           type: string
           description: Компания
           example: ACME corporation
+        storageSpace:
+          type: number
+          description: Дисковое пространство
+          example: 20000000
         role:
           description: Роль пользователя
           example: advertiser
@@ -3963,6 +4019,10 @@ components:
           type: string
           description: Компания
           example: ACME corporation
+        storageSpace:
+          type: number
+          description: Дисковое пространство
+          example: 20000000
         role:
           description: Роль пользователя
           example: advertiser
@@ -4248,6 +4308,53 @@ components:
           items:
             type: string
             format: uuid
+    StatisticsPlaylistResponse:
+      type: object
+      properties:
+        added:
+          type: number
+          description: Добавленные
+        played:
+          type: number
+          description: Запущенные
+      required:
+        - added
+        - played
+    StorageSpaceResponse:
+      type: object
+      properties:
+        used:
+          type: number
+          description: Добавленные медиа
+        unused:
+          type: number
+          description: Максимальное место
+      required:
+        - used
+        - unused
+    StatisticsResponse:
+      type: object
+      properties:
+        status:
+          description: Статус операции
+          example: success
+          $ref: "#/components/schemas/Status"
+        countDevices:
+          type: number
+          description: Количество устройств
+        playlists:
+          description: Плейлисты
+          allOf:
+            - $ref: "#/components/schemas/StatisticsPlaylistResponse"
+        storageSpace:
+          description: Дисковое пространство
+          allOf:
+            - $ref: "#/components/schemas/StorageSpaceResponse"
+      required:
+        - status
+        - countDevices
+        - playlists
+        - storageSpace
 externalDocs:
   description: MyScreen backend API
   url: https://api.myscreen.ru

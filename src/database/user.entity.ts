@@ -11,6 +11,7 @@ import {
   IsPhoneNumber,
   IsDate,
   IsDefined,
+  IsNumber,
 } from 'class-validator';
 import {
   Column,
@@ -111,6 +112,15 @@ export class UserEntity {
   })
   @IsString()
   company?: string;
+
+  @Column({ type: 'bigint', default: 20000000000 })
+  @ApiProperty({
+    description: 'Дисковое пространство',
+    example: 20000000,
+    required: false,
+  })
+  @IsNumber()
+  storageSpace?: number;
 
   @Column({
     type: 'enum',
