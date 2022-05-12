@@ -100,7 +100,7 @@ export class WSGateway
           if (valueUpdated?.roles?.includes(UserRoleEnum.Monitor)) {
             const monitor = await this.monitorService.findOne({
               where: { id: valueUpdated.userId },
-              relations: [],
+              relations: ['playlist'],
             });
             if (monitor) {
               /* await */ this.monitorService
