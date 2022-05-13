@@ -26,14 +26,11 @@ import {
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status, UserRoleEnum } from '@/enums';
-import {
-  StatisticsPlaylistResponse,
-  StatisticsResponse,
-  StorageSpaceResponse,
-} from '@/dto/response/statistics.response';
+import { StatisticsResponse } from '@/dto/response/statistics.response';
 import { UserService } from '@/database/user.service';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { PlaylistService } from '@/database/playlist.service';
+import { MonitorService } from '@/database/monitor.service';
 
 @ApiResponse({
   status: 400,
@@ -79,6 +76,7 @@ export class StatisticsController {
 
   constructor(
     private readonly userService: UserService,
+    private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
@@ -98,24 +96,25 @@ export class StatisticsController {
   async getPlaylists(
     @Req() { user: { id: userId } }: ExpressRequest,
   ): Promise<StatisticsResponse> {
-    const countDevices = this.wsGateway.statistics(userId);
-
-    const playlists: StatisticsPlaylistResponse = {
-      added: 0,
-      played: 0,
-    };
-
-    const data = await this.userService.findById(userId);
-    const storageSpace: StorageSpaceResponse = {
-      used: data?.countUsedSpace ?? 0,
-      unused: data?.storageSpace ?? 0,
-    };
+    const [[, added], [, played], user] = await Promise.all([
+      this.playlistService.findAndCount({
+        where: { userId },
+        relations: [],
+      }),
+      this.monitorService.findAndCount({
+        where: { userId, playlistPlayed: true },
+      }),
+      this.userService.findById(userId),
+    ]);
 
     return {
       status: Status.Success,
-      countDevices,
-      playlists,
-      storageSpace,
+      countDevices: this.wsGateway.statistics(),
+      playlists: { added, played },
+      storageSpace: {
+        used: user?.countUsedSpace ?? 0,
+        unused: user?.storageSpace ?? 0,
+      },
     };
   }
 }

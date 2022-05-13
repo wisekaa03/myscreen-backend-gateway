@@ -229,11 +229,12 @@ export class WSGateway
         } else {
           dataObject = data;
         }
+        // { "event": "monitor", "data": "true" }
         // записываем в базу данных
         monitor = await this.monitorService.update(
           monitor.userId,
           Object.assign(monitor, {
-            playlistPlayed: dataObject.playlistPlayed,
+            playlistPlayed: dataObject?.playlistPlayed,
           }),
         );
         // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
@@ -300,11 +301,9 @@ export class WSGateway
       });
   }
 
-  statistics(userId: string): number {
-    const clients = [...this.clients.values()];
-    return clients.reduce(
-      (accValue, value) => (userId === value.userId ? accValue + 1 : accValue),
-      0,
-    );
+  statistics(): number {
+    return [...this.clients.values()].filter((value) =>
+      value.roles?.includes(UserRoleEnum.Monitor),
+    ).length;
   }
 }

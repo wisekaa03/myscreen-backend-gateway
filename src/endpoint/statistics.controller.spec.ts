@@ -5,6 +5,7 @@ import { StatisticsController } from './statistics.controller';
 import { PlaylistService } from '@/database/playlist.service';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
+import { MonitorService } from '@/database/monitor.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -27,6 +28,10 @@ describe(StatisticsController.name, () => {
       providers: [
         {
           provide: PlaylistService,
+          useClass: mockRepository,
+        },
+        {
+          provide: MonitorService,
           useClass: mockRepository,
         },
         {
