@@ -334,20 +334,28 @@ export class FileController {
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
-    const where: FindOptionsWhere<FileEntity> = {
-      id,
-    };
     let file: FileEntity | null = null;
     if (role.includes(UserRoleEnum.Monitor)) {
       const monitor = await this.monitorService.findOne({
         where: { id: userId },
+        relations: {
+          playlist: {
+            files: {
+              folder: true,
+            },
+          },
+        },
       });
-      if (monitor && monitor.playlist && monitor.playlist.files) {
+      if (monitor?.playlist?.files) {
         file = monitor.playlist.files.find((f) => f.id === id) ?? null;
       }
     } else {
-      where.userId = userId;
-      file = await this.fileService.findOne({ where });
+      file = await this.fileService.findOne({
+        where: { id, userId },
+        relations: {
+          folder: true,
+        },
+      });
     }
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);
