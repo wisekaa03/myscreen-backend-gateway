@@ -320,6 +320,50 @@ export class EditorService {
 
     const { keepSourceAudio, audioLayers, width, height, fps } = editor;
 
+    const clips = layers.map((layer) => {
+      const duration = this.calcDuration(layer);
+      if (layer.file.videoType === VideoType.Image) {
+        return {
+          duration,
+          layers: [
+            {
+              type: 'image',
+              resizeMode: 'contain',
+              zoomDirection: null,
+              path: layer.path,
+            } as editly.ImageLayer,
+          ],
+          transition: {
+            duration: 0,
+          },
+        };
+      }
+
+      return {
+        duration,
+        layers: [
+          {
+            type: 'video',
+            path: layer.path,
+            cutFrom: layer.cutFrom,
+            cutTo: layer.cutTo,
+            mixVolume: layer.mixVolume,
+          } as editly.VideoLayer,
+        ],
+        transition: {
+          duration: 0,
+        },
+      };
+    });
+
+    const audioTracks = audioLayers.map((layer) => ({
+      type: 'audio',
+      path: layer.path,
+      cutFrom: layer.cutFrom,
+      cutTo: layer.cutTo,
+      mixVolume: layer.mixVolume,
+    }));
+
     return [
       this.tempDirectory,
       {
@@ -327,48 +371,9 @@ export class EditorService {
         height,
         fps,
         keepSourceAudio,
+        clips,
         loopAudio: true,
-        clips: layers.map((layer) => {
-          const duration = this.calcDuration(layer);
-          if (layer.file.videoType === VideoType.Image) {
-            return {
-              duration,
-              layers: [
-                {
-                  type: 'image',
-                  resizeMode: 'contain',
-                  zoomDirection: null,
-                  path: layer.path,
-                },
-              ],
-              transition: {
-                duration: 0,
-              },
-            };
-          }
-          return {
-            duration,
-            layers: [
-              {
-                type: 'video',
-                path: layer.path,
-                cutFrom: layer.cutFrom,
-                cutTo: layer.cutTo,
-                mixVolume: layer.mixVolume,
-              },
-            ],
-            transition: {
-              duration: 0,
-            },
-          };
-        }),
-        audioTracks: audioLayers.map((layer) => ({
-          type: 'audio',
-          path: layer.path,
-          cutFrom: layer.cutFrom,
-          cutTo: layer.cutTo,
-          mixVolume: layer.mixVolume,
-        })),
+        audioTracks,
         outPath: path.join(this.tempDirectory, editor.id),
       },
     ];
@@ -545,49 +550,49 @@ export class EditorService {
           throw reason;
         });
 
-        let outPath: string | Error;
-        if (process.env.NODE_ENV !== 'production') {
-          await editly(editlyConfig);
-          outPath = editlyConfig.outPath;
-        } else {
-          outPath = await new Promise<string>((resolve, reject) => {
-            const childEditly = child.fork(
-              'node_modules/.bin/editly',
-              ['--json', editlyPath],
-              {
-                silent: true,
-              },
+        // let outPath: string | Error;
+        // if (process.env.NODE_ENV !== 'production') {
+        //   await editly(editlyConfig);
+        //   outPath = editlyConfig.outPath;
+        // } else {
+        const outPath = await new Promise<string>((resolve, reject) => {
+          const childEditly = child.fork(
+            'node_modules/.bin/editly',
+            ['--json', editlyPath],
+            {
+              silent: true,
+            },
+          );
+          childEditly.stdout?.on('data', async (message: Buffer) => {
+            const msg = message.toString();
+            this.logger.debug(
+              `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
+              'Editly',
             );
-            childEditly.stdout?.on('data', async (message: Buffer) => {
-              const msg = message.toString();
-              this.logger.debug(
-                `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
-                'Editly',
-              );
-              // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
-              const percent = msg.match(/(\d+%)/g);
-              if (Array.isArray(percent) && percent.length > 0) {
-                await this.editorRepository.update(renderEditor.id, {
-                  renderingPercent: parseInt(percent[percent.length - 1], 10),
-                });
-              }
-            });
-            childEditly.stderr?.on('data', (message: Buffer) => {
-              const msg = message.toString();
-              this.logger.debug(msg, undefined, 'Editly');
-            });
-            childEditly.on('error', (error: Error) => {
-              this.logger.error(error.message, error.stack, 'Editly');
-              reject(error);
-            });
-            childEditly.on(
-              'exit',
-              (/* code: number | null, signal: NodeJS.Signals | null */) => {
-                resolve(editlyConfig.outPath);
-              },
-            );
+            // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
+            const percent = msg.match(/(\d+%)/g);
+            if (Array.isArray(percent) && percent.length > 0) {
+              await this.editorRepository.update(renderEditor.id, {
+                renderingPercent: parseInt(percent[percent.length - 1], 10),
+              });
+            }
           });
-        }
+          childEditly.stderr?.on('data', (message: Buffer) => {
+            const msg = message.toString();
+            this.logger.debug(msg, undefined, 'Editly');
+          });
+          childEditly.on('error', (error: Error) => {
+            this.logger.error(error.message, error.stack, 'Editly');
+            reject(error);
+          });
+          childEditly.on(
+            'exit',
+            (/* code: number | null, signal: NodeJS.Signals | null */) => {
+              resolve(editlyConfig.outPath);
+            },
+          );
+        });
+        // }
 
         const { size } = await fs.stat(outPath);
 
