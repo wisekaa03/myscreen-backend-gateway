@@ -562,14 +562,6 @@ export class EditorController {
         userId,
         id,
       },
-      select: [
-        'id',
-        'renderingStatus',
-        'renderingPercent',
-        'renderingError',
-        'renderedFile',
-      ],
-      relations: ['renderedFile'],
     });
     if (!data) {
       throw new NotFoundException('Editor not found');
