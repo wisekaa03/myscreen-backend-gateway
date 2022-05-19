@@ -474,7 +474,21 @@ export class EditorService {
     rerender = false,
   ): Promise<EditorEntity | undefined> {
     const editor = await this.editorRepository.findOne({
-      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
+      relations: {
+        videoLayers: {
+          file: {
+            folder: true,
+          },
+        },
+        audioLayers: {
+          file: {
+            folder: true,
+          },
+        },
+        renderedFile: {
+          folder: true,
+        },
+      },
       where: {
         id,
       },
@@ -561,7 +575,7 @@ export class EditorService {
           childEditly.stdout?.on('data', (message: Buffer) => {
             const msg = message.toString();
             this.logger.debug(
-              `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
+              `Editly on '${renderEditor.id}' / '${renderEditor.name}': ${msg}`,
               'Editly',
             );
             // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
@@ -691,8 +705,8 @@ export class EditorService {
         // deleteLayer.concat(fs.unlink(outPath));
         // await Promise.allSettled(deleteLayer);
       })(editor).catch((error: any) => {
-        this.logger.error(error);
-        this.editorRepository.update(editor?.id, {
+        this.logger.error(error?.message, error?.stack, 'Editly');
+        this.editorRepository.update(editor.id, {
           renderingError: error?.message || error,
           renderingStatus: RenderingStatus.Error,
           renderingPercent: null,
@@ -708,7 +722,7 @@ export class EditorService {
       } else {
         renderingError = error as string;
       }
-      await this.editorRepository.update(editor.id, {
+      this.editorRepository.update(editor.id, {
         renderingStatus: RenderingStatus.Error,
         renderingError,
         renderingPercent: 0,
