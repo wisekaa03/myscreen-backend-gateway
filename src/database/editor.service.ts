@@ -550,12 +550,7 @@ export class EditorService {
           throw reason;
         });
 
-        // let outPath: string | Error;
-        // if (process.env.NODE_ENV !== 'production') {
-        //   await editly(editlyConfig);
-        //   outPath = editlyConfig.outPath;
-        // } else {
-        const outPath = await new Promise<string>((resolve, reject) => {
+        const outPath = await new Promise<string | Error>((resolve, reject) => {
           const childEditly = child.fork(
             'node_modules/.bin/editly',
             ['--json', editlyPath],
@@ -563,7 +558,7 @@ export class EditorService {
               silent: true,
             },
           );
-          childEditly.stdout?.on('data', async (message: Buffer) => {
+          childEditly.stdout?.on('data', (message: Buffer) => {
             const msg = message.toString();
             this.logger.debug(
               `Editly on '${renderEditor.id} / ${renderEditor.name}': ${msg}`,
@@ -572,9 +567,13 @@ export class EditorService {
             // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
             const percent = msg.match(/(\d+%)/g);
             if (Array.isArray(percent) && percent.length > 0) {
-              await this.editorRepository.update(renderEditor.id, {
-                renderingPercent: parseInt(percent[percent.length - 1], 10),
-              });
+              this.editorRepository
+                .update(renderEditor.id, {
+                  renderingPercent: parseInt(percent[percent.length - 1], 10),
+                })
+                .catch((error: any) => {
+                  this.logger.error(error?.message, error?.stack, 'Editly');
+                });
             }
           });
           childEditly.stderr?.on('data', (message: Buffer) => {
@@ -592,10 +591,11 @@ export class EditorService {
             },
           );
         });
-        // }
+        if (outPath instanceof Error) {
+          throw outPath;
+        }
 
         const { size } = await fs.stat(outPath);
-
         const folder = await this.folderService
           .rootFolder(userId)
           .then(async (rootFolder) => {
@@ -690,9 +690,9 @@ export class EditorService {
         // }
         // deleteLayer.concat(fs.unlink(outPath));
         // await Promise.allSettled(deleteLayer);
-      })(editor).catch((error) => {
+      })(editor).catch((error: any) => {
         this.logger.error(error);
-        this.editorRepository.update(editor.id, {
+        this.editorRepository.update(editor?.id, {
           renderingError: error?.message || error,
           renderingStatus: RenderingStatus.Error,
           renderingPercent: null,

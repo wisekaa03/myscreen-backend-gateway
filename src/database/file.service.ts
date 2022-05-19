@@ -419,23 +419,19 @@ export class FileService {
   }
 
   async deletePrep(filesId: string[]): Promise<void> {
-    const [editorFiles, playlistFiles] = await Promise.all([
+    const [videoFiles, audioFiles, playlistFiles] = await Promise.all([
       this.editorService.find({
         where: [
           {
             videoLayers: {
-              file: {
-                id: In(filesId),
-              },
+              file: { id: In(filesId) },
             },
           },
-          {
-            audioLayers: {
-              file: {
-                id: In(filesId),
-              },
-            },
-          },
+          // {
+          //   audioLayers: {
+          //     file: { id: In(filesId) },
+          //   },
+          // },
         ],
         select: {
           id: true,
@@ -446,6 +442,45 @@ export class FileService {
               id: true,
             },
           },
+          // audioLayers: {
+          //   id: true,
+          //   file: {
+          //     id: true,
+          //   },
+          // },
+        },
+        relations: {
+          videoLayers: {
+            file: true,
+          },
+          // audioLayers: {
+          //   file: true,
+          // },
+        },
+        loadEagerRelations: false,
+      }),
+      this.editorService.find({
+        where: [
+          // {
+          //   videoLayers: {
+          //     file: { id: In(filesId) },
+          //   },
+          // },
+          {
+            audioLayers: {
+              file: { id: In(filesId) },
+            },
+          },
+        ],
+        select: {
+          id: true,
+          name: true,
+          // videoLayers: {
+          //   id: true,
+          //   file: {
+          //     id: true,
+          //   },
+          // },
           audioLayers: {
             id: true,
             file: {
@@ -454,9 +489,9 @@ export class FileService {
           },
         },
         relations: {
-          videoLayers: {
-            file: true,
-          },
+          // videoLayers: {
+          //   file: true,
+          // },
           audioLayers: {
             file: true,
           },
@@ -478,18 +513,24 @@ export class FileService {
     ]);
 
     if (
-      (editorFiles && Array.isArray(editorFiles) && editorFiles.length > 0) ||
-      (playlistFiles &&
-        Array.isArray(playlistFiles) &&
-        playlistFiles.length > 0)
+      (Array.isArray(videoFiles) && videoFiles.length > 0) ||
+      (Array.isArray(audioFiles) && audioFiles.length > 0) ||
+      (Array.isArray(playlistFiles) && playlistFiles.length > 0)
     ) {
       const errorMsg = {} as {
-        editor: { id: string; name: string }[] | null;
+        video: { id: string; name: string }[] | null;
+        audio: { id: string; name: string }[] | null;
         playlist: { id: string; name: string }[] | null;
         monitor: { id: string; name: string }[] | null;
       };
-      if (Array.isArray(editorFiles) && editorFiles.length > 0) {
-        errorMsg.editor = editorFiles.map((editor) => ({
+      if (Array.isArray(videoFiles) && videoFiles.length > 0) {
+        errorMsg.video = videoFiles.map((editor) => ({
+          id: editor.id,
+          name: editor.name,
+        }));
+      }
+      if (Array.isArray(audioFiles) && audioFiles.length > 0) {
+        errorMsg.audio = audioFiles.map((editor) => ({
           id: editor.id,
           name: editor.name,
         }));

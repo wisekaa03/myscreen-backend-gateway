@@ -21,6 +21,7 @@ import {
   Req,
   Res,
   InternalServerErrorException,
+  NotAcceptableException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -574,7 +575,7 @@ export class EditorController {
       throw new NotFoundException('Editor not found');
     }
     if (data.renderingError) {
-      throw new InternalServerErrorException(data.renderingError);
+      throw new NotAcceptableException(data.renderingError);
     }
 
     return {
