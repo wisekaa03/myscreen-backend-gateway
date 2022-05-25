@@ -1493,13 +1493,6 @@ abbrev@1:
   resolved "https://registry.yarnpkg.com/abbrev/-/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"
   integrity sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==
 
-abort-controller@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/abort-controller/-/abort-controller-3.0.0.tgz#eaf54d53b62bae4138e809ca225c8439a6efb392"
-  integrity sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==
-  dependencies:
-    event-target-shim "^5.0.0"
-
 accepts@~1.3.8:
   version "1.3.8"
   resolved "https://registry.yarnpkg.com/accepts/-/accepts-1.3.8.tgz#0bf0be125b67014adcb0b0921e62db7bffe16b2e"
@@ -1804,7 +1797,7 @@ aws-sdk@^2.1142.0:
     uuid "3.3.2"
     xml2js "0.4.19"
 
-axios@0.27.2:
+axios@0.27.2, axios@^0.27.2:
   version "0.27.2"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.27.2.tgz#207658cc8621606e586c85db4b41a750e756d972"
   integrity sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==
@@ -1912,11 +1905,6 @@ bl@^4.0.3, bl@^4.1.0:
     buffer "^5.5.0"
     inherits "^2.0.4"
     readable-stream "^3.4.0"
-
-bluebird@^3.7.2:
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
-  integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
 
 body-parser@1.20.0, body-parser@>=1.20.0:
   version "1.20.0"
@@ -3101,11 +3089,6 @@ etag@~1.8.1:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/etag/-/etag-1.8.1.tgz#41ae2eeb65efa62268aebfea83ac7d79299b0887"
   integrity sha1-Qa4u62XvpiJorr/qg6x9eSmbCIc=
-
-event-target-shim@^5.0.0:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/event-target-shim/-/event-target-shim-5.0.1.tgz#5d4d3ebdf9583d63a5333ce2deb7480ab2b05789"
-  integrity sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==
 
 events@1.1.1:
   version "1.1.1"
@@ -4784,19 +4767,6 @@ kleur@^3.0.3:
   resolved "https://registry.yarnpkg.com/kleur/-/kleur-3.0.3.tgz#a79c9ecc86ee1ce3fa6206d1216c501f147fc07e"
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
-ky-universal@>=0.10.1, ky-universal@^0.8.2:
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/ky-universal/-/ky-universal-0.10.1.tgz#778881e098f6e3c52a87b382d9acca54d22bb0d3"
-  integrity sha512-r8909k+ELKZAxhVA5c440x22hqw5XcMRwLRbgpPQk4JHy3/ddJnvzcnSo5Ww3HdKdNeS3Y8dBgcIYyVahMa46g==
-  dependencies:
-    abort-controller "^3.0.0"
-    node-fetch "^3.2.2"
-
-ky@>=0.30.0, ky@^0.25.1:
-  version "0.30.0"
-  resolved "https://registry.yarnpkg.com/ky/-/ky-0.30.0.tgz#a3d293e4f6c4604a9a4694eceb6ce30e73d27d64"
-  integrity sha512-X/u76z4JtDVq10u1JA5UQfatPxgPaVDMYTrgHyiTpGN2z4TMEJkIHsoSBBSg9SWZEIXTKsi9kHgiQ9o3Y/4yog==
-
 leven@2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/leven/-/leven-2.1.0.tgz#c2e7a9f772094dee9d34202ae8acce4687875580"
@@ -4960,17 +4930,14 @@ magic-string@0.25.7, magic-string@>=0.26.2, magic-string@^0.25.7:
   dependencies:
     sourcemap-codec "^1.4.8"
 
-mailgun.js@^5.2.0:
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-5.2.2.tgz#3ac4fca01a1d14efc428ca85f9eedd527aa2041e"
-  integrity sha512-stnq7qJSwxpbHZFHoxw+IBRMm1A+pEwxCGdRZlyujdjIy7wENX+6XHbA8syfuSaWg/gklSGUBa3IMtfzxQ8ZwQ==
+mailgun.js@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-7.0.0.tgz#ed5a0d6b70843793aa4f7d421291c31ca9e17e38"
+  integrity sha512-mayM0EjGJS5s9MqxYZexMfJyNNK5m6jZ0lIPBbn+ypm0+otxK9mNNJ9lOU6HvDQs37fEp2jtZjRSy+5rX9Ypdw==
   dependencies:
+    axios "^0.27.2"
     base-64 "^1.0.0"
-    bluebird "^3.7.2"
-    ky "^0.25.1"
-    ky-universal "^0.8.2"
     url-join "^4.0.1"
-    web-streams-polyfill "^3.0.1"
     webpack-merge "^5.4.0"
 
 make-dir@^3.0.0, make-dir@^3.1.0:
@@ -5242,10 +5209,10 @@ ms@2.1.3, ms@^2.0.0, ms@^2.1.1, ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-multer-media@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.2.tgz#28408b8e0f8bf88018d470b8be976d94dafd004d"
-  integrity sha512-voGPEx+ar9REpyR1Koule2OY8OoOCfenwSVmxdk9nlek3eJfar1hBHpm6CgTcxfQykA7BX/1cnXGv3Rrf9sl7Q==
+multer-media@^3.1.3:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.3.tgz#33a40935002c5aec7f65eff83737d7441c3f3154"
+  integrity sha512-IPEFBKMq5tCMLHkN0Jb7TBvxgakoaUiWaSGfoSdpYeFRmPJGsBiJ75oFqeeKyJGQItl6OmiEQ0IbOZnpTsrQ6A==
   dependencies:
     ffmpeg-static "^5.0.0"
     media-probe "^1.0.1"
@@ -5335,13 +5302,14 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^2.4.0:
-  version "2.4.0"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-2.4.0.tgz#d55d5d9d280254021cce06cb956d224da666b07d"
-  integrity sha512-c1eEhDrMDBN3DSpoP1CCHhTCnRxuz3WvRm/Dn3iq5WmRyvOihANoILiQO4U5jlFBti1r8cHN7PhcpiVNbJzHvQ==
+nestjs-mailgun@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-3.0.1.tgz#9e8a855f4a2abcbaf61ed1df1f23a090e377f679"
+  integrity sha512-OzzOyM1Fb1DKU1cwkawO81BFoILM1d08R1Jo49n/zon02VORTyxnqynVhZWUHBuuZhjoXqxOXcKAgKWPxoxzVQ==
   dependencies:
     form-data "^4.0.0"
-    mailgun.js "^5.2.0"
+    mailgun.js "^7.0.0"
+    node-fetch "^3.2.4"
     reflect-metadata "^0.1.13"
     rxjs "^7.5.5"
 
@@ -5374,7 +5342,14 @@ node-emoji@1.11.0:
   dependencies:
     lodash "^4.17.21"
 
-node-fetch@>=3.2.4, node-fetch@^3.2.2, node-fetch@^3.2.4:
+node-fetch@^2.6.1, node-fetch@^2.6.7:
+  version "2.6.7"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
+  integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
+  dependencies:
+    whatwg-url "^5.0.0"
+
+node-fetch@^3.2.4:
   version "3.2.4"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-3.2.4.tgz#3fbca2d8838111048232de54cb532bd3cf134947"
   integrity sha512-WvYJRN7mMyOLurFR2YpysQGuwYrJN+qrrpHjJDuKMcSPdfFccRUla/kng2mz6HWSBxJcqPbvatS6Gb4RhOzCJw==
@@ -5382,13 +5357,6 @@ node-fetch@>=3.2.4, node-fetch@^3.2.2, node-fetch@^3.2.4:
     data-uri-to-buffer "^4.0.0"
     fetch-blob "^3.1.4"
     formdata-polyfill "^4.0.10"
-
-node-fetch@^2.6.1, node-fetch@^2.6.7:
-  version "2.6.7"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
-  integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
-  dependencies:
-    whatwg-url "^5.0.0"
 
 node-gyp@>=9.0.0, node-gyp@^8.4.1:
   version "9.0.0"
@@ -7413,7 +7381,7 @@ weakmap-shim@^1.1.0:
   resolved "https://registry.yarnpkg.com/weakmap-shim/-/weakmap-shim-1.1.1.tgz#d65afd784109b2166e00ff571c33150ec2a40b49"
   integrity sha1-1lr9eEEJshZuAP9XHDMVDsKkC0k=
 
-web-streams-polyfill@^3.0.1, web-streams-polyfill@^3.0.3:
+web-streams-polyfill@^3.0.3:
   version "3.2.1"
   resolved "https://registry.yarnpkg.com/web-streams-polyfill/-/web-streams-polyfill-3.2.1.tgz#71c2718c52b45fd49dbeee88634b3a60ceab42a6"
   integrity sha512-e0MO3wdXWKrLbL0DgGnUV7WHVuw9OUvL4hjgnPkIeEvESk74gAITi5G606JtZPp39cd8HA9VQzCIvA49LpPN5Q==
