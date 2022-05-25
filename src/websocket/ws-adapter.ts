@@ -1,4 +1,4 @@
-import http from 'http';
+import http from 'node:http';
 import WebSocket from 'ws';
 import { Logger } from '@nestjs/common';
 import { AbstractWsAdapter } from '@nestjs/websockets';

@@ -1789,10 +1789,10 @@ atomic-sleep@^1.0.0:
   resolved "https://registry.yarnpkg.com/atomic-sleep/-/atomic-sleep-1.0.0.tgz#eb85b77a601fc932cfe432c5acd364a9e2c9075b"
   integrity sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==
 
-aws-sdk@^2.1141.0:
-  version "2.1141.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1141.0.tgz#c7b1227c1557c0d188e7af497cca2b292cee2d2a"
-  integrity sha512-AIZhWB51UEMcU7zKOrbCzCnHtXJTjmO+3PDIjwc5+8tT623Ud/vcrvSlxmqNxrgSnlXThLrxH9fTw/n/sxiXxg==
+aws-sdk@^2.1142.0:
+  version "2.1142.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1142.0.tgz#8fca9cfa100153d10d753afbc11a3ad7af6fe72b"
+  integrity sha512-ii+4Q8jqN31CiXpn9i/4vGCjqo02TGihmre5b44OUsTiKNXSjqr/aRrcirMsfuBFWRdrdcU12ez7Mg+N9GDNjw==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -2766,9 +2766,9 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.4.118:
-  version "1.4.137"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.137.tgz#186180a45617283f1c012284458510cd99d6787f"
-  integrity sha512-0Rcpald12O11BUogJagX3HsCN3FE83DSqWjgXoHo5a72KUKMSfI39XBgJpgNNxS9fuGzytaFjE06kZkiVFy2qA==
+  version "1.4.138"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.138.tgz#3ec41ca589aaf505dfe2034fde913329af801730"
+  integrity sha512-IOyp2Seq3w4QLln+yZWcMF3VXhhduz4bwg9gfI+CnP5TkzwNXQ8FCZuwwPsnes73AfWdf5J2n2OXdUwDUspDPQ==
 
 emittery@^0.10.2:
   version "0.10.2"
@@ -5356,9 +5356,9 @@ nestjs-s3@^1.0.1:
   integrity sha512-c7xnTcQZHZM3Hdw+Zl0PAgvpVjG4OmdxGFDtyUESXmumt0ZjA7xdUUQ6BgfKmd0eo4AT9LOrjGuSJUPOJgIdkw==
 
 node-abi@^3.3.0, node-abi@^3.5.0:
-  version "3.15.0"
-  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-3.15.0.tgz#cd9ac8c58328129b49998cc6fa16aa5506152716"
-  integrity sha512-Ic6z/j6I9RLm4ov7npo1I48UQr2BEyFCqh6p7S1dhEx9jPO0GPGq/e2Rb7x7DroQrmiVMz/Bw1vJm9sPAl2nxA==
+  version "3.21.0"
+  resolved "https://registry.yarnpkg.com/node-abi/-/node-abi-3.21.0.tgz#cd3c6bfca94fb08b3ae6f2bb1e09da628c97540c"
+  integrity sha512-0ChvtQmmNYzXju0fjG0Vfg72q2D8FxUhluvV9uqivtXsKblSekJE2juxfg+9HoSgqPMqCmVEC/GHHtGzi4xYTg==
   dependencies:
     semver "^7.3.5"
 
@@ -5864,15 +5864,16 @@ pino-elasticsearch@^6.2.0:
     readable-stream "^3.6.0"
     split2 "^3.1.1"
 
-pino-http@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/pino-http/-/pino-http-7.0.0.tgz#6fc496db85d85eb759ce81f0c1b883d266355f84"
-  integrity sha512-6qSe+hv/gkAakQOuM9gLcCaaNvG+qioC9Cgm5WflCIhYOgDNNT3NyDQ7p4kAuyVzN1B8RZfIU3u7SsFFEBVMGg==
+pino-http@^7.1.0:
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/pino-http/-/pino-http-7.1.0.tgz#922d86713856982a8d787c102624dea74411f10f"
+  integrity sha512-p/SqK6VpLP2AawGZEmciboat3TXlXwbvlElquBfht1gLQkMKwKDTDlsXOEOfKjOXX21ZYHFVVO75C1uKESXHxg==
   dependencies:
     fast-url-parser "^1.1.3"
     get-caller-file "^2.0.5"
     pino "^7.5.0"
     pino-std-serializers "^5.0.0"
+    process-warning "^2.0.0"
 
 pino-pretty@^7.6.1:
   version "7.6.1"
@@ -6039,6 +6040,11 @@ process-warning@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/process-warning/-/process-warning-1.0.0.tgz#980a0b25dc38cd6034181be4b7726d89066b4616"
   integrity sha512-du4wfLyj4yCZq1VupnVSZmRsPJsNuxoDQFdCFHLaYiEbFBD7QE0a+I4D7hOxrVnh78QE/YipFAj9lXHiXocV+Q==
+
+process-warning@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/process-warning/-/process-warning-2.0.0.tgz#341dbeaac985b90a04ebcd844d50097c7737b2ee"
+  integrity sha512-+MmoAXoUX+VTHAlwns0h+kFUWFs/3FZy+ZuchkgjyOu3oioLAo2LB5aCfKPh2+P9O18i3m43tUEv3YqttSy0Ww==
 
 progress@^2.0.3:
   version "2.0.3"
@@ -7240,10 +7246,10 @@ typeorm@^0.3.6:
     xml2js "^0.4.23"
     yargs "^17.3.1"
 
-typescript@4.6.4, typescript@>=4.6.4, typescript@^4.6.4:
-  version "4.6.4"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.6.4.tgz#caa78bbc3a59e6a5c510d35703f6a09877ce45e9"
-  integrity sha512-9ia/jWHIEbo49HfjrLGfKbZSuWo9iTMwXO+Ca3pRsSpbsMbc7/IU8NKdCZVRRBafVPGnoJeFL76ZOAA84I9fEg==
+typescript@4.6.4, typescript@>=4.7.2, typescript@^4.7.2:
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.7.2.tgz#1f9aa2ceb9af87cca227813b4310fff0b51593c4"
+  integrity sha512-Mamb1iX2FDUpcTRzltPxgWMKy3fhg0TN378ylbktPGPK/99KbDtMQ4W1hwgsbPAsG3a0xKa1vmw4VKZQbkvz5A==
 
 unbox-primitive@^1.0.2:
   version "1.0.2"

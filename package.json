@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.17.5",
+  "version": "2.17.6",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -62,7 +62,7 @@
     "**/**/split2": ">=4.1.0",
     "**/**/tr46": ">=3.0.0",
     "**/**/tslib": ">=2.4.0",
-    "**/**/typescript": ">=4.6.4",
+    "**/**/typescript": ">=4.7.2",
     "**/**/qs": ">=6.10.3",
     "**/**/url": ">=0.11.0",
     "**/**/ws": ">=8.6.0",
@@ -80,7 +80,7 @@
     "@nestjs/swagger": "^5.2.1",
     "@nestjs/typeorm": "^8.0.4",
     "@nestjs/websockets": "^8.4.5",
-    "aws-sdk": "^2.1141.0",
+    "aws-sdk": "^2.1142.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "debug": "^4.3.4",
@@ -104,7 +104,7 @@
     "pg-native": "^3.0.0",
     "pino": "^7.11.0",
     "pino-elasticsearch": "^6.2.0",
-    "pino-http": "^7.0.0",
+    "pino-http": "^7.1.0",
     "pino-pretty": "^7.6.1",
     "pino-std-serializers": "^5.3.0",
     "reflect-metadata": "^0.1.13",
@@ -148,6 +148,6 @@
     "supertest": "^6.2.3",
     "ts-jest": "^28.0.3",
     "ts-node": "^10.8.0",
-    "typescript": "^4.6.4"
+    "typescript": "^4.7.2"
   }
 }
