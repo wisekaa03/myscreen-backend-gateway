@@ -1,11 +1,17 @@
 ignores: [
-  "debug",
-  "dotenv",
-  "multer",
-  "@nestjs/schematics",
-  "@types/debug",
-  "@types/multer",
-  "@types/passport",
-  "@types/validator",
-  "depcheck"
+ "@nestjs/mapped-types",
+ "@nestjs/platform-ws",
+ "debug",
+ "dotenv",
+ "ioredis",
+ "multer",
+ "pg",
+ "pg-native",
+ "pino-elasticsearch",
+ "@nestjs/schematics",
+ "@types/debug",
+ "@types/multer",
+ "@types/passport",
+ "@types/validator",
+ "depcheck"
 ]
