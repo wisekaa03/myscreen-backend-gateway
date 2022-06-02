@@ -19,6 +19,7 @@ import { UptimeController } from './uptime.controller';
 import { PlaylistController } from './playlist.controller';
 import { RootController } from './root.controller';
 import { StatisticsController } from './statistics.controller';
+import { CooperationController } from './cooperation.controller';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { StatisticsController } from './statistics.controller';
     PlaylistController,
     PaymentLogController,
     StatisticsController,
+    CooperationController,
   ],
 
   providers: [Logger],

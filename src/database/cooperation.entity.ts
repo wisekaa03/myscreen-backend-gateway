@@ -32,7 +32,19 @@ export class CooperationEntity {
     eager: true,
   })
   @JoinColumn()
+  @ApiProperty({
+    description: 'Покупатель',
+    items: { $ref: '#/components/schemas/UserResponse' },
+  })
   buyer!: UserEntity;
+
+  @Column({ select: false })
+  @IsUUID()
+  @ApiProperty({
+    description: 'Покупатель ID',
+    format: 'uuid',
+  })
+  buyerId!: string;
 
   @ManyToOne(() => UserEntity, (seller) => seller.id, {
     onDelete: 'CASCADE',
@@ -41,7 +53,19 @@ export class CooperationEntity {
     eager: true,
   })
   @JoinColumn()
+  @ApiProperty({
+    description: 'Продавец',
+    items: { $ref: '#/components/schemas/UserResponse' },
+  })
   seller!: UserEntity;
+
+  @Column({ select: false })
+  @IsUUID()
+  @ApiProperty({
+    description: 'Продавец ID',
+    format: 'uuid',
+  })
+  sellerId!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
     onDelete: 'CASCADE',
@@ -50,7 +74,19 @@ export class CooperationEntity {
     eager: true,
   })
   @JoinColumn()
+  @ApiProperty({
+    description: 'Монитор',
+    items: { $ref: '#/components/schemas/MonitorResponse' },
+  })
   monitor!: MonitorEntity;
+
+  @Column({ select: false })
+  @IsUUID()
+  @ApiProperty({
+    description: 'Монитор ID',
+    format: 'uuid',
+  })
+  monitorId!: string;
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     onDelete: 'CASCADE',
@@ -59,7 +95,19 @@ export class CooperationEntity {
     eager: true,
   })
   @JoinColumn()
+  @ApiProperty({
+    description: 'Плэйлист',
+    items: { $ref: '#/components/schemas/PlaylistResponse' },
+  })
   playlist!: PlaylistEntity;
+
+  @Column({ select: false })
+  @IsUUID()
+  @ApiProperty({
+    description: 'Плэйлист ID',
+    format: 'uuid',
+  })
+  playlistId!: string;
 
   @Column({
     type: 'enum',
@@ -84,6 +132,10 @@ export class CooperationEntity {
   })
   @JoinColumn()
   user!: UserEntity;
+
+  @Column({ select: false })
+  @IsUUID()
+  userId!: string;
 
   @CreateDateColumn()
   @ApiProperty({

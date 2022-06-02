@@ -54,3 +54,6 @@ export * from './editors-get.request';
 export * from './editor-get.request';
 export * from './editor-export.request';
 export * from './auth-monitor.request';
+export * from './cooperation.request';
+export * from './cooperation-partial.request';
+export * from './cooperation-get.request';

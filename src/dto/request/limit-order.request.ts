@@ -362,4 +362,25 @@ export class LimitOrderRequest<T = Record<string, 'DESC' | 'ASC'>> {
     required: false,
   })
   updatedAt?: Order;
+
+  @ApiProperty({
+    enum: Order,
+    enumName: 'Order',
+    required: false,
+  })
+  seller?: Order;
+
+  @ApiProperty({
+    enum: Order,
+    enumName: 'Order',
+    required: false,
+  })
+  buyer?: Order;
+
+  @ApiProperty({
+    enum: Order,
+    enumName: 'Order',
+    required: false,
+  })
+  playlist?: Order;
 }

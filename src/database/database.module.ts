@@ -29,6 +29,8 @@ import { UserSizeEntity } from './user.view.entity';
 import { UserService } from './user.service';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
+import { CooperationService } from './cooperation.service';
+import { CooperationEntity } from './cooperation.entity';
 
 @Module({
   imports: [
@@ -55,6 +57,7 @@ import { RefreshTokenService } from './refreshtoken.service';
       UserEntity,
       UserSizeEntity,
       RefreshTokenEntity,
+      CooperationEntity,
     ]),
   ],
 
@@ -70,6 +73,7 @@ import { RefreshTokenService } from './refreshtoken.service';
     PlaylistService,
     UserService,
     RefreshTokenService,
+    CooperationService,
   ],
 
   exports: [
@@ -82,6 +86,7 @@ import { RefreshTokenService } from './refreshtoken.service';
     PlaylistService,
     UserService,
     RefreshTokenService,
+    CooperationService,
   ],
 })
 export class DatabaseModule implements OnModuleInit {
