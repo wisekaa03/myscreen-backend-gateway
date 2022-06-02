@@ -27,7 +27,7 @@ import {
 
 // import { isAWSError } from '@/shared/is-aws-error';
 import { FileCategory, VideoType } from '@/enums';
-import { FileUploadRequest } from '@/dto';
+import { ConflictData, FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
 import { FfMpegPreview } from '@/shared/ffmpeg';
 import { TypeOrmFind } from '@/shared/typeorm.find';
@@ -517,28 +517,26 @@ export class FileService {
       (Array.isArray(audioFiles) && audioFiles.length > 0) ||
       (Array.isArray(playlistFiles) && playlistFiles.length > 0)
     ) {
-      const errorMsg = {} as {
-        video: { id: string; name: string }[] | null;
-        audio: { id: string; name: string }[] | null;
-        playlist: { id: string; name: string }[] | null;
-        monitor: { id: string; name: string }[] | null;
-      };
+      const errorMsg = {} as ConflictData;
       if (Array.isArray(videoFiles) && videoFiles.length > 0) {
         errorMsg.video = videoFiles.map((editor) => ({
           id: editor.id,
           name: editor.name,
+          file: editor.renderedFile ?? undefined,
         }));
       }
       if (Array.isArray(audioFiles) && audioFiles.length > 0) {
         errorMsg.audio = audioFiles.map((editor) => ({
           id: editor.id,
           name: editor.name,
+          file: editor.renderedFile ?? undefined,
         }));
       }
       if (Array.isArray(playlistFiles) && playlistFiles.length > 0) {
         errorMsg.playlist = playlistFiles.map((playlist) => ({
           id: playlist.id,
           name: playlist.name,
+          file: playlist.files?.find((file) => filesId.includes(file.id)),
         }));
       }
       throw new ConflictException(

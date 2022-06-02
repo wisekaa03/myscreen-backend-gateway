@@ -10,7 +10,7 @@ import {
   type SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { Logger } from 'nestjs-pino';
+import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 import { WsAdapter } from '@/websocket/ws-adapter';
 import { version, author, homepage, description } from '../package.json';
@@ -58,6 +58,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
         stopAtFirstError: true,
       }),
     )
+    .useGlobalInterceptors(new LoggerErrorInterceptor())
     .useWebSocketAdapter(new WsAdapter(app))
     .useLogger(logger);
   app.flushLogs();

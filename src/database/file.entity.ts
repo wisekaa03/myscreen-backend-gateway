@@ -243,6 +243,8 @@ export class FileEntity {
   @AfterLoad()
   @AfterUpdate()
   after() {
-    this.duration = parseFloat(`${this.duration ?? 0}`);
+    if (this.duration !== undefined && this.duration !== null) {
+      this.duration = parseFloat(`${this.duration}`);
+    }
   }
 }

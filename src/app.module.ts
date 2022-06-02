@@ -13,7 +13,6 @@ import { DatabaseModule } from '@/database/database.module';
 import { AuthModule } from '@/auth/auth.module';
 import { EndpointModule } from '@/endpoint/endpoint.module';
 import { WSModule } from '@/websocket/ws.module';
-// import { LoggingInterceptor } from '@/intercept/logging.interceptor';
 
 @Module({
   imports: [
@@ -63,6 +62,7 @@ import { WSModule } from '@/websocket/ws.module';
               'debug',
             ),
             transport: { targets },
+            autoLogging: false,
           },
         };
       },
@@ -79,9 +79,6 @@ import { WSModule } from '@/websocket/ws.module';
     EndpointModule,
     WSModule,
   ],
-  providers: [
-    Logger,
-    // { provide: APP_INTERCEPTOR, useClass: LoggingInterceptor },
-  ],
+  providers: [Logger],
 })
 export class AppModule {}

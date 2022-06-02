@@ -7,6 +7,7 @@ export * from './user.response';
 export * from './user-get.response';
 export * from './users-get.response';
 export * from './file.response';
+export * from './file-id.response';
 export * from './files-get.response';
 export * from './file-get.response';
 export * from './files-upload.response';
