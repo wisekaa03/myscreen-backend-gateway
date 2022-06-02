@@ -36,7 +36,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(AuthService.name, () => {
-  let authService: AuthService;
+  let service: AuthService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -58,15 +58,15 @@ describe(AuthService.name, () => {
       ],
     }).compile();
 
-    authService = module.get<AuthService>(AuthService);
+    service = module.get<AuthService>(AuthService);
   });
 
   it('should be defined', () => {
-    expect(authService).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   it('login', async () => {
-    const login = await authService.login(email, password);
+    const login = await service.login(email, password);
     expect(login).toEqual([
       user,
       { refreshToken: token, token, type: 'bearer' },

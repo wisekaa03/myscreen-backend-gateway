@@ -19,7 +19,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(AuthController.name, () => {
-  let authController: AuthController;
+  let controller: AuthController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,11 +40,11 @@ describe(AuthController.name, () => {
       ],
     }).compile();
 
-    authController = module.get<AuthController>(AuthController);
+    controller = module.get<AuthController>(AuthController);
   });
 
   it('should be defined', () => {
-    expect(authController).toBeDefined();
+    expect(controller).toBeDefined();
   });
 
   it('should ensure the JwtAuthGuard is applied to the AuthController.authorization', async () => {

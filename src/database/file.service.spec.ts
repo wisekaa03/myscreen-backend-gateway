@@ -25,7 +25,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(FileService.name, () => {
-  let fileService: FileService;
+  let service: FileService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -63,11 +63,11 @@ describe(FileService.name, () => {
       ],
     }).compile();
 
-    fileService = module.get<FileService>(FileService);
+    service = module.get<FileService>(FileService);
   });
 
   it('should be defined', () => {
-    expect(fileService).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   // TODO: should inspect:

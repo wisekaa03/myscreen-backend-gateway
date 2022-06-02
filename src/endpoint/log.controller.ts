@@ -46,5 +46,5 @@ import { UserRoleEnum } from '@/enums';
 @ApiTags('log')
 @Controller('log')
 export class PaymentLogController {
-  paymentLogger = new Logger(PaymentLogController.name);
+  logger = new Logger(PaymentLogController.name);
 }

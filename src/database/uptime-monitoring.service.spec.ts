@@ -16,7 +16,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(UptimeMonitoringService.name, () => {
-  let uptimeMonitoringService: UptimeMonitoringService;
+  let service: UptimeMonitoringService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,12 +29,10 @@ describe(UptimeMonitoringService.name, () => {
       ],
     }).compile();
 
-    uptimeMonitoringService = module.get<UptimeMonitoringService>(
-      UptimeMonitoringService,
-    );
+    service = module.get<UptimeMonitoringService>(UptimeMonitoringService);
   });
 
   it('should be defined', () => {
-    expect(uptimeMonitoringService).toBeDefined();
+    expect(service).toBeDefined();
   });
 });

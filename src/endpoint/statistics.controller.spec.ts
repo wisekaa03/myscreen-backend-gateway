@@ -20,7 +20,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(StatisticsController.name, () => {
-  let statisticsController: StatisticsController;
+  let controller: StatisticsController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -42,12 +42,11 @@ describe(StatisticsController.name, () => {
       ],
     }).compile();
 
-    statisticsController =
-      module.get<StatisticsController>(StatisticsController);
+    controller = module.get<StatisticsController>(StatisticsController);
   });
 
   it('should be defined', () => {
-    expect(statisticsController).toBeDefined();
+    expect(controller).toBeDefined();
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {

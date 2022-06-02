@@ -20,7 +20,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(EditorService.name, () => {
-  let editorService: EditorService;
+  let service: EditorService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -46,10 +46,10 @@ describe(EditorService.name, () => {
       ],
     }).compile();
 
-    editorService = module.get<EditorService>(EditorService);
+    service = module.get<EditorService>(EditorService);
   });
 
   it('should be defined', () => {
-    expect(editorService).toBeDefined();
+    expect(service).toBeDefined();
   });
 });

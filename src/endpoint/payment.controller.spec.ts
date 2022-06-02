@@ -17,7 +17,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(PaymentController.name, () => {
-  let paymentController: PaymentController;
+  let controller: PaymentController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,11 +30,11 @@ describe(PaymentController.name, () => {
       ],
     }).compile();
 
-    paymentController = module.get<PaymentController>(PaymentController);
+    controller = module.get<PaymentController>(PaymentController);
   });
 
   it('should be defined', () => {
-    expect(paymentController).toBeDefined();
+    expect(controller).toBeDefined();
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {

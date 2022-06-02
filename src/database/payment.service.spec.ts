@@ -16,7 +16,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(PaymentService.name, () => {
-  let orderService: PaymentService;
+  let service: PaymentService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,10 +29,10 @@ describe(PaymentService.name, () => {
       ],
     }).compile();
 
-    orderService = module.get<PaymentService>(PaymentService);
+    service = module.get<PaymentService>(PaymentService);
   });
 
   it('should be defined', () => {
-    expect(orderService).toBeDefined();
+    expect(service).toBeDefined();
   });
 });

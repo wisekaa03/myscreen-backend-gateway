@@ -18,7 +18,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(PlaylistController.name, () => {
-  let playlistController: PlaylistController;
+  let controller: PlaylistController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,11 +35,11 @@ describe(PlaylistController.name, () => {
       ],
     }).compile();
 
-    playlistController = module.get<PlaylistController>(PlaylistController);
+    controller = module.get<PlaylistController>(PlaylistController);
   });
 
   it('should be defined', () => {
-    expect(playlistController).toBeDefined();
+    expect(controller).toBeDefined();
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {

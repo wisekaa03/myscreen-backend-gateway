@@ -17,7 +17,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(PaymentLogController.name, () => {
-  let paymentLogController: PaymentLogController;
+  let controller: PaymentLogController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -30,12 +30,11 @@ describe(PaymentLogController.name, () => {
       ],
     }).compile();
 
-    paymentLogController =
-      module.get<PaymentLogController>(PaymentLogController);
+    controller = module.get<PaymentLogController>(PaymentLogController);
   });
 
   it('should be defined', () => {
-    expect(paymentLogController).toBeDefined();
+    expect(controller).toBeDefined();
   });
 
   // TODO: should inspect:

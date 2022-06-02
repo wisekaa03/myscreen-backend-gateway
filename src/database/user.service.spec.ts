@@ -20,7 +20,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(UserService.name, () => {
-  let userService: UserService;
+  let service: UserService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -42,11 +42,11 @@ describe(UserService.name, () => {
       ],
     }).compile();
 
-    userService = module.get<UserService>(UserService);
+    service = module.get<UserService>(UserService);
   });
 
   it('should be defined', () => {
-    expect(userService).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   // TODO: should inspect:

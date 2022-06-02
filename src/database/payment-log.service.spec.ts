@@ -16,7 +16,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(PaymentLogService.name, () => {
-  let logService: PaymentLogService;
+  let service: PaymentLogService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,10 +29,10 @@ describe(PaymentLogService.name, () => {
       ],
     }).compile();
 
-    logService = module.get<PaymentLogService>(PaymentLogService);
+    service = module.get<PaymentLogService>(PaymentLogService);
   });
 
   it('should be defined', () => {
-    expect(logService).toBeDefined();
+    expect(service).toBeDefined();
   });
 });

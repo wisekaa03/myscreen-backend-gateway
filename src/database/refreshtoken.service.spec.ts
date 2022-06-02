@@ -18,7 +18,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(RefreshTokenService.name, () => {
-  let refreshTokenService: RefreshTokenService;
+  let service: RefreshTokenService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -32,11 +32,11 @@ describe(RefreshTokenService.name, () => {
       ],
     }).compile();
 
-    refreshTokenService = module.get<RefreshTokenService>(RefreshTokenService);
+    service = module.get<RefreshTokenService>(RefreshTokenService);
   });
 
   it('should be defined', () => {
-    expect(refreshTokenService).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   // TODO: should inspect:

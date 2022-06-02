@@ -19,7 +19,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(FolderService.name, () => {
-  let folderService: FolderService;
+  let service: FolderService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,15 +40,15 @@ describe(FolderService.name, () => {
       ],
     }).compile();
 
-    folderService = module.get<FolderService>(FolderService);
+    service = module.get<FolderService>(FolderService);
   });
 
   it('should be defined', () => {
-    expect(folderService).toBeDefined();
+    expect(service).toBeDefined();
   });
 
   it('returns folder.findOne', async () => {
-    expect(await folderService.findOne({})).toStrictEqual([]);
+    expect(await service.findOne({})).toStrictEqual([]);
   });
 
   // it('returns folder.find', async () => {
@@ -60,7 +60,7 @@ describe(FolderService.name, () => {
   // });
 
   it('returns folder.update', async () => {
-    expect(await folderService.update({})).toStrictEqual([]);
+    expect(await service.update({})).toStrictEqual([]);
   });
 
   // TODO: Implement

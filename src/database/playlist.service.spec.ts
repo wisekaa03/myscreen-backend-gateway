@@ -16,7 +16,7 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(PlaylistService.name, () => {
-  let playlistService: PlaylistService;
+  let service: PlaylistService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,10 +29,10 @@ describe(PlaylistService.name, () => {
       ],
     }).compile();
 
-    playlistService = module.get<PlaylistService>(PlaylistService);
+    service = module.get<PlaylistService>(PlaylistService);
   });
 
   it('should be defined', () => {
-    expect(playlistService).toBeDefined();
+    expect(service).toBeDefined();
   });
 });
