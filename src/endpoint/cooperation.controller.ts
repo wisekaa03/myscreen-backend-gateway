@@ -3,11 +3,19 @@ import type {
   Response as ExpressResponse,
 } from 'express';
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
+  Get,
   HttpCode,
   Logger,
+  NotFoundException,
+  Param,
+  ParseUUIDPipe,
+  Patch,
   Post,
+  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -21,11 +29,15 @@ import {
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
   BadRequestError,
+  CooperationCreateRequest,
   CooperationGetRequest,
+  CooperationGetResponse,
   CooperationsGetResponse,
+  CooperationUpdateRequest,
   ForbiddenError,
   InternalServerError,
   NotFoundError,
+  SuccessResponse,
   UnauthorizedError,
 } from '@/dto';
 import { Status, UserRoleEnum } from '@/enums';
@@ -98,6 +110,138 @@ export class CooperationController {
       status: Status.Success,
       count,
       data,
+    };
+  }
+
+  @Put('/')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'cooperation-create',
+    summary: 'Создание взаимодействия',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: CooperationGetResponse,
+  })
+  async createEditor(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Body() body: CooperationCreateRequest,
+  ): Promise<CooperationGetResponse> {
+    const data = await this.cooperationService.update(userId, body);
+    if (!data) {
+      throw new NotFoundException('Cooperation not found');
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Get('/:cooperationId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'cooperation-get',
+    summary: 'Получение взаимодействия',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: CooperationGetResponse,
+  })
+  async getEditor(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Param('cooperationId', ParseUUIDPipe) id: string,
+  ): Promise<CooperationGetResponse> {
+    const data = await this.cooperationService.findOne({
+      where: {
+        userId,
+        id,
+      },
+    });
+    if (!data) {
+      throw new NotFoundException('Cooperation not found');
+    }
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Patch('/:cooperationId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'cooperation-update',
+    summary: 'Изменить взаимодействие',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: CooperationGetResponse,
+  })
+  async updateEditor(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Param('cooperationId', ParseUUIDPipe) id: string,
+    @Body() update: CooperationUpdateRequest,
+  ): Promise<CooperationGetResponse> {
+    const editor = await this.cooperationService.findOne({
+      where: {
+        userId,
+        id,
+      },
+    });
+    if (!editor) {
+      throw new NotFoundException('Cooperation not found');
+    }
+
+    const data = await this.cooperationService.update(userId, {
+      ...editor,
+      ...update,
+    });
+    if (!data) {
+      throw new BadRequestException('Cooperation exists and not exists ?');
+    }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Delete('/:cooperationId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'cooperation-delete',
+    summary: 'Удаление взаимодействия',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: SuccessResponse,
+  })
+  async deleteCooperation(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Param('cooperationId', ParseUUIDPipe) id: string,
+  ): Promise<SuccessResponse> {
+    const cooperation = await this.cooperationService.findOne({
+      where: { userId, id },
+      select: ['id', 'userId'],
+    });
+    if (!cooperation) {
+      throw new NotFoundException(`Cooperation '${id}' is not found`);
+    }
+
+    const { affected } = await this.cooperationService.delete(
+      userId,
+      cooperation,
+    );
+    if (!affected) {
+      throw new NotFoundException('This cooperation is not exists');
+    }
+
+    return {
+      status: Status.Success,
     };
   }
 }

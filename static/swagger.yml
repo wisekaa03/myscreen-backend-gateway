@@ -2043,43 +2043,150 @@ paths:
               schema:
                 $ref: "#/components/schemas/CooperationsGetResponse"
         "400":
+          &a54
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
         "401":
+          &a55
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
         "403":
+          &a56
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
         "404":
+          &a57
           description: Ошибка папки
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
         "500":
+          &a58
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
       tags:
+        &a59
         - cooperation
       security:
+        &a60
         - bearer: []
+    put:
+      operationId: cooperation-create
+      summary: Создание взаимодействия
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CooperationCreateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CooperationGetResponse"
+        "400": *a54
+        "401": *a55
+        "403": *a56
+        "404": *a57
+        "500": *a58
+      tags: *a59
+      security: *a60
+  "/api/v2/cooperation/{cooperationId}":
+    get:
+      operationId: cooperation-get
+      summary: Получение взаимодействия
+      parameters:
+        - name: cooperationId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CooperationGetResponse"
+        "400": *a54
+        "401": *a55
+        "403": *a56
+        "404": *a57
+        "500": *a58
+      tags: *a59
+      security: *a60
+    patch:
+      operationId: cooperation-update
+      summary: Изменить взаимодействие
+      parameters:
+        - name: cooperationId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CooperationUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CooperationGetResponse"
+        "400": *a54
+        "401": *a55
+        "403": *a56
+        "404": *a57
+        "500": *a58
+      tags: *a59
+      security: *a60
+    delete:
+      operationId: cooperation-delete
+      summary: Удаление взаимодействия
+      parameters:
+        - name: cooperationId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *a54
+        "401": *a55
+        "403": *a56
+        "404": *a57
+        "500": *a58
+      tags: *a59
+      security: *a60
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.18.8
+  version: 2.18.9
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2099,14 +2206,14 @@ tags:
     description: Мониторы
   - name: editor
     description: Редакторы
+  - name: cooperation
+    description: Взаимодействия покупателей и продавца
+  - name: statistics
+    description: Cтатистика
   - name: order
     description: Заказы
   - name: payment
     description: Оплата
-  - name: statistics
-    description: Cтатистика
-  - name: cooperation
-    description: Взаимодействия покупателей и продавца
 servers: []
 components:
   securitySchemes:
@@ -2709,7 +2816,7 @@ components:
         address:
           description: Адрес монитора
           example:
-            &a54
+            &a61
             city: Krasnodar
             country: Russia
             street: Krasnaya
@@ -2724,7 +2831,7 @@ components:
         price:
           description: Стоимость показов
           example:
-            &a55
+            &a62
             of1s: 0
             show100: 0
           allOf:
@@ -2736,7 +2843,7 @@ components:
         monitorInfo:
           description: Модель и прочие характеристики монитора
           example:
-            &a56
+            &a63
             model: Samsung
             resolution: 1920 x 1080 px
             angle: 0
@@ -2762,7 +2869,7 @@ components:
           example: 111-111-111
         location:
           example:
-            &a57
+            &a64
             type: Point
             coordinates:
               - 38.97603
@@ -3100,7 +3207,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *a54
+          example: *a61
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3109,7 +3216,7 @@ components:
           $ref: "#/components/schemas/MonitorCategory"
         price:
           description: Стоимость показов
-          example: *a55
+          example: *a62
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
@@ -3118,7 +3225,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *a56
+          example: *a63
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3143,7 +3250,7 @@ components:
           description: Последний раз виден
           example: null
         location:
-          example: *a57
+          example: *a64
           allOf:
             - $ref: "#/components/schemas/PointClass"
         createdAt:
@@ -3206,7 +3313,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *a54
+          example: *a61
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3215,7 +3322,7 @@ components:
           $ref: "#/components/schemas/MonitorCategory"
         price:
           description: Стоимость показов
-          example: *a55
+          example: *a62
           allOf:
             - $ref: "#/components/schemas/MonitorPrice"
         orientation:
@@ -3224,11 +3331,11 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *a56
+          example: *a63
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         location:
-          example: *a57
+          example: *a64
           allOf:
             - $ref: "#/components/schemas/PointClass"
         code:
@@ -3420,7 +3527,7 @@ components:
         renderedFile:
           description: Обработанный файл
           allOf:
-            &a58
+            &a65
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -3657,7 +3764,7 @@ components:
           description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
-          allOf: *a58
+          allOf: *a65
       required:
         - id
         - renderingStatus
@@ -4578,6 +4685,58 @@ components:
         - status
         - count
         - data
+    CooperationCreateRequest:
+      type: object
+      properties:
+        buyerId:
+          type: string
+          description: Покупатель ID
+          format: uuid
+        sellerId:
+          type: string
+          description: Продавец ID
+          format: uuid
+        monitorId:
+          type: string
+          description: Монитор ID
+          format: uuid
+        playlistId:
+          type: string
+          description: Плэйлист ID
+          format: uuid
+        approved:
+          description: Не обработан / Разрешен / Запрещен
+          example: NotProcessed
+          $ref: "#/components/schemas/CooperationApproved"
+      required:
+        - buyerId
+        - sellerId
+        - monitorId
+        - playlistId
+        - approved
+    CooperationGetResponse:
+      type: object
+      properties:
+        status:
+          description: Статус операции
+          example: success
+          $ref: "#/components/schemas/Status"
+        data:
+          description: Взаимодействие покупателей и продавца
+          allOf:
+            - $ref: "#/components/schemas/CooperationResponse"
+      required:
+        - status
+        - data
+    CooperationUpdateRequest:
+      type: object
+      properties:
+        approved:
+          description: Не обработан / Разрешен / Запрещен
+          example: NotProcessed
+          $ref: "#/components/schemas/CooperationApproved"
+      required:
+        - approved
 externalDocs:
   description: MyScreen backend API
   url: https://api.myscreen.ru

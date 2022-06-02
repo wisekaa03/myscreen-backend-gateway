@@ -57,3 +57,5 @@ export * from './auth-monitor.request';
 export * from './cooperation.request';
 export * from './cooperation-partial.request';
 export * from './cooperation-get.request';
+export * from './cooperation-create.request';
+export * from './cooperation-update.request';
