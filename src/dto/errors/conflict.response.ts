@@ -6,6 +6,7 @@ import { FileIDResponse } from '@/dto/response/file-id.response';
 export class ConflictDataFile {
   @ApiProperty({
     description: 'ID ссылки',
+    format: 'uuid',
     required: false,
   })
   id!: string;
@@ -13,6 +14,7 @@ export class ConflictDataFile {
   @ApiProperty({
     description: 'Имя ссылки',
     required: false,
+    example: 'Имя ссылки',
   })
   name?: string;
 

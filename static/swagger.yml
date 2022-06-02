@@ -2027,7 +2027,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.18.2
+  version: 2.18.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3633,17 +3633,24 @@ components:
           type: string
           description: Идентификатор файла
           format: uuid
+        name:
+          type: string
+          description: Имя файла
+          example: foo.mp4
       required:
         - id
+        - name
     ConflictDataFile:
       type: object
       properties:
         id:
           type: string
           description: ID ссылки
+          format: uuid
         name:
           type: string
           description: Имя ссылки
+          example: Имя ссылки
         file:
           description: Файл
           allOf:

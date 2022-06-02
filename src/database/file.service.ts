@@ -440,6 +440,7 @@ export class FileService {
             id: true,
             file: {
               id: true,
+              name: true,
             },
           },
           // audioLayers: {
@@ -485,6 +486,7 @@ export class FileService {
             id: true,
             file: {
               id: true,
+              name: true,
             },
           },
         },
@@ -503,7 +505,10 @@ export class FileService {
         select: {
           id: true,
           name: true,
-          files: { id: true },
+          files: {
+            id: true,
+            name: true,
+          },
         },
         relations: {
           files: true,
