@@ -7,7 +7,7 @@ jobs:
   build-test-install-deploy:
     docker:
       # specify the version you desire here
-      - image: cimg/node:16.15.0
+      - image: cimg/node:18.2.0
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -18,10 +18,11 @@ jobs:
 
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y rsync curl wget make g++ build-essential libxi-dev libglu1-mesa-dev libglew-dev
+      - run: sudo apt-get install -y rsync curl wget make g++ build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - checkout
       - run: chmod +x ~/project/myscreen/api-backend/.circleci/*.sh
       - run: ~/project/myscreen/api-backend/.circleci/notify.sh "start"
+      - run: export CXXFLAGS='-include /usr/include/c++/11/limits'
       - add_ssh_keys:
           fingerprints:
             - '1e:a7:8f:cf:dc:3c:db:82:1f:f7:2e:22:bc:4a:29:d4'

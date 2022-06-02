@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.17.14",
+  "version": "2.18.1",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -56,8 +56,6 @@
     "**/**/pino": ">=8.0.0",
     "**/**/send": ">=0.18.0",
     "**/**/serve-static": ">=1.15.0",
-    "**/**/source-map-support": ">=0.5.21",
-    "**/**/source-map": ">=0.7.3",
     "**/**/split2": ">=4.1.0",
     "**/**/tr46": ">=3.0.0",
     "**/**/tslib": ">=2.4.0",
