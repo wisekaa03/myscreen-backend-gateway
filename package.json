@@ -33,7 +33,7 @@
     "prepare": "husky install"
   },
   "engines": {
-    "node": ">=16.14.2"
+    "node": ">=16.15.0"
   },
   "resolutions": {
     "**/**/@elastic/elasticsearch": ">=8.2.1",
