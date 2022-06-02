@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDate, IsUUID } from 'class-validator';
+import { IsDate, IsEnum, IsUUID } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 import { MonitorEntity } from './monitor.entity';
@@ -121,7 +121,7 @@ export class CooperationEntity {
     example: CooperationApproved.NotProcessed,
     required: true,
   })
-  @IsBoolean()
+  @IsEnum(CooperationApproved)
   approved!: CooperationApproved;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
