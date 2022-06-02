@@ -85,6 +85,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     .addTag('order', 'Заказы')
     .addTag('payment', 'Оплата')
     .addTag('statistics', 'Cтатистика')
+    .addTag('cooperation', 'Взаимодействия покупателей и продавца')
 
     .build();
 

@@ -35,7 +35,7 @@ export class EditorEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор редактора',
-    example: '12345678',
+    format: 'uuid',
     required: true,
   })
   @IsUUID()
@@ -134,7 +134,7 @@ export class EditorEntity {
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({
-    description: '', // DEBUG: непонятно
+    description: 'Воспроизводить музыку с видео',
     type: 'boolean',
     example: true,
     required: true,

@@ -2027,7 +2027,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.18.3
+  version: 2.18.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2053,6 +2053,8 @@ tags:
     description: Оплата
   - name: statistics
     description: Cтатистика
+  - name: cooperation
+    description: Взаимодействия покупателей и продавца
 servers: []
 components:
   securitySchemes:
@@ -3238,7 +3240,7 @@ components:
         id:
           type: string
           description: Идентификатор редактора
-          example: "12345678"
+          format: uuid
         name:
           type: string
           description: Имя редактора
@@ -3329,7 +3331,7 @@ components:
         id:
           type: string
           description: Идентификатор редактора
-          example: "12345678"
+          format: uuid
         name:
           type: string
           description: Имя редактора
@@ -3364,7 +3366,7 @@ components:
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
-          description: ""
+          description: Воспроизводить музыку с видео
           example: true
         totalDuration:
           type: number
@@ -3446,7 +3448,7 @@ components:
           example: 24
         keepSourceAudio:
           type: boolean
-          description: ""
+          description: Воспроизводить музыку с видео
           example: true
       required:
         - name
@@ -3489,7 +3491,7 @@ components:
           example: 24
         keepSourceAudio:
           type: boolean
-          description: ""
+          description: Воспроизводить музыку с видео
           example: true
     EditorLayerCreateRequest:
       type: object
@@ -3583,7 +3585,7 @@ components:
         id:
           type: string
           description: Идентификатор редактора
-          example: "12345678"
+          format: uuid
         renderingStatus:
           description: Статус рендеринга
           example: initial
