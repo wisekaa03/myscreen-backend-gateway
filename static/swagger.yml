@@ -2079,7 +2079,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.18.7
+  version: 2.18.8
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4477,7 +4477,7 @@ components:
       properties:
         id:
           type: string
-          description: Идентификатор
+          description: Идентификатор взаимодействия
           format: uuid
         buyerId:
           type: string
@@ -4499,13 +4499,6 @@ components:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
           $ref: "#/components/schemas/CooperationApproved"
-      required:
-        - id
-        - buyerId
-        - sellerId
-        - monitorId
-        - playlistId
-        - approved
     CooperationGetRequest:
       type: object
       properties:
@@ -4520,244 +4513,29 @@ components:
       required:
         - where
         - scope
-    UserEntity:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор пользователя
-          format: uuid
-          example: "1234567"
-        email:
-          type: string
-          description: EMail пользователя
-          format: email
-          example: foo@bar.baz
-        surname:
-          type: string
-          description: Фамилия
-          example: Steve
-        name:
-          type: string
-          description: Имя
-          example: John
-        middleName:
-          type: string
-          description: Отчество
-          example: Doe
-        password:
-          type: string
-          example: Secret~12345678
-          description: Пароля пользователя (должен удовлетворять минимальным требованиям)
-          minLength: 8
-          maxLength: 30
-          pattern: |-
-            /((?=.*d)|(?=.*W+))(?![.
-            ])(?=.*[A-Z])(?=.*[a-z]).*$/
-        phoneNumber:
-          type: string
-          description: Телефон пользователя
-          example: "+78002000000"
-        city:
-          type: string
-          description: Город
-          example: Krasnodar
-        country:
-          type: string
-          description: Страна
-          example: RU
-        company:
-          type: string
-          description: Компания
-          example: ACME corporation
-        storageSpace:
-          type: number
-          description: Дисковое пространство
-          example: 20000000
-        role:
-          description: Роль пользователя
-          example: advertiser
-          $ref: "#/components/schemas/UserRoleResponse"
-        verified:
-          type: boolean
-          description: EMail подтвержден
-          example: true
-        isDemoUser:
-          type: boolean
-          description: Демо пользователь
-          example: true
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-      required:
-        - id
-        - email
-        - password
-        - role
-        - createdAt
-        - updatedAt
-    MonitorEntity:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор монитора
-          format: uuid
-        name:
-          type: string
-          description: Имя
-          example: имя монитора
-        address:
-          description: Адрес монитора
-          example: *a54
-          allOf:
-            - $ref: "#/components/schemas/Address"
-        category:
-          description: Категория
-          example: GAS_STATION
-          $ref: "#/components/schemas/MonitorCategory"
-        price:
-          description: Стоимость показов
-          example: *a55
-          allOf:
-            - $ref: "#/components/schemas/MonitorPrice"
-        orientation:
-          description: Ориентация экрана
-          example: Horizontal
-          $ref: "#/components/schemas/MonitorOrientation"
-        monitorInfo:
-          description: Модель и прочие характеристики монитора
-          example: *a56
-          allOf:
-            - $ref: "#/components/schemas/MonitorInfo"
-        attached:
-          type: boolean
-          description: Присоединен
-          example: false
-        status:
-          description: Подключен
-          example: offline
-          $ref: "#/components/schemas/MonitorStatus"
-        playlistPlayed:
-          type: boolean
-          description: Проигрывается плэйлист
-          example: false
-        code:
-          type: string
-          description: Идентификатор устройства
-          example: 111-111-111
-        lastSeen:
-          format: date-time
-          type: string
-          description: Последний раз виден
-          example: null
-        location:
-          example: *a57
-          allOf:
-            - $ref: "#/components/schemas/PointClass"
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-      required:
-        - id
-        - name
-        - category
-        - orientation
-        - monitorInfo
-        - attached
-        - status
-        - playlistPlayed
-        - lastSeen
-        - createdAt
-        - updatedAt
-    PlaylistEntity:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор плэйлиста
-          example: "1234567"
-          format: uuid
-        name:
-          type: string
-          description: Имя плэйлиста
-          example: имя плэйлиста
-        description:
-          type: string
-          description: Описание плэйлиста
-          example: описание плэйлиста
-        files:
-          type: array
-          description: Файлы
-          items:
-            $ref: "#/components/schemas/FileResponse"
-        monitors:
-          type: array
-          description: Мониторы
-          items:
-            $ref: "#/components/schemas/MonitorResponse"
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: 2021-01-01T10:00:00.147Z
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: 2021-01-01T10:00:00.147Z
-      required:
-        - id
-        - name
-        - files
-        - monitors
-        - createdAt
-        - updatedAt
     CooperationResponse:
       type: object
       properties:
         id:
           type: string
-          description: Идентификатор
+          description: Идентификатор взаимодействия
           format: uuid
         buyer:
           description: Покупатель
-          items:
-            $ref: "#/components/schemas/UserResponse"
           allOf:
-            - $ref: "#/components/schemas/UserEntity"
+            - $ref: "#/components/schemas/UserResponse"
         seller:
           description: Продавец
-          items:
-            $ref: "#/components/schemas/UserResponse"
           allOf:
-            - $ref: "#/components/schemas/UserEntity"
+            - $ref: "#/components/schemas/UserResponse"
         monitor:
           description: Монитор
-          items:
-            $ref: "#/components/schemas/MonitorResponse"
           allOf:
-            - $ref: "#/components/schemas/MonitorEntity"
+            - $ref: "#/components/schemas/MonitorResponse"
         playlist:
           description: Плэйлист
-          items:
-            $ref: "#/components/schemas/PlaylistResponse"
           allOf:
-            - $ref: "#/components/schemas/PlaylistEntity"
+            - $ref: "#/components/schemas/PlaylistResponse"
         approved:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed

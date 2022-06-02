@@ -19,7 +19,7 @@ import { CooperationApproved } from '@/enums';
 export class CooperationEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
-    description: 'Идентификатор',
+    description: 'Идентификатор взаимодействия',
     format: 'uuid',
   })
   @IsUUID()
@@ -34,7 +34,8 @@ export class CooperationEntity {
   @JoinColumn()
   @ApiProperty({
     description: 'Покупатель',
-    items: { $ref: '#/components/schemas/UserResponse' },
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/UserResponse' }],
   })
   buyer!: UserEntity;
 
@@ -55,7 +56,8 @@ export class CooperationEntity {
   @JoinColumn()
   @ApiProperty({
     description: 'Продавец',
-    items: { $ref: '#/components/schemas/UserResponse' },
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/UserResponse' }],
   })
   seller!: UserEntity;
 
@@ -76,7 +78,8 @@ export class CooperationEntity {
   @JoinColumn()
   @ApiProperty({
     description: 'Монитор',
-    items: { $ref: '#/components/schemas/MonitorResponse' },
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/MonitorResponse' }],
   })
   monitor!: MonitorEntity;
 
@@ -97,7 +100,8 @@ export class CooperationEntity {
   @JoinColumn()
   @ApiProperty({
     description: 'Плэйлист',
-    items: { $ref: '#/components/schemas/PlaylistResponse' },
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/PlaylistResponse' }],
   })
   playlist!: PlaylistEntity;
 
