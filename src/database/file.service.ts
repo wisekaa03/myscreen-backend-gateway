@@ -427,11 +427,6 @@ export class FileService {
               file: { id: In(filesId) },
             },
           },
-          // {
-          //   audioLayers: {
-          //     file: { id: In(filesId) },
-          //   },
-          // },
         ],
         select: {
           id: true,
@@ -443,30 +438,16 @@ export class FileService {
               name: true,
             },
           },
-          // audioLayers: {
-          //   id: true,
-          //   file: {
-          //     id: true,
-          //   },
-          // },
         },
         relations: {
           videoLayers: {
             file: true,
           },
-          // audioLayers: {
-          //   file: true,
-          // },
         },
         loadEagerRelations: false,
       }),
       this.editorService.find({
         where: [
-          // {
-          //   videoLayers: {
-          //     file: { id: In(filesId) },
-          //   },
-          // },
           {
             audioLayers: {
               file: { id: In(filesId) },
@@ -476,12 +457,6 @@ export class FileService {
         select: {
           id: true,
           name: true,
-          // videoLayers: {
-          //   id: true,
-          //   file: {
-          //     id: true,
-          //   },
-          // },
           audioLayers: {
             id: true,
             file: {
@@ -491,9 +466,6 @@ export class FileService {
           },
         },
         relations: {
-          // videoLayers: {
-          //   file: true,
-          // },
           audioLayers: {
             file: true,
           },
@@ -527,14 +499,14 @@ export class FileService {
         errorMsg.video = videoFiles.map((editor) => ({
           id: editor.id,
           name: editor.name,
-          file: editor.renderedFile ?? undefined,
+          file: editor.videoLayers.map((layer) => layer.file)?.pop(),
         }));
       }
       if (Array.isArray(audioFiles) && audioFiles.length > 0) {
         errorMsg.audio = audioFiles.map((editor) => ({
           id: editor.id,
           name: editor.name,
-          file: editor.renderedFile ?? undefined,
+          file: editor.audioLayers.map((layer) => layer.file)?.pop(),
         }));
       }
       if (Array.isArray(playlistFiles) && playlistFiles.length > 0) {
