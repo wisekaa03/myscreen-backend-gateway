@@ -4,7 +4,7 @@ import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { FindOptionsWhere, In } from 'typeorm';
+import { In } from 'typeorm';
 import {
   BadRequestException,
   Body,

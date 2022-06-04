@@ -1,4 +1,3 @@
-// import { APP_INTERCEPTOR } from '@nestjs/core';
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from 'nestjs-s3';

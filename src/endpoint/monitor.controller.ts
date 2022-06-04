@@ -1,5 +1,5 @@
 import type { Request as ExpressRequest } from 'express';
-import { FindManyOptions, TypeORMError } from 'typeorm';
+import { FindManyOptions } from 'typeorm';
 import {
   BadRequestException,
   Body,
