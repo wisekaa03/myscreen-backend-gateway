@@ -1066,10 +1066,10 @@
   dependencies:
     "@types/istanbul-lib-report" "*"
 
-"@types/jest@^28.1.0":
-  version "28.1.0"
-  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-28.1.0.tgz#6107d7f8cf46d994e4de23e11f873d61bafe5573"
-  integrity sha512-ITfF6JJIl9zbEi2k6NmhNE/BiDqfsI/ceqfvdaWaPbcrCpYyyRq4KtDQIWh6vQUru6SqwppODiom/Zhid+np6A==
+"@types/jest@^28.1.1":
+  version "28.1.1"
+  resolved "https://registry.yarnpkg.com/@types/jest/-/jest-28.1.1.tgz#8c9ba63702a11f8c386ee211280e8b68cb093cd1"
+  integrity sha512-C2p7yqleUKtCkVjlOur9BWVA4HgUQmEj/HWCt5WzZ5mLXrWnyIfl0wGuArc+kBXsy0ZZfLp+7dywB4HtSVYGVA==
   dependencies:
     jest-matcher-utils "^27.0.0"
     pretty-format "^27.0.0"
@@ -1118,10 +1118,10 @@
   dependencies:
     "@types/express" "*"
 
-"@types/node@*", "@types/node@^17.0.39":
-  version "17.0.39"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.39.tgz#3652d82e2a16b4ea679d5ea3143b816c91b7e113"
-  integrity sha512-JDU3YLlnPK3WDao6/DlXLOgSNpG13ct+CwIO17V8q0/9fWJyeMJJ/VyZ1lv8kDprihvZMydzVwf0tQOqGiY2Nw==
+"@types/node@*", "@types/node@^17.0.40":
+  version "17.0.40"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.40.tgz#76ee88ae03650de8064a6cf75b8d95f9f4a16090"
+  integrity sha512-UXdBxNGqTMtm7hCwh9HtncFVLrXoqA3oJW30j6XWp5BH/wu3mVeaxo7cq5benFdBw34HB3XDT2TRPI7rXZ+mDg==
 
 "@types/node@^10.0.3":
   version "10.17.60"
@@ -1205,10 +1205,10 @@
   dependencies:
     "@types/superagent" "*"
 
-"@types/validator@^13.7.2":
-  version "13.7.2"
-  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.7.2.tgz#a2114225d9be743fb154b06c29b8257aaca42922"
-  integrity sha512-KFcchQ3h0OPQgFirBRPZr5F/sVjxZsOrQHedj3zi8AH3Zv/hOLx2OLR4hxR5HcfoU+33n69ZuOfzthKVdMoTiw==
+"@types/validator@^13.7.3":
+  version "13.7.3"
+  resolved "https://registry.yarnpkg.com/@types/validator/-/validator-13.7.3.tgz#3193c0a3c03a7d1189016c62b4fba4b149ef5e33"
+  integrity sha512-DNviAE5OUcZ5s+XEQHRhERLg8fOp8gSgvyJ4aaFASx5wwaObm+PBwTIMXiOFm1QrSee5oYwEAYb7LMzX2O88gA==
 
 "@types/ws@^8.5.3":
   version "8.5.3"
@@ -5204,16 +5204,16 @@ ms@2.1.3, ms@^2.0.0, ms@^2.1.1, ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-multer-media@^3.1.3:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.3.tgz#33a40935002c5aec7f65eff83737d7441c3f3154"
-  integrity sha512-IPEFBKMq5tCMLHkN0Jb7TBvxgakoaUiWaSGfoSdpYeFRmPJGsBiJ75oFqeeKyJGQItl6OmiEQ0IbOZnpTsrQ6A==
+multer-media@^3.1.4:
+  version "3.1.4"
+  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.4.tgz#ba7147a783e812f3e10663ff1996bf30ab630de3"
+  integrity sha512-jL0rasEKIDHXa+ZLRRapavjQBDpiGrKhzb+SDjc0z0mfKwl6mJpy82Dgnb7yVvO1mhKe1IvJgZhGcZkunBkvmA==
   dependencies:
     ffmpeg-static "^5.0.0"
     media-probe "^1.0.1"
-    multer "^1.4.4"
+    multer "1.4.5-lts.1"
 
-multer@1.4.4, multer@1.4.5-lts.1, multer@>=1.4.5-lts.1, multer@^1.4.4:
+multer@1.4.4, multer@1.4.5-lts.1, multer@>=1.4.5-lts.1:
   version "1.4.5-lts.1"
   resolved "https://registry.yarnpkg.com/multer/-/multer-1.4.5-lts.1.tgz#803e24ad1984f58edffbc79f56e305aec5cfd1ac"
   integrity sha512-ywPWvcDMeH+z9gQq5qYHCCy+ethsk4goepZ45GLD63fOu0YcNecQxi64nDs3qluZB+murG3/D4dJ7+dGctcCQQ==
@@ -5296,14 +5296,14 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-3.0.1.tgz#9e8a855f4a2abcbaf61ed1df1f23a090e377f679"
-  integrity sha512-OzzOyM1Fb1DKU1cwkawO81BFoILM1d08R1Jo49n/zon02VORTyxnqynVhZWUHBuuZhjoXqxOXcKAgKWPxoxzVQ==
+nestjs-mailgun@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-3.0.2.tgz#897a9fa182c19377b1370da2f6a3f4aa02108eb7"
+  integrity sha512-W39iAURV1wliQ7JRJi5/Aa3m2gV6RRl6lIwhDJFOdgbNQ2cIBSvEtBSkLCsxJi01L1Yr89Vw+MQdGCQFWOBEBw==
   dependencies:
     form-data "^4.0.0"
     mailgun.js "^7.0.0"
-    node-fetch "^3.2.4"
+    node-fetch "^3.2.5"
     reflect-metadata "^0.1.13"
     rxjs "^7.5.5"
 
@@ -5343,7 +5343,7 @@ node-fetch@^2.6.1, node-fetch@^2.6.7:
   dependencies:
     whatwg-url "^5.0.0"
 
-node-fetch@^3.2.4:
+node-fetch@^3.2.5:
   version "3.2.5"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-3.2.5.tgz#7d31da657804db5185540ddac7ddd516a9a2bd26"
   integrity sha512-u7zCHdJp8JXBwF09mMfo2CL6kp37TslDl1KP3hRGTlCInBtag+UO3LGVy+NF0VzvnL3PVMpA2hXh1EtECFnyhQ==

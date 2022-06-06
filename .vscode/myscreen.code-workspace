@@ -12,6 +12,10 @@
       "**/dist/*/**": true,
       "**/upload/*/**": true
     },
+    "path-intellisense.extensionOnImport": true,
+    "typescript.suggest.paths": false,
+    "javascript.suggest.paths": false,
+    "versionlens.suggestions.showPrereleasesOnStartup": false,
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": "active",
     // "editor.fontFamily": "Fira Code",
@@ -62,8 +66,6 @@
         "source.fixAll.eslint": true,
       }
     },
-    "prettier.packageManager": "yarn",
-    "code-runner.enableAppInsights": false,
     "typescript.tsdk": "node_modules/typescript/lib",
     "less.lint.duplicateProperties": "warning",
     "less.lint.float": "warning",
@@ -160,7 +162,7 @@
     "todo-tree.highlights.defaultHighlight": {
       "icon": "check",
       "type": "line",
-      "foreground": "red",
+      "foreground": "#FF0000",
       "opacity": 99,
       "iconColour": "#FF8C00"
     },

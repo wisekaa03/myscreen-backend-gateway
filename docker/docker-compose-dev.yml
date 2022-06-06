@@ -28,7 +28,7 @@ services:
       - "5432:5432"
 
   pgadmin4:
-    image: dpage/pgadmin4:6.8
+    image: dpage/pgadmin4:6.10
     restart: always
     environment:
       PGADMIN_LISTEN_PORT: 8080
