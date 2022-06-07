@@ -60,6 +60,7 @@ export class CooperationService {
   ): Promise<CooperationEntity | null> {
     const updated: DeepPartial<CooperationEntity> = {
       ...update,
+      buyerId: userId,
       userId,
     };
 

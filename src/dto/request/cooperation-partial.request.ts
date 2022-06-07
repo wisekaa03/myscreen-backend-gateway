@@ -4,6 +4,7 @@ import { CooperationEntity } from '@/database/cooperation.entity';
 export class CooperationPartialRequest extends PartialType(
   OmitType(CooperationEntity, [
     'buyer',
+    'buyerId',
     'seller',
     'monitor',
     'playlist',

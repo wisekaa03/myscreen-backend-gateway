@@ -30,7 +30,7 @@ import { WSModule } from '@/websocket/ws.module';
               : `${__dirname}/shared/pino-pretty.js`,
           options: {
             colorize: process.env.NODE_ENV !== 'production',
-            translateTime: 'yyyy-mm-dd HH:MM:ss',
+            translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
             singleLine: true,
             ignore: 'pid,hostname',
           },
