@@ -28,6 +28,7 @@ export class CooperationEntity {
   @ManyToOne(() => UserEntity, (buyer) => buyer.id, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    nullable: true,
     cascade: true,
     eager: true,
   })
@@ -37,15 +38,16 @@ export class CooperationEntity {
     type: 'string',
     allOf: [{ $ref: '#/components/schemas/UserResponse' }],
   })
-  buyer!: UserEntity;
+  buyer!: UserEntity | null;
 
-  @Column({ select: false })
+  @Column({ select: false, nullable: true })
   @IsUUID()
   @ApiProperty({
     description: 'Покупатель ID',
     format: 'uuid',
+    required: false,
   })
-  buyerId!: string;
+  buyerId!: string | null;
 
   @ManyToOne(() => UserEntity, (seller) => seller.id, {
     onDelete: 'CASCADE',
@@ -66,6 +68,7 @@ export class CooperationEntity {
   @ApiProperty({
     description: 'Продавец ID',
     format: 'uuid',
+    required: false,
   })
   sellerId!: string;
 

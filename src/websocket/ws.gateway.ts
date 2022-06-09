@@ -283,22 +283,19 @@ export class WSGateway
   async monitorPlaylist(
     monitor: MonitorEntity,
     playlist: PlaylistEntity | null,
-  ): Promise<void> {
+  ): Promise<MonitorEntity> {
     this.clients.forEach((value, client) => {
       if (value.userId === monitor.id) {
         client.send(JSON.stringify([{ event: 'playlist', data: playlist }]));
       }
     });
-    await this.monitorService
-      .update(
-        monitor.userId,
-        Object.assign(monitor, {
-          status: MonitorStatus.Online,
-        }),
-      )
-      .catch((error) => {
-        this.logger.error(error);
-      });
+
+    return this.monitorService.update(
+      monitor.userId,
+      Object.assign(monitor, {
+        status: MonitorStatus.Online,
+      }),
+    );
   }
 
   statistics(): number {

@@ -60,13 +60,13 @@ export class CooperationService {
   ): Promise<CooperationEntity | null> {
     const updated: DeepPartial<CooperationEntity> = {
       ...update,
-      buyerId: userId,
       userId,
     };
 
     const cooperation = await this.cooperationRepository.save(
       this.cooperationRepository.create(updated),
     );
+
     return this.cooperationRepository.findOne({
       where: { id: cooperation.id },
     });

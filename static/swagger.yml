@@ -2186,7 +2186,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.18.17
+  version: 2.18.18
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4586,6 +4586,10 @@ components:
           type: string
           description: Идентификатор взаимодействия
           format: uuid
+        buyerId:
+          type: object
+          description: Покупатель ID
+          format: uuid
         sellerId:
           type: string
           description: Продавец ID
@@ -4684,6 +4688,10 @@ components:
     CooperationCreateRequest:
       type: object
       properties:
+        buyerId:
+          type: object
+          description: Покупатель ID
+          format: uuid
         sellerId:
           type: string
           description: Продавец ID
@@ -4701,7 +4709,6 @@ components:
           example: NotProcessed
           $ref: "#/components/schemas/CooperationApproved"
       required:
-        - sellerId
         - monitorId
         - playlistId
         - approved

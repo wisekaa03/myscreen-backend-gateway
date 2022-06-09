@@ -4,7 +4,6 @@ import { CooperationEntity } from '@/database/cooperation.entity';
 export class CooperationCreateRequest extends OmitType(CooperationEntity, [
   'id',
   'buyer',
-  'buyerId',
   'seller',
   'monitor',
   'playlist',

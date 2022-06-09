@@ -43,12 +43,13 @@ import {
   MonitorCreateRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status, UserRoleEnum } from '@/enums';
+import { CooperationApproved, Status, UserRoleEnum } from '@/enums';
 import { MonitorService } from '@/database/monitor.service';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
 import { MonitorEntity } from '@/database/monitor.entity';
+import { CooperationService } from '@/database/cooperation.service';
 
 @ApiResponse({
   status: 400,
@@ -95,6 +96,7 @@ export class MonitorController {
   constructor(
     private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
+    private readonly cooperationService: CooperationService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -200,7 +202,7 @@ export class MonitorController {
     type: MonitorsGetResponse,
   })
   async createMonitorPlaylist(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<MonitorsGetResponse> {
     if (!Array.isArray(attach.monitors) || attach.monitors.length < 1) {
@@ -216,28 +218,40 @@ export class MonitorController {
       throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
     }
 
-    const dataPromise = attach.monitors.map(async (monitorId) => {
-      const monitor = await this.monitorService
+    const dataPromise = attach.monitors.map(async (monitorId) =>
+      this.monitorService
         .findOne({
           where: {
             userId,
             id: monitorId,
           },
         })
-        .then((monitorFound) => {
-          if (!monitorFound) {
+        .then((monitor) => {
+          if (!monitor) {
             throw new NotFoundException(`Monitor '${monitorId}' not found`);
           }
           return this.monitorService.update(userId, {
-            ...monitorFound,
+            ...monitor,
             playlist,
           });
-        });
+        })
+        .then((monitor) => {
+          this.wsGateway.monitorPlaylist(monitor, playlist);
 
-      /* await */ this.wsGateway.monitorPlaylist(monitor, playlist);
+          if (role.includes(UserRoleEnum.Advertiser)) {
+            this.cooperationService.update(userId, {
+              buyerId: null,
+              sellerId: userId,
+              monitor,
+              playlist,
+              approved: CooperationApproved.NotProcessed,
+              userId,
+            });
+          }
 
-      return monitor;
-    });
+          return monitor;
+        }),
+    );
 
     const data = await Promise.all(dataPromise);
 
