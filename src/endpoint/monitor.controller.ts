@@ -218,40 +218,39 @@ export class MonitorController {
       throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
     }
 
-    const dataPromise = attach.monitors.map(async (monitorId) =>
-      this.monitorService
-        .findOne({
-          where: {
-            userId,
-            id: monitorId,
-          },
-        })
-        .then((monitor) => {
-          if (!monitor) {
-            throw new NotFoundException(`Monitor '${monitorId}' not found`);
-          }
-          return this.monitorService.update(userId, {
-            ...monitor,
-            playlist,
-          });
-        })
-        .then((monitor) => {
-          this.wsGateway.monitorPlaylist(monitor, playlist);
+    const dataPromise = attach.monitors.map(async (monitorId) => {
+      let monitor = await this.monitorService.findOne({
+        where: {
+          userId,
+          id: monitorId,
+        },
+      });
+      if (!monitor) {
+        throw new NotFoundException(`Monitor '${monitorId}' not found`);
+      }
 
-          if (role.includes(UserRoleEnum.Advertiser)) {
-            this.cooperationService.update(userId, {
-              buyerId: null,
-              sellerId: userId,
-              monitor,
-              playlist,
-              approved: CooperationApproved.NotProcessed,
-              userId,
-            });
-          }
+      monitor = await this.monitorService.update(userId, {
+        ...monitor,
+        playlist,
+      });
+      await this.wsGateway.monitorPlaylist(monitor, playlist);
 
-          return monitor;
-        }),
-    );
+      if (
+        role.includes(UserRoleEnum.Advertiser) ||
+        role.includes(UserRoleEnum.Administrator)
+      ) {
+        await this.cooperationService.update(userId, {
+          buyerId: null,
+          sellerId: userId,
+          monitor,
+          playlist,
+          approved: CooperationApproved.NotProcessed,
+          userId,
+        });
+      }
+
+      return monitor;
+    });
 
     const data = await Promise.all(dataPromise);
 
