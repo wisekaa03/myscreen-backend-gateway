@@ -221,7 +221,6 @@ export class MonitorController {
     const dataPromise = attach.monitors.map(async (monitorId) => {
       let monitor = await this.monitorService.findOne({
         where: {
-          userId,
           id: monitorId,
         },
       });
