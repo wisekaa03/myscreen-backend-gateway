@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.19.14",
+  "version": "2.19.15",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -82,7 +82,7 @@
     "@nestjs/swagger": "^5.2.1",
     "@nestjs/typeorm": "^8.1.4",
     "@nestjs/websockets": "^8.4.7",
-    "aws-sdk": "^2.1166.0",
+    "aws-sdk": "^2.1167.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "debug": "^4.3.4",
@@ -133,10 +133,10 @@
     "@types/supertest": "^2.0.12",
     "@types/validator": "^13.7.3",
     "@types/ws": "^8.5.3",
-    "@typescript-eslint/eslint-plugin": "^5.30.0",
-    "@typescript-eslint/parser": "^5.30.0",
+    "@typescript-eslint/eslint-plugin": "^5.30.3",
+    "@typescript-eslint/parser": "^5.30.3",
     "depcheck": "^1.4.3",
-    "eslint": "^8.18.0",
+    "eslint": "^8.19.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-prettier": "^8.5.0",
@@ -145,9 +145,9 @@
     "husky": "^8.0.1",
     "jest": "^28.1.2",
     "prettier": "^2.7.1",
-    "supertest": "^6.2.3",
+    "supertest": "^6.2.4",
     "ts-jest": "^28.0.5",
-    "ts-node": "^10.8.1",
+    "ts-node": "^10.8.2",
     "typescript": "^4.7.4"
   }
 }
