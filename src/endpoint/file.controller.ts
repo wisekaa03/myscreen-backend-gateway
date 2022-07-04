@@ -493,7 +493,7 @@ export class FileController {
 
     try {
       let buffer = file.preview?.preview;
-      if (!buffer) {
+      if (!buffer || buffer.length === 0) {
         buffer = await this.fileService.previewFile(file).catch((reason) => {
           throw reason;
         });
