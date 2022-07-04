@@ -592,23 +592,22 @@ export class FileService {
     }
 
     await FfMpegPreview(file.videoType, file.meta, filename, outPath).catch(
-      (reason) => {
+      (reason: unknown) => {
         throw new InternalServerErrorException(reason);
       },
     );
-    // TODO: сделать что-нибудь с preview файлами
 
-    return fs.readFile(outPath).then((buffer) => {
-      this.filePreviewRepository.save(
-        this.filePreviewRepository.create({
-          ...file.preview,
-          file,
-          preview: Buffer.from(`\\x${buffer.toString('hex')}`),
-        }),
-      );
+    const preview = await fs.readFile(outPath);
 
-      return buffer;
-    });
+    await this.filePreviewRepository.save(
+      this.filePreviewRepository.create({
+        ...file.preview,
+        file,
+        preview,
+      }),
+    );
+
+    return preview;
   }
 
   async preview(

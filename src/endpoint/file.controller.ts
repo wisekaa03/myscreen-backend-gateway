@@ -497,10 +497,6 @@ export class FileController {
         buffer = await this.fileService.previewFile(file).catch((reason) => {
           throw reason;
         });
-      } else {
-        this.fileService.previewFile(file).catch((reason) => {
-          this.logger.error(`previewFile: ${reason}`);
-        });
       }
 
       res.setHeader('Content-Length', buffer.length);
