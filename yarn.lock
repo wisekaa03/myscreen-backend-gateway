@@ -2762,9 +2762,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.4.172:
-  version "1.4.178"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.178.tgz#3dae6fda486007bb54bbfed420ebd40881a3de45"
-  integrity sha512-aWuhJXkwIdoQzGR8p2QvR3N0OzdUKZSP8+P/hzuMzNQIPZoEa8HiCGM75bQBHjyz+eKT5PB9dVCzkK/tyQ4B5Q==
+  version "1.4.179"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.179.tgz#450561ade3ca3497dfed65af412c672972b2dad5"
+  integrity sha512-1XeTb/U/8Xgh2YgPOqhakLYsvCcU4U7jUjTMbEnhIJoIWd/Qt3yC8y0cbG+fHzn4zUNF99Ey1xiPf20bwgLO3Q==
 
 emittery@^0.10.2:
   version "0.10.2"
@@ -3283,7 +3283,7 @@ fetch-blob@^3.1.2, fetch-blob@^3.1.4:
     node-domexception "^1.0.0"
     web-streams-polyfill "^3.0.3"
 
-ffmpeg-static@^5.0.0:
+ffmpeg-static@^5.0.2:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/ffmpeg-static/-/ffmpeg-static-5.0.2.tgz#7e5bae2bf78728b79b85c43979a14e2a8458cf72"
   integrity sha512-rYeA04AGbvxbUxov6Cn/KDKIzw2rmzwPlgHoqn837NZt0xPdOVA9mJMILz9IX27R45hhSlXS6nThk85XxDivLg==
@@ -4922,7 +4922,7 @@ magic-string@0.25.7, magic-string@>=0.26.2, magic-string@^0.25.7:
   dependencies:
     sourcemap-codec "^1.4.8"
 
-mailgun.js@^7.0.2:
+mailgun.js@^7.0.3:
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-7.0.3.tgz#c2d28f799da03b7a1b3602ddefb6676bf0c66287"
   integrity sha512-iyx8h6jjIe/2oAzWZyJMQ2Pct5rVFPaBsEpG3mgadgRdt4znq8C7Kf5CQILB4B350EoSpw93Mey6yVpXPlu7OA==
@@ -5190,12 +5190,12 @@ ms@2.1.3, ms@^2.0.0, ms@^2.1.1, ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-multer-media@^3.1.6:
-  version "3.1.6"
-  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.6.tgz#b920f73dd4b2b3c2934e04bb974dfe411b0a906c"
-  integrity sha512-cEBdIS5R4iHjxcbtnbDTVUaBeouSwkeT99qBjm9tADV7+w1jpEn+RiDOrLiwAx9qvawxdzfCgRjALF5trWKQEw==
+multer-media@^3.1.7:
+  version "3.1.7"
+  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.7.tgz#a497d50831bdfaa3f43871fd21e5486e9450e239"
+  integrity sha512-G/Ywkkph0MsjZOwrpw8kPxc1+O/HyqcW7Z5aG+sb4rMtRr628otqFO3NdB61G17nAEh2maDGnRo3rx+M/nh+7w==
   dependencies:
-    ffmpeg-static "^5.0.0"
+    ffmpeg-static "^5.0.2"
     media-probe "^1.0.1"
     multer "1.4.5-lts.1"
 
@@ -5287,13 +5287,13 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^3.0.5:
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-3.0.5.tgz#9e2ebb12cf3af9dce6aa3a07c3531454664e33fe"
-  integrity sha512-jvuxbzGi+8Ivv87vnHMp/0HtTuLupQam+G7x7IHBr4LM1KetJbepzUTZWm3mSfT6cS0KAhUSs5R2gsMy2ierxw==
+nestjs-mailgun@^3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-3.0.6.tgz#150152502818933481ec3cf1453d5b49d28499fa"
+  integrity sha512-pydqGx82vseXV+96O+ehdPJ+UkBkLxTiCr715s98pwa5ToFLWXMUFku9tGVuOwi+l1R2xRkzZTOqHQXcOqbvAg==
   dependencies:
     form-data "^4.0.0"
-    mailgun.js "^7.0.2"
+    mailgun.js "^7.0.3"
     node-fetch "^3.2.6"
     reflect-metadata "^0.1.13"
     rxjs "^7.5.5"

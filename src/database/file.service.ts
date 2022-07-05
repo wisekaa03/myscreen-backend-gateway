@@ -1,6 +1,6 @@
 import { createReadStream, promises as fs, createWriteStream } from 'node:fs';
 import { Readable } from 'node:stream';
-import path from 'node:path';
+import { join as pathJoin, parse as pathParse } from 'node:path';
 import { PromiseResult } from 'aws-sdk/lib/request';
 import {
   BadRequestException,
@@ -48,6 +48,8 @@ export class FileService {
 
   private region: string;
 
+  private downloadDir: string;
+
   constructor(
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => FolderService))
@@ -66,6 +68,7 @@ export class FileService {
   ) {
     this.region = configService.get<string>('AWS_REGION', 'ru-central1');
     this.bucket = configService.get<string>('AWS_BUCKET', 'myscreen-media');
+    this.downloadDir = configService.get<string>('FILES_UPLOAD', 'upload');
   }
 
   /**
@@ -558,15 +561,11 @@ export class FileService {
   }
 
   async previewFile(file: FileEntity): Promise<Buffer> {
-    const downloadDir = this.configService.get<string>(
-      'FILES_UPLOAD',
-      'upload',
-    );
-    await fs.mkdir(downloadDir, { recursive: true });
-    const filename = path.join(downloadDir, file.name);
-    let outPath = path.join(
-      downloadDir,
-      `${path.parse(file.name).name}-preview`,
+    await fs.mkdir(this.downloadDir, { recursive: true });
+    const filename = pathJoin(this.downloadDir, file.name);
+    let outPath = pathJoin(
+      this.downloadDir,
+      `${pathParse(file.name).name}-preview`,
     );
     outPath += file.videoType === VideoType.Video ? '.webm' : '.jpg';
 
@@ -599,13 +598,15 @@ export class FileService {
 
     const preview = await fs.readFile(outPath);
 
-    await this.filePreviewRepository.save(
-      this.filePreviewRepository.create({
-        ...file.preview,
-        file,
-        preview,
-      }),
-    );
+    /* await */ this.filePreviewRepository
+      .save(
+        this.filePreviewRepository.create({
+          ...file.preview,
+          file,
+          preview,
+        }),
+      )
+      .catch(() => {});
 
     return preview;
   }
@@ -617,8 +618,8 @@ export class FileService {
   ): Promise<Buffer> {
     let preview: Buffer;
     if (type === VideoType.Image) {
-      const outPath = path.join(
-        `${file.destination}/${path.parse(file.filename).name}-preview.jpg`,
+      const outPath = pathJoin(
+        `${file.destination}/${pathParse(file.filename).name}-preview.jpg`,
       );
       await FfMpegPreview(type, meta, file.path, outPath).catch((reason) => {
         throw new InternalServerErrorException(reason);
@@ -626,8 +627,8 @@ export class FileService {
 
       preview = await fs.readFile(outPath);
     } else if (type === VideoType.Video) {
-      const outPath = path.join(
-        `${file.destination}/${path.parse(file.filename).name}-preview.webm`,
+      const outPath = pathJoin(
+        `${file.destination}/${pathParse(file.filename).name}-preview.webm`,
       );
       await FfMpegPreview(type, meta, file.path, outPath).catch((reason) => {
         throw new InternalServerErrorException(reason);
@@ -650,7 +651,7 @@ export class FileService {
     file: Express.Multer.File,
   ): Promise<[MediaMeta, VideoType, string, Buffer]> {
     const [mime] = file.mimetype.split('/');
-    const extension = path.parse(file.originalname).ext.slice(1);
+    const extension = pathParse(file.originalname).ext.slice(1);
     const type =
       Object.values(VideoType).find((t) => t === mime) ?? VideoType.Other;
 

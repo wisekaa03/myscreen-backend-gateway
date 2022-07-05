@@ -34,7 +34,7 @@ export class FilePreviewEntity {
   file!: FileEntity;
 
   @Column({ type: 'bytea', nullable: true })
-  preview!: Buffer;
+  preview!: Uint8Array;
 
   @CreateDateColumn({ select: false })
   createdAt!: Date;

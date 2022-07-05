@@ -19,7 +19,7 @@ export async function FfMpegPreview(
     await exec(
       `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ` -vf scale="100:74" -y "${outPath}"`,
-    ).catch((reason) => {
+    ).catch((reason: unknown) => {
       logger.error(`FfMpeg: ${reason}`);
       throw reason;
     });
@@ -39,14 +39,14 @@ export async function FfMpegPreview(
         ' -an' +
         ` -vf scale="100:74",fps="1/${frameInterval}"` +
         ` -y "${outPattern}"`,
-    ).catch((reason) => {
+    ).catch((reason: unknown) => {
       logger.error(`FfMpeg: ${reason}`);
       throw reason;
     });
 
     await exec(
       `node_modules/ffmpeg-static/ffmpeg -framerate 1/0.6 -i "${outPattern}" -q:v 10 -v error -y "${outPath}"`,
-    ).catch((reason) => {
+    ).catch((reason: unknown) => {
       logger.error(`FfMpeg: ${reason}`);
       throw reason;
     });
