@@ -198,7 +198,7 @@ export class AuthController {
 
   @Post('/refresh')
   @HttpCode(200)
-  @ApiOperation({ operationId: 'auth-refresh', summary: 'Обновление токена' })
+  @ApiOperation({ operationId: 'refresh', summary: 'Обновление токена' })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',

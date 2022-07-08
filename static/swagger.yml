@@ -138,7 +138,7 @@ paths:
       tags: *a7
   /api/v2/auth/refresh:
     post:
-      operationId: auth-refresh
+      operationId: refresh
       summary: Обновление токена
       parameters: []
       requestBody:
@@ -2186,7 +2186,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.19.20
+  version: 2.20.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
