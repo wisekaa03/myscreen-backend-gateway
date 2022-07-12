@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import { join as pathJoin } from 'node:path';
-import { stringify as yamlStringify } from 'yaml';
+import { dump as yamlDump } from 'js-yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
@@ -100,12 +100,14 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   (async () => {
     const swaggerYml = pathJoin(staticAssets, 'swagger.yml');
-    writeFile(swaggerYml, yamlStringify(swaggerDocument)).then(() => {
-      logger.debug(
-        `The file '${swaggerYml}' has been writed`,
-        NestApplication.name,
-      );
-    });
+    writeFile(swaggerYml, yamlDump(swaggerDocument, { quotingType: '"' })).then(
+      () => {
+        logger.debug(
+          `The file '${swaggerYml}' has been writed`,
+          NestApplication.name,
+        );
+      },
+    );
   })();
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 

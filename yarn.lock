@@ -1075,6 +1075,11 @@
     jest-matcher-utils "^28.0.0"
     pretty-format "^28.0.0"
 
+"@types/js-yaml@^4.0.5":
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/@types/js-yaml/-/js-yaml-4.0.5.tgz#738dd390a6ecc5442f35e7f03fa1431353f7e138"
+  integrity sha512-FhpRzf927MNQdRZP0J5DLIdTXhjLYzeUTmLAu69mnVksLH9CJY3IuSeEgbKUki7GQZm0WqDkGzyxju2EZGD2wA==
+
 "@types/json-schema@*", "@types/json-schema@^7.0.8", "@types/json-schema@^7.0.9":
   version "7.0.11"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.11.tgz#d421b6c527a3037f7c84433fd2c4229e016863d3"
@@ -1788,10 +1793,10 @@ atomic-sleep@^1.0.0:
   resolved "https://registry.yarnpkg.com/atomic-sleep/-/atomic-sleep-1.0.0.tgz#eb85b77a601fc932cfe432c5acd364a9e2c9075b"
   integrity sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==
 
-aws-sdk@^2.1172.0:
-  version "2.1172.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1172.0.tgz#7b1c976c60570b1a11b7b13cd10d8c31cd5eb67f"
-  integrity sha512-B3NXD1ZLfwj8oDavb3GTUkDvCioWbRrf01nNkPvdTpoMBQCGw4elTuvG7ZQ114v5V2XWMxpu+SKMkcxALHEd6Q==
+aws-sdk@^2.1173.0:
+  version "2.1173.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1173.0.tgz#3da6cd33dff4de7c5572fee3e34483b5553992d7"
+  integrity sha512-RR5OENCE5N7J9sp6Are+8WacIa4sGgeVi3K0wezV97nDTHXJD82hSiaRCCN/xGfnB/GcWtPIBCetRD2tpiCN2w==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -6052,7 +6057,7 @@ read-pkg@^6.0.0:
     parse-json "^5.2.0"
     type-fest "^1.0.1"
 
-readable-stream@3, readable-stream@>=4.0.0, readable-stream@^3.0.2, readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.6.0, readable-stream@^4.0.0:
+readable-stream@3, readable-stream@>=4.1.0, readable-stream@^3.0.2, readable-stream@^3.1.1, readable-stream@^3.4.0, readable-stream@^3.6.0, readable-stream@^4.0.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/readable-stream/-/readable-stream-4.1.0.tgz#280d0a29f559d3fb684a277254e02b6f61ae0631"
   integrity sha512-sVisi3+P2lJ2t0BPbpK629j8wRW06yKGJUcaLAGXPAUhyUxVJm7VsCTit1PFgT4JHUDMrGNR+ZjSKpzGaRF3zw==
@@ -7441,11 +7446,6 @@ yaml@^1.10.0:
   version "1.10.2"
   resolved "https://registry.yarnpkg.com/yaml/-/yaml-1.10.2.tgz#2301c5ffbf12b467de8da2333a459e29e7920e4b"
   integrity sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==
-
-yaml@^2.1.1:
-  version "2.1.1"
-  resolved "https://registry.yarnpkg.com/yaml/-/yaml-2.1.1.tgz#1e06fb4ca46e60d9da07e4f786ea370ed3c3cfec"
-  integrity sha512-o96x3OPo8GjWeSLF+wOAbrPfhFOGY0W00GNaxCDv+9hkcDJEnev1yh8S7pgHF0ik6zc8sQLuL8hjHjJULZp8bw==
 
 yargs-parser@21.0.1, yargs-parser@^21.0.0, yargs-parser@^21.0.1:
   version "21.0.1"
