@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.20.2",
+  "version": "2.20.3",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -111,7 +111,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.6",
-    "swagger-ui-express": "^4.4.0",
+    "swagger-ui-express": "^4.5.0",
     "typeorm": "^0.3.7",
     "ws": "^8.8.0"
   },
@@ -122,8 +122,8 @@
     "@nestjs/testing": "^9.0.3",
     "@types/debug": "^4.1.7",
     "@types/express": "^4.17.13",
-    "@types/geojson": "^7946.0.8",
-    "@types/jest": "^28.1.4",
+    "@types/geojson": "^7946.0.9",
+    "@types/jest": "^28.1.5",
     "@types/js-yaml": "^4.0.5",
     "@types/jsonwebtoken": "^8.5.8",
     "@types/ms": "^0.7.31",
@@ -144,7 +144,7 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
     "husky": "^8.0.1",
-    "jest": "^28.1.2",
+    "jest": "^28.1.3",
     "prettier": "^2.7.1",
     "supertest": "^6.2.4",
     "ts-jest": "^28.0.5",
