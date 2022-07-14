@@ -100,13 +100,14 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   (async () => {
     const swaggerYml = pathJoin(staticAssets, 'swagger.yml');
-    writeFile(swaggerYml, yamlDump(swaggerDocument, { quotingType: '"' })).then(
-      () => {
-        logger.debug(
-          `The file '${swaggerYml}' has been writed`,
-          NestApplication.name,
-        );
-      },
+    const yamlDocument = yamlDump(swaggerDocument, {
+      quotingType: '"',
+      skipInvalid: true,
+    });
+    await writeFile(swaggerYml, yamlDocument);
+    logger.debug(
+      `The file '${swaggerYml}' has been writed`,
+      NestApplication.name,
     );
   })();
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
