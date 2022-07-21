@@ -17,10 +17,10 @@ import { version, author, homepage, description } from '../package.json';
 import { AppModule } from './app.module';
 import { ExceptionsFilter } from './exception/exceptions.filter';
 
-(async () => {
+async function bootstrap() {
   const configService = new ConfigService();
   const port = configService.get<number>('PORT', 3000);
-  const apiPath = configService.get<string>('API_PATH', '/api/v2/');
+  const apiPath = configService.get<string>('API_PATH', '/api/v2');
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
@@ -89,16 +89,8 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 
     .build();
 
-  const swaggerOptions: SwaggerCustomOptions = {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-    customSiteTitle: description,
-    customCss:
-      ".swagger-ui .topbar img { content: url('/favicon.ico') } .swagger-ui .topbar a::after { margin-left: 10px; content: 'MyScreen' }",
-  };
   const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
-  (async () => {
+  async function yamlSwagger() {
     const swaggerYml = pathJoin(staticAssets, 'swagger.yml');
     const yamlDocument = yamlDump(swaggerDocument, {
       quotingType: '"',
@@ -109,7 +101,17 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
       `The file '${swaggerYml}' has been writed`,
       NestApplication.name,
     );
-  })();
+  }
+  yamlSwagger();
+
+  const swaggerOptions: SwaggerCustomOptions = {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+    customSiteTitle: description,
+    customCss:
+      ".swagger-ui .topbar img { content: url('/favicon.ico') } .swagger-ui .topbar a::after { margin-left: 10px; content: 'MyScreen' }",
+  };
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
   await app.listen(port);
@@ -118,4 +120,5 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
     `Server version ${version} started in ${process.env.NODE_ENV} mode on ${url}${apiPath}`,
     NestApplication.name,
   );
-})();
+}
+bootstrap();
