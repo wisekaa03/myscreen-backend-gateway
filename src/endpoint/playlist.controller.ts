@@ -45,6 +45,7 @@ import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 import { UserRoleEnum } from '@/enums';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -110,10 +111,7 @@ export class PlaylistController {
   ): Promise<PlaylistsGetResponse> {
     const [data, count] = await this.playlistService.findAndCount({
       ...paginationQueryToConfig(scope),
-      where: {
-        userId,
-        ...where,
-      },
+      where: TypeOrmFind.Where(where, userId),
     });
 
     return {

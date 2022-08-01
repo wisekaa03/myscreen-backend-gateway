@@ -48,6 +48,7 @@ import { FolderEntity } from '@/database/folder.entity';
 import { FolderService } from '@/database/folder.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { UserRoleEnum } from '@/enums';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -106,10 +107,7 @@ export class FolderController {
   ): Promise<FoldersGetResponse> {
     const [data, count] = await this.folderService.findAndCount({
       ...paginationQueryToConfig(scope),
-      where: {
-        userId,
-        ...where,
-      },
+      where: TypeOrmFind.Where(where, userId),
     });
 
     return {

@@ -36,6 +36,7 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 1,
     'operator-linebreak': 0,
     'import/extensions': 0,
+    'no-nested-ternary': 0,
     'no-underscore-dangle': 0,
     '@typescript-eslint/brace-style': 0,
   },

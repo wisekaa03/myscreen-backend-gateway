@@ -30,6 +30,7 @@ import { Status } from '@/enums/status.enum';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PaymentService } from '@/database/payment.service';
 import { UserRoleEnum } from '@/enums';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -92,10 +93,7 @@ export class PaymentController {
   ): Promise<PaymentsGetResponse> {
     const [data, count] = await this.paymentService.find({
       ...paginationQueryToConfig(scope),
-      where: {
-        userId,
-        ...where,
-      },
+      where: TypeOrmFind.Where(where, userId),
     });
 
     return {

@@ -1,7 +1,10 @@
 import { Logger } from '@nestjs/common';
 import {
   FindManyOptions,
+  FindOptionsWhere,
   IsNull,
+  ILike,
+  Equal,
   ObjectLiteral,
   Repository,
   SelectQueryBuilder,
@@ -65,31 +68,54 @@ export class TypeOrmFind {
   ): FindManyOptions<Entity> => {
     if (find.where) {
       const { where, ...data } = find;
-      let whereIsNull;
-      if (Array.isArray(where)) {
-        whereIsNull = where.map((whereField) =>
-          Object.entries(whereField).reduce(
-            (accWhere, [field, value]) =>
-              value === null
-                ? { ...accWhere, [field]: IsNull() }
-                : { ...accWhere, [field]: value },
-            {} as Record<string, any>,
-          ),
-        );
-        return {
-          where: [...whereIsNull],
-          ...data,
-        } as FindManyOptions<Entity>;
-      }
-      whereIsNull = Object.entries(where).reduce(
-        (accWhere, [field, value]) =>
-          value === null
-            ? { ...accWhere, [field]: IsNull() }
-            : { ...accWhere, [field]: value },
-        {} as Record<string, any>,
-      );
-      return { where: { ...whereIsNull }, ...data } as FindManyOptions<Entity>;
+      return {
+        where: TypeOrmFind.IsNull(where),
+        ...data,
+      };
     }
     return find;
+  };
+
+  static IsNull = <Entity extends ObjectLiteral>(
+    where: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
+  ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
+    if (Array.isArray(where)) {
+      const whereIsNull = where.map((whereField) =>
+        Object.entries(whereField).reduce(
+          (accWhere, [field, value]) =>
+            value === null
+              ? { ...accWhere, [field]: IsNull() }
+              : typeof value === 'string' && value.match(/%/)
+              ? { ...accWhere, [field]: ILike(value) }
+              : { ...accWhere, [field]: value },
+          {} as Record<string, any>,
+        ),
+      );
+      return whereIsNull;
+    }
+    const whereIsNull = Object.entries(where).reduce(
+      (accWhere, [field, value]) =>
+        value === null
+          ? { ...accWhere, [field]: IsNull() }
+          : typeof value === 'string' && value.match(/%/)
+          ? { ...accWhere, [field]: ILike(value) }
+          : { ...accWhere, [field]: value },
+      {} as Record<string, any>,
+    );
+    return whereIsNull;
+  };
+
+  static Where = <Entity extends ObjectLiteral>(
+    where: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
+    userId?: string,
+  ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
+    if (userId) {
+      const whereIsNull = {
+        ...TypeOrmFind.IsNull(where),
+        userId: Equal(userId),
+      };
+      return whereIsNull;
+    }
+    return TypeOrmFind.IsNull(where);
   };
 }

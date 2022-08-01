@@ -67,6 +67,7 @@ import { UserRoleEnum, VideoType } from '@/enums';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { FolderService } from '@/database/folder.service';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -140,10 +141,7 @@ export class FileController {
   ): Promise<FilesGetResponse> {
     const [data, count] = await this.fileService.findAndCount({
       ...paginationQueryToConfig(scope),
-      where: {
-        userId,
-        ...where,
-      },
+      where: TypeOrmFind.Where(where, userId),
     });
 
     return {

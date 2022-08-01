@@ -50,6 +50,7 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { CooperationService } from '@/database/cooperation.service';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -125,7 +126,7 @@ export class MonitorController {
   ): Promise<MonitorsGetResponse> {
     const conditional: FindManyOptions<MonitorEntity> = {
       ...paginationQueryToConfig(scope),
-      where,
+      where: TypeOrmFind.Where(where),
     };
     if (role.includes(UserRoleEnum.Monitor)) {
       // добавляем то, что содержится у нас в userId: monitorId.

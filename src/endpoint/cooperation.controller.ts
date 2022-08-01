@@ -40,6 +40,7 @@ import {
 import { Status, UserRoleEnum } from '@/enums';
 import { CooperationService } from '@/database/cooperation.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -97,10 +98,7 @@ export class CooperationController {
   ): Promise<CooperationsGetResponse> {
     const [data, count] = await this.cooperationService.findAndCount({
       ...paginationQueryToConfig(scope),
-      where: {
-        userId,
-        ...where,
-      },
+      where: TypeOrmFind.Where(where, userId),
     });
 
     return {

@@ -30,6 +30,7 @@ import { Status } from '@/enums/status.enum';
 import { OrderService } from '@/database/order.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { UserRoleEnum } from '@/enums';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -92,10 +93,7 @@ export class OrderController {
   ): Promise<OrdersGetResponse> {
     const [data, count] = await this.orderService.find({
       ...paginationQueryToConfig(scope),
-      where: {
-        userId,
-        ...where,
-      },
+      where: TypeOrmFind.Where(where, userId),
     });
 
     return {

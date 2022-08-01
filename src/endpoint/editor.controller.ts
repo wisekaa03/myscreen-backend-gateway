@@ -55,6 +55,7 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
+import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -120,10 +121,7 @@ export class EditorController {
   ): Promise<EditorsGetResponse> {
     const [data, count] = await this.editorService.findAndCount({
       ...paginationQueryToConfig(scope),
-      where: {
-        userId,
-        ...where,
-      },
+      where: TypeOrmFind.Where(where, userId),
     });
 
     return {
