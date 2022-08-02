@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { FindOptionsWhere } from 'typeorm';
 
 import { LimitRequest } from './limit.request';
 import { PlaylistPartialRequest } from './playlist-partial.request';
@@ -15,7 +16,7 @@ export class PlaylistsGetRequest {
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => PlaylistPartialRequest)
-  where!: Partial<PlaylistPartialRequest>;
+  where!: FindOptionsWhere<PlaylistPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',

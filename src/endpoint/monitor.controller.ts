@@ -31,7 +31,6 @@ import {
   ForbiddenError,
   InternalServerError,
   MonitorGetResponse,
-  MonitorPartialRequest,
   MonitorsGetRequest,
   MonitorsGetResponse,
   MonitorsPlaylistAttachRequest,
@@ -41,6 +40,7 @@ import {
   SuccessResponse,
   UnauthorizedError,
   MonitorCreateRequest,
+  MonitorUpdateRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { CooperationApproved, Status, UserRoleEnum } from '@/enums';
@@ -426,7 +426,7 @@ export class MonitorController {
   async updateMonitor(
     @Req() { user: { id: userId } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
-    @Body() update: MonitorPartialRequest,
+    @Body() update: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
     const monitor = await this.monitorService.findOne({
       where: {

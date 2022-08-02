@@ -2,10 +2,10 @@ import type { FindManyOptions, FindOneOptions } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 import { LimitRequest } from '@/dto/request/limit.request';
 
-export type ScopeOrder<T> = FindOneOptions<T>['order'];
+export type ScopeOrder = FindOneOptions<any>['order'];
 
 export const paginationQueryToConfig = <T>(
-  scope?: LimitRequest<T>,
+  scope?: LimitRequest,
 ): FindManyOptions<T> => {
   const pagination: FindManyOptions<T> = {};
 
@@ -19,7 +19,7 @@ export const paginationQueryToConfig = <T>(
     }
 
     if (scope.order) {
-      const order: ScopeOrder<T> = {};
+      const order: ScopeOrder = {};
       Object.entries(scope.order).forEach(([field, orderBy]) => {
         switch (orderBy) {
           case 'ASC':

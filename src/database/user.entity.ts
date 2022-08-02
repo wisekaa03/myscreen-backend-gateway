@@ -171,7 +171,7 @@ export class UserEntity {
     required: true,
   })
   @IsDate()
-  createdAt!: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -180,5 +180,5 @@ export class UserEntity {
     required: true,
   })
   @IsDate()
-  updatedAt!: Date;
+  updatedAt?: Date;
 }

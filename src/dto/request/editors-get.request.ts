@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { FindOptionsWhere } from 'typeorm';
 
 import { LimitRequest } from './limit.request';
 import { EditorPartialRequest } from './editor-partial.request';
@@ -15,7 +16,7 @@ export class EditorsGetRequest {
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => EditorPartialRequest)
-  where!: Partial<EditorPartialRequest>;
+  where!: FindOptionsWhere<EditorPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',

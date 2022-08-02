@@ -889,9 +889,9 @@
     node-fetch "^2.6.1"
 
 "@sinclair/typebox@^0.24.1":
-  version "0.24.25"
-  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.25.tgz#61234177664cf161b621443a18f9e6714f757e2b"
-  integrity sha512-Z0b1gkfeHzRQen7juqXIZ4P2nvI6vZV+m/PhxBlVsNH/jSg2FuqJ+x4haFFIbbct6LMA7m6x2sBob/Giecj09A==
+  version "0.24.26"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.26.tgz#84f9e8c1d93154e734a7947609a1dc7c7a81cc22"
+  integrity sha512-1ZVIyyS1NXDRVT8GjWD5jULjhDyM3IsIHef2VGUMdnWOlX2tkPjyEX/7K0TGSH2S8EaPhp1ylFdjSjUGQ+gecg==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
@@ -2746,9 +2746,9 @@ ee-first@1.1.1:
   integrity sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==
 
 electron-to-chromium@^1.4.202:
-  version "1.4.207"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.207.tgz#9c3310ebace2952903d05dcaba8abe3a4ed44c01"
-  integrity sha512-piH7MJDJp4rJCduWbVvmUd59AUne1AFBJ8JaRQvk0KzNTSUnZrVXHCZc+eg+CGE4OujkcLJznhGKD6tuAshj5Q==
+  version "1.4.208"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.208.tgz#ecb5b47c8cc212a43172ffc5ce50178a638a5d74"
+  integrity sha512-diMr4t69FigAGUk2KovP0bygEtN/9AkqEVkzjEp0cu+zFFbZMVvwACpTTfuj1mAmFR5kNoSW8wGKDFWIvmThiQ==
 
 emittery@^0.10.2:
   version "0.10.2"
@@ -3288,9 +3288,9 @@ file-entry-cache@^6.0.1:
     flat-cache "^3.0.4"
 
 file-type@^17.1.2:
-  version "17.1.4"
-  resolved "https://registry.yarnpkg.com/file-type/-/file-type-17.1.4.tgz#e86bd6cc1b727ff2b2bd62f100958e4bcf37a6a3"
-  integrity sha512-3w/rJUUPBj6CYhVER3D5JCKwYJJiC36uj5dP+LnyubHI6H6FJo1TeWVCEA09YLVoZqV3/mLP26j9+Pz1GjAyjQ==
+  version "17.1.5"
+  resolved "https://registry.yarnpkg.com/file-type/-/file-type-17.1.5.tgz#bdc07bd60bda110c80bc2d0367a1598b2025675b"
+  integrity sha512-GMZRKCpcCQgqV0L/8ZqlMZ5lLzH2GLYnAwnqen6fr8b0CHzQPP+R/vXHBOsa0m/R74gCZP3sQDpu6fUeIvyFEQ==
   dependencies:
     readable-web-to-node-stream "^3.0.2"
     strtok3 "^7.0.0-alpha.9"
@@ -6784,10 +6784,10 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-swagger-ui-dist@4.12.0, swagger-ui-dist@>=4.11.0, swagger-ui-dist@>=4.13.0:
-  version "4.13.1"
-  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-4.13.1.tgz#7d1c3f79ef5ae1ee3ef932d0e0353784fbd37a95"
-  integrity sha512-H29YxoXWNFT5gHhgK2m7MiZM3fVzTw4t5zWfRJBXnn37leHKWjezo8AHLApZxrGs3mRuQLFhZ3LRgy/S955kNg==
+swagger-ui-dist@4.12.0, swagger-ui-dist@>=4.11.0, swagger-ui-dist@>=4.13.2, swagger-ui-dist@^4.13.2:
+  version "4.13.2"
+  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-4.13.2.tgz#fb814efd51bf06aa8630c0a0af6e3caa48ac6552"
+  integrity sha512-jHL6UyIYpvEI7NsuWd0R3hJaPQTg6Oo4qSBo+oVfOEkv6rrQm/475RGSMmZgV6ajp+Sgrp9CqrDjQYAgQqiv1A==
 
 swagger-ui-express@^4.5.0:
   version "4.5.0"

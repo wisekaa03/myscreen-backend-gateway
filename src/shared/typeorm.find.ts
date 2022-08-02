@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import { isDateString } from 'class-validator';
 import {
   FindManyOptions,
   FindOptionsWhere,
@@ -8,6 +9,7 @@ import {
   ObjectLiteral,
   Repository,
   SelectQueryBuilder,
+  Between,
 } from 'typeorm';
 
 export class TypeOrmFind {
@@ -69,37 +71,57 @@ export class TypeOrmFind {
     if (find.where) {
       const { where, ...data } = find;
       return {
-        where: TypeOrmFind.IsNull(where),
+        where: TypeOrmFind.#Where(where),
         ...data,
       };
     }
     return find;
   };
 
-  static IsNull = <Entity extends ObjectLiteral>(
+  static #Where = <Entity extends ObjectLiteral>(
     where: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
   ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
     if (Array.isArray(where)) {
       const whereIsNull = where.map((whereField) =>
-        Object.entries(whereField).reduce(
-          (accWhere, [field, value]) =>
-            value === null
-              ? { ...accWhere, [field]: IsNull() }
-              : typeof value === 'string' && value.match(/%/)
-              ? { ...accWhere, [field]: ILike(value) }
-              : { ...accWhere, [field]: value },
-          {} as Record<string, any>,
-        ),
+        Object.entries(whereField).reduce((accWhere, [field, value]) => {
+          if (value === null) {
+            return { ...accWhere, [field]: IsNull() };
+          }
+          if (typeof value === 'string' && value.match(/%/)) {
+            return { ...accWhere, [field]: ILike(value) };
+          }
+          if (
+            Array.isArray(value) &&
+            value.length === 2 &&
+            isDateString(value[0]) &&
+            isDateString(value[1])
+          ) {
+            return { ...accWhere, [field]: Between(value[0], value[1]) };
+          }
+          return { ...accWhere, [field]: value };
+        }, {} as Record<string, any>),
       );
       return whereIsNull;
     }
+
     const whereIsNull = Object.entries(where).reduce(
-      (accWhere, [field, value]) =>
-        value === null
-          ? { ...accWhere, [field]: IsNull() }
-          : typeof value === 'string' && value.match(/%/)
-          ? { ...accWhere, [field]: ILike(value) }
-          : { ...accWhere, [field]: value },
+      (accWhere, [field, value]) => {
+        if (value === null) {
+          return { ...accWhere, [field]: IsNull() };
+        }
+        if (typeof value === 'string' && value.match(/%/)) {
+          return { ...accWhere, [field]: ILike(value) };
+        }
+        if (
+          Array.isArray(value) &&
+          value.length === 2 &&
+          isDateString(value[0]) &&
+          isDateString(value[1])
+        ) {
+          return { ...accWhere, [field]: Between(value[0], value[1]) };
+        }
+        return { ...accWhere, [field]: value };
+      },
       {} as Record<string, any>,
     );
     return whereIsNull;
@@ -111,11 +133,11 @@ export class TypeOrmFind {
   ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
     if (userId) {
       const whereIsNull = {
-        ...TypeOrmFind.IsNull(where),
+        ...TypeOrmFind.#Where(where),
         userId: Equal(userId),
       };
       return whereIsNull;
     }
-    return TypeOrmFind.IsNull(where);
+    return TypeOrmFind.#Where(where);
   };
 }

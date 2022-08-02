@@ -449,7 +449,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/MonitorPartialRequest"
+              $ref: "#/components/schemas/MonitorUpdateRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -2127,7 +2127,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.20.16
+  version: 2.21.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2813,6 +2813,22 @@ components:
               - 45.04484
           allOf:
             - $ref: "#/components/schemas/PointClass"
+        createdAt:
+          description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
+        updatedAt:
+          description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
     Order:
       type: string
       enum:
@@ -3329,6 +3345,60 @@ components:
       required:
         - status
         - data
+    MonitorUpdateRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор монитора
+          format: uuid
+        name:
+          type: string
+          description: Имя
+          example: имя монитора
+        address:
+          description: Адрес монитора
+          example: *ref_60
+          allOf:
+            - $ref: "#/components/schemas/Address"
+        category:
+          description: Категория
+          example: GAS_STATION
+          $ref: "#/components/schemas/MonitorCategory"
+        price:
+          description: Стоимость показов
+          example: *ref_61
+          allOf:
+            - $ref: "#/components/schemas/MonitorPrice"
+        orientation:
+          description: Ориентация экрана
+          example: Horizontal
+          $ref: "#/components/schemas/MonitorOrientation"
+        monitorInfo:
+          description: Модель и прочие характеристики монитора
+          example: *ref_62
+          allOf:
+            - $ref: "#/components/schemas/MonitorInfo"
+        attached:
+          type: boolean
+          description: Присоединен
+          example: false
+        status:
+          description: Подключен
+          example: offline
+          $ref: "#/components/schemas/MonitorStatus"
+        playlistPlayed:
+          type: boolean
+          description: Проигрывается плэйлист
+          example: false
+        code:
+          type: string
+          description: Идентификатор устройства
+          example: 111-111-111
+        location:
+          example: *ref_63
+          allOf:
+            - $ref: "#/components/schemas/PointClass"
     RenderingStatus:
       type: string
       enum:
@@ -3351,6 +3421,22 @@ components:
           description: Статус рендеринга
           example: initial
           $ref: "#/components/schemas/RenderingStatus"
+        createdAt:
+          description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
+        updatedAt:
+          description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
     EditorsGetRequest:
       type: object
       properties:
@@ -3835,6 +3921,22 @@ components:
           description: В какую категорию относить файл
           example: media
           $ref: "#/components/schemas/FileCategory"
+        createdAt:
+          description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
+        updatedAt:
+          description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
     FilesGetRequest:
       type: object
       properties:
@@ -3989,6 +4091,22 @@ components:
           type: string
           description: Родительская папка
           format: uuid
+        createdAt:
+          description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
+        updatedAt:
+          description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
     FoldersGetRequest:
       type: object
       properties:
@@ -4190,15 +4308,21 @@ components:
           description: Демо пользователь
           example: true
         createdAt:
-          format: date-time
-          type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
         updatedAt:
-          format: date-time
-          type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
     UsersGetRequest:
       type: object
       properties:
@@ -4392,6 +4516,22 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
+        createdAt:
+          description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
+        updatedAt:
+          description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
     PlaylistsGetRequest:
       type: object
       properties:
@@ -4542,6 +4682,22 @@ components:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
           $ref: "#/components/schemas/CooperationApproved"
+        createdAt:
+          description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
+        updatedAt:
+          description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
     CooperationGetRequest:
       type: object
       properties:
