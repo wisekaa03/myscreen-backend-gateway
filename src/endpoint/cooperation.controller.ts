@@ -98,7 +98,7 @@ export class CooperationController {
   ): Promise<CooperationsGetResponse> {
     const [data, count] = await this.cooperationService.findAndCount({
       ...paginationQueryToConfig(scope),
-      where: TypeOrmFind.Where(where, userId),
+      where: TypeOrmFind.Where(where),
     });
 
     return {
