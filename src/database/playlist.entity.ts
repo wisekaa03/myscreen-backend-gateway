@@ -1,6 +1,7 @@
 import {
   IsDate,
   IsDefined,
+  IsEnum,
   IsNotEmpty,
   IsString,
   IsUUID,
@@ -8,6 +9,8 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  AfterLoad,
+  AfterUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -21,6 +24,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
@@ -58,6 +62,16 @@ export class PlaylistEntity {
   @IsString()
   @MinLength(1)
   description!: string;
+
+  @ApiProperty({
+    description: 'Статус',
+    enum: PlaylistStatusEnum,
+    enumName: 'PlaylistStatus',
+    example: PlaylistStatusEnum.Offline,
+    required: true,
+  })
+  @IsEnum(PlaylistStatusEnum)
+  status!: PlaylistStatusEnum;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     cascade: true,
@@ -117,4 +131,24 @@ export class PlaylistEntity {
   })
   @IsDate()
   updatedAt!: Date;
+
+  @AfterLoad()
+  @AfterUpdate()
+  after() {
+    if (this.monitors) {
+      const monitorStatus = this.monitors.filter(
+        (monitor) => monitor.status === MonitorStatus.Online,
+      );
+      const monitorPlayed = this.monitors.filter(
+        (monitor) => monitor.playlistPlayed,
+      );
+
+      this.status =
+        monitorPlayed.length > 0
+          ? PlaylistStatusEnum.Broadcast
+          : monitorStatus.length > 0
+          ? PlaylistStatusEnum.NoBroadcast
+          : PlaylistStatusEnum.Offline;
+    }
+  }
 }

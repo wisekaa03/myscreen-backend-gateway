@@ -4,7 +4,7 @@ import { IsDateString, IsOptional, MinLength } from 'class-validator';
 import { PlaylistEntity } from '@/database/playlist.entity';
 
 export class PlaylistPartialRequest extends PartialType(
-  PickType(PlaylistEntity, ['id', 'name', 'description']),
+  PickType(PlaylistEntity, ['id', 'name', 'description', 'status']),
 ) {
   @IsOptional()
   @MinLength(0)

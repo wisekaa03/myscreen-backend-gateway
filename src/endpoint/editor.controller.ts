@@ -107,7 +107,7 @@ export class EditorController {
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editors-get',
+    operationId: 'get-many',
     summary: 'Получение списка редакторов',
   })
   @ApiResponse({
@@ -134,7 +134,7 @@ export class EditorController {
   @Put('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-create',
+    operationId: 'create',
     summary: 'Создание редактора',
   })
   @ApiResponse({
@@ -166,7 +166,7 @@ export class EditorController {
   @Get('/:editorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-get',
+    operationId: 'get-one',
     summary: 'Получение редактора',
   })
   @ApiResponse({
@@ -197,7 +197,7 @@ export class EditorController {
   @Patch('/:editorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-update',
+    operationId: 'update',
     summary: 'Изменить редактор',
   })
   @ApiResponse({
@@ -246,7 +246,7 @@ export class EditorController {
   @Delete('/:editorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-delete',
+    operationId: 'delete',
     summary: 'Удаление редактора',
   })
   @ApiResponse({
@@ -279,7 +279,7 @@ export class EditorController {
   @Put('/layer/:editorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-layer-create',
+    operationId: 'layer-create',
     summary: 'Создание слоя редактора',
   })
   @ApiResponse({
@@ -333,7 +333,7 @@ export class EditorController {
   @Get('/layer/:editorId/:layerId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-layer-get',
+    operationId: 'layer-get',
     summary: 'Получение слоя редактора',
   })
   @ApiResponse({
@@ -373,7 +373,7 @@ export class EditorController {
   @Patch('/layer/:editorId/:layerId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-layer-update',
+    operationId: 'layer-update',
     summary: 'Изменить слой редактора',
   })
   @ApiResponse({
@@ -424,7 +424,7 @@ export class EditorController {
   @Put('/layer/:editorId/:layerId/:moveIndex')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-layer-move',
+    operationId: 'layer-move',
     summary: 'Изменить очередь слоя редактора',
   })
   @ApiResponse({
@@ -454,7 +454,7 @@ export class EditorController {
   @Delete('/layer/:editorId/:layerId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-layer-delete',
+    operationId: 'layer-delete',
     summary: 'Удаление слоя редактора',
   })
   @ApiResponse({
@@ -503,7 +503,7 @@ export class EditorController {
   @Post('/frame/:editorId/:time')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-frame-get',
+    operationId: 'frame-get',
     summary: 'Получение кадра из редактора',
   })
   @ApiResponse({
@@ -543,7 +543,7 @@ export class EditorController {
   @Get('/export/:editorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-export-status',
+    operationId: 'export-status',
     summary: 'Узнать статус экспорта видео из редактора',
   })
   @ApiResponse({
@@ -577,7 +577,7 @@ export class EditorController {
   @Post('/export/:editorId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'editor-export',
+    operationId: 'export',
     summary: 'Экспорт видео из редактора',
   })
   @ApiResponse({

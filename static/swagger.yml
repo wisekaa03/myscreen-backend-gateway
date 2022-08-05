@@ -516,7 +516,7 @@ paths:
       security: *ref_14
   /api/v2/editor:
     post:
-      operationId: editors-get
+      operationId: get-many
       summary: Получение списка редакторов
       parameters: []
       requestBody:
@@ -573,7 +573,7 @@ paths:
       security: &ref_22
         - bearer: []
     put:
-      operationId: editor-create
+      operationId: create
       summary: Создание редактора
       parameters: []
       requestBody:
@@ -599,7 +599,7 @@ paths:
       security: *ref_22
   /api/v2/editor/{editorId}:
     get:
-      operationId: editor-get
+      operationId: get-one
       summary: Получение редактора
       parameters:
         - name: editorId
@@ -623,7 +623,7 @@ paths:
       tags: *ref_21
       security: *ref_22
     patch:
-      operationId: editor-update
+      operationId: update
       summary: Изменить редактор
       parameters:
         - name: editorId
@@ -653,7 +653,7 @@ paths:
       tags: *ref_21
       security: *ref_22
     delete:
-      operationId: editor-delete
+      operationId: delete
       summary: Удаление редактора
       parameters:
         - name: editorId
@@ -678,7 +678,7 @@ paths:
       security: *ref_22
   /api/v2/editor/layer/{editorId}:
     put:
-      operationId: editor-layer-create
+      operationId: layer-create
       summary: Создание слоя редактора
       parameters:
         - name: editorId
@@ -709,7 +709,7 @@ paths:
       security: *ref_22
   /api/v2/editor/layer/{editorId}/{layerId}:
     get:
-      operationId: editor-layer-get
+      operationId: layer-get
       summary: Получение слоя редактора
       parameters:
         - name: editorId
@@ -738,7 +738,7 @@ paths:
       tags: *ref_21
       security: *ref_22
     patch:
-      operationId: editor-layer-update
+      operationId: layer-update
       summary: Изменить слой редактора
       parameters:
         - name: editorId
@@ -773,7 +773,7 @@ paths:
       tags: *ref_21
       security: *ref_22
     delete:
-      operationId: editor-layer-delete
+      operationId: layer-delete
       summary: Удаление слоя редактора
       parameters:
         - name: editorId
@@ -803,7 +803,7 @@ paths:
       security: *ref_22
   /api/v2/editor/layer/{editorId}/{layerId}/{moveIndex}:
     put:
-      operationId: editor-layer-move
+      operationId: layer-move
       summary: Изменить очередь слоя редактора
       parameters:
         - name: editorId
@@ -838,7 +838,7 @@ paths:
       security: *ref_22
   /api/v2/editor/frame/{editorId}/{time}:
     post:
-      operationId: editor-frame-get
+      operationId: frame-get
       summary: Получение кадра из редактора
       parameters:
         - name: editorId
@@ -869,7 +869,7 @@ paths:
       security: *ref_22
   /api/v2/editor/export/{editorId}:
     get:
-      operationId: editor-export-status
+      operationId: export-status
       summary: Узнать статус экспорта видео из редактора
       parameters:
         - name: editorId
@@ -893,7 +893,7 @@ paths:
       tags: *ref_21
       security: *ref_22
     post:
-      operationId: editor-export
+      operationId: export
       summary: Экспорт видео из редактора
       parameters:
         - name: editorId
@@ -1760,7 +1760,7 @@ paths:
         - bearer: []
   /api/v2/playlist:
     post:
-      operationId: playlists-get
+      operationId: get-many
       summary: Получение списка плэйлистов
       parameters: []
       requestBody:
@@ -1817,7 +1817,7 @@ paths:
       security: &ref_52
         - bearer: []
     put:
-      operationId: playlist-create
+      operationId: create
       summary: Создание плэйлиста
       parameters: []
       requestBody:
@@ -1843,7 +1843,7 @@ paths:
       security: *ref_52
   /api/v2/playlist/{playlistId}:
     get:
-      operationId: playlist-get
+      operationId: get-one
       summary: Получение плэйлиста
       parameters:
         - name: playlistId
@@ -1867,7 +1867,7 @@ paths:
       tags: *ref_51
       security: *ref_52
     patch:
-      operationId: playlist-update
+      operationId: update
       summary: Обновление плэйлиста
       parameters:
         - name: playlistId
@@ -1897,7 +1897,7 @@ paths:
       tags: *ref_51
       security: *ref_52
     delete:
-      operationId: playlist-delete
+      operationId: delete
       summary: Удаление плэйлиста
       parameters:
         - name: playlistId
@@ -1974,7 +1974,7 @@ paths:
         - bearer: []
   /api/v2/cooperation:
     post:
-      operationId: cooperations-get
+      operationId: get-many
       summary: Получение списка взаимодествия
       parameters: []
       requestBody:
@@ -2025,7 +2025,7 @@ paths:
       security: &ref_59
         - bearer: []
     put:
-      operationId: cooperation-create
+      operationId: create
       summary: Создание взаимодействия
       parameters: []
       requestBody:
@@ -2050,7 +2050,7 @@ paths:
       security: *ref_59
   /api/v2/cooperation/{cooperationId}:
     get:
-      operationId: cooperation-get
+      operationId: get-one
       summary: Получение взаимодействия
       parameters:
         - name: cooperationId
@@ -2073,7 +2073,7 @@ paths:
       tags: *ref_58
       security: *ref_59
     patch:
-      operationId: cooperation-update
+      operationId: update
       summary: Изменить взаимодействие
       parameters:
         - name: cooperationId
@@ -2102,7 +2102,7 @@ paths:
       tags: *ref_58
       security: *ref_59
     delete:
-      operationId: cooperation-delete
+      operationId: delete
       summary: Удаление взаимодействия
       parameters:
         - name: cooperationId
@@ -2127,7 +2127,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.22.2
+  version: 2.22.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2976,6 +2976,12 @@ components:
       required:
         - where
         - scope
+    PlaylistStatus:
+      type: string
+      enum:
+        - Offline
+        - Broadcast
+        - NoBroadcast
     VideoType:
       type: string
       enum:
@@ -3120,6 +3126,10 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
+        status:
+          description: Статус
+          example: Offline
+          $ref: "#/components/schemas/PlaylistStatus"
         createdAt:
           format: date-time
           type: string
@@ -3143,6 +3153,7 @@ components:
       required:
         - id
         - name
+        - status
         - createdAt
         - updatedAt
         - monitors
@@ -4516,6 +4527,10 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
+        status:
+          description: Статус
+          example: Offline
+          $ref: "#/components/schemas/PlaylistStatus"
         createdAt:
           description: Время создания
           example:
