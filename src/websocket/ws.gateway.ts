@@ -16,13 +16,13 @@ import type { IncomingMessage } from 'http';
 import { Observable, of } from 'rxjs';
 
 import { AuthService } from '@/auth/auth.service';
-import { UserService } from '@/database/user.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
-import { MonitorStatus, UserRoleEnum } from '@/enums';
+import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
 import { WebSocketClient } from './interface/websocket-client';
+import { PlaylistService } from '@/database/playlist.service';
 
 @WebSocketGateway({
   cors: {
@@ -36,7 +36,7 @@ export class WSGateway
 {
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
+    private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,
   ) {}
 
@@ -284,9 +284,22 @@ export class WSGateway
     monitor: MonitorEntity,
     playlist: PlaylistEntity | null,
   ): Promise<MonitorEntity> {
+    let playlistUpdated = playlist;
+    if (playlistUpdated) {
+      playlistUpdated = await this.playlistService.update(
+        playlistUpdated.userId,
+        {
+          ...playlistUpdated,
+          status: PlaylistStatusEnum.Broadcast,
+        },
+      );
+    }
+
     this.clients.forEach((value, client) => {
       if (value.userId === monitor.id) {
-        client.send(JSON.stringify([{ event: 'playlist', data: playlist }]));
+        client.send(
+          JSON.stringify([{ event: 'playlist', data: playlistUpdated }]),
+        );
       }
     });
 

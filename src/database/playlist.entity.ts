@@ -11,6 +11,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
   AfterUpdate,
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -63,6 +65,11 @@ export class PlaylistEntity {
   @MinLength(1)
   description!: string;
 
+  @Column({
+    type: 'enum',
+    enum: PlaylistStatusEnum,
+    default: PlaylistStatusEnum.Offline,
+  })
   @ApiProperty({
     description: 'Статус',
     enum: PlaylistStatusEnum,
@@ -133,7 +140,8 @@ export class PlaylistEntity {
   updatedAt!: Date;
 
   @AfterLoad()
-  @AfterUpdate()
+  @BeforeInsert()
+  @BeforeUpdate()
   after() {
     if (this.monitors) {
       const monitorStatus = this.monitors.filter(

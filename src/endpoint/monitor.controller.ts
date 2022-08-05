@@ -233,7 +233,7 @@ export class MonitorController {
         ...monitor,
         playlist,
       });
-      await this.wsGateway.monitorPlaylist(monitor, playlist);
+      /* await */ this.wsGateway.monitorPlaylist(monitor, playlist);
 
       if (
         role.includes(UserRoleEnum.Advertiser) ||
