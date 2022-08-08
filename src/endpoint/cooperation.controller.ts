@@ -123,7 +123,11 @@ export class CooperationController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() body: CooperationCreateRequest,
   ): Promise<CooperationGetResponse> {
-    const data = await this.cooperationService.update(userId, body);
+    const data = await this.cooperationService.update({
+      ...body,
+      sellerId: userId,
+      userId,
+    });
     if (!data) {
       throw new NotFoundException('Cooperation not found');
     }
@@ -182,7 +186,6 @@ export class CooperationController {
   ): Promise<CooperationGetResponse> {
     const editor = await this.cooperationService.findOne({
       where: {
-        userId,
         id,
       },
     });
@@ -190,7 +193,7 @@ export class CooperationController {
       throw new NotFoundException('Cooperation not found');
     }
 
-    const data = await this.cooperationService.update(userId, {
+    const data = await this.cooperationService.update({
       ...editor,
       ...update,
     });

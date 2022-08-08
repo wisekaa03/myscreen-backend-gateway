@@ -239,7 +239,7 @@ export class MonitorController {
         role.includes(UserRoleEnum.Advertiser) ||
         role.includes(UserRoleEnum.Administrator)
       ) {
-        await this.cooperationService.update(userId, {
+        /* await */ this.cooperationService.update({
           buyerId: null,
           sellerId: userId,
           monitor,

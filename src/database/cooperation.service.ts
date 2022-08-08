@@ -55,16 +55,10 @@ export class CooperationService {
   }
 
   async update(
-    userId: string,
     update: Partial<CooperationEntity>,
   ): Promise<CooperationEntity | null> {
-    const updated: DeepPartial<CooperationEntity> = {
-      ...update,
-      userId,
-    };
-
     const cooperation = await this.cooperationRepository.save(
-      this.cooperationRepository.create(updated),
+      this.cooperationRepository.create(update),
     );
 
     return this.cooperationRepository.findOne({
