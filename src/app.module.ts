@@ -70,13 +70,13 @@ import { WSModule } from '@/websocket/ws.module';
 
     AuthModule,
     MailModule,
+    WSModule,
     S3Module.forRootAsync({
       useClass: S3ModuleOptionsClass,
       inject: [ConfigService],
     }),
     DatabaseModule,
     EndpointModule,
-    WSModule,
   ],
   providers: [Logger],
 })

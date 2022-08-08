@@ -239,14 +239,18 @@ export class MonitorController {
         role.includes(UserRoleEnum.Advertiser) ||
         role.includes(UserRoleEnum.Administrator)
       ) {
-        /* await */ this.cooperationService.update({
-          buyerId: null,
-          sellerId: userId,
-          monitor,
-          playlist,
-          approved: CooperationApproved.NotProcessed,
-          userId,
-        });
+        /* await */ this.cooperationService
+          .update(undefined, {
+            buyerId: null,
+            sellerId: userId,
+            monitor,
+            playlist,
+            approved: CooperationApproved.NotProcessed,
+            userId,
+          })
+          .catch((error) => {
+            this.logger.error(error);
+          });
       }
 
       return monitor;

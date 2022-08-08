@@ -1,18 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeepPartial,
-  DeleteResult,
-  FindManyOptions,
-  Repository,
-} from 'typeorm';
+import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
 
+import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/shared/typeorm.find';
+import { CooperationApproved } from '@/enums';
 import { CooperationEntity } from './cooperation.entity';
 
 @Injectable()
 export class CooperationService {
+  private logger = new Logger(CooperationService.name);
+
   constructor(
+    private readonly wsGateway: WSGateway,
     @InjectRepository(CooperationEntity)
     private readonly cooperationRepository: Repository<CooperationEntity>,
   ) {}
@@ -55,14 +55,27 @@ export class CooperationService {
   }
 
   async update(
+    id: string | undefined,
     update: Partial<CooperationEntity>,
   ): Promise<CooperationEntity | null> {
-    const cooperation = await this.cooperationRepository.save(
-      this.cooperationRepository.create(update),
+    await this.cooperationRepository.manager.transaction(
+      async (cooperationRepository) => {
+        const cooperation = await cooperationRepository.save(
+          this.cooperationRepository.create(update),
+        );
+
+        if (update.approved === CooperationApproved.Allowed) {
+          /* await */ this.wsGateway
+            .monitorPlaylist(cooperation.monitor, cooperation.playlist)
+            .catch((error) => {
+              this.logger.error(error);
+            });
+        }
+      },
     );
 
     return this.cooperationRepository.findOne({
-      where: { id: cooperation.id },
+      where: { id },
     });
   }
 

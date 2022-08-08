@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
+import { WSGateway } from '@/websocket/ws.gateway';
 import { CooperationEntity } from './cooperation.entity';
 import { CooperationService } from './cooperation.service';
 
@@ -22,6 +24,10 @@ describe(CooperationService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CooperationService,
+        {
+          provide: WSGateway,
+          useClass: mockRepository,
+        },
         {
           provide: getRepositoryToken(CooperationEntity),
           useClass: mockRepository,

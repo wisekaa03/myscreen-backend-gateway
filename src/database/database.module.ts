@@ -1,10 +1,11 @@
-import { Module, Logger, OnModuleInit } from '@nestjs/common';
+import { Module, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { MonitorStatus } from '@/enums';
 import { TypeOrmOptionsClass } from '@/shared/typeorm.options';
 import { MailModule } from '@/mail/mail.module';
+import { WSModule } from '@/websocket/ws.module';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorService } from './editor.service';
@@ -35,6 +36,7 @@ import { CooperationEntity } from './cooperation.entity';
 @Module({
   imports: [
     MailModule,
+    forwardRef(() => WSModule),
 
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmOptionsClass,

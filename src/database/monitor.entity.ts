@@ -46,7 +46,7 @@ export class PointClass implements Point {
     required: true,
   })
   @IsIn(['Point'])
-  type: 'Point' = 'Point';
+  'type': 'Point' = 'Point' as const;
 
   @ApiProperty({
     type: Number,

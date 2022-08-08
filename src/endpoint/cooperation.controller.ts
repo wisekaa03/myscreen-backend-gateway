@@ -123,7 +123,7 @@ export class CooperationController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() body: CooperationCreateRequest,
   ): Promise<CooperationGetResponse> {
-    const data = await this.cooperationService.update({
+    const data = await this.cooperationService.update(undefined, {
       ...body,
       sellerId: userId,
       userId,
@@ -193,7 +193,7 @@ export class CooperationController {
       throw new NotFoundException('Cooperation not found');
     }
 
-    const data = await this.cooperationService.update({
+    const data = await this.cooperationService.update(id, {
       ...editor,
       ...update,
     });
