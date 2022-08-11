@@ -2127,7 +2127,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.22.9
+  version: 2.22.10
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
