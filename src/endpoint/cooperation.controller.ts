@@ -84,7 +84,7 @@ export class CooperationController {
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'get-many',
+    operationId: 'cooperations-get',
     summary: 'Получение списка взаимодествия',
   })
   @ApiResponse({
@@ -111,7 +111,7 @@ export class CooperationController {
   @Put('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'create',
+    operationId: 'cooperation-create',
     summary: 'Создание взаимодействия',
   })
   @ApiResponse({
@@ -141,7 +141,7 @@ export class CooperationController {
   @Get('/:cooperationId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'get-one',
+    operationId: 'cooperation-get',
     summary: 'Получение взаимодействия',
   })
   @ApiResponse({
@@ -171,7 +171,7 @@ export class CooperationController {
   @Patch('/:cooperationId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'update',
+    operationId: 'cooperation-update',
     summary: 'Изменить взаимодействие',
   })
   @ApiResponse({
@@ -210,7 +210,7 @@ export class CooperationController {
   @Delete('/:cooperationId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'delete',
+    operationId: 'cooperation-delete',
     summary: 'Удаление взаимодействия',
   })
   @ApiResponse({
