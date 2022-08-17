@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -121,6 +122,7 @@ export class CooperationEntity {
     enum: CooperationApproved,
     default: CooperationApproved.NotProcessed,
   })
+  @Index()
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
     enum: CooperationApproved,

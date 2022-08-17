@@ -23,6 +23,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { In } from 'typeorm';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
   BadRequestError,
@@ -37,7 +38,7 @@ import {
   SuccessResponse,
   UnauthorizedError,
 } from '@/dto';
-import { Status, UserRoleEnum } from '@/enums';
+import { CooperationApproved, Status, UserRoleEnum } from '@/enums';
 import { CooperationService } from '@/database/cooperation.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { TypeOrmFind } from '@/shared/typeorm.find';
@@ -93,14 +94,36 @@ export class CooperationController {
     type: CooperationsGetResponse,
   })
   async getCooperations(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
     @Body() { where, scope }: CooperationGetRequest,
   ): Promise<CooperationsGetResponse> {
+    if (role.includes(UserRoleEnum.MonitorOwner)) {
+      const [data, count] = await this.cooperationService.findAndCount({
+        ...paginationQueryToConfig(scope),
+        where: { ...TypeOrmFind.Where(where), buyerId: userId },
+      });
+      return {
+        status: Status.Success,
+        count,
+        data,
+      };
+    }
+    if (role.includes(UserRoleEnum.Advertiser)) {
+      const [data, count] = await this.cooperationService.findAndCount({
+        ...paginationQueryToConfig(scope),
+        where: { ...TypeOrmFind.Where(where), sellerId: userId },
+      });
+      return {
+        status: Status.Success,
+        count,
+        data,
+      };
+    }
+
     const [data, count] = await this.cooperationService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: TypeOrmFind.Where(where),
     });
-
     return {
       status: Status.Success,
       count,

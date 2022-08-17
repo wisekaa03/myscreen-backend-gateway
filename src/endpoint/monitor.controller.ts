@@ -241,8 +241,8 @@ export class MonitorController {
       ) {
         /* await */ this.cooperationService
           .update(undefined, {
-            buyerId: null,
-            sellerId: userId,
+            sellerId: monitor.userId,
+            buyerId: userId,
             monitor,
             playlist,
             approved: CooperationApproved.NotProcessed,

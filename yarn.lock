@@ -1809,10 +1809,10 @@ available-typed-arrays@^1.0.5:
   resolved "https://registry.yarnpkg.com/available-typed-arrays/-/available-typed-arrays-1.0.5.tgz#92f95616501069d07d10edb2fc37d3e1c65123b7"
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
-aws-sdk@^2.1196.0:
-  version "2.1196.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1196.0.tgz#28951e1c742373397514f295f742eb3a9497c02d"
-  integrity sha512-iOGhCY5IqGfHCJ70p0H/uxkXDh/96KanAMfhnGGbIKbpVliuEV7SYxTfsWORaaUHey+N8FE6OMKfzo7F4X+wQg==
+aws-sdk@^2.1197.0:
+  version "2.1197.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1197.0.tgz#d679f52353f03e598ffed5609ed65593cef1f83f"
+  integrity sha512-BUxYU+gzxCylEM37NeGcS5kWotXVmKrOBG9+/+U+tnOTW7/3yNBrBfhPrs5IgMhm7H38CLWgOqwJaGDlYzwH/Q==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -5112,9 +5112,9 @@ minipass-collect@^1.0.2:
     minipass "^3.0.0"
 
 minipass-fetch@^2.0.3:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/minipass-fetch/-/minipass-fetch-2.1.0.tgz#ca1754a5f857a3be99a9271277246ac0b44c3ff8"
-  integrity sha512-H9U4UVBGXEyyWJnqYDCLp1PwD8XIkJ4akNHp1aGVI+2Ym7wQMlxDKi4IB4JbmyU+pl9pEs/cVrK6cOuvmbK4Sg==
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/minipass-fetch/-/minipass-fetch-2.1.1.tgz#9b39c047cf10af9bfa6f3a4d25ed88444be27a4c"
+  integrity sha512-/kgtXVGS10PTFET6dAbOBWQtgH+iDiI4NhRqAftojRlsOJhk0y45sVVxqCaRQC+AMFH7JkHiWpuKJKQ+mojKiA==
   dependencies:
     minipass "^3.1.6"
     minipass-sized "^1.0.3"
@@ -6734,10 +6734,10 @@ supports-preserve-symlinks-flag@^1.0.0:
   resolved "https://registry.yarnpkg.com/supports-preserve-symlinks-flag/-/supports-preserve-symlinks-flag-1.0.0.tgz#6eda4bd344a3c94aea376d4cc31bc77311039e09"
   integrity sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==
 
-swagger-ui-dist@4.13.2, swagger-ui-dist@>=4.11.0, swagger-ui-dist@>=4.13.2, swagger-ui-dist@^4.13.2:
-  version "4.13.2"
-  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-4.13.2.tgz#fb814efd51bf06aa8630c0a0af6e3caa48ac6552"
-  integrity sha512-jHL6UyIYpvEI7NsuWd0R3hJaPQTg6Oo4qSBo+oVfOEkv6rrQm/475RGSMmZgV6ajp+Sgrp9CqrDjQYAgQqiv1A==
+swagger-ui-dist@4.13.2, swagger-ui-dist@>=4.11.0, swagger-ui-dist@>=4.14.0, swagger-ui-dist@^4.14.0:
+  version "4.14.0"
+  resolved "https://registry.yarnpkg.com/swagger-ui-dist/-/swagger-ui-dist-4.14.0.tgz#e34d807464eb84578c43902e393084a1a6fbda52"
+  integrity sha512-TBzhheU15s+o54Cgk9qxuYcZMiqSm/SkvKnapoGHOF66kz0Y5aGjpzj5BT/vpBbn6rTPJ9tUYXQxuDWfsjiGMw==
 
 swagger-ui-express@^4.5.0:
   version "4.5.0"
@@ -7091,9 +7091,9 @@ unbox-primitive@^1.0.2:
     which-boxed-primitive "^1.0.2"
 
 undici@^5.1.1:
-  version "5.8.2"
-  resolved "https://registry.yarnpkg.com/undici/-/undici-5.8.2.tgz#071fc8a6a5d24db0ad510ad442f607d9b09d5eec"
-  integrity sha512-3KLq3pXMS0Y4IELV045fTxqz04Nk9Ms7yfBBHum3yxsTR4XNn+ZCaUbf/mWitgYDAhsplQ0B1G4S5D345lMO3A==
+  version "5.9.1"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-5.9.1.tgz#fc9fd85dd488f965f153314a63d9426a11f3360b"
+  integrity sha512-6fB3a+SNnWEm4CJbgo0/CWR8RGcOCQP68SF4X0mxtYTq2VNN8T88NYrWVBAeSX+zb7bny2dx2iYhP3XHi00omg==
 
 uniq@^1.0.0:
   version "1.0.1"

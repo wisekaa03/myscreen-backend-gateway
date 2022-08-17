@@ -74,6 +74,9 @@ export class CooperationService {
       },
     );
 
+    if (id === undefined) {
+      return null;
+    }
     return this.cooperationRepository.findOne({
       where: { id },
     });
