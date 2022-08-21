@@ -186,11 +186,7 @@ export class MonitorController {
   }
 
   @Patch('/playlist')
-  @Roles(
-    UserRoleEnum.Administrator,
-    UserRoleEnum.Advertiser,
-    UserRoleEnum.MonitorOwner,
-  )
+  @Roles(UserRoleEnum.Administrator, UserRoleEnum.Advertiser)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -233,7 +229,6 @@ export class MonitorController {
         ...monitor,
         playlist,
       });
-      /* await */ this.wsGateway.monitorPlaylist(monitor, playlist);
 
       if (
         role.includes(UserRoleEnum.Advertiser) ||
@@ -267,11 +262,7 @@ export class MonitorController {
 
   @Delete('/playlist')
   @HttpCode(200)
-  @Roles(
-    UserRoleEnum.Administrator,
-    UserRoleEnum.Advertiser,
-    UserRoleEnum.MonitorOwner,
-  )
+  @Roles(UserRoleEnum.Administrator, UserRoleEnum.Advertiser)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     operationId: 'monitor-playlist-delete',
@@ -374,7 +365,6 @@ export class MonitorController {
   @HttpCode(200)
   @Roles(
     UserRoleEnum.Administrator,
-    UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
   )

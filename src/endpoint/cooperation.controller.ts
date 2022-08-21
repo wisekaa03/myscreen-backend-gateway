@@ -4,8 +4,10 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
   HttpCode,
+  Inject,
   Logger,
   NotFoundException,
   Param,
@@ -42,6 +44,7 @@ import { CooperationApproved, Status, UserRoleEnum } from '@/enums';
 import { CooperationService } from '@/database/cooperation.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { TypeOrmFind } from '@/shared/typeorm.find';
+import { WSGateway } from '@/websocket/ws.gateway';
 
 @ApiResponse({
   status: 400,
@@ -80,7 +83,11 @@ import { TypeOrmFind } from '@/shared/typeorm.find';
 export class CooperationController {
   logger = new Logger(CooperationController.name);
 
-  constructor(private readonly cooperationService: CooperationService) {}
+  constructor(
+    private readonly cooperationService: CooperationService,
+    @Inject(forwardRef(() => WSGateway))
+    private readonly wsGateway: WSGateway,
+  ) {}
 
   @Post('/')
   @HttpCode(200)
@@ -212,7 +219,7 @@ export class CooperationController {
     @Param('cooperationId', ParseUUIDPipe) id: string,
     @Body() update: CooperationUpdateRequest,
   ): Promise<CooperationGetResponse> {
-    const editor = await this.cooperationService.findOne({
+    const application = await this.cooperationService.findOne({
       where: [
         {
           id,
@@ -224,16 +231,23 @@ export class CooperationController {
         },
       ],
     });
-    if (!editor) {
+    if (!application) {
       throw new NotFoundException('Cooperation not found');
     }
 
     const data = await this.cooperationService.update(id, {
-      ...editor,
+      ...application,
       ...update,
     });
     if (!data) {
       throw new BadRequestException('Cooperation exists and not exists ?');
+    }
+
+    const { monitor, playlist } = application;
+    if (data.approved === CooperationApproved.Allowed) {
+      /* await */ this.wsGateway.monitorPlaylist(monitor, playlist);
+    } else {
+      /* await */ this.wsGateway.monitorPlaylist(monitor, null);
     }
 
     return {
