@@ -97,10 +97,14 @@ export class CooperationController {
     @Req() { user: { id: userId, role } }: ExpressRequest,
     @Body() { where, scope }: CooperationGetRequest,
   ): Promise<CooperationsGetResponse> {
+    const sqlWhere = TypeOrmFind.Where(where);
     if (role.includes(UserRoleEnum.MonitorOwner)) {
       const [data, count] = await this.cooperationService.findAndCount({
         ...paginationQueryToConfig(scope),
-        where: { ...TypeOrmFind.Where(where), buyerId: userId },
+        where: [
+          { ...sqlWhere, buyerId: userId },
+          { ...sqlWhere, sellerId: userId },
+        ],
       });
       return {
         status: Status.Success,
@@ -111,7 +115,10 @@ export class CooperationController {
     if (role.includes(UserRoleEnum.Advertiser)) {
       const [data, count] = await this.cooperationService.findAndCount({
         ...paginationQueryToConfig(scope),
-        where: { ...TypeOrmFind.Where(where), sellerId: userId },
+        where: [
+          { ...sqlWhere, buyerId: userId },
+          { ...sqlWhere, sellerId: userId },
+        ],
       });
       return {
         status: Status.Success,
@@ -173,12 +180,10 @@ export class CooperationController {
     type: CooperationGetResponse,
   })
   async getEditor(
-    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('cooperationId', ParseUUIDPipe) id: string,
   ): Promise<CooperationGetResponse> {
     const data = await this.cooperationService.findOne({
       where: {
-        userId,
         id,
       },
     });
@@ -208,9 +213,16 @@ export class CooperationController {
     @Body() update: CooperationUpdateRequest,
   ): Promise<CooperationGetResponse> {
     const editor = await this.cooperationService.findOne({
-      where: {
-        id,
-      },
+      where: [
+        {
+          id,
+          sellerId: userId,
+        },
+        {
+          id,
+          buyerId: userId,
+        },
+      ],
     });
     if (!editor) {
       throw new NotFoundException('Cooperation not found');
@@ -246,7 +258,10 @@ export class CooperationController {
     @Param('cooperationId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
     const cooperation = await this.cooperationService.findOne({
-      where: { userId, id },
+      where: [
+        { id, sellerId: userId },
+        { id, buyerId: userId },
+      ],
       select: ['id', 'userId'],
     });
     if (!cooperation) {

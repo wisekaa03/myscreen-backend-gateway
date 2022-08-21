@@ -189,7 +189,7 @@ export class FileService {
   async upload(
     userId: string,
     {
-      folderId: folderIdp = undefined,
+      folderId: folderIdOrig = undefined,
       category = FileCategory.Media,
       monitorId = undefined,
     }: FileUploadRequest,
@@ -197,15 +197,15 @@ export class FileService {
   ): Promise<Array<FileEntity>> {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
       let folder: FolderEntity | null = null;
-      if (!folderIdp) {
+      if (!folderIdOrig) {
         folder = await this.folderService.rootFolder(userId);
       } else {
         folder =
           (await this.folderService.findOne({
-            where: { userId, id: folderIdp },
+            where: { userId, id: folderIdOrig },
           })) ?? null;
         if (!folder) {
-          throw new NotFoundException(`Folder '${folderIdp}' not found`);
+          throw new NotFoundException(`Folder '${folderIdOrig}' not found`);
         }
       }
       const folderId = folder.id;
@@ -265,16 +265,6 @@ export class FileService {
           monitors: monitorId ? [{ id: monitorId }] : undefined,
         };
 
-        const update = await fileRepository.save(
-          fileRepository.create<FileEntity>(FileEntity, media),
-        );
-        return fileRepository.findOneOrFail<FileEntity>(FileEntity, {
-          where: { id: update.id },
-        });
-      });
-      const returnFiles = await Promise.all(filesPromises);
-
-      const s3Promises = files.map(async (file) => {
         const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
         try {
           const promise = await this.s3Service
@@ -285,6 +275,9 @@ export class FileService {
               Body: createReadStream(file.path),
             })
             .promise();
+          if (!promise) {
+            throw new Error('Failed to upload');
+          }
           this.logger.debug(
             `The file '${file.path}' has been uploaded on S3 '${promise.Key}'`,
           );
@@ -292,10 +285,13 @@ export class FileService {
           this.logger.error('S3 Error: upload', error);
           throw new ServiceUnavailableException(error);
         }
-      });
-      await Promise.all(s3Promises);
 
-      return returnFiles;
+        return fileRepository.save(
+          fileRepository.create<FileEntity>(FileEntity, media),
+        );
+      });
+
+      return Promise.all(filesPromises);
     });
   }
 
