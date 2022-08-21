@@ -497,10 +497,12 @@ export class FileController {
         buffer = await this.fileService.previewFile(file).catch((reason) => {
           throw reason;
         });
+      } else {
+        /* await */ this.fileService.previewFile(file).catch(() => {});
       }
 
       res.setHeader('Content-Length', buffer.length);
-      res.setHeader('Cache-Control', 'private, max-age=31536000');
+      res.setHeader('Cache-Control', 'private, max-age=315360');
       const fileParse = pathParse(file.name);
       if (file.videoType === VideoType.Video) {
         res.setHeader('Content-Type', 'video/webm');
