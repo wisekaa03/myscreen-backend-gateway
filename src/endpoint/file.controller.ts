@@ -349,7 +349,9 @@ export class FileController {
       }
     } else {
       file = await this.fileService.findOne({
-        where: { id, userId },
+        // TODO: where: {id, userId} - посмотреть если в заявках (cooperation) участвует
+        // TODO: то выдавать его, нужно продумать
+        where: { id },
         relations: {
           folder: true,
         },
@@ -468,7 +470,7 @@ export class FileController {
   ): Promise<void> {
     const file = await this.fileService.findOne({
       where: {
-        userId,
+        /* userId, */
         id: fileId,
       },
       select: [
