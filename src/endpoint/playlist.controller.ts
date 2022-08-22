@@ -77,11 +77,7 @@ import { TypeOrmFind } from '@/shared/typeorm.find';
   description: 'Ошибка сервера',
   type: ServiceUnavailableError,
 })
-@Roles(
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-)
+@Roles(UserRoleEnum.Administrator, UserRoleEnum.Advertiser)
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiTags('playlist')
@@ -162,6 +158,13 @@ export class PlaylistController {
   }
 
   @Get('/:playlistId')
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
     operationId: 'playlist-get',

@@ -93,7 +93,7 @@ export class CooperationController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'cooperations-get',
-    summary: 'Получение списка взаимодествия',
+    summary: 'Получение списка заявок',
   })
   @ApiResponse({
     status: 200,
@@ -145,41 +145,11 @@ export class CooperationController {
     };
   }
 
-  @Put('/')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'cooperation-create',
-    summary: 'Создание взаимодействия',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: CooperationGetResponse,
-  })
-  async createEditor(
-    @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() body: CooperationCreateRequest,
-  ): Promise<CooperationGetResponse> {
-    const data = await this.cooperationService.update(undefined, {
-      ...body,
-      sellerId: userId,
-      userId,
-    });
-    if (!data) {
-      throw new NotFoundException('Cooperation not found');
-    }
-
-    return {
-      status: Status.Success,
-      data,
-    };
-  }
-
   @Get('/:cooperationId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'cooperation-get',
-    summary: 'Получение взаимодействия',
+    summary: 'Получение заявки',
   })
   @ApiResponse({
     status: 200,
@@ -207,7 +177,7 @@ export class CooperationController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'cooperation-update',
-    summary: 'Изменить взаимодействие',
+    summary: 'Изменить заявку',
   })
   @ApiResponse({
     status: 200,
@@ -246,8 +216,6 @@ export class CooperationController {
     const { monitor, playlist } = application;
     if (data.approved === CooperationApproved.Allowed) {
       /* await */ this.wsGateway.monitorPlaylist(monitor, playlist);
-    } else {
-      /* await */ this.wsGateway.monitorPlaylist(monitor, null);
     }
 
     return {
@@ -260,7 +228,7 @@ export class CooperationController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'cooperation-delete',
-    summary: 'Удаление взаимодействия',
+    summary: 'Удаление заявки',
   })
   @ApiResponse({
     status: 200,

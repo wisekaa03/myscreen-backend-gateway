@@ -104,11 +104,7 @@ import { TypeOrmFind } from '@/shared/typeorm.find';
   description: 'Ошибка сервера',
   type: ServiceUnavailableError,
 })
-@Roles(
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-)
+@Roles(UserRoleEnum.Administrator, UserRoleEnum.Advertiser)
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 @ApiExtraModels(FileUploadRequest)
