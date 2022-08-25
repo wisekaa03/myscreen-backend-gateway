@@ -1,10 +1,10 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString, IsOptional } from 'class-validator';
 
-import { CooperationEntity } from '@/database/cooperation.entity';
+import { ApplicationEntity } from '@/database/application.entity';
 
 export class CooperationPartialRequest extends PartialType(
-  OmitType(CooperationEntity, [
+  OmitType(ApplicationEntity, [
     'buyer',
     'seller',
     'monitor',

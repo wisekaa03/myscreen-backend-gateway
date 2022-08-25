@@ -49,7 +49,7 @@ import { WSGateway } from '@/websocket/ws.gateway';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { CooperationService } from '@/database/cooperation.service';
+import { ApplicationService } from '@/database/application.service';
 import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
@@ -97,7 +97,7 @@ export class MonitorController {
   constructor(
     private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
-    private readonly cooperationService: CooperationService,
+    private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -238,7 +238,7 @@ export class MonitorController {
         role.includes(UserRoleEnum.Advertiser) ||
         role.includes(UserRoleEnum.Administrator)
       ) {
-        /* await */ this.cooperationService
+        /* await */ this.applicationService
           .update(undefined, {
             sellerId: monitor.userId,
             buyerId: userId,

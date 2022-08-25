@@ -30,8 +30,8 @@ import { UserSizeEntity } from './user.view.entity';
 import { UserService } from './user.service';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
-import { CooperationService } from './cooperation.service';
-import { CooperationEntity } from './cooperation.entity';
+import { ApplicationService } from './application.service';
+import { ApplicationEntity } from './application.entity';
 
 @Module({
   imports: [
@@ -59,7 +59,7 @@ import { CooperationEntity } from './cooperation.entity';
       UserEntity,
       UserSizeEntity,
       RefreshTokenEntity,
-      CooperationEntity,
+      ApplicationEntity,
     ]),
   ],
 
@@ -75,7 +75,7 @@ import { CooperationEntity } from './cooperation.entity';
     PlaylistService,
     UserService,
     RefreshTokenService,
-    CooperationService,
+    ApplicationService,
   ],
 
   exports: [
@@ -88,7 +88,7 @@ import { CooperationEntity } from './cooperation.entity';
     PlaylistService,
     UserService,
     RefreshTokenService,
-    CooperationService,
+    ApplicationService,
   ],
 })
 export class DatabaseModule implements OnModuleInit {

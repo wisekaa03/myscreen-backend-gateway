@@ -17,7 +17,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { CooperationApproved } from '@/enums';
 
 @Entity('cooperation')
-export class CooperationEntity {
+export class ApplicationEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор взаимодействия',

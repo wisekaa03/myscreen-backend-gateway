@@ -25,11 +25,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { In } from 'typeorm';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
   BadRequestError,
-  CooperationCreateRequest,
   CooperationGetRequest,
   CooperationGetResponse,
   CooperationsGetResponse,
@@ -41,7 +39,7 @@ import {
   UnauthorizedError,
 } from '@/dto';
 import { CooperationApproved, Status, UserRoleEnum } from '@/enums';
-import { CooperationService } from '@/database/cooperation.service';
+import { ApplicationService } from '@/database/application.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { TypeOrmFind } from '@/shared/typeorm.find';
 import { WSGateway } from '@/websocket/ws.gateway';
@@ -80,11 +78,11 @@ import { WSGateway } from '@/websocket/ws.gateway';
 @ApiBearerAuth()
 @ApiTags('cooperation')
 @Controller('cooperation')
-export class CooperationController {
-  logger = new Logger(CooperationController.name);
+export class ApplicationController {
+  logger = new Logger(ApplicationController.name);
 
   constructor(
-    private readonly cooperationService: CooperationService,
+    private readonly cooperationService: ApplicationService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}

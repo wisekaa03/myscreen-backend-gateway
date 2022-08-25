@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
-// import { JwtAuthGuard } from '@/guards';
 import { WSGateway } from '@/websocket/ws.gateway';
-import { CooperationService } from '@/database/cooperation.service';
-import { CooperationController } from './cooperation.controller';
+import { ApplicationEntity } from './application.entity';
+import { ApplicationService } from './application.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -17,31 +17,28 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(CooperationController.name, () => {
-  let controller: CooperationController;
+describe(ApplicationService.name, () => {
+  let service: ApplicationService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [CooperationController],
       providers: [
+        ApplicationService,
         {
-          provide: CooperationService,
+          provide: WSGateway,
           useClass: mockRepository,
         },
         {
-          provide: WSGateway,
+          provide: getRepositoryToken(ApplicationEntity),
           useClass: mockRepository,
         },
       ],
     }).compile();
 
-    controller = module.get<CooperationController>(CooperationController);
+    service = module.get<ApplicationService>(ApplicationService);
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(service).toBeDefined();
   });
-
-  // TODO: should inspect:
-  // TODO: -
 });

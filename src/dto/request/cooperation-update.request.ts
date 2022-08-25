@@ -1,6 +1,6 @@
 import { PickType } from '@nestjs/swagger';
-import { CooperationEntity } from '@/database/cooperation.entity';
+import { ApplicationEntity } from '@/database/application.entity';
 
-export class CooperationUpdateRequest extends PickType(CooperationEntity, [
+export class CooperationUpdateRequest extends PickType(ApplicationEntity, [
   'approved',
 ]) {}

@@ -4,7 +4,7 @@ import { JwtAuthGuard } from '@/guards';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
-import { CooperationService } from '@/database/cooperation.service';
+import { ApplicationService } from '@/database/application.service';
 import { MonitorController } from './monitor.controller';
 
 export const mockRepository = jest.fn(() => ({
@@ -35,7 +35,7 @@ describe(MonitorController.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: CooperationService,
+          provide: ApplicationService,
           useClass: mockRepository,
         },
         {

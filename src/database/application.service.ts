@@ -5,22 +5,22 @@ import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/shared/typeorm.find';
 import { CooperationApproved } from '@/enums';
-import { CooperationEntity } from './cooperation.entity';
+import { ApplicationEntity } from './application.entity';
 
 @Injectable()
-export class CooperationService {
-  private logger = new Logger(CooperationService.name);
+export class ApplicationService {
+  private logger = new Logger(ApplicationService.name);
 
   constructor(
     private readonly wsGateway: WSGateway,
-    @InjectRepository(CooperationEntity)
-    private readonly cooperationRepository: Repository<CooperationEntity>,
+    @InjectRepository(ApplicationEntity)
+    private readonly cooperationRepository: Repository<ApplicationEntity>,
   ) {}
 
   async find(
-    find: FindManyOptions<CooperationEntity>,
+    find: FindManyOptions<ApplicationEntity>,
     caseInsensitive = true,
-  ): Promise<Array<CooperationEntity>> {
+  ): Promise<Array<ApplicationEntity>> {
     const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
       conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
@@ -31,9 +31,9 @@ export class CooperationService {
   }
 
   async findAndCount(
-    find: FindManyOptions<CooperationEntity>,
+    find: FindManyOptions<ApplicationEntity>,
     caseInsensitive = true,
-  ): Promise<[Array<CooperationEntity>, number]> {
+  ): Promise<[Array<ApplicationEntity>, number]> {
     const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
       conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
@@ -44,8 +44,8 @@ export class CooperationService {
   }
 
   async findOne(
-    find: FindManyOptions<CooperationEntity>,
-  ): Promise<CooperationEntity | null> {
+    find: FindManyOptions<ApplicationEntity>,
+  ): Promise<ApplicationEntity | null> {
     return find.relations
       ? this.cooperationRepository.findOne(TypeOrmFind.Nullable(find))
       : this.cooperationRepository.findOne({
@@ -56,8 +56,8 @@ export class CooperationService {
 
   async update(
     id: string | undefined,
-    update: Partial<CooperationEntity>,
-  ): Promise<CooperationEntity | null> {
+    update: Partial<ApplicationEntity>,
+  ): Promise<ApplicationEntity | null> {
     await this.cooperationRepository.manager.transaction(
       async (cooperationRepository) => {
         const cooperation = await cooperationRepository.save(
@@ -84,7 +84,7 @@ export class CooperationService {
 
   async delete(
     userId: string,
-    cooperation: CooperationEntity,
+    cooperation: ApplicationEntity,
   ): Promise<DeleteResult> {
     return this.cooperationRepository.delete({
       id: cooperation.id,

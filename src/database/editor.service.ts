@@ -23,7 +23,7 @@ import {
   Repository,
 } from 'typeorm';
 import { ffprobe } from 'media-probe';
-import editly from 'editly';
+import Editly from 'editly';
 
 import { FileCategory, RenderingStatus, VideoType } from '@/enums';
 import { TypeOrmFind } from '@/shared/typeorm.find';
@@ -301,7 +301,7 @@ export class EditorService {
   private async prepareAssets(
     editor: EditorEntity,
     audio: boolean,
-  ): Promise<[string, editly.Config]> {
+  ): Promise<[string, Editly.Config]> {
     await fs.mkdir(this.tempDirectory, { recursive: true });
 
     const videoLayersPromise = editor.videoLayers.map(
@@ -331,7 +331,7 @@ export class EditorService {
               resizeMode: 'contain',
               zoomDirection: null,
               path: layer.path,
-            } as editly.ImageLayer,
+            } as Editly.ImageLayer,
           ],
           transition: {
             duration: 0,
@@ -348,7 +348,7 @@ export class EditorService {
             cutFrom: layer.cutFrom,
             cutTo: layer.cutTo,
             mixVolume: layer.mixVolume,
-          } as editly.VideoLayer,
+          } as Editly.VideoLayer,
         ],
         transition: {
           duration: 0,
@@ -431,8 +431,8 @@ export class EditorService {
     const seekTimestamp = this.convertSecToTime(seekTime);
 
     const isFormat = (format: string) =>
-      (clip.layers as editly.Layer[]).every((layer) =>
-        (layer as editly.VideoLayer).path.endsWith(format),
+      (clip.layers as Editly.Layer[]).every((layer) =>
+        (layer as Editly.VideoLayer).path.endsWith(format),
       );
 
     if (isFormat('jpg')) {
@@ -441,9 +441,9 @@ export class EditorService {
           'Multi-layer editing does not support for images',
         );
       }
-      outPath = (clip.layers[0] as editly.VideoLayer).path;
+      outPath = (clip.layers[0] as Editly.VideoLayer).path;
     } else if (isFormat('mp4')) {
-      const inputs = (clip.layers as editly.VideoLayer[]).reduce(
+      const inputs = (clip.layers as Editly.VideoLayer[]).reduce(
         (input, { path: videoPath }) => `${input}-i ${videoPath} `,
         '',
       );
@@ -518,7 +518,7 @@ export class EditorService {
         await this.editorRepository.update(editor.id, {
           renderedFile: null,
         });
-        /* await */ this.fileService
+        await this.fileService
           .delete(userId, [editor.renderedFile.id])
           .catch((reason) => {
             this.logger.error(`Delete from editor failed: ${reason}`);
