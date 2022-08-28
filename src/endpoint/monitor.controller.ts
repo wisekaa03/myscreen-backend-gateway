@@ -234,10 +234,7 @@ export class MonitorController {
         playlist,
       });
 
-      if (
-        role.includes(UserRoleEnum.Advertiser) ||
-        role.includes(UserRoleEnum.Administrator)
-      ) {
+      if (!role.includes(UserRoleEnum.Monitor)) {
         /* await */ this.applicationService
           .update(undefined, {
             sellerId: monitor.userId,
