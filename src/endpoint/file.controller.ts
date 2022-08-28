@@ -562,11 +562,22 @@ export class FileController {
       throw new NotFoundException('File not found');
     }
 
-    const data = await this.fileService.update(file, {
-      ...file,
-      folder: undefined,
-      ...update,
-    });
+    let data: FileEntity;
+    if (update.folderId) {
+      const folder = await this.folderService.findOne({
+        where: { id: update.folderId },
+      });
+      if (!folder) {
+        throw new NotFoundException('Folder not found');
+      }
+      data = await this.fileService.update(
+        file,
+        Object.assign(file, folder, update),
+      );
+    } else {
+      data = await this.fileService.update(file, Object.assign(file, update));
+    }
+
     if (!data) {
       throw new BadRequestException('File exists and not exists ?');
     }
