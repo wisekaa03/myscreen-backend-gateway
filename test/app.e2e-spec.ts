@@ -321,7 +321,7 @@ describe('Backend API (e2e)', () => {
         .send(verify)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(403);
+        .expect(400);
     });
 
     /**

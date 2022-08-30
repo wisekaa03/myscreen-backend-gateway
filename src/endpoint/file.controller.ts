@@ -333,30 +333,14 @@ export class FileController {
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
     let file: FileEntity | null = null;
-    if (role.includes(UserRoleEnum.Monitor)) {
-      const monitor = await this.monitorService.findOne({
-        where: { id: userId },
-        relations: {
-          playlist: {
-            files: {
-              folder: true,
-            },
-          },
-        },
-      });
-      if (monitor?.playlist?.files) {
-        file = monitor.playlist.files.find((f) => f.id === id) ?? null;
-      }
-    } else {
-      file = await this.fileService.findOne({
-        // TODO: where: {id, userId} - посмотреть если в заявках (cooperation) участвует
-        // TODO: то выдавать его, нужно продумать
-        where: { id },
-        relations: {
-          folder: true,
-        },
-      });
-    }
+    file = await this.fileService.findOne({
+      // TODO: where: {id, userId} - посмотреть если в заявках (application) участвует
+      // TODO: то выдавать его, нужно продумать
+      where: { id },
+      relations: {
+        folder: true,
+      },
+    });
     if (!file) {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
@@ -407,6 +391,12 @@ export class FileController {
   }
 
   @Post('/:fileId')
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  )
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-get',
@@ -423,7 +413,7 @@ export class FileController {
   ): Promise<FileGetResponse> {
     const data = await this.fileService.findOne({
       where: {
-        userId,
+        /* userId, */
         id,
       },
     });
@@ -497,8 +487,6 @@ export class FileController {
         buffer = await this.fileService.previewFile(file).catch((reason) => {
           throw reason;
         });
-      } else {
-        /* await */ this.fileService.previewFile(file).catch(() => {});
       }
 
       res.setHeader('Content-Length', buffer.length);

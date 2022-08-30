@@ -2024,12 +2024,12 @@ paths:
         - cooperation
       security: &ref_59
         - bearer: []
-  /api/v2/cooperation/{cooperationId}:
+  /api/v2/cooperation/{applicationId}:
     get:
       operationId: cooperation-get
       summary: Получение заявки
       parameters:
-        - name: cooperationId
+        - name: applicationId
           required: true
           in: path
           schema:
@@ -2052,7 +2052,7 @@ paths:
       operationId: cooperation-update
       summary: Изменить заявку
       parameters:
-        - name: cooperationId
+        - name: applicationId
           required: true
           in: path
           schema:
@@ -2081,7 +2081,7 @@ paths:
       operationId: cooperation-delete
       summary: Удаление заявки
       parameters:
-        - name: cooperationId
+        - name: applicationId
           required: true
           in: path
           schema:
@@ -2103,7 +2103,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.24.3
+  version: 2.24.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev

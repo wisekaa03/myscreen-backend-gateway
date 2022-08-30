@@ -259,9 +259,7 @@ export class FileService {
           category,
           extension,
           hash: file.hash,
-          preview: {
-            preview: Buffer.from(`\\x${preview.toString('hex')}`),
-          },
+          preview: undefined,
           monitors: monitorId ? [{ id: monitorId }] : undefined,
         };
 
@@ -594,7 +592,7 @@ export class FileService {
 
     const preview = await fs.readFile(outPath);
 
-    /* await */ this.filePreviewRepository
+    await this.filePreviewRepository
       .save(
         this.filePreviewRepository.create({
           ...file.preview,
@@ -679,9 +677,7 @@ export class FileService {
         },
       };
 
-      const preview = await this.preview(type, file, meta);
-
-      return [meta, type, extension, preview];
+      return [meta, type, extension, Buffer.alloc(0)];
     }
 
     return [{ filesize: file.size }, type, extension, Buffer.alloc(0)];

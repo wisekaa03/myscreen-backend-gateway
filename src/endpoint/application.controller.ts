@@ -82,7 +82,7 @@ export class ApplicationController {
   logger = new Logger(ApplicationController.name);
 
   constructor(
-    private readonly cooperationService: ApplicationService,
+    private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -104,27 +104,14 @@ export class ApplicationController {
   ): Promise<CooperationsGetResponse> {
     const sqlWhere = TypeOrmFind.Where(where);
     if (role.includes(UserRoleEnum.MonitorOwner)) {
-      const [data, count] = await this.cooperationService.findAndCount({
+      const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         where: [
           { ...sqlWhere, buyerId: userId },
           { ...sqlWhere, sellerId: userId },
         ],
       });
-      return {
-        status: Status.Success,
-        count,
-        data,
-      };
-    }
-    if (role.includes(UserRoleEnum.Advertiser)) {
-      const [data, count] = await this.cooperationService.findAndCount({
-        ...paginationQueryToConfig(scope),
-        where: [
-          { ...sqlWhere, buyerId: userId },
-          { ...sqlWhere, sellerId: userId },
-        ],
-      });
+
       return {
         status: Status.Success,
         count,
@@ -132,7 +119,23 @@ export class ApplicationController {
       };
     }
 
-    const [data, count] = await this.cooperationService.findAndCount({
+    if (role.includes(UserRoleEnum.Advertiser)) {
+      const [data, count] = await this.applicationService.findAndCount({
+        ...paginationQueryToConfig(scope),
+        where: [
+          { ...sqlWhere, buyerId: userId },
+          { ...sqlWhere, sellerId: userId },
+        ],
+      });
+
+      return {
+        status: Status.Success,
+        count,
+        data,
+      };
+    }
+
+    const [data, count] = await this.applicationService.findAndCount({
       ...paginationQueryToConfig(scope),
       where: TypeOrmFind.Where(where),
     });
@@ -143,7 +146,7 @@ export class ApplicationController {
     };
   }
 
-  @Get('/:cooperationId')
+  @Get('/:applicationId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'cooperation-get',
@@ -155,15 +158,15 @@ export class ApplicationController {
     type: CooperationGetResponse,
   })
   async getEditor(
-    @Param('cooperationId', ParseUUIDPipe) id: string,
+    @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<CooperationGetResponse> {
-    const data = await this.cooperationService.findOne({
+    const data = await this.applicationService.findOne({
       where: {
         id,
       },
     });
     if (!data) {
-      throw new NotFoundException('Cooperation not found');
+      throw new NotFoundException('Application not found');
     }
     return {
       status: Status.Success,
@@ -171,7 +174,7 @@ export class ApplicationController {
     };
   }
 
-  @Patch('/:cooperationId')
+  @Patch('/:applicationId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'cooperation-update',
@@ -184,10 +187,10 @@ export class ApplicationController {
   })
   async updateEditor(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Param('cooperationId', ParseUUIDPipe) id: string,
+    @Param('applicationId', ParseUUIDPipe) id: string,
     @Body() update: CooperationUpdateRequest,
   ): Promise<CooperationGetResponse> {
-    const application = await this.cooperationService.findOne({
+    const application = await this.applicationService.findOne({
       where: [
         {
           id,
@@ -200,20 +203,15 @@ export class ApplicationController {
       ],
     });
     if (!application) {
-      throw new NotFoundException('Cooperation not found');
+      throw new NotFoundException('Application not found');
     }
 
-    const data = await this.cooperationService.update(id, {
-      ...application,
-      ...update,
-    });
+    const data = await this.applicationService.update(
+      id,
+      Object.assign(application, update),
+    );
     if (!data) {
-      throw new BadRequestException('Cooperation exists and not exists ?');
-    }
-
-    const { monitor, playlist } = application;
-    if (data.approved === CooperationApproved.Allowed) {
-      /* await */ this.wsGateway.monitorPlaylist(monitor, playlist);
+      throw new BadRequestException('Application exists and not exists ?');
     }
 
     return {
@@ -222,7 +220,7 @@ export class ApplicationController {
     };
   }
 
-  @Delete('/:cooperationId')
+  @Delete('/:applicationId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'cooperation-delete',
@@ -235,25 +233,25 @@ export class ApplicationController {
   })
   async deleteCooperation(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Param('cooperationId', ParseUUIDPipe) id: string,
+    @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
-    const cooperation = await this.cooperationService.findOne({
+    const application = await this.applicationService.findOne({
       where: [
         { id, sellerId: userId },
         { id, buyerId: userId },
       ],
-      select: ['id', 'userId'],
+      select: ['id', 'sellerId', 'buyerId', 'userId'],
     });
-    if (!cooperation) {
-      throw new NotFoundException(`Cooperation '${id}' is not found`);
+    if (!application) {
+      throw new NotFoundException(`Application '${id}' is not found`);
     }
 
-    const { affected } = await this.cooperationService.delete(
+    const { affected } = await this.applicationService.delete(
       userId,
-      cooperation,
+      application,
     );
     if (!affected) {
-      throw new NotFoundException('This cooperation is not exists');
+      throw new NotFoundException('This application is not exists');
     }
 
     return {
