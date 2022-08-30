@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { WSGateway } from '@/websocket/ws.gateway';
+import { MailService } from '@/mail/mail.service';
 import { ApplicationEntity } from './application.entity';
 import { ApplicationService } from './application.service';
 
@@ -24,6 +25,10 @@ describe(ApplicationService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ApplicationService,
+        {
+          provide: MailService,
+          useClass: mockRepository,
+        },
         {
           provide: WSGateway,
           useClass: mockRepository,

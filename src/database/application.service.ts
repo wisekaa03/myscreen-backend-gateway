@@ -5,6 +5,7 @@ import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/shared/typeorm.find';
 import { CooperationApproved } from '@/enums';
+import { MailService } from '@/mail/mail.service';
 import { ApplicationEntity } from './application.entity';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class ApplicationService {
   private logger = new Logger(ApplicationService.name);
 
   constructor(
+    private readonly mailService: MailService,
     private readonly wsGateway: WSGateway,
     @InjectRepository(ApplicationEntity)
     private readonly cooperationRepository: Repository<ApplicationEntity>,
@@ -64,6 +66,14 @@ export class ApplicationService {
           this.cooperationRepository.create(update),
         );
 
+        if (update.approved === CooperationApproved.NotProcessed) {
+          /* await */ this.mailService
+            .sendApplicationWarningMessage(cooperation.seller.email)
+            .catch((error) => {
+              this.logger.error(error);
+            });
+        }
+
         if (update.approved === CooperationApproved.Allowed) {
           /* await */ this.wsGateway
             .monitorPlaylist(cooperation.monitor, cooperation.playlist)
@@ -74,12 +84,11 @@ export class ApplicationService {
       },
     );
 
-    if (id === undefined) {
-      return null;
-    }
-    return this.cooperationRepository.findOne({
-      where: { id },
-    });
+    return id === undefined
+      ? null
+      : this.cooperationRepository.findOne({
+          where: { id },
+        });
   }
 
   async delete(

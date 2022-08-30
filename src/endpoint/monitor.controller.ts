@@ -235,13 +235,19 @@ export class MonitorController {
       });
 
       if (!role.includes(UserRoleEnum.Monitor)) {
+        let approved: CooperationApproved;
+        if (monitor.userId === userId) {
+          approved = CooperationApproved.Allowed;
+        } else {
+          approved = CooperationApproved.NotProcessed;
+        }
         /* await */ this.applicationService
           .update(undefined, {
             sellerId: monitor.userId,
             buyerId: userId,
             monitor,
             playlist,
-            approved: CooperationApproved.NotProcessed,
+            approved,
             userId,
           })
           .catch((error) => {

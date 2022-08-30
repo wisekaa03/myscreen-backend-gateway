@@ -38,6 +38,9 @@ export class MailService {
     'Поздравляем с успешной регистрацией. \n' +
     'Мы рады видеть Вас в числе наших пользователей.';
 
+  private static applicationWarningText = () =>
+    'Вам новая заявка по монитору. \n';
+
   /**
    * Отправляет приветственное письмо
    * @async
@@ -50,6 +53,31 @@ export class MailService {
       to: email,
       subject: 'Регистрация',
       text: MailService.registerEmailText(),
+    };
+
+    return this.mailgunService
+      .createEmail(this.domain, {
+        ...message,
+        template: this.template,
+        'h:X-Mailgun-Variables': JSON.stringify(message),
+      })
+      .catch((error: MailgunError) => {
+        throw new InternalServerErrorException(error);
+      });
+  }
+
+  /**
+   * Отправляет сообщение о поступившей заявке
+   * @async
+   * @param {string} email Почта пользователя
+   * @returns {any}
+   */
+  async sendApplicationWarningMessage(email: string): Promise<any> {
+    const message = {
+      from: this.from,
+      to: email,
+      subject: 'Заявка по монитору',
+      text: MailService.applicationWarningText(),
     };
 
     return this.mailgunService

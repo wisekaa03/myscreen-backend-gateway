@@ -332,8 +332,7 @@ export class FileController {
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
-    let file: FileEntity | null = null;
-    file = await this.fileService.findOne({
+    const file = await this.fileService.findOne({
       // TODO: where: {id, userId} - посмотреть если в заявках (application) участвует
       // TODO: то выдавать его, нужно продумать
       where: { id },
