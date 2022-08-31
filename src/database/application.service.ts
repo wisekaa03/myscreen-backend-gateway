@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
 
 import { WSGateway } from '@/websocket/ws.gateway';
@@ -12,12 +13,20 @@ import { ApplicationEntity } from './application.entity';
 export class ApplicationService {
   private logger = new Logger(ApplicationService.name);
 
+  private frontendUrl: string;
+
   constructor(
     private readonly mailService: MailService,
+    private readonly configService: ConfigService,
     private readonly wsGateway: WSGateway,
     @InjectRepository(ApplicationEntity)
     private readonly cooperationRepository: Repository<ApplicationEntity>,
-  ) {}
+  ) {
+    this.frontendUrl = configService.get<string>(
+      'FRONTEND_URL',
+      'http://localhost',
+    );
+  }
 
   async find(
     find: FindManyOptions<ApplicationEntity>,
@@ -68,7 +77,10 @@ export class ApplicationService {
 
         if (update.approved === CooperationApproved.NotProcessed) {
           /* await */ this.mailService
-            .sendApplicationWarningMessage(cooperation.seller.email)
+            .sendApplicationWarningMessage(
+              cooperation.seller.email,
+              `${this.frontendUrl}/applications`,
+            )
             .catch((error) => {
               this.logger.error(error);
             });

@@ -4,7 +4,11 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { MailgunService, type MailgunError } from 'nestjs-mailgun';
+import {
+  MailgunMessageData,
+  MailgunService,
+  type MailgunError,
+} from 'nestjs-mailgun';
 
 @Injectable()
 export class MailService {
@@ -31,15 +35,18 @@ export class MailService {
     ${confirmUrl}`;
 
   private static forgotPasswordText = (forgotPasswordUrl: string) =>
-    `Чтобы восстановить доступ к своему аккаунту, пройдите, пожалуйста, по ссылке: \n${forgotPasswordUrl}`;
+    `Чтобы восстановить доступ к своему аккаунту, пройдите, пожалуйста, по ссылке: \n\
+    ${forgotPasswordUrl}`;
 
   private static registerEmailText = () =>
-    'Добро пожаловать в MySсreen. \n' +
-    'Поздравляем с успешной регистрацией. \n' +
-    'Мы рады видеть Вас в числе наших пользователей.';
+    'Добро пожаловать в MySсreen. \n\
+    Поздравляем с успешной регистрацией. \n\
+    Мы рады видеть Вас в числе наших пользователей.';
 
-  private static applicationWarningText = () =>
-    'Вам новая заявка по монитору. \n';
+  private static applicationWarningText = (applicationUrl: string) =>
+    `Вы получили новую заявку в MyScreen! \n\
+    Чтобы с ней ознакомиться, пройдите, пожалуйста, по ссылке: \n\
+    ${applicationUrl}`;
 
   /**
    * Отправляет приветственное письмо
@@ -48,7 +55,7 @@ export class MailService {
    * @returns {any}
    */
   async sendWelcomeMessage(email: string): Promise<any> {
-    const message = {
+    const message: MailgunMessageData = {
       from: this.from,
       to: email,
       subject: 'Регистрация',
@@ -72,19 +79,30 @@ export class MailService {
    * @param {string} email Почта пользователя
    * @returns {any}
    */
-  async sendApplicationWarningMessage(email: string): Promise<any> {
-    const message = {
+  async sendApplicationWarningMessage(
+    email: string,
+    applicationUrl: string,
+  ): Promise<any> {
+    const message: MailgunMessageData = {
       from: this.from,
       to: email,
-      subject: 'Заявка по монитору',
-      text: MailService.applicationWarningText(),
+      subject: 'Новая заявка',
+      text: MailService.applicationWarningText(applicationUrl),
+    };
+
+    const variables = {
+      applicationUrl,
+      button: {
+        url: applicationUrl,
+        text: 'Посмотреть',
+      },
     };
 
     return this.mailgunService
       .createEmail(this.domain, {
         ...message,
         template: this.template,
-        'h:X-Mailgun-Variables': JSON.stringify(message),
+        'h:X-Mailgun-Variables': JSON.stringify({ ...message, ...variables }),
       })
       .catch((error: MailgunError) => {
         throw new InternalServerErrorException(error);
@@ -99,7 +117,7 @@ export class MailService {
    * @returns {any}
    */
   async sendVerificationCode(email: string, confirmUrl: string): Promise<any> {
-    const message = {
+    const message: MailgunMessageData = {
       from: this.from,
       to: email,
       subject: 'Подтверждение аккаунта',
@@ -136,7 +154,7 @@ export class MailService {
    * @returns {any}
    */
   async forgotPassword(email: string, forgotPasswordUrl: string): Promise<any> {
-    const message = {
+    const message: MailgunMessageData = {
       from: this.from,
       to: email,
       subject: 'Сброс пароля',

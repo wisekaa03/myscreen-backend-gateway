@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { MailService } from '@/mail/mail.service';
@@ -12,6 +13,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: () => {},
   metadata: {
     columns: [],
     relations: [],
@@ -27,6 +29,10 @@ describe(ApplicationService.name, () => {
         ApplicationService,
         {
           provide: MailService,
+          useClass: mockRepository,
+        },
+        {
+          provide: ConfigService,
           useClass: mockRepository,
         },
         {
