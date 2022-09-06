@@ -24,6 +24,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Not } from 'typeorm';
 
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
@@ -38,7 +39,7 @@ import {
   SuccessResponse,
   UnauthorizedError,
 } from '@/dto';
-import { CooperationApproved, Status, UserRoleEnum } from '@/enums';
+import { Status, UserRoleEnum } from '@/enums';
 import { ApplicationService } from '@/database/application.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { TypeOrmFind } from '@/shared/typeorm.find';
@@ -107,8 +108,8 @@ export class ApplicationController {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         where: [
-          { ...sqlWhere, buyerId: userId },
-          { ...sqlWhere, sellerId: userId },
+          { ...sqlWhere, buyerId: userId, sellerId: Not(userId) },
+          { ...sqlWhere, buyerId: Not(userId), sellerId: userId },
         ],
       });
 
@@ -123,8 +124,8 @@ export class ApplicationController {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         where: [
-          { ...sqlWhere, buyerId: userId },
-          { ...sqlWhere, sellerId: userId },
+          { ...sqlWhere, buyerId: userId, sellerId: Not(userId) },
+          { ...sqlWhere, buyerId: Not(userId), sellerId: userId },
         ],
       });
 

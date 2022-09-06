@@ -87,7 +87,7 @@ export class TypeOrmFind {
           if (value === null) {
             return { ...accWhere, [field]: IsNull() };
           }
-          if (typeof value === 'string' && value.match(/%/)) {
+          if (typeof value === 'string' && /%/.test(value)) {
             return { ...accWhere, [field]: ILike(value) };
           }
           if (
@@ -109,7 +109,7 @@ export class TypeOrmFind {
         if (value === null) {
           return { ...accWhere, [field]: IsNull() };
         }
-        if (typeof value === 'string' && value.match(/%/)) {
+        if (typeof value === 'string' && /%/.test(value)) {
           return { ...accWhere, [field]: ILike(value) };
         }
         if (
