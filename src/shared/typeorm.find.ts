@@ -10,6 +10,7 @@ import {
   Repository,
   SelectQueryBuilder,
   Between,
+  In,
 } from 'typeorm';
 
 export class TypeOrmFind {
@@ -90,13 +91,15 @@ export class TypeOrmFind {
           if (typeof value === 'string' && /%/.test(value)) {
             return { ...accWhere, [field]: ILike(value) };
           }
-          if (
-            Array.isArray(value) &&
-            value.length === 2 &&
-            isDateString(value[0]) &&
-            isDateString(value[1])
-          ) {
-            return { ...accWhere, [field]: Between(value[0], value[1]) };
+          if (Array.isArray(value)) {
+            if (
+              value.length === 2 &&
+              isDateString(value[0]) &&
+              isDateString(value[1])
+            ) {
+              return { ...accWhere, [field]: Between(value[0], value[1]) };
+            }
+            return { ...accWhere, [field]: In(value) };
           }
           return { ...accWhere, [field]: value };
         }, {} as Record<string, any>),
@@ -112,13 +115,15 @@ export class TypeOrmFind {
         if (typeof value === 'string' && /%/.test(value)) {
           return { ...accWhere, [field]: ILike(value) };
         }
-        if (
-          Array.isArray(value) &&
-          value.length === 2 &&
-          isDateString(value[0]) &&
-          isDateString(value[1])
-        ) {
-          return { ...accWhere, [field]: Between(value[0], value[1]) };
+        if (Array.isArray(value)) {
+          if (
+            value.length === 2 &&
+            isDateString(value[0]) &&
+            isDateString(value[1])
+          ) {
+            return { ...accWhere, [field]: Between(value[0], value[1]) };
+          }
+          return { ...accWhere, [field]: In(value) };
         }
         return { ...accWhere, [field]: value };
       },

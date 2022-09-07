@@ -1,9 +1,10 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsDateString, IsOptional } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional } from 'class-validator';
 
 import { ApplicationEntity } from '@/database/application.entity';
+import { ApplicationApproved } from '@/enums';
 
-export class CooperationPartialRequest extends PartialType(
+export class ApplicationPartialRequest extends PartialType(
   OmitType(ApplicationEntity, [
     'buyer',
     'seller',
@@ -14,6 +15,17 @@ export class CooperationPartialRequest extends PartialType(
     'updatedAt',
   ]),
 ) {
+  @ApiProperty({
+    description: 'Не обработан / Разрешен / Запрещен',
+    enum: ApplicationApproved,
+    enumName: 'ApplicationApproved',
+    example: [ApplicationApproved.NotProcessed, ApplicationApproved.Allowed],
+    isArray: true,
+    required: true,
+  })
+  @IsEnum(ApplicationApproved, { each: true })
+  approved!: Array<ApplicationApproved>;
+
   @ApiProperty({
     description: 'Время создания',
     example: ['2021-01-01', '2021-12-31'],

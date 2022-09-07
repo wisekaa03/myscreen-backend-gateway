@@ -5,7 +5,7 @@ import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/shared/typeorm.find';
-import { CooperationApproved } from '@/enums';
+import { ApplicationApproved } from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { ApplicationEntity } from './application.entity';
 
@@ -20,7 +20,7 @@ export class ApplicationService {
     private readonly configService: ConfigService,
     private readonly wsGateway: WSGateway,
     @InjectRepository(ApplicationEntity)
-    private readonly cooperationRepository: Repository<ApplicationEntity>,
+    private readonly applicationRepository: Repository<ApplicationEntity>,
   ) {
     this.frontendUrl = configService.get<string>(
       'FRONTEND_URL',
@@ -37,8 +37,8 @@ export class ApplicationService {
       conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
     }
     return caseInsensitive
-      ? TypeOrmFind.findCI(this.cooperationRepository, conditional)
-      : this.cooperationRepository.find(conditional);
+      ? TypeOrmFind.findCI(this.applicationRepository, conditional)
+      : this.applicationRepository.find(conditional);
   }
 
   async findAndCount(
@@ -50,16 +50,16 @@ export class ApplicationService {
       conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
     }
     return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(this.cooperationRepository, conditional)
-      : this.cooperationRepository.findAndCount(conditional);
+      ? TypeOrmFind.findAndCountCI(this.applicationRepository, conditional)
+      : this.applicationRepository.findAndCount(conditional);
   }
 
   async findOne(
     find: FindManyOptions<ApplicationEntity>,
   ): Promise<ApplicationEntity | null> {
     return find.relations
-      ? this.cooperationRepository.findOne(TypeOrmFind.Nullable(find))
-      : this.cooperationRepository.findOne({
+      ? this.applicationRepository.findOne(TypeOrmFind.Nullable(find))
+      : this.applicationRepository.findOne({
           relations: ['buyer', 'seller', 'monitor', 'playlist'],
           ...TypeOrmFind.Nullable(find),
         });
@@ -69,13 +69,13 @@ export class ApplicationService {
     id: string | undefined,
     update: Partial<ApplicationEntity>,
   ): Promise<ApplicationEntity | null> {
-    await this.cooperationRepository.manager.transaction(
-      async (cooperationRepository) => {
-        const cooperation = await cooperationRepository.save(
-          this.cooperationRepository.create(update),
+    await this.applicationRepository.manager.transaction(
+      async (applicationRepository) => {
+        const cooperation = await applicationRepository.save(
+          this.applicationRepository.create(update),
         );
 
-        if (update.approved === CooperationApproved.NotProcessed) {
+        if (update.approved === ApplicationApproved.NotProcessed) {
           /* await */ this.mailService
             .sendApplicationWarningMessage(
               cooperation.seller.email,
@@ -86,7 +86,7 @@ export class ApplicationService {
             });
         }
 
-        if (update.approved === CooperationApproved.Allowed) {
+        if (update.approved === ApplicationApproved.Allowed) {
           /* await */ this.wsGateway
             .monitorPlaylist(cooperation.monitor, cooperation.playlist)
             .catch((error) => {
@@ -98,7 +98,7 @@ export class ApplicationService {
 
     return id === undefined
       ? null
-      : this.cooperationRepository.findOne({
+      : this.applicationRepository.findOne({
           where: { id },
         });
   }
@@ -107,7 +107,7 @@ export class ApplicationService {
     userId: string,
     cooperation: ApplicationEntity,
   ): Promise<DeleteResult> {
-    return this.cooperationRepository.delete({
+    return this.applicationRepository.delete({
       id: cooperation.id,
       userId,
     });

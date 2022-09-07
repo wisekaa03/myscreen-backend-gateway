@@ -1972,9 +1972,9 @@ paths:
         - statistics
       security:
         - bearer: []
-  /api/v2/cooperation:
+  /api/v2/application:
     post:
-      operationId: cooperations-get
+      operationId: applications-get
       summary: Получение списка заявок
       parameters: []
       requestBody:
@@ -1982,14 +1982,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CooperationGetRequest"
+              $ref: "#/components/schemas/ApplicationGetRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CooperationsGetResponse"
+                $ref: "#/components/schemas/ApplicationsGetResponse"
         "400": &ref_53
           description: Ответ будет таким если с данным что-то не так
           content:
@@ -2021,12 +2021,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
       tags: &ref_58
-        - cooperation
+        - application
       security: &ref_59
         - bearer: []
-  /api/v2/cooperation/{applicationId}:
+  /api/v2/application/{applicationId}:
     get:
-      operationId: cooperation-get
+      operationId: application-get
       summary: Получение заявки
       parameters:
         - name: applicationId
@@ -2040,7 +2040,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CooperationGetResponse"
+                $ref: "#/components/schemas/ApplicationGetResponse"
         "400": *ref_53
         "401": *ref_54
         "403": *ref_55
@@ -2049,7 +2049,7 @@ paths:
       tags: *ref_58
       security: *ref_59
     patch:
-      operationId: cooperation-update
+      operationId: application-update
       summary: Изменить заявку
       parameters:
         - name: applicationId
@@ -2062,14 +2062,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CooperationUpdateRequest"
+              $ref: "#/components/schemas/ApplicationUpdateRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CooperationGetResponse"
+                $ref: "#/components/schemas/ApplicationGetResponse"
         "400": *ref_53
         "401": *ref_54
         "403": *ref_55
@@ -2078,7 +2078,7 @@ paths:
       tags: *ref_58
       security: *ref_59
     delete:
-      operationId: cooperation-delete
+      operationId: application-delete
       summary: Удаление заявки
       parameters:
         - name: applicationId
@@ -2103,7 +2103,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.24.9
+  version: 2.25.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2657,17 +2657,6 @@ components:
         - SAUNAS
         - BEAUTY_SALONS
         - GAS_STATION
-    MonitorPrice:
-      type: object
-      properties:
-        of1s:
-          type: number
-          description: Стоимость показа 1 секунды
-          example: 1
-        show100:
-          type: number
-          description: Стоимость 100 показов в день
-          example: 100
     MonitorOrientation:
       type: string
       enum:
@@ -2744,20 +2733,25 @@ components:
           description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
-        price:
-          description: Стоимость показов
-          example: &ref_61
-            of1s: 0
-            show100: 0
-          allOf:
-            - $ref: "#/components/schemas/MonitorPrice"
+        price1s:
+          type: integer
+          description: Стоимость показа 1 секунды в рублях
+          example: 1
+        minWarranty:
+          type: integer
+          description: Гарантированное минимальное количество показов в день
+          example: 1
+        maxDuration:
+          type: integer
+          description: Максимальная длительность плэйлиста в секундах
+          example: 1
         orientation:
           description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: &ref_62
+          example: &ref_61
             model: Samsung
             resolution: 1920 x 1080 px
             angle: 0
@@ -2782,7 +2776,7 @@ components:
           description: Идентификатор устройства
           example: 111-111-111
         location:
-          example: &ref_63
+          example: &ref_62
             type: Point
             coordinates:
               - 38.97603
@@ -3154,18 +3148,25 @@ components:
           description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
-        price:
-          description: Стоимость показов
-          example: *ref_61
-          allOf:
-            - $ref: "#/components/schemas/MonitorPrice"
+        price1s:
+          type: integer
+          description: Стоимость показа 1 секунды в рублях
+          example: 1
+        minWarranty:
+          type: integer
+          description: Гарантированное минимальное количество показов в день
+          example: 1
+        maxDuration:
+          type: integer
+          description: Максимальная длительность плэйлиста в секундах
+          example: 1
         orientation:
           description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_62
+          example: *ref_61
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3190,7 +3191,7 @@ components:
           description: Последний раз виден
           example: null
         location:
-          example: *ref_63
+          example: *ref_62
           allOf:
             - $ref: "#/components/schemas/PointClass"
         createdAt:
@@ -3260,22 +3261,29 @@ components:
           description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
-        price:
-          description: Стоимость показов
-          example: *ref_61
-          allOf:
-            - $ref: "#/components/schemas/MonitorPrice"
+        price1s:
+          type: integer
+          description: Стоимость показа 1 секунды в рублях
+          example: 1
+        minWarranty:
+          type: integer
+          description: Гарантированное минимальное количество показов в день
+          example: 1
+        maxDuration:
+          type: integer
+          description: Максимальная длительность плэйлиста в секундах
+          example: 1
         orientation:
           description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_62
+          example: *ref_61
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         location:
-          example: *ref_63
+          example: *ref_62
           allOf:
             - $ref: "#/components/schemas/PointClass"
         code:
@@ -3352,18 +3360,25 @@ components:
           description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
-        price:
-          description: Стоимость показов
-          example: *ref_61
-          allOf:
-            - $ref: "#/components/schemas/MonitorPrice"
+        price1s:
+          type: integer
+          description: Стоимость показа 1 секунды в рублях
+          example: 1
+        minWarranty:
+          type: integer
+          description: Гарантированное минимальное количество показов в день
+          example: 1
+        maxDuration:
+          type: integer
+          description: Максимальная длительность плэйлиста в секундах
+          example: 1
         orientation:
           description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_62
+          example: *ref_61
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3383,7 +3398,7 @@ components:
           description: Идентификатор устройства
           example: 111-111-111
         location:
-          example: *ref_63
+          example: *ref_62
           allOf:
             - $ref: "#/components/schemas/PointClass"
     RenderingStatus:
@@ -3536,7 +3551,7 @@ components:
           description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
-          allOf: &ref_64
+          allOf: &ref_63
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -3773,7 +3788,7 @@ components:
           description: Ошибка рендеринга
         renderedFile:
           description: Обработанный файл
-          allOf: *ref_64
+          allOf: *ref_63
       required:
         - id
         - renderingStatus
@@ -4640,13 +4655,13 @@ components:
         - countDevices
         - playlists
         - storageSpace
-    CooperationApproved:
+    ApplicationApproved:
       type: string
       enum:
         - NotProcessed
         - Allowed
         - Denied
-    CooperationPartialRequest:
+    ApplicationPartialRequest:
       type: object
       properties:
         id:
@@ -4670,9 +4685,13 @@ components:
           description: Плэйлист ID
           format: uuid
         approved:
+          type: array
           description: Не обработан / Разрешен / Запрещен
-          example: NotProcessed
-          $ref: "#/components/schemas/CooperationApproved"
+          example:
+            - NotProcessed
+            - Allowed
+          items:
+            $ref: "#/components/schemas/ApplicationApproved"
         createdAt:
           description: Время создания
           example:
@@ -4689,13 +4708,15 @@ components:
           type: array
           items:
             type: array
-    CooperationGetRequest:
+      required:
+        - approved
+    ApplicationGetRequest:
       type: object
       properties:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/CooperationPartialRequest"
+            - $ref: "#/components/schemas/ApplicationPartialRequest"
         scope:
           description: Рамки для запроса
           allOf:
@@ -4703,7 +4724,7 @@ components:
       required:
         - where
         - scope
-    CooperationResponse:
+    ApplicationResponse:
       type: object
       properties:
         id:
@@ -4729,7 +4750,7 @@ components:
         approved:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
-          $ref: "#/components/schemas/CooperationApproved"
+          $ref: "#/components/schemas/ApplicationApproved"
         createdAt:
           format: date-time
           type: string
@@ -4749,7 +4770,7 @@ components:
         - approved
         - createdAt
         - updatedAt
-    CooperationsGetResponse:
+    ApplicationsGetResponse:
       type: object
       properties:
         status:
@@ -4763,12 +4784,12 @@ components:
           description: Взаимодействия покупателей и продавца
           type: array
           items:
-            $ref: "#/components/schemas/CooperationResponse"
+            $ref: "#/components/schemas/ApplicationResponse"
       required:
         - status
         - count
         - data
-    CooperationGetResponse:
+    ApplicationGetResponse:
       type: object
       properties:
         status:
@@ -4778,17 +4799,17 @@ components:
         data:
           description: Взаимодействие покупателей и продавца
           allOf:
-            - $ref: "#/components/schemas/CooperationResponse"
+            - $ref: "#/components/schemas/ApplicationResponse"
       required:
         - status
         - data
-    CooperationUpdateRequest:
+    ApplicationUpdateRequest:
       type: object
       properties:
         approved:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
-          $ref: "#/components/schemas/CooperationApproved"
+          $ref: "#/components/schemas/ApplicationApproved"
       required:
         - approved
 externalDocs:

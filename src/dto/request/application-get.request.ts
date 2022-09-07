@@ -4,19 +4,19 @@ import { Type } from 'class-transformer';
 import { FindOptionsWhere } from 'typeorm';
 
 import { LimitRequest } from './limit.request';
-import { CooperationPartialRequest } from './cooperation-partial.request';
+import { ApplicationPartialRequest } from './application-partial.request';
 
-export class CooperationGetRequest {
+export class ApplicationGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: CooperationPartialRequest,
+    type: ApplicationPartialRequest,
     required: true,
   })
   @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => CooperationPartialRequest)
-  where!: FindOptionsWhere<CooperationPartialRequest>;
+  @Type(() => ApplicationPartialRequest)
+  where!: FindOptionsWhere<ApplicationPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -27,5 +27,5 @@ export class CooperationGetRequest {
   @IsNotEmpty()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope!: LimitRequest<CooperationPartialRequest>;
+  scope!: LimitRequest<ApplicationPartialRequest>;
 }

@@ -1,5 +1,5 @@
 import type { Request as ExpressRequest } from 'express';
-import { FindManyOptions } from 'typeorm';
+import { FindManyOptions, MoreThan } from 'typeorm';
 import {
   BadRequestException,
   Body,
@@ -43,7 +43,7 @@ import {
   MonitorUpdateRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { CooperationApproved, Status, UserRoleEnum } from '@/enums';
+import { ApplicationApproved, Status, UserRoleEnum } from '@/enums';
 import { MonitorService } from '@/database/monitor.service';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
@@ -134,7 +134,11 @@ export class MonitorController {
     } else if (role.includes(UserRoleEnum.MonitorOwner)) {
       conditional.where = { userId };
     } else {
-      conditional.where = {};
+      conditional.where = {
+        price1s: MoreThan(0),
+        minWarranty: MoreThan(0),
+        maxDuration: MoreThan(0),
+      };
     }
     const [data, count] = await this.monitorService.findAndCount(conditional);
 
@@ -235,11 +239,11 @@ export class MonitorController {
       });
 
       if (!role.includes(UserRoleEnum.Monitor)) {
-        let approved: CooperationApproved;
+        let approved: ApplicationApproved;
         if (monitor.userId === userId) {
-          approved = CooperationApproved.Allowed;
+          approved = ApplicationApproved.Allowed;
         } else {
-          approved = CooperationApproved.NotProcessed;
+          approved = ApplicationApproved.NotProcessed;
         }
         /* await */ this.applicationService
           .update(undefined, {

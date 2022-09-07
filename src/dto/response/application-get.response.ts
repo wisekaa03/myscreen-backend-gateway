@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { CooperationResponse } from './cooperation.response';
+import { ApplicationResponse } from './application.response';
 
-export class CooperationGetResponse {
+export class ApplicationGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -15,8 +15,8 @@ export class CooperationGetResponse {
 
   @ApiProperty({
     description: 'Взаимодействие покупателей и продавца',
-    type: CooperationResponse,
+    type: ApplicationResponse,
     required: true,
   })
-  data!: CooperationResponse;
+  data!: ApplicationResponse;
 }

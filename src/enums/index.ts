@@ -7,5 +7,5 @@ export * from './role.enum';
 export * from './status.enum';
 export * from './video-type.enum';
 export * from './monitor.category.enum';
-export * from './cooperation-approved.enum';
+export * from './application-approved.enum';
 export * from './playlist-status.enum';

@@ -14,9 +14,9 @@ import { IsDate, IsEnum, IsUUID } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { CooperationApproved } from '@/enums';
+import { ApplicationApproved } from '@/enums';
 
-@Entity('cooperation')
+@Entity('application')
 export class ApplicationEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
@@ -119,19 +119,19 @@ export class ApplicationEntity {
 
   @Column({
     type: 'enum',
-    enum: CooperationApproved,
-    default: CooperationApproved.NotProcessed,
+    enum: ApplicationApproved,
+    default: ApplicationApproved.NotProcessed,
   })
   @Index()
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
-    enum: CooperationApproved,
-    enumName: 'CooperationApproved',
-    example: CooperationApproved.NotProcessed,
+    enum: ApplicationApproved,
+    enumName: 'ApplicationApproved',
+    example: ApplicationApproved.NotProcessed,
     required: true,
   })
-  @IsEnum(CooperationApproved)
-  approved!: CooperationApproved;
+  @IsEnum(ApplicationApproved, { each: true })
+  approved!: ApplicationApproved | Array<ApplicationApproved>;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',

@@ -1,4 +1,4 @@
-export enum CooperationApproved {
+export enum ApplicationApproved {
   NotProcessed = 'NotProcessed',
   Allowed = 'Allowed',
   Denied = 'Denied',

@@ -24,15 +24,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Not } from 'typeorm';
+import { In, Not } from 'typeorm';
 
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
   BadRequestError,
-  CooperationGetRequest,
-  CooperationGetResponse,
-  CooperationsGetResponse,
-  CooperationUpdateRequest,
+  ApplicationGetRequest,
+  ApplicationGetResponse,
+  ApplicationsGetResponse,
+  ApplicationUpdateRequest,
   ForbiddenError,
   InternalServerError,
   NotFoundError,
@@ -77,8 +77,8 @@ import { WSGateway } from '@/websocket/ws.gateway';
 )
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
-@ApiTags('cooperation')
-@Controller('cooperation')
+@ApiTags('application')
+@Controller('application')
 export class ApplicationController {
   logger = new Logger(ApplicationController.name);
 
@@ -91,25 +91,25 @@ export class ApplicationController {
   @Post('/')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'cooperations-get',
+    operationId: 'applications-get',
     summary: 'Получение списка заявок',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: CooperationsGetResponse,
+    type: ApplicationsGetResponse,
   })
   async getCooperations(
     @Req() { user: { id: userId, role } }: ExpressRequest,
-    @Body() { where, scope }: CooperationGetRequest,
-  ): Promise<CooperationsGetResponse> {
+    @Body() { where, scope }: ApplicationGetRequest,
+  ): Promise<ApplicationsGetResponse> {
     const sqlWhere = TypeOrmFind.Where(where);
     if (role.includes(UserRoleEnum.MonitorOwner)) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         where: [
-          { ...sqlWhere, buyerId: userId, sellerId: Not(userId) },
-          { ...sqlWhere, buyerId: Not(userId), sellerId: userId },
+          { ...sqlWhere, buyerId: Not(userId) },
+          { ...sqlWhere, sellerId: Not(userId) },
         ],
       });
 
@@ -124,8 +124,8 @@ export class ApplicationController {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         where: [
-          { ...sqlWhere, buyerId: userId, sellerId: Not(userId) },
-          { ...sqlWhere, buyerId: Not(userId), sellerId: userId },
+          { ...sqlWhere, buyerId: userId },
+          { ...sqlWhere, sellerId: userId },
         ],
       });
 
@@ -150,17 +150,17 @@ export class ApplicationController {
   @Get('/:applicationId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'cooperation-get',
+    operationId: 'application-get',
     summary: 'Получение заявки',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: CooperationGetResponse,
+    type: ApplicationGetResponse,
   })
   async getEditor(
     @Param('applicationId', ParseUUIDPipe) id: string,
-  ): Promise<CooperationGetResponse> {
+  ): Promise<ApplicationGetResponse> {
     const data = await this.applicationService.findOne({
       where: {
         id,
@@ -178,19 +178,19 @@ export class ApplicationController {
   @Patch('/:applicationId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'cooperation-update',
+    operationId: 'application-update',
     summary: 'Изменить заявку',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: CooperationGetResponse,
+    type: ApplicationGetResponse,
   })
-  async updateEditor(
+  async updateApplication(
     @Req() { user: { id: userId } }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) id: string,
-    @Body() update: CooperationUpdateRequest,
-  ): Promise<CooperationGetResponse> {
+    @Body() update: ApplicationUpdateRequest,
+  ): Promise<ApplicationGetResponse> {
     const application = await this.applicationService.findOne({
       where: [
         {
@@ -224,7 +224,7 @@ export class ApplicationController {
   @Delete('/:applicationId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'cooperation-delete',
+    operationId: 'application-delete',
     summary: 'Удаление заявки',
   })
   @ApiResponse({
@@ -232,7 +232,7 @@ export class ApplicationController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async deleteCooperation(
+  async deleteApplication(
     @Req() { user: { id: userId } }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {

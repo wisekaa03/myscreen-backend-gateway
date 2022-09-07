@@ -4,6 +4,7 @@ import {
   IsDefined,
   IsEnum,
   IsIn,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -101,24 +102,6 @@ export class Address {
   room?: string;
 }
 
-export class MonitorPrice {
-  @ApiProperty({
-    description: 'Стоимость показа 1 секунды',
-    example: 1,
-    required: false,
-  })
-  @IsNumber()
-  of1s?: number;
-
-  @ApiProperty({
-    description: 'Стоимость 100 показов в день',
-    example: 100,
-    required: false,
-  })
-  @IsNumber()
-  show100?: number;
-}
-
 export class MonitorInfo {
   @ApiProperty({
     description: 'Модель',
@@ -210,16 +193,35 @@ export class MonitorEntity {
   @IsEnum(MonitorCategoryEnum)
   category!: MonitorCategoryEnum;
 
-  @Column({ type: 'jsonb', default: {} })
+  @Column({ type: 'integer', default: 0 })
   @ApiProperty({
-    type: MonitorPrice,
-    description: 'Стоимость показов',
-    example: { of1s: 0, show100: 0 },
+    type: 'integer',
+    description: 'Стоимость показа 1 секунды в рублях',
+    example: 1,
     required: false,
   })
-  @ValidateNested()
-  @Type(() => MonitorPrice)
-  price!: MonitorPrice;
+  @IsInt()
+  price1s!: number;
+
+  @Column({ type: 'integer', default: 0 })
+  @ApiProperty({
+    type: 'integer',
+    description: 'Гарантированное минимальное количество показов в день',
+    example: 1,
+    required: false,
+  })
+  @IsInt()
+  minWarranty!: number;
+
+  @Column({ type: 'integer', default: 0 })
+  @ApiProperty({
+    type: 'integer',
+    description: 'Максимальная длительность плэйлиста в секундах',
+    example: 1,
+    required: false,
+  })
+  @IsInt()
+  maxDuration!: number;
 
   @Column({ type: 'enum', enum: MonitorOrientation })
   @ApiProperty({
@@ -232,7 +234,6 @@ export class MonitorEntity {
   @IsEnum(MonitorOrientation)
   orientation!: MonitorOrientation;
 
-  // TODO: transformer functions
   @Column({ type: 'jsonb', default: {} })
   @ApiProperty({
     type: MonitorInfo,

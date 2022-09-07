@@ -1,8 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
 import { ApplicationEntity } from '@/database/application.entity';
 
-export class CooperationCreateRequest extends OmitType(ApplicationEntity, [
-  'id',
+export class ApplicationRequest extends OmitType(ApplicationEntity, [
   'buyer',
   'seller',
   'monitor',
