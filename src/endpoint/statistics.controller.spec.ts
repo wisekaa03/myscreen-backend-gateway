@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { StatisticsController } from './statistics.controller';
-import { PlaylistService } from '@/database/playlist.service';
-import { WSGateway } from '@/websocket/ws.gateway';
-import { UserService } from '@/database/user.service';
-import { MonitorService } from '@/database/monitor.service';
+import { PlaylistService } from '../database/playlist.service';
+import { WSGateway } from '../websocket/ws.gateway';
+import { UserService } from '../database/user.service';
+import { MonitorService } from '../database/monitor.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),

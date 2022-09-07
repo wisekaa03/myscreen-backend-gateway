@@ -31,12 +31,12 @@ import {
   UsersGetResponse,
   UserGetResponse,
   UsersGetRequest,
-} from '@/dto';
-import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
-import { Status } from '@/enums/status.enum';
-import { UserRoleEnum } from '@/enums/role.enum';
-import { UserService } from '@/database/user.service';
-import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+} from '../dto/index';
+import { JwtAuthGuard, RolesGuard, Roles } from '../guards/index';
+import { Status } from '../enums/status.enum';
+import { UserRoleEnum } from '../enums/role.enum';
+import { UserService } from '../database/user.service';
+import { paginationQueryToConfig } from '../shared/pagination-query-to-config';
 
 @ApiResponse({
   status: 400,

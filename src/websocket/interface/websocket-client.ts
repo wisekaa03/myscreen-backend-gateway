@@ -1,6 +1,6 @@
 import type { WebSocket } from 'ws';
-import type { UserRoleEnum } from '@/enums';
-import type { Token } from '@/dto/interface';
+import type { UserRoleEnum } from '../../enums/role.enum.js';
+import type { Token } from '../../dto/interface.js';
 
 export interface WebSocketClient {
   ws: WebSocket;

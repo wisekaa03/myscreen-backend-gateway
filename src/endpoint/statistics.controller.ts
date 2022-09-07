@@ -23,14 +23,14 @@ import {
   NotFoundError,
   ServiceUnavailableError,
   UnauthorizedError,
-} from '@/dto';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status, UserRoleEnum } from '@/enums';
-import { StatisticsResponse } from '@/dto/response/statistics.response';
-import { UserService } from '@/database/user.service';
-import { WSGateway } from '@/websocket/ws.gateway';
-import { PlaylistService } from '@/database/playlist.service';
-import { MonitorService } from '@/database/monitor.service';
+} from '../dto/index';
+import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
+import { Status, UserRoleEnum } from '../enums/index';
+import { StatisticsResponse } from '../dto/response/statistics.response';
+import { UserService } from '../database/user.service';
+import { WSGateway } from '../websocket/ws.gateway';
+import { PlaylistService } from '../database/playlist.service';
+import { MonitorService } from '../database/monitor.service';
 
 @ApiResponse({
   status: 400,

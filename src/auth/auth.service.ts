@@ -3,17 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import { type JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
 
+import { UserRoleEnum } from '../enums/role.enum';
 import {
   JWT_BASE_OPTIONS,
   type MyscreenJwtPayload,
-} from '@/shared/jwt.payload';
-import { userEntityToUser, AuthenticationPayload } from '@/dto';
-import { UserService } from '@/database/user.service';
-import { UserEntity } from '@/database/user.entity';
-import { RefreshTokenService } from '@/database/refreshtoken.service';
-import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
-import { decodeMailToken } from '@/shared/mail-token';
-import { UserRoleEnum } from '@/enums';
+} from '../shared/jwt.payload';
+import { userEntityToUser, AuthenticationPayload } from '../dto/index';
+import { UserService } from '../database/user.service';
+import { UserEntity } from '../database/user.entity';
+import { RefreshTokenService } from '../database/refreshtoken.service';
+import { RefreshTokenEntity } from '../database/refreshtoken.entity';
+import { decodeMailToken } from '../shared/mail-token';
 
 @Injectable()
 export class AuthService {

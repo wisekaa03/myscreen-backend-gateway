@@ -12,10 +12,10 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
-import { WsAdapter } from '@/websocket/ws-adapter';
 import { version, author, homepage, description } from '../package.json';
-import { AppModule } from './app.module';
 import { ExceptionsFilter } from './exception/exceptions.filter';
+import { WsAdapter } from './websocket/ws-adapter';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const configService = new ConfigService();

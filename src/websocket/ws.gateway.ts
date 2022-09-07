@@ -15,14 +15,18 @@ import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { Observable, of } from 'rxjs';
 
-import { AuthService } from '@/auth/auth.service';
-import { PlaylistEntity } from '@/database/playlist.entity';
-import { MonitorEntity } from '@/database/monitor.entity';
-import { MonitorService } from '@/database/monitor.service';
-import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
-import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
+import { AuthService } from '../auth/auth.service';
+import { PlaylistEntity } from '../database/playlist.entity';
+import { MonitorEntity } from '../database/monitor.entity';
+import { MonitorService } from '../database/monitor.service';
+import { WsExceptionsFilter } from '../exception/ws-exceptions.filter';
+import {
+  MonitorStatus,
+  PlaylistStatusEnum,
+  UserRoleEnum,
+} from '../enums/index';
 import { WebSocketClient } from './interface/websocket-client';
-import { PlaylistService } from '@/database/playlist.service';
+import { PlaylistService } from '../database/playlist.service';
 
 @WebSocketGateway({
   cors: {
@@ -54,7 +58,7 @@ export class WSGateway
   ): Promise<WebSocketClient | undefined> {
     const { sub: userId, aud: roles } = await this.authService
       .jwtVerify(token)
-      .catch((error) => {
+      .catch((error: any) => {
         this.logger.error(error);
         throw new WsException('Not authorized');
       });
@@ -110,7 +114,7 @@ export class WSGateway
                     status: MonitorStatus.Online,
                   }),
                 )
-                .catch((error) => {
+                .catch((error: any) => {
                   this.logger.error(error);
                 });
               /* await */ this.monitorStatus(monitor.id, MonitorStatus.Online);
@@ -154,7 +158,7 @@ export class WSGateway
               status: MonitorStatus.Offline,
             }),
           )
-          .catch((error) => {
+          .catch((error: any) => {
             this.logger.error(error);
           });
         /* await */ this.monitorStatus(monitor.id, MonitorStatus.Offline);
@@ -185,7 +189,7 @@ export class WSGateway
                   status: MonitorStatus.Online,
                 }),
               )
-              .catch((error) => {
+              .catch((error: any) => {
                 this.logger.error(error);
               });
             /* await */ this.monitorStatus(monitor.id, MonitorStatus.Online);

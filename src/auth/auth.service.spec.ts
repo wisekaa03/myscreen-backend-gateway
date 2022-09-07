@@ -2,8 +2,8 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 
-import { UserService } from '@/database/user.service';
-import { RefreshTokenService } from '@/database/refreshtoken.service';
+import { UserService } from '../database/user.service';
+import { RefreshTokenService } from '../database/refreshtoken.service';
 import { AuthService } from './auth.service';
 
 const email = 'foo@bar.baz';

@@ -34,9 +34,9 @@ import {
   MonitorCategoryEnum,
   MonitorOrientation,
   MonitorStatus,
-} from '@/enums';
-import { UserEntity } from '@/database/user.entity';
-import { PlaylistEntity } from '@/database/playlist.entity';
+} from '../enums/index';
+import { UserEntity } from './user.entity';
+import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
 
 export class PointClass implements Point {

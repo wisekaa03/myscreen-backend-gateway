@@ -10,7 +10,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
-  AfterUpdate,
   BeforeInsert,
   BeforeUpdate,
   Column,

@@ -3,8 +3,8 @@ import util from 'node:util';
 import path from 'node:path';
 import { Logger } from '@nestjs/common';
 
-import { MediaMeta } from '@/database/file.entity';
-import { VideoType } from '@/enums';
+import { MediaMeta } from '../database/file.entity';
+import { VideoType } from '../enums/video-type.enum';
 
 const exec = util.promisify(child.exec);
 

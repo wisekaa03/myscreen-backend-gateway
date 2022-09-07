@@ -1,6 +1,7 @@
 import type { JwtPayload } from 'jsonwebtoken';
-import type { UserEntity } from '@/database/user.entity';
-import { UserRoleEnum } from '@/enums';
+
+import type { UserEntity } from '../database/user.entity';
+import { UserRoleEnum } from '../enums/role.enum';
 
 export const JWT_BASE_OPTIONS = {};
 

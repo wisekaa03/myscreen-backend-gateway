@@ -58,16 +58,16 @@ import {
   FilesDeleteRequest,
   FilesUpdateRequest,
   FilesCopyRequest,
-} from '@/dto';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status } from '@/enums/status.enum';
-import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
-import { FileService } from '@/database/file.service';
-import { UserRoleEnum, VideoType } from '@/enums';
-import { FileEntity } from '@/database/file.entity';
-import { MonitorService } from '@/database/monitor.service';
-import { FolderService } from '@/database/folder.service';
-import { TypeOrmFind } from '@/shared/typeorm.find';
+} from '../dto/index';
+import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
+import { Status } from '../enums/status.enum';
+import { paginationQueryToConfig } from '../shared/pagination-query-to-config';
+import { FileService } from '../database/file.service';
+import { UserRoleEnum, VideoType } from '../enums';
+import { FileEntity } from '../database/file.entity';
+import { MonitorService } from '../database/monitor.service';
+import { FolderService } from '../database/folder.service';
+import { TypeOrmFind } from '../shared/typeorm.find';
 
 @ApiResponse({
   status: 400,
@@ -328,7 +328,7 @@ export class FileController {
     },
   })
   async getFileS3(
-    @Req() { user: { id: userId, role } }: ExpressRequest,
+    /* @Req() { user: { id: userId, role } }: ExpressRequest, */
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
@@ -407,7 +407,7 @@ export class FileController {
     type: FileGetResponse,
   })
   async getFileDB(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    /* @Req() { user: { id: userId } }: ExpressRequest, */
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<FileGetResponse> {
     const data = await this.fileService.findOne({
@@ -453,7 +453,7 @@ export class FileController {
     },
   })
   async getFilePreview(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    /* @Req() { user: { id: userId } }: ExpressRequest, */
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<void> {

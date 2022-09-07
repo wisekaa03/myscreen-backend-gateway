@@ -24,7 +24,7 @@ import {
   NotFoundError,
   ConflictError,
   NotImplementedError,
-} from '@/dto';
+} from '../dto/index';
 
 @Catch()
 export class ExceptionsFilter extends BaseExceptionFilter<Error> {

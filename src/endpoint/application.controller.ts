@@ -14,7 +14,6 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
-  Put,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -24,7 +23,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { In, Not } from 'typeorm';
+import { Not } from 'typeorm';
 
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {

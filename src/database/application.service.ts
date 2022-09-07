@@ -71,25 +71,28 @@ export class ApplicationService {
   ): Promise<ApplicationEntity | null> {
     await this.applicationRepository.manager.transaction(
       async (applicationRepository) => {
-        const cooperation = await applicationRepository.save(
+        const application = await applicationRepository.save(
           this.applicationRepository.create(update),
         );
 
         if (update.approved === ApplicationApproved.NotProcessed) {
           /* await */ this.mailService
             .sendApplicationWarningMessage(
-              cooperation.seller.email,
+              application.seller?.email,
               `${this.frontendUrl}/applications`,
             )
-            .catch((error) => {
-              this.logger.error(error);
+            .catch((error: any) => {
+              this.logger.error(
+                `ApplicationService seller=${application.seller}, buyer=${application.buyer}: ${error}`,
+                error,
+              );
             });
         }
 
         if (update.approved === ApplicationApproved.Allowed) {
           /* await */ this.wsGateway
-            .monitorPlaylist(cooperation.monitor, cooperation.playlist)
-            .catch((error) => {
+            .monitorPlaylist(application.monitor, application.playlist)
+            .catch((error: any) => {
               this.logger.error(error);
             });
         }

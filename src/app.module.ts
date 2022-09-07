@@ -1,17 +1,18 @@
 import { Module, Logger } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from 'nestjs-s3';
+import { TransportTargetOptions, LevelWithSilent } from 'pino';
 import type pino from 'pino';
 import type { PrettyOptions } from 'pino-pretty';
 import type { ClientOptions as ElasticClientOptions } from '@elastic/elasticsearch';
 import { LoggerModule, Params as NestPinoParams } from 'nestjs-pino';
 
-import { S3ModuleOptionsClass } from '@/shared/s3-module-options-class';
-import { MailModule } from '@/mail/mail.module';
-import { DatabaseModule } from '@/database/database.module';
-import { AuthModule } from '@/auth/auth.module';
-import { EndpointModule } from '@/endpoint/endpoint.module';
-import { WSModule } from '@/websocket/ws.module';
+import { S3ModuleOptionsClass } from './shared/s3-module-options-class';
+import { MailModule } from './mail/mail.module';
+import { DatabaseModule } from './database/database.module';
+import { AuthModule } from './auth/auth.module';
+import { EndpointModule } from './endpoint/endpoint.module';
+import { WSModule } from './websocket/ws.module';
 
 @Module({
   imports: [
@@ -20,7 +21,7 @@ import { WSModule } from '@/websocket/ws.module';
       useFactory: async (
         configService: ConfigService,
       ): Promise<NestPinoParams> => {
-        const targets: pino.TransportTargetOptions[] = [];
+        const targets: TransportTargetOptions[] = [];
 
         // Pretty-print
         const prettyPrint: pino.TransportTargetOptions<PrettyOptions> = {
@@ -34,7 +35,7 @@ import { WSModule } from '@/websocket/ws.module';
             singleLine: true,
             ignore: 'pid,hostname',
           },
-          level: configService.get<pino.LevelWithSilent>('LOG_LEVEL', 'debug'),
+          level: configService.get<LevelWithSilent>('LOG_LEVEL', 'debug'),
         };
         targets.push(prettyPrint);
 
@@ -46,20 +47,14 @@ import { WSModule } from '@/websocket/ws.module';
             options: {
               // TODO
             },
-            level: configService.get<pino.LevelWithSilent>(
-              'LOG_LEVEL',
-              'debug',
-            ),
+            level: configService.get<LevelWithSilent>('LOG_LEVEL', 'debug'),
           };
           targets.push(kibana);
         }
 
         return {
           pinoHttp: {
-            level: configService.get<pino.LevelWithSilent>(
-              'LOG_LEVEL',
-              'debug',
-            ),
+            level: configService.get<LevelWithSilent>('LOG_LEVEL', 'debug'),
             transport: { targets },
             autoLogging: false,
           },

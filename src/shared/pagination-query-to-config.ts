@@ -1,6 +1,7 @@
 import type { FindManyOptions, FindOneOptions } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
-import { LimitRequest } from '@/dto/request/limit.request';
+
+import { LimitRequest } from '../dto/request/limit.request';
 
 export type ScopeOrder = FindOneOptions<any>['order'];
 

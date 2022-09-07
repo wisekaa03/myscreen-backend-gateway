@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { JwtAuthGuard } from '@/guards';
-import { WSGateway } from '@/websocket/ws.gateway';
-import { MonitorService } from '@/database/monitor.service';
-import { PlaylistService } from '@/database/playlist.service';
-import { ApplicationService } from '@/database/application.service';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { WSGateway } from '../websocket/ws.gateway';
+import { MonitorService } from '../database/monitor.service';
+import { PlaylistService } from '../database/playlist.service';
+import { ApplicationService } from '../database/application.service';
 import { MonitorController } from './monitor.controller';
 
 export const mockRepository = jest.fn(() => ({
