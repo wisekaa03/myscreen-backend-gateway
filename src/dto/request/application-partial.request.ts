@@ -24,7 +24,7 @@ export class ApplicationPartialRequest extends PartialType(
     required: true,
   })
   @IsEnum(ApplicationApproved, { each: true })
-  approved!: Array<ApplicationApproved>;
+  approved?: Array<ApplicationApproved>;
 
   @ApiProperty({
     description: 'Время создания',
