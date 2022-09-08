@@ -2,10 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-import { WSGateway } from '@/websocket/ws.gateway';
-import { MailService } from '@/mail/mail.service';
+import { WSGateway } from '../websocket/ws.gateway';
+import { MailService } from '../mail/mail.service';
 import { ApplicationEntity } from './application.entity';
 import { ApplicationService } from './application.service';
+import { UserService } from './user.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -29,6 +30,10 @@ describe(ApplicationService.name, () => {
         ApplicationService,
         {
           provide: MailService,
+          useClass: mockRepository,
+        },
+        {
+          provide: UserService,
           useClass: mockRepository,
         },
         {

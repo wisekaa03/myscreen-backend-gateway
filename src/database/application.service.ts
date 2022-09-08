@@ -3,10 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
 
-import { WSGateway } from '@/websocket/ws.gateway';
-import { TypeOrmFind } from '@/shared/typeorm.find';
-import { ApplicationApproved } from '@/enums';
-import { MailService } from '@/mail/mail.service';
+import { WSGateway } from '../websocket/ws.gateway';
+import { TypeOrmFind } from '../shared/typeorm.find';
+import { ApplicationApproved } from '../enums/index';
+import { MailService } from '../mail/mail.service';
+import { UserService } from './user.service';
 import { ApplicationEntity } from './application.entity';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class ApplicationService {
   private frontendUrl: string;
 
   constructor(
+    private readonly userService: UserService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
     private readonly wsGateway: WSGateway,
@@ -76,17 +78,22 @@ export class ApplicationService {
         );
 
         if (update.approved === ApplicationApproved.NotProcessed) {
-          /* await */ this.mailService
-            .sendApplicationWarningMessage(
-              application.seller?.email,
-              `${this.frontendUrl}/applications`,
-            )
-            .catch((error: any) => {
-              this.logger.error(
-                `ApplicationService seller=${application.seller}, buyer=${application.buyer}: ${error}`,
-                error,
-              );
-            });
+          const seller = await this.userService.findById(application.sellerId);
+          if (seller) {
+            await this.mailService
+              .sendApplicationWarningMessage(
+                seller.email,
+                `${this.frontendUrl}/applications`,
+              )
+              .catch((error: any) => {
+                this.logger.error(
+                  `ApplicationService seller email=${seller.email}: ${error}`,
+                  error,
+                );
+              });
+          } else {
+            this.logger.error('ApplicationService seller email=undefined');
+          }
         }
 
         if (update.approved === ApplicationApproved.Allowed) {
