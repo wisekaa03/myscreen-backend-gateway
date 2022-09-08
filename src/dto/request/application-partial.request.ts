@@ -21,7 +21,7 @@ export class ApplicationPartialRequest extends PartialType(
     enumName: 'ApplicationApproved',
     example: [ApplicationApproved.NotProcessed, ApplicationApproved.Allowed],
     isArray: true,
-    required: true,
+    required: false,
   })
   @IsEnum(ApplicationApproved, { each: true })
   approved?: Array<ApplicationApproved>;
