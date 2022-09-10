@@ -1,3 +1,4 @@
+import { Order } from '../dto/request/limit-order.request';
 import { paginationQueryToConfig } from './pagination-query-to-config';
 
 describe('pagination query to config', () => {
@@ -5,7 +6,9 @@ describe('pagination query to config', () => {
     const config = paginationQueryToConfig({
       limit: 10,
       page: 2,
-      order: { name: 'ASC' },
+      order: {
+        name: Order.ASC,
+      },
     });
 
     expect(config).toStrictEqual({
