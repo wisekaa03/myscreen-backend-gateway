@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
-import { PaymentEntity } from '@/database/payment.entity';
+import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
+import { PaymentEntity } from '../../database/payment.entity';
 import { LimitRequest } from './limit.request';
 import { PaymentRequest } from './payment.request';
 
@@ -10,22 +12,30 @@ export class PaymentsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: PaymentRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => PaymentRequest)
-  where!: PaymentRequest;
+  where?: FindOptionsWhere<PaymentRequest>;
+
+  @ApiProperty({
+    description: 'Выбрать поля',
+    example: [],
+    enum: swaggerGetModelProperties(PaymentEntity),
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  select?: FindOptionsSelect<PaymentRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope!: LimitRequest<PaymentEntity>;
+  scope?: LimitRequest<PaymentRequest>;
 }

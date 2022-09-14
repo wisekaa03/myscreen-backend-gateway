@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { FindOptionsWhere } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
+import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
+import { MonitorEntity } from '../../database/monitor.entity';
 import { LimitRequest } from './limit.request';
 import { MonitorPartialRequest } from './monitor-partial.request';
 
@@ -10,22 +12,30 @@ export class MonitorsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: MonitorPartialRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => MonitorPartialRequest)
-  where!: FindOptionsWhere<MonitorPartialRequest>;
+  where?: FindOptionsWhere<MonitorPartialRequest>;
+
+  @ApiProperty({
+    description: 'Выбрать поля',
+    example: [],
+    enum: swaggerGetModelProperties(MonitorEntity),
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  select?: FindOptionsSelect<MonitorPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope!: LimitRequest<MonitorPartialRequest>;
+  scope?: LimitRequest<MonitorPartialRequest>;
 }

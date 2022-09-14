@@ -16,6 +16,8 @@ import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
 import { FilePreviewEntity } from './file-preview.entity';
 import { MonitorEntity } from './monitor.entity';
+import { MonitorFavoriteEntity } from './monitor.favorite.entity';
+import { MonitorViewEntity } from './monitor.view.entity';
 import { MonitorService } from './monitor.service';
 import { OrderEntity } from './order.entity';
 import { OrderService } from './order.service';
@@ -51,15 +53,17 @@ import { ApplicationEntity } from './application.entity';
       FileEntity,
       FilePreviewEntity,
       MonitorEntity,
+      MonitorFavoriteEntity,
       OrderEntity,
       PaymentLogEntity,
       PaymentEntity,
       PlaylistEntity,
       UptimeMonitoringEntity,
       UserEntity,
-      UserSizeEntity,
       RefreshTokenEntity,
       ApplicationEntity,
+      UserSizeEntity,
+      MonitorViewEntity,
     ]),
   ],
 

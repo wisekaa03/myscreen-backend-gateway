@@ -489,6 +489,56 @@ paths:
         "503": *ref_12
       tags: *ref_13
       security: *ref_14
+  /api/v2/monitor/{monitorId}/favoritePlus:
+    get:
+      operationId: monitor-favorite-plus
+      summary: Избранное +
+      parameters:
+        - name: monitorId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorGetResponse"
+        "400": *ref_7
+        "401": *ref_8
+        "403": *ref_9
+        "404": *ref_10
+        "500": *ref_11
+        "503": *ref_12
+      tags: *ref_13
+      security: *ref_14
+  /api/v2/monitor/{monitorId}/favoriteMinus:
+    get:
+      operationId: monitor-favorite-minus
+      summary: Избранное -
+      parameters:
+        - name: monitorId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonitorGetResponse"
+        "400": *ref_7
+        "401": *ref_8
+        "403": *ref_9
+        "404": *ref_10
+        "500": *ref_11
+        "503": *ref_12
+      tags: *ref_13
+      security: *ref_14
   /api/v2/monitor/{monitorId}/playlist:
     get:
       operationId: monitor-get-playlist
@@ -2103,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.26.7
+  version: 2.27.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2783,6 +2833,10 @@ components:
               - 45.04484
           allOf:
             - $ref: "#/components/schemas/PointClass"
+        favorite:
+          type: boolean
+          description: Избранный монитор
+          example: false
         createdAt:
           description: Время создания
           example:
@@ -2939,13 +2993,34 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/MonitorPartialRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - name
+              - address
+              - category
+              - price1s
+              - minWarranty
+              - maxDuration
+              - orientation
+              - monitorInfo
+              - attached
+              - status
+              - playlistPlayed
+              - code
+              - lastSeen
+              - location
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     PlaylistStatus:
       type: string
       enum:
@@ -3200,8 +3275,12 @@ components:
           type: string
           description: Время изменения
           example: "2021-01-01T10:00:00.147Z"
+        favorite:
+          type: boolean
+          description: Избранный монитор
+          example: false
         playlist:
-          description: Плэйлист
+          description: Плэйлист привязанный к монитору
           allOf:
             - $ref: "#/components/schemas/PlaylistResponse"
         files:
@@ -3225,6 +3304,7 @@ components:
         - lastSeen
         - createdAt
         - updatedAt
+        - favorite
         - code
     MonitorsGetResponse:
       type: object
@@ -3446,13 +3526,32 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/EditorPartialRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - name
+              - width
+              - height
+              - fps
+              - renderingStatus
+              - renderingPercent
+              - renderingError
+              - renderedFile
+              - keepSourceAudio
+              - totalDuration
+              - videoLayers
+              - audioLayers
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     EditorLayerResponse:
       type: object
       properties:
@@ -3946,13 +4045,30 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/FilePartialRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - folderId
+              - name
+              - extension
+              - hash
+              - videoType
+              - category
+              - filesize
+              - duration
+              - width
+              - height
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     FilesGetResponse:
       type: object
       properties:
@@ -4116,13 +4232,22 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/FolderPartialRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - name
+              - parentFolderId
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     FoldersGetResponse:
       type: object
       properties:
@@ -4332,13 +4457,32 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/UserPartialRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - email
+              - surname
+              - name
+              - middleName
+              - phoneNumber
+              - city
+              - country
+              - company
+              - storageSpace
+              - role
+              - verified
+              - isDemoUser
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     UsersGetResponse:
       type: object
       properties:
@@ -4372,13 +4516,21 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/OrderRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - description
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     OrderResponse:
       type: object
       properties:
@@ -4439,13 +4591,23 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/PaymentRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - amount
+              - incomeAmount
+              - description
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     PaymentResponse:
       type: object
       properties:
@@ -4545,13 +4707,25 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/PlaylistPartialRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - name
+              - description
+              - status
+              - files
+              - monitors
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     PlaylistsGetResponse:
       type: object
       properties:
@@ -4715,13 +4889,29 @@ components:
           description: Запрос
           allOf:
             - $ref: "#/components/schemas/ApplicationPartialRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - buyer
+              - buyerId
+              - seller
+              - sellerId
+              - monitor
+              - monitorId
+              - playlist
+              - playlistId
+              - approved
+              - createdAt
+              - updatedAt
         scope:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-      required:
-        - where
-        - scope
     ApplicationResponse:
       type: object
       properties:

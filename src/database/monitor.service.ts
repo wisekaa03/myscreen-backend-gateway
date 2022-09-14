@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
@@ -10,18 +10,21 @@ import {
 import { MonitorStatus } from '../enums/monitor-status.enum';
 import { TypeOrmFind } from '../shared/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
+import { MonitorViewEntity } from './monitor.view.entity';
 
 @Injectable()
 export class MonitorService {
   constructor(
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
+    @InjectRepository(MonitorViewEntity)
+    private readonly monitorViewRepository: Repository<MonitorViewEntity>,
   ) {}
 
   async find(
     find: FindManyOptions<MonitorEntity>,
     caseInsensitive = true,
-  ): Promise<Array<MonitorEntity>> {
+  ): Promise<Array<MonitorViewEntity>> {
     return caseInsensitive
       ? TypeOrmFind.findCI(this.monitorRepository, {
           relations: ['files', 'playlist'],
@@ -36,7 +39,7 @@ export class MonitorService {
   async findAndCount(
     find: FindManyOptions<MonitorEntity>,
     caseInsensitive = true,
-  ): Promise<[Array<MonitorEntity>, number]> {
+  ): Promise<[Array<MonitorViewEntity>, number]> {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.monitorRepository, {
           relations: ['files', 'playlist'],
@@ -49,9 +52,9 @@ export class MonitorService {
   }
 
   async findOne(
-    find: FindManyOptions<MonitorEntity>,
-  ): Promise<MonitorEntity | null> {
-    return this.monitorRepository.findOne({
+    find: FindManyOptions<MonitorViewEntity>,
+  ): Promise<MonitorViewEntity | null> {
+    return this.monitorViewRepository.findOne({
       relations: ['files', 'playlist'],
       ...TypeOrmFind.Nullable(find),
     });
@@ -90,9 +93,17 @@ export class MonitorService {
     );
   }
 
-  async delete(userId: string, monitor: MonitorEntity): Promise<DeleteResult> {
+  async favorite(
+    userId: string,
+    monitorId: string,
+    favorite = true,
+  ): Promise<MonitorViewEntity> {
+    throw new NotImplementedException();
+  }
+
+  async delete(userId: string, id: string): Promise<DeleteResult> {
     return this.monitorRepository.delete({
-      id: monitor.id,
+      id,
       userId,
     });
   }

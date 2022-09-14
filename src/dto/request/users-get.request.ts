@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { FindOptionsWhere } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
+import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
+import { UserEntity } from '../../database/user.entity';
 import { LimitRequest } from './limit.request';
 import { UserPartialRequest } from './user-partial.request';
 
@@ -10,22 +12,32 @@ export class UsersGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: UserPartialRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => UserPartialRequest)
-  where!: FindOptionsWhere<UserPartialRequest>;
+  where?: FindOptionsWhere<UserPartialRequest>;
+
+  @ApiProperty({
+    description: 'Выбрать поля',
+    example: [],
+    enum: swaggerGetModelProperties(UserEntity).filter(
+      (user) => user !== 'password',
+    ),
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  select?: FindOptionsSelect<UserPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope!: LimitRequest<UserPartialRequest>;
+  scope?: LimitRequest<UserPartialRequest>;
 }

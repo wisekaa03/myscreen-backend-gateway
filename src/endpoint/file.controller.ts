@@ -137,10 +137,11 @@ export class FileController {
   })
   async getFiles(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { where, scope }: FilesGetRequest,
+    @Body() { where, select, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
     const [data, count] = await this.fileService.findAndCount({
       ...paginationQueryToConfig(scope),
+      select,
       where: TypeOrmFind.Where(where, userId),
     });
 

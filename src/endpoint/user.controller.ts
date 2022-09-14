@@ -79,10 +79,11 @@ export class UserController {
     type: UsersGetResponse,
   })
   async users(
-    @Body() { where, scope }: UsersGetRequest,
+    @Body() { where, select, scope }: UsersGetRequest,
   ): Promise<UsersGetResponse> {
     const [users, count] = await this.userService.findAndCount({
       ...paginationQueryToConfig(scope),
+      select,
       where,
     });
     const data = users.map(

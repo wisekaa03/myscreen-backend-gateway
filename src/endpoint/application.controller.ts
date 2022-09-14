@@ -100,12 +100,13 @@ export class ApplicationController {
   })
   async getCooperations(
     @Req() { user: { id: userId, role } }: ExpressRequest,
-    @Body() { where, scope }: ApplicationGetRequest,
+    @Body() { where, select, scope }: ApplicationGetRequest,
   ): Promise<ApplicationsGetResponse> {
     const sqlWhere = TypeOrmFind.Where(where);
     if (role.includes(UserRoleEnum.MonitorOwner)) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
+        select,
         where: [
           { ...sqlWhere, buyerId: Not(userId) },
           { ...sqlWhere, sellerId: Not(userId) },
@@ -122,6 +123,7 @@ export class ApplicationController {
     if (role.includes(UserRoleEnum.Advertiser)) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
+        select,
         where: [
           { ...sqlWhere, buyerId: userId },
           { ...sqlWhere, sellerId: userId },
@@ -137,6 +139,7 @@ export class ApplicationController {
 
     const [data, count] = await this.applicationService.findAndCount({
       ...paginationQueryToConfig(scope),
+      select,
       where: TypeOrmFind.Where(where),
     });
     return {

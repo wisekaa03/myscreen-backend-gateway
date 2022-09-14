@@ -122,10 +122,11 @@ export class MonitorController {
   })
   async getMonitors(
     @Req() { user: { id: userId, role } }: ExpressRequest,
-    @Body() { where, scope }: MonitorsGetRequest,
+    @Body() { where, select, scope }: MonitorsGetRequest,
   ): Promise<MonitorsGetResponse> {
     const conditional: FindManyOptions<MonitorEntity> = {
       ...paginationQueryToConfig(scope),
+      select,
       where: TypeOrmFind.Where(where),
     };
     if (role.includes(UserRoleEnum.Monitor)) {
@@ -166,12 +167,13 @@ export class MonitorController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() monitor: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    const monitorEntity = await this.monitorService.findOne({
+    const findMonitor = await this.monitorService.findOne({
+      select: ['id', 'name', 'code'],
       where: { code: monitor.code },
     });
-    if (monitorEntity) {
+    if (findMonitor) {
       throw new BadRequestException(
-        `Монитор '${monitorEntity.name}'/'${monitorEntity.code}' уже существует`,
+        `Монитор '${findMonitor.name}'/'${findMonitor.code}' уже существует`,
       );
     }
 
@@ -376,6 +378,64 @@ export class MonitorController {
     };
   }
 
+  @Get('/:monitorId/favoritePlus')
+  @HttpCode(200)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiOperation({
+    operationId: 'monitor-favorite-plus',
+    summary: 'Избранное +',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MonitorGetResponse,
+  })
+  async monitorFavoritePlus(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Param('monitorId', ParseUUIDPipe) id: string,
+  ): Promise<MonitorGetResponse> {
+    const data = await this.monitorService.favorite(userId, id, true);
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Get('/:monitorId/favoriteMinus')
+  @HttpCode(200)
+  @Roles(
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  )
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiOperation({
+    operationId: 'monitor-favorite-minus',
+    summary: 'Избранное -',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MonitorGetResponse,
+  })
+  async monitorFavoriteMinus(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Param('monitorId', ParseUUIDPipe) id: string,
+  ): Promise<MonitorGetResponse> {
+    const data = await this.monitorService.favorite(userId, id, false);
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
   @Get('/:monitorId/playlist')
   @HttpCode(200)
   @Roles(
@@ -438,6 +498,8 @@ export class MonitorController {
     @Body() update: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
     const monitor = await this.monitorService.findOne({
+      select: ['id'],
+      loadEagerRelations: false,
       where: {
         userId,
         id,
@@ -475,6 +537,8 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
     const monitor = await this.monitorService.findOne({
+      select: ['id'],
+      loadEagerRelations: false,
       where: {
         userId,
         id,
@@ -484,7 +548,7 @@ export class MonitorController {
       throw new NotFoundException(`Monitor '${id}' is not found`);
     }
 
-    const { affected } = await this.monitorService.delete(userId, monitor);
+    const { affected } = await this.monitorService.delete(userId, id);
     if (!affected) {
       throw new NotFoundException('This monitor is not exists');
     }

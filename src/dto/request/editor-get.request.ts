@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { FindOptionsWhere } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
+import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
+import { EditorEntity } from '../../database/editor.entity';
 import { LimitRequest } from './limit.request';
 import { EditorPartialRequest } from './editor-partial.request';
 
@@ -10,22 +12,30 @@ export class EditorGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: EditorPartialRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => EditorPartialRequest)
-  where!: FindOptionsWhere<EditorPartialRequest>;
+  where?: FindOptionsWhere<EditorPartialRequest>;
+
+  @ApiProperty({
+    description: 'Выбрать поля',
+    example: [],
+    enum: swaggerGetModelProperties(EditorEntity),
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  select?: FindOptionsSelect<EditorPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope!: LimitRequest<EditorPartialRequest>;
+  scope?: LimitRequest<EditorPartialRequest>;
 }

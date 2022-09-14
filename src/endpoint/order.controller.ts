@@ -89,10 +89,11 @@ export class OrderController {
   })
   async getOrders(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { where, scope }: OrdersGetRequest,
+    @Body() { where, select, scope }: OrdersGetRequest,
   ): Promise<OrdersGetResponse> {
     const [data, count] = await this.orderService.find({
       ...paginationQueryToConfig(scope),
+      select,
       where: TypeOrmFind.Where(where, userId),
     });
 

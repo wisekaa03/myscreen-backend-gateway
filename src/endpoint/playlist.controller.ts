@@ -107,10 +107,11 @@ export class PlaylistController {
   })
   async getPlaylists(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Body() { where, scope }: PlaylistsGetRequest,
+    @Body() { where, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
     const [data, count] = await this.playlistService.findAndCount({
       ...paginationQueryToConfig(scope),
+      select,
       where: TypeOrmFind.Where(where, userId),
     });
 

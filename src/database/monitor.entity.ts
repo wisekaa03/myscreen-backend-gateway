@@ -23,6 +23,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
   UpdateDateColumn,
@@ -38,6 +39,8 @@ import {
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
+// eslint-disable-next-line import/no-cycle
+import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 
 export class PointClass implements Point {
   @ApiProperty({
@@ -312,6 +315,18 @@ export class MonitorEntity {
   @ValidateNested()
   @Type(() => PointClass)
   location?: Point | null;
+
+  @OneToMany(
+    () => MonitorFavoriteEntity,
+    (monitorFavorites) => monitorFavorites.monitor,
+    {
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+      cascade: true,
+      nullable: true,
+    },
+  )
+  favorities?: MonitorFavoriteEntity[] | null;
 
   @ManyToOne(() => UserEntity, (user) => user.monitors, {
     onDelete: 'CASCADE',

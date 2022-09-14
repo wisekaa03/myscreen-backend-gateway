@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorService } from './monitor.service';
+import { MonitorViewEntity } from './monitor.view.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -24,6 +25,10 @@ describe(MonitorService.name, () => {
         MonitorService,
         {
           provide: getRepositoryToken(MonitorEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(MonitorViewEntity),
           useClass: mockRepository,
         },
       ],

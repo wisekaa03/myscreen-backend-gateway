@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { FindOptionsWhere } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
+import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
+import { PlaylistEntity } from '../../database/playlist.entity';
 import { LimitRequest } from './limit.request';
 import { PlaylistPartialRequest } from './playlist-partial.request';
 
@@ -10,22 +12,30 @@ export class PlaylistsGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: PlaylistPartialRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => PlaylistPartialRequest)
-  where!: FindOptionsWhere<PlaylistPartialRequest>;
+  where?: FindOptionsWhere<PlaylistPartialRequest>;
+
+  @ApiProperty({
+    description: 'Выбрать поля',
+    example: [],
+    enum: swaggerGetModelProperties(PlaylistEntity),
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  select?: FindOptionsSelect<PlaylistPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope!: LimitRequest<PlaylistPartialRequest>;
+  scope?: LimitRequest<PlaylistPartialRequest>;
 }

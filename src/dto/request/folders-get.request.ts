@@ -1,8 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { FindOptionsWhere } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
+import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
+import { FolderEntity } from '../../database/folder.entity';
 import { LimitRequest } from './limit.request';
 import { FolderPartialRequest } from './folder-partial.request';
 
@@ -10,22 +12,30 @@ export class FoldersGetRequest {
   @ApiProperty({
     description: 'Запрос',
     type: FolderPartialRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => FolderPartialRequest)
-  where!: FindOptionsWhere<FolderPartialRequest>;
+  where?: FindOptionsWhere<FolderPartialRequest>;
+
+  @ApiProperty({
+    description: 'Выбрать поля',
+    example: [],
+    enum: swaggerGetModelProperties(FolderEntity),
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  select?: FindOptionsSelect<FolderPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
     type: LimitRequest,
-    required: true,
+    required: false,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope!: LimitRequest<FolderPartialRequest>;
+  scope?: LimitRequest<FolderPartialRequest>;
 }

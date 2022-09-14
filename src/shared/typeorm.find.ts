@@ -80,7 +80,7 @@ export class TypeOrmFind {
   };
 
   static #Where = <Entity extends ObjectLiteral>(
-    where: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
+    where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
   ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
     if (Array.isArray(where)) {
       const whereIsNull = where.map((whereField) =>
@@ -107,33 +107,32 @@ export class TypeOrmFind {
       return whereIsNull;
     }
 
-    const whereIsNull = Object.entries(where).reduce(
-      (accWhere, [field, value]) => {
-        if (value === null) {
-          return { ...accWhere, [field]: IsNull() };
-        }
-        if (typeof value === 'string' && /%/.test(value)) {
-          return { ...accWhere, [field]: ILike(value) };
-        }
-        if (Array.isArray(value)) {
-          if (
-            value.length === 2 &&
-            isDateString(value[0]) &&
-            isDateString(value[1])
-          ) {
-            return { ...accWhere, [field]: Between(value[0], value[1]) };
+    const whereIsNull = where
+      ? Object.entries(where).reduce((accWhere, [field, value]) => {
+          if (value === null) {
+            return { ...accWhere, [field]: IsNull() };
           }
-          return { ...accWhere, [field]: In(value) };
-        }
-        return { ...accWhere, [field]: value };
-      },
-      {} as Record<string, any>,
-    );
+          if (typeof value === 'string' && /%/.test(value)) {
+            return { ...accWhere, [field]: ILike(value) };
+          }
+          if (Array.isArray(value)) {
+            if (
+              value.length === 2 &&
+              isDateString(value[0]) &&
+              isDateString(value[1])
+            ) {
+              return { ...accWhere, [field]: Between(value[0], value[1]) };
+            }
+            return { ...accWhere, [field]: In(value) };
+          }
+          return { ...accWhere, [field]: value };
+        }, {} as Record<string, any>)
+      : {};
     return whereIsNull;
   };
 
   static Where = <Entity extends ObjectLiteral>(
-    where: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
+    where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
     userId?: string,
   ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
     if (userId) {
