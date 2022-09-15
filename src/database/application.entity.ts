@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEnum, IsUUID } from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsUUID } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 import { MonitorEntity } from './monitor.entity';
@@ -132,6 +132,46 @@ export class ApplicationEntity {
   })
   @IsEnum(ApplicationApproved, { each: true })
   approved!: ApplicationApproved | Array<ApplicationApproved>;
+
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description: 'Время когда',
+    example: '2021-01-01T10:00:00.147Z',
+    required: true,
+  })
+  @IsDate()
+  dateWhen!: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true, default: null })
+  @ApiProperty({
+    type: 'string',
+    format: 'date-time',
+    description: 'Время до',
+    example: '2021-10-01T10:00:00.147Z',
+    required: true,
+  })
+  @IsDate()
+  dateBefore!: Date | null;
+
+  @Column({ type: 'boolean', nullable: false, default: false })
+  @ApiProperty({
+    description: 'Рандомное воспроизведение/по порядку',
+    example: false,
+    required: true,
+  })
+  @IsBoolean()
+  playlistRandom!: boolean;
+
+  @Column({ type: 'boolean', nullable: false, default: false })
+  @ApiProperty({
+    description: 'Смена текущего плэйлиста: сразу/когда закончится',
+    example: false,
+    required: true,
+  })
+  @IsBoolean()
+  playlistChange!: boolean;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',

@@ -2153,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.27.3
+  version: 2.27.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4862,6 +4862,24 @@ components:
             - Allowed
           items:
             $ref: "#/components/schemas/ApplicationApproved"
+        dateWhen:
+          type: string
+          format: date-time
+          description: Время когда
+          example: "2021-01-01T10:00:00.147Z"
+        dateBefore:
+          type: string
+          format: date-time
+          description: Время до
+          example: "2021-10-01T10:00:00.147Z"
+        playlistRandom:
+          type: boolean
+          description: Рандомное воспроизведение/по порядку
+          example: false
+        playlistChange:
+          type: boolean
+          description: "Смена текущего плэйлиста: сразу/когда закончится"
+          example: false
         createdAt:
           description: Время создания
           example:
@@ -4902,6 +4920,10 @@ components:
               - playlist
               - playlistId
               - approved
+              - dateWhen
+              - dateBefore
+              - playlistRandom
+              - playlistChange
               - createdAt
               - updatedAt
         scope:
@@ -4935,6 +4957,24 @@ components:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
           $ref: "#/components/schemas/ApplicationApproved"
+        dateWhen:
+          type: string
+          format: date-time
+          description: Время когда
+          example: "2021-01-01T10:00:00.147Z"
+        dateBefore:
+          type: string
+          format: date-time
+          description: Время до
+          example: "2021-10-01T10:00:00.147Z"
+        playlistRandom:
+          type: boolean
+          description: Рандомное воспроизведение/по порядку
+          example: false
+        playlistChange:
+          type: boolean
+          description: "Смена текущего плэйлиста: сразу/когда закончится"
+          example: false
         createdAt:
           format: date-time
           type: string
@@ -4952,6 +4992,10 @@ components:
         - monitor
         - playlist
         - approved
+        - dateWhen
+        - dateBefore
+        - playlistRandom
+        - playlistChange
         - createdAt
         - updatedAt
     ApplicationsGetResponse:
