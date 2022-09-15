@@ -80,13 +80,11 @@ export class MonitorService {
       relations: ['files', 'playlist', 'favorities'],
       ...TypeOrmFind.Nullable(find),
     });
-    if (!monitor) {
-      throw new NotFoundException('Monitor not found');
+    if (monitor) {
+      monitor.favorite =
+        monitor.favorities?.some((value) => value.userId === userId) ?? false;
+      delete monitor.favorities;
     }
-
-    monitor.favorite =
-      monitor.favorities?.some((value) => value.userId === userId) ?? false;
-    delete monitor.favorities;
 
     return monitor;
   }
