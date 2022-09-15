@@ -219,7 +219,7 @@ export class FileService {
       }
       if (monitorId) {
         monitor =
-          (await this.monitorService.findOne({
+          (await this.monitorService.findOne(userId, {
             where: { userId, id: monitorId },
           })) ?? null;
         if (!monitor) {

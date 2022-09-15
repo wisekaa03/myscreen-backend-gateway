@@ -1,4 +1,4 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
@@ -10,54 +10,85 @@ import {
 import { MonitorStatus } from '../enums/monitor-status.enum';
 import { TypeOrmFind } from '../shared/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
-import { MonitorViewEntity } from './monitor.view.entity';
+import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 
 @Injectable()
 export class MonitorService {
   constructor(
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
-    @InjectRepository(MonitorViewEntity)
-    private readonly monitorViewRepository: Repository<MonitorViewEntity>,
+    @InjectRepository(MonitorFavoriteEntity)
+    private readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
   ) {}
 
   async find(
+    userId: string,
     find: FindManyOptions<MonitorEntity>,
     caseInsensitive = true,
-  ): Promise<Array<MonitorViewEntity>> {
-    return caseInsensitive
-      ? TypeOrmFind.findCI(this.monitorRepository, {
-          relations: ['files', 'playlist'],
+  ): Promise<Array<MonitorEntity>> {
+    const monitor = caseInsensitive
+      ? await TypeOrmFind.findCI(this.monitorRepository, {
+          relations: ['files', 'playlist', 'favorities'],
           ...TypeOrmFind.Nullable(find),
         })
-      : this.monitorRepository.find({
-          relations: ['files', 'playlist'],
+      : await this.monitorRepository.find({
+          relations: ['files', 'playlist', 'favorities'],
           ...TypeOrmFind.Nullable(find),
         });
+
+    return monitor.map((item: MonitorEntity) => {
+      const value = item;
+      value.favorite =
+        value.favorities?.some((i) => i.userId === userId) ?? false;
+      delete value.favorities;
+      return value;
+    });
   }
 
   async findAndCount(
+    userId: string,
     find: FindManyOptions<MonitorEntity>,
     caseInsensitive = true,
-  ): Promise<[Array<MonitorViewEntity>, number]> {
-    return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(this.monitorRepository, {
-          relations: ['files', 'playlist'],
+  ): Promise<[Array<MonitorEntity>, number]> {
+    const monitor = caseInsensitive
+      ? await TypeOrmFind.findAndCountCI(this.monitorRepository, {
+          relations: ['files', 'playlist', 'favorities'],
           ...TypeOrmFind.Nullable(find),
         })
-      : this.monitorRepository.findAndCount({
-          relations: ['files', 'playlist'],
+      : await this.monitorRepository.findAndCount({
+          relations: ['files', 'playlist', 'favorities'],
           ...TypeOrmFind.Nullable(find),
         });
+
+    return [
+      monitor[0].map((item: MonitorEntity) => {
+        const value = item;
+        value.favorite =
+          value.favorities?.some((i) => i.userId === userId) ?? false;
+        delete value.favorities;
+        return value;
+      }),
+      monitor[1],
+    ];
   }
 
   async findOne(
-    find: FindManyOptions<MonitorViewEntity>,
-  ): Promise<MonitorViewEntity | null> {
-    return this.monitorViewRepository.findOne({
-      relations: ['files', 'playlist'],
+    userId: string,
+    find: FindManyOptions<MonitorEntity>,
+  ): Promise<MonitorEntity | null> {
+    const monitor = await this.monitorRepository.findOne({
+      relations: ['files', 'playlist', 'favorities'],
       ...TypeOrmFind.Nullable(find),
     });
+    if (!monitor) {
+      throw new NotFoundException('Monitor not found');
+    }
+
+    monitor.favorite =
+      monitor.favorities?.some((value) => value.userId === userId) ?? false;
+    delete monitor.favorities;
+
+    return monitor;
   }
 
   async update(
@@ -97,8 +128,32 @@ export class MonitorService {
     userId: string,
     monitorId: string,
     favorite = true,
-  ): Promise<MonitorViewEntity> {
-    throw new NotImplementedException();
+  ): Promise<MonitorEntity | null> {
+    const monitor = await this.findOne(userId, {
+      where: { id: monitorId },
+    });
+    if (!monitor) {
+      throw new NotFoundException('Monitor not found');
+    }
+    if (favorite && !monitor.favorite) {
+      const insertResult = await this.monitorFavoriteRepository.insert({
+        monitorId,
+        userId,
+      });
+      if (!insertResult) {
+        throw new NotFoundException('Monitor not found');
+      }
+    } else if (!favorite && monitor.favorite) {
+      const { affected } = await this.monitorFavoriteRepository.delete({
+        monitorId: monitor.id,
+        userId,
+      });
+      if (!affected) {
+        throw new NotFoundException('Monitor not found');
+      }
+    }
+
+    return this.findOne(userId, { where: { id: monitorId } });
   }
 
   async delete(userId: string, id: string): Promise<DeleteResult> {

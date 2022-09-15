@@ -30,13 +30,6 @@ module.exports = {
   rootDir: '..',
   // setupFiles: ['./jest.setup.ts'],
   // snapshotSerializers: ['enzyme-to-json/serializer'],
-  globals: {
-    'ts-jest': {
-      // tsconfig: 'tsconfig.jest.json',
-      // Disable type-checking
-      isolatedModules: true,
-    },
-  },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: localPathMapper,
   transform: {

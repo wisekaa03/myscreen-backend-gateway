@@ -2153,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.27.0
+  version: 2.27.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3015,6 +3015,7 @@ components:
               - code
               - lastSeen
               - location
+              - favorite
               - createdAt
               - updatedAt
         scope:
@@ -3275,10 +3276,6 @@ components:
           type: string
           description: Время изменения
           example: "2021-01-01T10:00:00.147Z"
-        favorite:
-          type: boolean
-          description: Избранный монитор
-          example: false
         playlist:
           description: Плэйлист привязанный к монитору
           allOf:
@@ -3304,7 +3301,6 @@ components:
         - lastSeen
         - createdAt
         - updatedAt
-        - favorite
         - code
     MonitorsGetResponse:
       type: object

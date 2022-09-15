@@ -23,19 +23,17 @@ module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   rootDir: './',
-  // setupFiles: ['./jest.setup.ts'],
-  // snapshotSerializers: ['enzyme-to-json/serializer'],
-  globals: {
-    'ts-jest': {
-      // tsconfig: 'tsconfig.jest.json',
-      // Disable type-checking
-      isolatedModules: true,
-    },
-  },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: localPathMapper,
   transform: {
-    '^.+\\.[tj]sx?$': 'ts-jest/legacy',
+    '^.+\\.[tj]sx?$': [
+      'ts-jest',
+      {
+        // tsconfig: 'tsconfig.jest.json',
+        // Disable type-checking
+        isolatedModules: true,
+      },
+    ],
     // '.+\\.(css|styl|less|sass|scss|png|jpg|ttf|woff|woff2)(\\?.*)?$':
     //   'jest-transform-stub',
     // '^.+\\.svg$': 'jest-svg-transformer',

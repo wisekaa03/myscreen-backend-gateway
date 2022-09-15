@@ -1,16 +1,17 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 // import { Point } from 'geojson';
 
-// import { MonitorEntity } from '../../database/monitor.entity';
-import { MonitorViewEntity } from '../../database/monitor.view.entity';
+import { MonitorEntity } from '../../database/monitor.entity';
 import { FileEntity } from '../../database/file.entity';
 import { PlaylistEntity } from '../../database/playlist.entity';
 import { PlaylistResponse } from './playlist.response';
 import { FileResponse } from './file.response';
 
-export class MonitorResponse extends OmitType(MonitorViewEntity, [
+export class MonitorResponse extends OmitType(MonitorEntity, [
   'playlist',
-  // 'files',
+  'files',
+  'favorities',
+  'favorite',
   'code',
 ]) {
   @ApiProperty({

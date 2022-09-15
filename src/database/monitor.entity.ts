@@ -15,6 +15,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   Entity,
@@ -323,10 +324,16 @@ export class MonitorEntity {
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
       cascade: true,
-      nullable: true,
     },
   )
-  favorities?: MonitorFavoriteEntity[] | null;
+  favorities?: MonitorFavoriteEntity[];
+
+  @ApiProperty({
+    description: 'Избранный монитор',
+    example: false,
+    required: true,
+  })
+  favorite!: boolean;
 
   @ManyToOne(() => UserEntity, (user) => user.monitors, {
     onDelete: 'CASCADE',
@@ -352,10 +359,9 @@ export class MonitorEntity {
     cascade: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    nullable: true,
   })
   @JoinTable()
-  files?: FileEntity[] | null;
+  files?: FileEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

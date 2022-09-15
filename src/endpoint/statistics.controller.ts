@@ -101,7 +101,7 @@ export class StatisticsController {
         where: { userId },
         relations: [],
       }),
-      this.monitorService.findAndCount({
+      this.monitorService.findAndCount(userId, {
         where: { userId, playlistPlayed: true },
       }),
       this.userService.findById(userId),

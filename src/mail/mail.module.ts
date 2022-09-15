@@ -2,7 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailgunModule } from 'nestjs-mailgun';
 
-import { MailService } from './mail.service.js';
+import { MailService } from './mail.service';
 
 // TODO: заменить это все микросервисной архитектурой
 

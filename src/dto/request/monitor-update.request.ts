@@ -9,6 +9,8 @@ export class MonitorUpdateRequest extends PartialType(
     'userId',
     'playlist',
     'files',
+    'favorite',
+    'favorities',
     'createdAt',
     'updatedAt',
   ]),

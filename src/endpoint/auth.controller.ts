@@ -325,9 +325,12 @@ export class AuthController {
   async monitor(
     @Body() { code }: AuthMonitorRequest,
   ): Promise<AuthRefreshResponse> {
-    const monitor = await this.monitorService.findOne({
-      where: { attached: false, code },
-    });
+    const monitor = await this.monitorService.findOne(
+      'monitorFavoritiesDisabled',
+      {
+        where: { attached: false, code },
+      },
+    );
     if (!monitor) {
       throw new NotFoundException('This monitor does not exist');
     }

@@ -85,7 +85,7 @@ export class PlaylistEntity {
     onUpdate: 'CASCADE',
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ name: 'userId' })
   user!: UserEntity;
 
   @Column({ select: false })

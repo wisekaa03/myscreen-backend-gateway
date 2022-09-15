@@ -102,10 +102,13 @@ export class WSGateway
         if (token) {
           const valueUpdated = await this.authorization(client, value, token);
           if (valueUpdated?.roles?.includes(UserRoleEnum.Monitor)) {
-            const monitor = await this.monitorService.findOne({
-              where: { id: valueUpdated.userId },
-              relations: ['playlist'],
-            });
+            const monitor = await this.monitorService.findOne(
+              valueUpdated.userId || 'monitorFavoritiesDisabled',
+              {
+                where: { id: valueUpdated.userId },
+                relations: ['playlist'],
+              },
+            );
             if (monitor) {
               /* await */ this.monitorService
                 .update(
@@ -147,9 +150,12 @@ export class WSGateway
     }
     this.logger.debug(`Disconnect: key='${value.key}'`);
     if (value.roles?.includes(UserRoleEnum.Monitor)) {
-      const monitor = await this.monitorService.findOne({
-        where: { id: value.userId },
-      });
+      const monitor = await this.monitorService.findOne(
+        value.userId || 'monitorFavoritiesDisabled',
+        {
+          where: { id: value.userId },
+        },
+      );
       if (monitor) {
         /* await */ this.monitorService
           .update(
@@ -177,10 +183,13 @@ export class WSGateway
       if (value) {
         const valueUpdated = await this.authorization(client, value, token);
         if (valueUpdated?.roles?.includes(UserRoleEnum.Monitor)) {
-          const monitor = await this.monitorService.findOne({
-            where: { id: valueUpdated.userId },
-            relations: ['playlist'],
-          });
+          const monitor = await this.monitorService.findOne(
+            valueUpdated.userId || 'monitorFavoritiesDisabled',
+            {
+              where: { id: valueUpdated.userId },
+              relations: ['playlist'],
+            },
+          );
           if (monitor) {
             /* await */ this.monitorService
               .update(
@@ -217,9 +226,12 @@ export class WSGateway
     const value = this.clients.get(client);
     if (value && value.auth) {
       if (value.roles?.includes(UserRoleEnum.Monitor)) {
-        let monitor = await this.monitorService.findOne({
-          where: { id: value.userId },
-        });
+        let monitor = await this.monitorService.findOne(
+          value.userId || 'monitorFavoritiesDisabled',
+          {
+            where: { id: value.userId },
+          },
+        );
         if (!monitor) {
           throw new WsException('Not exist monitorId');
         }

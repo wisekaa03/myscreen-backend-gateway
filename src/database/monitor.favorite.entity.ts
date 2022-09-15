@@ -1,6 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID } from 'class-validator';
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 // eslint-disable-next-line import/no-cycle
 import { MonitorEntity } from './monitor.entity';
@@ -18,13 +25,23 @@ export class MonitorFavoriteEntity {
   id!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.favorities)
-  monitor!: MonitorEntity;
+  @JoinColumn({ name: 'monitorId' })
+  monitor?: MonitorEntity;
 
-  @ManyToOne(() => UserEntity, (user) => user.id, {
+  @Column()
+  @IsUUID()
+  monitorId!: string;
+
+  @ManyToOne(() => UserEntity, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     cascade: true,
-    eager: false,
   })
-  user!: UserEntity;
+  @JoinColumn({ name: 'userId' })
+  @Index()
+  user?: UserEntity;
+
+  @Column()
+  @IsUUID()
+  userId!: string;
 }

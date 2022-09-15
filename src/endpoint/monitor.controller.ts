@@ -127,21 +127,24 @@ export class MonitorController {
     const conditional: FindManyOptions<MonitorEntity> = {
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where),
     };
     if (role.includes(UserRoleEnum.Monitor)) {
       // добавляем то, что содержится у нас в userId: monitorId.
-      conditional.where = { id: userId };
+      conditional.where = { id: userId, ...TypeOrmFind.Where(where) };
     } else if (role.includes(UserRoleEnum.MonitorOwner)) {
-      conditional.where = { userId };
+      conditional.where = { userId, ...TypeOrmFind.Where(where) };
     } else {
       conditional.where = {
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
+        ...TypeOrmFind.Where(where),
       };
     }
-    const [data, count] = await this.monitorService.findAndCount(conditional);
+    const [data, count] = await this.monitorService.findAndCount(
+      userId,
+      conditional,
+    );
 
     return {
       status: Status.Success,
@@ -167,7 +170,7 @@ export class MonitorController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() monitor: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    const findMonitor = await this.monitorService.findOne({
+    const findMonitor = await this.monitorService.findOne(userId, {
       select: ['id', 'name', 'code'],
       where: { code: monitor.code },
     });
@@ -226,7 +229,7 @@ export class MonitorController {
     }
 
     const dataPromise = attach.monitors.map(async (monitorId) => {
-      let monitor = await this.monitorService.findOne({
+      let monitor = await this.monitorService.findOne(userId, {
         where: {
           id: monitorId,
         },
@@ -308,7 +311,7 @@ export class MonitorController {
     }
 
     const dataPromise = attach.monitors.map(async (monitorId) => {
-      const monitor = await this.monitorService.findOne({
+      const monitor = await this.monitorService.findOne(userId, {
         where: {
           userId,
           id: monitorId,
@@ -367,7 +370,7 @@ export class MonitorController {
     } else {
       conditional.where = { userId, id };
     }
-    const data = await this.monitorService.findOne(conditional);
+    const data = await this.monitorService.findOne(userId, conditional);
     if (!data) {
       throw new NotFoundException(`Monitor '${id}' not found`);
     }
@@ -400,6 +403,9 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
     const data = await this.monitorService.favorite(userId, id, true);
+    if (!data) {
+      throw new NotFoundException(`Monitor '${id}' not found`);
+    }
 
     return {
       status: Status.Success,
@@ -429,6 +435,9 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
     const data = await this.monitorService.favorite(userId, id, false);
+    if (!data) {
+      throw new NotFoundException(`Monitor '${id}' not found`);
+    }
 
     return {
       status: Status.Success,
@@ -465,7 +474,7 @@ export class MonitorController {
     } else {
       conditional.where = { userId, id };
     }
-    const data = await this.monitorService.findOne(conditional);
+    const data = await this.monitorService.findOne(userId, conditional);
     if (!data) {
       throw new NotFoundException(`Monitor '${id}' not found`);
     }
@@ -497,7 +506,7 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
     @Body() update: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
-    const monitor = await this.monitorService.findOne({
+    const monitor = await this.monitorService.findOne(userId, {
       select: ['id'],
       loadEagerRelations: false,
       where: {
@@ -536,7 +545,7 @@ export class MonitorController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
-    const monitor = await this.monitorService.findOne({
+    const monitor = await this.monitorService.findOne(userId, {
       select: ['id'],
       loadEagerRelations: false,
       where: {
