@@ -11,7 +11,6 @@ export class MonitorResponse extends OmitType(MonitorEntity, [
   'playlist',
   'files',
   'favorities',
-  'favorite',
   'code',
 ]) {
   @ApiProperty({

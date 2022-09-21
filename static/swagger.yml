@@ -2153,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.28.0
+  version: 2.28.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3266,6 +3266,10 @@ components:
           example: *ref_62
           allOf:
             - $ref: "#/components/schemas/PointClass"
+        favorite:
+          type: boolean
+          description: Избранный монитор
+          example: false
         createdAt:
           format: date-time
           type: string
@@ -3299,6 +3303,7 @@ components:
         - status
         - playlistPlayed
         - lastSeen
+        - favorite
         - createdAt
         - updatedAt
         - code
