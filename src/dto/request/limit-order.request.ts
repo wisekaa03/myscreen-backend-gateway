@@ -383,4 +383,11 @@ export class LimitOrderRequest<T = Record<string, 'DESC' | 'ASC'>> {
     required: false,
   })
   playlist?: Order;
+
+  @ApiProperty({
+    enum: Order,
+    enumName: 'Order',
+    required: false,
+  })
+  favorite?: Order;
 }

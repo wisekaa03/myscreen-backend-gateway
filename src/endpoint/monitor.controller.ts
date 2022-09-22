@@ -41,6 +41,7 @@ import {
   UnauthorizedError,
   MonitorCreateRequest,
   MonitorUpdateRequest,
+  Order,
 } from '../dto/index';
 import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
 import { ApplicationApproved, Status, UserRoleEnum } from '../enums/index';
@@ -145,6 +146,16 @@ export class MonitorController {
       userId,
       conditional,
     );
+    if (scope?.order?.favorite) {
+      return {
+        status: Status.Success,
+        count,
+        data:
+          scope.order.favorite === Order.ASC
+            ? data.sort((a, b) => (a.favorite === b.favorite ? 0 : 1))
+            : data.sort((a, b) => (a.favorite === b.favorite ? 0 : -1)),
+      };
+    }
 
     return {
       status: Status.Success,
@@ -258,6 +269,10 @@ export class MonitorController {
             playlist,
             approved,
             userId,
+            dateBefore: attach.application.dateBefore,
+            dateWhen: attach.application.dateWhen,
+            playlistChange: attach.application.playlistChange,
+            playlistRandom: attach.application.playlistRandom,
           })
           .catch((error) => {
             this.logger.error(error);

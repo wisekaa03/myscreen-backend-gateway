@@ -22,21 +22,23 @@ export const paginationQueryToConfig = <T>(
     if (scope.order) {
       const order: ScopeOrder = {};
       Object.entries(scope.order).forEach(([field, orderBy]) => {
-        switch (orderBy) {
-          case 'ASC':
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            order[field] = 'ASC';
-            break;
-          case 'DESC':
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            order[field] = 'DESC';
-            break;
-          default:
-            throw new BadRequestException(
-              `Order field '${field}' is not an 'ASC' or 'DESC'`,
-            );
+        if (field !== 'favorite') {
+          switch (orderBy) {
+            case 'ASC':
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              order[field] = 'ASC';
+              break;
+            case 'DESC':
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              order[field] = 'DESC';
+              break;
+            default:
+              throw new BadRequestException(
+                `Order field '${field}' is not an 'ASC' or 'DESC'`,
+              );
+          }
         }
       });
       pagination.order = order;

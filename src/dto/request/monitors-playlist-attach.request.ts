@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDefined, IsUUID } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDefined, IsUUID, ValidateNested } from 'class-validator';
+import { ApplicationCreateMonitorRequest } from './application-create-monitor.request';
 
 export class MonitorsPlaylistAttachRequest {
   @ApiProperty({
@@ -22,4 +24,14 @@ export class MonitorsPlaylistAttachRequest {
   @IsDefined({ each: true })
   @IsUUID('all', { each: true })
   monitors!: string[];
+
+  @ApiProperty({
+    description: 'Создание заявки',
+    type: ApplicationCreateMonitorRequest,
+    required: true,
+  })
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => ApplicationCreateMonitorRequest)
+  application!: ApplicationCreateMonitorRequest;
 }

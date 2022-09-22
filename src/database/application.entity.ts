@@ -42,12 +42,12 @@ export class ApplicationEntity {
   buyer!: UserEntity | null;
 
   @Column({ select: false, nullable: true })
-  @IsUUID()
   @ApiProperty({
     description: 'Покупатель ID',
     format: 'uuid',
     required: false,
   })
+  @IsUUID()
   buyerId!: string | null;
 
   @ManyToOne(() => UserEntity, (seller) => seller.id, {
@@ -65,12 +65,12 @@ export class ApplicationEntity {
   seller!: UserEntity;
 
   @Column({ select: false })
-  @IsUUID()
   @ApiProperty({
     description: 'Продавец ID',
     format: 'uuid',
     required: false,
   })
+  @IsUUID()
   sellerId!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
