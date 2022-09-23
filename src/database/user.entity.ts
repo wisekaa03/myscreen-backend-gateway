@@ -9,9 +9,9 @@ import {
   IsNotEmpty,
   IsISO31661Alpha2,
   IsPhoneNumber,
-  IsDate,
   IsDefined,
   IsNumber,
+  IsDateString,
 } from 'class-validator';
 import {
   Column,
@@ -201,7 +201,7 @@ export class UserEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -210,6 +210,6 @@ export class UserEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   updatedAt?: Date;
 }

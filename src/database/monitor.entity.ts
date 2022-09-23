@@ -1,6 +1,6 @@
 import {
   IsBoolean,
-  IsDate,
+  IsDateString,
   IsDefined,
   IsEnum,
   IsIn,
@@ -15,7 +15,6 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  AfterLoad,
   Column,
   CreateDateColumn,
   Entity,
@@ -300,7 +299,7 @@ export class MonitorEntity {
     example: null,
     nullable: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   lastSeen?: Date;
 
   @Column({
@@ -371,7 +370,7 @@ export class MonitorEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   createdAt!: Date;
 
   @UpdateDateColumn()
@@ -380,6 +379,6 @@ export class MonitorEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   updatedAt!: Date;
 }

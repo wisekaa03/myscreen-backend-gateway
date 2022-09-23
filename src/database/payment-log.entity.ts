@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsUUID } from 'class-validator';
+import { IsDateString, IsUUID } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 import { OrderEntity } from '@/database/order.entity';
@@ -51,7 +51,7 @@ export class PaymentLogEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   createdAt!: Date;
 
   @UpdateDateColumn()
@@ -60,6 +60,6 @@ export class PaymentLogEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   updatedAt!: Date;
 }

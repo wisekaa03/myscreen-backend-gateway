@@ -1,4 +1,11 @@
-import { IsDate, IsUUID, Min, Max, IsInt, IsNumber } from 'class-validator';
+import {
+  IsUUID,
+  Min,
+  Max,
+  IsInt,
+  IsNumber,
+  IsDateString,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
@@ -142,7 +149,7 @@ export class EditorLayerEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   createdAt!: Date;
 
   @UpdateDateColumn()
@@ -151,7 +158,7 @@ export class EditorLayerEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   updatedAt!: Date;
 
   // For path name

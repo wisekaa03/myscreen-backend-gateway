@@ -15,9 +15,9 @@ import {
   IsUUID,
   MinLength,
   IsNotEmpty,
-  IsDate,
   IsDefined,
   IsString,
+  IsDateString,
 } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from './file.entity';
@@ -95,7 +95,7 @@ export class FolderEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   createdAt!: Date;
 
   @UpdateDateColumn()
@@ -104,6 +104,6 @@ export class FolderEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   updatedAt!: Date;
 }

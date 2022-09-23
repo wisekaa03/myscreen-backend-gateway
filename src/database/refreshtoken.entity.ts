@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsUUID } from 'class-validator';
+import { IsDateString, IsUUID } from 'class-validator';
 import { UserEntity } from '@/database/user.entity';
 
 @Entity('refresh_token')
@@ -46,7 +46,7 @@ export class RefreshTokenEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   createdAt!: Date;
 
   @UpdateDateColumn()
@@ -55,6 +55,6 @@ export class RefreshTokenEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   updatedAt!: Date;
 }

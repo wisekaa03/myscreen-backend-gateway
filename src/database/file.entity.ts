@@ -14,7 +14,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import type { FfprobeData } from 'media-probe';
 import {
-  IsDate,
+  IsDateString,
   IsDefined,
   IsEnum,
   IsJSON,
@@ -230,7 +230,7 @@ export class FileEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   createdAt!: Date;
 
   @UpdateDateColumn()
@@ -239,7 +239,7 @@ export class FileEntity {
     example: '2021-01-01T10:00:00.147Z',
     required: true,
   })
-  @IsDate()
+  @IsDateString({ strict: false })
   updatedAt!: Date;
 
   @AfterLoad()
