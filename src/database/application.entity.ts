@@ -11,10 +11,11 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsDateString, IsEnum, IsUUID } from 'class-validator';
 
-import { UserEntity } from '@/database/user.entity';
+import { IsDateStringOrNull } from '../shared/is-date-string-or-null';
+import { ApplicationApproved } from '../enums/application-approved.enum';
+import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { ApplicationApproved } from '@/enums';
 
 @Entity('application')
 export class ApplicationEntity {
@@ -152,10 +153,9 @@ export class ApplicationEntity {
     description: 'Время до',
     example: '2021-10-01T10:00:00.147Z',
     nullable: true,
-    required: true,
+    required: false,
   })
-  // TODO: разобраться с ограничениями
-  // @IsDateString({ strict: false })
+  @IsDateStringOrNull({ strict: false })
   dateBefore!: Date | null;
 
   @Column({ type: 'boolean', nullable: false, default: false })

@@ -2153,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.30.3
+  version: 2.30.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3438,7 +3438,6 @@ components:
           example: false
       required:
         - dateWhen
-        - dateBefore
         - playlistChange
     MonitorsPlaylistAttachRequest:
       type: object
@@ -5065,7 +5064,6 @@ components:
         - playlist
         - approved
         - dateWhen
-        - dateBefore
         - playlistChange
         - createdAt
         - updatedAt
