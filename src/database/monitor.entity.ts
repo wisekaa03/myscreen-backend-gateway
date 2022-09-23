@@ -36,6 +36,7 @@ import {
   MonitorOrientation,
   MonitorStatus,
 } from '../enums/index';
+import { IsDateStringOrNull } from '../shared/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
@@ -292,15 +293,16 @@ export class MonitorEntity {
   @Length(11, 11)
   code!: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   @ApiProperty({
-    type: Date,
+    type: 'string',
+    format: 'date-time',
     description: 'Последний раз виден',
-    example: null,
+    example: '2021-10-01T10:00:00.147Z',
     nullable: true,
   })
-  @IsDateString({ strict: false })
-  lastSeen?: Date;
+  @IsDateStringOrNull({ strict: false })
+  lastSeen?: Date | null;
 
   @Column({
     type: 'geometry',
