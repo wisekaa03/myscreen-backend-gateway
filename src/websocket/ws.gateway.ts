@@ -27,6 +27,7 @@ import {
 } from '../enums/index';
 import { WebSocketClient } from './interface/websocket-client';
 import { PlaylistService } from '../database/playlist.service';
+import { ApplicationEntity } from '@/database/application.entity';
 
 @WebSocketGateway({
   cors: {
@@ -293,38 +294,40 @@ export class WSGateway
    *  - Создание связки плэйлиста и монитора
    *  - Удаление связки плэйлиста и монитора
    *  - TODO
-   * @param monitor
-   * @param playlist
+   * @param application ApplicationEntity or null
+   * @param monitor MonitorEntity or null
    */
-  async monitorPlaylist(
-    monitor: MonitorEntity,
-    playlist: PlaylistEntity | null,
-  ): Promise<MonitorEntity> {
-    let playlistUpdated = playlist;
-    if (playlistUpdated) {
-      playlistUpdated = await this.playlistService.update(
-        playlistUpdated.userId,
-        {
-          ...playlistUpdated,
-          status: PlaylistStatusEnum.Broadcast,
-        },
-      );
+  async application(
+    application: ApplicationEntity | null,
+    monitor?: MonitorEntity | null,
+  ): Promise<void> {
+    if (application === null && monitor === null) {
+      this.logger.error('ApplicationEntity or MonitorEntity is required');
+      return;
     }
 
-    this.clients.forEach((value, client) => {
-      if (value.userId === monitor.id) {
-        client.send(
-          JSON.stringify([{ event: 'playlist', data: playlistUpdated }]),
-        );
-      }
-    });
+    if (application?.playlist && application?.monitor) {
+      /* await */ this.playlistService.update(application.playlist.userId, {
+        id: application.playlist.id,
+        status: PlaylistStatusEnum.Broadcast,
+      });
 
-    return this.monitorService.update(
-      monitor.userId,
-      Object.assign(monitor, {
-        status: MonitorStatus.Online,
-      }),
-    );
+      this.clients.forEach((value, client) => {
+        if (value.userId === application.monitorId) {
+          client.send(
+            JSON.stringify([{ event: 'application', data: application }]),
+          );
+        }
+      });
+    }
+
+    if (monitor) {
+      this.clients.forEach((value, client) => {
+        if (value.userId === monitor.id) {
+          client.send(JSON.stringify([{ event: 'application', data: null }]));
+        }
+      });
+    }
   }
 
   statistics(): number {

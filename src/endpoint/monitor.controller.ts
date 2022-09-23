@@ -341,7 +341,11 @@ export class MonitorController {
         );
       }
 
-      /* await */ this.wsGateway.monitorPlaylist(monitor, null);
+      /* await */ this.wsGateway
+        .application(null, monitor)
+        .catch((error: any) => {
+          this.logger.error(error);
+        });
 
       return this.monitorService.update(userId, {
         ...monitor,

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
@@ -67,15 +67,32 @@ export class ApplicationService {
         });
   }
 
+  /**
+   * Update the application
+   *
+   * @param id Application.id
+   * @param update Partial<ApplicationEntity>
+   * @returns
+   */
   async update(
     id: string | undefined,
     update: Partial<ApplicationEntity>,
   ): Promise<ApplicationEntity | null> {
     await this.applicationRepository.manager.transaction(
       async (applicationRepository) => {
-        const application = await applicationRepository.save(
-          this.applicationRepository.create(update),
-        );
+        let application: ApplicationEntity | null =
+          await applicationRepository.save<ApplicationEntity>(
+            applicationRepository.create<ApplicationEntity>(
+              ApplicationEntity,
+              update,
+            ),
+          );
+        application = await applicationRepository.findOneBy(ApplicationEntity, {
+          id: application.id,
+        });
+        if (!application) {
+          throw new NotFoundException('Application not found');
+        }
 
         if (update.approved === ApplicationApproved.NotProcessed) {
           const seller = await this.userService.findById(application.sellerId);
@@ -98,7 +115,7 @@ export class ApplicationService {
 
         if (update.approved === ApplicationApproved.Allowed) {
           /* await */ this.wsGateway
-            .monitorPlaylist(application.monitor, application.playlist)
+            .application(application)
             .catch((error: any) => {
               this.logger.error(error);
             });
