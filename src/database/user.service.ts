@@ -283,6 +283,9 @@ export class UserService {
       return {
         id,
         role: UserRoleEnum.Monitor,
+        name: null,
+        surname: null,
+        middleName: null,
         email: '',
         disabled: false,
         verified: true,

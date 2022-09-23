@@ -75,6 +75,7 @@ export class FolderEntity {
     description: 'Родительская папка',
     type: 'string',
     format: 'uuid',
+    nullable: true,
     required: false,
   })
   @IsUUID()

@@ -54,20 +54,38 @@ export class UserEntity {
   @ApiHideProperty()
   disabled!: boolean;
 
-  @Column({ nullable: true })
-  @ApiProperty({ description: 'Фамилия', example: 'Steve', required: false })
+  @Column({ type: 'varchar', nullable: true })
+  @ApiProperty({
+    type: 'string',
+    description: 'Фамилия',
+    example: 'Steve',
+    nullable: true,
+    required: false,
+  })
   @IsString()
-  surname?: string;
+  surname!: string | null;
 
-  @Column({ nullable: true })
-  @ApiProperty({ description: 'Имя', example: 'John', required: false })
+  @Column({ type: 'varchar', nullable: true })
+  @ApiProperty({
+    type: 'string',
+    description: 'Имя',
+    example: 'John',
+    nullable: true,
+    required: false,
+  })
   @IsString()
-  name?: string;
+  name!: string | null;
 
-  @Column({ nullable: true })
-  @ApiProperty({ description: 'Отчество', example: 'Doe', required: false })
+  @Column({ type: 'varchar', nullable: true })
+  @ApiProperty({
+    type: 'string',
+    description: 'Отчество',
+    example: 'Doe',
+    nullable: true,
+    required: false,
+  })
   @IsString()
-  middleName?: string;
+  middleName!: string | null;
 
   @Column()
   @ApiProperty({
@@ -89,18 +107,29 @@ export class UserEntity {
   @ApiProperty({
     description: 'Телефон пользователя',
     example: '+78002000000',
+    nullable: true,
     required: false,
   })
   @IsPhoneNumber()
   phoneNumber?: string;
 
   @Column({ nullable: true })
-  @ApiProperty({ description: 'Город', example: 'Krasnodar', required: false })
+  @ApiProperty({
+    description: 'Город',
+    example: 'Krasnodar',
+    nullable: true,
+    required: false,
+  })
   @IsString()
   city?: string;
 
   @Column({ default: 'RU', nullable: true })
-  @ApiProperty({ description: 'Страна', example: 'RU', required: false })
+  @ApiProperty({
+    description: 'Страна',
+    example: 'RU',
+    nullable: true,
+    required: false,
+  })
   @IsISO31661Alpha2()
   country?: string;
 
@@ -108,6 +137,7 @@ export class UserEntity {
   @ApiProperty({
     description: 'Компания',
     example: 'ACME corporation',
+    nullable: true,
     required: false,
   })
   @IsString()

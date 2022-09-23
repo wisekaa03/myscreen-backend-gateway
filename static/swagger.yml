@@ -2153,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.29.2
+  version: 2.30.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2346,30 +2346,37 @@ components:
           type: string
           description: Фамилия
           example: Steve
+          nullable: true
         name:
           type: string
           description: Имя
           example: John
+          nullable: true
         middleName:
           type: string
           description: Отчество
           example: Doe
+          nullable: true
         phoneNumber:
           type: string
           description: Телефон пользователя
           example: "+78002000000"
+          nullable: true
         city:
           type: string
           description: Город
           example: Krasnodar
+          nullable: true
         country:
           type: string
           description: Страна
           example: RU
+          nullable: true
         company:
           type: string
           description: Компания
           example: ACME corporation
+          nullable: true
         storageSpace:
           type: number
           description: Дисковое пространство
@@ -2437,30 +2444,37 @@ components:
           type: string
           description: Фамилия
           example: Steve
+          nullable: true
         name:
           type: string
           description: Имя
           example: John
+          nullable: true
         middleName:
           type: string
           description: Отчество
           example: Doe
+          nullable: true
         phoneNumber:
           type: string
           description: Телефон пользователя
           example: "+78002000000"
+          nullable: true
         city:
           type: string
           description: Город
           example: Krasnodar
+          nullable: true
         country:
           type: string
           description: Страна
           example: RU
+          nullable: true
         company:
           type: string
           description: Компания
           example: ACME corporation
+          nullable: true
         role:
           description: Роль пользователя
           example: advertiser
@@ -2535,14 +2549,17 @@ components:
           type: string
           description: Фамилия
           example: Steve
+          nullable: true
         name:
           type: string
           description: Имя
           example: John
+          nullable: true
         middleName:
           type: string
           description: Отчество
           example: Doe
+          nullable: true
         password:
           type: string
           example: Secret~12345678
@@ -2556,18 +2573,22 @@ components:
           type: string
           description: Телефон пользователя
           example: "+78002000000"
+          nullable: true
         city:
           type: string
           description: Город
           example: Krasnodar
+          nullable: true
         country:
           type: string
           description: Страна
           example: RU
+          nullable: true
         company:
           type: string
           description: Компания
           example: ACME corporation
+          nullable: true
         role:
           description: Роль пользователя
           example: advertiser
@@ -2825,6 +2846,7 @@ components:
           type: string
           description: Идентификатор устройства
           example: 111-111-111
+          nullable: true
         location:
           example: &ref_62
             type: Point
@@ -3058,6 +3080,7 @@ components:
           type: string
           description: Родительская папка
           format: uuid
+          nullable: true
         createdAt:
           format: date-time
           type: string
@@ -3174,6 +3197,7 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
+          nullable: true
         status:
           description: Статус
           example: Offline
@@ -3264,6 +3288,7 @@ components:
           type: string
           description: Последний раз виден
           example: null
+          nullable: true
         location:
           example: *ref_62
           allOf:
@@ -3406,6 +3431,7 @@ components:
           format: date-time
           description: Время до
           example: "2021-10-01T10:00:00.147Z"
+          nullable: true
         playlistRandom:
           type: boolean
           description: Рандомное воспроизведение/по порядку
@@ -3511,6 +3537,7 @@ components:
           type: string
           description: Идентификатор устройства
           example: 111-111-111
+          nullable: true
         location:
           example: *ref_62
           allOf:
@@ -3679,11 +3706,14 @@ components:
           type: integer
           description: Процент рендеринга
           example: 0
+          nullable: true
         renderingError:
           type: string
           description: Ошибка рендеринга
+          nullable: true
         renderedFile:
           description: Обработанный файл
+          nullable: true
           allOf: &ref_63
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
@@ -3916,11 +3946,14 @@ components:
           type: integer
           description: Процент рендеринга
           example: 0
+          nullable: true
         renderingError:
           type: string
           description: Ошибка рендеринга
+          nullable: true
         renderedFile:
           description: Обработанный файл
+          nullable: true
           allOf: *ref_63
       required:
         - id
@@ -4243,6 +4276,7 @@ components:
           type: string
           description: Родительская папка
           format: uuid
+          nullable: true
         createdAt:
           description: Время создания
           example:
@@ -4313,6 +4347,7 @@ components:
           type: string
           description: Родительская папка
           format: uuid
+          nullable: true
       required:
         - name
     FolderGetResponse:
@@ -4419,14 +4454,17 @@ components:
           type: string
           description: Фамилия
           example: Steve
+          nullable: true
         name:
           type: string
           description: Имя
           example: John
+          nullable: true
         middleName:
           type: string
           description: Отчество
           example: Doe
+          nullable: true
         password:
           type: string
           example: Secret~12345678
@@ -4440,18 +4478,22 @@ components:
           type: string
           description: Телефон пользователя
           example: "+78002000000"
+          nullable: true
         city:
           type: string
           description: Город
           example: Krasnodar
+          nullable: true
         country:
           type: string
           description: Страна
           example: RU
+          nullable: true
         company:
           type: string
           description: Компания
           example: ACME corporation
+          nullable: true
         storageSpace:
           type: number
           description: Дисковое пространство
@@ -4714,6 +4756,7 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
+          nullable: true
         status:
           description: Статус
           example: Offline
@@ -4790,6 +4833,7 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
+          nullable: true
         files:
           description: Файлы
           type: array
@@ -4810,6 +4854,7 @@ components:
           type: string
           description: Описание плэйлиста
           example: описание плэйлиста
+          nullable: true
         files:
           description: Файлы
           type: array
@@ -4880,6 +4925,7 @@ components:
           type: object
           description: Покупатель ID
           format: uuid
+          nullable: true
         sellerId:
           type: string
           description: Продавец ID
@@ -4910,6 +4956,7 @@ components:
           format: date-time
           description: Время до
           example: "2021-10-01T10:00:00.147Z"
+          nullable: true
         playlistRandom:
           type: boolean
           description: Рандомное воспроизведение/по порядку
@@ -5005,6 +5052,7 @@ components:
           format: date-time
           description: Время до
           example: "2021-10-01T10:00:00.147Z"
+          nullable: true
         playlistRandom:
           type: boolean
           description: Рандомное воспроизведение/по порядку

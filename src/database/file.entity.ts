@@ -160,14 +160,14 @@ export class FileEntity {
   @IsNotEmpty()
   filesize!: number;
 
-  @Column({ type: 'numeric', nullable: true, default: 0 })
+  @Column({ type: 'numeric', default: 0 })
   @ApiProperty({
     description: 'Продолжительность видео',
     type: 'number',
     example: 10,
   })
   @IsNotEmpty()
-  duration?: number;
+  duration!: number;
 
   @Column({ type: 'integer', default: 1024 })
   @ApiProperty({
@@ -199,7 +199,7 @@ export class FileEntity {
   @JoinColumn({ name: 'userId' })
   user!: UserEntity;
 
-  @Column({ select: false, nullable: true })
+  @Column({ select: false })
   userId!: string;
 
   @OneToOne(() => FilePreviewEntity, (filePreview) => filePreview.file, {

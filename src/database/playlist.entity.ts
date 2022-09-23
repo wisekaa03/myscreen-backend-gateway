@@ -58,6 +58,7 @@ export class PlaylistEntity {
   @ApiProperty({
     description: 'Описание плэйлиста',
     example: 'описание плэйлиста',
+    nullable: true,
     required: false,
   })
   @IsString()
@@ -116,6 +117,7 @@ export class PlaylistEntity {
   @ApiProperty({
     description: 'Мониторы',
     type: 'array',
+    nullable: true,
     items: { $ref: '#/components/schemas/MonitorResponse' },
   })
   monitors?: MonitorEntity[] | null;

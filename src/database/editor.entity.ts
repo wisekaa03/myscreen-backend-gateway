@@ -84,7 +84,6 @@ export class EditorEntity {
     type: 'enum',
     enum: RenderingStatus,
     default: RenderingStatus.Initial,
-    nullable: true,
   })
   @ApiProperty({
     description: 'Статус рендеринга',
@@ -105,6 +104,7 @@ export class EditorEntity {
     type: 'integer',
     description: 'Процент рендеринга',
     example: 0,
+    nullable: true,
     required: true,
   })
   @IsNumber()
@@ -114,6 +114,7 @@ export class EditorEntity {
   @ApiProperty({
     type: 'string',
     description: 'Ошибка рендеринга',
+    nullable: true,
     required: true,
   })
   @IsString()
@@ -128,6 +129,7 @@ export class EditorEntity {
   @ApiProperty({
     description: 'Обработанный файл',
     type: 'string',
+    nullable: true,
     allOf: [{ $ref: '#/components/schemas/FileResponse' }],
   })
   renderedFile!: FileEntity | null;
@@ -142,7 +144,7 @@ export class EditorEntity {
   @IsBoolean()
   keepSourceAudio!: boolean;
 
-  @Column({ type: 'numeric', default: 0, nullable: true })
+  @Column({ type: 'numeric', default: 0 })
   @ApiProperty({
     description: 'Общее время',
     type: 'number',
@@ -173,6 +175,7 @@ export class EditorEntity {
     type: 'string',
     format: 'uuid',
     isArray: true,
+    nullable: true,
   })
   audioLayers!: EditorLayerEntity[];
 

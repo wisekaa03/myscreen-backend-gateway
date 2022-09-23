@@ -45,6 +45,7 @@ export class ApplicationEntity {
   @ApiProperty({
     description: 'Покупатель ID',
     format: 'uuid',
+    nullable: true,
     required: false,
   })
   @IsUUID()
@@ -133,7 +134,7 @@ export class ApplicationEntity {
   @IsEnum(ApplicationApproved, { each: true })
   approved!: ApplicationApproved | Array<ApplicationApproved>;
 
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @Column({ type: 'timestamp' })
   @ApiProperty({
     type: 'string',
     format: 'date-time',
@@ -142,7 +143,7 @@ export class ApplicationEntity {
     required: true,
   })
   @IsDate()
-  dateWhen!: Date | null;
+  dateWhen!: Date;
 
   @Column({ type: 'timestamp', nullable: true, default: null })
   @ApiProperty({
@@ -150,6 +151,7 @@ export class ApplicationEntity {
     format: 'date-time',
     description: 'Время до',
     example: '2021-10-01T10:00:00.147Z',
+    nullable: true,
     required: true,
   })
   @IsDate()

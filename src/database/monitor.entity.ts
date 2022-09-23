@@ -287,6 +287,7 @@ export class MonitorEntity {
     type: 'string',
     description: 'Идентификатор устройства',
     example: '111-111-111',
+    nullable: true,
     required: false,
   })
   @Length(11, 11)
@@ -297,6 +298,7 @@ export class MonitorEntity {
     type: Date,
     description: 'Последний раз виден',
     example: null,
+    nullable: true,
   })
   @IsDate()
   lastSeen?: Date;
