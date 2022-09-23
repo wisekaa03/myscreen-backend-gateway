@@ -272,7 +272,6 @@ export class MonitorController {
             dateBefore: attach.application.dateBefore,
             dateWhen: attach.application.dateWhen,
             playlistChange: attach.application.playlistChange,
-            playlistRandom: attach.application.playlistRandom,
           })
           .catch((error) => {
             this.logger.error(error);

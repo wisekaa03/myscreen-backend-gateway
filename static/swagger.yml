@@ -2153,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.30.0
+  version: 2.30.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3432,10 +3432,6 @@ components:
           description: Время до
           example: "2021-10-01T10:00:00.147Z"
           nullable: true
-        playlistRandom:
-          type: boolean
-          description: Рандомное воспроизведение/по порядку
-          example: false
         playlistChange:
           type: boolean
           description: "Смена текущего плэйлиста: сразу/когда закончится"
@@ -3443,7 +3439,6 @@ components:
       required:
         - dateWhen
         - dateBefore
-        - playlistRandom
         - playlistChange
     MonitorsPlaylistAttachRequest:
       type: object
@@ -4957,10 +4952,6 @@ components:
           description: Время до
           example: "2021-10-01T10:00:00.147Z"
           nullable: true
-        playlistRandom:
-          type: boolean
-          description: Рандомное воспроизведение/по порядку
-          example: false
         playlistChange:
           type: boolean
           description: "Смена текущего плэйлиста: сразу/когда закончится"
@@ -5007,7 +4998,6 @@ components:
               - approved
               - dateWhen
               - dateBefore
-              - playlistRandom
               - playlistChange
               - createdAt
               - updatedAt
@@ -5053,10 +5043,6 @@ components:
           description: Время до
           example: "2021-10-01T10:00:00.147Z"
           nullable: true
-        playlistRandom:
-          type: boolean
-          description: Рандомное воспроизведение/по порядку
-          example: false
         playlistChange:
           type: boolean
           description: "Смена текущего плэйлиста: сразу/когда закончится"
@@ -5080,7 +5066,6 @@ components:
         - approved
         - dateWhen
         - dateBefore
-        - playlistRandom
         - playlistChange
         - createdAt
         - updatedAt

@@ -38,9 +38,10 @@ export class UserEntity {
   @IsUUID()
   id!: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', unique: true })
   @ApiProperty({
     description: 'EMail пользователя',
+    type: 'string',
     format: 'email',
     example: 'foo@bar.baz',
   })

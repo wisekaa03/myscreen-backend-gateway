@@ -159,15 +159,6 @@ export class ApplicationEntity {
 
   @Column({ type: 'boolean', nullable: false, default: false })
   @ApiProperty({
-    description: 'Рандомное воспроизведение/по порядку',
-    example: false,
-    required: true,
-  })
-  @IsBoolean()
-  playlistRandom!: boolean;
-
-  @Column({ type: 'boolean', nullable: false, default: false })
-  @ApiProperty({
     description: 'Смена текущего плэйлиста: сразу/когда закончится',
     example: false,
     required: true,
