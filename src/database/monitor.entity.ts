@@ -293,7 +293,7 @@ export class MonitorEntity {
   @Length(11, 11)
   code!: string | null;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', default: null, nullable: true })
   @ApiProperty({
     type: 'string',
     format: 'date-time',

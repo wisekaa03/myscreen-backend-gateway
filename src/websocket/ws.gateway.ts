@@ -123,13 +123,13 @@ export class WSGateway
                     {
                       monitorId: monitor.id,
                       approved: ApplicationApproved.Allowed,
-                      dateWhen: LessThanOrEqual<Date>(new Date(Date.now())),
-                      dateBefore: MoreThanOrEqual<Date>(new Date(Date.now())),
+                      dateWhen: LessThanOrEqual<Date>(new Date()),
+                      dateBefore: MoreThanOrEqual<Date>(new Date()),
                     },
                     {
                       monitorId: monitor.id,
                       approved: ApplicationApproved.Allowed,
-                      dateWhen: LessThanOrEqual<Date>(new Date(Date.now())),
+                      dateWhen: LessThanOrEqual<Date>(new Date()),
                       dateBefore: IsNull(),
                     },
                   ],
@@ -223,13 +223,13 @@ export class WSGateway
                   {
                     monitorId: monitor.id,
                     approved: ApplicationApproved.Allowed,
-                    dateWhen: LessThanOrEqual<Date>(new Date(Date.now())),
-                    dateBefore: MoreThanOrEqual<Date>(new Date(Date.now())),
+                    dateWhen: LessThanOrEqual<Date>(new Date()),
+                    dateBefore: MoreThanOrEqual<Date>(new Date()),
                   },
                   {
                     monitorId: monitor.id,
                     approved: ApplicationApproved.Allowed,
-                    dateWhen: LessThanOrEqual<Date>(new Date(Date.now())),
+                    dateWhen: LessThanOrEqual<Date>(new Date()),
                     dateBefore: IsNull(),
                   },
                 ],

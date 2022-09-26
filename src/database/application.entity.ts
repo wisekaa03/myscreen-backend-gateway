@@ -135,7 +135,8 @@ export class ApplicationEntity {
   @IsEnum(ApplicationApproved, { each: true })
   approved!: ApplicationApproved | Array<ApplicationApproved>;
 
-  @Column({ type: 'timestamp' })
+  @Column({ type: 'timestamptz', default: '2021-01-01T10:00:00.147Z' })
+  @Index()
   @ApiProperty({
     type: 'string',
     format: 'date-time',
@@ -146,7 +147,8 @@ export class ApplicationEntity {
   @IsDateString({ strict: false })
   dateWhen!: Date;
 
-  @Column({ type: 'timestamp', nullable: true, default: null })
+  @Column({ type: 'timestamptz', nullable: true, default: null })
+  @Index()
   @ApiProperty({
     type: 'string',
     format: 'date-time',
