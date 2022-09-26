@@ -2153,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.30.6
+  version: 2.30.7
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2388,10 +2388,6 @@ components:
         verified:
           type: boolean
           description: EMail подтвержден
-          example: true
-        isDemoUser:
-          type: boolean
-          description: Демо пользователь
           example: true
         createdAt:
           format: date-time
