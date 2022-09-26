@@ -30,6 +30,7 @@ import { WebSocketClient } from './interface/websocket-client';
 import { PlaylistService } from '../database/playlist.service';
 import { ApplicationEntity } from '../database/application.entity';
 import { ApplicationService } from '@/database/application.service';
+import { IncomingMessageData } from './interface/incoming-message';
 
 @WebSocketGateway({
   cors: {
@@ -102,60 +103,7 @@ export class WSGateway
         port: req.socket?.remotePort || 0,
         auth: false,
       };
-      if (req.headers.authorization !== undefined) {
-        // Authentication through token
-        const token = req.headers.authorization.split(' ', 2).pop();
-        if (token) {
-          const valueUpdated = await this.authorization(client, value, token);
-          if (valueUpdated?.roles?.includes(UserRoleEnum.Monitor)) {
-            const monitor = await this.monitorService.findOne(
-              valueUpdated.monitorId || 'monitorFavoritiesDisabled',
-              {
-                where: { id: valueUpdated.monitorId },
-                relations: ['playlist', 'user'],
-              },
-            );
-            let application: ApplicationEntity[] | null = null;
-            if (monitor) {
-              [application] = await Promise.all([
-                this.applicationService.find({
-                  where: [
-                    {
-                      monitorId: monitor.id,
-                      approved: ApplicationApproved.Allowed,
-                      dateWhen: LessThanOrEqual<Date>(new Date()),
-                      dateBefore: MoreThanOrEqual<Date>(new Date()),
-                    },
-                    {
-                      monitorId: monitor.id,
-                      approved: ApplicationApproved.Allowed,
-                      dateWhen: LessThanOrEqual<Date>(new Date()),
-                      dateBefore: IsNull(),
-                    },
-                  ],
-                }),
-                this.monitorService
-                  .update(
-                    monitor.userId,
-                    Object.assign(monitor, {
-                      status: MonitorStatus.Online,
-                    }),
-                  )
-                  .catch((error: any) => {
-                    this.logger.error(error);
-                  }),
-                this.monitorStatus(monitor.id, MonitorStatus.Online),
-              ]);
-            }
-            client.send(
-              JSON.stringify([{ event: 'application', data: application }]),
-            );
-          }
-          return;
-        }
-      } else {
-        this.logger.debug(`New connection: key='${value.key}'`);
-      }
+      this.logger.debug(`New connection: key='${value.key}'`);
       this.clients.set(client, {
         ...value,
         auth: false,
@@ -201,12 +149,19 @@ export class WSGateway
   @SubscribeMessage('auth/token')
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() token: string,
+    @MessageBody() incoming: IncomingMessageData,
   ): Promise<Observable<WsResponse<string | ApplicationEntity[] | null>[]>> {
-    if (isJWT(token)) {
+    if (!(incoming.token && incoming.date)) {
+      throw new WsException('Not authorized');
+    }
+    if (isJWT(incoming.token)) {
       const value = this.clients.get(client);
       if (value) {
-        const valueUpdated = await this.authorization(client, value, token);
+        const valueUpdated = await this.authorization(
+          client,
+          value,
+          incoming.token,
+        );
         if (valueUpdated?.roles?.includes(UserRoleEnum.Monitor)) {
           const monitor = await this.monitorService.findOne(
             valueUpdated.monitorId || 'monitorFavoritiesDisabled',
@@ -223,13 +178,13 @@ export class WSGateway
                   {
                     monitorId: monitor.id,
                     approved: ApplicationApproved.Allowed,
-                    dateWhen: LessThanOrEqual<Date>(new Date()),
-                    dateBefore: MoreThanOrEqual<Date>(new Date()),
+                    dateWhen: LessThanOrEqual<Date>(new Date(incoming.date)),
+                    dateBefore: MoreThanOrEqual<Date>(new Date(incoming.date)),
                   },
                   {
                     monitorId: monitor.id,
                     approved: ApplicationApproved.Allowed,
-                    dateWhen: LessThanOrEqual<Date>(new Date()),
+                    dateWhen: LessThanOrEqual<Date>(new Date(incoming.date)),
                     dateBefore: IsNull(),
                   },
                 ],
@@ -249,7 +204,7 @@ export class WSGateway
           }
           return of([
             { event: 'auth/token', data: 'authorized' },
-            { event: 'application', data: application },
+            { event: 'applications', data: application },
           ]);
         }
         return of([{ event: 'auth/token', data: 'authorized' }]);
