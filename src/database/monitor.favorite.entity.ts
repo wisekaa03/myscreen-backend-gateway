@@ -24,7 +24,10 @@ export class MonitorFavoriteEntity {
   @IsUUID()
   id!: string;
 
-  @ManyToOne(() => MonitorEntity, (monitor) => monitor.favorities)
+  @ManyToOne(() => MonitorEntity, (monitor) => monitor.favorities, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({ name: 'monitorId' })
   monitor?: MonitorEntity;
 
