@@ -60,23 +60,25 @@ export class WSGateway
     value: WebSocketClient,
     token: string,
   ): Promise<WebSocketClient | undefined> {
-    const { sub: userId, aud: roles } = await this.authService
+    const { sub: monitorId, aud: roles } = await this.authService
       .jwtVerify(token)
       .catch((error: any) => {
         this.logger.error(error);
         throw new WsException('Not authorized');
       });
-    if (userId && roles) {
+    if (monitorId && roles) {
       this.logger.debug(
         `Client key='${
           value.key
-        }', auth=true, userId='${userId}', roles='${JSON.stringify(roles)}'`,
+        }', auth=true, monitorId='${monitorId}', roles='${JSON.stringify(
+          roles,
+        )}'`,
       );
-      const valueUpdated = {
+      const valueUpdated: WebSocketClient = {
         ...value,
         auth: true,
         token,
-        userId,
+        monitorId,
         roles,
       };
       this.clients.set(client, valueUpdated);
@@ -107,9 +109,9 @@ export class WSGateway
           const valueUpdated = await this.authorization(client, value, token);
           if (valueUpdated?.roles?.includes(UserRoleEnum.Monitor)) {
             const monitor = await this.monitorService.findOne(
-              valueUpdated.userId || 'monitorFavoritiesDisabled',
+              valueUpdated.monitorId || 'monitorFavoritiesDisabled',
               {
-                where: { id: valueUpdated.userId },
+                where: { id: valueUpdated.monitorId },
                 relations: ['playlist', 'user'],
               },
             );
@@ -134,7 +136,7 @@ export class WSGateway
                 }),
                 this.monitorService
                   .update(
-                    monitor.user.id,
+                    monitor.userId,
                     Object.assign(monitor, {
                       status: MonitorStatus.Online,
                     }),
@@ -172,16 +174,16 @@ export class WSGateway
     this.logger.debug(`Disconnect: key='${value.key}'`);
     if (value.roles?.includes(UserRoleEnum.Monitor)) {
       const monitor = await this.monitorService.findOne(
-        value.userId || 'monitorFavoritiesDisabled',
+        value.monitorId || 'monitorFavoritiesDisabled',
         {
-          where: { id: value.userId },
+          where: { id: value.monitorId },
         },
       );
       if (monitor) {
         await Promise.all([
           this.monitorService
             .update(
-              monitor.user.id,
+              monitor.userId,
               Object.assign(monitor, {
                 status: MonitorStatus.Offline,
               }),
@@ -207,9 +209,9 @@ export class WSGateway
         const valueUpdated = await this.authorization(client, value, token);
         if (valueUpdated?.roles?.includes(UserRoleEnum.Monitor)) {
           const monitor = await this.monitorService.findOne(
-            valueUpdated.userId || 'monitorFavoritiesDisabled',
+            valueUpdated.monitorId || 'monitorFavoritiesDisabled',
             {
-              where: { id: valueUpdated.userId },
+              where: { id: valueUpdated.monitorId },
               relations: ['playlist', 'user'],
             },
           );
@@ -234,7 +236,7 @@ export class WSGateway
               }),
               this.monitorService
                 .update(
-                  monitor.user.id,
+                  monitor.userId,
                   Object.assign(monitor, {
                     status: MonitorStatus.Online,
                   }),
@@ -269,9 +271,9 @@ export class WSGateway
     if (value && value.auth) {
       if (value.roles?.includes(UserRoleEnum.Monitor)) {
         let monitor = await this.monitorService.findOne(
-          value.userId || 'monitorFavoritiesDisabled',
+          value.monitorId || 'monitorFavoritiesDisabled',
           {
-            where: { id: value.userId },
+            where: { id: value.monitorId },
           },
         );
         if (!monitor) {
@@ -299,7 +301,7 @@ export class WSGateway
         this.clients.forEach((v, c) => {
           if (
             v.roles?.includes(UserRoleEnum.Advertiser) ||
-            v.userId === monitor?.userId
+            v.monitorId === monitor?.id
           ) {
             c.send(JSON.stringify([{ event: 'monitor', data: monitor }]));
           }
@@ -348,23 +350,27 @@ export class WSGateway
     }
 
     if (application?.playlist && application?.monitor) {
-      await this.playlistService.update(application.playlist.user.id, {
+      await this.playlistService.update(application.playlist.userId, {
         id: application.playlist.id,
         status: PlaylistStatusEnum.Broadcast,
       });
 
       this.clients.forEach((value, client) => {
-        if (value.userId === application.monitor.id) {
+        if (value.monitorId === application.monitor.id) {
           client.send(
             JSON.stringify([{ event: 'application', data: application }]),
           );
         }
       });
+    } else {
+      this.logger.error(
+        'application.playlist or application.monitor is required',
+      );
     }
 
     if (monitor) {
       this.clients.forEach((value, client) => {
-        if (value.userId === monitor.id) {
+        if (value.monitorId === monitor.id) {
           client.send(JSON.stringify([{ event: 'application', data: null }]));
         }
       });
