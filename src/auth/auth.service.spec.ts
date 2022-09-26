@@ -22,7 +22,7 @@ const user = {
   company: 'ACME corporation',
   role: 'advertiser',
   verified: true,
-  isDemoUser: false,
+  // isDemoUser: false,
   createdAt: '1000-01-01T01:00:50.804Z',
   updatedAt: '1000-01-01T01:00:43.121Z',
   countUsedSpace: '0',

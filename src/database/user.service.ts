@@ -22,6 +22,7 @@ import { TypeOrmFind } from '@/shared/typeorm.find';
 import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserSizeEntity } from './user.view.entity';
+import { selectUserOptions } from '@/dto';
 
 @Injectable()
 export class UserService {
@@ -212,7 +213,10 @@ export class UserService {
   ): Promise<UserEntity> {
     const [email, forgotPassword] = decodeMailToken(forgotPasswordToken);
 
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: { ...selectUserOptions, forgotConfirmKey: true },
+    });
     if (!user) {
       throw new ForbiddenException('User not exists', email);
     }
@@ -255,21 +259,23 @@ export class UserService {
   }
 
   async findAndCount(
-    find: FindManyOptions<UserEntity>,
+    options: FindManyOptions<UserEntity>,
     caseInsensitive = true,
   ): Promise<[UserEntity[], number]> {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(
           this.userRepository,
-          TypeOrmFind.Nullable(find),
+          TypeOrmFind.Nullable(options),
         )
-      : this.userRepository.findAndCount(TypeOrmFind.Nullable(find));
+      : this.userRepository.findAndCount(TypeOrmFind.Nullable(options));
   }
 
   async findByEmail(
     email: string,
+    options?: FindManyOptions<UserEntity>,
   ): Promise<(UserEntity & Partial<UserSizeEntity>) | null> {
     return this.userSizeRepository.findOne({
+      ...options,
       where: { email },
     });
   }

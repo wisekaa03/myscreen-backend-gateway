@@ -88,7 +88,7 @@ export class UserEntity {
   @IsString()
   middleName!: string | null;
 
-  @Column()
+  @Column({ select: false })
   @ApiProperty({
     example: 'Secret~12345678',
     description:
@@ -170,13 +170,13 @@ export class UserEntity {
   @IsEnum(UserRole)
   role!: UserRoleEnum;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, select: false })
   forgotConfirmKey?: string | null;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, select: false })
   emailConfirmKey?: string | null;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, select: false })
   @ApiProperty({
     description: 'EMail подтвержден',
     example: true,
@@ -184,7 +184,7 @@ export class UserEntity {
   })
   verified!: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, select: false })
   @ApiProperty({
     description: 'Демо пользователь',
     example: true,

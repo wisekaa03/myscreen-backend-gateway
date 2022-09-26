@@ -199,7 +199,7 @@ export class FileEntity {
   @JoinColumn({ name: 'userId' })
   user!: UserEntity;
 
-  @Column({ select: false })
+  @Column()
   userId!: string;
 
   @OneToOne(() => FilePreviewEntity, (filePreview) => filePreview.file, {

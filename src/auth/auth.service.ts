@@ -8,7 +8,11 @@ import {
   JWT_BASE_OPTIONS,
   type MyscreenJwtPayload,
 } from '../shared/jwt.payload';
-import { userEntityToUser, AuthenticationPayload } from '../dto/index';
+import {
+  userEntityToUser,
+  AuthenticationPayload,
+  selectUserOptions,
+} from '../dto/index';
 import { UserService } from '../database/user.service';
 import { UserEntity } from '../database/user.entity';
 import { RefreshTokenService } from '../database/refreshtoken.service';
@@ -54,7 +58,9 @@ export class AuthService {
       throw new ForbiddenException('Password mismatched', password);
     }
 
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userService.findByEmail(email, {
+      select: { ...selectUserOptions, password: true },
+    });
     if (!user) {
       throw new ForbiddenException('Password mismatched', password);
     }
@@ -250,7 +256,9 @@ export class AuthService {
   async verifyEmail(verify_email: string): Promise<true> {
     const [email, verifyToken] = decodeMailToken(verify_email);
 
-    const user = await this.userService.findByEmail(email);
+    const user = await this.userService.findByEmail(email, {
+      select: { ...selectUserOptions, emailConfirmKey: true },
+    });
     if (!user) {
       throw new ForbiddenException();
     }
