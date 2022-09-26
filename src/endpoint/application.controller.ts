@@ -190,17 +190,17 @@ export class ApplicationController {
   })
   async updateApplication(
     @Req() { user: { id: userId } }: ExpressRequest,
-    @Param('applicationId', ParseUUIDPipe) id: string,
+    @Param('applicationId', ParseUUIDPipe) applicationId: string,
     @Body() update: ApplicationUpdateRequest,
   ): Promise<ApplicationGetResponse> {
     const application = await this.applicationService.findOne({
       where: [
         {
-          id,
+          id: applicationId,
           sellerId: userId,
         },
         {
-          id,
+          id: applicationId,
           buyerId: userId,
         },
       ],
@@ -209,10 +209,10 @@ export class ApplicationController {
       throw new NotFoundException('Application not found');
     }
 
-    const data = await this.applicationService.update(
-      id,
-      Object.assign(application, update),
-    );
+    const data = await this.applicationService.update(applicationId, {
+      ...application,
+      ...update,
+    });
     if (!data) {
       throw new BadRequestException('Application exists and not exists ?');
     }
@@ -243,7 +243,7 @@ export class ApplicationController {
         { id, sellerId: userId },
         { id, buyerId: userId },
       ],
-      select: ['id', 'sellerId', 'buyerId', 'userId'],
+      relations: ['monitor'],
     });
     if (!application) {
       throw new NotFoundException(`Application '${id}' is not found`);

@@ -1,4 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
@@ -20,6 +26,7 @@ export class ApplicationService {
     private readonly userService: UserService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
     @InjectRepository(ApplicationEntity)
     private readonly applicationRepository: Repository<ApplicationEntity>,
@@ -87,35 +94,38 @@ export class ApplicationService {
               update,
             ),
           );
-        application = await applicationRepository.findOneBy(ApplicationEntity, {
-          id: application.id,
+        application = await applicationRepository.findOne(ApplicationEntity, {
+          where: {
+            id: application.id,
+          },
         });
         if (!application) {
           throw new NotFoundException('Application not found');
         }
 
         if (update.approved === ApplicationApproved.NotProcessed) {
-          const seller = await this.userService.findById(application.sellerId);
-          if (seller) {
+          if (application.seller) {
             await this.mailService
               .sendApplicationWarningMessage(
-                seller.email,
+                application.seller.email,
                 `${this.frontendUrl}/applications`,
               )
               .catch((error: any) => {
                 this.logger.error(
-                  `ApplicationService seller email=${seller.email}: ${error}`,
+                  `ApplicationService seller email=${application?.seller.email}: ${error}`,
                   error,
                 );
               });
           } else {
             this.logger.error('ApplicationService seller email=undefined');
           }
-        }
-
-        if (update.approved === ApplicationApproved.Allowed) {
-          /* await */ this.wsGateway
-            .application(application)
+        } else if (update.approved === ApplicationApproved.Allowed) {
+          await this.wsGateway.application(application).catch((error: any) => {
+            this.logger.error(error);
+          });
+        } else if (update.approved === ApplicationApproved.Denied) {
+          await this.wsGateway
+            .application(null, application.monitor)
             .catch((error: any) => {
               this.logger.error(error);
             });
@@ -132,11 +142,19 @@ export class ApplicationService {
 
   async delete(
     userId: string,
-    cooperation: ApplicationEntity,
+    application: ApplicationEntity,
   ): Promise<DeleteResult> {
-    return this.applicationRepository.delete({
-      id: cooperation.id,
+    await this.wsGateway
+      .application(null, application.monitor)
+      .catch((error: any) => {
+        this.logger.error(error);
+      });
+
+    const deleteResult = await this.applicationRepository.delete({
+      id: application.id,
       userId,
     });
+
+    return deleteResult;
   }
 }

@@ -261,7 +261,7 @@ export class MonitorController {
         } else {
           approved = ApplicationApproved.NotProcessed;
         }
-        /* await */ this.applicationService
+        await this.applicationService
           .update(undefined, {
             sellerId: monitor.userId,
             buyerId: userId,

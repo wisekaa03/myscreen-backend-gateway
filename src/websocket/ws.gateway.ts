@@ -15,19 +15,21 @@ import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { Observable, of } from 'rxjs';
 
+import { IsNull, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
-import { PlaylistEntity } from '../database/playlist.entity';
 import { MonitorEntity } from '../database/monitor.entity';
 import { MonitorService } from '../database/monitor.service';
 import { WsExceptionsFilter } from '../exception/ws-exceptions.filter';
 import {
+  ApplicationApproved,
   MonitorStatus,
   PlaylistStatusEnum,
   UserRoleEnum,
 } from '../enums/index';
 import { WebSocketClient } from './interface/websocket-client';
 import { PlaylistService } from '../database/playlist.service';
-import { ApplicationEntity } from '@/database/application.entity';
+import { ApplicationEntity } from '../database/application.entity';
+import { ApplicationService } from '@/database/application.service';
 
 @WebSocketGateway({
   cors: {
@@ -41,6 +43,7 @@ export class WSGateway
 {
   constructor(
     private readonly authService: AuthService,
+    private readonly applicationService: ApplicationService,
     private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,
   ) {}
@@ -107,26 +110,43 @@ export class WSGateway
               valueUpdated.userId || 'monitorFavoritiesDisabled',
               {
                 where: { id: valueUpdated.userId },
-                relations: ['playlist'],
+                relations: ['playlist', 'user'],
               },
             );
+            let application: ApplicationEntity[] | null = null;
             if (monitor) {
-              /* await */ this.monitorService
-                .update(
-                  monitor.userId,
-                  Object.assign(monitor, {
-                    status: MonitorStatus.Online,
+              [application] = await Promise.all([
+                this.applicationService.find({
+                  where: [
+                    {
+                      monitorId: monitor.id,
+                      approved: ApplicationApproved.Allowed,
+                      dateWhen: LessThanOrEqual<Date>(new Date(Date.now())),
+                      dateBefore: MoreThanOrEqual<Date>(new Date(Date.now())),
+                    },
+                    {
+                      monitorId: monitor.id,
+                      approved: ApplicationApproved.Allowed,
+                      dateWhen: LessThanOrEqual<Date>(new Date(Date.now())),
+                      dateBefore: IsNull(),
+                    },
+                  ],
+                }),
+                this.monitorService
+                  .update(
+                    monitor.user.id,
+                    Object.assign(monitor, {
+                      status: MonitorStatus.Online,
+                    }),
+                  )
+                  .catch((error: any) => {
+                    this.logger.error(error);
                   }),
-                )
-                .catch((error: any) => {
-                  this.logger.error(error);
-                });
-              /* await */ this.monitorStatus(monitor.id, MonitorStatus.Online);
+                this.monitorStatus(monitor.id, MonitorStatus.Online),
+              ]);
             }
             client.send(
-              JSON.stringify([
-                { event: 'playlist', data: monitor?.playlist ?? null },
-              ]),
+              JSON.stringify([{ event: 'application', data: application }]),
             );
           }
           return;
@@ -158,17 +178,19 @@ export class WSGateway
         },
       );
       if (monitor) {
-        /* await */ this.monitorService
-          .update(
-            monitor.userId,
-            Object.assign(monitor, {
-              status: MonitorStatus.Offline,
+        await Promise.all([
+          this.monitorService
+            .update(
+              monitor.user.id,
+              Object.assign(monitor, {
+                status: MonitorStatus.Offline,
+              }),
+            )
+            .catch((error: any) => {
+              this.logger.error(error);
             }),
-          )
-          .catch((error: any) => {
-            this.logger.error(error);
-          });
-        /* await */ this.monitorStatus(monitor.id, MonitorStatus.Offline);
+          this.monitorStatus(monitor.id, MonitorStatus.Offline),
+        ]);
       }
     }
     this.clients.delete(client);
@@ -178,7 +200,7 @@ export class WSGateway
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() token: string,
-  ): Promise<Observable<WsResponse<string | PlaylistEntity | null>[]>> {
+  ): Promise<Observable<WsResponse<string | ApplicationEntity[] | null>[]>> {
     if (isJWT(token)) {
       const value = this.clients.get(client);
       if (value) {
@@ -188,25 +210,44 @@ export class WSGateway
             valueUpdated.userId || 'monitorFavoritiesDisabled',
             {
               where: { id: valueUpdated.userId },
-              relations: ['playlist'],
+              relations: ['playlist', 'user'],
             },
           );
+          let application: ApplicationEntity[] | null = null;
           if (monitor) {
-            /* await */ this.monitorService
-              .update(
-                monitor.userId,
-                Object.assign(monitor, {
-                  status: MonitorStatus.Online,
+            [application] = await Promise.all([
+              this.applicationService.find({
+                where: [
+                  {
+                    monitorId: monitor.id,
+                    approved: ApplicationApproved.Allowed,
+                    dateWhen: LessThanOrEqual<Date>(new Date(Date.now())),
+                    dateBefore: MoreThanOrEqual<Date>(new Date(Date.now())),
+                  },
+                  {
+                    monitorId: monitor.id,
+                    approved: ApplicationApproved.Allowed,
+                    dateWhen: LessThanOrEqual<Date>(new Date(Date.now())),
+                    dateBefore: IsNull(),
+                  },
+                ],
+              }),
+              this.monitorService
+                .update(
+                  monitor.user.id,
+                  Object.assign(monitor, {
+                    status: MonitorStatus.Online,
+                  }),
+                )
+                .catch((error: any) => {
+                  this.logger.error(error);
                 }),
-              )
-              .catch((error: any) => {
-                this.logger.error(error);
-              });
-            /* await */ this.monitorStatus(monitor.id, MonitorStatus.Online);
+              this.monitorStatus(monitor.id, MonitorStatus.Online),
+            ]);
           }
           return of([
             { event: 'auth/token', data: 'authorized' },
-            { event: 'playlist', data: monitor?.playlist ?? null },
+            { event: 'application', data: application },
           ]);
         }
         return of([{ event: 'auth/token', data: 'authorized' }]);
@@ -307,13 +348,13 @@ export class WSGateway
     }
 
     if (application?.playlist && application?.monitor) {
-      /* await */ this.playlistService.update(application.playlist.userId, {
+      await this.playlistService.update(application.playlist.user.id, {
         id: application.playlist.id,
         status: PlaylistStatusEnum.Broadcast,
       });
 
       this.clients.forEach((value, client) => {
-        if (value.userId === application.monitorId) {
+        if (value.userId === application.monitor.id) {
           client.send(
             JSON.stringify([{ event: 'application', data: application }]),
           );
