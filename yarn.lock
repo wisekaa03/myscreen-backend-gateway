@@ -1201,10 +1201,10 @@
   resolved "https://registry.yarnpkg.com/@types/parse-json/-/parse-json-4.0.0.tgz#2f8bb441434d163b35fb8ffdccd7138927ffb8c0"
   integrity sha512-//oorEZjL6sbPcKUaCdIGlIUeH26mgzimjBB77G6XRgnDl/L5wOnpyBGRe/Mmf5CVW3PwEBE1NjiMZ/ssFh4wA==
 
-"@types/passport-jwt@^3.0.6":
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/@types/passport-jwt/-/passport-jwt-3.0.6.tgz#41cc8b5803d5f5f06eb33e19c453b42716def4f1"
-  integrity sha512-cmAAMIRTaEwpqxlrZyiEY9kdibk94gP5KTF8AT1Ra4rWNZYHNMreqhKUEeC5WJtuN5SJZjPQmV+XO2P5PlnvNQ==
+"@types/passport-jwt@^3.0.7":
+  version "3.0.7"
+  resolved "https://registry.yarnpkg.com/@types/passport-jwt/-/passport-jwt-3.0.7.tgz#ef8d8160dd9f4a3426aec031080cce9538b044a3"
+  integrity sha512-qRQ4qlww1Yhs3IaioDKrsDNmKy6gLDLgFsGwpCnc2YqWovO2Oxu9yCQdWHMJafQ7UIuOba4C4/TNXcGkQfEjlQ==
   dependencies:
     "@types/express" "*"
     "@types/jsonwebtoken" "*"
@@ -1855,10 +1855,10 @@ available-typed-arrays@^1.0.5:
   resolved "https://registry.yarnpkg.com/available-typed-arrays/-/available-typed-arrays-1.0.5.tgz#92f95616501069d07d10edb2fc37d3e1c65123b7"
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
-aws-sdk@^2.1226.0:
-  version "2.1226.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1226.0.tgz#6794d42c3c0f18df4393cda5d0de610410aa9faa"
-  integrity sha512-rlR3gPmKUZBe4sVobfKPBag+qXT6Ej+SC4ESJP87Xuz0uq4NFFY6COqYtbneIVKC8AIdg7SYY2jUR3GslrsSFQ==
+aws-sdk@^2.1227.0:
+  version "2.1227.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1227.0.tgz#2ef47b77aa104f07bf5b233c06adf51f166cd390"
+  integrity sha512-L6vnopVXVXKEqi0R4i54F6xSemczd/aRy4UscqnfpyvNYr9yLL3jVApFo7OX8hxompe/tgxdQFXvMiNzhkSrwQ==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -5925,9 +5925,9 @@ pluralize@8.0.0:
   integrity sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==
 
 postcss@^8.1.10:
-  version "8.4.16"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.16.tgz#33a1d675fac39941f5f445db0de4db2b6e01d43c"
-  integrity sha512-ipHE1XBvKzm5xI7hiHCZJCSugxvsdq2mPnsq5+UF+VHCjiBvtDrlxJfMBToWaP9D5XlgNmcFGqoHmUn0EYEaRQ==
+  version "8.4.17"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.17.tgz#f87863ec7cd353f81f7ab2dec5d67d861bbb1be5"
+  integrity sha512-UNxNOLQydcOFi41yHNMcKRZ39NeXlr8AxGuZJsdub8vIb12fHzcq37DTU/QtbI6WLxNg2gF9Z+8qtRwTj1UI1Q==
   dependencies:
     nanoid "^3.3.4"
     picocolors "^1.0.0"
