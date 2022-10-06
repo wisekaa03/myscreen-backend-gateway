@@ -44,7 +44,7 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
-import { UserRoleEnum } from '@/enums';
+import { UserRoleEnum } from '../enums/role.enum';
 import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
@@ -106,13 +106,16 @@ export class PlaylistController {
     type: PlaylistsGetResponse,
   })
   async getPlaylists(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
     @Body() { where, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
     const [data, count] = await this.playlistService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where, userId),
+      where: TypeOrmFind.Where(
+        where,
+        role?.includes(UserRoleEnum.Administrator) ? undefined : userId,
+      ),
     });
 
     return {
