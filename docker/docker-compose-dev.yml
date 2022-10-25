@@ -43,6 +43,7 @@ services:
       PGADMIN_CONFIG_LANGUAGES: '{''ru'': ''Russian''}'
     volumes:
       - ./servers.json:/pgadmin4/servers.json
+      - ./postgresql-root.crt:/var/lib/pgadmin/postgresql-root.crt
       - ./pgpassfile:/pgadmin4/pgpassfile
       - pgadmin4:/var/lib/pgadmin
     depends_on:
