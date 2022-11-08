@@ -35,8 +35,8 @@ import {
   MonitorsGetResponse,
   MonitorsPlaylistAttachRequest,
   NotFoundError,
-  PlaylistGetResponse,
   ServiceUnavailableError,
+  ApplicationsGetResponse,
   SuccessResponse,
   UnauthorizedError,
   MonitorCreateRequest,
@@ -463,7 +463,7 @@ export class MonitorController {
     };
   }
 
-  @Get('/:monitorId/playlist')
+  @Get('/:monitorId/applications')
   @HttpCode(200)
   @Roles(
     UserRoleEnum.Administrator,
@@ -472,18 +472,18 @@ export class MonitorController {
   )
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
-    operationId: 'monitor-get-playlist',
+    operationId: 'monitor-get-applications',
     summary: 'Получение плэйлиста монитора',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: PlaylistGetResponse,
+    type: ApplicationsGetResponse,
   })
-  async getMonitorPlaylist(
+  async getMonitorApplications(
     @Req() { user: { id: userId, role } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
-  ): Promise<PlaylistGetResponse> {
+  ): Promise<ApplicationsGetResponse> {
     const conditional: FindManyOptions<MonitorEntity> = {
       relations: ['playlist'],
     };
@@ -492,17 +492,20 @@ export class MonitorController {
     } else {
       conditional.where = { userId, id };
     }
-    const data = await this.monitorService.findOne(userId, conditional);
-    if (!data) {
+    const monitor = await this.monitorService.findOne(userId, conditional);
+    if (!monitor) {
       throw new NotFoundException(`Monitor '${id}' not found`);
     }
-    if (!data.playlist) {
+    if (!monitor.playlist) {
       throw new NotFoundException(`Have no playlist in monitor '${id}'`);
     }
 
+    const data = await this.applicationService.monitorApplications(monitor.id);
+
     return {
       status: Status.Success,
-      data: data.playlist,
+      count: data.length,
+      data,
     };
   }
 

@@ -7,7 +7,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  FindManyOptions,
+  IsNull,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 
 import { WSGateway } from '../websocket/ws.gateway';
 import { TypeOrmFind } from '../shared/typeorm.find';
@@ -72,6 +79,28 @@ export class ApplicationService {
           relations: ['buyer', 'seller', 'monitor', 'playlist'],
           ...TypeOrmFind.Nullable(find),
         });
+  }
+
+  async monitorApplications(
+    monitorId: string,
+    date: string | Date = new Date(),
+  ) {
+    return this.find({
+      where: [
+        {
+          monitorId,
+          approved: ApplicationApproved.Allowed,
+          dateWhen: LessThanOrEqual<Date>(new Date(date)),
+          dateBefore: MoreThanOrEqual<Date>(new Date(date)),
+        },
+        {
+          monitorId,
+          approved: ApplicationApproved.Allowed,
+          dateWhen: LessThanOrEqual<Date>(new Date(date)),
+          dateBefore: IsNull(),
+        },
+      ],
+    });
   }
 
   /**

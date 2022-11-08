@@ -539,9 +539,9 @@ paths:
         "503": *ref_12
       tags: *ref_13
       security: *ref_14
-  /api/v2/monitor/{monitorId}/playlist:
+  /api/v2/monitor/{monitorId}/applications:
     get:
-      operationId: monitor-get-playlist
+      operationId: monitor-get-applications
       summary: Получение плэйлиста монитора
       parameters:
         - name: monitorId
@@ -555,7 +555,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/PlaylistGetResponse"
+                $ref: "#/components/schemas/ApplicationsGetResponse"
         "400": *ref_7
         "401": *ref_8
         "403": *ref_9
@@ -2153,7 +2153,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.30.25
+  version: 2.31.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3456,19 +3456,93 @@ components:
         - playlistId
         - monitors
         - application
-    PlaylistGetResponse:
+    ApplicationApproved:
+      type: string
+      enum:
+        - NotProcessed
+        - Allowed
+        - Denied
+    ApplicationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор взаимодействия
+          format: uuid
+        buyer:
+          description: Покупатель
+          allOf:
+            - $ref: "#/components/schemas/UserResponse"
+        seller:
+          description: Продавец
+          allOf:
+            - $ref: "#/components/schemas/UserResponse"
+        monitor:
+          description: Монитор
+          allOf:
+            - $ref: "#/components/schemas/MonitorResponse"
+        playlist:
+          description: Плэйлист
+          allOf:
+            - $ref: "#/components/schemas/PlaylistResponse"
+        approved:
+          description: Не обработан / Разрешен / Запрещен
+          example: NotProcessed
+          $ref: "#/components/schemas/ApplicationApproved"
+        dateWhen:
+          type: string
+          format: date-time
+          description: Время когда
+          example: "2021-01-01T10:00:00.147Z"
+        dateBefore:
+          type: string
+          format: date-time
+          description: Время до
+          example: "2021-10-01T10:00:00.147Z"
+          nullable: true
+        playlistChange:
+          type: boolean
+          description: "Смена текущего плэйлиста: сразу/когда закончится"
+          example: false
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: "2021-01-01T10:00:00.147Z"
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: "2021-01-01T10:00:00.147Z"
+      required:
+        - id
+        - buyer
+        - seller
+        - monitor
+        - playlist
+        - approved
+        - dateWhen
+        - playlistChange
+        - createdAt
+        - updatedAt
+    ApplicationsGetResponse:
       type: object
       properties:
         status:
           description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
+        count:
+          type: number
+          description: Количество взаимодействий
         data:
-          description: Плэйлист
-          allOf:
-            - $ref: "#/components/schemas/PlaylistResponse"
+          description: Взаимодействия покупателей и продавца
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationResponse"
       required:
         - status
+        - count
         - data
     MonitorUpdateRequest:
       type: object
@@ -4833,6 +4907,20 @@ components:
       required:
         - name
         - files
+    PlaylistGetResponse:
+      type: object
+      properties:
+        status:
+          description: Статус операции
+          example: success
+          $ref: "#/components/schemas/Status"
+        data:
+          description: Плэйлист
+          allOf:
+            - $ref: "#/components/schemas/PlaylistResponse"
+      required:
+        - status
+        - data
     PlaylistUpdateRequest:
       type: object
       properties:
@@ -4898,12 +4986,6 @@ components:
         - countDevices
         - playlists
         - storageSpace
-    ApplicationApproved:
-      type: string
-      enum:
-        - NotProcessed
-        - Allowed
-        - Denied
     ApplicationPartialRequest:
       type: object
       properties:
@@ -5000,88 +5082,6 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-    ApplicationResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор взаимодействия
-          format: uuid
-        buyer:
-          description: Покупатель
-          allOf:
-            - $ref: "#/components/schemas/UserResponse"
-        seller:
-          description: Продавец
-          allOf:
-            - $ref: "#/components/schemas/UserResponse"
-        monitor:
-          description: Монитор
-          allOf:
-            - $ref: "#/components/schemas/MonitorResponse"
-        playlist:
-          description: Плэйлист
-          allOf:
-            - $ref: "#/components/schemas/PlaylistResponse"
-        approved:
-          description: Не обработан / Разрешен / Запрещен
-          example: NotProcessed
-          $ref: "#/components/schemas/ApplicationApproved"
-        dateWhen:
-          type: string
-          format: date-time
-          description: Время когда
-          example: "2021-01-01T10:00:00.147Z"
-        dateBefore:
-          type: string
-          format: date-time
-          description: Время до
-          example: "2021-10-01T10:00:00.147Z"
-          nullable: true
-        playlistChange:
-          type: boolean
-          description: "Смена текущего плэйлиста: сразу/когда закончится"
-          example: false
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
-      required:
-        - id
-        - buyer
-        - seller
-        - monitor
-        - playlist
-        - approved
-        - dateWhen
-        - playlistChange
-        - createdAt
-        - updatedAt
-    ApplicationsGetResponse:
-      type: object
-      properties:
-        status:
-          description: Статус операции
-          example: success
-          $ref: "#/components/schemas/Status"
-        count:
-          type: number
-          description: Количество взаимодействий
-        data:
-          description: Взаимодействия покупателей и продавца
-          type: array
-          items:
-            $ref: "#/components/schemas/ApplicationResponse"
-      required:
-        - status
-        - count
-        - data
     ApplicationGetResponse:
       type: object
       properties:

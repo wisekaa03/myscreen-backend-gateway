@@ -173,22 +173,10 @@ export class WSGateway
           let application: ApplicationEntity[] | null = null;
           if (monitor) {
             [application] = await Promise.all([
-              this.applicationService.find({
-                where: [
-                  {
-                    monitorId: monitor.id,
-                    approved: ApplicationApproved.Allowed,
-                    dateWhen: LessThanOrEqual<Date>(new Date(incoming.date)),
-                    dateBefore: MoreThanOrEqual<Date>(new Date(incoming.date)),
-                  },
-                  {
-                    monitorId: monitor.id,
-                    approved: ApplicationApproved.Allowed,
-                    dateWhen: LessThanOrEqual<Date>(new Date(incoming.date)),
-                    dateBefore: IsNull(),
-                  },
-                ],
-              }),
+              this.applicationService.monitorApplications(
+                monitor.id,
+                incoming.date,
+              ),
               this.monitorService
                 .update(
                   monitor.userId,
