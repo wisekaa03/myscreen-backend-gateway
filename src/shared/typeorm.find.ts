@@ -11,6 +11,8 @@ import {
   SelectQueryBuilder,
   Between,
   In,
+  LessThanOrEqual,
+  MoreThanOrEqual,
 } from 'typeorm';
 
 export class TypeOrmFind {
@@ -101,6 +103,18 @@ export class TypeOrmFind {
             }
             return { ...accWhere, [field]: In(value) };
           }
+          if (typeof value === 'string' && /^>=/.test(value)) {
+            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(2)) };
+          }
+          if (typeof value === 'string' && /^<=/.test(value)) {
+            return { ...accWhere, [field]: LessThanOrEqual(value.slice(2)) };
+          }
+          if (typeof value === 'string' && /^>/.test(value)) {
+            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
+          }
+          if (typeof value === 'string' && /^</.test(value)) {
+            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
+          }
           return { ...accWhere, [field]: value };
         }, {} as Record<string, any>),
       );
@@ -124,6 +138,18 @@ export class TypeOrmFind {
               return { ...accWhere, [field]: Between(value[0], value[1]) };
             }
             return { ...accWhere, [field]: In(value) };
+          }
+          if (typeof value === 'string' && /^>=/.test(value)) {
+            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(2)) };
+          }
+          if (typeof value === 'string' && /^<=/.test(value)) {
+            return { ...accWhere, [field]: LessThanOrEqual(value.slice(2)) };
+          }
+          if (typeof value === 'string' && /^>/.test(value)) {
+            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
+          }
+          if (typeof value === 'string' && /^</.test(value)) {
+            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
           }
           return { ...accWhere, [field]: value };
         }, {} as Record<string, any>)
