@@ -85,7 +85,7 @@ export class ApplicationService {
     monitorId: string,
     date: string | Date = new Date(),
   ) {
-    return this.find({
+    const monitorApplicatons = await this.find({
       where: [
         {
           monitorId,
@@ -100,7 +100,40 @@ export class ApplicationService {
           dateBefore: IsNull(),
         },
       ],
+      order: { updatedAt: 'DESC' },
     });
+
+    const today = new Date(date);
+    let forceReplace = false;
+
+    const expected = monitorApplicatons.filter(
+      ({ dateWhen, dateBefore, playlistChange }) => {
+        if (forceReplace) {
+          return false;
+        }
+        let isExpect = true;
+
+        if (dateBefore) {
+          const date1 = new Date(dateBefore);
+          date1.setSeconds(0, 0);
+
+          isExpect = date1 >= today;
+        }
+
+        if (playlistChange) {
+          const date2 = new Date(dateWhen);
+          date2.setSeconds(0, 0);
+
+          if (today >= date2) {
+            forceReplace = true;
+          }
+        }
+
+        return isExpect;
+      },
+    );
+
+    return expected;
   }
 
   /**
