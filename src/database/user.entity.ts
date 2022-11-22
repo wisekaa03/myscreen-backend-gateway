@@ -184,7 +184,7 @@ export class UserEntity {
   })
   verified!: boolean;
 
-  @Column({ type: 'boolean', default: false, select: false })
+  @Column({ type: 'boolean', default: false })
   @ApiProperty({
     description: 'Демо пользователь',
     example: true,

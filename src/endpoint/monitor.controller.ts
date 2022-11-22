@@ -272,6 +272,14 @@ export class MonitorController {
       if (!monitor) {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
+      // TODO: 1. Забронированное и доступное время для создания заявки
+      // TODO: 1.1. При подачи заявки Рекламодателем нужно проверять нет ли пересечения
+      // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
+      // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
+      // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
+      // if () {
+
+      // }
 
       monitor = await this.monitorService.update(userId, {
         ...monitor,
