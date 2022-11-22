@@ -186,11 +186,11 @@ export class UserEntity {
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
-    description: 'Демо пользователь',
-    example: true,
+    description: 'Демо пользователь (дата когда включится подписка)',
+    example: false,
     required: false,
   })
-  isDemoUser!: boolean;
+  isDemoUser?: boolean;
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
   monitors?: MonitorEntity[];

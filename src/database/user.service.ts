@@ -295,7 +295,6 @@ export class UserService {
         email: '',
         disabled: false,
         verified: true,
-        isDemoUser: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

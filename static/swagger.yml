@@ -4580,8 +4580,8 @@ components:
           example: true
         isDemoUser:
           type: boolean
-          description: Демо пользователь
-          example: true
+          description: Демо пользователь (дата когда включится подписка)
+          example: false
         createdAt:
           description: Время создания
           example:
