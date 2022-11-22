@@ -98,7 +98,7 @@ export class ApplicationController {
     description: 'Успешный ответ',
     type: ApplicationsGetResponse,
   })
-  async getCooperations(
+  async getApplications(
     @Req() { user: { id: userId, role } }: ExpressRequest,
     @Body() { where, select, scope }: ApplicationGetRequest,
   ): Promise<ApplicationsGetResponse> {
@@ -160,7 +160,7 @@ export class ApplicationController {
     description: 'Успешный ответ',
     type: ApplicationGetResponse,
   })
-  async getEditor(
+  async getApplication(
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationGetResponse> {
     const data = await this.applicationService.findOne({

@@ -82,7 +82,7 @@ async function bootstrap() {
     .addTag('playlist', 'Плейлисты')
     .addTag('monitor', 'Мониторы')
     .addTag('editor', 'Редакторы')
-    .addTag('cooperation', 'Взаимодействия покупателей и продавца')
+    .addTag('application', 'Взаимодействия покупателей и продавца')
     .addTag('statistics', 'Cтатистика')
     .addTag('order', 'Заказы')
     .addTag('payment', 'Оплата')
