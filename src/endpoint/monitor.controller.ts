@@ -1,5 +1,5 @@
 import type { Request as ExpressRequest } from 'express';
-import { FindManyOptions, MoreThan } from 'typeorm';
+import { Between, FindManyOptions, In, MoreThan } from 'typeorm';
 import {
   BadRequestException,
   Body,
@@ -26,6 +26,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
+import { isDateString } from 'class-validator';
 import {
   BadRequestError,
   ForbiddenError,
@@ -140,6 +141,29 @@ export class MonitorController {
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
         ...TypeOrmFind.Where(where),
+      };
+    }
+    if (
+      where?.dateWhenApp &&
+      Array.isArray(where.dateWhenApp) &&
+      where.dateWhenApp.length === 2 &&
+      isDateString(where.dateWhenApp[0]) &&
+      isDateString(where.dateWhenApp[1])
+    ) {
+      const applicationsWhen = await this.applicationService.find(
+        {
+          where: {
+            dateWhen: Between(where.dateWhenApp[0], where.dateWhenApp[1]),
+          },
+          select: {
+            monitorId: true,
+          },
+          relations: [],
+        },
+        false,
+      );
+      conditional.where = {
+        id: In(applicationsWhen.map((application) => application.monitorId)),
       };
     }
     const [data, count] = await this.monitorService.findAndCount(

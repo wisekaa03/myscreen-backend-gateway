@@ -87,6 +87,9 @@ export class TypeOrmFind {
     if (Array.isArray(where)) {
       const whereIsNull = where.map((whereField) =>
         Object.entries(whereField).reduce((accWhere, [field, value]) => {
+          if (field === 'dateWhenApp') {
+            return accWhere;
+          }
           if (value === null) {
             return { ...accWhere, [field]: IsNull() };
           }
@@ -123,6 +126,9 @@ export class TypeOrmFind {
 
     const whereIsNull = where
       ? Object.entries(where).reduce((accWhere, [field, value]) => {
+          if (field === 'dateWhenApp') {
+            return accWhere;
+          }
           if (value === null) {
             return { ...accWhere, [field]: IsNull() };
           }

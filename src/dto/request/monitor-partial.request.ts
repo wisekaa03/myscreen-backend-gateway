@@ -15,8 +15,18 @@ export class MonitorPartialRequest extends PartialType(
   ]),
 ) {
   @ApiProperty({
+    description: 'Время начала проигрывания',
+    example: ['2021-01-01', '2022-12-31'],
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString({ strict: false }, { each: true })
+  dateWhenApp?: Array<Date>;
+
+  @ApiProperty({
     description: 'Время создания',
-    example: ['2021-01-01', '2021-12-31'],
+    example: ['2021-01-01', '2022-12-31'],
     isArray: true,
     required: false,
   })
@@ -26,7 +36,7 @@ export class MonitorPartialRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время изменения',
-    example: ['2021-01-01', '2021-12-31'],
+    example: ['2021-01-01', '2022-12-31'],
     isArray: true,
     required: false,
   })

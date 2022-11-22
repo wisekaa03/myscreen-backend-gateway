@@ -2855,11 +2855,19 @@ components:
           type: boolean
           description: Избранный монитор
           example: false
+        dateWhenApp:
+          description: Время начала проигрывания
+          example:
+            - "2021-01-01"
+            - "2022-12-31"
+          type: array
+          items:
+            type: array
         createdAt:
           description: Время создания
           example:
             - "2021-01-01"
-            - "2021-12-31"
+            - "2022-12-31"
           type: array
           items:
             type: array
@@ -2867,7 +2875,7 @@ components:
           description: Время изменения
           example:
             - "2021-01-01"
-            - "2021-12-31"
+            - "2022-12-31"
           type: array
           items:
             type: array
