@@ -265,23 +265,16 @@ export class MonitorController {
       throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
     }
 
-    const dataPromise = attach.monitors.map(async (monitorId) => {
-      let monitor = await this.monitorService.findOne(userId, {
-        where: {
-          id: monitorId,
-        },
-      });
-      if (!monitor) {
-        throw new NotFoundException(`Monitor '${monitorId}' not found`);
-      }
-      // TODO: 1. Забронированное и доступное время для создания заявки
-      // TODO: 1.1. При подачи заявки Рекламодателем нужно проверять нет ли пересечения
-      // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
-      // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
-      // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
-      if (role.includes(UserRoleEnum.Advertiser)) {
+    // TODO: 1. Забронированное и доступное время для создания заявки
+    // TODO: 1.1. При подачи заявки Рекламодателем нужно проверять нет ли пересечения
+    // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
+    // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
+    // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
+    if (role.includes(UserRoleEnum.Advertiser)) {
+      const tryPromise = attach.monitors.map(async (monitorId) => {
         const approved = await this.applicationService.find({
           where: {
+            monitorId,
             dateWhen: attach.application.dateBefore
               ? Between(
                   attach.application.dateWhen,
@@ -294,6 +287,18 @@ export class MonitorController {
         if (approved.length > 0) {
           throw new NotAcceptableException('This time is overlapped');
         }
+      });
+      await Promise.all(tryPromise);
+    }
+
+    const dataPromise = attach.monitors.map(async (monitorId) => {
+      let monitor = await this.monitorService.findOne(userId, {
+        where: {
+          id: monitorId,
+        },
+      });
+      if (!monitor) {
+        throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
 
       monitor = await this.monitorService.update(userId, {
