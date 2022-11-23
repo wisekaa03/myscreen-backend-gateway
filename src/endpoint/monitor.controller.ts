@@ -1,5 +1,5 @@
 import type { Request as ExpressRequest } from 'express';
-import { Between, FindManyOptions, In, MoreThan } from 'typeorm';
+import { Between, FindManyOptions, In, MoreThan, Not } from 'typeorm';
 import {
   BadRequestException,
   Body,
@@ -10,6 +10,7 @@ import {
   HttpCode,
   Inject,
   Logger,
+  NotAcceptableException,
   NotFoundException,
   Param,
   ParseUUIDPipe,
@@ -153,7 +154,8 @@ export class MonitorController {
       const applicationsWhen = await this.applicationService.find(
         {
           where: {
-            dateWhen: Between(where.dateWhenApp[0], where.dateWhenApp[1]),
+            dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
+            approved: Not(ApplicationApproved.Denied),
           },
           select: {
             monitorId: true,
@@ -277,9 +279,22 @@ export class MonitorController {
       // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
       // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
       // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
-      // if () {
-
-      // }
+      if (role.includes(UserRoleEnum.Advertiser)) {
+        const approved = await this.applicationService.find({
+          where: {
+            dateWhen: attach.application.dateBefore
+              ? Between(
+                  attach.application.dateWhen,
+                  attach.application.dateBefore,
+                )
+              : attach.application.dateWhen,
+            approved: Not(ApplicationApproved.Denied),
+          },
+        });
+        if (approved.length > 0) {
+          throw new NotAcceptableException('This time is overlapped');
+        }
+      }
 
       monitor = await this.monitorService.update(userId, {
         ...monitor,
