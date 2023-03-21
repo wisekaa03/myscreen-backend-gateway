@@ -308,6 +308,12 @@ export class FileService {
         Key,
       })
       .promise()
+      .catch((error: any) => {
+        throw new HttpException(
+          `S3 error '${file.name}': ${error?.code || 'Not found'}`,
+          error?.statusCode || 404,
+        );
+      })
       .then((value) => {
         this.logger.debug(
           `The file '${file.id}' head on S3 '${Key}': ${JSON.stringify(value)}`,
@@ -542,7 +548,7 @@ export class FileService {
               );
             });
           })
-          .catch((error) => {
+          .catch((error: unknown) => {
             this.logger.error(`S3 Error headObject: ${JSON.stringify(error)}`);
           });
       }),

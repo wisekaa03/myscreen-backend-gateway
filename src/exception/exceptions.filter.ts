@@ -37,9 +37,15 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
       const response = exception.getResponse();
       this.logger.error(exception.message, exception.stack);
 
-      if (exception instanceof UnauthorizedException) {
+      if (
+        exception instanceof UnauthorizedException ||
+        (exception as any)?.status === 401
+      ) {
         exceptionRule = new UnauthorizedError(exception.message);
-      } else if (exception instanceof BadRequestException) {
+      } else if (
+        exception instanceof BadRequestException ||
+        (exception as any)?.status === 400
+      ) {
         let message = response as string;
         if (typeof response !== 'string') {
           if (typeof (response as any).message !== 'string') {
@@ -49,9 +55,15 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
           }
         }
         exceptionRule = new BadRequestError(message);
-      } else if (exception instanceof ForbiddenException) {
+      } else if (
+        exception instanceof ForbiddenException ||
+        (exception as any)?.status === 403
+      ) {
         exceptionRule = new ForbiddenError(exception.message);
-      } else if (exception instanceof NotFoundException) {
+      } else if (
+        exception instanceof NotFoundException ||
+        (exception as any)?.status === 404
+      ) {
         exceptionRule = new NotFoundError(exception.message);
       } else if (exception instanceof RequestTimeoutException) {
         exceptionRule = new InternalServerError(exception.message);

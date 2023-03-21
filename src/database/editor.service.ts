@@ -204,7 +204,7 @@ export class EditorService {
   /**
    * Update layer
    * @async
-   * @param {UserEntity} user User entity
+   * @param {string} userId User ID
    * @param {number} editorId Editor ID
    * @param {EditorLayerEntity} layer Editor layer entity
    * @param {Partial<EditorLayerEntity>} update Update editor layer
@@ -236,8 +236,8 @@ export class EditorService {
    * Delete layer
    * @async
    * @param {string} userId User ID
-   * @param {EditorEntity} editorID Editor ID
-   * @param {EditorLayerEntity} editorLayer Editor layer entity
+   * @param {EditorEntity} editorId Editor ID
+   * @param {EditorLayerEntity} editorLayerId Editor layer entity
    * @returns {DeleteResult} Result
    */
   async deleteLayer(
@@ -288,11 +288,7 @@ export class EditorService {
             this.logger.error(error, error.stack);
             reject(error);
           });
-      }).catch((error) => {
-        throw new NotFoundException(error);
       });
-    } else {
-      throw new NotFoundException(`S3 error '${file.name}': Not found`);
     }
 
     return layer;
@@ -727,7 +723,8 @@ export class EditorService {
         renderingError,
         renderingPercent: 0,
       });
-      return undefined;
+
+      throw error;
     }
   }
 
