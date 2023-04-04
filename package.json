@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.32.27",
+  "version": "2.33.0",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -33,7 +33,7 @@
     "prepare": "husky install"
   },
   "engines": {
-    "node": ">=16.17.0"
+    "node": ">=16.20.0"
   },
   "resolutions": {
     "**/**/@elastic/elasticsearch": ">=8.6.0",
@@ -54,28 +54,28 @@
     "**/**/minimatch": ">=6.1.6",
     "**/**/multer": ">=1.4.5-lts.1",
     "**/**/node-gyp": ">=9.3.1",
-    "**/**/nopt": ">=7.0.0",
+    "**/**/nopt": ">=7.1.0",
     "**/**/npmlog": ">=6.0.2",
     "**/**/on-finished": ">=2.4.1",
     "**/**/optionator": ">=0.9.1",
     "**/**/readable-stream": ">=4.3.0",
-    "**/**/rimraf": ">=4.1.2",
+    "**/**/rimraf": ">=4.4.1",
     "**/**/pino": ">=8.11.0",
     "**/url/punycode": "^1.3.2",
     "**/**/send": ">=0.18.0",
     "**/**/serve-static": ">=1.15.0",
-    "**/**/split2": ">=4.1.0",
-    "**/**/swagger-ui-dist": ">=4.18.1",
+    "**/**/split2": ">=4.2.0",
+    "**/**/swagger-ui-dist": ">=4.18.2",
     "**/**/through2": ">=4.0.2",
     "**/**/tr46": ">=4.1.1",
-    "**/**/tsconfig-paths": ">=4.1.2",
+    "**/**/tsconfig-paths": ">=4.2.0",
     "**/**/tslib": ">=2.5.0",
     "**/**/typescript": "^4.9.5",
     "**/**/qs": ">=6.11.1",
     "**/**/querystring": ">=0.2.1",
     "**/**/url": ">=0.11.0",
     "**/**/uuid": ">=9.0.0",
-    "**/**/webpack": ">=5.76.2",
+    "**/**/webpack": ">=5.77.0",
     "**/**/ws": ">=8.13.0",
     "**/**/xml2js": ">=0.4.23"
   },
@@ -105,14 +105,12 @@
     "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.0",
     "media-probe": "^1.0.1",
-    "minimatch": ">=6.1.6",
     "ms": "^2.1.3",
     "multer": "^1.4.5-lts.1",
     "multer-media": "^3.1.10",
     "nestjs-mailgun": "^3.1.5",
     "nestjs-pino": "^3.1.2",
     "nestjs-s3": "^1.0.1",
-    "nopt": ">=7.0.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.10.0",
@@ -121,12 +119,9 @@
     "pino-http": "^8.3.3",
     "pino-pretty": "^10.0.0",
     "reflect-metadata": "^0.1.13",
-    "rimraf": ">=4.1.2",
+    "rimraf": "^4.4.1",
     "rxjs": "^7.8.0",
-    "split2": ">=4.1.0",
-    "swagger-ui-dist": ">=4.18.1",
     "swagger-ui-express": "^4.6.2",
-    "tsconfig-paths": ">=4.1.2",
     "typeorm": "^0.3.12",
     "ws": "^8.13.0"
   },
@@ -165,6 +160,6 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^4.9.5",
-    "webpack": ">=5.76.2"
+    "webpack": "^5.77.0"
   }
 }
