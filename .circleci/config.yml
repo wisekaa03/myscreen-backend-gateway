@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - run: sudo apt-get update
-      - run: sudo apt-get install -y rsync curl wget make g++ python build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - run: sudo apt-get install -y rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - checkout
       - run: chmod +x ~/project/myscreen/api-backend/.circleci/*.sh
       - run: ~/project/myscreen/api-backend/.circleci/notify.sh "start"
