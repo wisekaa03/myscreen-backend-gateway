@@ -20,6 +20,7 @@ module.exports = {
   },
   ignorePatterns: ['upload/', '.eslintrc.js'],
   rules: {
+    "import/no-extraneous-dependencies": ["error", {"devDependencies": true, "optionalDependencies": false, "peerDependencies": false}],
     '@typescript-eslint/interface-name-prefix': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',

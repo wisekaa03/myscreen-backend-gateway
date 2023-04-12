@@ -31,7 +31,7 @@ export function IsDateStringOrNull(
       constraints: [options],
       options: validationOptions,
       validator: {
-        validate(value: any, args: ValidationArguments) {
+        validate(value: any /* , args: ValidationArguments */) {
           return value === null || isISO8601(value, options);
         },
         defaultMessage: buildMessage(

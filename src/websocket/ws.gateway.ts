@@ -15,13 +15,11 @@ import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { Observable, of } from 'rxjs';
 
-import { IsNull, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { AuthService } from '../auth/auth.service';
 import { MonitorEntity } from '../database/monitor.entity';
 import { MonitorService } from '../database/monitor.service';
 import { WsExceptionsFilter } from '../exception/ws-exceptions.filter';
 import {
-  ApplicationApproved,
   MonitorStatus,
   PlaylistStatusEnum,
   UserRoleEnum,
