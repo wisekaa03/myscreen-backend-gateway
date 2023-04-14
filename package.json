@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.34.1",
+  "version": "2.34.2",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -36,7 +36,7 @@
     "node": ">=16.19.1"
   },
   "resolutions": {
-    "**/**/@elastic/elasticsearch": ">=8.6.0",
+    "**/**/@elastic/elasticsearch": ">=8.7.0",
     "**/@nestjs/cli/tsconfig-paths": ">=4.1.2",
     "**/**/body-parser": ">=1.20.2",
     "**/**/concat-stream": ">=2.0.0",
@@ -80,7 +80,7 @@
     "**/**/xml2js": ">=0.5.0"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^8.6.0",
+    "@elastic/elasticsearch": "^8.7.0",
     "@nestjs/common": "^9.4.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.4.0",
@@ -92,7 +92,7 @@
     "@nestjs/swagger": "^6.3.0",
     "@nestjs/typeorm": "^9.0.1",
     "@nestjs/websockets": "^9.4.0",
-    "aws-sdk": "^2.1357.0",
+    "aws-sdk": "^2.1358.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
     "debug": "^4.3.4",
@@ -142,7 +142,7 @@
     "@types/passport": "^1.0.12",
     "@types/passport-jwt": "^3.0.8",
     "@types/supertest": "^2.0.12",
-    "@types/validator": "^13.7.14",
+    "@types/validator": "^13.7.15",
     "@types/ws": "^8.5.4",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
