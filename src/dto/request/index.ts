@@ -61,3 +61,5 @@ export * from './application-partial.request';
 export * from './application-get.request';
 export * from './application-create.request';
 export * from './application-update.request';
+export * from './report-device-status.request';
+export * from './report-views.request';

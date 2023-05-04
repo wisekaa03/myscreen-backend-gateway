@@ -2013,64 +2013,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StatisticsResponse"
-        "400":
-          description: Ответ будет таким если с данным что-то не так
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BadRequestError"
-        "401":
-          description: Ответ для незарегистрированного пользователя
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UnauthorizedError"
-        "403":
-          description: Ответ для неавторизованного пользователя
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ForbiddenError"
-        "404":
-          description: Ошибка медиа
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NotFoundError"
-        "500":
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-        "503":
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ServiceUnavailableError"
-      tags:
-        - statistics
-      security:
-        - bearer: []
-  /api/v2/application:
-    post:
-      operationId: applications-get
-      summary: Получение списка заявок
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ApplicationGetRequest"
-      responses:
-        "200":
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApplicationsGetResponse"
         "400": &ref_61
           description: Ответ будет таким если с данным что-то не так
           content:
@@ -2090,7 +2032,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_64
-          description: Ошибка папки
+          description: Ошибка медиа
           content:
             application/json:
               schema:
@@ -2101,9 +2043,129 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-      tags: &ref_66
+        "503": &ref_66
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceUnavailableError"
+      tags: &ref_67
+        - statistics
+      security: &ref_68
+        - bearer: []
+  /api/v2/statistics/deviceStatus:
+    post:
+      operationId: deviceStatus
+      summary: Выставление счетов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportDeviceStatusRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/vnd.ms-excel:
+              encoding:
+                ms_excel:
+                  contentType: application/vnd.ms-excel
+            application/pdf:
+              encoding:
+                pdf:
+                  contentType: application/pdf
+        "400": *ref_61
+        "401": *ref_62
+        "403": *ref_63
+        "404": *ref_64
+        "500": *ref_65
+        "503": *ref_66
+      tags: *ref_67
+      security: *ref_68
+  /api/v2/statistics/reportViews:
+    post:
+      operationId: reportViews
+      summary: Выставление счетов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportViewsRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/vnd.ms-excel:
+              encoding:
+                ms_excel:
+                  contentType: application/vnd.ms-excel
+            application/pdf:
+              encoding:
+                pdf:
+                  contentType: application/pdf
+        "400": *ref_61
+        "401": *ref_62
+        "403": *ref_63
+        "404": *ref_64
+        "500": *ref_65
+        "503": *ref_66
+      tags: *ref_67
+      security: *ref_68
+  /api/v2/application:
+    post:
+      operationId: applications-get
+      summary: Получение списка заявок
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationsGetResponse"
+        "400": &ref_69
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401": &ref_70
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403": &ref_71
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404": &ref_72
+          description: Ошибка папки
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500": &ref_73
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+      tags: &ref_74
         - application
-      security: &ref_67
+      security: &ref_75
         - bearer: []
   /api/v2/application/{applicationId}:
     get:
@@ -2122,13 +2184,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationGetResponse"
-        "400": *ref_61
-        "401": *ref_62
-        "403": *ref_63
-        "404": *ref_64
-        "500": *ref_65
-      tags: *ref_66
-      security: *ref_67
+        "400": *ref_69
+        "401": *ref_70
+        "403": *ref_71
+        "404": *ref_72
+        "500": *ref_73
+      tags: *ref_74
+      security: *ref_75
     patch:
       operationId: application-update
       summary: Изменить заявку
@@ -2151,13 +2213,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationGetResponse"
-        "400": *ref_61
-        "401": *ref_62
-        "403": *ref_63
-        "404": *ref_64
-        "500": *ref_65
-      tags: *ref_66
-      security: *ref_67
+        "400": *ref_69
+        "401": *ref_70
+        "403": *ref_71
+        "404": *ref_72
+        "500": *ref_73
+      tags: *ref_74
+      security: *ref_75
     delete:
       operationId: application-delete
       summary: Удаление заявки
@@ -2174,17 +2236,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_61
-        "401": *ref_62
-        "403": *ref_63
-        "404": *ref_64
-        "500": *ref_65
-      tags: *ref_66
-      security: *ref_67
+        "400": *ref_69
+        "401": *ref_70
+        "403": *ref_71
+        "404": *ref_72
+        "500": *ref_73
+      tags: *ref_74
+      security: *ref_75
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.35.1
+  version: 2.35.2
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2819,7 +2881,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: &ref_68
+          example: &ref_76
             city: Krasnodar
             country: Russia
             street: Krasnaya
@@ -2849,7 +2911,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: &ref_69
+          example: &ref_77
             model: Samsung
             resolution: 1920 x 1080 px
             angle: 0
@@ -2875,7 +2937,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: &ref_70
+          example: &ref_78
             type: Point
             coordinates:
               - 38.97603
@@ -3278,7 +3340,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_68
+          example: *ref_76
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3303,7 +3365,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_69
+          example: *ref_77
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3325,7 +3387,7 @@ components:
           example: "2021-10-01T10:00:00.147Z"
           nullable: true
         location:
-          example: *ref_70
+          example: *ref_78
           allOf:
             - $ref: "#/components/schemas/PointClass"
         favorite:
@@ -3397,7 +3459,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_68
+          example: *ref_76
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3422,11 +3484,11 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_69
+          example: *ref_77
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         location:
-          example: *ref_70
+          example: *ref_78
           allOf:
             - $ref: "#/components/schemas/PointClass"
         code:
@@ -3596,7 +3658,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_68
+          example: *ref_76
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3621,7 +3683,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_69
+          example: *ref_77
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3642,7 +3704,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: *ref_70
+          example: *ref_78
           allOf:
             - $ref: "#/components/schemas/PointClass"
     RenderingStatus:
@@ -3817,7 +3879,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: &ref_71
+          allOf: &ref_79
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -4057,7 +4119,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: *ref_71
+          allOf: *ref_79
       required:
         - id
         - renderingStatus
@@ -5039,6 +5101,48 @@ components:
         - countDevices
         - playlists
         - storageSpace
+    ReportDeviceStatusRequest:
+      type: object
+      properties:
+        format:
+          description: Формат получаемого файла
+          example: xlsx
+          $ref: "#/components/schemas/InvoiceFormat"
+        dateFrom:
+          format: date-time
+          type: string
+          description: Начальная дата
+          example: "2023-05-01"
+        dateTo:
+          format: date-time
+          type: string
+          description: Конечная дата
+          example: "2023-05-01"
+      required:
+        - format
+        - dateFrom
+        - dateTo
+    ReportViewsRequest:
+      type: object
+      properties:
+        format:
+          description: Формат получаемого файла
+          example: xlsx
+          $ref: "#/components/schemas/InvoiceFormat"
+        dateFrom:
+          format: date-time
+          type: string
+          description: Начальная дата
+          example: "2023-05-01"
+        dateTo:
+          format: date-time
+          type: string
+          description: Конечная дата
+          example: "2023-05-01"
+      required:
+        - format
+        - dateFrom
+        - dateTo
     ApplicationPartialRequest:
       type: object
       properties:
