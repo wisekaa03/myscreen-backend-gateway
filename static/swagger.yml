@@ -1710,46 +1710,77 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OrdersGetResponse"
-        "400":
+        "400": &ref_45
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401":
+        "401": &ref_46
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403":
+        "403": &ref_47
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404":
+        "404": &ref_48
           description: Ошибка медиа
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500":
+        "500": &ref_49
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503":
+        "503": &ref_50
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags:
+      tags: &ref_51
         - order
-      security:
+      security: &ref_52
         - bearer: []
+  /api/v2/order/invoice:
+    post:
+      operationId: invoice
+      summary: Выставление счетов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/vnd.ms-excel:
+              encoding:
+                ms_excel:
+                  contentType: application/vnd.ms-excel
+            application/pdf:
+              encoding:
+                pdf:
+                  contentType: application/pdf
+        "400": *ref_45
+        "401": *ref_46
+        "403": *ref_47
+        "404": *ref_48
+        "500": *ref_49
+        "503": *ref_50
+      tags: *ref_51
+      security: *ref_52
   /api/v2/payment:
     post:
       operationId: payments-get
@@ -1826,45 +1857,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistsGetResponse"
-        "400": &ref_45
+        "400": &ref_53
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_46
+        "401": &ref_54
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_47
+        "403": &ref_55
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_48
+        "404": &ref_56
           description: Ошибка медиа
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500": &ref_49
+        "500": &ref_57
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503": &ref_50
+        "503": &ref_58
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags: &ref_51
+      tags: &ref_59
         - playlist
-      security: &ref_52
+      security: &ref_60
         - bearer: []
     put:
       operationId: playlist-create
@@ -1883,14 +1914,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *ref_45
-        "401": *ref_46
-        "403": *ref_47
-        "404": *ref_48
-        "500": *ref_49
-        "503": *ref_50
-      tags: *ref_51
-      security: *ref_52
+        "400": *ref_53
+        "401": *ref_54
+        "403": *ref_55
+        "404": *ref_56
+        "500": *ref_57
+        "503": *ref_58
+      tags: *ref_59
+      security: *ref_60
   /api/v2/playlist/{playlistId}:
     get:
       operationId: playlist-get
@@ -1908,14 +1939,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *ref_45
-        "401": *ref_46
-        "403": *ref_47
-        "404": *ref_48
-        "500": *ref_49
-        "503": *ref_50
-      tags: *ref_51
-      security: *ref_52
+        "400": *ref_53
+        "401": *ref_54
+        "403": *ref_55
+        "404": *ref_56
+        "500": *ref_57
+        "503": *ref_58
+      tags: *ref_59
+      security: *ref_60
     patch:
       operationId: playlist-update
       summary: Обновление плэйлиста
@@ -1938,14 +1969,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *ref_45
-        "401": *ref_46
-        "403": *ref_47
-        "404": *ref_48
-        "500": *ref_49
-        "503": *ref_50
-      tags: *ref_51
-      security: *ref_52
+        "400": *ref_53
+        "401": *ref_54
+        "403": *ref_55
+        "404": *ref_56
+        "500": *ref_57
+        "503": *ref_58
+      tags: *ref_59
+      security: *ref_60
     delete:
       operationId: playlist-delete
       summary: Удаление плэйлиста
@@ -1962,14 +1993,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_45
-        "401": *ref_46
-        "403": *ref_47
-        "404": *ref_48
-        "500": *ref_49
-        "503": *ref_50
-      tags: *ref_51
-      security: *ref_52
+        "400": *ref_53
+        "401": *ref_54
+        "403": *ref_55
+        "404": *ref_56
+        "500": *ref_57
+        "503": *ref_58
+      tags: *ref_59
+      security: *ref_60
   /api/v2/statistics:
     get:
       operationId: statistics
@@ -2040,39 +2071,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationsGetResponse"
-        "400": &ref_53
+        "400": &ref_61
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_54
+        "401": &ref_62
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_55
+        "403": &ref_63
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_56
+        "404": &ref_64
           description: Ошибка папки
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500": &ref_57
+        "500": &ref_65
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-      tags: &ref_58
+      tags: &ref_66
         - application
-      security: &ref_59
+      security: &ref_67
         - bearer: []
   /api/v2/application/{applicationId}:
     get:
@@ -2091,13 +2122,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationGetResponse"
-        "400": *ref_53
-        "401": *ref_54
-        "403": *ref_55
-        "404": *ref_56
-        "500": *ref_57
-      tags: *ref_58
-      security: *ref_59
+        "400": *ref_61
+        "401": *ref_62
+        "403": *ref_63
+        "404": *ref_64
+        "500": *ref_65
+      tags: *ref_66
+      security: *ref_67
     patch:
       operationId: application-update
       summary: Изменить заявку
@@ -2120,13 +2151,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationGetResponse"
-        "400": *ref_53
-        "401": *ref_54
-        "403": *ref_55
-        "404": *ref_56
-        "500": *ref_57
-      tags: *ref_58
-      security: *ref_59
+        "400": *ref_61
+        "401": *ref_62
+        "403": *ref_63
+        "404": *ref_64
+        "500": *ref_65
+      tags: *ref_66
+      security: *ref_67
     delete:
       operationId: application-delete
       summary: Удаление заявки
@@ -2143,17 +2174,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_53
-        "401": *ref_54
-        "403": *ref_55
-        "404": *ref_56
-        "500": *ref_57
-      tags: *ref_58
-      security: *ref_59
+        "400": *ref_61
+        "401": *ref_62
+        "403": *ref_63
+        "404": *ref_64
+        "500": *ref_65
+      tags: *ref_66
+      security: *ref_67
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.35.0
+  version: 2.35.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2788,7 +2819,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: &ref_60
+          example: &ref_68
             city: Krasnodar
             country: Russia
             street: Krasnaya
@@ -2818,7 +2849,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: &ref_61
+          example: &ref_69
             model: Samsung
             resolution: 1920 x 1080 px
             angle: 0
@@ -2844,7 +2875,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: &ref_62
+          example: &ref_70
             type: Point
             coordinates:
               - 38.97603
@@ -3247,7 +3278,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_60
+          example: *ref_68
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3272,7 +3303,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_61
+          example: *ref_69
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3294,7 +3325,7 @@ components:
           example: "2021-10-01T10:00:00.147Z"
           nullable: true
         location:
-          example: *ref_62
+          example: *ref_70
           allOf:
             - $ref: "#/components/schemas/PointClass"
         favorite:
@@ -3366,7 +3397,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_60
+          example: *ref_68
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3391,11 +3422,11 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_61
+          example: *ref_69
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         location:
-          example: *ref_62
+          example: *ref_70
           allOf:
             - $ref: "#/components/schemas/PointClass"
         code:
@@ -3565,7 +3596,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_60
+          example: *ref_68
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3590,7 +3621,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_61
+          example: *ref_69
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3611,7 +3642,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: *ref_62
+          example: *ref_70
           allOf:
             - $ref: "#/components/schemas/PointClass"
     RenderingStatus:
@@ -3786,7 +3817,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: &ref_63
+          allOf: &ref_71
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -4026,7 +4057,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: *ref_63
+          allOf: *ref_71
       required:
         - id
         - renderingStatus
@@ -4725,6 +4756,20 @@ components:
         - status
         - count
         - data
+    InvoiceFormat:
+      type: string
+      enum:
+        - xlsx
+        - pdf
+    InvoiceRequest:
+      type: object
+      properties:
+        format:
+          description: Формат получаемого файла
+          example: xlsx
+          $ref: "#/components/schemas/InvoiceFormat"
+      required:
+        - format
     PaymentRequest:
       type: object
       properties:

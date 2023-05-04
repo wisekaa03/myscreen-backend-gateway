@@ -18,6 +18,7 @@ export * from './folders-delete.request';
 export * from './folders-update.request';
 export * from './folder-create.request';
 export * from './folder-update.request';
+export * from './invoice.request';
 export * from './file.request';
 export * from './file-partial.request';
 export * from './file-upload.request';

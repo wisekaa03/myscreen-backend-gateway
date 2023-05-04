@@ -13,6 +13,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
+import { XlsxModule } from './xlsx/xlsx.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { WSModule } from './websocket/ws.module';
     }),
     DatabaseModule,
     EndpointModule,
+    XlsxModule,
   ],
   providers: [Logger],
 })

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { JwtAuthGuard } from '@/guards';
 import { OrderService } from '@/database/order.service';
+import { XlsxService } from '@/xlsx/xlsx.service';
 import { OrderController } from './order.controller';
 
 export const mockRepository = jest.fn(() => ({
@@ -25,6 +26,10 @@ describe(OrderController.name, () => {
       providers: [
         {
           provide: OrderService,
+          useClass: mockRepository,
+        },
+        {
+          provide: XlsxService,
           useClass: mockRepository,
         },
       ],

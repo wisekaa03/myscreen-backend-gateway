@@ -1,11 +1,16 @@
-import type { Request as ExpressRequest } from 'express';
+import type {
+  Request as ExpressRequest,
+  Response as ExpressResponse,
+} from 'express';
 import {
   Body,
   Controller,
   HttpCode,
+  InternalServerErrorException,
   Logger,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,6 +24,7 @@ import {
   BadRequestError,
   ForbiddenError,
   InternalServerError,
+  InvoiceRequest,
   NotFoundError,
   OrdersGetRequest,
   OrdersGetResponse,
@@ -31,6 +37,8 @@ import { OrderService } from '@/database/order.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/shared/typeorm.find';
+import { XlsxService } from '@/xlsx/xlsx.service';
+import { InvoiceFormat } from '@/enums/invoice-format.enum';
 
 @ApiResponse({
   status: 400,
@@ -74,7 +82,10 @@ import { TypeOrmFind } from '@/shared/typeorm.find';
 export class OrderController {
   logger = new Logger(OrderController.name);
 
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly xlsxService: XlsxService,
+  ) {}
 
   @Post('/')
   @HttpCode(200)
@@ -102,5 +113,55 @@ export class OrderController {
       count,
       data,
     };
+  }
+
+  @Post('invoice')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'invoice',
+    summary: 'Выставление счетов',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    content: {
+      'application/vnd.ms-excel': {
+        encoding: {
+          ms_excel: {
+            contentType: 'application/vnd.ms-excel',
+          },
+        },
+      },
+      'application/pdf': {
+        encoding: {
+          pdf: {
+            contentType: 'application/pdf',
+          },
+        },
+      },
+    },
+  })
+  async invoice(
+    @Req() { user: { id: userId } }: ExpressRequest,
+    @Res() res: ExpressResponse,
+    @Body() { format }: InvoiceRequest,
+  ): Promise<void> {
+    if (format === InvoiceFormat.XLSX) {
+      const data = await this.xlsxService.invoice(userId);
+
+      res.statusCode = 200;
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="invoice.xlsx"',
+      );
+      res.setHeader('Content-Type', 'application/vnd.ms-excel');
+      res.end(data, 'binary');
+      return;
+    }
+
+    // if (format === InvoiceFormat.PDF) {
+    // }
+
+    throw new InternalServerErrorException();
   }
 }
