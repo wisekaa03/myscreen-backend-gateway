@@ -2056,7 +2056,7 @@ paths:
   /api/v2/statistics/deviceStatus:
     post:
       operationId: deviceStatus
-      summary: Выставление счетов
+      summary: Отчёт по статусу устройства
       parameters: []
       requestBody:
         required: true
@@ -2087,7 +2087,7 @@ paths:
   /api/v2/statistics/reportViews:
     post:
       operationId: reportViews
-      summary: Выставление счетов
+      summary: Отчёт по показам
       parameters: []
       requestBody:
         required: true

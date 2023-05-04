@@ -11,6 +11,7 @@ export class XlsxService {
 
   /**
    * Invoice
+   *
    * @param userId
    * @returns Buffer XLSX file buffer
    */
@@ -29,6 +30,7 @@ export class XlsxService {
 
   /**
    * Report on device status
+   *
    * @param userId
    * @returns Buffer XLSX file buffer
    */
@@ -55,6 +57,7 @@ export class XlsxService {
 
   /**
    * Report on views
+   *
    * @param userId
    * @returns Buffer XLSX file buffer
    */

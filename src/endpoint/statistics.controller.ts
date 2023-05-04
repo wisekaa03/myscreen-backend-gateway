@@ -134,7 +134,7 @@ export class StatisticsController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'deviceStatus',
-    summary: 'Выставление счетов',
+    summary: 'Отчёт по статусу устройства',
   })
   @ApiResponse({
     status: 200,
@@ -188,7 +188,7 @@ export class StatisticsController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'reportViews',
-    summary: 'Выставление счетов',
+    summary: 'Отчёт по показам',
   })
   @ApiResponse({
     status: 200,
