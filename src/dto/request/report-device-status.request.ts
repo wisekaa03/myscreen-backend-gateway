@@ -17,11 +17,11 @@ export class ReportDeviceStatusRequest {
 
   @ApiProperty({
     description: 'Начальная дата',
-    example: '2023-05-01',
+    example: '2022-05-01',
     required: true,
   })
   @IsNotEmpty()
-  @IsDateString()
+  @IsDateString({ strict: false })
   dateFrom!: Date;
 
   @ApiProperty({
@@ -30,6 +30,6 @@ export class ReportDeviceStatusRequest {
     required: true,
   })
   @IsNotEmpty()
-  @IsDateString()
+  @IsDateString({ strict: false })
   dateTo!: Date;
 }

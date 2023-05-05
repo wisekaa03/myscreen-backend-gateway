@@ -2246,7 +2246,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.35.4
+  version: 2.35.5
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -5112,7 +5112,7 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-05-01"
+          example: "2022-05-01"
         dateTo:
           format: date-time
           type: string
@@ -5133,7 +5133,7 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-05-01"
+          example: "2022-05-01"
         dateTo:
           format: date-time
           type: string
