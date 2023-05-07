@@ -1,4 +1,4 @@
-import { Readable } from 'node:stream';
+import internal from 'node:stream';
 import { parse as pathParse } from 'node:path';
 import type {
   Request as ExpressRequest,
@@ -12,7 +12,6 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpException,
   Logger,
   NotFoundException,
   Param,
@@ -345,49 +344,27 @@ export class FileController {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
 
-    await this.fileService
-      .getS3Object(file)
-      .on('httpHeaders', (statusCode, headers, awsResponse) => {
-        if (statusCode === 200) {
-          res.setHeader(
-            'Content-Length',
-            headers['content-length'] ||
-              String(file?.filesize) ||
-              String(file?.meta.filesize),
-          );
-          res.setHeader('Cache-Control', 'private, max-age=31536000');
-          res.setHeader('Content-Type', headers['content-type']);
-          res.setHeader('Last-Modified', headers['last-modified']);
-          res.setHeader(
-            'Content-Disposition',
-            `attachment;filename=${encodeURIComponent(file?.name || '')}`,
-          );
-          if (!res.headersSent) {
-            res.flushHeaders();
-          }
-          (awsResponse.httpResponse.createUnbufferedStream() as Readable).pipe(
-            res,
-          );
-        } else {
-          throw new HttpException(
-            awsResponse.error || awsResponse.httpResponse.statusMessage,
-            awsResponse.httpResponse.statusCode,
-          );
-        }
-      })
-      .promise()
-      .then(() => {
-        this.logger.debug(`The file '${file?.name}' has been downloaded`);
-      })
-      .catch((error: unknown) => {
-        this.logger.error(`S3 Error: ${JSON.stringify(error)}`, error);
-        if (error instanceof HttpException) {
-          res.writeHead(error.getStatus(), error.message || 'Not Found');
-        } else {
-          res.writeHead(404, 'Not Found');
-        }
-        res.send();
-      });
+    const data = await this.fileService.getS3Object(file);
+    if (data.Body instanceof internal.Readable) {
+      res.setHeader(
+        'Content-Length',
+        String(file?.filesize) || String(file?.meta.filesize),
+      );
+      res.setHeader('Cache-Control', 'private, max-age=31536000');
+      // res.setHeader('Content-Type', headers['content-type']);
+      // res.setHeader('Last-Modified', headers['last-modified']);
+      res.setHeader(
+        'Content-Disposition',
+        `attachment;filename=${encodeURIComponent(file?.name || '')}`,
+      );
+      if (!res.headersSent) {
+        res.flushHeaders();
+      }
+
+      this.logger.debug(`The file '${file?.name}' has been downloaded`);
+
+      data.Body.pipe(res);
+    }
   }
 
   @Post('/:fileId')

@@ -4,6 +4,7 @@ import {
   promises as fs,
   ReadStream,
 } from 'node:fs';
+import internal from 'stream';
 import path from 'node:path';
 import child from 'node:child_process';
 import util from 'node:util';
@@ -278,17 +279,11 @@ export class EditorService {
     }
 
     if (await this.fileService.headS3Object(file)) {
-      await new Promise<void>((resolve, reject) => {
-        this.fileService
-          .getS3Object(file)
-          .createReadStream()
-          .pipe(createWriteStream(filePath))
-          .on('finish', () => resolve())
-          .on('error', (error) => {
-            this.logger.error(error, error.stack);
-            reject(error);
-          });
-      });
+      const outputStream = createWriteStream(filePath);
+      const data = await this.fileService.getS3Object(file);
+      if (data.Body instanceof internal.Readable) {
+        data.Body.pipe(outputStream);
+      }
     }
 
     return layer;

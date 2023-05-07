@@ -8,10 +8,9 @@ describe('isAWSError', () => {
   it('isAWSError: true', () => {
     expect(
       isAWSError({
-        region: 'us-east-1',
-        code: 200,
-        message: 'Body message',
-        retryDelay: 10,
+        $response: 'us-east-1',
+        $metadata: 200,
+        $fault: 'Body message',
       }),
     ).toBe(true);
   });

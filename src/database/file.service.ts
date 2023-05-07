@@ -1,7 +1,6 @@
 import { createReadStream, promises as fs, createWriteStream } from 'node:fs';
-import { Readable } from 'node:stream';
+import internal from 'node:stream';
 import { join as pathJoin, parse as pathParse } from 'node:path';
-import { PromiseResult } from 'aws-sdk/lib/request';
 import {
   BadRequestException,
   ConflictException,
@@ -16,6 +15,13 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import {
+  CopyObjectOutput,
+  DeleteObjectOutput,
+  GetObjectCommand,
+  GetObjectCommandOutput,
+  HeadObjectOutput,
+} from '@aws-sdk/client-s3';
 import { InjectS3, S3 } from 'nestjs-s3';
 import {
   Repository,
@@ -25,7 +31,6 @@ import {
   In,
 } from 'typeorm';
 
-// import { isAWSError } from '@/shared/is-aws-error';
 import { FileCategory, VideoType } from '@/enums';
 import { ConflictData, FileUploadRequest } from '@/dto';
 import { getS3Name } from '@/shared/get-name';
@@ -152,11 +157,9 @@ export class FileService {
             CopySource: `${this.bucket}/${CopySource}`,
             MetadataDirective: 'REPLACE',
           })
-          .promise()
           .then(() =>
             this.s3Service
               .deleteObject({ Bucket: this.bucket, Key: CopySource })
-              .promise()
               .catch((error) => {
                 this.logger.error('S3 Error deleteObject:', error);
               }),
@@ -265,19 +268,17 @@ export class FileService {
 
         const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
         try {
-          const promise = await this.s3Service
-            .upload({
-              Bucket: this.bucket,
-              Key,
-              ContentType: file.mimetype,
-              Body: createReadStream(file.path),
-            })
-            .promise();
+          const promise = await this.s3Service.putObject({
+            Bucket: this.bucket,
+            Key,
+            ContentType: file.mimetype,
+            Body: createReadStream(file.path),
+          });
           if (!promise) {
             throw new Error('Failed to upload');
           }
           this.logger.debug(
-            `The file '${file.path}' has been uploaded on S3 '${promise.Key}'`,
+            `The file '${file.path}' has been uploaded on S3 '${promise.SSEKMSKeyId}'`,
           );
         } catch (error) {
           this.logger.error('S3 Error: upload', error);
@@ -298,16 +299,13 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.HeadObjectOutput, AWS.AWSError>} S3 headers
    */
-  async headS3Object(
-    file: FileEntity,
-  ): Promise<PromiseResult<AWS.S3.HeadObjectOutput, AWS.AWSError>> {
+  async headS3Object(file: FileEntity): Promise<HeadObjectOutput> {
     const Key = `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`;
     return this.s3Service
       .headObject({
         Bucket: this.bucket,
         Key,
       })
-      .promise()
       .catch((error: any) => {
         throw new HttpException(
           `S3 error '${file.name}': ${error?.code || 'Not found'}`,
@@ -327,14 +325,14 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>} S3 object
    */
-  getS3Object(
-    file: FileEntity,
-  ): AWS.Request<AWS.S3.GetObjectOutput, AWS.AWSError> {
+  getS3Object(file: FileEntity): Promise<GetObjectCommandOutput> {
     const Key = `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`;
-    return this.s3Service.getObject({
-      Bucket: this.bucket,
-      Key,
-    });
+    return this.s3Service.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key,
+      }),
+    );
   }
 
   /**
@@ -342,20 +340,17 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.DeleteObjectOutput, AWS.AWSError>} S3 object
    */
-  async deleteS3Object(
-    file: FileEntity,
-  ): Promise<PromiseResult<AWS.S3.DeleteObjectOutput, AWS.AWSError>> {
+  async deleteS3Object(file: FileEntity): Promise<DeleteObjectOutput> {
     const Key = `${file.folder.id}/${file.hash}-${getS3Name(file.name)}`;
     return this.s3Service
       .deleteObject({
         Bucket: this.bucket,
         Key,
       })
-      .promise()
       .then((value) => {
         this.logger.debug(
           `The file '${Key}' has been deleted on S3: ${
-            value.$response.data?.DeleteMarker || true
+            value.DeleteMarker || true
           }`,
         );
         return value;
@@ -370,7 +365,7 @@ export class FileService {
   async copyS3Object(
     update: FolderEntity,
     file: FileEntity,
-  ): Promise<PromiseResult<AWS.S3.CopyObjectOutput, AWS.AWSError>> {
+  ): Promise<CopyObjectOutput> {
     const s3Name = getS3Name(file.name);
     const Key = `${update.id}/${file.hash}-${s3Name}`;
     const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
@@ -382,7 +377,6 @@ export class FileService {
         Key,
         MetadataDirective: 'REPLACE',
       })
-      .promise()
       .then((fileUpdated) => {
         this.logger.debug(
           `The file has been copied on S3: from ${CopySource} to ${Key}`,
@@ -571,23 +565,11 @@ export class FileService {
 
     if (await fs.access(outPath).catch(() => true)) {
       const filenameStream = createWriteStream(filename);
-      await this.getS3Object(file)
-        .on('httpHeaders', (statusCode, headers, awsResponse) => {
-          if (statusCode === 200) {
-            (
-              awsResponse.httpResponse.createUnbufferedStream() as Readable
-            ).pipe(filenameStream);
-          } else {
-            throw new HttpException(
-              awsResponse.error || awsResponse.httpResponse.statusMessage,
-              awsResponse.httpResponse.statusCode,
-            );
-          }
-        })
-        .promise()
-        .then(() => {
-          this.logger.debug(`The file ${file.name} has been downloaded`);
-        });
+      const data = await this.getS3Object(file);
+      if (data.Body instanceof internal.Readable) {
+        data.Body.pipe(filenameStream);
+        this.logger.debug(`The file ${file.name} has been downloaded`);
+      }
     }
 
     await FfMpegPreview(file.videoType, file.meta, filename, outPath).catch(
