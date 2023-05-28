@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MonitorService } from '../database/monitor.service';
-import { XlsxService } from './xlsx.service';
+import { PrintService } from './print.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -14,13 +14,13 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(XlsxService.name, () => {
-  let xlsxService: XlsxService;
+describe(PrintService.name, () => {
+  let xlsxService: PrintService;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        XlsxService,
+        PrintService,
         {
           provide: MonitorService,
           useClass: mockRepository,
@@ -28,7 +28,7 @@ describe(XlsxService.name, () => {
       ],
     }).compile();
 
-    xlsxService = module.get<XlsxService>(XlsxService);
+    xlsxService = module.get<PrintService>(PrintService);
   });
 
   it('should be defined', () => {

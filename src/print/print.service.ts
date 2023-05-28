@@ -6,10 +6,11 @@ import {
 import XLSX from 'xlsx-js-style';
 import { CellObject } from 'xlsx-js-style/types';
 import { MonitorService } from '@/database/monitor.service';
+import { InvoiceFormat } from '@/enums/invoice-format.enum';
 
 @Injectable()
-export class XlsxService {
-  logger = new Logger(XlsxService.name);
+export class PrintService {
+  logger = new Logger(PrintService.name);
 
   constructor(private readonly monitorService: MonitorService) {}
 
@@ -19,7 +20,7 @@ export class XlsxService {
    * @param userId
    * @returns Buffer XLSX file buffer
    */
-  async invoice(userId: string): Promise<Buffer> {
+  async invoice(userId: string, format: InvoiceFormat): Promise<Buffer> {
     const options: XLSX.WritingOptions = { bookType: 'xlsx', type: 'buffer' };
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet<CellObject>([
@@ -38,11 +39,13 @@ export class XlsxService {
    */
   async reportDeviceStatus({
     userId,
+    format,
     dateFrom,
     dateTo,
     monitorId,
   }: {
     userId: string;
+    format: InvoiceFormat;
     dateFrom: Date;
     dateTo: Date;
     monitorId?: string;
@@ -312,10 +315,12 @@ export class XlsxService {
    */
   async reportViews({
     userId,
+    format,
     dateFrom,
     dateTo,
   }: {
     userId: string;
+    format: InvoiceFormat;
     dateFrom: Date;
     dateTo: Date;
   }): Promise<Buffer> {

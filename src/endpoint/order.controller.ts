@@ -37,7 +37,7 @@ import { OrderService } from '@/database/order.service';
 import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/shared/typeorm.find';
-import { XlsxService } from '@/xlsx/xlsx.service';
+import { PrintService } from '@/print/print.service';
 import { InvoiceFormat } from '@/enums/invoice-format.enum';
 
 @ApiResponse({
@@ -84,7 +84,7 @@ export class OrderController {
 
   constructor(
     private readonly orderService: OrderService,
-    private readonly xlsxService: XlsxService,
+    private readonly printService: PrintService,
   ) {}
 
   @Post('/')
@@ -146,22 +146,22 @@ export class OrderController {
     @Res() res: ExpressResponse,
     @Body() { format }: InvoiceRequest,
   ): Promise<void> {
-    if (format === InvoiceFormat.XLSX) {
-      const data = await this.xlsxService.invoice(userId);
+    const data = await this.printService.invoice(userId, format);
 
-      res.statusCode = 200;
+    res.statusCode = 200;
+    if (format === InvoiceFormat.PDF) {
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="invoice.pdf"',
+      );
+      res.setHeader('Content-Type', 'application/pdf');
+    } else {
       res.setHeader(
         'Content-Disposition',
         'attachment; filename="invoice.xlsx"',
       );
       res.setHeader('Content-Type', 'application/vnd.ms-excel');
-      res.end(data, 'binary');
-      return;
     }
-
-    // if (format === InvoiceFormat.PDF) {
-    // }
-
-    throw new InternalServerErrorException();
+    res.end(data, 'binary');
   }
 }

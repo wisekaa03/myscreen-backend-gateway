@@ -41,7 +41,7 @@ import { UserService } from '../database/user.service';
 import { WSGateway } from '../websocket/ws.gateway';
 import { PlaylistService } from '../database/playlist.service';
 import { MonitorService } from '../database/monitor.service';
-import { XlsxService } from '../xlsx/xlsx.service';
+import { PrintService } from '../print/print.service';
 
 @ApiResponse({
   status: 400,
@@ -89,7 +89,7 @@ export class StatisticsController {
     private readonly userService: UserService,
     private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
-    private readonly xlsxService: XlsxService,
+    private readonly printService: PrintService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -161,27 +161,30 @@ export class StatisticsController {
     @Res() res: ExpressResponse,
     @Body() { format, dateFrom, dateTo }: ReportDeviceStatusRequest,
   ): Promise<void> {
-    if (format === InvoiceFormat.XLSX) {
-      const data = await this.xlsxService.reportDeviceStatus({
-        userId,
-        dateFrom,
-        dateTo,
-      });
+    const data = await this.printService.reportDeviceStatus({
+      userId,
+      format,
+      dateFrom,
+      dateTo,
+    });
 
-      res.statusCode = 200;
+    res.statusCode = 200;
+
+    if (format === InvoiceFormat.PDF) {
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="reportDeviceStatus.pdf"',
+      );
+      res.setHeader('Content-Type', 'application/pdf');
+    } else {
       res.setHeader(
         'Content-Disposition',
         'attachment; filename="reportDeviceStatus.xlsx"',
       );
       res.setHeader('Content-Type', 'application/vnd.ms-excel');
-      res.end(data, 'binary');
-      return;
     }
 
-    // if (format === InvoiceFormat.PDF) {
-    // }
-
-    throw new InternalServerErrorException();
+    res.end(data, 'binary');
   }
 
   @Post('reportViews')
@@ -215,26 +218,29 @@ export class StatisticsController {
     @Res() res: ExpressResponse,
     @Body() { format, dateFrom, dateTo }: ReportViewsRequest,
   ): Promise<void> {
-    if (format === InvoiceFormat.XLSX) {
-      const data = await this.xlsxService.reportViews({
-        userId,
-        dateFrom,
-        dateTo,
-      });
+    const data = await this.printService.reportViews({
+      userId,
+      format,
+      dateFrom,
+      dateTo,
+    });
 
-      res.statusCode = 200;
+    res.statusCode = 200;
+
+    if (format === InvoiceFormat.PDF) {
+      res.setHeader(
+        'Content-Disposition',
+        'attachment; filename="reportViews.pdf"',
+      );
+      res.setHeader('Content-Type', 'application/pdf');
+    } else {
       res.setHeader(
         'Content-Disposition',
         'attachment; filename="reportViews.xlsx"',
       );
       res.setHeader('Content-Type', 'application/vnd.ms-excel');
-      res.end(data, 'binary');
-      return;
     }
 
-    // if (format === InvoiceFormat.PDF) {
-    // }
-
-    throw new InternalServerErrorException();
+    res.end(data, 'binary');
   }
 }

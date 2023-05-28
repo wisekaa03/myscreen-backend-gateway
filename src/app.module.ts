@@ -13,7 +13,7 @@ import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
-import { XlsxModule } from './xlsx/xlsx.module';
+import { PrintModule } from './print/print.module';
 
 @Module({
   imports: [
@@ -73,7 +73,7 @@ import { XlsxModule } from './xlsx/xlsx.module';
     }),
     DatabaseModule,
     EndpointModule,
-    XlsxModule,
+    PrintModule,
   ],
   providers: [Logger],
 })
