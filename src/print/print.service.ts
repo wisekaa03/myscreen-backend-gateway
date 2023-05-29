@@ -4,9 +4,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import XLSX from 'xlsx-js-style';
-import { CellObject } from 'xlsx-js-style/types';
 import { MonitorService } from '@/database/monitor.service';
 import { InvoiceFormat } from '@/enums/invoice-format.enum';
+import { printSpecific } from './print.specific';
 
 @Injectable()
 export class PrintService {
@@ -22,165 +22,11 @@ export class PrintService {
    */
   async invoice(userId: string, format: InvoiceFormat): Promise<Buffer> {
     const options: XLSX.WritingOptions = { bookType: 'xlsx', type: 'buffer' };
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet<CellObject>([
-      [
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        {
-          v: 'Адрес: 119021, Россия, г. Москва, ул. Льва Толстого, д. 16',
-          t: 's',
-          s: { alignment: { horizontal: 'right' }, font: { bold: true } },
-        },
-      ],
-      [
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        {
-          v: 'тел. (495) 739-70-00',
-          t: 's',
-          s: { font: { bold: true }, alignment: { horizontal: 'right' } },
-        },
-      ],
-      [
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        {
-          v: 'факс. (495) 739-70-70',
-          t: 's',
-          s: { font: { bold: true }, alignment: { horizontal: 'right' } },
-        },
-      ],
-      [],
-      [
-        { v: '', t: 's' },
-        {
-          v: 'Образец заполнения платежного поручения',
-          t: 's',
-          s: { font: { bold: true }, alignment: { horizontal: 'center' } },
-        },
-      ],
-      [],
-      [
-        { v: '', t: 's' },
-        { v: 'Получатель', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: 'Сч. №', t: 's', s: { alignment: { vertical: 'top' } } },
-        {
-          v: '40702810600014307627',
-          t: 's',
-          s: { alignment: { vertical: 'top' } },
-        },
-      ],
-      [
-        { v: '', t: 's' },
-        { v: 'ИНН/КПП 7736207543/997750001 ООО "ЯНДЕКС"', t: 's' },
-      ],
-      [
-        { v: '', t: 's' },
-        { v: 'Банк получателя', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: 'БИК', t: 's' },
-        { v: '44525545', t: 's' },
-      ],
-      [
-        { v: '', t: 's' },
-        {
-          v: 'АО Юникредит Банк, 119034, г. Москва, Пречистенская наб., д. 9 ',
-          t: 's',
-          s: { alignment: { wrapText: true } },
-        },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: 'Сч. №', t: 's', s: { alignment: { vertical: 'top' } } },
-        {
-          v: '30101810300000000000000',
-          t: 's',
-          s: { alignment: { vertical: 'top' } },
-        },
-      ],
-      [],
-      [
-        { v: '', t: 's' },
-        {
-          v: 'Условия для расчетов',
-          t: 's',
-          s: { font: { bold: true, underline: true } },
-        },
-      ],
-      [],
-      [
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        { v: '1. Счет действителен в течение пяти банковских дней.', t: 's' },
-      ],
-      [
-        { v: '', t: 's' },
-        { v: '', t: 's' },
-        {
-          v: '2. В назначении платежа, пожалуйста, указывайте номер счета.',
-          t: 's',
-        },
-      ],
-      [],
-      [
-        { v: '', t: 's' },
-        {
-          v: 'СЧЕТ № Б-2438137758-1 от 27 февраля 2020 г.',
-          t: 's',
-          s: { font: { bold: true }, alignment: { horizontal: 'center' } },
-        },
-      ],
-      [],
-    ]);
-    ws['!cols'] = [
-      { wch: 5 },
-      { wch: 5 },
-      { wch: 19 },
-      { wch: 11 },
-      { wch: 15 },
-      { wch: 11 },
-      { wch: 11 },
-      { wch: 15 },
-    ];
-    ws['!rows'] = [{}, {}, {}, {}, {}, {}, {}, {}, {}, { hpx: 24 }];
-    ws['!merges'] = [
-      { s: { r: 4, c: 1 }, e: { r: 4, c: 7 } },
-
-      { s: { r: 6, c: 1 }, e: { r: 6, c: 4 } },
-      { s: { r: 6, c: 5 }, e: { r: 7, c: 5 } },
-      { s: { r: 6, c: 6 }, e: { r: 7, c: 7 } },
-
-      { s: { r: 7, c: 1 }, e: { r: 7, c: 4 } },
-
-      { s: { r: 8, c: 1 }, e: { r: 8, c: 4 } },
-      { s: { r: 8, c: 6 }, e: { r: 8, c: 7 } },
-
-      { s: { r: 9, c: 1 }, e: { r: 9, c: 4 } },
-      { s: { r: 9, c: 6 }, e: { r: 9, c: 7 } },
-
-      { s: { r: 16, c: 1 }, e: { r: 16, c: 7 } },
-    ];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(printSpecific.invoice.xls);
+    ws['!cols'] = printSpecific.invoice.cols;
+    ws['!rows'] = printSpecific.invoice.rows;
+    ws['!merges'] = printSpecific.invoice.merges;
     XLSX.utils.book_append_sheet(wb, ws, 'Счёт');
 
     return XLSX.writeXLSX(wb, options);
@@ -215,8 +61,8 @@ export class PrintService {
       bookSST: false,
       type: 'binary',
     };
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet<CellObject>([
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([
       [
         {
           v: 'Отчет по статусам устройств',
