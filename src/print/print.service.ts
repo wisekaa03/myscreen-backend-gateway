@@ -2,13 +2,14 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  Scope,
 } from '@nestjs/common';
 import XLSX from 'xlsx-js-style';
 import { MonitorService } from '@/database/monitor.service';
 import { InvoiceFormat } from '@/enums/invoice-format.enum';
 import { printSpecific } from './print.specific';
 
-@Injectable()
+@Injectable({ scope: Scope.DEFAULT })
 export class PrintService {
   logger = new Logger(PrintService.name);
 

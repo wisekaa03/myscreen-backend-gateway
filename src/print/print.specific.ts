@@ -430,7 +430,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
           },
         },
         {
-          v: '5000',
+          v: 5000,
           t: 'n',
           s: {
             alignment: { horizontal: 'right' },
@@ -515,7 +515,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
         { v: '', t: 's' },
         { v: '', t: 's' },
         { v: '', t: 's' },
-        { v: '', t: 's' },
+        { l: { Target: 'https://ya.ru/yandex.png' }, t: 's' },
         { v: '(Л.Ф. Савков)', t: 's' },
       ],
       [
