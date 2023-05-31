@@ -35,7 +35,7 @@ import {
 } from '../dto/index';
 import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
 import { Status, UserRoleEnum } from '../enums/index';
-import { InvoiceFormat } from '../enums/invoice-format.enum';
+import { SpecificFormat } from '@/enums/invoice-format.enum';
 import { StatisticsResponse } from '../dto/response/statistics.response';
 import { UserService } from '../database/user.service';
 import { WSGateway } from '../websocket/ws.gateway';
@@ -169,19 +169,22 @@ export class StatisticsController {
     });
 
     res.statusCode = 200;
+    switch (format) {
+      case SpecificFormat.PDF:
+        res.setHeader(
+          'Content-Disposition',
+          'attachment; filename="report-device-status.pdf"',
+        );
+        res.setHeader('Content-Type', 'application/pdf');
+        break;
 
-    if (format === InvoiceFormat.PDF) {
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="reportDeviceStatus.pdf"',
-      );
-      res.setHeader('Content-Type', 'application/pdf');
-    } else {
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="reportDeviceStatus.xlsx"',
-      );
-      res.setHeader('Content-Type', 'application/vnd.ms-excel');
+      case SpecificFormat.XLSX:
+      default:
+        res.setHeader(
+          'Content-Disposition',
+          'attachment; filename="report-device-status.xlsx"',
+        );
+        res.setHeader('Content-Type', 'application/vnd.ms-excel');
     }
 
     res.end(data, 'binary');
@@ -226,19 +229,22 @@ export class StatisticsController {
     });
 
     res.statusCode = 200;
+    switch (format) {
+      case SpecificFormat.PDF:
+        res.setHeader(
+          'Content-Disposition',
+          'attachment; filename="report-views.pdf"',
+        );
+        res.setHeader('Content-Type', 'application/pdf');
+        break;
 
-    if (format === InvoiceFormat.PDF) {
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="reportViews.pdf"',
-      );
-      res.setHeader('Content-Type', 'application/pdf');
-    } else {
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="reportViews.xlsx"',
-      );
-      res.setHeader('Content-Type', 'application/vnd.ms-excel');
+      case SpecificFormat.XLSX:
+      default:
+        res.setHeader(
+          'Content-Disposition',
+          'attachment; filename="report-views.xlsx"',
+        );
+        res.setHeader('Content-Type', 'application/vnd.ms-excel');
     }
 
     res.end(data, 'binary');

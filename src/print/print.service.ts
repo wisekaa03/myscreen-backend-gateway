@@ -4,9 +4,9 @@ import {
   Logger,
   Scope,
 } from '@nestjs/common';
-import XLSX from 'xlsx-js-style';
+import excelJS from 'exceljs';
 import { MonitorService } from '@/database/monitor.service';
-import { InvoiceFormat } from '@/enums/invoice-format.enum';
+import { SpecificFormat } from '@/enums/invoice-format.enum';
 import { printSpecific } from './print.specific';
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -21,17 +21,18 @@ export class PrintService {
    * @param userId
    * @returns Buffer XLSX file buffer
    */
-  async invoice(userId: string, format: InvoiceFormat): Promise<Buffer> {
-    const options: XLSX.WritingOptions = { bookType: 'xlsx', type: 'buffer' };
-    const wb = XLSX.utils.book_new();
-    const { worksheet, cols, rows, merges } = printSpecific.invoice.xls({});
-    const ws = XLSX.utils.aoa_to_sheet(worksheet);
-    ws['!cols'] = cols;
-    ws['!rows'] = rows;
-    ws['!merges'] = merges;
-    XLSX.utils.book_append_sheet(wb, ws, 'Счёт');
+  async invoice(
+    userId: string,
+    format: SpecificFormat,
+  ): Promise<excelJS.Buffer> {
+    switch (format) {
+      case SpecificFormat.PDF:
+        return printSpecific.invoice.pdf({});
 
-    return XLSX.writeXLSX(wb, options);
+      case SpecificFormat.XLSX:
+      default:
+        return printSpecific.invoice.xls({});
+    }
   }
 
   /**
@@ -48,33 +49,24 @@ export class PrintService {
     monitorId,
   }: {
     userId: string;
-    format: InvoiceFormat;
+    format: SpecificFormat;
     dateFrom: Date;
     dateTo: Date;
     monitorId?: string;
-  }): Promise<Buffer> {
+  }): Promise<excelJS.Buffer> {
     // const monitors = await this.monitorService.find(userId, {
     //   // TODO: fix this
     //   relations: [],
     // });
 
-    const options: XLSX.WritingOptions = {
-      bookType: 'xlsx',
-      bookSST: false,
-      type: 'binary',
-    };
-    const wb = XLSX.utils.book_new();
-    const { worksheet, cols, rows, merges } = printSpecific.deviceStatus.xls({
-      dateFrom,
-      dateTo,
-    });
-    const ws = XLSX.utils.aoa_to_sheet(worksheet);
-    ws['!cols'] = cols;
-    ws['!rows'] = rows;
-    ws['!merges'] = merges;
-    XLSX.utils.book_append_sheet(wb, ws, 'Отчёт по статусу устройства');
+    switch (format) {
+      case SpecificFormat.PDF:
+        return printSpecific.deviceStatus.pdf({ dateFrom, dateTo });
 
-    return XLSX.writeXLSX(wb, options);
+      case SpecificFormat.XLSX:
+      default:
+        return printSpecific.deviceStatus.xls({ dateFrom, dateTo });
+    }
   }
 
   /**
@@ -90,22 +82,17 @@ export class PrintService {
     dateTo,
   }: {
     userId: string;
-    format: InvoiceFormat;
+    format: SpecificFormat;
     dateFrom: Date;
     dateTo: Date;
-  }): Promise<Buffer> {
-    const options: XLSX.WritingOptions = { bookType: 'xlsx', type: 'buffer' };
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    const { worksheet, cols, rows, merges } = printSpecific.views.xls({
-      dateFrom,
-      dateTo,
-    });
-    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(worksheet);
-    ws['!cols'] = cols;
-    ws['!rows'] = rows;
-    ws['!merges'] = merges;
-    XLSX.utils.book_append_sheet(wb, ws, 'Отчёт по показам');
+  }): Promise<excelJS.Buffer> {
+    switch (format) {
+      case SpecificFormat.PDF:
+        return printSpecific.views.pdf({ dateFrom, dateTo });
 
-    return XLSX.writeXLSX(wb, options);
+      case SpecificFormat.XLSX:
+      default:
+        return printSpecific.views.xls({ dateFrom, dateTo });
+    }
   }
 }

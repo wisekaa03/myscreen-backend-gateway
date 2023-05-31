@@ -38,7 +38,7 @@ import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
 import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/shared/typeorm.find';
 import { PrintService } from '@/print/print.service';
-import { InvoiceFormat } from '@/enums/invoice-format.enum';
+import { SpecificFormat } from '@/enums/invoice-format.enum';
 
 @ApiResponse({
   status: 400,
@@ -149,19 +149,24 @@ export class OrderController {
     const data = await this.printService.invoice(userId, format);
 
     res.statusCode = 200;
-    if (format === InvoiceFormat.PDF) {
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="invoice.pdf"',
-      );
-      res.setHeader('Content-Type', 'application/pdf');
-    } else {
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="invoice.xlsx"',
-      );
-      res.setHeader('Content-Type', 'application/vnd.ms-excel');
+    switch (format) {
+      case SpecificFormat.PDF:
+        res.setHeader(
+          'Content-Disposition',
+          'attachment; filename="invoice.pdf"',
+        );
+        res.setHeader('Content-Type', 'application/pdf');
+        break;
+
+      case SpecificFormat.XLSX:
+      default:
+        res.setHeader(
+          'Content-Disposition',
+          'attachment; filename="invoice.xlsx"',
+        );
+        res.setHeader('Content-Type', 'application/vnd.ms-excel');
     }
+
     res.end(data, 'binary');
   }
 }

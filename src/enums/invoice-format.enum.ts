@@ -1,4 +1,4 @@
-export enum InvoiceFormat {
+export enum SpecificFormat {
   XLSX = 'xlsx',
   PDF = 'pdf',
 }
