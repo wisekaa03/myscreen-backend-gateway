@@ -262,6 +262,14 @@ export class MonitorEntity {
   @IsBoolean()
   attached!: boolean;
 
+  @Column({ type: 'boolean', default: true })
+  @ApiProperty({
+    description: 'Есть звуковая дорожка',
+    example: true,
+  })
+  @IsBoolean()
+  sound!: boolean;
+
   @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
   @Index()
   @ApiProperty({

@@ -12,6 +12,7 @@ export class MonitorRequest extends PickType(MonitorEntity, [
   'orientation',
   'price1s',
   'status',
+  'sound',
 ]) {
   @ApiProperty({
     type: 'string',

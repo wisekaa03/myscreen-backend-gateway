@@ -2246,7 +2246,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.36.8
+  version: 2.36.9
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2923,6 +2923,10 @@ components:
           type: boolean
           description: Присоединен
           example: false
+        sound:
+          type: boolean
+          description: Есть звуковая дорожка
+          example: true
         status:
           description: Подключен
           example: offline
@@ -3131,6 +3135,7 @@ components:
               - orientation
               - monitorInfo
               - attached
+              - sound
               - status
               - playlistPlayed
               - code
@@ -3372,6 +3377,10 @@ components:
           type: boolean
           description: Присоединен
           example: false
+        sound:
+          type: boolean
+          description: Есть звуковая дорожка
+          example: true
         status:
           description: Подключен
           example: offline
@@ -3424,6 +3433,7 @@ components:
         - orientation
         - monitorInfo
         - attached
+        - sound
         - status
         - playlistPlayed
         - lastSeen
@@ -3487,6 +3497,10 @@ components:
           example: *ref_77
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
+        sound:
+          type: boolean
+          description: Есть звуковая дорожка
+          example: true
         location:
           example: *ref_78
           allOf:
@@ -3500,6 +3514,7 @@ components:
         - category
         - orientation
         - monitorInfo
+        - sound
         - code
     MonitorGetResponse:
       type: object
@@ -3690,6 +3705,10 @@ components:
           type: boolean
           description: Присоединен
           example: false
+        sound:
+          type: boolean
+          description: Есть звуковая дорожка
+          example: true
         status:
           description: Подключен
           example: offline
