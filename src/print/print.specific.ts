@@ -526,254 +526,395 @@ export const printSpecific: Record<string, PrintSpecific> = {
   deviceStatus: {
     xls: async ({ dateFrom, dateTo }) => {
       const workbook = new excelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Счёт');
+      const worksheet = workbook.addWorksheet('Отчет по статусам устройств');
 
-      //       const worksheet: CellObject[][] = [
-      //         [
-      //           {
-      //             v: 'Отчет по статусам устройств',
-      //             t: 's',
-      //           },
-      //         ],
-      //         [
-      //           {
-      //             v: `Период отчета: с ${dateFrom} по ${dateTo}`,
-      //             t: 's',
-      //           },
-      //         ],
-      //         [{ t: 'z' }],
-      //         [{ t: 'z' }],
-      //         [
-      //           {
-      //             v: 'Название устройства',
-      //             t: 's',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           { t: 'z' },
-      //           { t: 'z' },
-      //           {
-      //             v: 'Название папки',
-      //             t: 's',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           { t: 'z' },
-      //           {
-      //             v: 'Адрес',
-      //             t: 's',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           { t: 'z' },
-      //           {
-      //             t: 'z',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //         ],
-      //         [
-      //           {
-      //             v: 'Samsung',
-      //             t: 's',
-      //             s: {
-      //               alignment: { wrapText: true },
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           { t: 'z' },
-      //           { t: 'z' },
-      //           {
-      //             v: 'АЗС-123',
-      //             t: 's',
-      //             s: {
-      //               alignment: { wrapText: true },
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           { t: 'z' },
-      //           {
-      //             v: 'Челябинская область, Сосновский район, 35 км а/д Челябинск-Троицк',
-      //             t: 's',
-      //             s: {
-      //               alignment: { wrapText: true },
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //         ],
-      //         [{ t: 'z' }],
-      //         [
-      //           { t: 'z' },
-      //           {
-      //             v: 'Статус',
-      //             t: 's',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           {
-      //             v: 'Дата начала',
-      //             t: 's',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           {
-      //             v: 'Дата окончания',
-      //             t: 's',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           {
-      //             v: 'Продолжительность',
-      //             t: 's',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //           { t: 'z' },
-      //           {
-      //             v: 'Описание ошибки',
-      //             t: 's',
-      //             s: {
-      //               border: {
-      //                 top: { style: 'thin', color: { rgb: '000000' } },
-      //                 bottom: { style: 'thin', color: { rgb: '000000' } },
-      //                 right: { style: 'thin', color: { rgb: '000000' } },
-      //                 left: { style: 'thin', color: { rgb: '000000' } },
-      //               },
-      //             },
-      //           },
-      //         ],
-      //         [
-      //           { t: 'z' },
-      //           { v: 'online', t: 's', s: {} },
-      //           {
-      //             v: '23.04.2021 18:29:43',
-      //             t: 's',
-      //             s: {},
-      //           },
-      //           {
-      //             v: '24.04.2021 10:44:27',
-      //             t: 's',
-      //             s: {},
-      //           },
-      //           {
-      //             v: '16 часов 14 минут 44 секунды',
-      //             t: 's',
-      //             s: {},
-      //           },
-      //           { t: 'z' },
-      //         ],
-      //         [
-      //           { t: 'z' },
-      //           { v: 'offline', t: 's', s: {} },
-      //           {
-      //             v: '24.04.2021 10:44:27',
-      //             t: 's',
-      //             s: {},
-      //           },
-      //           {
-      //             v: '24.04.2021 10:44:32',
-      //             t: 's',
-      //             s: {},
-      //           },
-      //           { v: '5 секунд', t: 's', s: {} },
-      //         ],
-      //       ];
-      //       const cols: ColInfo[] = [
-      //         { wch: 1 },
-      //         { wch: 10 },
-      //         { wch: 19 },
-      //         { wch: 19 },
-      //         { wch: 11 },
-      //         { wch: 30 },
-      //         { wch: 30 },
-      //         { wch: 30 },
-      //       ];
-      //       const rows: RowInfo[] = [];
-      //       const merges: Range[] = [
-      //         { s: { r: 4, c: 0 }, e: { r: 4, c: 2 } },
-      //         { s: { r: 4, c: 3 }, e: { r: 4, c: 4 } },
-      //         { s: { r: 4, c: 5 }, e: { r: 4, c: 7 } },
-      //         { s: { r: 5, c: 0 }, e: { r: 5, c: 2 } },
-      //         { s: { r: 5, c: 3 }, e: { r: 5, c: 4 } },
-      //         { s: { r: 5, c: 5 }, e: { r: 5, c: 7 } },
-      //         { s: { r: 7, c: 4 }, e: { r: 7, c: 5 } },
-      //         { s: { r: 7, c: 6 }, e: { r: 7, c: 7 } },
-      //         { s: { r: 8, c: 4 }, e: { r: 8, c: 5 } },
-      //         { s: { r: 8, c: 6 }, e: { r: 8, c: 7 } },
-      //         { s: { r: 9, c: 4 }, e: { r: 9, c: 5 } },
-      //         { s: { r: 9, c: 6 }, e: { r: 9, c: 7 } },
-      //       ];
-      //       return { worksheet, cols, rows, merges };
+      const rows = [
+        ['Отчет по статусам устройств'],
+        [`Период отчета: с ${dateFrom} по ${dateTo}`],
+        [],
+        [],
+        ['Название устройства', '', '', 'Название папки', '', 'Адрес', ''],
+        [
+          'Samsung',
+          '',
+          '',
+          'АЗС-123',
+          '',
+          'Челябинская область, Сосновский район, 35 км а/д Челябинск-Троицк',
+        ],
+        [],
+        [
+          '',
+          'Статус',
+          'Дата начала',
+          'Дата окончания',
+          'Продолжительность',
+          '',
+          'Описание ошибки',
+        ],
+        [
+          '',
+          'online',
+          '23.04.2021 18:29:43',
+          '24.04.2021 10:44:27',
+          '16 часов 14 минут 44 секунды',
+        ],
+        [
+          '',
+          'offline',
+          '24.04.2021 10:44:27',
+          '24.04.2021 10:44:32',
+          '5 секунд',
+        ],
+      ];
+      worksheet.addRows(rows);
+      worksheet.columns = [
+        {
+          width: 1,
+          style: {
+            font: { name: 'Arial', size: 11 },
+            alignment: { vertical: 'middle' },
+          },
+        },
+        {
+          width: 10,
+          style: {
+            font: { name: 'Arial', size: 11 },
+            alignment: { vertical: 'middle' },
+          },
+        },
+        {
+          width: 19,
+          style: {
+            font: { name: 'Arial', size: 11 },
+            alignment: { vertical: 'middle' },
+          },
+        },
+        {
+          width: 19,
+          style: {
+            font: { name: 'Arial', size: 11 },
+            alignment: { vertical: 'middle' },
+          },
+        },
+        {
+          width: 11,
+          style: {
+            font: { name: 'Arial', size: 11 },
+            alignment: { vertical: 'middle' },
+          },
+        },
+        {
+          width: 30,
+          style: {
+            font: { name: 'Arial', size: 11 },
+            alignment: { vertical: 'middle' },
+          },
+        },
+        {
+          width: 30,
+          style: {
+            font: { name: 'Arial', size: 11 },
+            alignment: { vertical: 'middle' },
+          },
+        },
+        {
+          width: 30,
+          style: {
+            font: { name: 'Arial', size: 11 },
+            alignment: { vertical: 'middle' },
+          },
+        },
+      ];
+      worksheet.getRow(7).height = 4;
+
+      worksheet.getCell('A1').style = {
+        font: {
+          name: 'Arial',
+          size: 14,
+          bold: true,
+        },
+      };
+      worksheet.getCell('A5').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('D5').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('F5').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+
+      worksheet.getCell('A6').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('D6').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('F6').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+
+      worksheet.getCell('B8').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('C8').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('D8').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('E8').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('G8').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+
+      worksheet.getCell('B9').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('C9').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('D9').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('E9').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('G9').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+
+      worksheet.getCell('B10').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('C10').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('D10').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('E10').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('G10').style = {
+        font: {
+          name: 'Arial',
+          size: 11,
+        },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+
+      worksheet.mergeCells('A5:C5');
+      worksheet.mergeCells('D5:E5');
+      worksheet.mergeCells('F5:H5');
+      worksheet.mergeCells('D6:E6');
+      worksheet.mergeCells('A6:C6');
+      worksheet.mergeCells('F6:H6');
+      worksheet.mergeCells('E8:F8');
+      worksheet.mergeCells('G8:H8');
+      worksheet.mergeCells('E9:F9');
+      worksheet.mergeCells('G9:H9');
+      worksheet.mergeCells('E10:F10');
+      worksheet.mergeCells('G10:H10');
+
+      // worksheet.pageSetup.printArea = 'A1:I39';
+      worksheet.pageSetup.scale = 70;
+      worksheet.pageSetup.fitToPage = false;
 
       return workbook.xlsx.writeBuffer();
     },
 
     pdf: async ({ dateFrom, dateTo }) => {
       const workbook = new excelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Счёт');
+      const worksheet = workbook.addWorksheet('Отчет по статусам устройств');
 
       return workbook.xlsx.writeBuffer();
     },
@@ -782,7 +923,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
   views: {
     xls: async ({ dateFrom, dateTo }) => {
       const workbook = new excelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Отчет по статусам устройств');
+      const worksheet = workbook.addWorksheet('Отчёт по показам');
 
       worksheet.addRow(['Отчёт по показам']);
 
