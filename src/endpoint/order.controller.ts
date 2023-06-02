@@ -39,6 +39,7 @@ import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/shared/typeorm.find';
 import { PrintService } from '@/print/print.service';
 import { SpecificFormat } from '@/enums/invoice-format.enum';
+import { formatToContentType } from '@/shared/format-to-content-type';
 
 @ApiResponse({
   status: 400,
@@ -128,14 +129,14 @@ export class OrderController {
       'application/vnd.ms-excel': {
         encoding: {
           ms_excel: {
-            contentType: 'application/vnd.ms-excel',
+            contentType: formatToContentType[SpecificFormat.XLSX],
           },
         },
       },
       'application/pdf': {
         encoding: {
           pdf: {
-            contentType: 'application/pdf',
+            contentType: formatToContentType[SpecificFormat.PDF],
           },
         },
       },
@@ -148,24 +149,16 @@ export class OrderController {
   ): Promise<void> {
     const data = await this.printService.invoice(userId, format);
 
-    res.statusCode = 200;
-    switch (format) {
-      case SpecificFormat.PDF:
-        res.setHeader(
-          'Content-Disposition',
-          'attachment; filename="invoice.pdf"',
-        );
-        res.setHeader('Content-Type', 'application/pdf');
-        break;
+    const specificFormat = formatToContentType[format]
+      ? format
+      : SpecificFormat.XLSX;
 
-      case SpecificFormat.XLSX:
-      default:
-        res.setHeader(
-          'Content-Disposition',
-          'attachment; filename="invoice.xlsx"',
-        );
-        res.setHeader('Content-Type', 'application/vnd.ms-excel');
-    }
+    res.statusCode = 200;
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="invoice.${specificFormat}"`,
+    );
+    res.setHeader('Content-Type', formatToContentType[format]);
 
     res.end(data, 'binary');
   }

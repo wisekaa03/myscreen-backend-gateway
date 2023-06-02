@@ -42,6 +42,7 @@ import { WSGateway } from '../websocket/ws.gateway';
 import { PlaylistService } from '../database/playlist.service';
 import { MonitorService } from '../database/monitor.service';
 import { PrintService } from '../print/print.service';
+import { formatToContentType } from '@/shared/format-to-content-type';
 
 @ApiResponse({
   status: 400,
@@ -143,14 +144,14 @@ export class StatisticsController {
       'application/vnd.ms-excel': {
         encoding: {
           ms_excel: {
-            contentType: 'application/vnd.ms-excel',
+            contentType: formatToContentType[SpecificFormat.XLSX],
           },
         },
       },
       'application/pdf': {
         encoding: {
           pdf: {
-            contentType: 'application/pdf',
+            contentType: formatToContentType[SpecificFormat.PDF],
           },
         },
       },
@@ -168,24 +169,16 @@ export class StatisticsController {
       dateTo,
     });
 
-    res.statusCode = 200;
-    switch (format) {
-      case SpecificFormat.PDF:
-        res.setHeader(
-          'Content-Disposition',
-          'attachment; filename="report-device-status.pdf"',
-        );
-        res.setHeader('Content-Type', 'application/pdf');
-        break;
+    const specificFormat = formatToContentType[format]
+      ? format
+      : SpecificFormat.XLSX;
 
-      case SpecificFormat.XLSX:
-      default:
-        res.setHeader(
-          'Content-Disposition',
-          'attachment; filename="report-device-status.xlsx"',
-        );
-        res.setHeader('Content-Type', 'application/vnd.ms-excel');
-    }
+    res.statusCode = 200;
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="report-device-status.${specificFormat}"`,
+    );
+    res.setHeader('Content-Type', formatToContentType[format]);
 
     res.end(data, 'binary');
   }
@@ -203,14 +196,14 @@ export class StatisticsController {
       'application/vnd.ms-excel': {
         encoding: {
           ms_excel: {
-            contentType: 'application/vnd.ms-excel',
+            contentType: formatToContentType[SpecificFormat.XLSX],
           },
         },
       },
       'application/pdf': {
         encoding: {
           pdf: {
-            contentType: 'application/pdf',
+            contentType: formatToContentType[SpecificFormat.PDF],
           },
         },
       },
@@ -228,24 +221,16 @@ export class StatisticsController {
       dateTo,
     });
 
-    res.statusCode = 200;
-    switch (format) {
-      case SpecificFormat.PDF:
-        res.setHeader(
-          'Content-Disposition',
-          'attachment; filename="report-views.pdf"',
-        );
-        res.setHeader('Content-Type', 'application/pdf');
-        break;
+    const specificFormat = formatToContentType[format]
+      ? format
+      : SpecificFormat.XLSX;
 
-      case SpecificFormat.XLSX:
-      default:
-        res.setHeader(
-          'Content-Disposition',
-          'attachment; filename="report-views.xlsx"',
-        );
-        res.setHeader('Content-Type', 'application/vnd.ms-excel');
-    }
+    res.statusCode = 200;
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="report-views.${specificFormat}"`,
+    );
+    res.setHeader('Content-Type', formatToContentType[format]);
 
     res.end(data, 'binary');
   }

@@ -82,15 +82,15 @@ export const printSpecific: Record<string, PrintSpecific> = {
           '',
           'Сумма, рубли РФ',
         ],
-        ['', '1', 'Услуги «Яндекс.Директ».', '', '', '', '', 5000],
-        ['', '', '', '', '', '', 'Итого без НДС:', 5000],
-        ['', '', '', '', '', '', 'НДС:', 1000],
-        ['', '', '', '', '', '', 'Всего к оплате, рубли РФ:', 6000],
+        ['', '1', 'Услуги «Яндекс.Директ».', '', '', '', '', '5 000,00'],
+        ['', '', '', '', '', '', 'Итого без НДС:', '5 000,00'],
+        ['', '', '', '', '', '', 'НДС:', '1 000,00'],
+        ['', '', '', '', '', '', 'Всего к оплате, рубли РФ:', '6 000,00'],
         [],
         ['', 'К оплате: Шесть тысяч рублей 00 копеек'],
-        ['', '', '', '', '(Л.Ф. Савков)'],
+        [],
         ['', 'Коммерческий директор'],
-        ['', 'По доверенности №95 от 15.06.2018'],
+        ['', 'По доверенности №95 от 15.06.2018', '', '', '(Л.Ф. Савков)'],
         [],
         [],
         [],
@@ -101,62 +101,68 @@ export const printSpecific: Record<string, PrintSpecific> = {
         ],
       ];
       worksheet.addRows(rows);
-      worksheet.pageSetup.scale = 70;
       worksheet.columns = [
         {
           width: 8,
           style: {
             font: { name: 'Arial', size: 14 },
-            alignment: { vertical: 'top' },
+            alignment: { vertical: 'middle' },
           },
         },
         {
           width: 8,
           style: {
             font: { name: 'Arial', size: 14 },
-            alignment: { vertical: 'top' },
+            alignment: { vertical: 'middle' },
           },
         },
         {
-          width: 24,
+          width: 28,
           style: {
             font: { name: 'Arial', size: 14 },
-            alignment: { vertical: 'top' },
+            alignment: { vertical: 'middle' },
           },
         },
         {
-          width: 15,
+          width: 16,
           style: {
             font: { name: 'Arial', size: 14 },
-            alignment: { vertical: 'top' },
+            alignment: { vertical: 'middle' },
           },
         },
         {
           width: 22,
           style: {
             font: { name: 'Arial', size: 14 },
-            alignment: { vertical: 'top' },
+            alignment: { vertical: 'middle' },
           },
         },
         {
           width: 12,
           style: {
             font: { name: 'Arial', size: 14 },
-            alignment: { vertical: 'top' },
+            alignment: { vertical: 'middle' },
           },
         },
         {
           width: 15,
           style: {
             font: { name: 'Arial', size: 14 },
-            alignment: { vertical: 'top' },
+            alignment: { vertical: 'middle' },
           },
         },
         {
           width: 24,
           style: {
             font: { name: 'Arial', size: 14 },
-            alignment: { vertical: 'top' },
+            alignment: { vertical: 'middle' },
+          },
+        },
+        {
+          width: 4,
+          style: {
+            font: { name: 'Arial', size: 14 },
+            alignment: { vertical: 'middle' },
           },
         },
       ];
@@ -164,38 +170,52 @@ export const printSpecific: Record<string, PrintSpecific> = {
       worksheet.getRow(10).height = 36;
       worksheet.getRow(19).height = 36;
       worksheet.getRow(20).height = 36;
+      worksheet.getRow(34).height = 36;
+      worksheet.getRow(38).height = 48;
       worksheet.getRow(39).height = 110;
+
       worksheet.getCell('H1').style = {
-        font: { name: 'Arial', size: 14, bold: true },
+        font: {
+          name: 'Arial',
+          size: 14,
+          bold: true,
+        },
         alignment: { horizontal: 'right' },
       };
       worksheet.getCell('H2').style = {
-        font: { name: 'Arial', size: 14, bold: true },
+        font: {
+          name: 'Arial',
+          size: 14,
+          bold: true,
+        },
         alignment: { horizontal: 'right' },
       };
       worksheet.getCell('H3').style = {
-        font: { name: 'Arial', size: 14, bold: true },
+        font: {
+          name: 'Arial',
+          size: 14,
+          bold: true,
+        },
         alignment: { horizontal: 'right' },
       };
+
       worksheet.getCell('B5').style = {
         font: { name: 'Arial', size: 14, bold: true },
         alignment: { horizontal: 'center' },
       };
       worksheet.getCell('B7').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
           top: { style: 'thin', color: { argb: '000000' } },
-          bottom: { style: 'thin', color: { argb: '000000' } },
           left: { style: 'thin', color: { argb: '000000' } },
           right: { style: 'thin', color: { argb: '000000' } },
         },
       };
       worksheet.getCell('B8').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
-          top: { style: 'thin', color: { argb: '000000' } },
           bottom: { style: 'thin', color: { argb: '000000' } },
           left: { style: 'thin', color: { argb: '000000' } },
           right: { style: 'thin', color: { argb: '000000' } },
@@ -203,19 +223,17 @@ export const printSpecific: Record<string, PrintSpecific> = {
       };
       worksheet.getCell('B9').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
           top: { style: 'thin', color: { argb: '000000' } },
-          bottom: { style: 'thin', color: { argb: '000000' } },
           left: { style: 'thin', color: { argb: '000000' } },
           right: { style: 'thin', color: { argb: '000000' } },
         },
       };
       worksheet.getCell('B10').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
-          top: { style: 'thin', color: { argb: '000000' } },
           bottom: { style: 'thin', color: { argb: '000000' } },
           left: { style: 'thin', color: { argb: '000000' } },
           right: { style: 'thin', color: { argb: '000000' } },
@@ -223,7 +241,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
       };
       worksheet.getCell('F7').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
           top: { style: 'thin', color: { argb: '000000' } },
           bottom: { style: 'thin', color: { argb: '000000' } },
@@ -233,7 +251,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
       };
       worksheet.getCell('F9').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
           top: { style: 'thin', color: { argb: '000000' } },
           bottom: { style: 'thin', color: { argb: '000000' } },
@@ -243,7 +261,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
       };
       worksheet.getCell('F10').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
           top: { style: 'thin', color: { argb: '000000' } },
           bottom: { style: 'thin', color: { argb: '000000' } },
@@ -253,7 +271,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
       };
       worksheet.getCell('G7').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
           top: { style: 'thin', color: { argb: '000000' } },
           bottom: { style: 'thin', color: { argb: '000000' } },
@@ -263,7 +281,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
       };
       worksheet.getCell('G9').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
           top: { style: 'thin', color: { argb: '000000' } },
           bottom: { style: 'thin', color: { argb: '000000' } },
@@ -273,7 +291,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
       };
       worksheet.getCell('G10').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+        alignment: { horizontal: 'left', vertical: 'middle', wrapText: true },
         border: {
           top: { style: 'thin', color: { argb: '000000' } },
           bottom: { style: 'thin', color: { argb: '000000' } },
@@ -281,39 +299,129 @@ export const printSpecific: Record<string, PrintSpecific> = {
           right: { style: 'thin', color: { argb: '000000' } },
         },
       };
-      worksheet.getCell('B12').style = {
-        font: {
-          name: 'Arial',
-          size: 14,
-          bold: true,
-          underline: true,
-          italic: true,
-        },
+      worksheet.getCell('B12').style.font = {
+        name: 'Arial',
+        size: 14,
+        bold: true,
+        underline: true,
+        italic: true,
       };
       worksheet.getCell('B17').style = {
+        alignment: { horizontal: 'center' },
         font: {
           name: 'Arial',
           size: 14,
           bold: true,
         },
-        alignment: { horizontal: 'center' },
       };
-      worksheet.getCell('B22').style = {
+      worksheet.getCell('B19').style = {
         font: {
           name: 'Arial',
           size: 14,
-          bold: true,
-          italic: true,
-          underline: true,
+        },
+        alignment: { vertical: 'top', horizontal: 'left', wrapText: true },
+      };
+      worksheet.getCell('B20').style = {
+        font: {
+          name: 'Arial',
+          size: 14,
+        },
+        alignment: { vertical: 'top', horizontal: 'left', wrapText: true },
+      };
+      worksheet.getCell('B22').style.font = {
+        name: 'Arial',
+        size: 14,
+        bold: true,
+        underline: true,
+        italic: true,
+      };
+      worksheet.getCell('B25').style = {
+        font: { name: 'Arial', size: 14 },
+        alignment: { vertical: 'middle' },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
         },
       };
       worksheet.getCell('C25').style = {
         font: { name: 'Arial', size: 14 },
         alignment: { horizontal: 'center' },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        },
       };
       worksheet.getCell('H25').style = {
         font: { name: 'Arial', size: 14 },
         alignment: { horizontal: 'center' },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('B26').style = {
+        font: { name: 'Arial', size: 14 },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('C26').style = {
+        font: { name: 'Arial', size: 14 },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('H26').style = {
+        font: { name: 'Arial', size: 14 },
+        alignment: { horizontal: 'right' },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('H27').style = {
+        font: { name: 'Arial', size: 14 },
+        alignment: { horizontal: 'right' },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('H28').style = {
+        font: { name: 'Arial', size: 14 },
+        alignment: { horizontal: 'right' },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        },
+      };
+      worksheet.getCell('H29').style = {
+        font: { name: 'Arial', size: 14 },
+        alignment: { horizontal: 'right' },
+        border: {
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          right: { style: 'thin', color: { argb: '000000' } },
+        },
       };
       worksheet.getCell('G27').style = {
         font: { name: 'Arial', size: 14 },
@@ -324,15 +432,35 @@ export const printSpecific: Record<string, PrintSpecific> = {
         alignment: { horizontal: 'right' },
       };
       worksheet.getCell('G29').style = {
-        font: { name: 'Arial', size: 14, bold: true },
+        font: { name: 'Arial', size: 14 },
         alignment: { horizontal: 'right' },
       };
-      worksheet.getCell('B31').style = {
-        font: { name: 'Arial', size: 14, bold: true, italic: true },
+      worksheet.getCell('B31').style.font = {
+        name: 'Arial',
+        size: 14,
+        bold: true,
+        italic: true,
+      };
+      worksheet.getCell('B34').style = {
+        font: {
+          name: 'Arial',
+          size: 14,
+        },
+        alignment: { horizontal: 'left', vertical: 'top', wrapText: true },
+      };
+      worksheet.getCell('E34').style = {
+        font: {
+          name: 'Arial',
+          size: 14,
+        },
+        alignment: { horizontal: 'right', vertical: 'middle' },
       };
       worksheet.getCell('B39').style = {
         font: { name: 'Arial', size: 14 },
-        alignment: { vertical: 'top', wrapText: true },
+        alignment: {
+          vertical: 'top',
+          wrapText: true,
+        },
       };
 
       worksheet.mergeCells('B5:H5');
@@ -345,9 +473,44 @@ export const printSpecific: Record<string, PrintSpecific> = {
       worksheet.mergeCells('B10:E10');
       worksheet.mergeCells('G10:H10');
       worksheet.mergeCells('B17:H17');
+      worksheet.mergeCells('B19:E19');
+      worksheet.mergeCells('B20:E20');
       worksheet.mergeCells('C25:G25');
       worksheet.mergeCells('C26:G26');
+      worksheet.mergeCells('B34:C34');
       worksheet.mergeCells('B39:H39');
+
+      const yandexPng = workbook.addImage({
+        filename: 'src/print/yandex.png',
+        extension: 'png',
+      });
+      const yandexSignPng = workbook.addImage({
+        filename: 'src/print/yandex-sign.png',
+        extension: 'png',
+      });
+      const yandexStampPng = workbook.addImage({
+        filename: 'src/print/yandex-stamp.png',
+        extension: 'png',
+      });
+
+      worksheet.addImage(yandexPng, {
+        tl: { row: 0, col: 1 },
+        ext: { width: 92, height: 47 },
+      });
+
+      worksheet.addImage(yandexSignPng, {
+        tl: { row: 33, col: 3 },
+        ext: { width: 107, height: 64 },
+      });
+
+      worksheet.addImage(yandexStampPng, {
+        tl: { row: 30, col: 6 },
+        ext: { width: 207, height: 205 },
+      });
+
+      worksheet.pageSetup.printArea = 'A1:I39';
+      worksheet.pageSetup.scale = 70;
+      worksheet.pageSetup.fitToPage = false;
 
       return workbook.xlsx.writeBuffer();
     },
