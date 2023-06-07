@@ -7,7 +7,7 @@ jobs:
   build-test-install-deploy:
     docker:
       # specify the version you desire here
-      - image: cimg/node:18.15.0
+      - image: cimg/node:18.16.0
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
