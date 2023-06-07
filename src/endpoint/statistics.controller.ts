@@ -35,13 +35,14 @@ import {
 } from '../dto/index';
 import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
 import { Status, UserRoleEnum } from '../enums/index';
-import { InvoiceFormat } from '../enums/invoice-format.enum';
+import { SpecificFormat } from '@/enums/invoice-format.enum';
 import { StatisticsResponse } from '../dto/response/statistics.response';
 import { UserService } from '../database/user.service';
 import { WSGateway } from '../websocket/ws.gateway';
 import { PlaylistService } from '../database/playlist.service';
 import { MonitorService } from '../database/monitor.service';
-import { XlsxService } from '../xlsx/xlsx.service';
+import { PrintService } from '../print/print.service';
+import { formatToContentType } from '@/shared/format-to-content-type';
 
 @ApiResponse({
   status: 400,
@@ -89,7 +90,7 @@ export class StatisticsController {
     private readonly userService: UserService,
     private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
-    private readonly xlsxService: XlsxService,
+    private readonly printService: PrintService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -143,14 +144,14 @@ export class StatisticsController {
       'application/vnd.ms-excel': {
         encoding: {
           ms_excel: {
-            contentType: 'application/vnd.ms-excel',
+            contentType: formatToContentType[SpecificFormat.XLSX],
           },
         },
       },
       'application/pdf': {
         encoding: {
           pdf: {
-            contentType: 'application/pdf',
+            contentType: formatToContentType[SpecificFormat.PDF],
           },
         },
       },
@@ -161,27 +162,25 @@ export class StatisticsController {
     @Res() res: ExpressResponse,
     @Body() { format, dateFrom, dateTo }: ReportDeviceStatusRequest,
   ): Promise<void> {
-    if (format === InvoiceFormat.XLSX) {
-      const data = await this.xlsxService.reportDeviceStatus({
-        userId,
-        dateFrom,
-        dateTo,
-      });
+    const data = await this.printService.reportDeviceStatus({
+      userId,
+      format,
+      dateFrom,
+      dateTo,
+    });
 
-      res.statusCode = 200;
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="reportDeviceStatus.xlsx"',
-      );
-      res.setHeader('Content-Type', 'application/vnd.ms-excel');
-      res.end(data, 'binary');
-      return;
-    }
+    const specificFormat = formatToContentType[format]
+      ? format
+      : SpecificFormat.XLSX;
 
-    // if (format === InvoiceFormat.PDF) {
-    // }
+    res.statusCode = 200;
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="report-device-status.${specificFormat}"`,
+    );
+    res.setHeader('Content-Type', formatToContentType[format]);
 
-    throw new InternalServerErrorException();
+    res.end(data, 'binary');
   }
 
   @Post('reportViews')
@@ -197,14 +196,14 @@ export class StatisticsController {
       'application/vnd.ms-excel': {
         encoding: {
           ms_excel: {
-            contentType: 'application/vnd.ms-excel',
+            contentType: formatToContentType[SpecificFormat.XLSX],
           },
         },
       },
       'application/pdf': {
         encoding: {
           pdf: {
-            contentType: 'application/pdf',
+            contentType: formatToContentType[SpecificFormat.PDF],
           },
         },
       },
@@ -215,26 +214,24 @@ export class StatisticsController {
     @Res() res: ExpressResponse,
     @Body() { format, dateFrom, dateTo }: ReportViewsRequest,
   ): Promise<void> {
-    if (format === InvoiceFormat.XLSX) {
-      const data = await this.xlsxService.reportViews({
-        userId,
-        dateFrom,
-        dateTo,
-      });
+    const data = await this.printService.reportViews({
+      userId,
+      format,
+      dateFrom,
+      dateTo,
+    });
 
-      res.statusCode = 200;
-      res.setHeader(
-        'Content-Disposition',
-        'attachment; filename="reportViews.xlsx"',
-      );
-      res.setHeader('Content-Type', 'application/vnd.ms-excel');
-      res.end(data, 'binary');
-      return;
-    }
+    const specificFormat = formatToContentType[format]
+      ? format
+      : SpecificFormat.XLSX;
 
-    // if (format === InvoiceFormat.PDF) {
-    // }
+    res.statusCode = 200;
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="report-views.${specificFormat}"`,
+    );
+    res.setHeader('Content-Type', formatToContentType[format]);
 
-    throw new InternalServerErrorException();
+    res.end(data, 'binary');
   }
 }

@@ -1,14 +1,14 @@
 import { Global, Module } from '@nestjs/common';
 
 import { DatabaseModule } from '../database/database.module';
-import { XlsxService } from './xlsx.service';
+import { PrintService } from './print.service';
 
 // TODO: заменить это все микросервисной архитектурой
 
 @Global()
 @Module({
   imports: [DatabaseModule],
-  providers: [XlsxService],
-  exports: [XlsxService],
+  providers: [PrintService],
+  exports: [PrintService],
 })
-export class XlsxModule {}
+export class PrintModule {}

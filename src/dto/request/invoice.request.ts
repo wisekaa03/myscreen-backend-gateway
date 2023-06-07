@@ -1,17 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from 'class-validator';
 
-import { InvoiceFormat } from '@/enums/invoice-format.enum';
+import { SpecificFormat } from '@/enums/invoice-format.enum';
 
 export class InvoiceRequest {
   @ApiProperty({
     description: 'Формат получаемого файла',
-    enum: InvoiceFormat,
+    enum: SpecificFormat,
     enumName: 'InvoiceFormat',
-    example: InvoiceFormat.XLSX,
+    example: SpecificFormat.XLSX,
     required: true,
   })
   @IsNotEmpty()
-  @IsEnum(InvoiceFormat)
-  format!: InvoiceFormat;
+  @IsEnum(SpecificFormat)
+  format!: SpecificFormat;
 }

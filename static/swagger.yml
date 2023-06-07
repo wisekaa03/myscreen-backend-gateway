@@ -2246,7 +2246,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.36.3
+  version: 2.36.13
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2482,6 +2482,10 @@ components:
           type: boolean
           description: EMail подтвержден
           example: true
+        isDemoUser:
+          type: boolean
+          description: Демо пользователь (дата когда включится подписка)
+          example: false
         createdAt:
           format: date-time
           type: string
@@ -2923,6 +2927,10 @@ components:
           type: boolean
           description: Присоединен
           example: false
+        sound:
+          type: boolean
+          description: Есть звуковая дорожка
+          example: true
         status:
           description: Подключен
           example: offline
@@ -3131,6 +3139,7 @@ components:
               - orientation
               - monitorInfo
               - attached
+              - sound
               - status
               - playlistPlayed
               - code
@@ -3372,6 +3381,10 @@ components:
           type: boolean
           description: Присоединен
           example: false
+        sound:
+          type: boolean
+          description: Есть звуковая дорожка
+          example: true
         status:
           description: Подключен
           example: offline
@@ -3424,6 +3437,7 @@ components:
         - orientation
         - monitorInfo
         - attached
+        - sound
         - status
         - playlistPlayed
         - lastSeen
@@ -3487,6 +3501,10 @@ components:
           example: *ref_77
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
+        sound:
+          type: boolean
+          description: Есть звуковая дорожка
+          example: true
         location:
           example: *ref_78
           allOf:
@@ -3500,6 +3518,7 @@ components:
         - category
         - orientation
         - monitorInfo
+        - sound
         - code
     MonitorGetResponse:
       type: object
@@ -3690,6 +3709,10 @@ components:
           type: boolean
           description: Присоединен
           example: false
+        sound:
+          type: boolean
+          description: Есть звуковая дорожка
+          example: true
         status:
           description: Подключен
           example: offline

@@ -13,6 +13,7 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
   'price1s',
   'minWarranty',
   'maxDuration',
+  'sound',
 ]) {
   @ApiProperty({
     type: 'string',
