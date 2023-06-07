@@ -16,6 +16,7 @@ export const selectUserOptions: FindOptionsSelect<UserEntity> = {
   country: true,
   company: true,
   storageSpace: true,
+  isDemoUser: true,
   role: true,
   verified: true,
   createdAt: true,
@@ -26,7 +27,6 @@ export class UserResponse extends OmitType(UserSizeEntity, [
   'forgotConfirmKey',
   'emailConfirmKey',
   'password',
-  'isDemoUser',
   'monitors',
 ]) {}
 
@@ -34,7 +34,6 @@ export const userEntityToUser = ({
   forgotConfirmKey,
   emailConfirmKey,
   password,
-  isDemoUser,
   monitors,
   ...data
 }: UserEntity & Partial<UserSizeEntity>): Partial<UserEntity> &

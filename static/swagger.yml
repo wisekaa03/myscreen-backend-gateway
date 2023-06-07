@@ -2482,6 +2482,10 @@ components:
           type: boolean
           description: EMail подтвержден
           example: true
+        isDemoUser:
+          type: boolean
+          description: Демо пользователь (дата когда включится подписка)
+          example: false
         createdAt:
           format: date-time
           type: string
