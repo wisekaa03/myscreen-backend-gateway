@@ -2246,7 +2246,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.36.13
+  version: 2.36.14
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2465,11 +2465,6 @@ components:
           description: Страна
           example: RU
           nullable: true
-        company:
-          type: string
-          description: Компания
-          example: ACME corporation
-          nullable: true
         storageSpace:
           type: number
           description: Дисковое пространство
@@ -2486,6 +2481,55 @@ components:
           type: boolean
           description: Демо пользователь (дата когда включится подписка)
           example: false
+        company:
+          type: string
+          description: Компания
+          example: ACME corporation
+          nullable: true
+        companyLegalAddress:
+          type: string
+          description: Юридический адрес
+          example: г. Краснодар, ул. Красная, д. 1
+        companyActualAddress:
+          type: string
+          description: Фактический адрес
+          example: г. Краснодар, ул. Красная, д. 1
+        companyTIN:
+          type: string
+          description: Идентификационный номер налогоплательщика (ИНН)
+          example: "012345678901"
+        companyRRC:
+          type: string
+          description: Код Причины Постановки на учет (КПП)
+          example: "012345678901"
+        companyPSRN:
+          type: string
+          description: Основной Государственный Регистрационный Номер (ОГРН)
+          example: "012345678901"
+        companyPhone:
+          type: string
+          description: Телефон организации
+          example: "+78002000000"
+        companyEmail:
+          type: string
+          description: Email организации
+          example: we@are.the.best
+        companyBank:
+          type: string
+          description: Наименование банка
+          example: Банк
+        companyBIC:
+          type: string
+          description: Банковский идентификационный код (БИК)
+          example: "012345678"
+        companyCorrespondentAccount:
+          type: string
+          description: Корреспондентский счет
+          example: "30101810400000000000"
+        companyPaymentAccount:
+          type: string
+          description: Расчетный счет
+          example: "40802810064580000000"
         createdAt:
           format: date-time
           type: string
@@ -4677,11 +4721,6 @@ components:
           description: Страна
           example: RU
           nullable: true
-        company:
-          type: string
-          description: Компания
-          example: ACME corporation
-          nullable: true
         storageSpace:
           type: number
           description: Дисковое пространство
@@ -4698,6 +4737,55 @@ components:
           type: boolean
           description: Демо пользователь (дата когда включится подписка)
           example: false
+        company:
+          type: string
+          description: Компания
+          example: ACME corporation
+          nullable: true
+        companyLegalAddress:
+          type: string
+          description: Юридический адрес
+          example: г. Краснодар, ул. Красная, д. 1
+        companyActualAddress:
+          type: string
+          description: Фактический адрес
+          example: г. Краснодар, ул. Красная, д. 1
+        companyTIN:
+          type: string
+          description: Идентификационный номер налогоплательщика (ИНН)
+          example: "012345678901"
+        companyRRC:
+          type: string
+          description: Код Причины Постановки на учет (КПП)
+          example: "012345678901"
+        companyPSRN:
+          type: string
+          description: Основной Государственный Регистрационный Номер (ОГРН)
+          example: "012345678901"
+        companyPhone:
+          type: string
+          description: Телефон организации
+          example: "+78002000000"
+        companyEmail:
+          type: string
+          description: Email организации
+          example: we@are.the.best
+        companyBank:
+          type: string
+          description: Наименование банка
+          example: Банк
+        companyBIC:
+          type: string
+          description: Банковский идентификационный код (БИК)
+          example: "012345678"
+        companyCorrespondentAccount:
+          type: string
+          description: Корреспондентский счет
+          example: "30101810400000000000"
+        companyPaymentAccount:
+          type: string
+          description: Расчетный счет
+          example: "40802810064580000000"
         createdAt:
           description: Время создания
           example:
@@ -4736,11 +4824,22 @@ components:
               - phoneNumber
               - city
               - country
-              - company
               - storageSpace
               - role
               - verified
               - isDemoUser
+              - company
+              - companyLegalAddress
+              - companyActualAddress
+              - companyTIN
+              - companyRRC
+              - companyPSRN
+              - companyPhone
+              - companyEmail
+              - companyBank
+              - companyBIC
+              - companyCorrespondentAccount
+              - companyPaymentAccount
               - createdAt
               - updatedAt
         scope:

@@ -134,16 +134,6 @@ export class UserEntity {
   @IsISO31661Alpha2()
   country?: string;
 
-  @Column({ nullable: true })
-  @ApiProperty({
-    description: 'Компания',
-    example: 'ACME corporation',
-    nullable: true,
-    required: false,
-  })
-  @IsString()
-  company?: string;
-
   @Column({ type: 'bigint', default: 20000000000 })
   @ApiProperty({
     description: 'Дисковое пространство',
@@ -194,6 +184,115 @@ export class UserEntity {
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
   monitors?: MonitorEntity[];
+
+  @Column({ nullable: true })
+  @ApiProperty({
+    description: 'Компания',
+    example: 'ACME corporation',
+    nullable: true,
+    required: false,
+  })
+  @IsString()
+  company?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Юридический адрес',
+    example: 'г. Краснодар, ул. Красная, д. 1',
+    required: false,
+  })
+  @IsString()
+  companyLegalAddress?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Фактический адрес',
+    example: 'г. Краснодар, ул. Красная, д. 1',
+    required: false,
+  })
+  @IsString()
+  companyActualAddress?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Идентификационный номер налогоплательщика (ИНН)',
+    example: '012345678901',
+    required: false,
+  })
+  @IsString()
+  companyTIN?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Код Причины Постановки на учет (КПП)',
+    example: '012345678901',
+    required: false,
+  })
+  @IsString()
+  companyRRC?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Основной Государственный Регистрационный Номер (ОГРН)',
+    example: '012345678901',
+    required: false,
+  })
+  @IsString()
+  companyPSRN?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Телефон организации',
+    example: '+78002000000',
+    required: false,
+  })
+  @IsPhoneNumber()
+  companyPhone?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Email организации',
+    example: 'we@are.the.best',
+    required: false,
+  })
+  @IsString()
+  companyEmail?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Наименование банка',
+    example: 'Банк',
+    required: false,
+  })
+  @IsString()
+  companyBank?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Банковский идентификационный код (БИК)',
+    example: '012345678',
+    required: false,
+  })
+  @IsString()
+  companyBIC?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Корреспондентский счет',
+    example: '30101810400000000000',
+    required: false,
+  })
+  @IsString()
+  companyCorrespondentAccount?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Расчетный счет',
+    example: '40802810064580000000',
+    required: false,
+  })
+  @IsString()
+  companyPaymentAccount?: string;
 
   @CreateDateColumn()
   @ApiProperty({
