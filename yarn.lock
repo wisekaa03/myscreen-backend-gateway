@@ -1794,7 +1794,7 @@
     iterare "1.2.1"
     tslib "2.5.3"
 
-"@nestjs/common@^9.0.11":
+"@nestjs/common@^9.4.3":
   version "9.4.3"
   resolved "https://registry.yarnpkg.com/@nestjs/common/-/common-9.4.3.tgz#f907c5315b4273f7675864a05c4dda7056632b87"
   integrity sha512-Gd6D4IaYj01o14Bwv81ukidn4w3bPHCblMUq+SmUmWLyosK+XQmInCS09SbDDZyL8jy86PngtBLTdhJ2bXSUig==
@@ -1848,10 +1848,10 @@
   resolved "https://registry.yarnpkg.com/@nestjs/passport/-/passport-10.0.0.tgz#92d36d4b8796b373da3f4d1a055db03cb246b127"
   integrity sha512-IlKKc6M7JOe+4dBbW6gZsXBSD05ZYgwfGf3GJhgCmUGYVqffpDdALQSS6JftnExrE+12rACoEmHkzYwKAGVK0Q==
 
-"@nestjs/platform-express@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-10.0.0.tgz#2178f29e5061cf3fa6b590ba4b525837c3e4ee23"
-  integrity sha512-jOQBPVpk7B4JFXZZwxHSsY6odIqZlea9CbqKzu/hfDyqRv+AwuJk5gprvvL6RpWAHNyRMH1r5/14bqcXD3+WGw==
+"@nestjs/platform-express@^9.4.3":
+  version "9.4.3"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-9.4.3.tgz#f61b75686bdfce566be3b54fa7bb20a4d87ed619"
+  integrity sha512-FpdczWoRSC0zz2dNL9u2AQLXKXRVtq4HgHklAhbL59X0uy+mcxhlSThG7DHzDMkoSnuuHY8ojDVf7mDxk+GtCw==
   dependencies:
     body-parser "1.20.2"
     cors "2.8.5"
@@ -1859,10 +1859,10 @@
     multer "1.4.4-lts.1"
     tslib "2.5.3"
 
-"@nestjs/platform-ws@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@nestjs/platform-ws/-/platform-ws-10.0.0.tgz#e374a029a21c1b0b6a9c72b35b57aa8b92772f5f"
-  integrity sha512-kDcrTzegvPl9m509OqVXmUk2Cxlntd1Z2cQUV+SG1DPTfk7zv+biIr6I5Y7kc5sW4jS/lnxteuXA5OJ0IXXfPg==
+"@nestjs/platform-ws@^9.4.3":
+  version "9.4.3"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-ws/-/platform-ws-9.4.3.tgz#9edb2ad9b2952c7010a741779ff727a134c897cb"
+  integrity sha512-JK0wrPlV0vbU+H+ISrj0+APFzVmtb7lX5X3NZgW99kevusSkwkfmya9jzQwWh7fe0ErgYZISvmxkb3PuyhDOlw==
   dependencies:
     tslib "2.5.3"
     ws "8.13.0"
@@ -1889,10 +1889,10 @@
     path-to-regexp "3.2.0"
     swagger-ui-dist "4.18.2"
 
-"@nestjs/testing@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@nestjs/testing/-/testing-10.0.0.tgz#0dbb293d866c1d94edf48d2d9e7c4e4585ff4c0b"
-  integrity sha512-U5q3+svkddpdSk51ZFCEnFpQuWxAwE4ahsX77FrqqCAYidr7HUtL/BHYOVzI5H9vUH6BvJxMbfo3tiUXQl/2aA==
+"@nestjs/testing@^9.4.3":
+  version "9.4.3"
+  resolved "https://registry.yarnpkg.com/@nestjs/testing/-/testing-9.4.3.tgz#53ffbabdd38f500b145c30f2fbb76dedad393d79"
+  integrity sha512-LDT8Ai2eKnTzvnPaJwWOK03qTaFap5uHHsJCv6dL0uKWk6hyF9jms8DjyVaGsaujCaXDG8izl1mDEER0OmxaZA==
   dependencies:
     tslib "2.5.3"
 
@@ -1903,10 +1903,10 @@
   dependencies:
     uuid "9.0.0"
 
-"@nestjs/websockets@^10.0.0":
-  version "10.0.0"
-  resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-10.0.0.tgz#06acace22c7093c345960104b8b7ba67e8b4f193"
-  integrity sha512-Qv7KKdJ7bNnR2jaA8rXhhqTuwbFoAV29TKA1EZIUWGL6OHb2do/JB14mJ9yDQfi1fbfb0xjxWno7iPgaO+LHUw==
+"@nestjs/websockets@^9.4.3":
+  version "9.4.3"
+  resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-9.4.3.tgz#0584a66bd4bc1563b0cb18a141d4a565397eddaf"
+  integrity sha512-LMLKJWZbWH3VQRxDK/658ynyN1n5lLCIen/dey2y5TzB0RNgxlSso/YJATVVfWNaT2CxPG8TUQMOTdopXCWGQw==
   dependencies:
     iterare "1.2.1"
     object-hash "3.0.0"
@@ -6514,10 +6514,10 @@ magic-string@0.25.1, magic-string@0.30.0, magic-string@>=0.27.0, magic-string@^0
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.4.13"
 
-mailgun.js@^8.0.1:
-  version "8.2.2"
-  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-8.2.2.tgz#97133d69fd76b77c67eedb394fd85b1875cac600"
-  integrity sha512-po/KtofzrTuKhHLenbmliDsVVOFANwcfDFUGnggwnyZJmZz7JgBlV6nzK9o2Fk+OK2SiBmJTK25RbkAj57Hd+Q==
+mailgun.js@^9.0.1:
+  version "9.0.1"
+  resolved "https://registry.yarnpkg.com/mailgun.js/-/mailgun.js-9.0.1.tgz#170f997f36d0af16cc4257ab21e4e3e82ed4d159"
+  integrity sha512-bVZ1zGh5UfQcChqIwIAil99hzoTeB3aHqAUbqmIBLMLcKfx+FF2qvhbc00WtwrFhe5dBQqQw6zPj0QBlqV4nXg==
   dependencies:
     axios "^1.3.3"
     base-64 "^1.0.0"
@@ -6909,14 +6909,14 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-mailgun@^3.1.5:
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-3.1.5.tgz#1b9d9cb6d9d1b7167e1f1ae6b48aa78c4f47ae70"
-  integrity sha512-sIU2x5SxXDfz1F6dzcZaD2/X4g85FXL2BjK7IoUxagqQIGoU1k4uBNE+KZ/tckgXu75mJuea4GBihb8noH6Bkw==
+nestjs-mailgun@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/nestjs-mailgun/-/nestjs-mailgun-4.0.0.tgz#f061f6c1d7c5489b45d220d208c2a307c7b1483b"
+  integrity sha512-jCL/UGNSnBwrzb8nYu1zv333m3gKKM6ybO0Xv6LjP8HwnTmKASWb6vGzH5//QUYnzEtW3AemQX55Hc2f/pSnvA==
   dependencies:
-    "@nestjs/common" "^9.0.11"
+    "@nestjs/common" "^10.0.0"
     form-data "^4.0.0"
-    mailgun.js "^8.0.1"
+    mailgun.js "^9.0.1"
 
 nestjs-pino@^3.3.0:
   version "3.3.0"
