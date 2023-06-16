@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { type JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
 
+import addMonths from 'date-fns/addMonths';
 import { UserRoleEnum } from '../enums/role.enum';
 import {
   JWT_BASE_OPTIONS,
@@ -63,6 +64,15 @@ export class AuthService {
     });
     if (!user) {
       throw new ForbiddenException('Password mismatched', password);
+    }
+    if (
+      user.isDemoUser &&
+      user.createdAt &&
+      addMonths(user.createdAt, 1) <= new Date()
+    ) {
+      throw new ForbiddenException(
+        'You have a Demo User account. Time to pay.',
+      );
     }
     if (!user.verified) {
       throw new ForbiddenException('You have to respond to our email', email);

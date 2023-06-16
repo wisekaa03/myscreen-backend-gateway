@@ -5,6 +5,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   forwardRef,
   Get,
   HttpCode,
@@ -26,8 +27,9 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-
 import { isDateString } from 'class-validator';
+import addMonths from 'date-fns/addMonths';
+
 import {
   BadRequestError,
   ForbiddenError,
@@ -54,6 +56,7 @@ import { PlaylistService } from '../database/playlist.service';
 import { MonitorEntity } from '../database/monitor.entity';
 import { ApplicationService } from '../database/application.service';
 import { TypeOrmFind } from '../shared/typeorm.find';
+import { UserService } from '@/database/user.service';
 
 @ApiResponse({
   status: 400,
@@ -99,6 +102,7 @@ export class MonitorController {
 
   constructor(
     private readonly monitorService: MonitorService,
+    private readonly userService: UserService,
     private readonly playlistService: PlaylistService,
     private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => WSGateway))
@@ -214,6 +218,24 @@ export class MonitorController {
     if (findMonitor) {
       throw new BadRequestException(
         `Монитор '${findMonitor.name}'/'${findMonitor.code}' уже существует`,
+      );
+    }
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new ForbiddenException();
+    }
+    if (user.isDemoUser && addMonths(Date.now(), 1) <= new Date()) {
+      throw new ForbiddenException(
+        'You have a Demo User account. Time to pay.',
+      );
+    }
+    const [, countMonitors] = await this.monitorService.findAndCount(userId, {
+      select: ['id'],
+      where: { userId },
+    });
+    if (countMonitors > 5) {
+      throw new ForbiddenException(
+        'You have a Demo User account. There are 5 monitors limit.',
       );
     }
 

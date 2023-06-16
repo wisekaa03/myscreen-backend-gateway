@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.36.18",
+  "version": "2.37.0",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -42,7 +42,7 @@
     "**/terser/commander": "^4.1.1",
     "**/**/concat-stream": ">=2.0.0",
     "**/**/debug": ">=4.3.4",
-    "**/**/dotenv": ">=16.2.0",
+    "**/**/dotenv": ">=16.3.0",
     "**/editly/execa": ">=7.1.1",
     "**/**/execa": "^5.1.1",
     "**/**/express": ">=4.18.2",
@@ -78,7 +78,7 @@
     "**/**/ws": ">=8.13.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.353.0",
+    "@aws-sdk/client-s3": "^3.354.0",
     "@elastic/elasticsearch": "^8.8.1",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.0.0",
@@ -93,8 +93,9 @@
     "@nestjs/websockets": "^10.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
+    "date-fns": "^2.30.0",
     "debug": "^4.3.4",
-    "dotenv": "^16.2.0",
+    "dotenv": "^16.3.0",
     "editly": "^0.14.2",
     "exceljs": "^4.3.0",
     "express": "^4.18.2",
@@ -147,7 +148,7 @@
     "@typescript-eslint/eslint-plugin": "^5.59.11",
     "@typescript-eslint/parser": "^5.59.11",
     "depcheck": "^1.4.3",
-    "eslint": "^8.42.0",
+    "eslint": "^8.43.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-prettier": "^8.8.0",

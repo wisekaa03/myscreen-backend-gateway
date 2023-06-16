@@ -12,6 +12,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import addMonths from 'date-fns/addMonths';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -109,6 +110,11 @@ export class AuthController {
     const user = await this.userService.findById(userId, role);
     if (!user) {
       throw new ForbiddenException();
+    }
+    if (user.isDemoUser && addMonths(Date.now(), 1) <= new Date()) {
+      throw new ForbiddenException(
+        'You have a Demo User account. Time to pay.',
+      );
     }
 
     return {
