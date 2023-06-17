@@ -105,18 +105,8 @@ export class AuthController {
     type: UserGetResponse,
   })
   async authorization(
-    @Req() { user: { id: userId, role } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
   ): Promise<UserGetResponse> {
-    const user = await this.userService.findById(userId, role);
-    if (!user) {
-      throw new ForbiddenException();
-    }
-    if (user.isDemoUser && addMonths(Date.now(), 1) <= new Date()) {
-      throw new ForbiddenException(
-        'You have a Demo User account. Time to pay.',
-      );
-    }
-
     return {
       status: Status.Success,
       data: userEntityToUser(user),

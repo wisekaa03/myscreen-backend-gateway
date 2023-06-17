@@ -15,7 +15,7 @@ import {
   FindManyOptions,
 } from 'typeorm';
 
-import { UserRoleEnum } from '@/enums';
+import { UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
 import { genKey } from '@/shared/genKey';
 import { TypeOrmFind } from '@/shared/typeorm.find';
@@ -120,13 +120,18 @@ export class UserService {
       throw new PreconditionFailedException('User exists', create.email);
     }
 
+    let { storageSpace } = create;
+    if (create.isDemoUser) {
+      storageSpace = UserStoreSpaceEnum.OWNER_DEMO;
+    }
+
     const user: DeepPartial<UserEntity> = {
       ...create,
       disabled: false,
       password: createHmac('sha256', password.normalize()).digest('hex'),
       emailConfirmKey: genKey(),
       verified: false,
-      isDemoUser: false,
+      storageSpace,
     };
     const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
