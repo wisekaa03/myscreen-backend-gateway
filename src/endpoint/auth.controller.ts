@@ -12,6 +12,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import addMonths from 'date-fns/addMonths';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -104,13 +105,8 @@ export class AuthController {
     type: UserGetResponse,
   })
   async authorization(
-    @Req() { user: { id: userId, role } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
   ): Promise<UserGetResponse> {
-    const user = await this.userService.findById(userId, role);
-    if (!user) {
-      throw new ForbiddenException();
-    }
-
     return {
       status: Status.Success,
       data: userEntityToUser(user),

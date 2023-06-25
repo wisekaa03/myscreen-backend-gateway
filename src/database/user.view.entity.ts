@@ -136,16 +136,6 @@ export class UserSizeEntity implements UserEntity {
 
   @ViewColumn()
   @ApiProperty({
-    description: 'Компания',
-    example: 'ACME corporation',
-    nullable: true,
-    required: false,
-  })
-  @IsString()
-  company?: string;
-
-  @ViewColumn()
-  @ApiProperty({
     description: 'Дисковое пространство',
     example: 20000000,
     required: false,
@@ -190,6 +180,115 @@ export class UserSizeEntity implements UserEntity {
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
   monitors?: MonitorEntity[];
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Компания',
+    example: 'ACME corporation',
+    nullable: true,
+    required: false,
+  })
+  @IsString()
+  company?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Юридический адрес',
+    example: 'г. Краснодар, ул. Красная, д. 1',
+    required: false,
+  })
+  @IsString()
+  companyLegalAddress?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Фактический адрес',
+    example: 'г. Краснодар, ул. Красная, д. 1',
+    required: false,
+  })
+  @IsString()
+  companyActualAddress?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Идентификационный номер налогоплательщика (ИНН)',
+    example: '012345678901',
+    required: false,
+  })
+  @IsString()
+  companyTIN?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Код Причины Постановки на учет (КПП)',
+    example: '012345678901',
+    required: false,
+  })
+  @IsString()
+  companyRRC?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Основной Государственный Регистрационный Номер (ОГРН)',
+    example: '012345678901',
+    required: false,
+  })
+  @IsString()
+  companyPSRN?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Телефон организации',
+    example: '+78002000000',
+    required: false,
+  })
+  @IsPhoneNumber()
+  companyPhone?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Email организации',
+    example: 'we@are.the.best',
+    required: false,
+  })
+  @IsString()
+  companyEmail?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Наименование банка',
+    example: 'Банк',
+    required: false,
+  })
+  @IsString()
+  companyBank?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Банковский идентификационный код (БИК)',
+    example: '012345678',
+    required: false,
+  })
+  @IsString()
+  companyBIC?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Корреспондентский счет',
+    example: '30101810400000000000',
+    required: false,
+  })
+  @IsString()
+  companyCorrespondentAccount?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Расчетный счет',
+    example: '40802810064580000000',
+    required: false,
+  })
+  @IsString()
+  companyPaymentAccount?: string;
 
   @ViewColumn()
   @ApiProperty({

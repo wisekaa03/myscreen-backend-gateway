@@ -6,6 +6,7 @@ import { MonitorService } from '../database/monitor.service';
 import { PlaylistService } from '../database/playlist.service';
 import { ApplicationService } from '../database/application.service';
 import { MonitorController } from './monitor.controller';
+import { UserService } from '@/database/user.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -28,6 +29,10 @@ describe(MonitorController.name, () => {
       providers: [
         {
           provide: MonitorService,
+          useClass: mockRepository,
+        },
+        {
+          provide: UserService,
           useClass: mockRepository,
         },
         {

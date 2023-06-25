@@ -1,11 +1,8 @@
 import { Request } from 'express';
-import { UserRoleEnum } from '@/enums';
+import { UserSizeEntity } from '@/database/user.view.entity';
 
 declare module 'express' {
   export interface Request {
-    user: {
-      id: string;
-      role: UserRoleEnum[];
-    };
+    user: UserSizeEntity;
   }
 }

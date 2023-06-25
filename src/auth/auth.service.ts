@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { type JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
 
+import addMonths from 'date-fns/addMonths';
 import { UserRoleEnum } from '../enums/role.enum';
+import { UserStoreSpaceEnum } from '../enums/store-space.enum';
 import {
   JWT_BASE_OPTIONS,
   type MyscreenJwtPayload,
@@ -73,6 +75,24 @@ export class AuthService {
       : false;
     if (!valid) {
       throw new ForbiddenException('Password mismatched', password);
+    }
+
+    if (user.isDemoUser) {
+      if (user.createdAt && addMonths(user.createdAt, 1) <= new Date()) {
+        throw new ForbiddenException(
+          'You have a Demo User account. Time to pay.',
+        );
+      }
+      if ((user.storageSpace || 0) > UserStoreSpaceEnum.OWNER_DEMO) {
+        throw new ForbiddenException(
+          'You have a Demo User account. Time to pay..',
+        );
+      }
+      if ((user.countUsedSpace || 0) > UserStoreSpaceEnum.OWNER_DEMO) {
+        throw new ForbiddenException(
+          'You have a Demo User account. Time to pay...',
+        );
+      }
     }
 
     const [token, refresh] = await Promise.all([
