@@ -103,7 +103,7 @@ export class ApplicationController {
     @Body() { where, select, scope }: ApplicationGetRequest,
   ): Promise<ApplicationsGetResponse> {
     const sqlWhere = TypeOrmFind.Where(where);
-    if (role.includes(UserRoleEnum.MonitorOwner)) {
+    if (role === UserRoleEnum.MonitorOwner) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
@@ -120,7 +120,7 @@ export class ApplicationController {
       };
     }
 
-    if (role.includes(UserRoleEnum.Advertiser)) {
+    if (role === UserRoleEnum.Advertiser) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,

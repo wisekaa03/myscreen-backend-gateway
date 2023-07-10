@@ -135,10 +135,10 @@ export class MonitorController {
       ...paginationQueryToConfig(scope),
       select,
     };
-    if (role.includes(UserRoleEnum.Monitor)) {
+    if (role === UserRoleEnum.Monitor) {
       // добавляем то, что содержится у нас в userId: monitorId.
       conditional.where = { id: userId, ...TypeOrmFind.Where(where) };
-    } else if (role.includes(UserRoleEnum.MonitorOwner)) {
+    } else if (role === UserRoleEnum.MonitorOwner) {
       conditional.where = { userId, ...TypeOrmFind.Where(where) };
     } else {
       conditional.where = {
@@ -292,7 +292,7 @@ export class MonitorController {
     // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
     // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
     // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
-    if (role.includes(UserRoleEnum.Advertiser)) {
+    if (role === UserRoleEnum.Advertiser) {
       const tryPromise = attach.monitors.map(async (monitorId) => {
         const approved = await this.applicationService.find({
           where: {
@@ -328,7 +328,7 @@ export class MonitorController {
         playlist,
       });
 
-      if (!role.includes(UserRoleEnum.Monitor)) {
+      if (role !== UserRoleEnum.Monitor) {
         let approved: ApplicationApproved;
         if (monitor.userId === userId) {
           approved = ApplicationApproved.Allowed;
@@ -457,7 +457,7 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
     const conditional: FindManyOptions<MonitorEntity> = {};
-    if (role.includes(UserRoleEnum.Monitor)) {
+    if (role === UserRoleEnum.Monitor) {
       conditional.where = { id: userId };
     } else {
       conditional.where = { userId, id };
@@ -561,7 +561,7 @@ export class MonitorController {
     const conditional: FindManyOptions<MonitorEntity> = {
       relations: ['playlist'],
     };
-    if (role.includes(UserRoleEnum.Monitor)) {
+    if (role === UserRoleEnum.Monitor) {
       conditional.where = { id: userId };
     } else {
       conditional.where = { userId, id };
