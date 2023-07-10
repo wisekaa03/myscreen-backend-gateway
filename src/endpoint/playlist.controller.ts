@@ -114,7 +114,7 @@ export class PlaylistController {
       select,
       where: TypeOrmFind.Where(
         where,
-        role?.includes(UserRoleEnum.Administrator) ? undefined : userId,
+        role === UserRoleEnum.Administrator ? undefined : userId,
       ),
     });
 
