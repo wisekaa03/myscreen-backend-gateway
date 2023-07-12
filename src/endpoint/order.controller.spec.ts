@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard } from '@/guards';
 import { OrderService } from '@/database/order.service';
 import { PrintService } from '@/print/print.service';
+import { UserService } from '@/database/user.service';
 import { OrderController } from './order.controller';
 
 export const mockRepository = jest.fn(() => ({
@@ -30,6 +31,10 @@ describe(OrderController.name, () => {
         },
         {
           provide: PrintService,
+          useClass: mockRepository,
+        },
+        {
+          provide: UserService,
           useClass: mockRepository,
         },
       ],

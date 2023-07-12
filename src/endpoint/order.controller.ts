@@ -40,6 +40,7 @@ import { TypeOrmFind } from '@/shared/typeorm.find';
 import { PrintService } from '@/print/print.service';
 import { SpecificFormat } from '@/enums/invoice-format.enum';
 import { formatToContentType } from '@/shared/format-to-content-type';
+import { UserService } from '@/database/user.service';
 
 @ApiResponse({
   status: 400,
@@ -86,6 +87,7 @@ export class OrderController {
   constructor(
     private readonly orderService: OrderService,
     private readonly printService: PrintService,
+    private readonly userService: UserService,
   ) {}
 
   @Post('/')
@@ -145,9 +147,9 @@ export class OrderController {
   async invoice(
     @Req() { user: { id: userId } }: ExpressRequest,
     @Res() res: ExpressResponse,
-    @Body() { format }: InvoiceRequest,
+    @Body() { format, sum }: InvoiceRequest,
   ): Promise<void> {
-    const data = await this.printService.invoice(userId, format);
+    const data = await this.printService.invoice(userId, format, sum);
 
     const specificFormat = formatToContentType[format]
       ? format

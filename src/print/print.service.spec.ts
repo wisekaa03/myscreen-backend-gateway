@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MonitorService } from '../database/monitor.service';
 import { PrintService } from './print.service';
+import { UserService } from '@/database/user.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -23,6 +24,10 @@ describe(PrintService.name, () => {
         PrintService,
         {
           provide: MonitorService,
+          useClass: mockRepository,
+        },
+        {
+          provide: UserService,
           useClass: mockRepository,
         },
       ],

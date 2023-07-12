@@ -1,16 +1,29 @@
 import excelJS from 'exceljs';
+import { format } from '@vicimpa/rubles';
+
+import { UserEntity } from '@/database/user.entity';
+
+// сумма прописью для чисел от 0 до 999 триллионов
+// можно передать параметр "валюта": RUB,USD,EUR (по умолчанию RUB)
 
 export interface PrintSpecific {
-  xls(opt: Record<string, string | Date>): Promise<excelJS.Buffer>;
+  xls(opt: Record<string, any>): Promise<excelJS.Buffer>;
 
-  pdf(opt: Record<string, string | Date>): Promise<excelJS.Buffer>;
+  pdf(opt: Record<string, any>): Promise<excelJS.Buffer>;
 }
+
+export const numberFormat = (num: number) => num.toFixed(2);
+export const vat = (num: number) => num * 0.2;
 
 export const printSpecific: Record<string, PrintSpecific> = {
   invoice: {
-    xls: async ({ dateFrom, dateTo }) => {
+    xls: async ({ user, sum }: { user: UserEntity; sum: number }) => {
       const workbook = new excelJS.Workbook();
       const worksheet = workbook.addWorksheet('Счёт');
+
+      const withoutVat = numberFormat(sum - vat(sum));
+      const vatSum = numberFormat(vat(sum));
+      const wordsSum = format(sum);
 
       const rows = [
         [
@@ -82,12 +95,21 @@ export const printSpecific: Record<string, PrintSpecific> = {
           '',
           'Сумма, рубли РФ',
         ],
-        ['', '1', 'Услуги «Яндекс.Директ».', '', '', '', '', '5 000,00'],
-        ['', '', '', '', '', '', 'Итого без НДС:', '5 000,00'],
-        ['', '', '', '', '', '', 'НДС:', '1 000,00'],
-        ['', '', '', '', '', '', 'Всего к оплате, рубли РФ:', '6 000,00'],
+        ['', '1', 'Услуги «Яндекс.Директ».', '', '', '', '', withoutVat],
+        ['', '', '', '', '', '', 'Итого без НДС:', withoutVat],
+        ['', '', '', '', '', '', 'НДС:', vatSum],
+        [
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          'Всего к оплате, рубли РФ:',
+          numberFormat(sum),
+        ],
         [],
-        ['', 'К оплате: Шесть тысяч рублей 00 копеек'],
+        ['', `К оплате: ${wordsSum}`],
         [],
         ['', 'Коммерческий директор'],
         ['', 'По доверенности №95 от 15.06.2018', '', '', '(Л.Ф. Савков)'],
@@ -515,7 +537,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
       return workbook.xlsx.writeBuffer();
     },
 
-    pdf: async ({ dateFrom, dateTo }) => {
+    pdf: async ({ user, sum }: { user: UserEntity; sum: number }) => {
       const workbook = new excelJS.Workbook();
       const worksheet = workbook.addWorksheet('Счёт');
 
