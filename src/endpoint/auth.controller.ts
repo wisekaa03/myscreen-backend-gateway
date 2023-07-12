@@ -136,6 +136,9 @@ export class AuthController {
     @Body() update: UserUpdateRequest,
   ): Promise<UserGetResponse> {
     const data = await this.userService.update(userId, update);
+    if (!data) {
+      throw new NotFoundException();
+    }
 
     return {
       status: Status.Success,

@@ -1,7 +1,7 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsDefined, IsEnum, IsNotEmpty } from 'class-validator';
+// import { IsEnum } from 'class-validator';
 
-import { UserRole, UserRoleEnum } from '@/enums';
+// import { UserRole, UserRoleEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 
 export class UserUpdateRequest extends PartialType(
@@ -28,15 +28,13 @@ export class UserUpdateRequest extends PartialType(
     'companyEmail',
   ]),
 ) {
-  @ApiProperty({
-    description: 'Роль пользователя',
-    enum: UserRole,
-    enumName: 'UserRoleRequest',
-    example: UserRoleEnum.Advertiser,
-    required: false,
-  })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsEnum(UserRole)
-  role!: UserRoleEnum;
+  // @ApiProperty({
+  //   description: 'Роль пользователя',
+  //   enum: UserRole,
+  //   enumName: 'UserRoleRequest',
+  //   example: UserRoleEnum.Advertiser,
+  //   required: false,
+  // })
+  // @IsEnum(UserRole)
+  // role?: UserRoleEnum;
 }

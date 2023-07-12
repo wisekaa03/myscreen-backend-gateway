@@ -54,7 +54,7 @@ export class UserService {
   async update(
     userId: string,
     update: Partial<UserEntity>,
-  ): Promise<UserEntity> {
+  ): Promise<UserSizeEntity | null> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new ForbiddenException();
@@ -76,9 +76,11 @@ export class UserService {
       ]).then(([saved]) => saved);
     }
 
-    return this.userRepository.save(
+    const userSaved = await this.userRepository.save(
       this.userRepository.create(Object.assign(user, update)),
     );
+
+    return this.userSizeRepository.findOne({ where: { id: userSaved.id } });
   }
 
   /**

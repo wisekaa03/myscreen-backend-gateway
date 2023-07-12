@@ -2246,7 +2246,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.37.19
+  version: 2.37.20
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2564,11 +2564,6 @@ components:
       required:
         - status
         - data
-    UserRoleRequest:
-      type: string
-      enum:
-        - monitor-owner
-        - advertiser
     UserUpdateRequest:
       type: object
       properties:
@@ -2656,10 +2651,6 @@ components:
           type: string
           description: Расчетный счет
           example: "40802810064580000000"
-        role:
-          description: Роль пользователя
-          example: advertiser
-          $ref: "#/components/schemas/UserRoleRequest"
     LoginRequest:
       type: object
       properties:
@@ -2718,6 +2709,11 @@ components:
         - status
         - payload
         - data
+    UserRoleRequest:
+      type: string
+      enum:
+        - monitor-owner
+        - advertiser
     RegisterRequest:
       type: object
       properties:
