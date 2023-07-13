@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
 
 import { SpecificFormat } from '@/enums/invoice-format.enum';
 
@@ -14,4 +14,13 @@ export class InvoiceRequest {
   @IsNotEmpty()
   @IsEnum(SpecificFormat)
   format!: SpecificFormat;
+
+  @ApiProperty({
+    description: 'Сумма счета',
+    example: 1000,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  sum!: number;
 }

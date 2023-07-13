@@ -2246,7 +2246,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.37.17
+  version: 2.37.23
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2612,6 +2612,50 @@ components:
           description: Компания
           example: ACME corporation
           nullable: true
+        companyLegalAddress:
+          type: string
+          description: Юридический адрес
+          example: г. Краснодар, ул. Красная, д. 1
+        companyActualAddress:
+          type: string
+          description: Фактический адрес
+          example: г. Краснодар, ул. Красная, д. 1
+        companyTIN:
+          type: string
+          description: Идентификационный номер налогоплательщика (ИНН)
+          example: "012345678901"
+        companyRRC:
+          type: string
+          description: Код Причины Постановки на учет (КПП)
+          example: "012345678901"
+        companyPSRN:
+          type: string
+          description: Основной Государственный Регистрационный Номер (ОГРН)
+          example: "012345678901"
+        companyPhone:
+          type: string
+          description: Телефон организации
+          example: "+78002000000"
+        companyEmail:
+          type: string
+          description: Email организации
+          example: we@are.the.best
+        companyBank:
+          type: string
+          description: Наименование банка
+          example: Банк
+        companyBIC:
+          type: string
+          description: Банковский идентификационный код (БИК)
+          example: "012345678"
+        companyCorrespondentAccount:
+          type: string
+          description: Корреспондентский счет
+          example: "30101810400000000000"
+        companyPaymentAccount:
+          type: string
+          description: Расчетный счет
+          example: "40802810064580000000"
         role:
           description: Роль пользователя
           example: advertiser
@@ -4952,8 +4996,13 @@ components:
           description: Формат получаемого файла
           example: xlsx
           $ref: "#/components/schemas/InvoiceFormat"
+        sum:
+          type: number
+          description: Сумма счета
+          example: 1000
       required:
         - format
+        - sum
     PaymentRequest:
       type: object
       properties:

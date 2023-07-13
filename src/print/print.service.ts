@@ -2,18 +2,23 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
   Scope,
 } from '@nestjs/common';
 import excelJS from 'exceljs';
 import { MonitorService } from '@/database/monitor.service';
 import { SpecificFormat } from '@/enums/invoice-format.enum';
 import { printSpecific } from './print.specific';
+import { UserService } from '@/database/user.service';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PrintService {
   logger = new Logger(PrintService.name);
 
-  constructor(private readonly monitorService: MonitorService) {}
+  constructor(
+    private readonly monitorService: MonitorService,
+    private readonly userService: UserService,
+  ) {}
 
   /**
    * Invoice
@@ -24,14 +29,20 @@ export class PrintService {
   async invoice(
     userId: string,
     format: SpecificFormat,
+    sum: number,
   ): Promise<excelJS.Buffer> {
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     switch (format) {
       case SpecificFormat.PDF:
-        return printSpecific.invoice.pdf({});
+        return printSpecific.invoice.pdf({ user, sum });
 
       case SpecificFormat.XLSX:
       default:
-        return printSpecific.invoice.xls({});
+        return printSpecific.invoice.xls({ user, sum });
     }
   }
 

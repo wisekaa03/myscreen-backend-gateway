@@ -26,9 +26,8 @@ export class TypeOrmFind {
     const columns = repository.metadata.ownColumns;
     if (orderBy) {
       Object.entries(orderBy).forEach(([field, direction]) => {
-        const column = columns.find(
-          (value) => value.databaseName === field,
-        )?.type;
+        const column = columns.find((value) => value.databaseName === field)
+          ?.type;
         const d = direction === 'DESC' ? 'DESC' : 'ASC';
         // TODO: эх... разобраться с relations:  || (find.relations && (find.take || find.skip))
         if (
@@ -86,79 +85,85 @@ export class TypeOrmFind {
   ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
     if (Array.isArray(where)) {
       const whereIsNull = where.map((whereField) =>
-        Object.entries(whereField).reduce((accWhere, [field, value]) => {
-          if (field === 'dateWhenApp') {
-            return accWhere;
-          }
-          if (value === null) {
-            return { ...accWhere, [field]: IsNull() };
-          }
-          if (typeof value === 'string' && /%/.test(value)) {
-            return { ...accWhere, [field]: ILike(value) };
-          }
-          if (Array.isArray(value)) {
-            if (
-              value.length === 2 &&
-              isDateString(value[0]) &&
-              isDateString(value[1])
-            ) {
-              return { ...accWhere, [field]: Between(value[0], value[1]) };
+        Object.entries(whereField).reduce(
+          (accWhere, [field, value]) => {
+            if (field === 'dateWhenApp') {
+              return accWhere;
             }
-            return { ...accWhere, [field]: In(value) };
-          }
-          if (typeof value === 'string' && /^>=/.test(value)) {
-            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(2)) };
-          }
-          if (typeof value === 'string' && /^<=/.test(value)) {
-            return { ...accWhere, [field]: LessThanOrEqual(value.slice(2)) };
-          }
-          if (typeof value === 'string' && /^>/.test(value)) {
-            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
-          }
-          if (typeof value === 'string' && /^</.test(value)) {
-            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
-          }
-          return { ...accWhere, [field]: value };
-        }, {} as Record<string, any>),
+            if (value === null) {
+              return { ...accWhere, [field]: IsNull() };
+            }
+            if (typeof value === 'string' && /%/.test(value)) {
+              return { ...accWhere, [field]: ILike(value) };
+            }
+            if (Array.isArray(value)) {
+              if (
+                value.length === 2 &&
+                isDateString(value[0]) &&
+                isDateString(value[1])
+              ) {
+                return { ...accWhere, [field]: Between(value[0], value[1]) };
+              }
+              return { ...accWhere, [field]: In(value) };
+            }
+            if (typeof value === 'string' && /^>=/.test(value)) {
+              return { ...accWhere, [field]: MoreThanOrEqual(value.slice(2)) };
+            }
+            if (typeof value === 'string' && /^<=/.test(value)) {
+              return { ...accWhere, [field]: LessThanOrEqual(value.slice(2)) };
+            }
+            if (typeof value === 'string' && /^>/.test(value)) {
+              return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
+            }
+            if (typeof value === 'string' && /^</.test(value)) {
+              return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
+            }
+            return { ...accWhere, [field]: value };
+          },
+          {} as Record<string, any>,
+        ),
       );
       return whereIsNull;
     }
 
     const whereIsNull = where
-      ? Object.entries(where).reduce((accWhere, [field, value]) => {
-          if (field === 'dateWhenApp') {
-            return accWhere;
-          }
-          if (value === null) {
-            return { ...accWhere, [field]: IsNull() };
-          }
-          if (typeof value === 'string' && /%/.test(value)) {
-            return { ...accWhere, [field]: ILike(value) };
-          }
-          if (Array.isArray(value)) {
-            if (
-              value.length === 2 &&
-              isDateString(value[0]) &&
-              isDateString(value[1])
-            ) {
-              return { ...accWhere, [field]: Between(value[0], value[1]) };
+      ? Object.entries(where).reduce(
+          (accWhere, [field, value]) => {
+            if (field === 'dateWhenApp') {
+              return accWhere;
             }
-            return { ...accWhere, [field]: In(value) };
-          }
-          if (typeof value === 'string' && /^>=/.test(value)) {
-            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(2)) };
-          }
-          if (typeof value === 'string' && /^<=/.test(value)) {
-            return { ...accWhere, [field]: LessThanOrEqual(value.slice(2)) };
-          }
-          if (typeof value === 'string' && /^>/.test(value)) {
-            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
-          }
-          if (typeof value === 'string' && /^</.test(value)) {
-            return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
-          }
-          return { ...accWhere, [field]: value };
-        }, {} as Record<string, any>)
+            if (value === null) {
+              return { ...accWhere, [field]: IsNull() };
+            }
+            if (typeof value === 'string' && /%/.test(value)) {
+              return { ...accWhere, [field]: ILike(value) };
+            }
+            if (Array.isArray(value)) {
+              if (
+                value.length === 2 &&
+                isDateString(value[0]) &&
+                isDateString(value[1])
+              ) {
+                return { ...accWhere, [field]: Between(value[0], value[1]) };
+              }
+              return { ...accWhere, [field]: In(value) };
+            }
+            if (typeof value === 'string' && /^>=/.test(value)) {
+              return { ...accWhere, [field]: MoreThanOrEqual(value.slice(2)) };
+            }
+            if (typeof value === 'string' && /^<=/.test(value)) {
+              return { ...accWhere, [field]: LessThanOrEqual(value.slice(2)) };
+            }
+            if (typeof value === 'string' && /^>/.test(value)) {
+              return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
+            }
+            if (typeof value === 'string' && /^</.test(value)) {
+              return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
+            }
+            return { ...accWhere, [field]: value };
+          },
+          {} as Record<string, any>,
+        )
       : {};
     return whereIsNull;
   };

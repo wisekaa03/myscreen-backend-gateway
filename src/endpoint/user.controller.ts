@@ -193,11 +193,14 @@ export class UserController {
       throw new ForbiddenException();
     }
 
+    const data = await this.userService.update(user.id, update);
+    if (!data) {
+      throw new NotFoundException();
+    }
+
     return {
       status: Status.Success,
-      data: await this.userService
-        .update(user.id, update)
-        .then(({ password, ...data }) => data),
+      data,
     };
   }
 

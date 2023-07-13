@@ -319,8 +319,8 @@ export class WSGateway
   }
 
   statistics(): number {
-    return [...this.clients.values()].filter((value) =>
-      value.roles?.includes(UserRoleEnum.Monitor),
+    return [...this.clients.values()].filter(
+      (value) => value.roles?.includes(UserRoleEnum.Monitor),
     ).length;
   }
 }
