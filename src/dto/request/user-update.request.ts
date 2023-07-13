@@ -26,6 +26,8 @@ export class UserUpdateRequest extends PartialType(
     'companyBank',
     'companyPaymentAccount',
     'companyEmail',
+    'companyRepresentative',
+    'companyFax',
   ]),
 ) {
   @ApiProperty({

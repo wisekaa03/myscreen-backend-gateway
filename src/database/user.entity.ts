@@ -294,6 +294,24 @@ export class UserEntity {
   @IsString()
   companyPaymentAccount?: string;
 
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Факс организации',
+    example: '+78002000000',
+    required: false,
+  })
+  @IsString()
+  companyFax?: string;
+
+  @Column({ default: '' })
+  @ApiProperty({
+    description: 'Представитель организации',
+    example: 'Тухбатуллина Юлия Евгеньевна',
+    required: false,
+  })
+  @IsString()
+  companyRepresentative?: string;
+
   @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',

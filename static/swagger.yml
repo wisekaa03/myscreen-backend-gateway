@@ -2246,7 +2246,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.37.27
+  version: 2.37.28
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2530,6 +2530,14 @@ components:
           type: string
           description: Расчетный счет
           example: "40802810064580000000"
+        companyFax:
+          type: string
+          description: Факс организации
+          example: "+78002000000"
+        companyRepresentative:
+          type: string
+          description: Представитель организации
+          example: Тухбатуллина Юлия Евгеньевна
         createdAt:
           format: date-time
           type: string
@@ -2656,6 +2664,14 @@ components:
           type: string
           description: Расчетный счет
           example: "40802810064580000000"
+        companyFax:
+          type: string
+          description: Факс организации
+          example: "+78002000000"
+        companyRepresentative:
+          type: string
+          description: Представитель организации
+          example: Тухбатуллина Юлия Евгеньевна
         role:
           description: Роль пользователя
           example: advertiser
@@ -4830,6 +4846,14 @@ components:
           type: string
           description: Расчетный счет
           example: "40802810064580000000"
+        companyFax:
+          type: string
+          description: Факс организации
+          example: "+78002000000"
+        companyRepresentative:
+          type: string
+          description: Представитель организации
+          example: Тухбатуллина Юлия Евгеньевна
         createdAt:
           description: Время создания
           example:
@@ -4884,6 +4908,8 @@ components:
               - companyBIC
               - companyCorrespondentAccount
               - companyPaymentAccount
+              - companyFax
+              - companyRepresentative
               - createdAt
               - updatedAt
         scope:

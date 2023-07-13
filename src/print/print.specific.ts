@@ -1,5 +1,7 @@
 import excelJS from 'exceljs';
 import { format } from '@vicimpa/rubles';
+import { format as dateFormat } from 'date-fns';
+import dateRu from 'date-fns/locale/ru';
 
 import { UserEntity } from '@/database/user.entity';
 import { OrderEntity } from '@/database/order.entity';
@@ -28,7 +30,10 @@ export const printSpecific: Record<string, PrintSpecific> = {
       const workbook = new excelJS.Workbook();
       const worksheet = workbook.addWorksheet('Счёт');
 
-      const { sum } = invoice;
+      const { sum, seqNo, createdAt } = invoice;
+      const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+        locale: dateRu,
+      });
       const withoutVat = numberFormat(sum - vat(sum));
       const vatSum = numberFormat(vat(sum));
       const wordsSum = format(sum);
@@ -71,7 +76,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
           '2. В назначении платежа, пожалуйста, указывайте номер счета.',
         ],
         [],
-        ['', `СЧЕТ № ${invoice} от 27 февраля 2020 г.`],
+        ['', `СЧЕТ № ${seqNo} от ${createdAtFormat}`],
         [],
         [
           '',
@@ -83,11 +88,11 @@ export const printSpecific: Record<string, PrintSpecific> = {
         ],
         [
           '',
-          `Представитель заказчика: ${user.companyPhone}`,
+          `Представитель заказчика: ${user.companyRepresentative}`,
           '',
           '',
           '',
-          `Факс: ${user.companyPhone}`,
+          `Факс: ${user.companyFax}`,
         ],
         [],
         ['', 'Основание:'],

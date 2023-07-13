@@ -292,6 +292,24 @@ export class UserSizeEntity implements UserEntity {
 
   @ViewColumn()
   @ApiProperty({
+    description: 'Факс организации',
+    example: '+78002000000',
+    required: false,
+  })
+  @IsString()
+  companyFax?: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Представитель организации',
+    example: 'Тухбатуллина Юлия Евгеньевна',
+    required: false,
+  })
+  @IsString()
+  companyRepresentative?: string;
+
+  @ViewColumn()
+  @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T10:00:00.147Z',
     required: true,
