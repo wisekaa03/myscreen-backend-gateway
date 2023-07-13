@@ -1,16 +1,11 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-  Scope,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Scope } from '@nestjs/common';
 import excelJS from 'exceljs';
 import { MonitorService } from '@/database/monitor.service';
 import { SpecificFormat } from '@/enums/invoice-format.enum';
 import { printSpecific } from './print.specific';
 import { UserService } from '@/database/user.service';
 import { OrderService } from '@/database/order.service';
+import { OrderEntity } from '@/database/order.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PrintService {
@@ -32,7 +27,7 @@ export class PrintService {
     userId: string,
     format: SpecificFormat,
     sum: number,
-  ): Promise<excelJS.Buffer> {
+  ): Promise<[OrderEntity, excelJS.Buffer]> {
     const user = await this.userService.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -46,11 +41,11 @@ export class PrintService {
 
     switch (format) {
       case SpecificFormat.PDF:
-        return printSpecific.invoice.pdf({ user, invoice });
+        return [invoice, await printSpecific.invoice.pdf({ user, invoice })];
 
       case SpecificFormat.XLSX:
       default:
-        return printSpecific.invoice.xls({ user, invoice });
+        return [invoice, await printSpecific.invoice.xls({ user, invoice })];
     }
   }
 
