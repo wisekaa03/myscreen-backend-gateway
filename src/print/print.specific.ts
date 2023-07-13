@@ -503,15 +503,15 @@ export const printSpecific: Record<string, PrintSpecific> = {
       worksheet.mergeCells('B39:H39');
 
       const yandexPng = workbook.addImage({
-        filename: 'src/print/yandex.png',
+        filename: 'static/yandex.png',
         extension: 'png',
       });
       const yandexSignPng = workbook.addImage({
-        filename: 'src/print/yandex-sign.png',
+        filename: 'static/yandex-sign.png',
         extension: 'png',
       });
       const yandexStampPng = workbook.addImage({
-        filename: 'src/print/yandex-stamp.png',
+        filename: 'static/yandex-stamp.png',
         extension: 'png',
       });
 
