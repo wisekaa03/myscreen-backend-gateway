@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  ForbiddenException,
   Get,
   HttpCode,
   Ip,
@@ -10,9 +9,9 @@ import {
   Patch,
   Post,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import addMonths from 'date-fns/addMonths';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -107,9 +106,14 @@ export class AuthController {
   async authorization(
     @Req() { user }: ExpressRequest,
   ): Promise<UserGetResponse> {
+    const data = await this.userService.findById(user.id);
+    if (!data) {
+      throw new UnauthorizedException();
+    }
+
     return {
       status: Status.Success,
-      data: userEntityToUser(user),
+      data: userEntityToUser(data),
     };
   }
 
@@ -137,7 +141,7 @@ export class AuthController {
   ): Promise<UserGetResponse> {
     const data = await this.userService.update(userId, update);
     if (!data) {
-      throw new NotFoundException();
+      throw new UnauthorizedException();
     }
 
     return {
