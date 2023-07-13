@@ -6,7 +6,6 @@ import {
   Body,
   Controller,
   HttpCode,
-  InternalServerErrorException,
   Logger,
   Post,
   Req,
@@ -19,6 +18,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { format as dateFormat } from 'date-fns';
+import dateRu from 'date-fns/locale/ru';
 
 import {
   BadRequestError,
@@ -149,16 +150,30 @@ export class OrderController {
     @Res() res: ExpressResponse,
     @Body() { format, sum }: InvoiceRequest,
   ): Promise<void> {
-    const data = await this.printService.invoice(userId, format, sum);
+    const [invoice, data] = await this.printService.invoice(
+      userId,
+      format,
+      sum,
+    );
 
     const specificFormat = formatToContentType[format]
       ? format
       : SpecificFormat.XLSX;
 
+    const createdAt = dateFormat(
+      invoice.createdAt,
+      "dd_LLLL_yyyy_'г._в'_hh_mm",
+      {
+        locale: dateRu,
+      },
+    );
+    const invoiceFilename = encodeURI(
+      `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
+    );
     res.statusCode = 200;
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="invoice.${specificFormat}"`,
+      `attachment; filename="${invoiceFilename}"`,
     );
     res.setHeader('Content-Type', formatToContentType[format]);
 

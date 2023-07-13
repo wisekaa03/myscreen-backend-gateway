@@ -1,7 +1,10 @@
 import excelJS from 'exceljs';
 import { format } from '@vicimpa/rubles';
+import { format as dateFormat } from 'date-fns';
+import dateRu from 'date-fns/locale/ru';
 
 import { UserEntity } from '@/database/user.entity';
+import { OrderEntity } from '@/database/order.entity';
 
 // сумма прописью для чисел от 0 до 999 триллионов
 // можно передать параметр "валюта": RUB,USD,EUR (по умолчанию RUB)
@@ -17,10 +20,20 @@ export const vat = (num: number) => num * 0.2;
 
 export const printSpecific: Record<string, PrintSpecific> = {
   invoice: {
-    xls: async ({ user, sum }: { user: UserEntity; sum: number }) => {
+    xls: async ({
+      user,
+      invoice,
+    }: {
+      user: UserEntity;
+      invoice: OrderEntity;
+    }) => {
       const workbook = new excelJS.Workbook();
       const worksheet = workbook.addWorksheet('Счёт');
 
+      const { sum, seqNo, createdAt } = invoice;
+      const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+        locale: dateRu,
+      });
       const withoutVat = numberFormat(sum - vat(sum));
       const vatSum = numberFormat(vat(sum));
       const wordsSum = format(sum);
@@ -63,23 +76,23 @@ export const printSpecific: Record<string, PrintSpecific> = {
           '2. В назначении платежа, пожалуйста, указывайте номер счета.',
         ],
         [],
-        ['', 'СЧЕТ № Б-2438137758-1 от 27 февраля 2020 г.'],
+        ['', `СЧЕТ № ${seqNo} от ${createdAtFormat}`],
         [],
         [
           '',
-          'Заказчик: ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ "ТОПАРТ"',
+          `Заказчик: ${user.company}`,
           '',
           '',
           '',
-          'Телефоны: 8(8553) 37-72-62',
+          `Телефоны: ${user.companyPhone}`,
         ],
         [
           '',
-          'Представитель заказчика: Тухбатуллина Юлия Евгеньевна',
+          `Представитель заказчика: ${user.companyRepresentative}`,
           '',
           '',
           '',
-          'Факс: 8(8553) 37-72-62',
+          `Факс: ${user.companyFax}`,
         ],
         [],
         ['', 'Основание:'],
@@ -537,7 +550,13 @@ export const printSpecific: Record<string, PrintSpecific> = {
       return workbook.xlsx.writeBuffer();
     },
 
-    pdf: async ({ user, sum }: { user: UserEntity; sum: number }) => {
+    pdf: async ({
+      user,
+      invoice,
+    }: {
+      user: UserEntity;
+      invoice: OrderEntity;
+    }) => {
       const workbook = new excelJS.Workbook();
       const worksheet = workbook.addWorksheet('Счёт');
 
