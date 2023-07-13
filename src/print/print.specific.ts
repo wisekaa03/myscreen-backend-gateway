@@ -67,7 +67,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
         [],
         [
           '',
-          'Заказчик: ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ "ТОПАРТ"',
+          `Заказчик: ${user.company}`,
           '',
           '',
           '',
