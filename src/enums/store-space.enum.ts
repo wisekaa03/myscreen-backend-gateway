@@ -1,6 +1,5 @@
 export enum UserStoreSpaceEnum {
-  OWNER_DEMO = 1000000000,
-  OWNER_FULL = 20000000000,
-  OWNER_VIP = Infinity,
-  // ADVERTISER_FULL = 20000000000,
+  DEMO = 1000000000,
+  FULL = 20000000000,
+  VIP = Infinity,
 }

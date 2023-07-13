@@ -83,12 +83,12 @@ export class AuthService {
           'You have a Demo User account. Time to pay.',
         );
       }
-      if ((user.storageSpace || 0) > UserStoreSpaceEnum.OWNER_DEMO) {
+      if ((user.storageSpace || 0) > UserStoreSpaceEnum.DEMO) {
         throw new ForbiddenException(
           'You have a Demo User account. Time to pay..',
         );
       }
-      if ((user.countUsedSpace || 0) > UserStoreSpaceEnum.OWNER_DEMO) {
+      if ((user.countUsedSpace || 0) > UserStoreSpaceEnum.DEMO) {
         throw new ForbiddenException(
           'You have a Demo User account. Time to pay...',
         );

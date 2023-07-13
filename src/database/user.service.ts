@@ -124,7 +124,7 @@ export class UserService {
 
     let { storageSpace } = create;
     if (create.isDemoUser) {
-      storageSpace = UserStoreSpaceEnum.OWNER_DEMO;
+      storageSpace = UserStoreSpaceEnum.DEMO;
     }
 
     const user: DeepPartial<UserEntity> = {
