@@ -25,8 +25,14 @@ export class OrderService {
     return this.orderRepository.findOne(TypeOrmFind.Nullable(find));
   }
 
-  async create(user: UserEntity): Promise<OrderEntity> {
+  async create(
+    user: UserEntity,
+    sum: number,
+    description?: string,
+  ): Promise<OrderEntity> {
     const order: DeepPartial<OrderEntity> = {
+      sum,
+      description,
       user,
     };
 

@@ -37,6 +37,14 @@ export class OrderEntity {
   @IsString()
   description!: string;
 
+  @Column()
+  @ApiProperty({
+    description: 'Сумма счета',
+    example: 1000,
+  })
+  @IsNumber()
+  sum!: number;
+
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onUpdate: 'CASCADE',
     onDelete: 'CASCADE',
