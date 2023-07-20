@@ -62,7 +62,6 @@ export class FileService {
     private readonly monitorService: MonitorService,
     @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
-    @Inject(forwardRef(() => PlaylistService))
     private readonly playlistService: PlaylistService,
     @InjectS3()
     private readonly s3Service: S3,

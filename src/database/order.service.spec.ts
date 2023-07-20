@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
+import { PrintService } from '@/print/print.service';
 import { OrderEntity } from './order.entity';
 import { OrderService } from './order.service';
 
@@ -24,6 +26,10 @@ describe(OrderService.name, () => {
         OrderService,
         {
           provide: getRepositoryToken(OrderEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: PrintService,
           useClass: mockRepository,
         },
       ],

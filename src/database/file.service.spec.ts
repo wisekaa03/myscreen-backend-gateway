@@ -11,6 +11,7 @@ import { FileService } from './file.service';
 import { MonitorService } from './monitor.service';
 import { EditorService } from './editor.service';
 import { PlaylistService } from './playlist.service';
+import { MailService } from '@/mail/mail.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -18,6 +19,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: async () => Promise.resolve(''),
   metadata: {
     columns: [],
     relations: [],
@@ -31,7 +33,34 @@ describe(FileService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         FileService,
-        ConfigService,
+        {
+          provide: ConfigService,
+          useClass: mockRepository,
+        },
+        {
+          provide: MailService,
+          useClass: mockRepository,
+        },
+        {
+          provide: FolderService,
+          useClass: mockRepository,
+        },
+        {
+          provide: MonitorService,
+          useClass: mockRepository,
+        },
+        {
+          provide: EditorService,
+          useClass: mockRepository,
+        },
+        {
+          provide: PlaylistService,
+          useClass: mockRepository,
+        },
+        {
+          provide: getS3ConnectionToken(S3_MODULE_CONNECTION),
+          useClass: mockRepository,
+        },
         {
           provide: getRepositoryToken(FileEntity),
           useClass: mockRepository,
@@ -40,30 +69,10 @@ describe(FileService.name, () => {
           provide: getRepositoryToken(FilePreviewEntity),
           useClass: mockRepository,
         },
-        {
-          provide: getS3ConnectionToken(S3_MODULE_CONNECTION),
-          useClass: mockRepository,
-        },
-        {
-          provide: FolderService,
-          useClass: mockRepository,
-        },
-        {
-          provide: EditorService,
-          useClass: mockRepository,
-        },
-        {
-          provide: MonitorService,
-          useClass: mockRepository,
-        },
-        {
-          provide: PlaylistService,
-          useClass: mockRepository,
-        },
       ],
     }).compile();
 
-    service = module.get<FileService>(FileService);
+    service = module.get(FileService);
   });
 
   it('should be defined', () => {

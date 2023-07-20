@@ -14,6 +14,8 @@ import {
   BadRequestException,
   NotAcceptableException,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -44,6 +46,7 @@ export class EditorService {
   constructor(
     private readonly configService: ConfigService,
     private readonly folderService: FolderService,
+    @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @InjectRepository(EditorEntity)
     private readonly editorRepository: Repository<EditorEntity>,

@@ -46,7 +46,7 @@ describe(EditorService.name, () => {
       ],
     }).compile();
 
-    service = module.get<EditorService>(EditorService);
+    service = module.get(EditorService);
   });
 
   it('should be defined', () => {

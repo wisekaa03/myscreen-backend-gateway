@@ -51,7 +51,7 @@ describe(ApplicationService.name, () => {
       ],
     }).compile();
 
-    service = module.get<ApplicationService>(ApplicationService);
+    service = module.get(ApplicationService);
   });
 
   it('should be defined', () => {
