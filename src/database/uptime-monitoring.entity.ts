@@ -18,7 +18,6 @@ export class UptimeMonitoringEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор',
-    example: '1234567',
     format: 'uuid',
   })
   @IsUUID()

@@ -26,7 +26,6 @@ export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор файла',
-    example: '1234567',
     format: 'uuid',
   })
   @IsUUID()

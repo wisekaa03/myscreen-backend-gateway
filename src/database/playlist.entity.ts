@@ -36,7 +36,6 @@ export class PlaylistEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор плэйлиста',
-    example: '1234567',
     format: 'uuid',
     required: true,
   })

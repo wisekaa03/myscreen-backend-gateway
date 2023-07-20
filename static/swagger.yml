@@ -2294,7 +2294,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.38.0
+  version: 2.38.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2477,7 +2477,6 @@ components:
           type: string
           description: Идентификатор пользователя
           format: uuid
-          example: "1234567"
         email:
           type: string
           description: EMail пользователя
@@ -3445,7 +3444,6 @@ components:
         id:
           type: string
           description: Идентификатор плэйлиста
-          example: "1234567"
           format: uuid
         name:
           type: string
@@ -4784,7 +4782,6 @@ components:
           type: string
           description: Идентификатор пользователя
           format: uuid
-          example: "1234567"
         email:
           type: string
           description: EMail пользователя
@@ -4989,7 +4986,6 @@ components:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         description:
           type: string
@@ -5050,7 +5046,6 @@ components:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         description:
           type: string
@@ -5129,7 +5124,6 @@ components:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         approved:
           type: object
@@ -5149,7 +5143,6 @@ components:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         format:
           description: Формат получаемого файла
@@ -5195,7 +5188,6 @@ components:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         amount:
           type: string
@@ -5251,7 +5243,6 @@ components:
         id:
           type: string
           description: Идентификатор плэйлиста
-          example: "1234567"
           format: uuid
         name:
           type: string

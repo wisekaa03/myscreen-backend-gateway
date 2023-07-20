@@ -33,7 +33,6 @@ export class UserEntity {
   @ApiProperty({
     description: 'Идентификатор пользователя',
     format: 'uuid',
-    example: '1234567',
   })
   @IsUUID()
   id!: string;

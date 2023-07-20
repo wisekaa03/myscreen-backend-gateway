@@ -19,7 +19,6 @@ export class PaymentLogEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор',
-    example: '1234567',
     format: 'uuid',
   })
   @IsUUID()
