@@ -25,7 +25,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
+import { MonitorStatus, PlaylistStatusEnum } from '../enums/index';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';

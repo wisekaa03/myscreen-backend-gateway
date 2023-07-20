@@ -20,7 +20,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { FileEntity } from '@/database/file.entity';
+import { FileEntity } from './file.entity';
 import { EditorEntity } from './editor.entity';
 
 @Entity('editor_layer')

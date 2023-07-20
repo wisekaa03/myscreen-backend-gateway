@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { getS3ConnectionToken } from 'nestjs-s3';
 import { S3_MODULE_CONNECTION } from 'nestjs-s3/dist/s3.constants';
 
+import { MailService } from '../mail/mail.service';
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
@@ -11,7 +12,6 @@ import { FileService } from './file.service';
 import { MonitorService } from './monitor.service';
 import { EditorService } from './editor.service';
 import { PlaylistService } from './playlist.service';
-import { MailService } from '@/mail/mail.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),

@@ -24,7 +24,7 @@ import {
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
-import { UserRole, UserRoleEnum } from '@/enums';
+import { UserRole, UserRoleEnum } from '../enums/index';
 import { MonitorEntity } from '@/database/monitor.entity';
 
 @Entity('user')

@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsUUID } from 'class-validator';
+
 import { UserEntity } from '@/database/user.entity';
 
 @Entity('refresh_token')

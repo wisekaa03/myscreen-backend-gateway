@@ -5,12 +5,12 @@ import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
 import dateRu from 'date-fns/locale/ru';
 
-import { TypeOrmFind } from '@/shared/typeorm.find';
+import { TypeOrmFind } from '../shared/typeorm.find';
 import { OrderEntity } from './order.entity';
 import { UserEntity } from './user.entity';
-import { SpecificFormat } from '@/enums/invoice-format.enum';
-import { formatToContentType } from '@/shared/format-to-content-type';
-import { PrintService } from '@/print/print.service';
+import { SpecificFormat } from '../enums/invoice-format.enum';
+import { formatToContentType } from '../shared/format-to-content-type';
+import { PrintService } from '../print/print.service';
 
 @Injectable()
 export class OrderService {

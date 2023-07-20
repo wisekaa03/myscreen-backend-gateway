@@ -15,14 +15,14 @@ import {
   FindManyOptions,
 } from 'typeorm';
 
-import { UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
-import { decodeMailToken, generateMailToken } from '@/shared/mail-token';
-import { genKey } from '@/shared/genKey';
-import { TypeOrmFind } from '@/shared/typeorm.find';
-import { MailService } from '@/mail/mail.service';
+import { selectUserOptions } from '../dto/index';
+import { UserRoleEnum, UserStoreSpaceEnum } from '../enums/index';
+import { decodeMailToken, generateMailToken } from '../shared/mail-token';
+import { genKey } from '../shared/genKey';
+import { TypeOrmFind } from '../shared/typeorm.find';
+import { MailService } from '../mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserSizeEntity } from './user.view.entity';
-import { selectUserOptions } from '@/dto';
 
 @Injectable()
 export class UserService {

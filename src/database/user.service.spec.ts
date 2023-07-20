@@ -2,10 +2,10 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
+import { MailService } from '../mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserSizeEntity } from './user.view.entity';
 import { UserService } from './user.service';
-import { MailService } from '@/mail/mail.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
