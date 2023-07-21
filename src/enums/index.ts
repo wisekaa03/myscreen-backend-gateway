@@ -10,3 +10,4 @@ export * from './monitor.category.enum';
 export * from './application-approved.enum';
 export * from './playlist-status.enum';
 export * from './store-space.enum';
+export * from './invoice-approved.enum';

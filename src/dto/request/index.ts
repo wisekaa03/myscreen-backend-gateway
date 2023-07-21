@@ -29,6 +29,7 @@ export * from './files-delete.request';
 export * from './files-get.request';
 export * from './file-preview.request';
 export * from './order.request';
+export * from './order-partial.request';
 export * from './orders-get.request';
 export * from './order-invoice.request';
 export * from './order-approved.request';

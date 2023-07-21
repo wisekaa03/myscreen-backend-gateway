@@ -12,6 +12,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
   IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsString,
@@ -20,6 +21,7 @@ import {
 } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
+import { InvoiceApproved } from '@/enums/invoice-approved.enum';
 
 @Entity('order')
 export class OrderEntity {
@@ -45,17 +47,17 @@ export class OrderEntity {
   description!: string;
 
   @Column({
-    type: 'boolean',
-    default: null,
-    nullable: true,
+    type: 'enum',
+    enum: InvoiceApproved,
+    default: InvoiceApproved.PENDING,
     comment: 'Подтверждение/отклонение заказа',
   })
   @ApiProperty({
     description: 'Подтверждение/отклонение заказа',
     example: true,
   })
-  @IsBoolean()
-  approved!: boolean | null;
+  @IsEnum(InvoiceApproved)
+  approved!: InvoiceApproved;
 
   @Column()
   @ApiProperty({

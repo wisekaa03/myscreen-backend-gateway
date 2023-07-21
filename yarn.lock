@@ -7602,10 +7602,10 @@ pino-abstract-transport@^1.0.0, pino-abstract-transport@v1.0.0:
     readable-stream "^4.0.0"
     split2 "^4.0.0"
 
-pino-elasticsearch@^6.4.0:
-  version "6.4.0"
-  resolved "https://registry.yarnpkg.com/pino-elasticsearch/-/pino-elasticsearch-6.4.0.tgz#5ece10dc4030141b94cf559a48e314af38491de7"
-  integrity sha512-LamsoDrfHbZVDmXdcwutdcTpVjBM2C1D5X8D+zfHl4ubWGkYJU02+Ac775LSVfisc/qUtSxkzfxP0Q6NgJz6qg==
+pino-elasticsearch@^6.5.0:
+  version "6.5.0"
+  resolved "https://registry.yarnpkg.com/pino-elasticsearch/-/pino-elasticsearch-6.5.0.tgz#e3d9b1ef7a418ee7b2b9fd137ebaa5a7fe8974e2"
+  integrity sha512-2O1DluS0p+hwpmt2qy562adu+ewSWPmg8cCRpuudJGqWrSHcKq80VMaoWsztgohILbqGiNGetLg/qQJd9eLtbQ==
   dependencies:
     "@elastic/elasticsearch" "^8.2.1"
     minimist "^1.2.5"
@@ -7622,10 +7622,10 @@ pino-http@^8.3.3:
     pino-std-serializers "^6.0.0"
     process-warning "^2.0.0"
 
-pino-pretty@^10.0.1:
-  version "10.0.1"
-  resolved "https://registry.yarnpkg.com/pino-pretty/-/pino-pretty-10.0.1.tgz#54a11182068949ff3069f1f7857f297a14926e58"
-  integrity sha512-yrn00+jNpkvZX/NrPVCPIVHAfTDy3ahF0PND9tKqZk4j9s+loK8dpzrJj4dGb7i+WLuR50ussuTAiWoMWU+qeA==
+pino-pretty@^10.1.0:
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/pino-pretty/-/pino-pretty-10.1.0.tgz#d6917ca014338e56b4e6442fcf7dea8d83a4b081"
+  integrity sha512-9gAgVHCVTEq0ThcjoXkOICYQgdqh1h90WSuVAnNeCrRrefJInUvMbpDfy6PlsI29Nbu9UW9CGkUHztrR1A9N+A==
   dependencies:
     colorette "^2.0.7"
     dateformat "^4.6.3"
@@ -7694,9 +7694,9 @@ png-js@^1.0.0:
   integrity sha512-k+YsbhpA9e+EFfKjTCH3VW6aoKlyNYI6NYdTfDL4CIvFnvsuO84ttonmZE7rc+v23SLTH8XX+5w/Ak9v0xGY4g==
 
 postcss@^8.1.10:
-  version "8.4.26"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.26.tgz#1bc62ab19f8e1e5463d98cf74af39702a00a9e94"
-  integrity sha512-jrXHFF8iTloAenySjM/ob3gSj7pCu0Ji49hnjqzsgSRa50hkWCKD0HQ+gMNJkW38jBI68MpAAg7ZWwHwX8NMMw==
+  version "8.4.27"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.4.27.tgz#234d7e4b72e34ba5a92c29636734349e0d9c3057"
+  integrity sha512-gY/ACJtJPSmUFPDCHtX78+01fHa64FaU4zaaWfuh1MhGJISufJAH4cun6k/8fwsHYeK4UQmENQK+tRLCFJE8JQ==
   dependencies:
     nanoid "^3.3.6"
     picocolors "^1.0.0"
@@ -8851,9 +8851,9 @@ terser-webpack-plugin@^5.3.7:
     terser "^5.16.8"
 
 terser@^5.16.8:
-  version "5.19.1"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.19.1.tgz#dbd7231f224a9e2401d0f0959542ed74d76d340b"
-  integrity sha512-27hxBUVdV6GoNg1pKQ7Z5cbR6V9txPVyBA+FQw3BaZ1Wuzvztce5p156DaP0NVZNrMZZ+6iG9Syf7WgMNKDg2Q==
+  version "5.19.2"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.19.2.tgz#bdb8017a9a4a8de4663a7983f45c506534f9234e"
+  integrity sha512-qC5+dmecKJA4cpYxRa5aVkKehYsQKc+AHeKl0Oe62aYjBL8ZA33tTljktDHJSaxxMnbI5ZYw+o/S2DxxLu8OfA==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.8.2"

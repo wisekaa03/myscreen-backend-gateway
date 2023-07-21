@@ -2294,7 +2294,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.38.2
+  version: 2.38.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4992,7 +4992,7 @@ components:
           description: Описание заказа
           example: описание заказа
         approved:
-          type: object
+          type: string
           description: Подтверждение/отклонение заказа
           example: true
         sum:
@@ -5052,7 +5052,7 @@ components:
           description: Описание заказа
           example: описание заказа
         approved:
-          type: object
+          type: string
           description: Подтверждение/отклонение заказа
           example: true
         sum:
@@ -5126,7 +5126,7 @@ components:
           description: Идентификатор файла
           format: uuid
         approved:
-          type: object
+          type: string
           description: Подтверждение/отклонение заказа
           example: true
       required:
