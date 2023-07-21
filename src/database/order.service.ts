@@ -9,6 +9,7 @@ import { TypeOrmFind } from '../shared/typeorm.find';
 import { OrderEntity } from './order.entity';
 import { UserEntity } from './user.entity';
 import { SpecificFormat } from '../enums/invoice-format.enum';
+import { InvoiceApproved } from '../enums/invoice-approved.enum';
 import { formatToContentType } from '../shared/format-to-content-type';
 import { PrintService } from '../print/print.service';
 
@@ -41,7 +42,7 @@ export class OrderService {
       sum,
       description,
       user,
-      approved: null,
+      approved: InvoiceApproved.PENDING,
     };
 
     return this.orderRepository.save(this.orderRepository.create(order));
@@ -50,7 +51,7 @@ export class OrderService {
   async approved(
     user: UserEntity,
     id: string,
-    approved: boolean | null,
+    approved: InvoiceApproved,
   ): Promise<OrderEntity> {
     const order = await this.orderRepository.findOneBy({ id });
     if (!order) {

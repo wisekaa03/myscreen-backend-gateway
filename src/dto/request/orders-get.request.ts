@@ -7,6 +7,7 @@ import { swaggerGetModelProperties } from '../../shared/swagger-get-model-proper
 import { OrderEntity } from '../../database/order.entity';
 import { LimitRequest } from './limit.request';
 import { OrderRequest } from './order.request';
+import { OrderPartialRequest } from './order-partial.request';
 
 export class OrdersGetRequest {
   @ApiProperty({
@@ -17,7 +18,7 @@ export class OrdersGetRequest {
   @IsOptional()
   @ValidateNested()
   @Type(() => OrderRequest)
-  where?: FindOptionsWhere<OrderRequest>;
+  where?: FindOptionsWhere<OrderPartialRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
@@ -27,7 +28,7 @@ export class OrdersGetRequest {
     required: false,
   })
   @IsOptional()
-  select?: FindOptionsSelect<OrderRequest>;
+  select?: FindOptionsSelect<OrderPartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -37,5 +38,5 @@ export class OrdersGetRequest {
   @IsOptional()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<OrderRequest>;
+  scope?: LimitRequest<OrderPartialRequest>;
 }
