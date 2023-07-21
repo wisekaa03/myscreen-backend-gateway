@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
 import { UptimeMonitoringService } from './uptime-monitoring.service';
 

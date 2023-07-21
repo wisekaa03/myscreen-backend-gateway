@@ -9,7 +9,15 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsNumber, IsString, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUUID,
+  Min,
+} from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 
@@ -18,7 +26,6 @@ export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор файла',
-    example: '1234567',
     format: 'uuid',
   })
   @IsUUID()
@@ -37,12 +44,27 @@ export class OrderEntity {
   @IsString()
   description!: string;
 
+  @Column({
+    type: 'boolean',
+    default: null,
+    nullable: true,
+    comment: 'Подтверждение/отклонение заказа',
+  })
+  @ApiProperty({
+    description: 'Подтверждение/отклонение заказа',
+    example: true,
+  })
+  @IsBoolean()
+  approved!: boolean | null;
+
   @Column()
   @ApiProperty({
     description: 'Сумма счета',
     example: 1000,
   })
+  @IsNotEmpty()
   @IsNumber()
+  @Min(100)
   sum!: number;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {

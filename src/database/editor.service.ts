@@ -14,6 +14,8 @@ import {
   BadRequestException,
   NotAcceptableException,
   NotFoundException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,8 +28,8 @@ import {
 import { ffprobe } from 'media-probe';
 import Editly from 'editly';
 
-import { FileCategory, RenderingStatus, VideoType } from '@/enums';
-import { TypeOrmFind } from '@/shared/typeorm.find';
+import { FileCategory, RenderingStatus, VideoType } from '../enums/index';
+import { TypeOrmFind } from '../shared/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';
@@ -44,6 +46,7 @@ export class EditorService {
   constructor(
     private readonly configService: ConfigService,
     private readonly folderService: FolderService,
+    @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @InjectRepository(EditorEntity)
     private readonly editorRepository: Repository<EditorEntity>,

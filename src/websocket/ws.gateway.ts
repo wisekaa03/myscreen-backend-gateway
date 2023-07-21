@@ -1,5 +1,5 @@
 import { isJWT } from 'class-validator';
-import { Logger, UseFilters } from '@nestjs/common';
+import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
 import {
   SubscribeMessage,
   WebSocketGateway,
@@ -42,6 +42,7 @@ export class WSGateway
 {
   constructor(
     private readonly authService: AuthService,
+    @Inject(forwardRef(() => ApplicationService))
     private readonly applicationService: ApplicationService,
     private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,

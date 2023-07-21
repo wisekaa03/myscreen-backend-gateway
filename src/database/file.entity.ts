@@ -24,12 +24,12 @@ import {
   IsUUID,
 } from 'class-validator';
 
-import { FileCategory, VideoType } from '@/enums';
+import { FileCategory, VideoType } from '../enums/index';
+import { UserEntity } from './user.entity';
+import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from '@/database/folder.entity';
-import { PlaylistEntity } from '@/database/playlist.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { UserEntity } from './user.entity';
 
 export class MediaMeta {
   @ApiProperty({

@@ -18,6 +18,7 @@ import {
   PaymentEnumCancellationParty,
   PaymentEnumCancellationReason,
 } from '@/enums';
+
 import { UserEntity } from '@/database/user.entity';
 import { OrderEntity } from '@/database/order.entity';
 
@@ -26,7 +27,6 @@ export class PaymentEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор файла',
-    example: '1234567',
     format: 'uuid',
   })
   @IsUUID()

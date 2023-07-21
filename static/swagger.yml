@@ -1760,7 +1760,55 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/InvoiceRequest"
+              $ref: "#/components/schemas/OrderInvoiceRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderGetResponse"
+        "400": *ref_45
+        "401": *ref_46
+        "403": *ref_47
+        "404": *ref_48
+        "500": *ref_49
+        "503": *ref_50
+      tags: *ref_51
+      security: *ref_52
+  /api/v2/order/approved:
+    post:
+      operationId: approved
+      summary: Подтверждение/отклонение инвойса
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderApprovedRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+        "400": *ref_45
+        "401": *ref_46
+        "403": *ref_47
+        "404": *ref_48
+        "500": *ref_49
+        "503": *ref_50
+      tags: *ref_51
+      security: *ref_52
+  /api/v2/order/download:
+    post:
+      operationId: download
+      summary: Метод для скачивания файла excel/pdf/etc
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderDownloadRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -2246,7 +2294,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.37.28
+  version: 2.38.2
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2429,7 +2477,6 @@ components:
           type: string
           description: Идентификатор пользователя
           format: uuid
-          example: "1234567"
         email:
           type: string
           description: EMail пользователя
@@ -3397,7 +3444,6 @@ components:
         id:
           type: string
           description: Идентификатор плэйлиста
-          example: "1234567"
           format: uuid
         name:
           type: string
@@ -4736,7 +4782,6 @@ components:
           type: string
           description: Идентификатор пользователя
           format: uuid
-          example: "1234567"
         email:
           type: string
           description: EMail пользователя
@@ -4938,45 +4983,18 @@ components:
     OrderRequest:
       type: object
       properties:
-        description:
-          type: string
-          description: Описание заказа
-          example: описание заказа
-    OrdersGetRequest:
-      type: object
-      properties:
-        where:
-          description: Запрос
-          allOf:
-            - $ref: "#/components/schemas/OrderRequest"
-        select:
-          type: array
-          description: Выбрать поля
-          example: []
-          items:
-            type: string
-            enum:
-              - id
-              - description
-              - sum
-              - createdAt
-              - updatedAt
-        scope:
-          description: Рамки для запроса
-          allOf:
-            - $ref: "#/components/schemas/LimitRequest"
-    OrderResponse:
-      type: object
-      properties:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         description:
           type: string
           description: Описание заказа
           example: описание заказа
+        approved:
+          type: object
+          description: Подтверждение/отклонение заказа
+          example: true
         sum:
           type: number
           description: Сумма счета
@@ -4994,6 +5012,67 @@ components:
       required:
         - id
         - description
+        - approved
+        - sum
+        - createdAt
+        - updatedAt
+    OrdersGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          allOf:
+            - $ref: "#/components/schemas/OrderRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - description
+              - approved
+              - sum
+              - createdAt
+              - updatedAt
+        scope:
+          description: Рамки для запроса
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
+    OrderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        description:
+          type: string
+          description: Описание заказа
+          example: описание заказа
+        approved:
+          type: object
+          description: Подтверждение/отклонение заказа
+          example: true
+        sum:
+          type: number
+          description: Сумма счета
+          example: 1000
+        createdAt:
+          format: date-time
+          type: string
+          description: Время создания
+          example: "2021-01-01T10:00:00.147Z"
+        updatedAt:
+          format: date-time
+          type: string
+          description: Время изменения
+          example: "2021-01-01T10:00:00.147Z"
+      required:
+        - id
+        - description
+        - approved
         - sum
         - createdAt
         - updatedAt
@@ -5016,25 +5095,62 @@ components:
         - status
         - count
         - data
-    InvoiceFormat:
-      type: string
-      enum:
-        - xlsx
-        - pdf
-    InvoiceRequest:
+    OrderInvoiceRequest:
       type: object
       properties:
-        format:
-          description: Формат получаемого файла
-          example: xlsx
-          $ref: "#/components/schemas/InvoiceFormat"
         sum:
           type: number
           description: Сумма счета
           example: 1000
       required:
-        - format
         - sum
+    OrderGetResponse:
+      type: object
+      properties:
+        status:
+          description: Статус операции
+          example: success
+          $ref: "#/components/schemas/Status"
+        data:
+          description: Счет
+          allOf:
+            - $ref: "#/components/schemas/OrderResponse"
+      required:
+        - status
+        - data
+    OrderApprovedRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        approved:
+          type: object
+          description: Подтверждение/отклонение заказа
+          example: true
+      required:
+        - id
+        - approved
+    InvoiceFormat:
+      type: string
+      enum:
+        - xlsx
+        - pdf
+    OrderDownloadRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        format:
+          description: Формат получаемого файла
+          example: xlsx
+          $ref: "#/components/schemas/InvoiceFormat"
+      required:
+        - id
+        - format
     PaymentRequest:
       type: object
       properties:
@@ -5072,7 +5188,6 @@ components:
         id:
           type: string
           description: Идентификатор файла
-          example: "1234567"
           format: uuid
         amount:
           type: string
@@ -5128,7 +5243,6 @@ components:
         id:
           type: string
           description: Идентификатор плэйлиста
-          example: "1234567"
           format: uuid
         name:
           type: string

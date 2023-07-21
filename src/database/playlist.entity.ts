@@ -25,7 +25,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
+import { MonitorStatus, PlaylistStatusEnum } from '../enums/index';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
@@ -36,7 +36,6 @@ export class PlaylistEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор плэйлиста',
-    example: '1234567',
     format: 'uuid',
     required: true,
   })

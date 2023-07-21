@@ -2,9 +2,9 @@ import { Module, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { MonitorStatus } from '@/enums';
-import { TypeOrmOptionsClass } from '@/shared/typeorm.options';
-import { MailModule } from '@/mail/mail.module';
+import { MonitorStatus } from '../enums/index';
+import { TypeOrmOptionsClass } from '../shared/typeorm.options';
+import { MailModule } from '../mail/mail.module';
 import { WSModule } from '@/websocket/ws.module';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';

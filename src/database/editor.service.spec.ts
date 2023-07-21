@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+
 import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorEntity } from './editor.entity';
 import { EditorService } from './editor.service';
@@ -46,7 +47,7 @@ describe(EditorService.name, () => {
       ],
     }).compile();
 
-    service = module.get<EditorService>(EditorService);
+    service = module.get(EditorService);
   });
 
   it('should be defined', () => {

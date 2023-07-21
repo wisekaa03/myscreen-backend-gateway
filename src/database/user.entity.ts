@@ -24,7 +24,7 @@ import {
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
-import { UserRole, UserRoleEnum } from '@/enums';
+import { UserRole, UserRoleEnum } from '../enums/index';
 import { MonitorEntity } from '@/database/monitor.entity';
 
 @Entity('user')
@@ -33,7 +33,6 @@ export class UserEntity {
   @ApiProperty({
     description: 'Идентификатор пользователя',
     format: 'uuid',
-    example: '1234567',
   })
   @IsUUID()
   id!: string;

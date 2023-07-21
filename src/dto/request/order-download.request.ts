@@ -1,9 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber, Min } from 'class-validator';
-
+import { ApiProperty, PickType } from '@nestjs/swagger';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { SpecificFormat } from '@/enums/invoice-format.enum';
+import { OrderEntity } from '@/database/order.entity';
 
-export class InvoiceRequest {
+export class OrderDownloadRequest extends PickType(OrderEntity, ['id']) {
   @ApiProperty({
     description: 'Формат получаемого файла',
     enum: SpecificFormat,
@@ -14,14 +14,4 @@ export class InvoiceRequest {
   @IsNotEmpty()
   @IsEnum(SpecificFormat)
   format!: SpecificFormat;
-
-  @ApiProperty({
-    description: 'Сумма счета',
-    example: 1000,
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(100)
-  sum!: number;
 }

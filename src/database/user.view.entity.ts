@@ -18,10 +18,11 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
+
+import { UserRole, UserRoleEnum } from '../enums/index';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
-import { UserRole, UserRoleEnum } from '@/enums';
 
 @ViewEntity({
   materialized: false,
@@ -46,7 +47,6 @@ export class UserSizeEntity implements UserEntity {
   @ApiProperty({
     description: 'Идентификатор пользователя',
     format: 'uuid',
-    example: '1234567',
   })
   @IsUUID()
   id!: string;
