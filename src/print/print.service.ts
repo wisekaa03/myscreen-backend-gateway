@@ -1,12 +1,12 @@
 import { Injectable, Logger, Scope } from '@nestjs/common';
 import excelJS from 'exceljs';
-import { MonitorService } from '@/database/monitor.service';
-import { SpecificFormat } from '@/enums/invoice-format.enum';
+
+import { SpecificFormat } from '../enums/specific-format.enum';
+import { OrderEntity } from '../database/order.entity';
+import { UserEntity } from '../database/user.entity';
+import { MonitorService } from '../database/monitor.service';
+import { UserService } from '../database/user.service';
 import { printSpecific } from './print.specific';
-import { UserService } from '@/database/user.service';
-import { OrderService } from '@/database/order.service';
-import { OrderEntity } from '@/database/order.entity';
-import { UserEntity } from '@/database/user.entity';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PrintService {

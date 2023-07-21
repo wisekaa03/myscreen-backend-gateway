@@ -99,7 +99,7 @@ export class UserService {
    * @param {Partial<UserEntity>} create
    * @returns {UserEntity} Пользователь
    */
-  async register(create: Partial<UserEntity>): Promise<UserEntity> {
+  async register(create: Partial<UserEntity>): Promise<UserSizeEntity | null> {
     const { email, password, role } = create;
     if (!email) {
       throw new BadRequestException();
@@ -139,10 +139,13 @@ export class UserService {
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
     if (process.env.NODE_ENV !== 'production') {
-      return this.userRepository.save(this.userRepository.create(user));
+      const { id } = await this.userRepository.save(
+        this.userRepository.create(user),
+      );
+      return this.userSizeRepository.findOne({ where: { id } });
     }
 
-    const [saved] = await Promise.all([
+    const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(user)),
       this.mailService.sendWelcomeMessage(email).catch((error) => {
         this.logger.error(error);
@@ -154,7 +157,7 @@ export class UserService {
         }),
     ]);
 
-    return saved;
+    return this.userSizeRepository.findOneBy({ id });
   }
 
   /**

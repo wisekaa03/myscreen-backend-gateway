@@ -54,7 +54,7 @@ export class OrderEntity {
   })
   @ApiProperty({
     description: 'Подтверждение/отклонение заказа',
-    example: true,
+    example: InvoiceApproved.APPROVED,
   })
   @IsEnum(InvoiceApproved)
   approved!: InvoiceApproved;

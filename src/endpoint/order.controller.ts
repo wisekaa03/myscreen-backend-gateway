@@ -32,17 +32,14 @@ import {
   UnauthorizedError,
   OrderApprovedRequest,
   OrderDownloadRequest,
-} from '@/dto';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status } from '@/enums/status.enum';
-import { OrderService } from '@/database/order.service';
-import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
-import { UserRoleEnum } from '@/enums';
-import { TypeOrmFind } from '@/shared/typeorm.find';
-import { PrintService } from '@/print/print.service';
-import { SpecificFormat } from '@/enums/invoice-format.enum';
-import { formatToContentType } from '@/shared/format-to-content-type';
-import { UserService } from '@/database/user.service';
+} from '../dto/index';
+import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
+import { OrderService } from '../database/order.service';
+import { paginationQueryToConfig } from '../shared/pagination-query-to-config';
+import { Status, UserRoleEnum, SpecificFormat } from '../enums/index';
+import { TypeOrmFind } from '../shared/typeorm.find';
+import { formatToContentType } from '../shared/format-to-content-type';
+import { UserService } from '../database/user.service';
 
 @ApiResponse({
   status: 400,
@@ -78,6 +75,7 @@ import { UserService } from '@/database/user.service';
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
+  UserRoleEnum.Accountant,
 )
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
@@ -103,13 +101,18 @@ export class OrderController {
     type: OrdersGetResponse,
   })
   async getOrders(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: OrdersGetRequest,
   ): Promise<OrdersGetResponse> {
+    const whenUser =
+      user.role === UserRoleEnum.Administrator ||
+      user.role === UserRoleEnum.Accountant
+        ? undefined
+        : user;
     const [data, count] = await this.orderService.find({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where, userId),
+      where: TypeOrmFind.Where(where, whenUser),
     });
 
     return {
@@ -156,6 +159,8 @@ export class OrderController {
     status: 200,
     description: 'Успешный ответ',
   })
+  @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async approved(
     @Req() { user }: ExpressRequest,
     @Body() { id, approved }: OrderApprovedRequest,

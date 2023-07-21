@@ -6,18 +6,17 @@ import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
 import { OrderEntity } from '../../database/order.entity';
 import { LimitRequest } from './limit.request';
-import { OrderRequest } from './order.request';
 import { OrderPartialRequest } from './order-partial.request';
 
 export class OrdersGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: OrderRequest,
+    type: OrderPartialRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => OrderRequest)
+  @Type(() => OrderPartialRequest)
   where?: FindOptionsWhere<OrderPartialRequest>;
 
   @ApiProperty({

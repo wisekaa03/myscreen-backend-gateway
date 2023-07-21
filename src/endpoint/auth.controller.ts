@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Patch,
   Post,
+  PreconditionFailedException,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -191,11 +192,14 @@ export class AuthController {
     type: UserGetResponse,
   })
   async register(@Body() body: RegisterRequest): Promise<UserGetResponse> {
-    const data = userEntityToUser(await this.userService.register(body));
+    const user = await this.userService.register(body);
+    if (!user) {
+      throw new PreconditionFailedException();
+    }
 
     return {
       status: Status.Success,
-      data,
+      data: userEntityToUser(user),
     };
   }
 

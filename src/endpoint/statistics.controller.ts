@@ -9,7 +9,6 @@ import {
   Get,
   HttpCode,
   Inject,
-  InternalServerErrorException,
   Logger,
   Post,
   Req,
@@ -34,15 +33,14 @@ import {
   UnauthorizedError,
 } from '../dto/index';
 import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
-import { Status, UserRoleEnum } from '../enums/index';
-import { SpecificFormat } from '@/enums/invoice-format.enum';
+import { Status, UserRoleEnum, SpecificFormat } from '../enums/index';
 import { StatisticsResponse } from '../dto/response/statistics.response';
 import { UserService } from '../database/user.service';
 import { WSGateway } from '../websocket/ws.gateway';
 import { PlaylistService } from '../database/playlist.service';
 import { MonitorService } from '../database/monitor.service';
 import { PrintService } from '../print/print.service';
-import { formatToContentType } from '@/shared/format-to-content-type';
+import { formatToContentType } from '../shared/format-to-content-type';
 
 @ApiResponse({
   status: 400,

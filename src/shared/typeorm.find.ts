@@ -15,6 +15,8 @@ import {
   MoreThanOrEqual,
 } from 'typeorm';
 
+import { UserEntity } from '../database/user.entity';
+
 export class TypeOrmFind {
   private static findOrder = <Entity extends ObjectLiteral>(
     repository: Repository<Entity>,
@@ -170,12 +172,12 @@ export class TypeOrmFind {
 
   static Where = <Entity extends ObjectLiteral>(
     where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
-    userId?: string,
+    user?: UserEntity,
   ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
-    if (userId) {
+    if (user) {
       const whereIsNull = {
         ...TypeOrmFind.#Where(where),
-        userId: Equal(userId),
+        userId: Equal(user.id),
       };
       return whereIsNull;
     }

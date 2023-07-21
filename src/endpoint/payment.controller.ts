@@ -88,13 +88,13 @@ export class PaymentController {
     type: PaymentsGetResponse,
   })
   async getPayments(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: PaymentsGetRequest,
   ): Promise<PaymentsGetResponse> {
     const [data, count] = await this.paymentService.find({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where, userId),
+      where: TypeOrmFind.Where(where, user),
     });
 
     return {

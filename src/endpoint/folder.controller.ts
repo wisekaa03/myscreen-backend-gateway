@@ -102,13 +102,13 @@ export class FolderController {
     type: FoldersGetResponse,
   })
   async getFolders(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { scope, select, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
     const [data, count] = await this.folderService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where, userId),
+      where: TypeOrmFind.Where(where, user),
     });
 
     return {

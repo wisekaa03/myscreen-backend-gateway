@@ -135,7 +135,7 @@ export class ApplicationEntity {
   @IsEnum(ApplicationApproved, { each: true })
   approved!: ApplicationApproved | Array<ApplicationApproved>;
 
-  @Column({ type: 'timestamptz', default: '2021-01-01T10:00:00.147Z' })
+  @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   @Index()
   @ApiProperty({
     type: 'string',
