@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { UserService } from '../database/user.service';
+import { InvoiceService } from '../database/invoice.service';
 import { MonitorService } from '../database/monitor.service';
 import { PrintService } from './print.service';
-import { UserService } from '@/database/user.service';
-import { OrderService } from '@/database/order.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -28,7 +29,7 @@ describe(PrintService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: OrderService,
+          provide: InvoiceService,
           useClass: mockRepository,
         },
         {

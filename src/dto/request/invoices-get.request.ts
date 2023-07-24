@@ -4,30 +4,30 @@ import { Type } from 'class-transformer';
 import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
 import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
-import { PaymentEntity } from '../../database/payment.entity';
+import { InvoiceEntity } from '../../database/invoice.entity';
 import { LimitRequest } from './limit.request';
-import { PaymentRequest } from './payment.request';
+import { InvoicePartialRequest } from './invoice-partial.request';
 
-export class PaymentsGetRequest {
+export class InvoicesGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: PaymentRequest,
+    type: InvoicePartialRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => PaymentRequest)
-  where?: FindOptionsWhere<PaymentRequest>;
+  @Type(() => InvoicePartialRequest)
+  where?: FindOptionsWhere<InvoicePartialRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
     example: [],
-    enum: swaggerGetModelProperties(PaymentEntity),
+    enum: swaggerGetModelProperties(InvoiceEntity),
     isArray: true,
     required: false,
   })
   @IsOptional()
-  select?: FindOptionsSelect<PaymentRequest>;
+  select?: FindOptionsSelect<InvoicePartialRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
@@ -37,5 +37,5 @@ export class PaymentsGetRequest {
   @IsOptional()
   @ValidateNested()
   @Type(() => LimitRequest)
-  scope?: LimitRequest<PaymentRequest>;
+  scope?: LimitRequest<InvoicePartialRequest>;
 }

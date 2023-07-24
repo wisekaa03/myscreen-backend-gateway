@@ -97,7 +97,7 @@ export class StatisticsController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'statistics',
-    summary: 'Получение статистики',
+    summary: 'Получение общей статистики по пользователю',
   })
   @ApiResponse({
     status: 200,
@@ -105,17 +105,16 @@ export class StatisticsController {
     type: StatisticsResponse,
   })
   async getPlaylists(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
   ): Promise<StatisticsResponse> {
-    const [[, added], [, played], user] = await Promise.all([
+    const [[, added], [, played]] = await Promise.all([
       this.playlistService.findAndCount({
-        where: { userId },
+        where: { userId: user.id },
         relations: [],
       }),
-      this.monitorService.findAndCount(userId, {
-        where: { userId, playlistPlayed: true },
+      this.monitorService.findAndCount(user.id, {
+        where: { userId: user.id, playlistPlayed: true },
       }),
-      this.userService.findById(userId),
     ]);
 
     return {

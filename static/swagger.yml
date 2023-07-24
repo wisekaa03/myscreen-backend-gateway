@@ -1692,24 +1692,24 @@ paths:
         "500": *ref_42
       tags: *ref_43
       security: *ref_44
-  /api/v2/order:
+  /api/v2/invoice:
     post:
       operationId: orders-get
-      summary: Получение списка заказов
+      summary: Получение списка счётов
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrdersGetRequest"
+              $ref: "#/components/schemas/InvoicesGetRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrdersGetResponse"
+                $ref: "#/components/schemas/InvoicesGetResponse"
         "400": &ref_45
           description: Ответ будет таким если с данным что-то не так
           content:
@@ -1747,10 +1747,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
       tags: &ref_51
-        - order
+        - invoice
       security: &ref_52
         - bearer: []
-  /api/v2/order/invoice:
+  /api/v2/invoice/invoice:
     post:
       operationId: invoice
       summary: Выставление счетов
@@ -1760,14 +1760,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderInvoiceRequest"
+              $ref: "#/components/schemas/InvoiceCreateRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/OrderGetResponse"
+                $ref: "#/components/schemas/InvoiceGetResponse"
         "400": *ref_45
         "401": *ref_46
         "403": *ref_47
@@ -1776,17 +1776,43 @@ paths:
         "503": *ref_50
       tags: *ref_51
       security: *ref_52
-  /api/v2/order/approved:
+  /api/v2/invoice/confirmed:
     post:
-      operationId: approved
-      summary: Подтверждение/отклонение инвойса
+      operationId: confirmed
+      summary: Подтверждение/отклонение счёта (только бухгалтер)
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderApprovedRequest"
+              $ref: "#/components/schemas/InvoiceIdRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceGetResponse"
+        "400": *ref_45
+        "401": *ref_46
+        "403": *ref_47
+        "404": *ref_48
+        "500": *ref_49
+        "503": *ref_50
+      tags: *ref_51
+      security: *ref_52
+  /api/v2/invoice/payed:
+    post:
+      operationId: payed
+      summary: Оплата по счету (только бухгалтер)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceIdRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -1798,7 +1824,7 @@ paths:
         "503": *ref_50
       tags: *ref_51
       security: *ref_52
-  /api/v2/order/download:
+  /api/v2/invoice/download:
     post:
       operationId: download
       summary: Метод для скачивания файла excel/pdf/etc
@@ -1808,7 +1834,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderDownloadRequest"
+              $ref: "#/components/schemas/InvoiceDownloadRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -1829,64 +1855,6 @@ paths:
         "503": *ref_50
       tags: *ref_51
       security: *ref_52
-  /api/v2/payment:
-    post:
-      operationId: payments-get
-      summary: Получение списка оплат
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PaymentsGetRequest"
-      responses:
-        "200":
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/PaymentsGetResponse"
-        "400":
-          description: Ответ будет таким если с данным что-то не так
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BadRequestError"
-        "401":
-          description: Ответ для незарегистрированного пользователя
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UnauthorizedError"
-        "403":
-          description: Ответ для неавторизованного пользователя
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ForbiddenError"
-        "404":
-          description: Ошибка медиа
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/NotFoundError"
-        "500":
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/InternalServerError"
-        "503":
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ServiceUnavailableError"
-      tags:
-        - payment
-      security:
-        - bearer: []
   /api/v2/playlist:
     post:
       operationId: playlists-get
@@ -2052,7 +2020,7 @@ paths:
   /api/v2/statistics:
     get:
       operationId: statistics
-      summary: Получение статистики
+      summary: Получение общей статистики по пользователю
       parameters: []
       responses:
         "200":
@@ -2294,7 +2262,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.38.5
+  version: 2.39.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2318,10 +2286,8 @@ tags:
     description: Взаимодействия покупателей и продавца
   - name: statistics
     description: Cтатистика
-  - name: order
+  - name: invoice
     description: Заказы
-  - name: payment
-    description: Оплата
 servers: []
 components:
   securitySchemes:
@@ -4981,21 +4947,31 @@ components:
         - status
         - count
         - data
-    OrderPartialRequest:
+    InvoiceStatus:
+      type: string
+      enum:
+        - AWAITING_CONFIRMATION
+        - CONFIRMED_PENDING_PAYMENT
+        - PAID
+        - CANCELLED
+    InvoicePartialRequest:
       type: object
       properties:
         id:
           type: string
-          description: Идентификатор файла
+          description: Идентификатор счёта
           format: uuid
+        seqNo:
+          type: number
+          description: Номер счета
         description:
           type: string
           description: Описание заказа
           example: описание заказа
-        approved:
-          type: string
-          description: Подтверждение/отклонение заказа
-          example: APPROVED
+        status:
+          description: Подтверждение/отклонение счёта
+          example: AWAITING_CONFIRMATION
+          $ref: "#/components/schemas/InvoiceStatus"
         sum:
           type: number
           description: Сумма счета
@@ -5016,13 +4992,13 @@ components:
           type: array
           items:
             type: array
-    OrdersGetRequest:
+    InvoicesGetRequest:
       type: object
       properties:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/OrderPartialRequest"
+            - $ref: "#/components/schemas/InvoicePartialRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5031,8 +5007,9 @@ components:
             type: string
             enum:
               - id
+              - seqNo
               - description
-              - approved
+              - status
               - sum
               - createdAt
               - updatedAt
@@ -5040,21 +5017,24 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-    OrderResponse:
+    InvoiceResponse:
       type: object
       properties:
         id:
           type: string
-          description: Идентификатор файла
+          description: Идентификатор счёта
           format: uuid
+        seqNo:
+          type: number
+          description: Номер счета
         description:
           type: string
           description: Описание заказа
           example: описание заказа
-        approved:
-          type: string
-          description: Подтверждение/отклонение заказа
-          example: APPROVED
+        status:
+          description: Подтверждение/отклонение счёта
+          example: AWAITING_CONFIRMATION
+          $ref: "#/components/schemas/InvoiceStatus"
         sum:
           type: number
           description: Сумма счета
@@ -5071,12 +5051,13 @@ components:
           example: "2021-01-01T10:00:00.147Z"
       required:
         - id
+        - seqNo
         - description
-        - approved
+        - status
         - sum
         - createdAt
         - updatedAt
-    OrdersGetResponse:
+    InvoicesGetResponse:
       type: object
       properties:
         status:
@@ -5090,21 +5071,25 @@ components:
           description: Заказы
           type: array
           items:
-            $ref: "#/components/schemas/OrderResponse"
+            $ref: "#/components/schemas/InvoiceResponse"
       required:
         - status
         - count
         - data
-    OrderInvoiceRequest:
+    InvoiceCreateRequest:
       type: object
       properties:
         sum:
           type: number
           description: Сумма счета
           example: 1000
+        description:
+          type: string
+          description: Описание заказа
+          example: описание заказа
       required:
         - sum
-    OrderGetResponse:
+    InvoiceGetResponse:
       type: object
       properties:
         status:
@@ -5112,37 +5097,32 @@ components:
           example: success
           $ref: "#/components/schemas/Status"
         data:
-          description: Счет
+          description: Счёт
           allOf:
-            - $ref: "#/components/schemas/OrderResponse"
+            - $ref: "#/components/schemas/InvoiceResponse"
       required:
         - status
         - data
-    OrderApprovedRequest:
+    InvoiceIdRequest:
       type: object
       properties:
         id:
           type: string
-          description: Идентификатор файла
+          description: Идентификатор счёта
           format: uuid
-        approved:
-          type: string
-          description: Подтверждение/отклонение заказа
-          example: APPROVED
       required:
         - id
-        - approved
     SpecificFormat:
       type: string
       enum:
         - xlsx
         - pdf
-    OrderDownloadRequest:
+    InvoiceDownloadRequest:
       type: object
       properties:
         id:
           type: string
-          description: Идентификатор файла
+          description: Идентификатор счёта
           format: uuid
         format:
           description: Формат получаемого файла
@@ -5151,92 +5131,6 @@ components:
       required:
         - id
         - format
-    PaymentRequest:
-      type: object
-      properties:
-        description:
-          type: string
-          description: Описание платежа
-          example: описание платежа
-    PaymentsGetRequest:
-      type: object
-      properties:
-        where:
-          description: Запрос
-          allOf:
-            - $ref: "#/components/schemas/PaymentRequest"
-        select:
-          type: array
-          description: Выбрать поля
-          example: []
-          items:
-            type: string
-            enum:
-              - id
-              - amount
-              - incomeAmount
-              - description
-              - createdAt
-              - updatedAt
-        scope:
-          description: Рамки для запроса
-          allOf:
-            - $ref: "#/components/schemas/LimitRequest"
-    PaymentResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор файла
-          format: uuid
-        amount:
-          type: string
-          description: Описание платежа
-          example: 1000 RUB
-        incomeAmount:
-          type: string
-          description: Описание платежа
-          example: 1000 RUB
-        description:
-          type: string
-          description: Описание платежа
-          example: описание платежа
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
-      required:
-        - id
-        - amount
-        - incomeAmount
-        - description
-        - createdAt
-        - updatedAt
-    PaymentsGetResponse:
-      type: object
-      properties:
-        status:
-          description: Статус операции
-          example: success
-          $ref: "#/components/schemas/Status"
-        count:
-          type: number
-          description: Количество оплат
-        data:
-          description: Оплаты
-          type: array
-          items:
-            $ref: "#/components/schemas/PaymentResponse"
-      required:
-        - status
-        - count
-        - data
     PlaylistPartialRequest:
       type: object
       properties:

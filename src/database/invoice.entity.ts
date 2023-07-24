@@ -10,7 +10,6 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsDateString,
   IsEnum,
   IsNotEmpty,
@@ -20,14 +19,14 @@ import {
   Min,
 } from 'class-validator';
 
-import { UserEntity } from '@/database/user.entity';
-import { InvoiceApproved } from '@/enums/invoice-approved.enum';
+import { UserEntity } from './user.entity';
+import { InvoiceStatus } from '../enums/invoice-status.enum';
 
-@Entity('order')
-export class OrderEntity {
+@Entity('invoice')
+export class InvoiceEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
-    description: 'Идентификатор файла',
+    description: 'Идентификатор счёта',
     format: 'uuid',
   })
   @IsUUID()
@@ -35,6 +34,9 @@ export class OrderEntity {
 
   @Generated('increment')
   @Column({ type: 'integer' })
+  @ApiProperty({
+    description: 'Номер счета',
+  })
   @IsNumber()
   seqNo?: number;
 
@@ -48,16 +50,19 @@ export class OrderEntity {
 
   @Column({
     type: 'enum',
-    enum: InvoiceApproved,
-    default: InvoiceApproved.PENDING,
-    comment: 'Подтверждение/отклонение заказа',
+    enum: InvoiceStatus,
+    default: InvoiceStatus.AWAITING_CONFIRMATION,
+    comment: 'Подтверждение/отклонение счёта',
   })
   @ApiProperty({
-    description: 'Подтверждение/отклонение заказа',
-    example: InvoiceApproved.APPROVED,
+    type: 'enum',
+    enum: InvoiceStatus,
+    enumName: 'InvoiceStatus',
+    description: 'Подтверждение/отклонение счёта',
+    example: InvoiceStatus.AWAITING_CONFIRMATION,
   })
-  @IsEnum(InvoiceApproved)
-  approved!: InvoiceApproved;
+  @IsEnum(InvoiceStatus)
+  status!: InvoiceStatus;
 
   @Column()
   @ApiProperty({

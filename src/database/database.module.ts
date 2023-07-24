@@ -18,11 +18,8 @@ import { FilePreviewEntity } from './file-preview.entity';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { MonitorService } from './monitor.service';
-import { OrderEntity } from './order.entity';
-import { OrderService } from './order.service';
-import { PaymentLogEntity } from './payment-log.entity';
-import { PaymentEntity } from './payment.entity';
-import { PaymentService } from './payment.service';
+import { InvoiceEntity } from './invoice.entity';
+import { InvoiceService } from './invoice.service';
 import { PlaylistEntity } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
@@ -53,9 +50,7 @@ import { ApplicationEntity } from './application.entity';
       FilePreviewEntity,
       MonitorEntity,
       MonitorFavoriteEntity,
-      OrderEntity,
-      PaymentLogEntity,
-      PaymentEntity,
+      InvoiceEntity,
       PlaylistEntity,
       UptimeMonitoringEntity,
       UserEntity,
@@ -72,8 +67,7 @@ import { ApplicationEntity } from './application.entity';
     FolderService,
     FileService,
     MonitorService,
-    OrderService,
-    PaymentService,
+    InvoiceService,
     PlaylistService,
     UserService,
     RefreshTokenService,
@@ -85,8 +79,7 @@ import { ApplicationEntity } from './application.entity';
     FileService,
     FolderService,
     MonitorService,
-    OrderService,
-    PaymentService,
+    InvoiceService,
     PlaylistService,
     UserService,
     RefreshTokenService,

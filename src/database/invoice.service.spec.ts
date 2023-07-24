@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { PrintService } from '../print/print.service';
-import { OrderEntity } from './order.entity';
-import { OrderService } from './order.service';
+import { InvoiceEntity } from './invoice.entity';
+import { InvoiceService } from './invoice.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -17,15 +17,15 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(OrderService.name, () => {
-  let service: OrderService;
+describe(InvoiceService.name, () => {
+  let service: InvoiceService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        OrderService,
+        InvoiceService,
         {
-          provide: getRepositoryToken(OrderEntity),
+          provide: getRepositoryToken(InvoiceEntity),
           useClass: mockRepository,
         },
         {
@@ -35,7 +35,7 @@ describe(OrderService.name, () => {
       ],
     }).compile();
 
-    service = module.get<OrderService>(OrderService);
+    service = module.get<InvoiceService>(InvoiceService);
   });
 
   it('should be defined', () => {
