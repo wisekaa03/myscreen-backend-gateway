@@ -2294,7 +2294,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.38.3
+  version: 2.38.5
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2470,6 +2470,7 @@ components:
         - monitor-owner
         - advertiser
         - administrator
+        - accountant
     UserResponse:
       type: object
       properties:
@@ -4980,7 +4981,7 @@ components:
         - status
         - count
         - data
-    OrderRequest:
+    OrderPartialRequest:
       type: object
       properties:
         id:
@@ -4994,35 +4995,34 @@ components:
         approved:
           type: string
           description: Подтверждение/отклонение заказа
-          example: true
+          example: APPROVED
         sum:
           type: number
           description: Сумма счета
           example: 1000
         createdAt:
-          format: date-time
-          type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
         updatedAt:
-          format: date-time
-          type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
-      required:
-        - id
-        - description
-        - approved
-        - sum
-        - createdAt
-        - updatedAt
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
+          type: array
+          items:
+            type: array
     OrdersGetRequest:
       type: object
       properties:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/OrderRequest"
+            - $ref: "#/components/schemas/OrderPartialRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5054,7 +5054,7 @@ components:
         approved:
           type: string
           description: Подтверждение/отклонение заказа
-          example: true
+          example: APPROVED
         sum:
           type: number
           description: Сумма счета
@@ -5128,11 +5128,11 @@ components:
         approved:
           type: string
           description: Подтверждение/отклонение заказа
-          example: true
+          example: APPROVED
       required:
         - id
         - approved
-    InvoiceFormat:
+    SpecificFormat:
       type: string
       enum:
         - xlsx
@@ -5147,7 +5147,7 @@ components:
         format:
           description: Формат получаемого файла
           example: xlsx
-          $ref: "#/components/schemas/InvoiceFormat"
+          $ref: "#/components/schemas/SpecificFormat"
       required:
         - id
         - format
@@ -5424,7 +5424,7 @@ components:
         format:
           description: Формат получаемого файла
           example: xlsx
-          $ref: "#/components/schemas/InvoiceFormat"
+          $ref: "#/components/schemas/SpecificFormat"
         dateFrom:
           format: date-time
           type: string
@@ -5445,7 +5445,7 @@ components:
         format:
           description: Формат получаемого файла
           example: xlsx
-          $ref: "#/components/schemas/InvoiceFormat"
+          $ref: "#/components/schemas/SpecificFormat"
         dateFrom:
           format: date-time
           type: string

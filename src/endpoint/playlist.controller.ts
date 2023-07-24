@@ -106,7 +106,7 @@ export class PlaylistController {
     type: PlaylistsGetResponse,
   })
   async getPlaylists(
-    @Req() { user: { id: userId, role } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
     const [data, count] = await this.playlistService.findAndCount({
@@ -114,7 +114,7 @@ export class PlaylistController {
       select,
       where: TypeOrmFind.Where(
         where,
-        role === UserRoleEnum.Administrator ? undefined : userId,
+        user.role === UserRoleEnum.Administrator ? undefined : user,
       ),
     });
 

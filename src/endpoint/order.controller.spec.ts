@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard } from '../guards/index';
 import { OrderService } from '@/database/order.service';
 import { PrintService } from '@/print/print.service';
 import { UserService } from '@/database/user.service';

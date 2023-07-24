@@ -116,13 +116,13 @@ export class EditorController {
     type: EditorsGetResponse,
   })
   async getEditors(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: EditorsGetRequest,
   ): Promise<EditorsGetResponse> {
     const [data, count] = await this.editorService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where, userId),
+      where: TypeOrmFind.Where(where, user),
     });
 
     return {
