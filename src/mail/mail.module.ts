@@ -1,8 +1,9 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MailgunModule } from 'nestjs-mailgun';
 
 import { MailService } from './mail.service';
+import { PrintModule } from '@/print/print.module';
 
 // TODO: заменить это все микросервисной архитектурой
 
@@ -22,6 +23,7 @@ import { MailService } from './mail.service';
       }),
       inject: [ConfigService],
     }),
+    forwardRef(() => PrintModule),
   ],
   providers: [MailService],
   exports: [MailService],

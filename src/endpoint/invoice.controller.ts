@@ -48,6 +48,7 @@ import { TypeOrmFind } from '../shared/typeorm.find';
 import { formatToContentType } from '../shared/format-to-content-type';
 import { UserService } from '../database/user.service';
 import { MailService } from '../mail/mail.service';
+import { WalletService } from '@/database/wallet.service';
 
 @ApiResponse({
   status: 400,
@@ -95,6 +96,7 @@ export class InvoiceController {
   constructor(
     private readonly userService: UserService,
     private readonly invoiceService: InvoiceService,
+    private readonly walletService: WalletService,
     private readonly mailService: MailService,
   ) {}
 
@@ -175,21 +177,21 @@ export class InvoiceController {
     @Req() { user }: ExpressRequest,
     @Body() { id }: InvoiceIdRequest,
   ): Promise<InvoiceGetResponse> {
-    const order = await this.invoiceService.findOne({ where: { id } });
-    if (!order) {
+    const invoice = await this.invoiceService.findOne({ where: { id } });
+    if (!invoice) {
       throw new NotFoundException();
     }
-    if (order.status !== InvoiceStatus.AWAITING_CONFIRMATION) {
+    if (invoice.status !== InvoiceStatus.AWAITING_CONFIRMATION) {
       throw new NotAcceptableException();
     }
 
     const data = await this.invoiceService.statusChange(
       user,
-      order,
+      invoice,
       InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
     );
 
-    /* await */ this.mailService.invoiceConfirmed(user.email, order);
+    /* await */ this.mailService.invoiceConfirmed(user, invoice);
 
     return {
       status: Status.Success,
@@ -213,21 +215,22 @@ export class InvoiceController {
     @Req() { user }: ExpressRequest,
     @Body() { id }: InvoiceIdRequest,
   ): Promise<InvoiceGetResponse> {
-    const order = await this.invoiceService.findOne({ where: { id } });
-    if (!order) {
+    const invoice = await this.invoiceService.findOne({ where: { id } });
+    if (!invoice) {
       throw new NotFoundException();
     }
-    if (order.status !== InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
+    if (invoice.status !== InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
       throw new NotAcceptableException();
     }
 
     const data = await this.invoiceService.statusChange(
       user,
-      order,
+      invoice,
       InvoiceStatus.PAID,
     );
 
-    /* await */ this.mailService.invoicePayed(user.email, order);
+    const sum = await this.walletService.walletSum(user.id);
+    /* await */ this.mailService.invoicePayed(user.email, invoice, sum ?? 0);
 
     return {
       status: Status.Success,

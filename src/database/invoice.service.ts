@@ -1,5 +1,5 @@
 import type { Response as ExpressResponse } from 'express';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
@@ -12,11 +12,15 @@ import { SpecificFormat } from '../enums/specific-format.enum';
 import { InvoiceStatus } from '../enums/invoice-status.enum';
 import { formatToContentType } from '../shared/format-to-content-type';
 import { PrintService } from '../print/print.service';
+import { WalletService } from './wallet.service';
+import { WalletEntity } from './wallet.entity';
 
 @Injectable()
 export class InvoiceService {
   constructor(
+    @Inject(forwardRef(() => PrintService))
     private readonly printService: PrintService,
+    private readonly walletService: WalletService,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
   ) {}
@@ -50,20 +54,21 @@ export class InvoiceService {
       const invoicesPromise = Object.values(invoices).map((invoice) =>
         this.invoiceRepository.save({
           ...invoice,
+          user: undefined,
           status: InvoiceStatus.CANCELLED,
         }),
       );
       await Promise.all(invoicesPromise);
     }
 
-    const order: DeepPartial<InvoiceEntity> = {
+    const invoice: DeepPartial<InvoiceEntity> = {
       sum,
       description,
-      user,
+      userId: user.id,
       status: InvoiceStatus.AWAITING_CONFIRMATION,
     };
 
-    return this.invoiceRepository.save(this.invoiceRepository.create(order));
+    return this.invoiceRepository.save(this.invoiceRepository.create(invoice));
   }
 
   async statusChange(
@@ -71,11 +76,28 @@ export class InvoiceService {
     invoice: InvoiceEntity,
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
-    const newInvoice: DeepPartial<InvoiceEntity> = {
+    const newInvoice: InvoiceEntity = {
       ...invoice,
       status,
     };
-    return this.invoiceRepository.save(newInvoice);
+
+    if (status !== InvoiceStatus.PAID) {
+      return this.invoiceRepository.save(newInvoice);
+    }
+
+    return this.invoiceRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        const invoiceChanged = await transactionalEntityManager.save(
+          InvoiceEntity,
+          newInvoice,
+        );
+        await transactionalEntityManager.save(
+          WalletEntity,
+          await this.walletService.create(user, invoiceChanged),
+        );
+        return invoiceChanged;
+      },
+    );
   }
 
   async download(

@@ -34,6 +34,8 @@ export const paginationQueryToConfig = <T>(
               // @ts-ignore
               order[field] = 'DESC';
               break;
+            case undefined:
+              break;
             default:
               throw new BadRequestException(
                 `Order field '${field}' is not an 'ASC' or 'DESC'`,

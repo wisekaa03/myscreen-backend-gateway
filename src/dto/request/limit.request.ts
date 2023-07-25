@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, Max, Min } from 'class-validator';
+import { IsOptional, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { LimitOrderRequest } from './limit-order.request';
@@ -28,7 +28,7 @@ export class LimitRequest<T = Record<string, 'DESC' | 'ASC'>> {
     example: { createdAt: 'DESC' },
     required: false,
   })
-  @IsObject()
+  @IsOptional()
   // @ValidateNested()
   @Type(() => LimitOrderRequest)
   order?: LimitOrderRequest<T>;

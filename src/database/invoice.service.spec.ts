@@ -4,6 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { PrintService } from '../print/print.service';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
+import { WalletService } from './wallet.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -24,6 +25,10 @@ describe(InvoiceService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         InvoiceService,
+        {
+          provide: WalletService,
+          useClass: mockRepository,
+        },
         {
           provide: getRepositoryToken(InvoiceEntity),
           useClass: mockRepository,

@@ -48,4 +48,9 @@ export const userEntityToUser = ({
   monitors,
   ...data
 }: UserEntity & Partial<UserSizeEntity>): Partial<UserEntity> &
-  Partial<UserSizeEntity> => data;
+  Partial<UserSizeEntity> => ({
+  ...data,
+  countUsedSpace: data.countUsedSpace || 0,
+  countMonitors: data.countMonitors || 0,
+  wallet: { total: data.walletSum || 0 },
+});

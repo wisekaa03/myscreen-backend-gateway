@@ -5,6 +5,8 @@ import {
   PreconditionFailedException,
   ForbiddenException,
   BadRequestException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -35,6 +37,7 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserSizeEntity)
     private readonly userSizeRepository: Repository<UserSizeEntity>,
+    @Inject(forwardRef(() => MailService))
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
   ) {
@@ -283,7 +286,7 @@ export class UserService {
   async findByEmail(
     email: string,
     options?: FindManyOptions<UserEntity>,
-  ): Promise<(UserEntity & Partial<UserSizeEntity>) | null> {
+  ): Promise<UserSizeEntity | null> {
     return this.userSizeRepository.findOne({
       ...options,
       where: { email },
@@ -294,7 +297,7 @@ export class UserService {
     id: string,
     role?: UserRoleEnum[],
     disabled = false,
-  ): Promise<(UserEntity & Partial<UserSizeEntity>) | null> {
+  ): Promise<UserSizeEntity | null> {
     if (role?.includes(UserRoleEnum.Monitor)) {
       return {
         id,

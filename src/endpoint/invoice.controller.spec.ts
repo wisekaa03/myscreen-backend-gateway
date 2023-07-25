@@ -6,6 +6,7 @@ import { PrintService } from '../print/print.service';
 import { UserService } from '../database/user.service';
 import { MailService } from '../mail/mail.service';
 import { InvoiceController } from './invoice.controller';
+import { WalletService } from '@/database/wallet.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -28,6 +29,10 @@ describe(InvoiceController.name, () => {
       providers: [
         {
           provide: InvoiceService,
+          useClass: mockRepository,
+        },
+        {
+          provide: WalletService,
           useClass: mockRepository,
         },
         {

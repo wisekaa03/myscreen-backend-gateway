@@ -30,10 +30,12 @@ import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
 import { ApplicationService } from './application.service';
 import { ApplicationEntity } from './application.entity';
+import { WalletEntity } from './wallet.entity';
+import { WalletService } from './wallet.service';
 
 @Module({
   imports: [
-    MailModule,
+    forwardRef(() => MailModule),
     forwardRef(() => WSModule),
 
     TypeOrmModule.forRootAsync({
@@ -57,6 +59,7 @@ import { ApplicationEntity } from './application.entity';
       RefreshTokenEntity,
       ApplicationEntity,
       UserSizeEntity,
+      WalletEntity,
     ]),
   ],
 
@@ -72,6 +75,7 @@ import { ApplicationEntity } from './application.entity';
     UserService,
     RefreshTokenService,
     ApplicationService,
+    WalletService,
   ],
 
   exports: [
@@ -84,6 +88,7 @@ import { ApplicationEntity } from './application.entity';
     UserService,
     RefreshTokenService,
     ApplicationService,
+    WalletService,
   ],
 })
 export class DatabaseModule implements OnModuleInit {

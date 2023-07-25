@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 
-import { UserService } from '../database/user.service';
-import { MonitorService } from '../database/monitor.service';
-import { PrintService } from './print.service';
-import { InvoiceService } from '@/database/invoice.service';
+import { PrintService } from '../print/print.service';
+import { WalletService } from './wallet.service';
+import { WalletEntity } from './wallet.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -17,32 +17,28 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(PrintService.name, () => {
-  let xlsxService: PrintService;
+describe(WalletService.name, () => {
+  let service: WalletService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        PrintService,
+        WalletService,
         {
-          provide: MonitorService,
+          provide: getRepositoryToken(WalletEntity),
           useClass: mockRepository,
         },
         {
-          provide: UserService,
-          useClass: mockRepository,
-        },
-        {
-          provide: InvoiceService,
+          provide: PrintService,
           useClass: mockRepository,
         },
       ],
     }).compile();
 
-    xlsxService = module.get(PrintService);
+    service = module.get(WalletService);
   });
 
   it('should be defined', () => {
-    expect(xlsxService).toBeDefined();
+    expect(service).toBeDefined();
   });
 });
