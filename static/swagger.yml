@@ -1694,7 +1694,7 @@ paths:
       security: *ref_44
   /api/v2/invoice:
     post:
-      operationId: orders-get
+      operationId: invoices-get
       summary: Получение списка счётов
       parameters: []
       requestBody:
@@ -1775,17 +1775,16 @@ paths:
         "503": *ref_50
       tags: *ref_51
       security: *ref_52
-  /api/v2/invoice/confirmed:
-    post:
-      operationId: confirmed
+  /api/v2/invoice/confirmed/{invoiceId}:
+    get:
+      operationId: invoice-confirmed
       summary: Подтверждение/отклонение счёта (только бухгалтер)
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InvoiceIdRequest"
+      parameters:
+        - name: invoiceId
+          required: true
+          in: path
+          schema:
+            type: string
       responses:
         "200":
           description: Успешный ответ
@@ -1801,17 +1800,16 @@ paths:
         "503": *ref_50
       tags: *ref_51
       security: *ref_52
-  /api/v2/invoice/payed:
-    post:
-      operationId: payed
+  /api/v2/invoice/payed/{invoiceId}:
+    get:
+      operationId: invoice-payed
       summary: Оплата по счету (только бухгалтер)
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InvoiceIdRequest"
+      parameters:
+        - name: invoiceId
+          required: true
+          in: path
+          schema:
+            type: string
       responses:
         "200":
           description: Успешный ответ
@@ -1823,17 +1821,21 @@ paths:
         "503": *ref_50
       tags: *ref_51
       security: *ref_52
-  /api/v2/invoice/download:
-    post:
-      operationId: download
+  /api/v2/invoice/download/{invoiceId}/{format}:
+    get:
+      operationId: invoice-download
       summary: Метод для скачивания файла excel/pdf/etc
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/InvoiceDownloadRequest"
+      parameters:
+        - name: invoiceId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: format
+          required: true
+          in: path
+          schema:
+            type: string
       responses:
         "200":
           description: Успешный ответ
@@ -2261,7 +2263,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.39.2
+  version: 2.39.4
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -5121,34 +5123,6 @@ components:
       required:
         - status
         - data
-    InvoiceIdRequest:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор счёта
-          format: uuid
-      required:
-        - id
-    SpecificFormat:
-      type: string
-      enum:
-        - xlsx
-        - pdf
-    InvoiceDownloadRequest:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Идентификатор счёта
-          format: uuid
-        format:
-          description: Формат получаемого файла
-          example: xlsx
-          $ref: "#/components/schemas/SpecificFormat"
-      required:
-        - id
-        - format
     PlaylistPartialRequest:
       type: object
       properties:
@@ -5330,6 +5304,11 @@ components:
         - countDevices
         - playlists
         - storageSpace
+    SpecificFormat:
+      type: string
+      enum:
+        - xlsx
+        - pdf
     ReportDeviceStatusRequest:
       type: object
       properties:

@@ -32,7 +32,6 @@ export * from './invoice.request';
 export * from './invoice-partial.request';
 export * from './invoices-get.request';
 export * from './invoice-create.request';
-export * from './invoice-id.request';
 export * from './invoice-download.request';
 export * from './playlist.request';
 export * from './playlist-partial.request';

@@ -5,10 +5,14 @@ import type {
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   Logger,
   NotAcceptableException,
   NotFoundException,
+  Param,
+  ParseEnumPipe,
+  ParseUUIDPipe,
   Post,
   Put,
   Req,
@@ -28,7 +32,6 @@ import {
   InternalServerError,
   InvoiceCreateRequest,
   InvoiceDownloadRequest,
-  InvoiceIdRequest,
   InvoicesGetRequest,
   InvoicesGetResponse,
   NotFoundError,
@@ -104,7 +107,7 @@ export class InvoiceController {
   @Post()
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'orders-get',
+    operationId: 'invoices-get',
     summary: 'Получение списка счётов',
   })
   @ApiResponse({
@@ -161,10 +164,10 @@ export class InvoiceController {
     };
   }
 
-  @Post('confirmed')
+  @Get('confirmed/:invoiceId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'confirmed',
+    operationId: 'invoice-confirmed',
     summary: 'Подтверждение/отклонение счёта (только бухгалтер)',
   })
   @ApiResponse({
@@ -176,7 +179,7 @@ export class InvoiceController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   async confirmed(
     @Req() { user }: ExpressRequest,
-    @Body() { id }: InvoiceIdRequest,
+    @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
     const invoice = await this.invoiceService.findOne({ where: { id } });
     if (!invoice) {
@@ -200,10 +203,10 @@ export class InvoiceController {
     };
   }
 
-  @Post('payed')
+  @Get('payed/:invoiceId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'payed',
+    operationId: 'invoice-payed',
     summary: 'Оплата по счету (только бухгалтер)',
   })
   @ApiResponse({
@@ -214,7 +217,7 @@ export class InvoiceController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   async payed(
     @Req() { user }: ExpressRequest,
-    @Body() { id }: InvoiceIdRequest,
+    @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
     const invoice = await this.invoiceService.findOne({ where: { id } });
     if (!invoice) {
@@ -239,10 +242,10 @@ export class InvoiceController {
     };
   }
 
-  @Post('download')
+  @Get('download/:invoiceId/:format')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'download',
+    operationId: 'invoice-download',
     summary: 'Метод для скачивания файла excel/pdf/etc',
   })
   @ApiResponse({
@@ -268,7 +271,8 @@ export class InvoiceController {
   async download(
     @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
-    @Body() { format, id }: InvoiceDownloadRequest,
+    @Param('invoiceId', ParseUUIDPipe) id: string,
+    @Param('format', new ParseEnumPipe(SpecificFormat)) format: SpecificFormat,
   ): Promise<void> {
     const invoice = await this.invoiceService.findOne({ where: { id } });
     if (!invoice) {
