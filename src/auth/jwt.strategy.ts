@@ -8,6 +8,7 @@ import type { MyscreenJwtPayload } from '../shared/jwt.payload';
 import { UserService } from '../database/user.service';
 import { UserStoreSpaceEnum } from '../enums/store-space.enum';
 import { UserSizeEntity } from '../database/user.view.entity';
+import { userEntityToUser } from '@/dto';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -31,10 +32,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       return null;
     }
 
-    const user = await this.userService.findById(id);
+    let user = await this.userService.findById(id);
     if (!user) {
       return null;
     }
+    user = userEntityToUser(user);
 
     if (user.isDemoUser) {
       if (user.createdAt && addMonths(user.createdAt, 1) <= new Date()) {

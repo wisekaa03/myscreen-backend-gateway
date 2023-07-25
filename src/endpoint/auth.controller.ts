@@ -107,14 +107,9 @@ export class AuthController {
   async authorization(
     @Req() { user }: ExpressRequest,
   ): Promise<UserGetResponse> {
-    const data = await this.userService.findById(user.id);
-    if (!data) {
-      throw new UnauthorizedException();
-    }
-
     return {
       status: Status.Success,
-      data: userEntityToUser(data),
+      data: userEntityToUser(user),
     };
   }
 

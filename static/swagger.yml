@@ -2263,7 +2263,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.39.5
+  version: 2.39.6
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2577,10 +2577,6 @@ components:
         countMonitors:
           type: number
           description: Использованные мониторы
-          example: 0
-        walletSum:
-          type: number
-          description: Баланс
           example: 0
         wallet:
           description: Баланс

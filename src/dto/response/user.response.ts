@@ -1,10 +1,9 @@
 import { OmitType } from '@nestjs/swagger';
 import { FindOptionsSelect } from 'typeorm';
 
-import { UserEntity } from '../../database/user.entity';
 import { UserSizeEntity } from '../../database/user.view.entity';
 
-export const selectUserOptions: FindOptionsSelect<UserEntity> = {
+export const selectUserOptions: FindOptionsSelect<UserSizeEntity> = {
   id: true,
   email: true,
   disabled: true,
@@ -32,6 +31,9 @@ export const selectUserOptions: FindOptionsSelect<UserEntity> = {
   verified: true,
   createdAt: true,
   updatedAt: true,
+  countUsedSpace: true,
+  countMonitors: true,
+  walletSum: true,
 };
 
 export class UserResponse extends OmitType(UserSizeEntity, [
@@ -46,11 +48,11 @@ export const userEntityToUser = ({
   emailConfirmKey,
   password,
   monitors,
+  walletSum,
   ...data
-}: UserEntity & Partial<UserSizeEntity>): Partial<UserEntity> &
-  Partial<UserSizeEntity> => ({
+}: UserSizeEntity): UserSizeEntity => ({
   ...data,
-  countUsedSpace: data.countUsedSpace || 0,
-  countMonitors: data.countMonitors || 0,
-  wallet: { total: data.walletSum || 0 },
+  countUsedSpace: data.countUsedSpace ?? 0,
+  countMonitors: data.countMonitors ?? 0,
+  wallet: { total: parseFloat(walletSum ?? '0') ?? 0 },
 });
