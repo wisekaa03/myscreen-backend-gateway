@@ -6,7 +6,7 @@ import { PlaylistService } from '../database/playlist.service';
 import { WSGateway } from '../websocket/ws.gateway';
 import { UserService } from '../database/user.service';
 import { MonitorService } from '../database/monitor.service';
-import { PrintService } from '@/print/print.service';
+import { PrintService } from '../print/print.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),

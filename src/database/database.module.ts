@@ -18,11 +18,8 @@ import { FilePreviewEntity } from './file-preview.entity';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { MonitorService } from './monitor.service';
-import { OrderEntity } from './order.entity';
-import { OrderService } from './order.service';
-import { PaymentLogEntity } from './payment-log.entity';
-import { PaymentEntity } from './payment.entity';
-import { PaymentService } from './payment.service';
+import { InvoiceEntity } from './invoice.entity';
+import { InvoiceService } from './invoice.service';
 import { PlaylistEntity } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
@@ -33,10 +30,12 @@ import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
 import { ApplicationService } from './application.service';
 import { ApplicationEntity } from './application.entity';
+import { WalletEntity } from './wallet.entity';
+import { WalletService } from './wallet.service';
 
 @Module({
   imports: [
-    MailModule,
+    forwardRef(() => MailModule),
     forwardRef(() => WSModule),
 
     TypeOrmModule.forRootAsync({
@@ -53,15 +52,14 @@ import { ApplicationEntity } from './application.entity';
       FilePreviewEntity,
       MonitorEntity,
       MonitorFavoriteEntity,
-      OrderEntity,
-      PaymentLogEntity,
-      PaymentEntity,
+      InvoiceEntity,
       PlaylistEntity,
       UptimeMonitoringEntity,
       UserEntity,
       RefreshTokenEntity,
       ApplicationEntity,
       UserSizeEntity,
+      WalletEntity,
     ]),
   ],
 
@@ -72,12 +70,12 @@ import { ApplicationEntity } from './application.entity';
     FolderService,
     FileService,
     MonitorService,
-    OrderService,
-    PaymentService,
+    InvoiceService,
     PlaylistService,
     UserService,
     RefreshTokenService,
     ApplicationService,
+    WalletService,
   ],
 
   exports: [
@@ -85,12 +83,12 @@ import { ApplicationEntity } from './application.entity';
     FileService,
     FolderService,
     MonitorService,
-    OrderService,
-    PaymentService,
+    InvoiceService,
     PlaylistService,
     UserService,
     RefreshTokenService,
     ApplicationService,
+    WalletService,
   ],
 })
 export class DatabaseModule implements OnModuleInit {

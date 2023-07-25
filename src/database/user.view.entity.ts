@@ -23,6 +23,16 @@ import { UserRole, UserRoleEnum } from '../enums/index';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
+import { WalletEntity } from './wallet.entity';
+
+export class Wallet {
+  @ApiProperty({
+    description: 'Баланс',
+    example: 0,
+    required: false,
+  })
+  total?: number;
+}
 
 @ViewEntity({
   materialized: false,
@@ -32,14 +42,34 @@ import { MonitorEntity } from './monitor.entity';
       .select('"user".*')
       .from(UserEntity, 'user')
       .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select('"monitor"."userId"', 'monitorUserId')
+            .addSelect('COUNT(*)', 'countMonitors')
+            .groupBy('"monitor"."userId"')
+            .from(MonitorEntity, 'monitor'),
+        'monitor',
+        '"monitorUserId" = "user"."id"',
+      )
+      .leftJoinAndSelect(
         (qb: SelectQueryBuilder<FileEntity>) =>
           qb
-            .select('"file"."userId"')
+            .select('"file"."userId"', 'fileUserId')
             .addSelect('SUM("file"."filesize")', 'countUsedSpace')
             .groupBy('"file"."userId"')
             .from(FileEntity, 'file'),
         'file',
-        '"file"."userId" = "user"."id"',
+        '"fileUserId" = "user"."id"',
+      )
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<WalletEntity>) =>
+          qb
+            .select('"wallet"."userId"', 'walletUserId')
+            .addSelect('SUM("wallet"."sum")', 'walletSum')
+            .groupBy('"wallet"."userId"')
+            .from(WalletEntity, 'wallet'),
+        'wallet',
+        '"walletUserId" = "user"."id"',
       ),
 })
 export class UserSizeEntity implements UserEntity {
@@ -333,4 +363,25 @@ export class UserSizeEntity implements UserEntity {
     required: false,
   })
   countUsedSpace?: number;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Использованные мониторы',
+    example: 0,
+    required: false,
+  })
+  countMonitors?: number;
+
+  @ApiProperty({
+    description: 'Баланс',
+    example: 0,
+    required: false,
+  })
+  walletSum?: number;
+
+  @ApiProperty({
+    description: 'Баланс',
+    required: false,
+  })
+  wallet?: Wallet;
 }

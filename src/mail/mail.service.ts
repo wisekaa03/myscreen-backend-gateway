@@ -9,6 +9,13 @@ import {
   MailgunService,
   type MailgunError,
 } from 'nestjs-mailgun';
+import { format as dateFormat } from 'date-fns';
+import dateRu from 'date-fns/locale/ru';
+
+import { InvoiceEntity } from '../database/invoice.entity';
+import { PrintService } from '@/print/print.service';
+import { UserEntity } from '@/database/user.entity';
+import { SpecificFormat } from '@/enums';
 
 @Injectable()
 export class MailService {
@@ -22,6 +29,7 @@ export class MailService {
 
   constructor(
     private readonly mailgunService: MailgunService,
+    private readonly printService: PrintService,
     private readonly configService: ConfigService,
   ) {
     this.domain = configService.get<string>('MAILGUN_API_DOMAIN', 'localhost');
@@ -47,6 +55,15 @@ export class MailService {
     `Вы получили новую заявку в MyScreen! \n\
     Чтобы с ней ознакомиться, пройдите, пожалуйста, по ссылке: \n\
     ${applicationUrl}`;
+
+  private static invoiceConfirmedText = () =>
+    'Счет во вложении. \n\
+    Напоминаем, что деньги на балансе отобразятся не сразу, а в течении нескольких дней с момента оплаты.';
+
+  private static invoicePayedText = (sum: number) =>
+    `Спасибо за оплату. \n\
+    Баланс: ${sum} рублей\n\
+    \n`;
 
   /**
    * Отправляет приветственное письмо
@@ -175,6 +192,106 @@ export class MailService {
         template: this.template,
         'h:X-Mailgun-Variables': JSON.stringify({
           ...message,
+          ...variables,
+        }),
+      })
+      .catch((error: MailgunError) => {
+        throw new InternalServerErrorException(error);
+      });
+  }
+
+  /**
+   * Счёт подтвержден
+   * @async
+   * @param {string} email Почта
+   * @param {InvoiceEntity} invoice Счёт
+   * @returns {any}
+   */
+  async invoiceConfirmed(
+    user: UserEntity,
+    invoice: InvoiceEntity,
+  ): Promise<any> {
+    const { seqNo, createdAt } = invoice;
+
+    const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+      locale: dateRu,
+    });
+
+    const createdAtFormatFile = dateFormat(createdAt, 'dd_LLLL_yyyy', {
+      locale: dateRu,
+    });
+
+    const invoicePrint = await this.printService.invoice(
+      user,
+      SpecificFormat.XLSX,
+      invoice,
+    );
+
+    const text = MailService.invoiceConfirmedText();
+    const message: MailgunMessageData = {
+      from: this.from,
+      to: user.email,
+      subject: `Счет на оплату ${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
+      text,
+      attachment: [
+        {
+          filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
+          data: invoicePrint,
+        },
+      ],
+    };
+
+    const variables = {
+      text,
+    };
+
+    return this.mailgunService
+      .createEmail(this.domain, {
+        ...message,
+        template: this.template,
+        'h:X-Mailgun-Variables': JSON.stringify({
+          ...variables,
+        }),
+      })
+      .catch((error: MailgunError) => {
+        throw new InternalServerErrorException(error);
+      });
+  }
+
+  /**
+   * Счёт оплачен
+   * @async
+   * @param {string} email Почта
+   * @param {InvoiceEntity} invoice Счёт
+   * @returns {any}
+   */
+  async invoicePayed(
+    email: string,
+    invoice: InvoiceEntity,
+    sum: number,
+  ): Promise<any> {
+    const { seqNo, createdAt } = invoice;
+
+    const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+      locale: dateRu,
+    });
+
+    const text = MailService.invoicePayedText(sum ?? 0);
+    const message: MailgunMessageData = {
+      from: this.from,
+      to: email,
+      subject: `Поступление по Счету ${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
+      text,
+    };
+
+    const variables = {
+      text,
+    };
+    return this.mailgunService
+      .createEmail(this.domain, {
+        ...message,
+        template: this.template,
+        'h:X-Mailgun-Variables': JSON.stringify({
           ...variables,
         }),
       })

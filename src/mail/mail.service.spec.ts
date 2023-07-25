@@ -2,9 +2,22 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MailgunService } from 'nestjs-mailgun';
 import { MailService } from './mail.service';
+import { PrintService } from '@/print/print.service';
 
 const email = 'foo@baz.bar';
 const data = { data: 'body' };
+
+export const mockRepository = jest.fn(() => ({
+  findOne: async () => Promise.resolve([]),
+  findAndCount: async () => Promise.resolve([]),
+  save: async () => Promise.resolve([]),
+  create: () => [],
+  remove: async () => Promise.resolve([]),
+  metadata: {
+    columns: [],
+    relations: [],
+  },
+}));
 
 describe(MailService.name, () => {
   let mailService: MailService;
@@ -13,6 +26,10 @@ describe(MailService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MailService,
+        {
+          provide: PrintService,
+          useClass: mockRepository,
+        },
         {
           provide: ConfigService,
           useValue: {

@@ -44,6 +44,7 @@ services:
     volumes:
       - ./servers.json:/pgadmin4/servers.json
       - ./postgresql-root.crt:/var/lib/pgadmin/postgresql-root.crt
+      - ./id_rsa:/var/lib/pgadmin/id_rsa
       - ./pgpassfile:/pgadmin4/pgpassfile
       - pgadmin4:/var/lib/pgadmin
     depends_on:

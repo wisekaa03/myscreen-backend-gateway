@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Status } from '@/enums/status.enum';
-import { PaymentResponse } from './payment.response';
+import { Status } from '../../enums/status.enum';
+import { InvoiceResponse } from './invoice.response';
 
-export class PaymentsGetResponse {
+export class InvoicesGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -13,14 +13,14 @@ export class PaymentsGetResponse {
   })
   status!: Status.Success;
 
-  @ApiProperty({ description: 'Количество оплат' })
+  @ApiProperty({ description: 'Количество заказов' })
   count!: number;
 
   @ApiProperty({
-    description: 'Оплаты',
-    type: PaymentResponse,
+    description: 'Заказы',
+    type: InvoiceResponse,
     isArray: true,
     required: true,
   })
-  data!: PaymentResponse[];
+  data!: InvoiceResponse[];
 }

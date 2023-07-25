@@ -84,8 +84,8 @@ async function bootstrap() {
     .addTag('editor', 'Редакторы')
     .addTag('application', 'Взаимодействия покупателей и продавца')
     .addTag('statistics', 'Cтатистика')
-    .addTag('order', 'Заказы')
-    .addTag('payment', 'Оплата')
+    .addTag('invoice', 'Заказы')
+    // .addTag('payment', 'Оплата')
 
     .build();
 

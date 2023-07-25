@@ -1,10 +1,10 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString, IsOptional } from 'class-validator';
 
-import { OrderEntity } from '../../database/order.entity';
+import { InvoiceEntity } from '../../database/invoice.entity';
 
-export class OrderPartialRequest extends PartialType(
-  OmitType(OrderEntity, ['createdAt', 'updatedAt']),
+export class InvoicePartialRequest extends PartialType(
+  OmitType(InvoiceEntity, ['createdAt', 'updatedAt']),
 ) {
   @ApiProperty({
     description: 'Время создания',

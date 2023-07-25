@@ -25,7 +25,11 @@ const user = {
   // isDemoUser: false,
   createdAt: '1000-01-01T01:00:50.804Z',
   updatedAt: '1000-01-01T01:00:43.121Z',
-  countUsedSpace: '0',
+  countUsedSpace: 0,
+  countMonitors: 0,
+  wallet: {
+    total: 0,
+  },
 };
 
 export const mockRepository = jest.fn(() => ({

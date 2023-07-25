@@ -2,7 +2,6 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Generated,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -10,64 +9,49 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsBoolean,
   IsDateString,
-  IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsString,
+  IsOptional,
   IsUUID,
-  Min,
 } from 'class-validator';
 
-import { UserEntity } from '@/database/user.entity';
-import { InvoiceApproved } from '@/enums/invoice-approved.enum';
+import { UserEntity } from './user.entity';
+import { InvoiceEntity } from './invoice.entity';
 
-@Entity('order')
-export class OrderEntity {
+@Entity('wallet')
+export class WalletEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
-    description: 'Идентификатор файла',
+    description: 'Идентификатор баланса',
     format: 'uuid',
   })
   @IsUUID()
   id!: string;
 
-  @Generated('increment')
-  @Column({ type: 'integer' })
-  @IsNumber()
-  seqNo?: number;
-
   @Column()
   @ApiProperty({
-    description: 'Описание заказа',
-    example: 'описание заказа',
-  })
-  @IsString()
-  description!: string;
-
-  @Column({
-    type: 'enum',
-    enum: InvoiceApproved,
-    default: InvoiceApproved.PENDING,
-    comment: 'Подтверждение/отклонение заказа',
-  })
-  @ApiProperty({
-    description: 'Подтверждение/отклонение заказа',
-    example: InvoiceApproved.APPROVED,
-  })
-  @IsEnum(InvoiceApproved)
-  approved!: InvoiceApproved;
-
-  @Column()
-  @ApiProperty({
-    description: 'Сумма счета',
-    example: 1000,
+    description: 'Баланс',
+    example: 0,
   })
   @IsNotEmpty()
   @IsNumber()
-  @Min(100)
   sum!: number;
+
+  @ManyToOne(() => InvoiceEntity, (invoice) => invoice.id, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    eager: false,
+    nullable: true,
+  })
+  @JoinColumn()
+  invoice!: InvoiceEntity;
+
+  @Column({ nullable: true })
+  @IsOptional()
+  @IsUUID()
+  invoiceId!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onUpdate: 'CASCADE',

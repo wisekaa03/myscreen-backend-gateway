@@ -12,9 +12,7 @@ import { FileController } from './file.controller';
 import { MonitorController } from './monitor.controller';
 import { EditorController } from './editor.controller';
 import { FolderController } from './folder.controller';
-import { OrderController } from './order.controller';
-import { PaymentController } from './payment.controller';
-import { PaymentLogController } from './log.controller';
+import { InvoiceController } from './invoice.controller';
 import { UptimeController } from './uptime.controller';
 import { PlaylistController } from './playlist.controller';
 import { RootController } from './root.controller';
@@ -40,11 +38,9 @@ import { ApplicationController } from './application.controller';
     FileController,
     FolderController,
     UserController,
-    OrderController,
-    PaymentController,
+    InvoiceController,
     UptimeController,
     PlaylistController,
-    PaymentLogController,
     StatisticsController,
     ApplicationController,
   ],

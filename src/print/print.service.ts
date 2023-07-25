@@ -1,11 +1,12 @@
-import { Injectable, Logger, Scope } from '@nestjs/common';
+import { Inject, Injectable, Logger, Scope, forwardRef } from '@nestjs/common';
 import excelJS from 'exceljs';
 
 import { SpecificFormat } from '../enums/specific-format.enum';
-import { OrderEntity } from '../database/order.entity';
 import { UserEntity } from '../database/user.entity';
-import { MonitorService } from '../database/monitor.service';
 import { UserService } from '../database/user.service';
+import { InvoiceEntity } from '../database/invoice.entity';
+import { MonitorService } from '../database/monitor.service';
+import { InvoiceService } from '@/database/invoice.service';
 import { printSpecific } from './print.specific';
 
 @Injectable({ scope: Scope.DEFAULT })
@@ -14,7 +15,8 @@ export class PrintService {
 
   constructor(
     private readonly monitorService: MonitorService,
-    private readonly userService: UserService,
+    @Inject(forwardRef(() => InvoiceService))
+    private readonly invoiceService: InvoiceService,
   ) {}
 
   /**
@@ -26,7 +28,7 @@ export class PrintService {
   async invoice(
     user: UserEntity,
     format: SpecificFormat,
-    invoice: OrderEntity,
+    invoice: InvoiceEntity,
   ): Promise<excelJS.Buffer> {
     switch (format) {
       case SpecificFormat.PDF:

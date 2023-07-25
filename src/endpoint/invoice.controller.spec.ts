@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { JwtAuthGuard } from '../guards/index';
-import { OrderService } from '@/database/order.service';
-import { PrintService } from '@/print/print.service';
-import { UserService } from '@/database/user.service';
-import { OrderController } from './order.controller';
+import { InvoiceService } from '../database/invoice.service';
+import { PrintService } from '../print/print.service';
+import { UserService } from '../database/user.service';
+import { MailService } from '../mail/mail.service';
+import { InvoiceController } from './invoice.controller';
+import { WalletService } from '@/database/wallet.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -18,15 +20,19 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(OrderController.name, () => {
-  let controller: OrderController;
+describe(InvoiceController.name, () => {
+  let controller: InvoiceController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [OrderController],
+      controllers: [InvoiceController],
       providers: [
         {
-          provide: OrderService,
+          provide: InvoiceService,
+          useClass: mockRepository,
+        },
+        {
+          provide: WalletService,
           useClass: mockRepository,
         },
         {
@@ -37,10 +43,14 @@ describe(OrderController.name, () => {
           provide: UserService,
           useClass: mockRepository,
         },
+        {
+          provide: MailService,
+          useClass: mockRepository,
+        },
       ],
     }).compile();
 
-    controller = module.get<OrderController>(OrderController);
+    controller = module.get(InvoiceController);
   });
 
   it('should be defined', () => {
@@ -48,7 +58,7 @@ describe(OrderController.name, () => {
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
-    const guards = Reflect.getMetadata('__guards__', OrderController);
+    const guards = Reflect.getMetadata('__guards__', InvoiceController);
     const guardJwt = new guards[0]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);
