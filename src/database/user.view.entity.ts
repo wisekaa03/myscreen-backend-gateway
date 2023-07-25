@@ -372,12 +372,8 @@ export class UserSizeEntity implements UserEntity {
   })
   countMonitors?: number;
 
-  @ApiProperty({
-    description: 'Баланс',
-    example: 0,
-    required: false,
-  })
-  walletSum?: number;
+  @ViewColumn()
+  walletSum?: string;
 
   @ApiProperty({
     description: 'Баланс',

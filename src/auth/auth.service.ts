@@ -60,9 +60,7 @@ export class AuthService {
       throw new ForbiddenException('Password mismatched', password);
     }
 
-    const user = await this.userService.findByEmail(email, {
-      select: { ...selectUserOptions, password: true },
-    });
+    const user = await this.userService.findByEmail(email);
     if (!user) {
       throw new ForbiddenException('Password mismatched', password);
     }
