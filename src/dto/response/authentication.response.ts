@@ -2,9 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
 import { Token } from '@/dto/interface';
-import { UserResponse } from '@/dto/response/user.response';
-import { UserEntity } from '@/database/user.entity';
-import { UserSizeEntity } from '@/database/user.view.entity';
+import { UserExtEntity } from '@/database/user.view.entity';
 
 export class AuthenticationPayload {
   @ApiProperty({ description: 'Тип: Bearer', example: 'bearer' })
@@ -42,10 +40,10 @@ export class AuthResponse {
 
   @ApiProperty({
     description: 'Пользователь',
-    type: UserResponse,
+    type: UserExtEntity,
     required: true,
   })
-  data!: Partial<UserEntity> & Partial<UserSizeEntity>;
+  data!: UserExtEntity;
 }
 
 export class AuthRefreshResponse {

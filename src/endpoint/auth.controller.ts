@@ -105,11 +105,11 @@ export class AuthController {
     type: UserGetResponse,
   })
   async authorization(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: data }: ExpressRequest,
   ): Promise<UserGetResponse> {
     return {
       status: Status.Success,
-      data: userEntityToUser(user),
+      data,
     };
   }
 

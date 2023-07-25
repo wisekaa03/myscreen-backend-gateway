@@ -2263,7 +2263,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.39.6
+  version: 2.39.7
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2445,7 +2445,7 @@ components:
           type: number
           description: Баланс
           example: 0
-    UserResponse:
+    UserExtEntity:
       type: object
       properties:
         id:
@@ -2598,7 +2598,7 @@ components:
         data:
           description: Пользователь
           allOf:
-            - $ref: "#/components/schemas/UserResponse"
+            - $ref: "#/components/schemas/UserExtEntity"
       required:
         - status
         - data
@@ -2759,7 +2759,7 @@ components:
         data:
           description: Пользователь
           allOf:
-            - $ref: "#/components/schemas/UserResponse"
+            - $ref: "#/components/schemas/UserExtEntity"
       required:
         - status
         - payload
@@ -3725,11 +3725,11 @@ components:
         buyer:
           description: Покупатель
           allOf:
-            - $ref: "#/components/schemas/UserResponse"
+            - $ref: "#/components/schemas/UserExtEntity"
         seller:
           description: Продавец
           allOf:
-            - $ref: "#/components/schemas/UserResponse"
+            - $ref: "#/components/schemas/UserExtEntity"
         monitor:
           description: Монитор
           allOf:
@@ -4958,7 +4958,7 @@ components:
           description: Пользователи
           type: array
           items:
-            $ref: "#/components/schemas/UserResponse"
+            $ref: "#/components/schemas/UserExtEntity"
       required:
         - status
         - count

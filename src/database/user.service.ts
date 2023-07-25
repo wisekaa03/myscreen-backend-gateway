@@ -24,7 +24,7 @@ import { genKey } from '../shared/genKey';
 import { TypeOrmFind } from '../shared/typeorm.find';
 import { MailService } from '../mail/mail.service';
 import { UserEntity } from './user.entity';
-import { UserSizeEntity } from './user.view.entity';
+import { UserExtEntity } from './user.view.entity';
 
 @Injectable()
 export class UserService {
@@ -35,8 +35,8 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(UserSizeEntity)
-    private readonly userSizeRepository: Repository<UserSizeEntity>,
+    @InjectRepository(UserExtEntity)
+    private readonly userSizeRepository: Repository<UserExtEntity>,
     @Inject(forwardRef(() => MailService))
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
@@ -57,7 +57,7 @@ export class UserService {
   async update(
     userId: string,
     update: Partial<UserEntity>,
-  ): Promise<UserSizeEntity | null> {
+  ): Promise<UserExtEntity | null> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new ForbiddenException();
@@ -102,7 +102,7 @@ export class UserService {
    * @param {Partial<UserEntity>} create
    * @returns {UserEntity} Пользователь
    */
-  async register(create: Partial<UserEntity>): Promise<UserSizeEntity | null> {
+  async register(create: Partial<UserEntity>): Promise<UserExtEntity | null> {
     const { email, password, role } = create;
     if (!email) {
       throw new BadRequestException();
@@ -286,7 +286,7 @@ export class UserService {
   async findByEmail(
     email: string,
     options?: FindManyOptions<UserEntity>,
-  ): Promise<UserSizeEntity | null> {
+  ): Promise<UserExtEntity | null> {
     return this.userSizeRepository.findOne({
       ...options,
       where: { email },
@@ -297,7 +297,7 @@ export class UserService {
     id: string,
     role?: UserRoleEnum[],
     disabled = false,
-  ): Promise<UserSizeEntity | null> {
+  ): Promise<UserExtEntity | null> {
     if (role?.includes(UserRoleEnum.Monitor)) {
       return {
         id,

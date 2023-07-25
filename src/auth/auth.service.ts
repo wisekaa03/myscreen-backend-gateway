@@ -20,6 +20,7 @@ import { UserEntity } from '../database/user.entity';
 import { RefreshTokenService } from '../database/refreshtoken.service';
 import { RefreshTokenEntity } from '../database/refreshtoken.entity';
 import { decodeMailToken } from '../shared/mail-token';
+import { UserExtEntity } from '@/database/user.view.entity';
 
 @Injectable()
 export class AuthService {
@@ -55,7 +56,7 @@ export class AuthService {
     email: string,
     password: string,
     fingerprint?: string,
-  ): Promise<[Partial<UserEntity>, AuthenticationPayload]> {
+  ): Promise<[UserExtEntity, AuthenticationPayload]> {
     if (!email || !password) {
       throw new ForbiddenException('Password mismatched', password);
     }
