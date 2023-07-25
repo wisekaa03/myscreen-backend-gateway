@@ -57,12 +57,13 @@ export class MailService {
     ${applicationUrl}`;
 
   private static invoiceConfirmedText = () =>
-    'Счет во вложении. \n\
+    'Счет во вложении. \n\n\
     Напоминаем, что деньги на балансе отобразятся не сразу, а в течении нескольких дней с момента оплаты.';
 
-  private static invoicePayedText = (sum: number) =>
+  private static invoicePayedText = (invoiceSum: number, sum: number) =>
     `Спасибо за оплату. \n\
-    Баланс: ${sum} рублей\n\
+    Сумма счета: ${invoiceSum} рублей. \n\
+    Баланс: ${sum} рублей. \n\
     \n`;
 
   /**
@@ -203,7 +204,7 @@ export class MailService {
   /**
    * Счёт подтвержден
    * @async
-   * @param {string} email Почта
+   * @param {UserEntity} user Почта
    * @param {InvoiceEntity} invoice Счёт
    * @returns {any}
    */
@@ -263,6 +264,7 @@ export class MailService {
    * @async
    * @param {string} email Почта
    * @param {InvoiceEntity} invoice Счёт
+   * @param {number} sum Баланс
    * @returns {any}
    */
   async invoicePayed(
@@ -276,7 +278,7 @@ export class MailService {
       locale: dateRu,
     });
 
-    const text = MailService.invoicePayedText(sum ?? 0);
+    const text = MailService.invoicePayedText(invoice.sum, sum ?? 0);
     const message: MailgunMessageData = {
       from: this.from,
       to: email,
