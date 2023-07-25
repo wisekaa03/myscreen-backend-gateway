@@ -190,12 +190,12 @@ export class InvoiceController {
     }
 
     const data = await this.invoiceService.statusChange(
-      user,
+      invoice.user,
       invoice,
       InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
     );
 
-    /* await */ this.mailService.invoiceConfirmed(user, invoice);
+    /* await */ this.mailService.invoiceConfirmed(invoice.user, invoice);
 
     return {
       status: Status.Success,
@@ -219,7 +219,10 @@ export class InvoiceController {
     @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
-    const invoice = await this.invoiceService.findOne({ where: { id } });
+    const invoice = await this.invoiceService.findOne({
+      where: { id },
+      relations: ['user'],
+    });
     if (!invoice) {
       throw new NotFoundException();
     }
@@ -228,13 +231,17 @@ export class InvoiceController {
     }
 
     const data = await this.invoiceService.statusChange(
-      user,
+      invoice.user,
       invoice,
       InvoiceStatus.PAID,
     );
 
-    const sum = await this.walletService.walletSum(user.id);
-    /* await */ this.mailService.invoicePayed(user.email, invoice, sum ?? 0);
+    const sum = await this.walletService.walletSum(invoice.userId);
+    /* await */ this.mailService.invoicePayed(
+      invoice.user.email,
+      invoice,
+      sum ?? 0,
+    );
 
     return {
       status: Status.Success,
@@ -274,11 +281,13 @@ export class InvoiceController {
     @Param('invoiceId', ParseUUIDPipe) id: string,
     @Param('format', new ParseEnumPipe(SpecificFormat)) format: SpecificFormat,
   ): Promise<void> {
-    const invoice = await this.invoiceService.findOne({ where: { id } });
+    const invoice = await this.invoiceService.findOne({
+      where: { id, userId: user.id },
+    });
     if (!invoice) {
       throw new NotFoundException();
     }
 
-    await this.invoiceService.download(user, res, invoice, format);
+    await this.invoiceService.download(invoice.user, res, invoice, format);
   }
 }
