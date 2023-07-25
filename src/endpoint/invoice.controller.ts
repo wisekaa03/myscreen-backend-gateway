@@ -10,6 +10,7 @@ import {
   NotAcceptableException,
   NotFoundException,
   Post,
+  Put,
   Req,
   Res,
   UseGuards,
@@ -100,7 +101,7 @@ export class InvoiceController {
     private readonly mailService: MailService,
   ) {}
 
-  @Post('/')
+  @Post()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'orders-get',
@@ -133,10 +134,10 @@ export class InvoiceController {
     };
   }
 
-  @Post('invoice')
+  @Put()
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'invoice',
+    operationId: 'invoice-create',
     summary: 'Выставление счетов',
   })
   @ApiResponse({

@@ -1750,9 +1750,8 @@ paths:
         - invoice
       security: &ref_52
         - bearer: []
-  /api/v2/invoice/invoice:
-    post:
-      operationId: invoice
+    put:
+      operationId: invoice-create
       summary: Выставление счетов
       parameters: []
       requestBody:
@@ -2262,7 +2261,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.39.1
+  version: 2.39.2
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
