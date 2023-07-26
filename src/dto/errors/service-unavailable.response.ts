@@ -1,27 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ServiceUnavailableException } from '@nestjs/common';
-import { Status } from '@/enums/status.enum';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
-/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-// @ts-ignore
-export class ServiceUnavailableError extends ServiceUnavailableException {
+import { Status } from '../../enums/status.enum';
+
+export class ServiceUnavailableError extends HttpException {
   constructor(message?: string) {
-    super({
-      status: Status.Error,
-      statusCode: 503,
-      code: 'server-error.10000',
-      message: message ?? 'Service Unavailable',
-    });
+    super(
+      {
+        status: Status.Error,
+        statusCode: 503,
+        code: 'server-error.10000',
+        message: message ?? 'Service Unavailable',
+      },
+      HttpStatus.SERVICE_UNAVAILABLE,
+    );
   }
-
-  @ApiProperty({
-    enum: Status,
-    enumName: 'Status',
-    example: Status.Error,
-    description: 'Статус операции',
-    required: true,
-  })
-  status!: Status.Error;
 
   @ApiProperty({ example: 503 })
   statusCode!: number;

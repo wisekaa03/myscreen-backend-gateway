@@ -1,27 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { NotFoundException } from '@nestjs/common';
-import { Status } from '@/enums/status.enum';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
-/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-// @ts-ignore
-export class NotFoundError extends NotFoundException {
+import { Status } from '../../enums/status.enum';
+
+export class NotFoundError extends HttpException {
   constructor(message?: string) {
-    super({
-      status: Status.Error,
-      statusCode: 404,
-      code: 'server-error.10005',
-      message: message ?? 'Not Found',
-    });
+    super(
+      {
+        status: Status.Error,
+        statusCode: 404,
+        code: 'server-error.10005',
+        message: message ?? 'Not Found',
+      },
+      HttpStatus.NOT_FOUND,
+    );
   }
-
-  @ApiProperty({
-    enum: Status,
-    enumName: 'Status',
-    example: Status.Error,
-    description: 'Статус операции',
-    required: true,
-  })
-  status!: Status.Error;
 
   @ApiProperty({ example: 404 })
   statusCode!: number;

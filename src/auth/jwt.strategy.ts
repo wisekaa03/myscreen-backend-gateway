@@ -5,10 +5,10 @@ import { PassportStrategy } from '@nestjs/passport';
 import addMonths from 'date-fns/addMonths';
 
 import type { MyscreenJwtPayload } from '../shared/jwt.payload';
+import { userEntityToUser } from '../dto/response/user.response';
 import { UserService } from '../database/user.service';
 import { UserStoreSpaceEnum } from '../enums/store-space.enum';
-import { UserSizeEntity } from '../database/user.view.entity';
-import { userEntityToUser } from '@/dto';
+import { UserExtEntity } from '../database/user.view.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: MyscreenJwtPayload): Promise<UserSizeEntity | null> {
+  async validate(payload: MyscreenJwtPayload): Promise<UserExtEntity | null> {
     const id = payload.sub;
     if (!id) {
       return null;

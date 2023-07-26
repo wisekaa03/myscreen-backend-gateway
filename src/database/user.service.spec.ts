@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { MailService } from '../mail/mail.service';
 import { UserEntity } from './user.entity';
-import { UserSizeEntity } from './user.view.entity';
+import { UserExtEntity } from './user.view.entity';
 import { UserService } from './user.service';
 
 export const mockRepository = jest.fn(() => ({
@@ -32,7 +32,7 @@ describe(UserService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(UserSizeEntity),
+          provide: getRepositoryToken(UserExtEntity),
           useClass: mockRepository,
         },
         {

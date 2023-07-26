@@ -38,7 +38,7 @@ export class ApplicationEntity {
   @ApiProperty({
     description: 'Покупатель',
     type: 'string',
-    allOf: [{ $ref: '#/components/schemas/UserResponse' }],
+    allOf: [{ $ref: '#/components/schemas/UserExtEntity' }],
   })
   buyer!: UserEntity | null;
 
@@ -62,7 +62,7 @@ export class ApplicationEntity {
   @ApiProperty({
     description: 'Продавец',
     type: 'string',
-    allOf: [{ $ref: '#/components/schemas/UserResponse' }],
+    allOf: [{ $ref: '#/components/schemas/UserExtEntity' }],
   })
   seller!: UserEntity;
 

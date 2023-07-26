@@ -72,7 +72,7 @@ export class Wallet {
         '"walletUserId" = "user"."id"',
       ),
 })
-export class UserSizeEntity implements UserEntity {
+export class UserExtEntity implements UserEntity {
   @ViewColumn()
   @ApiProperty({
     description: 'Идентификатор пользователя',

@@ -60,6 +60,11 @@ import { Roles, RolesGuard } from '@/guards';
   type: UnauthorizedError,
 })
 @ApiResponse({
+  status: 403,
+  description: 'Ответ для незарегистрированного пользователя',
+  type: UnauthorizedError,
+})
+@ApiResponse({
   status: 404,
   description: 'Монитор не найден',
   type: NotFoundError,
@@ -105,20 +110,20 @@ export class AuthController {
     type: UserGetResponse,
   })
   async authorization(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: data }: ExpressRequest,
   ): Promise<UserGetResponse> {
     return {
       status: Status.Success,
-      data: userEntityToUser(user),
+      data,
     };
   }
 
   @Patch('/')
-  @HttpCode(200)
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Advertiser,
+    UserRoleEnum.Accountant,
   )
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
