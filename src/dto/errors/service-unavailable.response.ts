@@ -16,15 +16,6 @@ export class ServiceUnavailableError extends HttpException {
     );
   }
 
-  // @ApiProperty({
-  //   enum: Status,
-  //   enumName: 'Status',
-  //   example: Status.Error,
-  //   description: 'Статус операции',
-  //   required: true,
-  // })
-  // status!: Status.Error;
-
   @ApiProperty({ example: 503 })
   statusCode!: number;
 

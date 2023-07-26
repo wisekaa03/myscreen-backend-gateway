@@ -16,15 +16,6 @@ export class BadRequestError extends HttpException {
     );
   }
 
-  // @ApiProperty({
-  //   enum: Status,
-  //   enumName: 'Status',
-  //   example: Status.Error,
-  //   description: 'Статус операции',
-  //   required: true,
-  // })
-  // status!: any;
-
   @ApiProperty({ required: true, example: 400 })
   statusCode!: number;
 

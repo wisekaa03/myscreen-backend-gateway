@@ -16,15 +16,6 @@ export class UnauthorizedError extends HttpException {
     );
   }
 
-  // @ApiProperty({
-  //   enum: Status,
-  //   enumName: 'Status',
-  //   example: Status.Error,
-  //   description: 'Статус операции',
-  //   required: true,
-  // })
-  // private readonly status!: Status.Error;
-
   @ApiProperty({ example: 401 })
   statusCode!: number;
 

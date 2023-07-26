@@ -16,15 +16,6 @@ export class ForbiddenError extends HttpException {
     );
   }
 
-  // @ApiProperty({
-  //   enum: Status,
-  //   enumName: 'Status',
-  //   example: Status.Error,
-  //   description: 'Статус операции',
-  //   required: true,
-  // })
-  // status!: Status.Error;
-
   @ApiProperty({ required: true, example: 403 })
   statusCode!: number;
 

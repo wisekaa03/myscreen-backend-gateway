@@ -16,15 +16,6 @@ export class NotFoundError extends HttpException {
     );
   }
 
-  // @ApiProperty({
-  //   enum: Status,
-  //   enumName: 'Status',
-  //   example: Status.Error,
-  //   description: 'Статус операции',
-  //   required: true,
-  // })
-  // status!: Status.Error;
-
   @ApiProperty({ example: 404 })
   statusCode!: number;
 
