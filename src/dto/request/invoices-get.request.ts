@@ -3,8 +3,8 @@ import { IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
-import { swaggerGetModelProperties } from '../../shared/swagger-get-model-properties';
-import { InvoiceEntity } from '../../database/invoice.entity';
+import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
+import { InvoiceEntity } from '@/database/invoice.entity';
 import { LimitRequest } from './limit.request';
 import { InvoicePartialRequest } from './invoice-partial.request';
 

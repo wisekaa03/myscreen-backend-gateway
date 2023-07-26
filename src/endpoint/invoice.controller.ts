@@ -31,28 +31,22 @@ import {
   ForbiddenError,
   InternalServerError,
   InvoiceCreateRequest,
-  InvoiceDownloadRequest,
   InvoicesGetRequest,
   InvoicesGetResponse,
   NotFoundError,
   InvoiceGetResponse,
   ServiceUnavailableError,
   UnauthorizedError,
-} from '../dto/index';
-import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
-import { InvoiceService } from '../database/invoice.service';
-import { paginationQueryToConfig } from '../shared/pagination-query-to-config';
-import {
-  Status,
-  UserRoleEnum,
-  SpecificFormat,
-  InvoiceStatus,
-} from '../enums/index';
-import { TypeOrmFind } from '../shared/typeorm.find';
-import { formatToContentType } from '../shared/format-to-content-type';
-import { UserService } from '../database/user.service';
-import { MailService } from '../mail/mail.service';
+} from '@/dto';
+import { Status, UserRoleEnum, SpecificFormat, InvoiceStatus } from '@/enums';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { TypeOrmFind } from '@/utils/typeorm.find';
+import { formatToContentType } from '@/utils/format-to-content-type';
+import { InvoiceService } from '@/database/invoice.service';
+import { UserService } from '@/database/user.service';
 import { WalletService } from '@/database/wallet.service';
+import { MailService } from '@/mail/mail.service';
 
 @ApiResponse({
   status: 400,

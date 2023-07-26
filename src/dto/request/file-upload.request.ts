@@ -1,8 +1,8 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { IsDefined, IsJSON, IsNotEmpty, IsUUID } from 'class-validator';
 
-import { FileEntity } from '@/database/file.entity';
 import { FileCategory } from '@/enums';
+import { FileEntity } from '@/database/file.entity';
 
 export class FileUploadRequest extends PickType(FileEntity, [
   'folderId',

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Status } from '../../enums/status.enum';
+import { Status } from '@/enums/status.enum';
 import { InvoiceResponse } from './invoice.response';
 
 export class InvoiceGetResponse {

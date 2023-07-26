@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEnum, IsNotEmpty } from 'class-validator';
 
-import { SpecificFormat } from '../../enums/specific-format.enum';
+import { SpecificFormat } from '@/enums/specific-format.enum';
 
 export class ReportDeviceStatusRequest {
   @ApiProperty({

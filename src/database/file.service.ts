@@ -31,12 +31,12 @@ import {
   In,
 } from 'typeorm';
 
-import { FileCategory, VideoType } from '../enums/index';
-import { ConflictData, FileUploadRequest } from '../dto/index';
+import { FileCategory, VideoType } from '@/enums';
+import { ConflictData, FileUploadRequest } from '@/dto';
 import { EditorService } from '@/database/editor.service';
-import { getS3Name } from '../shared/get-name';
-import { FfMpegPreview } from '../shared/ffmpeg';
-import { TypeOrmFind } from '../shared/typeorm.find';
+import { getS3Name } from '@/utils/get-name';
+import { FfMpegPreview } from '@/utils/ffmpeg';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
 import { FolderService } from './folder.service';

@@ -4,22 +4,21 @@ import { type JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
 import addMonths from 'date-fns/addMonths';
 
-import { UserRoleEnum } from '../enums/role.enum';
-import { UserStoreSpaceEnum } from '../enums/store-space.enum';
+import { UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import {
   JWT_BASE_OPTIONS,
   type MyscreenJwtPayload,
-} from '../shared/jwt.payload';
+} from '@/utils/jwt.payload';
+import { decodeMailToken } from '@/utils/mail-token';
 import {
   userEntityToUser,
   AuthenticationPayload,
   selectUserOptions,
-} from '../dto/index';
-import { UserService } from '../database/user.service';
-import { UserEntity } from '../database/user.entity';
-import { RefreshTokenService } from '../database/refreshtoken.service';
-import { RefreshTokenEntity } from '../database/refreshtoken.entity';
-import { decodeMailToken } from '../shared/mail-token';
+} from '@/dto';
+import { UserService } from '@/database/user.service';
+import { UserEntity } from '@/database/user.entity';
+import { RefreshTokenService } from '@/database/refreshtoken.service';
+import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
 import { UserExtEntity } from '@/database/user.view.entity';
 
 @Injectable()

@@ -1,4 +1,4 @@
-import { SpecificFormat } from '../enums/specific-format.enum';
+import { SpecificFormat } from '@/enums/specific-format.enum';
 
 export const formatToContentType: Record<SpecificFormat, string> = {
   [SpecificFormat.PDF]: 'application/pdf',

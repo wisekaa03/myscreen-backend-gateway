@@ -7,7 +7,6 @@ import {
   BadRequestException,
   ForbiddenException,
   PreconditionFailedException,
-  InternalServerErrorException,
   NotFoundException,
   RequestTimeoutException,
   ConflictException,
@@ -25,27 +24,20 @@ import {
   ConflictError,
   NotImplementedError,
   HttpError,
-} from '../dto/index';
+} from '@/dto';
 
 @Catch()
 export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   logger = new Logger(ExceptionsFilter.name);
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
-    let exceptionAfter: HttpError;
+    let exceptionAfter: HttpError | undefined;
 
     if (exception instanceof HttpException) {
-      const response = exception.getResponse();
       this.logger.error(exception.message, exception.stack);
 
       if (exception instanceof UnauthorizedException) {
         exceptionAfter = new UnauthorizedError(exception.message);
-      } else if (exception instanceof BadRequestException) {
-        const message =
-          typeof response === 'object'
-            ? (response as Record<string, Array<string>>).message?.join(', ')
-            : response;
-        exceptionAfter = new BadRequestError(message);
       } else if (exception instanceof ForbiddenException) {
         exceptionAfter = new ForbiddenError(exception.message);
       } else if (exception instanceof NotFoundException) {
@@ -56,12 +48,22 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         exceptionAfter = new PreconditionFailedError(exception.message);
       } else if (exception instanceof NotImplementedException) {
         exceptionAfter = new NotImplementedError(exception.message);
+      } else if (exception instanceof BadRequestException) {
+        const response = exception.getResponse();
+        exceptionAfter = new BadRequestError(
+          typeof response === 'object'
+            ? (response as Record<string, string>).message
+            : response,
+        );
       } else if (exception instanceof ConflictException) {
+        const response = exception.getResponse();
         exceptionAfter = new ConflictError(
           exception.message,
-          response as Record<string, any>,
+          typeof response === 'object'
+            ? (response as Record<string, unknown>)
+            : { message: response },
         );
-      } /* exception instanceof InternalServerErrorException */ else {
+      } else {
         exceptionAfter = new InternalServerError(exception.message);
       }
     } else if (exception instanceof Error) {
@@ -77,9 +79,11 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         (exception as any)?.stack || exception,
         'ExceptionsFilter: Unknown',
       );
-      exceptionAfter = exception;
     }
 
-    super.catch(Object.assign(exception, exceptionAfter), host);
+    super.catch(
+      exceptionAfter ? Object.assign(exception, exceptionAfter) : exception,
+      host,
+    );
   }
 }

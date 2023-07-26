@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { FileService } from '../database/file.service';
+import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
+import { FileService } from '@/database/file.service';
+import { MonitorService } from '@/database/monitor.service';
+import { FolderService } from '@/database/folder.service';
 import { FileController } from './file.controller';
-import { MonitorService } from '../database/monitor.service';
-import { FolderService } from '../database/folder.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),

@@ -24,7 +24,7 @@ import {
   Unique,
 } from 'typeorm';
 
-import { RenderingStatus } from '../enums/index';
+import { RenderingStatus } from '@/enums/rendering-status.enum';
 import { UserEntity } from './user.entity';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { FileEntity } from './file.entity';

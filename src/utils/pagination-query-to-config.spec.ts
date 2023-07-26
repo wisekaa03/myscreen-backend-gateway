@@ -1,4 +1,4 @@
-import { Order } from '../dto/request/limit-order.request';
+import { Order } from '@/dto/request/limit-order.request';
 import { paginationQueryToConfig } from './pagination-query-to-config';
 
 describe('pagination query to config', () => {

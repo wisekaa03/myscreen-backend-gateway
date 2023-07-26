@@ -12,7 +12,7 @@ import {
 import { format as dateFormat } from 'date-fns';
 import dateRu from 'date-fns/locale/ru';
 
-import { InvoiceEntity } from '../database/invoice.entity';
+import { InvoiceEntity } from '@/database/invoice.entity';
 import { PrintService } from '@/print/print.service';
 import { UserEntity } from '@/database/user.entity';
 import { SpecificFormat } from '@/enums';

@@ -24,7 +24,7 @@ import {
   IsUUID,
 } from 'class-validator';
 
-import { FileCategory, VideoType } from '../enums/index';
+import { FileCategory, VideoType } from '@/enums';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from '@/database/folder.entity';

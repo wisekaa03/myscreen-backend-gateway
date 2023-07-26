@@ -46,17 +46,17 @@ import {
   MonitorCreateRequest,
   MonitorUpdateRequest,
   Order,
-} from '../dto/index';
-import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
-import { ApplicationApproved, Status, UserRoleEnum } from '../enums/index';
-import { MonitorService } from '../database/monitor.service';
-import { WSGateway } from '../websocket/ws.gateway';
-import { paginationQueryToConfig } from '../shared/pagination-query-to-config';
-import { PlaylistService } from '../database/playlist.service';
-import { MonitorEntity } from '../database/monitor.entity';
-import { ApplicationService } from '../database/application.service';
-import { TypeOrmFind } from '../shared/typeorm.find';
+} from '@/dto';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { ApplicationApproved, Status, UserRoleEnum } from '@/enums';
+import { WSGateway } from '@/websocket/ws.gateway';
+import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { MonitorService } from '@/database/monitor.service';
 import { UserService } from '@/database/user.service';
+import { PlaylistService } from '@/database/playlist.service';
+import { MonitorEntity } from '@/database/monitor.entity';
+import { ApplicationService } from '@/database/application.service';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 
 @ApiResponse({
   status: 400,

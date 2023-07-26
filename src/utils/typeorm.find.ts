@@ -15,7 +15,7 @@ import {
   MoreThanOrEqual,
 } from 'typeorm';
 
-import { UserEntity } from '../database/user.entity';
+import { UserEntity } from '@/database/user.entity';
 
 export class TypeOrmFind {
   private static findOrder = <Entity extends ObjectLiteral>(

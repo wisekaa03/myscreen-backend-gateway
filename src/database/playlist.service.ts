@@ -7,7 +7,7 @@ import {
   Repository,
 } from 'typeorm';
 
-import { TypeOrmFind } from '../shared/typeorm.find';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { PlaylistEntity } from './playlist.entity';
 
 @Injectable()

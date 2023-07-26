@@ -11,6 +11,7 @@ import {
   IsString,
   IsUUID,
   Length,
+  Validate,
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -35,8 +36,8 @@ import {
   MonitorCategoryEnum,
   MonitorOrientation,
   MonitorStatus,
-} from '../enums/index';
-import { IsDateStringOrNull } from '../shared/is-date-string-or-null';
+} from '@/enums';
+import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
@@ -309,7 +310,7 @@ export class MonitorEntity {
     example: '2021-10-01T10:00:00.147Z',
     nullable: true,
   })
-  @IsDateStringOrNull({ strict: false })
+  @Validate(IsDateStringOrNull)
   lastSeen?: Date | null;
 
   @Column({

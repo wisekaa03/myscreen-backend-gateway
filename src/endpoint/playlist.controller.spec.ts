@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { PlaylistService } from '../database/playlist.service';
+import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
+import { PlaylistService } from '@/database/playlist.service';
+import { FileService } from '@/database/file.service';
 import { PlaylistController } from './playlist.controller';
-import { FileService } from '../database/file.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),

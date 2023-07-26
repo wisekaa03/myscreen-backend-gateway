@@ -1,7 +1,7 @@
 import type { FindManyOptions, FindOneOptions } from 'typeorm';
 import { BadRequestException } from '@nestjs/common';
 
-import { LimitRequest } from '../dto/request/limit.request';
+import { LimitRequest } from '@/dto/request/limit.request';
 
 export type ScopeOrder = FindOneOptions<any>['order'];
 
@@ -25,13 +25,9 @@ export const paginationQueryToConfig = <T>(
         if (field !== 'favorite') {
           switch (orderBy) {
             case 'ASC':
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
               order[field] = 'ASC';
               break;
             case 'DESC':
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
               order[field] = 'DESC';
               break;
             case undefined:

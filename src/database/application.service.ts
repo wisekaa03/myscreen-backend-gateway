@@ -16,10 +16,10 @@ import {
   Repository,
 } from 'typeorm';
 
-import { WSGateway } from '../websocket/ws.gateway';
-import { TypeOrmFind } from '../shared/typeorm.find';
-import { ApplicationApproved } from '../enums/index';
-import { MailService } from '../mail/mail.service';
+import { WSGateway } from '@/websocket/ws.gateway';
+import { TypeOrmFind } from '@/utils/typeorm.find';
+import { ApplicationApproved } from '@/enums';
+import { MailService } from '@/mail/mail.service';
 import { UserService } from './user.service';
 import { ApplicationEntity } from './application.entity';
 

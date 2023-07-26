@@ -1,7 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
 import { FindOptionsSelect } from 'typeorm';
 
-import { UserExtEntity } from '../../database/user.view.entity';
+import { UserExtEntity } from '@/database/user.view.entity';
 
 export const selectUserOptions: FindOptionsSelect<UserExtEntity> = {
   id: true,

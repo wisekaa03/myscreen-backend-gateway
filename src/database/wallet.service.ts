@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 
-import { TypeOrmFind } from '../shared/typeorm.find';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';

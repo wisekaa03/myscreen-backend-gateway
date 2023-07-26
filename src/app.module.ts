@@ -7,7 +7,7 @@ import type { PrettyOptions } from 'pino-pretty';
 import type { ClientOptions as ElasticClientOptions } from '@elastic/elasticsearch';
 import { LoggerModule, Params as NestPinoParams } from 'nestjs-pino';
 
-import { S3ModuleOptionsClass } from './shared/s3-module-options-class';
+import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
 import { MailModule } from './mail/mail.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';

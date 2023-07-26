@@ -25,7 +25,7 @@ import {
 } from '@nestjs/swagger';
 import { Not } from 'typeorm';
 
-import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
   BadRequestError,
   ApplicationGetRequest,
@@ -37,12 +37,12 @@ import {
   NotFoundError,
   SuccessResponse,
   UnauthorizedError,
-} from '../dto/index';
-import { Status, UserRoleEnum } from '../enums/index';
-import { TypeOrmFind } from '../shared/typeorm.find';
-import { paginationQueryToConfig } from '../shared/pagination-query-to-config';
-import { ApplicationService } from '../database/application.service';
-import { WSGateway } from '../websocket/ws.gateway';
+} from '@/dto';
+import { Status, UserRoleEnum } from '@/enums';
+import { TypeOrmFind } from '@/utils/typeorm.find';
+import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { WSGateway } from '@/websocket/ws.gateway';
+import { ApplicationService } from '@/database/application.service';
 
 @ApiResponse({
   status: 400,

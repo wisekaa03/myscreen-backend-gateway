@@ -31,16 +31,16 @@ import {
   ReportViewsRequest,
   ServiceUnavailableError,
   UnauthorizedError,
-} from '../dto/index';
-import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
-import { Status, UserRoleEnum, SpecificFormat } from '../enums/index';
-import { StatisticsResponse } from '../dto/response/statistics.response';
-import { UserService } from '../database/user.service';
-import { WSGateway } from '../websocket/ws.gateway';
-import { PlaylistService } from '../database/playlist.service';
-import { MonitorService } from '../database/monitor.service';
-import { PrintService } from '../print/print.service';
-import { formatToContentType } from '../shared/format-to-content-type';
+  StatisticsResponse,
+} from '@/dto';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { Status, UserRoleEnum, SpecificFormat } from '@/enums';
+import { UserService } from '@/database/user.service';
+import { WSGateway } from '@/websocket/ws.gateway';
+import { PlaylistService } from '@/database/playlist.service';
+import { MonitorService } from '@/database/monitor.service';
+import { PrintService } from '@/print/print.service';
+import { formatToContentType } from '@/utils/format-to-content-type';
 
 @ApiResponse({
   status: 400,

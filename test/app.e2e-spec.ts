@@ -28,7 +28,7 @@ import {
   AuthRefreshRequest,
 } from '@/dto';
 import { Status } from '@/enums';
-import { generateMailToken } from '@/shared/mail-token';
+import { generateMailToken } from '@/utils/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
 import { UserRoleEnum } from '@/enums/role.enum';
 import { UserEntity } from '@/database/user.entity';

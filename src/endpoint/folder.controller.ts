@@ -42,13 +42,12 @@ import {
   FoldersUpdateRequest,
   FoldersCopyRequest,
 } from '@/dto';
+import { Status, UserRoleEnum } from '@/enums';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status } from '@/enums/status.enum';
+import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FolderEntity } from '@/database/folder.entity';
 import { FolderService } from '@/database/folder.service';
-import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
-import { UserRoleEnum } from '@/enums';
-import { TypeOrmFind } from '@/shared/typeorm.find';
 
 @ApiResponse({
   status: 400,

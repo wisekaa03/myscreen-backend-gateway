@@ -57,16 +57,15 @@ import {
   FilesDeleteRequest,
   FilesUpdateRequest,
   FilesCopyRequest,
-} from '../dto/index';
-import { JwtAuthGuard, Roles, RolesGuard } from '../guards/index';
-import { Status } from '../enums/status.enum';
-import { paginationQueryToConfig } from '../shared/pagination-query-to-config';
-import { FileService } from '../database/file.service';
-import { UserRoleEnum, VideoType } from '../enums';
-import { FileEntity } from '../database/file.entity';
-import { MonitorService } from '../database/monitor.service';
-import { FolderService } from '../database/folder.service';
-import { TypeOrmFind } from '../shared/typeorm.find';
+} from '@/dto';
+import { UserRoleEnum, VideoType, Status } from '@/enums';
+import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { TypeOrmFind } from '@/utils/typeorm.find';
+import { FileService } from '@/database/file.service';
+import { FileEntity } from '@/database/file.entity';
+import { MonitorService } from '@/database/monitor.service';
+import { FolderService } from '@/database/folder.service';
 
 @ApiResponse({
   status: 400,

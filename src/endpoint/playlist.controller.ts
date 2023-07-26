@@ -22,8 +22,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-
 import { In } from 'typeorm';
+
 import {
   BadRequestError,
   ForbiddenError,
@@ -40,12 +40,12 @@ import {
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
-import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { UserRoleEnum } from '@/enums/role.enum';
+import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
-import { UserRoleEnum } from '../enums/role.enum';
-import { TypeOrmFind } from '@/shared/typeorm.find';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 
 @ApiResponse({
   status: 400,
