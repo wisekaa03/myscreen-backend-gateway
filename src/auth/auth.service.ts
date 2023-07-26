@@ -5,10 +5,7 @@ import { TokenExpiredError } from 'jsonwebtoken';
 import addMonths from 'date-fns/addMonths';
 
 import { UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
-import {
-  JWT_BASE_OPTIONS,
-  type MyscreenJwtPayload,
-} from '@/utils/jwt.payload';
+import { JWT_BASE_OPTIONS, type MyscreenJwtPayload } from '@/utils/jwt.payload';
 import { decodeMailToken } from '@/utils/mail-token';
 import {
   userEntityToUser,
