@@ -24,60 +24,45 @@ import {
   NotFoundError,
   ConflictError,
   NotImplementedError,
+  HttpError,
 } from '../dto/index';
 
 @Catch()
 export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   logger = new Logger(ExceptionsFilter.name);
 
-  catch(exception: Error, host: ArgumentsHost) {
-    let exceptionRule: Error | undefined;
+  catch(exception: HttpException | Error, host: ArgumentsHost) {
+    let exceptionAfter: HttpError;
 
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
       this.logger.error(exception.message, exception.stack);
 
-      if (
-        exception instanceof UnauthorizedException ||
-        (exception as any)?.status === 401
-      ) {
-        exceptionRule = new UnauthorizedError(exception.message);
-      } else if (
-        exception instanceof BadRequestException ||
-        (exception as any)?.status === 400
-      ) {
-        let message = response as string;
-        if (typeof response !== 'string') {
-          if (typeof (response as any).message !== 'string') {
-            message = `${(response as any)?.message?.join(', ')}.`;
-          } else {
-            message = (response as any).message;
-          }
-        }
-        exceptionRule = new BadRequestError(message);
-      } else if (
-        exception instanceof ForbiddenException ||
-        (exception as any)?.status === 403
-      ) {
-        exceptionRule = new ForbiddenError(exception.message);
-      } else if (
-        exception instanceof NotFoundException ||
-        (exception as any)?.status === 404
-      ) {
-        exceptionRule = new NotFoundError(exception.message);
+      if (exception instanceof UnauthorizedException) {
+        exceptionAfter = new UnauthorizedError(exception.message);
+      } else if (exception instanceof BadRequestException) {
+        const message =
+          typeof response === 'object'
+            ? (response as Record<string, Array<string>>).message?.join(', ')
+            : response;
+        exceptionAfter = new BadRequestError(message);
+      } else if (exception instanceof ForbiddenException) {
+        exceptionAfter = new ForbiddenError(exception.message);
+      } else if (exception instanceof NotFoundException) {
+        exceptionAfter = new NotFoundError(exception.message);
       } else if (exception instanceof RequestTimeoutException) {
-        exceptionRule = new InternalServerError(exception.message);
+        exceptionAfter = new InternalServerError(exception.message);
       } else if (exception instanceof PreconditionFailedException) {
-        exceptionRule = new PreconditionFailedError(exception.message);
-      } else if (exception instanceof InternalServerErrorException) {
-        exceptionRule = new InternalServerError(exception.message);
+        exceptionAfter = new PreconditionFailedError(exception.message);
       } else if (exception instanceof NotImplementedException) {
-        exceptionRule = new NotImplementedError(exception.message);
+        exceptionAfter = new NotImplementedError(exception.message);
       } else if (exception instanceof ConflictException) {
-        exceptionRule = new ConflictError(
+        exceptionAfter = new ConflictError(
           exception.message,
           response as Record<string, any>,
         );
+      } /* exception instanceof InternalServerErrorException */ else {
+        exceptionAfter = new InternalServerError(exception.message);
       }
     } else if (exception instanceof Error) {
       this.logger.error(
@@ -85,15 +70,16 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         exception.stack,
         'ExceptionsFilter: TypeORM',
       );
-      exceptionRule = new InternalServerError();
+      exceptionAfter = new InternalServerError();
     } else {
       this.logger.error(
         (exception as any)?.message || (exception as any).toString(),
         (exception as any)?.stack || exception,
         'ExceptionsFilter: Unknown',
       );
+      exceptionAfter = exception;
     }
 
-    super.catch(exceptionRule || exception, host);
+    super.catch(Object.assign(exception, exceptionAfter), host);
   }
 }

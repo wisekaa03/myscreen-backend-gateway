@@ -1,27 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PreconditionFailedException } from '@nestjs/common';
-import { Status } from '@/enums/status.enum';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
-/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-// @ts-ignore
-export class PreconditionFailedError extends PreconditionFailedException {
+import { Status } from '../../enums/status.enum';
+
+export class PreconditionFailedError extends HttpException {
   constructor(message?: string) {
-    super({
-      status: Status.Error,
-      statusCode: 412,
-      code: 'server-error.10002',
-      message: message ?? 'User exists',
-    });
+    super(
+      {
+        status: Status.Error,
+        statusCode: 412,
+        code: 'server-error.10002',
+        message: message ?? 'User exists',
+      },
+      HttpStatus.PRECONDITION_FAILED,
+    );
   }
 
-  @ApiProperty({
-    enum: Status,
-    enumName: 'Status',
-    example: Status.Error,
-    description: 'Статус операции',
-    required: true,
-  })
-  status!: Status.Error;
+  // @ApiProperty({
+  //   enum: Status,
+  //   enumName: 'Status',
+  //   example: Status.Error,
+  //   description: 'Статус операции',
+  //   required: true,
+  // })
+  // status!: Status.Error;
 
   @ApiProperty({ required: true, example: 412 })
   statusCode!: number;

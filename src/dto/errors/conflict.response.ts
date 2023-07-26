@@ -1,7 +1,8 @@
-import { ConflictException } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { Status } from '@/enums/status.enum';
-import { FileIDResponse } from '@/dto/response/file-id.response';
+
+import { Status } from '../../enums/status.enum';
+import { FileIDResponse } from '../response/file-id.response';
 
 export class ConflictDataFile {
   @ApiProperty({
@@ -56,27 +57,28 @@ export class ConflictData {
   monitor?: ConflictDataFile[] | null;
 }
 
-/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-// @ts-ignore
-export class ConflictError extends ConflictException {
+export class ConflictError extends HttpException {
   constructor(message?: string, data?: Record<string, unknown>) {
-    super({
-      status: Status.Error,
-      statusCode: 409,
-      code: 'server-error.10000',
-      message: message ?? 'Conflict exists',
-      data,
-    });
+    super(
+      {
+        status: Status.Error,
+        statusCode: 409,
+        code: 'server-error.10000',
+        message: message ?? 'Conflict exists',
+        data,
+      },
+      HttpStatus.CONFLICT,
+    );
   }
 
-  @ApiProperty({
-    enum: Status,
-    enumName: 'Status',
-    example: Status.Error,
-    description: 'Статус операции',
-    required: true,
-  })
-  status!: Status.Error;
+  // @ApiProperty({
+  //   enum: Status,
+  //   enumName: 'Status',
+  //   example: Status.Error,
+  //   description: 'Статус операции',
+  //   required: true,
+  // })
+  // status!: Status.Error;
 
   @ApiProperty({ required: true, example: 409 })
   statusCode!: number;

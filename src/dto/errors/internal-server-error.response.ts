@@ -1,27 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { InternalServerErrorException } from '@nestjs/common';
-import { Status } from '@/enums/status.enum';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
-/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-// @ts-ignore
-export class InternalServerError extends InternalServerErrorException {
+import { Status } from '../../enums/status.enum';
+
+export class InternalServerError extends HttpException {
   constructor(message?: string) {
-    super({
-      status: Status.Error,
-      statusCode: 500,
-      code: 'server-error.10000',
-      message: message ?? 'Server error',
-    });
+    super(
+      {
+        status: Status.Error,
+        statusCode: 500,
+        code: 'server-error.10000',
+        message: message ?? 'Server error',
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
-  @ApiProperty({
-    enum: Status,
-    enumName: 'Status',
-    example: Status.Error,
-    description: 'Статус операции',
-    required: true,
-  })
-  status!: Status.Error;
+  // @ApiProperty({
+  //   enum: Status,
+  //   enumName: 'Status',
+  //   example: Status.Error,
+  //   description: 'Статус операции',
+  //   required: true,
+  // })
+  // status!: Status.Error;
 
   @ApiProperty({ required: true, example: 500 })
   statusCode!: number;

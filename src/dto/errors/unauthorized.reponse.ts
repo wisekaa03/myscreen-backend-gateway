@@ -1,27 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UnauthorizedException } from '@nestjs/common';
-import { Status } from '@/enums/status.enum';
+import { HttpException, HttpStatus } from '@nestjs/common';
 
-/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-// @ts-ignore
-export class UnauthorizedError extends UnauthorizedException {
+import { Status } from '../../enums/status.enum';
+
+export class UnauthorizedError extends HttpException {
   constructor(message?: string) {
-    super({
-      status: Status.Error,
-      statusCode: 401,
-      code: 'server-error.10001',
-      message: message ?? 'Unauthorized request',
-    });
+    super(
+      {
+        status: Status.Error,
+        statusCode: 401,
+        code: 'server-error.10001',
+        message: message ?? 'Unauthorized request',
+      },
+      HttpStatus.UNAUTHORIZED,
+    );
   }
 
-  @ApiProperty({
-    enum: Status,
-    enumName: 'Status',
-    example: Status.Error,
-    description: 'Статус операции',
-    required: true,
-  })
-  status!: Status.Error;
+  // @ApiProperty({
+  //   enum: Status,
+  //   enumName: 'Status',
+  //   example: Status.Error,
+  //   description: 'Статус операции',
+  //   required: true,
+  // })
+  // private readonly status!: Status.Error;
 
   @ApiProperty({ example: 401 })
   statusCode!: number;

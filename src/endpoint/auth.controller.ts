@@ -60,6 +60,11 @@ import { Roles, RolesGuard } from '@/guards';
   type: UnauthorizedError,
 })
 @ApiResponse({
+  status: 403,
+  description: 'Ответ для незарегистрированного пользователя',
+  type: UnauthorizedError,
+})
+@ApiResponse({
   status: 404,
   description: 'Монитор не найден',
   type: NotFoundError,
@@ -114,11 +119,11 @@ export class AuthController {
   }
 
   @Patch('/')
-  @HttpCode(200)
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Advertiser,
+    UserRoleEnum.Accountant,
   )
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
