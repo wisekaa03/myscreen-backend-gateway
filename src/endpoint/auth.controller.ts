@@ -42,12 +42,11 @@ import {
   AuthMonitorRequest,
   NotFoundError,
 } from '@/dto';
-import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { Status, UserRoleEnum } from '@/enums';
+import { Roles, RolesGuard, JwtAuthGuard } from '@/guards';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
-import { Roles, RolesGuard } from '@/guards';
 
 @ApiResponse({
   status: 400,

@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString, IsOptional } from 'class-validator';
 
-import { MonitorEntity } from '../../database/monitor.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
 
 export class MonitorPartialRequest extends PartialType(
   OmitType(MonitorEntity, [

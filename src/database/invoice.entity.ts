@@ -19,8 +19,8 @@ import {
   Min,
 } from 'class-validator';
 
+import { InvoiceStatus } from '@/enums/invoice-status.enum';
 import { UserEntity } from './user.entity';
-import { InvoiceStatus } from '../enums/invoice-status.enum';
 
 @Entity('invoice')
 export class InvoiceEntity {

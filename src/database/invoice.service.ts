@@ -5,13 +5,13 @@ import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
 import dateRu from 'date-fns/locale/ru';
 
-import { TypeOrmFind } from '../shared/typeorm.find';
+import { TypeOrmFind } from '@/utils/typeorm.find';
+import { formatToContentType } from '@/utils/format-to-content-type';
+import { SpecificFormat } from '@/enums/specific-format.enum';
+import { InvoiceStatus } from '@/enums/invoice-status.enum';
+import { PrintService } from '@/print/print.service';
 import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
-import { SpecificFormat } from '../enums/specific-format.enum';
-import { InvoiceStatus } from '../enums/invoice-status.enum';
-import { formatToContentType } from '../shared/format-to-content-type';
-import { PrintService } from '../print/print.service';
 import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
 

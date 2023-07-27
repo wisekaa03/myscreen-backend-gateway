@@ -17,12 +17,12 @@ import {
   FindManyOptions,
 } from 'typeorm';
 
-import { selectUserOptions } from '../dto/index';
-import { UserRoleEnum, UserStoreSpaceEnum } from '../enums/index';
-import { decodeMailToken, generateMailToken } from '../shared/mail-token';
-import { genKey } from '../shared/genKey';
-import { TypeOrmFind } from '../shared/typeorm.find';
-import { MailService } from '../mail/mail.service';
+import { selectUserOptions } from '@/dto';
+import { UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
+import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
+import { genKey } from '@/utils/genKey';
+import { TypeOrmFind } from '@/utils/typeorm.find';
+import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserExtEntity } from './user.view.entity';
 

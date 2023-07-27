@@ -2,8 +2,8 @@ import { ApiProperty, OmitType } from '@nestjs/swagger';
 
 import { FileEntity } from '@/database/file.entity';
 import { MonitorResponse, PlaylistResponse } from '@/dto/response';
-import { FolderResponse } from './folder.response';
 import { FolderEntity } from '@/database/folder.entity';
+import { FolderResponse } from './folder.response';
 
 export class FileResponse extends OmitType(FileEntity, [
   'monitors',

@@ -51,11 +51,11 @@ import {
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { VideoType, Status, UserRoleEnum } from '@/enums';
-import { paginationQueryToConfig } from '@/shared/pagination-query-to-config';
+import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
-import { TypeOrmFind } from '@/shared/typeorm.find';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 
 @ApiResponse({
   status: 400,

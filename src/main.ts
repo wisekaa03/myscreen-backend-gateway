@@ -3,7 +3,7 @@ import { join as pathJoin } from 'node:path';
 import { dump as yamlDump } from 'js-yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import {
   SwaggerModule,
   DocumentBuilder,
@@ -11,6 +11,7 @@ import {
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
+import { ValidationError } from 'class-validator';
 
 import { version, author, homepage, description } from '../package.json';
 import { ExceptionsFilter } from './exception/exceptions.filter';
@@ -52,10 +53,18 @@ async function bootstrap() {
     .useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
+        skipUndefinedProperties: true,
         forbidNonWhitelisted: true,
         forbidUnknownValues: true,
-        skipUndefinedProperties: true,
-        stopAtFirstError: true,
+        stopAtFirstError: false,
+        exceptionFactory: (errors: ValidationError[]) => {
+          const message = errors
+            .map(
+              (error) => error.constraints && Object.values(error.constraints),
+            )
+            .join(', ');
+          return new BadRequestException(message);
+        },
       }),
     )
     .useGlobalInterceptors(new LoggerErrorInterceptor())

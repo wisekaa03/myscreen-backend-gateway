@@ -9,10 +9,16 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDateString, IsEnum, IsUUID } from 'class-validator';
+import {
+  IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsUUID,
+  Validate,
+} from 'class-validator';
 
-import { IsDateStringOrNull } from '../shared/is-date-string-or-null';
-import { ApplicationApproved } from '../enums/application-approved.enum';
+import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
+import { ApplicationApproved } from '@/enums/application-approved.enum';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
@@ -157,7 +163,7 @@ export class ApplicationEntity {
     nullable: true,
     required: false,
   })
-  @IsDateStringOrNull({ strict: false })
+  @Validate(IsDateStringOrNull)
   dateBefore!: Date | null;
 
   @Column({ type: 'boolean', nullable: false, default: false })

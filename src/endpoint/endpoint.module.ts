@@ -2,7 +2,7 @@ import { Module, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 
-import { MulterModuleOptionsClass } from '@/shared/multer-module-options-class';
+import { MulterModuleOptionsClass } from '@/utils/multer-module-options-class';
 import { AuthModule } from '@/auth/auth.module';
 import { DatabaseModule } from '@/database/database.module';
 import { WSModule } from '@/websocket/ws.module';

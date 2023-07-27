@@ -1,4 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
+
 import { EditorEntity } from '@/database/editor.entity';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { EditorLayerResponse } from './editor-layer.response';

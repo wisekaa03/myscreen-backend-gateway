@@ -15,19 +15,15 @@ import type { Server, WebSocket } from 'ws';
 import type { IncomingMessage } from 'http';
 import { Observable, of } from 'rxjs';
 
-import { AuthService } from '../auth/auth.service';
-import { MonitorEntity } from '../database/monitor.entity';
-import { MonitorService } from '../database/monitor.service';
-import { WsExceptionsFilter } from '../exception/ws-exceptions.filter';
-import {
-  MonitorStatus,
-  PlaylistStatusEnum,
-  UserRoleEnum,
-} from '../enums/index';
-import { WebSocketClient } from './interface/websocket-client';
-import { PlaylistService } from '../database/playlist.service';
-import { ApplicationEntity } from '../database/application.entity';
+import { AuthService } from '@/auth/auth.service';
+import { MonitorEntity } from '@/database/monitor.entity';
+import { MonitorService } from '@/database/monitor.service';
+import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
+import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
+import { PlaylistService } from '@/database/playlist.service';
+import { ApplicationEntity } from '@/database/application.entity';
 import { ApplicationService } from '@/database/application.service';
+import { WebSocketClient } from './interface/websocket-client';
 import { IncomingMessageData } from './interface/incoming-message';
 
 @WebSocketGateway({

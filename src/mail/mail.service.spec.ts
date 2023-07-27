@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { MailgunService } from 'nestjs-mailgun';
+
 import { MailService } from './mail.service';
 import { PrintService } from '@/print/print.service';
 

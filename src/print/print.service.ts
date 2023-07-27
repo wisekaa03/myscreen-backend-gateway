@@ -1,11 +1,10 @@
 import { Inject, Injectable, Logger, Scope, forwardRef } from '@nestjs/common';
 import excelJS from 'exceljs';
 
-import { SpecificFormat } from '../enums/specific-format.enum';
-import { UserEntity } from '../database/user.entity';
-import { UserService } from '../database/user.service';
-import { InvoiceEntity } from '../database/invoice.entity';
-import { MonitorService } from '../database/monitor.service';
+import { SpecificFormat } from '@/enums/specific-format.enum';
+import { UserEntity } from '@/database/user.entity';
+import { InvoiceEntity } from '@/database/invoice.entity';
+import { MonitorService } from '@/database/monitor.service';
 import { InvoiceService } from '@/database/invoice.service';
 import { printSpecific } from './print.specific';
 

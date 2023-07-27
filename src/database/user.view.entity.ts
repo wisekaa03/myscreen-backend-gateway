@@ -19,7 +19,7 @@ import {
   IsUUID,
 } from 'class-validator';
 
-import { UserRole, UserRoleEnum } from '../enums/index';
+import { UserRole, UserRoleEnum } from '@/enums';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';

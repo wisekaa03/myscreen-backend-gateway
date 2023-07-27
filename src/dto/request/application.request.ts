@@ -1,4 +1,5 @@
 import { OmitType } from '@nestjs/swagger';
+
 import { ApplicationEntity } from '@/database/application.entity';
 
 export class ApplicationRequest extends OmitType(ApplicationEntity, [

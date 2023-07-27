@@ -3,8 +3,8 @@ import { format } from '@vicimpa/rubles';
 import { format as dateFormat } from 'date-fns';
 import dateRu from 'date-fns/locale/ru';
 
-import { UserEntity } from '../database/user.entity';
-import { InvoiceEntity } from '../database/invoice.entity';
+import { UserEntity } from '@/database/user.entity';
+import { InvoiceEntity } from '@/database/invoice.entity';
 
 // сумма прописью для чисел от 0 до 999 триллионов
 // можно передать параметр "валюта": RUB,USD,EUR (по умолчанию RUB)

@@ -4,11 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import addMonths from 'date-fns/addMonths';
 
-import type { MyscreenJwtPayload } from '../shared/jwt.payload';
-import { userEntityToUser } from '../dto/response/user.response';
-import { UserService } from '../database/user.service';
-import { UserStoreSpaceEnum } from '../enums/store-space.enum';
-import { UserExtEntity } from '../database/user.view.entity';
+import type { MyscreenJwtPayload } from '@/utils/jwt.payload';
+import { UserStoreSpaceEnum } from '@/enums/store-space.enum';
+import { userEntityToUser } from '@/dto/response/user.response';
+import { UserService } from '@/database/user.service';
+import { UserExtEntity } from '@/database/user.view.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

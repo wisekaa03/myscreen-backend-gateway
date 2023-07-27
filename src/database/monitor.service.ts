@@ -7,8 +7,8 @@ import {
   Repository,
 } from 'typeorm';
 
-import { MonitorStatus } from '../enums/monitor-status.enum';
-import { TypeOrmFind } from '../shared/typeorm.find';
+import { MonitorStatus } from '@/enums/monitor-status.enum';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 

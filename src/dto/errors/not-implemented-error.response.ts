@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { HttpException, HttpStatus } from '@nestjs/common';
 
-import { Status } from '../../enums/status.enum';
+import { Status } from '@/enums/status.enum';
 
 export class NotImplementedError extends HttpException {
   constructor(message?: string) {

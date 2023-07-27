@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
-import { MailService } from '../mail/mail.service';
+import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserExtEntity } from './user.view.entity';
 import { UserService } from './user.service';

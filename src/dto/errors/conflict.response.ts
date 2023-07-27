@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Status } from '../../enums/status.enum';
-import { FileIDResponse } from '../response/file-id.response';
+import { Status } from '@/enums/status.enum';
+import { FileIDResponse } from '@/dto/response/file-id.response';
 
 export class ConflictDataFile {
   @ApiProperty({
