@@ -29,7 +29,7 @@ import { PrintModule } from './print/print.module';
           target:
             process.env.NODE_ENV === 'test'
               ? 'pino-pretty'
-              : `${__dirname}/shared/pino-pretty.js`,
+              : `${__dirname}/utils/pino-pretty.cjs`,
           options: {
             colorize: process.env.NODE_ENV !== 'production',
             translateTime: 'SYS:yyyy-mm-dd HH:MM:ss',
