@@ -25,6 +25,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FindOptionsWhere } from 'typeorm';
 
 import {
   BadRequestError,
@@ -47,6 +48,7 @@ import { InvoiceService } from '@/database/invoice.service';
 import { UserService } from '@/database/user.service';
 import { WalletService } from '@/database/wallet.service';
 import { MailService } from '@/mail/mail.service';
+import { InvoiceEntity } from '@/database/invoice.entity';
 
 @ApiResponse({
   status: 400,
@@ -172,7 +174,6 @@ export class InvoiceController {
   @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async confirmed(
-    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
     const invoice = await this.invoiceService.findOne({ where: { id } });
@@ -210,7 +211,6 @@ export class InvoiceController {
   @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async payed(
-    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
     const invoice = await this.invoiceService.findOne({
@@ -275,8 +275,16 @@ export class InvoiceController {
     @Param('invoiceId', ParseUUIDPipe) id: string,
     @Param('format', new ParseEnumPipe(SpecificFormat)) format: SpecificFormat,
   ): Promise<void> {
+    const where: FindOptionsWhere<InvoiceEntity> = { id };
+    if (
+      user.role !== UserRoleEnum.Administrator &&
+      user.role !== UserRoleEnum.Accountant
+    ) {
+      where.userId = user.id;
+    }
     const invoice = await this.invoiceService.findOne({
-      where: { id, userId: user.id },
+      where,
+      relations: ['user'],
     });
     if (!invoice) {
       throw new NotFoundException();
