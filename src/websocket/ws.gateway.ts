@@ -1,3 +1,4 @@
+import type { IncomingMessage } from 'http';
 import { isJWT } from 'class-validator';
 import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
 import {
@@ -12,7 +13,6 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import type { Server, WebSocket } from 'ws';
-import type { IncomingMessage } from 'http';
 import { Observable, of } from 'rxjs';
 
 import { AuthService } from '@/auth/auth.service';
