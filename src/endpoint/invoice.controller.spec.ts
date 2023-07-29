@@ -31,22 +31,6 @@ describe(InvoiceController.name, () => {
           provide: InvoiceService,
           useClass: mockRepository,
         },
-        {
-          provide: WalletService,
-          useClass: mockRepository,
-        },
-        {
-          provide: PrintService,
-          useClass: mockRepository,
-        },
-        {
-          provide: UserService,
-          useClass: mockRepository,
-        },
-        {
-          provide: MailService,
-          useClass: mockRepository,
-        },
       ],
     }).compile();
 

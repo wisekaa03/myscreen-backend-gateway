@@ -7,6 +7,7 @@ import {
   forwardRef,
   Get,
   HttpCode,
+  HttpStatus,
   Inject,
   Logger,
   NotFoundException,
@@ -45,27 +46,27 @@ import { WSGateway } from '@/websocket/ws.gateway';
 import { ApplicationService } from '@/database/application.service';
 
 @ApiResponse({
-  status: 400,
+  status: HttpStatus.BAD_REQUEST,
   description: 'Ответ будет таким если с данным что-то не так',
   type: BadRequestError,
 })
 @ApiResponse({
-  status: 401,
+  status: HttpStatus.UNAUTHORIZED,
   description: 'Ответ для незарегистрированного пользователя',
   type: UnauthorizedError,
 })
 @ApiResponse({
-  status: 403,
+  status: HttpStatus.FORBIDDEN,
   description: 'Ответ для неавторизованного пользователя',
   type: ForbiddenError,
 })
 @ApiResponse({
-  status: 404,
-  description: 'Ошибка папки',
+  status: HttpStatus.NOT_FOUND,
+  description: 'Не найдено',
   type: NotFoundError,
 })
 @ApiResponse({
-  status: 500,
+  status: HttpStatus.INTERNAL_SERVER_ERROR,
   description: 'Ошибка сервера',
   type: InternalServerError,
 })

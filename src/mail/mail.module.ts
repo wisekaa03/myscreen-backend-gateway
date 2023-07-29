@@ -5,6 +5,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 
 import { MailService } from './mail.service';
 import { PrintModule } from '@/print/print.module';
+import { MailLogger } from '@/utils/mail.logger';
 
 // TODO: заменить это все микросервисной архитектурой
 
@@ -21,7 +22,7 @@ import { PrintModule } from '@/print/print.module';
             user: configService.get<string>('MAIL_USER') || 'admin',
             pass: configService.get<string>('MAIL_PASS') || '12345678',
           },
-          logger: true,
+          logger: new MailLogger(),
           tls: {
             rejectUnauthorized: false,
           },

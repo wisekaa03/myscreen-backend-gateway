@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   Ip,
   Logger,
   NotFoundException,
@@ -41,6 +42,7 @@ import {
   UserGetResponse,
   AuthMonitorRequest,
   NotFoundError,
+  ForbiddenError,
 } from '@/dto';
 import { Status, UserRoleEnum } from '@/enums';
 import { Roles, RolesGuard, JwtAuthGuard } from '@/guards';
@@ -49,38 +51,38 @@ import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
 
 @ApiResponse({
-  status: 400,
+  status: HttpStatus.BAD_REQUEST,
   description: 'Ответ будет таким если с данным что-то не так',
   type: BadRequestError,
 })
 @ApiResponse({
-  status: 401,
+  status: HttpStatus.UNAUTHORIZED,
   description: 'Ответ для незарегистрированного пользователя',
   type: UnauthorizedError,
 })
 @ApiResponse({
-  status: 403,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
+  status: HttpStatus.FORBIDDEN,
+  description: 'Ответ для неавторизованного пользователя',
+  type: ForbiddenError,
 })
 @ApiResponse({
-  status: 404,
-  description: 'Монитор не найден',
+  status: HttpStatus.NOT_FOUND,
+  description: 'Не найдено',
   type: NotFoundError,
 })
 @ApiResponse({
-  status: 412,
+  status: HttpStatus.PRECONDITION_FAILED,
   description: 'Пользователь уже существует',
   type: PreconditionFailedError,
 })
 @ApiResponse({
-  status: 500,
+  status: HttpStatus.INTERNAL_SERVER_ERROR,
   description: 'Ошибка сервера',
   type: InternalServerError,
 })
 @ApiResponse({
-  status: 503,
-  description: 'Ошибка сервера',
+  status: HttpStatus.SERVICE_UNAVAILABLE,
+  description: 'Не доступен сервис',
   type: ServiceUnavailableError,
 })
 @ApiTags('auth')
