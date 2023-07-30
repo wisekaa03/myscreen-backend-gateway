@@ -43,8 +43,12 @@ function load_env() {
   echo "AWS_REGION=$AWS_REGION" >>.env
   echo "AWS_BUCKET=$AWS_BUCKET" >>.env
 
+  echo "MAIL_DOMAIN=$MAIL_DOMAIN" >>.env
+  echo "MAIL_KEY_SELECTOR=$MAIL_KEY_SELECTOR" >>.env
+  echo "MAIL_PRIVATE_KEY=$MAIL_PRIVATE_KEY" >>.env
   echo "MAIL_HOST=$MAIL_HOST" >>.env
   echo "MAIL_PORT=$MAIL_PORT" >>.env
+  echo "MAIL_FROM=$MAIL_FROM" >>.env
   echo "MAIL_USER=$MAIL_USER" >>.env
   echo "MAIL_PASS=$MAIL_PASS" >>.env
 
