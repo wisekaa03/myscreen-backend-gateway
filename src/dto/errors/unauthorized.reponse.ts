@@ -8,7 +8,7 @@ export class UnauthorizedError extends HttpException {
     super(
       {
         status: Status.Error,
-        statusCode: 401,
+        statusCode: HttpStatus.UNAUTHORIZED,
         code: 'server-error.10001',
         message: message ?? 'Unauthorized request',
       },
@@ -16,7 +16,7 @@ export class UnauthorizedError extends HttpException {
     );
   }
 
-  @ApiProperty({ example: 401 })
+  @ApiProperty({ example: HttpStatus.UNAUTHORIZED })
   statusCode!: number;
 
   @ApiProperty({ example: 'server-error.10001' })

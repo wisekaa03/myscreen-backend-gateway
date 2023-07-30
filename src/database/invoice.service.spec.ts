@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { PrintService } from '@/print/print.service';
+import { MailService } from '@/mail/mail.service';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
@@ -31,6 +32,10 @@ describe(InvoiceService.name, () => {
         },
         {
           provide: getRepositoryToken(InvoiceEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: MailService,
           useClass: mockRepository,
         },
         {

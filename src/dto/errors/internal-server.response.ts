@@ -3,20 +3,20 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 
 import { Status } from '@/enums/status.enum';
 
-export class NotImplementedError extends HttpException {
+export class InternalServerError extends HttpException {
   constructor(message?: string) {
     super(
       {
         status: Status.Error,
-        statusCode: 501,
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         code: 'server-error.10000',
-        message: message ?? 'Not implemented',
+        message: message ?? 'Server error',
       },
-      HttpStatus.NOT_IMPLEMENTED,
+      HttpStatus.INTERNAL_SERVER_ERROR,
     );
   }
 
-  @ApiProperty({ required: true, example: 501 })
+  @ApiProperty({ required: true, example: HttpStatus.INTERNAL_SERVER_ERROR })
   statusCode!: number;
 
   @ApiProperty({ required: true, example: 'server-error.10000' })

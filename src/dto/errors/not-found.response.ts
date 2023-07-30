@@ -8,7 +8,7 @@ export class NotFoundError extends HttpException {
     super(
       {
         status: Status.Error,
-        statusCode: 404,
+        statusCode: HttpStatus.NOT_FOUND,
         code: 'server-error.10005',
         message: message ?? 'Not Found',
       },
@@ -16,7 +16,7 @@ export class NotFoundError extends HttpException {
     );
   }
 
-  @ApiProperty({ example: 404 })
+  @ApiProperty({ example: HttpStatus.NOT_FOUND })
   statusCode!: number;
 
   @ApiProperty({ required: true, example: 'server-error.10005' })

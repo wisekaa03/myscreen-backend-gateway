@@ -8,7 +8,7 @@ export class BadRequestError extends HttpException {
     super(
       {
         status: Status.Error,
-        statusCode: 400,
+        statusCode: HttpStatus.BAD_REQUEST,
         code: 'server-error.10004',
         message: message ?? 'Bad request',
       },
@@ -16,7 +16,7 @@ export class BadRequestError extends HttpException {
     );
   }
 
-  @ApiProperty({ required: true, example: 400 })
+  @ApiProperty({ required: true, example: HttpStatus.BAD_REQUEST })
   statusCode!: number;
 
   @ApiProperty({ required: true, example: 'server-error.10004' })

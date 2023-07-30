@@ -10,6 +10,7 @@ import { formatToContentType } from '@/utils/format-to-content-type';
 import { SpecificFormat } from '@/enums/specific-format.enum';
 import { InvoiceStatus } from '@/enums/invoice-status.enum';
 import { PrintService } from '@/print/print.service';
+import { MailService } from '@/mail/mail.service';
 import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
 import { WalletService } from './wallet.service';
@@ -20,6 +21,8 @@ export class InvoiceService {
   constructor(
     @Inject(forwardRef(() => PrintService))
     private readonly printService: PrintService,
+    @Inject(forwardRef(() => MailService))
+    private readonly mailService: MailService,
     private readonly walletService: WalletService,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
@@ -82,6 +85,9 @@ export class InvoiceService {
     };
 
     if (status !== InvoiceStatus.PAID) {
+      if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
+        await this.mailService.invoiceConfirmed(invoice.user, invoice);
+      }
       return this.invoiceRepository.save(newInvoice);
     }
 
@@ -91,10 +97,19 @@ export class InvoiceService {
           InvoiceEntity,
           newInvoice,
         );
+
         await transactionalEntityManager.save(
           WalletEntity,
           await this.walletService.create(user, invoiceChanged),
         );
+
+        const sum = await this.walletService.walletSum(invoice.userId);
+        await this.mailService.invoicePayed(
+          invoice.user.email,
+          invoice,
+          sum ?? 0,
+        );
+
         return invoiceChanged;
       },
     );

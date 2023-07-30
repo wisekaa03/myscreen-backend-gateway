@@ -8,7 +8,7 @@ export class PreconditionFailedError extends HttpException {
     super(
       {
         status: Status.Error,
-        statusCode: 412,
+        statusCode: HttpStatus.PRECONDITION_FAILED,
         code: 'server-error.10002',
         message: message ?? 'User exists',
       },
@@ -16,7 +16,7 @@ export class PreconditionFailedError extends HttpException {
     );
   }
 
-  @ApiProperty({ required: true, example: 412 })
+  @ApiProperty({ required: true, example: HttpStatus.PRECONDITION_FAILED })
   statusCode!: number;
 
   @ApiProperty({ required: true, example: 'server-error.10002' })

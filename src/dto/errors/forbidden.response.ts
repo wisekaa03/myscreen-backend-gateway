@@ -8,7 +8,7 @@ export class ForbiddenError extends HttpException {
     super(
       {
         status: Status.Error,
-        statusCode: 403,
+        statusCode: HttpStatus.FORBIDDEN,
         code: 'server-error.10002',
         message: message ?? 'Forbidden',
       },
@@ -16,7 +16,7 @@ export class ForbiddenError extends HttpException {
     );
   }
 
-  @ApiProperty({ required: true, example: 403 })
+  @ApiProperty({ required: true, example: HttpStatus.FORBIDDEN })
   statusCode!: number;
 
   @ApiProperty({ required: true, example: 'server-error.10002' })

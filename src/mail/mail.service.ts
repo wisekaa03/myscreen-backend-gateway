@@ -1,39 +1,32 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  MailgunMessageData,
-  MailgunService,
-  type MailgunError,
-} from 'nestjs-mailgun';
+import { ISendMailOptions, MailerService } from '@nestjs-modules/mailer';
+import { SentMessageInfo } from 'nodemailer';
 import { format as dateFormat } from 'date-fns';
 import dateRu from 'date-fns/locale/ru';
 
+import { SpecificFormat } from '@/enums';
 import { InvoiceEntity } from '@/database/invoice.entity';
 import { PrintService } from '@/print/print.service';
 import { UserEntity } from '@/database/user.entity';
-import { SpecificFormat } from '@/enums';
 
 @Injectable()
 export class MailService {
   logger = new Logger(MailService.name);
 
-  private template = 'template.user-action';
+  private template = 'user-action';
 
   private domain: string;
 
   private from: string;
 
   constructor(
-    private readonly mailgunService: MailgunService,
+    private readonly mailerService: MailerService,
     private readonly printService: PrintService,
     private readonly configService: ConfigService,
   ) {
-    this.domain = configService.get<string>('MAILGUN_API_DOMAIN', 'localhost');
-    this.from = `MyScreen <no-reply@${this.domain}>`;
+    this.domain = configService.get<string>('MAIL_DOMAIN', 'localhost');
+    this.from = `"MyScreen" <no-reply@${this.domain}>`;
   }
 
   private static confirmEmailText = (confirmUrl: string) =>
@@ -72,23 +65,17 @@ export class MailService {
    * @param {string} email Почта пользователя
    * @returns {any}
    */
-  async sendWelcomeMessage(email: string): Promise<any> {
-    const message: MailgunMessageData = {
-      from: this.from,
+  async sendWelcomeMessage(email: string): Promise<SentMessageInfo> {
+    const message: ISendMailOptions = {
       to: email,
+      from: this.from,
       subject: 'Регистрация',
-      text: MailService.registerEmailText(),
+      template: this.template,
+      context: {
+        text: MailService.registerEmailText(),
+      },
     };
-
-    return this.mailgunService
-      .createEmail(this.domain, {
-        ...message,
-        template: this.template,
-        'h:X-Mailgun-Variables': JSON.stringify(message),
-      })
-      .catch((error: MailgunError) => {
-        throw new InternalServerErrorException(error);
-      });
+    return this.mailerService.sendMail(message);
   }
 
   /**
@@ -100,31 +87,22 @@ export class MailService {
   async sendApplicationWarningMessage(
     email: string,
     applicationUrl: string,
-  ): Promise<any> {
-    const message: MailgunMessageData = {
-      from: this.from,
+  ): Promise<SentMessageInfo> {
+    const message: ISendMailOptions = {
       to: email,
+      from: this.from,
       subject: 'Новая заявка',
-      text: MailService.applicationWarningText(applicationUrl),
-    };
-
-    const variables = {
-      applicationUrl,
-      button: {
-        url: applicationUrl,
-        text: 'Посмотреть',
+      template: this.template,
+      context: {
+        text: MailService.applicationWarningText(applicationUrl),
+        applicationUrl,
+        button: {
+          url: applicationUrl,
+          text: 'Посмотреть',
+        },
       },
     };
-
-    return this.mailgunService
-      .createEmail(this.domain, {
-        ...message,
-        template: this.template,
-        'h:X-Mailgun-Variables': JSON.stringify({ ...message, ...variables }),
-      })
-      .catch((error: MailgunError) => {
-        throw new InternalServerErrorException(error);
-      });
+    return this.mailerService.sendMail(message);
   }
 
   /**
@@ -134,34 +112,25 @@ export class MailService {
    * @param {string} confirmUrl URL по которому нужно пройти
    * @returns {any}
    */
-  async sendVerificationCode(email: string, confirmUrl: string): Promise<any> {
-    const message: MailgunMessageData = {
-      from: this.from,
+  async sendVerificationCode(
+    email: string,
+    confirmUrl: string,
+  ): Promise<SentMessageInfo> {
+    const message: ISendMailOptions = {
       to: email,
+      from: this.from,
       subject: 'Подтверждение аккаунта',
-      text: MailService.confirmEmailText(confirmUrl),
-    };
-
-    const variables = {
-      confirmUrl,
-      button: {
-        url: confirmUrl,
-        text: 'Подтвердить',
+      template: this.template,
+      context: {
+        text: MailService.confirmEmailText(confirmUrl),
+        confirmUrl,
+        button: {
+          url: confirmUrl,
+          text: 'Подтвердить',
+        },
       },
     };
-
-    return this.mailgunService
-      .createEmail(this.domain, {
-        ...message,
-        template: this.template,
-        'h:X-Mailgun-Variables': JSON.stringify({
-          ...message,
-          ...variables,
-        }),
-      })
-      .catch((error: MailgunError) => {
-        throw new InternalServerErrorException(error);
-      });
+    return this.mailerService.sendMail(message);
   }
 
   /**
@@ -171,34 +140,25 @@ export class MailService {
    * @param {string} forgotPasswordUrl URL по которому нужно пройти
    * @returns {any}
    */
-  async forgotPassword(email: string, forgotPasswordUrl: string): Promise<any> {
-    const message: MailgunMessageData = {
-      from: this.from,
+  async forgotPassword(
+    email: string,
+    forgotPasswordUrl: string,
+  ): Promise<SentMessageInfo> {
+    const message: ISendMailOptions = {
       to: email,
+      from: this.from,
       subject: 'Сброс пароля',
-      text: MailService.forgotPasswordText(forgotPasswordUrl),
-    };
-
-    const variables = {
-      forgotPasswordUrl,
-      button: {
-        url: forgotPasswordUrl,
-        text: 'Сбросить',
+      template: this.template,
+      context: {
+        text: MailService.forgotPasswordText(forgotPasswordUrl),
+        forgotPasswordUrl,
+        button: {
+          url: forgotPasswordUrl,
+          text: 'Сбросить',
+        },
       },
     };
-
-    return this.mailgunService
-      .createEmail(this.domain, {
-        ...message,
-        template: this.template,
-        'h:X-Mailgun-Variables': JSON.stringify({
-          ...message,
-          ...variables,
-        }),
-      })
-      .catch((error: MailgunError) => {
-        throw new InternalServerErrorException(error);
-      });
+    return this.mailerService.sendMail(message);
   }
 
   /**
@@ -211,52 +171,35 @@ export class MailService {
   async invoiceConfirmed(
     user: UserEntity,
     invoice: InvoiceEntity,
-  ): Promise<any> {
+  ): Promise<SentMessageInfo> {
     const { seqNo, createdAt } = invoice;
-
     const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
       locale: dateRu,
     });
-
     const createdAtFormatFile = dateFormat(createdAt, 'dd_LLLL_yyyy', {
       locale: dateRu,
     });
-
     const invoicePrint = await this.printService.invoice(
       user,
       SpecificFormat.XLSX,
       invoice,
     );
-
-    const text = MailService.invoiceConfirmedText();
-    const message: MailgunMessageData = {
-      from: this.from,
+    const message: ISendMailOptions = {
       to: user.email,
+      from: this.from,
       subject: `Счет на оплату ${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
-      text,
-      attachment: [
-        {
-          filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
-          data: invoicePrint,
-        },
-      ],
+      template: this.template,
+      context: {
+        text: MailService.invoiceConfirmedText(),
+        attachment: [
+          {
+            filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
+            content: invoicePrint,
+          },
+        ],
+      },
     };
-
-    const variables = {
-      text,
-    };
-
-    return this.mailgunService
-      .createEmail(this.domain, {
-        ...message,
-        template: this.template,
-        'h:X-Mailgun-Variables': JSON.stringify({
-          ...variables,
-        }),
-      })
-      .catch((error: MailgunError) => {
-        throw new InternalServerErrorException(error);
-      });
+    return this.mailerService.sendMail(message);
   }
 
   /**
@@ -271,34 +214,20 @@ export class MailService {
     email: string,
     invoice: InvoiceEntity,
     sum: number,
-  ): Promise<any> {
+  ): Promise<SentMessageInfo> {
     const { seqNo, createdAt } = invoice;
-
     const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
       locale: dateRu,
     });
-
-    const text = MailService.invoicePayedText(invoice.sum, sum ?? 0);
-    const message: MailgunMessageData = {
-      from: this.from,
+    const message: ISendMailOptions = {
       to: email,
+      from: this.from,
       subject: `Поступление по Счету ${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
-      text,
+      template: this.template,
+      context: {
+        text: MailService.invoicePayedText(invoice.sum, sum ?? 0),
+      },
     };
-
-    const variables = {
-      text,
-    };
-    return this.mailgunService
-      .createEmail(this.domain, {
-        ...message,
-        template: this.template,
-        'h:X-Mailgun-Variables': JSON.stringify({
-          ...variables,
-        }),
-      })
-      .catch((error: MailgunError) => {
-        throw new InternalServerErrorException(error);
-      });
+    return this.mailerService.sendMail(message);
   }
 }

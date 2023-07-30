@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { MailgunService } from 'nestjs-mailgun';
+import { MailerService } from '@nestjs-modules/mailer';
 
 import { MailService } from './mail.service';
 import { PrintService } from '@/print/print.service';
@@ -14,6 +14,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  sendMail: async () => Promise.resolve(data),
   metadata: {
     columns: [],
     relations: [],
@@ -32,20 +33,18 @@ describe(MailService.name, () => {
           useClass: mockRepository,
         },
         {
+          provide: MailerService,
+          useClass: mockRepository,
+        },
+        {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              if (key === 'MAILGUN_API_DOMAIN') {
+              if (key === 'MAIL_DOMAIN') {
                 return 'baz.bar';
               }
               return null;
             }),
-          },
-        },
-        {
-          provide: MailgunService,
-          useValue: {
-            createEmail: jest.fn(async () => data),
           },
         },
       ],

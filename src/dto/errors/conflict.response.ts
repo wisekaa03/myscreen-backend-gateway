@@ -62,7 +62,7 @@ export class ConflictError extends HttpException {
     super(
       {
         status: Status.Error,
-        statusCode: 409,
+        statusCode: HttpStatus.CONFLICT,
         code: 'server-error.10000',
         message: message ?? 'Conflict exists',
         data,
@@ -71,7 +71,7 @@ export class ConflictError extends HttpException {
     );
   }
 
-  @ApiProperty({ required: true, example: 409 })
+  @ApiProperty({ required: true, example: HttpStatus.CONFLICT })
   statusCode!: number;
 
   @ApiProperty({ required: true, example: 'server-error.10000' })

@@ -11,6 +11,7 @@ import {
   RequestTimeoutException,
   ConflictException,
   NotImplementedException,
+  NotAcceptableException,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 
@@ -24,6 +25,7 @@ import {
   ConflictError,
   NotImplementedError,
   HttpError,
+  NotAcceptableError,
 } from '@/dto';
 
 @Catch()
@@ -48,6 +50,8 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         exceptionAfter = new PreconditionFailedError(exception.message);
       } else if (exception instanceof NotImplementedException) {
         exceptionAfter = new NotImplementedError(exception.message);
+      } else if (exception instanceof NotAcceptableException) {
+        exceptionAfter = new NotAcceptableError(exception.message);
       } else if (exception instanceof BadRequestException) {
         const response = exception.getResponse();
         exceptionAfter = new BadRequestError(

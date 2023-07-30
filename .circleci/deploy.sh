@@ -43,9 +43,10 @@ function load_env() {
   echo "AWS_REGION=$AWS_REGION" >>.env
   echo "AWS_BUCKET=$AWS_BUCKET" >>.env
 
-  echo "MAILGUN_API_KEY=$MAIL_API_KEY" >>.env
-  echo "MAILGUN_API_DOMAIN=$MAIL_API_DOMAIN" >>.env
-  echo "MAILGUN_API_HOST=$MAILGUN_API_HOST" >>.env
+  echo "MAIL_HOST=$MAIL_HOST" >>.env
+  echo "MAIL_PORT=$MAIL_PORT" >>.env
+  echo "MAIL_USER=$MAIL_USER" >>.env
+  echo "MAIL_PASS=$MAIL_PASS" >>.env
 
   echo "Environments was loaded!"
 }
@@ -64,6 +65,7 @@ function deploy() {
     --exclude="dist/**.ts" \
     --exclude="dist/**.map" \
     --include="dist/***" \
+    --include="templates/***" \
     --include="static/***" \
     --include="upload/***" \
     --include="node_modules/***" \

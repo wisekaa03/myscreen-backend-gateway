@@ -22,6 +22,7 @@ import {
   Res,
   InternalServerErrorException,
   NotAcceptableException,
+  HttpStatus,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -48,6 +49,7 @@ import {
   EditorLayerUpdateRequest,
   EditorGetRenderingStatusResponse,
   EditorExportRequest,
+  NotAcceptableError,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { VideoType, Status, UserRoleEnum } from '@/enums';
@@ -58,33 +60,38 @@ import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 
 @ApiResponse({
-  status: 400,
+  status: HttpStatus.BAD_REQUEST,
   description: 'Ответ будет таким если с данным что-то не так',
   type: BadRequestError,
 })
 @ApiResponse({
-  status: 401,
+  status: HttpStatus.UNAUTHORIZED,
   description: 'Ответ для незарегистрированного пользователя',
   type: UnauthorizedError,
 })
 @ApiResponse({
-  status: 403,
+  status: HttpStatus.FORBIDDEN,
   description: 'Ответ для неавторизованного пользователя',
   type: ForbiddenError,
 })
 @ApiResponse({
-  status: 404,
-  description: 'Ошибка монитора',
+  status: HttpStatus.NOT_FOUND,
+  description: 'Не найдено',
   type: NotFoundError,
 })
 @ApiResponse({
-  status: 500,
+  status: HttpStatus.NOT_ACCEPTABLE,
+  description: 'Не принято значение',
+  type: NotAcceptableError,
+})
+@ApiResponse({
+  status: HttpStatus.INTERNAL_SERVER_ERROR,
   description: 'Ошибка сервера',
   type: InternalServerError,
 })
 @ApiResponse({
-  status: 503,
-  description: 'Ошибка сервера',
+  status: HttpStatus.SERVICE_UNAVAILABLE,
+  description: 'Не доступен сервис',
   type: ServiceUnavailableError,
 })
 @Roles(

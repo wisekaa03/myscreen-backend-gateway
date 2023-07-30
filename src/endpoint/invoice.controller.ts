@@ -7,6 +7,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   Logger,
   NotAcceptableException,
   NotFoundException,
@@ -38,6 +39,7 @@ import {
   InvoiceGetResponse,
   ServiceUnavailableError,
   UnauthorizedError,
+  NotAcceptableError,
 } from '@/dto';
 import { Status, UserRoleEnum, SpecificFormat, InvoiceStatus } from '@/enums';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
@@ -45,39 +47,41 @@ import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { InvoiceService } from '@/database/invoice.service';
-import { UserService } from '@/database/user.service';
-import { WalletService } from '@/database/wallet.service';
-import { MailService } from '@/mail/mail.service';
 import { InvoiceEntity } from '@/database/invoice.entity';
 
 @ApiResponse({
-  status: 400,
+  status: HttpStatus.BAD_REQUEST,
   description: 'Ответ будет таким если с данным что-то не так',
   type: BadRequestError,
 })
 @ApiResponse({
-  status: 401,
+  status: HttpStatus.UNAUTHORIZED,
   description: 'Ответ для незарегистрированного пользователя',
   type: UnauthorizedError,
 })
 @ApiResponse({
-  status: 403,
+  status: HttpStatus.FORBIDDEN,
   description: 'Ответ для неавторизованного пользователя',
   type: ForbiddenError,
 })
 @ApiResponse({
-  status: 404,
-  description: 'Ошибка медиа',
+  status: HttpStatus.NOT_FOUND,
+  description: 'Не найдено',
   type: NotFoundError,
 })
 @ApiResponse({
-  status: 500,
+  status: HttpStatus.NOT_ACCEPTABLE,
+  description: 'Не принято значение',
+  type: NotAcceptableError,
+})
+@ApiResponse({
+  status: HttpStatus.INTERNAL_SERVER_ERROR,
   description: 'Ошибка сервера',
   type: InternalServerError,
 })
 @ApiResponse({
-  status: 503,
-  description: 'Ошибка сервера',
+  status: HttpStatus.SERVICE_UNAVAILABLE,
+  description: 'Не доступен сервис',
   type: ServiceUnavailableError,
 })
 @Roles(
@@ -93,12 +97,7 @@ import { InvoiceEntity } from '@/database/invoice.entity';
 export class InvoiceController {
   logger = new Logger(InvoiceController.name);
 
-  constructor(
-    private readonly userService: UserService,
-    private readonly invoiceService: InvoiceService,
-    private readonly walletService: WalletService,
-    private readonly mailService: MailService,
-  ) {}
+  constructor(private readonly invoiceService: InvoiceService) {}
 
   @Post()
   @HttpCode(200)
@@ -176,7 +175,10 @@ export class InvoiceController {
   async confirmed(
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
-    const invoice = await this.invoiceService.findOne({ where: { id } });
+    const invoice = await this.invoiceService.findOne({
+      where: { id },
+      relations: ['user'],
+    });
     if (!invoice) {
       throw new NotFoundException();
     }
@@ -189,8 +191,6 @@ export class InvoiceController {
       invoice,
       InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
     );
-
-    /* await */ this.mailService.invoiceConfirmed(invoice.user, invoice);
 
     return {
       status: Status.Success,
@@ -228,13 +228,6 @@ export class InvoiceController {
       invoice.user,
       invoice,
       InvoiceStatus.PAID,
-    );
-
-    const sum = await this.walletService.walletSum(invoice.userId);
-    /* await */ this.mailService.invoicePayed(
-      invoice.user.email,
-      invoice,
-      sum ?? 0,
     );
 
     return {
