@@ -79,8 +79,9 @@ export class InvoiceService {
     invoice: InvoiceEntity,
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
-    const newInvoice: InvoiceEntity = {
+    const newInvoice: DeepPartial<InvoiceEntity> = {
       ...invoice,
+      user: undefined,
       status,
     };
 
@@ -98,9 +99,10 @@ export class InvoiceService {
             this.walletService.create(user, invoiceChanged),
           );
 
-          let sum = await this.walletService.walletSum(invoice.userId);
-          // так как транакция не завершена, то приходится приплюсовывать сюда invoice.sum
-          sum += invoice.sum;
+          const sum = await this.walletService.walletSum(
+            invoice.userId,
+            transactionalEntityManager,
+          );
 
           await this.mailService.invoicePayed(invoice.user.email, invoice, sum);
         } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {

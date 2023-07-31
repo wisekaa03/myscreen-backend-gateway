@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  EntityManager,
+  FindManyOptions,
+  Repository,
+} from 'typeorm';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { InvoiceEntity } from './invoice.entity';
@@ -36,7 +41,14 @@ export class WalletService {
     return this.walletRepository.create(wallet);
   }
 
-  async walletSum(userId: string): Promise<number> {
-    return this.walletRepository.sum('sum', { userId }).then((sum) => sum ?? 0);
+  async walletSum(
+    userId: string,
+    transactional?: EntityManager,
+  ): Promise<number> {
+    return transactional
+      ? transactional
+          .sum(WalletEntity, 'sum', { userId })
+          .then((sum) => sum ?? 0)
+      : this.walletRepository.sum('sum', { userId }).then((sum) => sum ?? 0);
   }
 }
