@@ -191,13 +191,13 @@ export class MailService {
       template: this.template,
       context: {
         text: MailService.invoiceConfirmedText(),
-        attachments: [
-          {
-            filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
-            content: invoicePrint,
-          },
-        ],
       },
+      attachments: [
+        {
+          filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
+          content: Buffer.from(invoicePrint),
+        },
+      ],
     };
     return this.mailerService.sendMail(message);
   }
