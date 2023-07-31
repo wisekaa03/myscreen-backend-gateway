@@ -187,17 +187,17 @@ export class MailService {
     const message: ISendMailOptions = {
       to: user.email,
       from: this.from,
-      subject: `Счет на оплату ${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
+      subject: `Счет на оплату №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
       context: {
         text: MailService.invoiceConfirmedText(),
-        attachments: [
-          {
-            filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
-            content: invoicePrint,
-          },
-        ],
       },
+      attachments: [
+        {
+          filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
+          content: Buffer.from(invoicePrint),
+        },
+      ],
     };
     return this.mailerService.sendMail(message);
   }
@@ -222,7 +222,7 @@ export class MailService {
     const message: ISendMailOptions = {
       to: email,
       from: this.from,
-      subject: `Поступление по Счету ${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
+      subject: `Поступление по Счету №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
       context: {
         text: MailService.invoicePayedText(invoice.sum, sum ?? 0),

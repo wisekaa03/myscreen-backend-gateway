@@ -91,13 +91,13 @@ export class InvoiceService {
           newInvoice,
         );
 
-        await transactionalEntityManager.save(
-          WalletEntity,
-          await this.walletService.create(user, invoiceChanged),
-        );
-
         if (status === InvoiceStatus.PAID) {
+          await transactionalEntityManager.save(
+            WalletEntity,
+            await this.walletService.create(user, invoiceChanged),
+          );
           const sum = await this.walletService.walletSum(invoice.userId);
+
           await this.mailService.invoicePayed(
             invoice.user.email,
             invoice,
