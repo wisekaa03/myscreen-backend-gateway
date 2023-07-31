@@ -46,7 +46,7 @@ module.exports = {
     '<rootDir>/dist/',
     '<rootDir>/node_modules/',
     '<rootDir>/static/',
-    '<rootDir>/template/',
+    '<rootDir>/templates/',
     '<rootDir>/test/',
     '<rootDir>/upload/',
   ],

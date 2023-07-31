@@ -19,7 +19,6 @@ import {
   FolderGetResponse,
   FilesGetResponse,
   FilesUploadResponse,
-  UsersGetResponse,
   UserGetResponse,
   FileGetResponse,
   VerifyEmailRequest,
@@ -32,12 +31,12 @@ import { generateMailToken } from '@/utils/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
 import { UserRoleEnum } from '@/enums/role.enum';
 import { UserEntity } from '@/database/user.entity';
-import { UserSizeEntity } from '@/database/user.view.entity';
+import { UserExtEntity } from '@/database/user.view.entity';
 import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
 import { WsAdapter } from '@/websocket/ws-adapter';
 
-type UserFileEntity = UserEntity & Partial<UserSizeEntity>;
+type UserFileEntity = UserEntity & Partial<UserExtEntity>;
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -79,6 +78,24 @@ const updateUser: UserUpdateRequest = {
   country: 'RU',
   company: 'ACME corporation',
   phoneNumber: '+78002000000',
+  companyActualAddress: '',
+  companyBIC: '',
+  companyBank: '',
+  companyCorrespondentAccount: '',
+  companyEmail: '',
+  companyFax: '',
+  companyLegalAddress: '',
+  companyPSRN: '',
+  companyPaymentAccount: '',
+  companyPhone: '',
+  companyRRC: '',
+  companyRepresentative: '',
+  companyTIN: '',
+  disabled: false,
+  isDemoUser: false,
+  verified: true,
+  countUsedSpace: undefined,
+  wallet: undefined,
 };
 
 describe('Backend API (e2e)', () => {
@@ -149,9 +166,9 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
-        .then(({ body }: { body: UsersGetResponse }) => {
+        .then(({ body }: { body: UserGetResponse }) => {
           expect(body.data.id).toBeDefined();
-          expect((body.data as any).password).toBeUndefined();
+          expect(body.data.password).toBeUndefined();
           if (body.data.id) {
             userId = body.data.id;
           }
@@ -307,7 +324,7 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.id).toBe(userId);
-          expect((body.data as any).password).toBeUndefined();
+          expect(body.data.password).toBeUndefined();
         });
     });
 
@@ -418,6 +435,10 @@ describe('Backend API (e2e)', () => {
         const userUpdate = await userService.update(user.id, {
           disabled: false,
         });
+        expect(userUpdate).toBe(true);
+        if (!userUpdate) {
+          return;
+        }
         expect(userUpdate.id).toBe(userId);
       }
       expect(false).toEqual(true);
@@ -841,6 +862,10 @@ describe('Backend API (e2e)', () => {
         const userUpdate = await userService.update(user.id, {
           role: UserRoleEnum.Administrator,
         });
+        expect(userUpdate).toBeDefined();
+        if (!userUpdate) {
+          return;
+        }
         expect(userUpdate.id).toBe(userId);
         expect(userUpdate.role).toBe(UserRoleEnum.Administrator);
       } else {

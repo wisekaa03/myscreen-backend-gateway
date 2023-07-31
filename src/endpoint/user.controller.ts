@@ -75,7 +75,7 @@ export class UserController {
 
   constructor(private readonly userService: UserService) {}
 
-  @Post('/')
+  @Post()
   @ApiOperation({
     operationId: 'users-get',
     summary: 'Получение информации о пользователях (только администратор)',
