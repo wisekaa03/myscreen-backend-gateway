@@ -15,7 +15,7 @@ import { MailLogger } from '@/utils/mail.logger';
     MailerModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         transport: {
-          host: configService.get('MAIL_HOST', 'smtp.timehost.ru'),
+          host: configService.get('MAIL_HOST', 'smtp.timeweb.ru'),
           port: parseInt(configService.get('MAIL_PORT', '465'), 10),
           secure: true,
           auth: {
