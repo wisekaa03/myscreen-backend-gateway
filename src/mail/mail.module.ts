@@ -15,12 +15,17 @@ import { MailLogger } from '@/utils/mail.logger';
     MailerModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
         transport: {
-          host: configService.get<string>('MAIL_HOST') || 'localhost',
-          port: parseInt(configService.get<string>('MAIL_PORT') || '465', 10),
+          host: configService.get('MAIL_HOST', 'smtp.timeweb.ru'),
+          port: parseInt(configService.get('MAIL_PORT', '465'), 10),
           secure: true,
           auth: {
-            user: configService.get<string>('MAIL_USER') || 'admin',
-            pass: configService.get<string>('MAIL_PASS') || '12345678',
+            user: configService.get('MAIL_USER', 'admin'),
+            pass: configService.get('MAIL_PASS', '12345678'),
+          },
+          dkim: configService.get('MAIL_PRIVATE_KEY') && {
+            domainName: configService.get('MAIL_DOMAIN'),
+            keySelector: configService.get('MAIL_KEY_SELECTOR'),
+            privateKey: configService.get('MAIL_PRIVATE_KEY'),
           },
           logger: new MailLogger(),
           tls: {
@@ -28,7 +33,7 @@ import { MailLogger } from '@/utils/mail.logger';
           },
         },
         defaults: {
-          from: '"MyScreen" <postmaster@mail.myscreen.ru>',
+          from: configService.get('MAIL_FROM'),
         },
         template: {
           dir: 'templates',

@@ -25,8 +25,8 @@ export class MailService {
     private readonly printService: PrintService,
     private readonly configService: ConfigService,
   ) {
-    this.domain = configService.get<string>('MAIL_DOMAIN', 'localhost');
-    this.from = `"MyScreen" <no-reply@${this.domain}>`;
+    this.domain = configService.get('MAIL_DOMAIN', 'myscreen.ru');
+    this.from = configService.get('MAIL_FROM', `no-reply@${this.domain}`);
   }
 
   private static confirmEmailText = (confirmUrl: string) =>

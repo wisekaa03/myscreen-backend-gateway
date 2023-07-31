@@ -84,13 +84,6 @@ export class InvoiceService {
       status,
     };
 
-    if (status !== InvoiceStatus.PAID) {
-      if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
-        await this.mailService.invoiceConfirmed(invoice.user, invoice);
-      }
-      return this.invoiceRepository.save(newInvoice);
-    }
-
     return this.invoiceRepository.manager.transaction(
       async (transactionalEntityManager) => {
         const invoiceChanged = await transactionalEntityManager.save(
@@ -103,12 +96,16 @@ export class InvoiceService {
           await this.walletService.create(user, invoiceChanged),
         );
 
-        const sum = await this.walletService.walletSum(invoice.userId);
-        await this.mailService.invoicePayed(
-          invoice.user.email,
-          invoice,
-          sum ?? 0,
-        );
+        if (status === InvoiceStatus.PAID) {
+          const sum = await this.walletService.walletSum(invoice.userId);
+          await this.mailService.invoicePayed(
+            invoice.user.email,
+            invoice,
+            sum ?? 0,
+          );
+        } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
+          await this.mailService.invoiceConfirmed(invoice.user, invoice);
+        }
 
         return invoiceChanged;
       },
