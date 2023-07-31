@@ -39,7 +39,7 @@ export class WalletService {
     return this.walletRepository.create(wallet);
   }
 
-  async walletSum(userId: string): Promise<number | null> {
-    return this.walletRepository.sum('sum', { userId });
+  async walletSum(userId: string): Promise<number> {
+    return this.walletRepository.sum('sum', { userId }).then((sum) => sum ?? 0);
   }
 }
