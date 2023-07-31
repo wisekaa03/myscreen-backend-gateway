@@ -28,10 +28,10 @@ export class WalletService {
 
   async create(
     user: UserEntity,
-    invoice?: InvoiceEntity,
+    invoice: InvoiceEntity,
   ): Promise<WalletEntity> {
     const wallet: DeepPartial<WalletEntity> = {
-      sum: invoice?.sum,
+      sum: invoice.sum,
       invoice,
       user,
     };
