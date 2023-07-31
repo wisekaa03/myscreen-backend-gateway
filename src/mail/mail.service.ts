@@ -187,7 +187,7 @@ export class MailService {
     const message: ISendMailOptions = {
       to: user.email,
       from: this.from,
-      subject: `Счет на оплату ${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
+      subject: `Счет на оплату №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
       context: {
         text: MailService.invoiceConfirmedText(),
@@ -222,7 +222,7 @@ export class MailService {
     const message: ISendMailOptions = {
       to: email,
       from: this.from,
-      subject: `Поступление по Счету ${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
+      subject: `Поступление по Счету №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
       context: {
         text: MailService.invoicePayedText(invoice.sum, sum ?? 0),
