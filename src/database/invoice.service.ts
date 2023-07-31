@@ -96,13 +96,11 @@ export class InvoiceService {
             WalletEntity,
             await this.walletService.create(user, invoiceChanged),
           );
-          const sum = await this.walletService.walletSum(invoice.userId);
+          const sum =
+            (await this.walletService.walletSum(invoice.userId)) ??
+            0 + invoice.sum;
 
-          await this.mailService.invoicePayed(
-            invoice.user.email,
-            invoice,
-            sum ?? 0,
-          );
+          await this.mailService.invoicePayed(invoice.user.email, invoice, sum);
         } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
           await this.mailService.invoiceConfirmed(invoice.user, invoice);
         }
