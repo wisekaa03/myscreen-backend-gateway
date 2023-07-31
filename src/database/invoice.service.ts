@@ -92,11 +92,14 @@ export class InvoiceService {
         );
 
         if (status === InvoiceStatus.PAID) {
+          // здесь записывается в базу сумма баланса
           await transactionalEntityManager.save(
             WalletEntity,
-            await this.walletService.create(user, invoiceChanged),
+            this.walletService.create(user, invoiceChanged),
           );
+
           let sum = await this.walletService.walletSum(invoice.userId);
+          // так как транакция не завершена, то приходится приплюсовывать сюда invoice.sum
           sum += invoice.sum;
 
           await this.mailService.invoicePayed(invoice.user.email, invoice, sum);

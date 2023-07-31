@@ -26,10 +26,7 @@ export class WalletService {
     return this.walletRepository.findOne(TypeOrmFind.Nullable(find));
   }
 
-  async create(
-    user: UserEntity,
-    invoice: InvoiceEntity,
-  ): Promise<WalletEntity> {
+  create(user: UserEntity, invoice: InvoiceEntity): WalletEntity {
     const wallet: DeepPartial<WalletEntity> = {
       sum: invoice.sum,
       invoice,
