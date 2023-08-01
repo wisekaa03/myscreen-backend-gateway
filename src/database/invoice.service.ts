@@ -79,8 +79,9 @@ export class InvoiceService {
     invoice: InvoiceEntity,
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
-    const newInvoice: InvoiceEntity = {
+    const newInvoice: DeepPartial<InvoiceEntity> = {
       ...invoice,
+      user: undefined,
       status,
     };
 
@@ -92,17 +93,18 @@ export class InvoiceService {
         );
 
         if (status === InvoiceStatus.PAID) {
+          // здесь записывается в базу сумма баланса
           await transactionalEntityManager.save(
             WalletEntity,
-            await this.walletService.create(user, invoiceChanged),
+            this.walletService.create(user, invoiceChanged),
           );
-          const sum = await this.walletService.walletSum(invoice.userId);
 
-          await this.mailService.invoicePayed(
-            invoice.user.email,
-            invoice,
-            sum ?? 0,
+          const sum = await this.walletService.walletSum(
+            invoice.userId,
+            transactionalEntityManager,
           );
+
+          await this.mailService.invoicePayed(invoice.user.email, invoice, sum);
         } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
           await this.mailService.invoiceConfirmed(invoice.user, invoice);
         }
