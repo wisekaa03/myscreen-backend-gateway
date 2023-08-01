@@ -70,9 +70,9 @@ export class FileService {
     @InjectRepository(FilePreviewEntity)
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
   ) {
-    this.region = configService.get<string>('AWS_REGION', 'ru-central1');
-    this.bucket = configService.get<string>('AWS_BUCKET', 'myscreen-media');
-    this.downloadDir = configService.get<string>('FILES_UPLOAD', 'upload');
+    this.region = configService.get('AWS_REGION', 'ru-central1');
+    this.bucket = configService.get('AWS_BUCKET', 'myscreen-media');
+    this.downloadDir = configService.get('FILES_UPLOAD', 'upload');
   }
 
   /**
@@ -267,17 +267,17 @@ export class FileService {
 
         const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
         try {
-          const promise = await this.s3Service.putObject({
+          const fileUploaded = await this.s3Service.putObject({
             Bucket: this.bucket,
             Key,
             ContentType: file.mimetype,
             Body: createReadStream(file.path),
           });
-          if (!promise) {
+          if (!fileUploaded) {
             throw new Error('Failed to upload');
           }
           this.logger.debug(
-            `The file '${file.path}' has been uploaded on S3 '${promise.SSEKMSKeyId}'`,
+            `The file '${file.path}' has been uploaded on S3 '${fileUploaded.ETag}'`,
           );
         } catch (error) {
           this.logger.error('S3 Error: upload', error);
