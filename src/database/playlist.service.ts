@@ -9,6 +9,8 @@ import {
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { PlaylistEntity } from './playlist.entity';
+import { UserEntity } from './user.entity';
+import { UserRoleEnum } from '@/enums';
 
 @Injectable()
 export class PlaylistService {
@@ -69,9 +71,12 @@ export class PlaylistService {
   }
 
   async delete(
-    userId: string,
     playlist: PlaylistEntity,
+    user: UserEntity,
   ): Promise<DeleteResult> {
-    return this.playlistEntity.delete({ id: playlist.id, userId });
+    if (user.role !== UserRoleEnum.Administrator) {
+      return this.playlistEntity.delete({ id: playlist.id, userId: user.id });
+    }
+    return this.playlistEntity.delete({ id: playlist.id });
   }
 }
