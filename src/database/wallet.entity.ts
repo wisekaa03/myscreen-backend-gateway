@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -46,12 +47,13 @@ export class WalletEntity {
     nullable: true,
   })
   @JoinColumn()
-  invoice!: InvoiceEntity;
+  invoice!: InvoiceEntity | null;
 
   @Column({ nullable: true })
+  @Index()
   @IsOptional()
   @IsUUID()
-  invoiceId!: string;
+  invoiceId!: string | null;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onUpdate: 'CASCADE',
@@ -63,6 +65,7 @@ export class WalletEntity {
   user!: UserEntity;
 
   @Column()
+  @Index()
   @IsUUID()
   userId!: string;
 

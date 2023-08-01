@@ -15,6 +15,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
@@ -89,6 +90,7 @@ export class PlaylistEntity {
   user!: UserEntity;
 
   @Column()
+  @Index()
   @IsUUID()
   userId!: string;
 
