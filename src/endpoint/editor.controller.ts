@@ -30,6 +30,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FindOptionsWhere } from 'typeorm';
 
 import {
   BadRequestError,
@@ -58,6 +59,7 @@ import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { TypeOrmFind } from '@/utils/typeorm.find';
+import { EditorEntity } from '@/database/editor.entity';
 
 @ApiResponse({
   status: HttpStatus.BAD_REQUEST,
@@ -111,7 +113,7 @@ export class EditorController {
     private readonly fileService: FileService,
   ) {}
 
-  @Post('/')
+  @Post()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editors-get',
@@ -129,7 +131,10 @@ export class EditorController {
     const [data, count] = await this.editorService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where, user),
+      where: TypeOrmFind.Where(
+        where,
+        user.role !== UserRoleEnum.Administrator ? user : undefined,
+      ),
     });
 
     return {
@@ -139,7 +144,7 @@ export class EditorController {
     };
   }
 
-  @Put('/')
+  @Put()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-create',
@@ -183,14 +188,15 @@ export class EditorController {
     type: EditorGetResponse,
   })
   async getEditor(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
   ): Promise<EditorGetResponse> {
+    const where: FindOptionsWhere<EditorEntity> = { id };
+    if (user.role !== UserRoleEnum.Administrator) {
+      where.userId = user.id;
+    }
     const data = await this.editorService.findOne({
-      where: {
-        userId,
-        id,
-      },
+      where,
       relations: ['videoLayers', 'audioLayers', 'renderedFile'],
     });
     if (!data) {
@@ -214,22 +220,23 @@ export class EditorController {
     type: EditorGetResponse,
   })
   async updateEditor(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Body() update: EditorUpdateRequest,
   ): Promise<EditorGetResponse> {
+    const where: FindOptionsWhere<EditorEntity> = { id };
+    if (user.role !== UserRoleEnum.Administrator) {
+      where.userId = user.id;
+    }
     const editor = await this.editorService.findOne({
-      where: {
-        userId,
-        id,
-      },
+      where,
     });
     if (!editor) {
       throw new NotFoundException('Editor not found');
     }
     const editorFound = await this.editorService.find({
       where: {
-        userId,
+        userId: user.id,
         name: update.name,
       },
     });
@@ -237,7 +244,7 @@ export class EditorController {
       throw new NotFoundException('This name already taken');
     }
 
-    const data = await this.editorService.update(userId, {
+    const data = await this.editorService.update(user.id, {
       ...editor,
       ...update,
     });
@@ -263,18 +270,22 @@ export class EditorController {
     type: SuccessResponse,
   })
   async deleteEditor(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
+    const where: FindOptionsWhere<EditorEntity> = { id };
+    if (user.role !== UserRoleEnum.Administrator) {
+      where.userId = user.id;
+    }
     const editor = await this.editorService.findOne({
-      where: { userId, id },
+      where,
       select: ['id', 'userId'],
     });
     if (!editor) {
       throw new NotFoundException(`Editor '${id}' is not found`);
     }
 
-    const { affected } = await this.editorService.delete(userId, editor);
+    const { affected } = await this.editorService.delete(user.id, editor);
     if (!affected) {
       throw new NotFoundException('This editor is not exists');
     }

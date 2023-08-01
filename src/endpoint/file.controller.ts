@@ -151,7 +151,7 @@ export class FileController {
     };
   }
 
-  @Put('/')
+  @Put()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-upload',

@@ -23,7 +23,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { In } from 'typeorm';
+import { FindOptionsWhere, In } from 'typeorm';
 
 import {
   BadRequestError,
@@ -47,6 +47,7 @@ import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 import { TypeOrmFind } from '@/utils/typeorm.find';
+import { PlaylistEntity } from '@/database/playlist.entity';
 
 @ApiResponse({
   status: HttpStatus.BAD_REQUEST,
@@ -126,7 +127,7 @@ export class PlaylistController {
     };
   }
 
-  @Put('/')
+  @Put()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'playlist-create',
@@ -257,17 +258,19 @@ export class PlaylistController {
     type: SuccessResponse,
   })
   async deletePlaylist(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
-    const data = await this.playlistService.findOne({
-      where: { userId, id },
-    });
+    const where: FindOptionsWhere<PlaylistEntity> = { id };
+    if (user.role !== UserRoleEnum.Administrator) {
+      where.userId = user.id;
+    }
+    const data = await this.playlistService.findOne({ where });
     if (!data) {
       throw new NotFoundException(`Playlist '${id}' not found`);
     }
 
-    const { affected } = await this.playlistService.delete(userId, data);
+    const { affected } = await this.playlistService.delete(data, user);
     if (!affected) {
       throw new NotFoundException('This playlist is not exists');
     }

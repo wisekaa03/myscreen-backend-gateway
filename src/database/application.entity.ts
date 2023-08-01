@@ -49,6 +49,7 @@ export class ApplicationEntity {
   buyer!: UserEntity | null;
 
   @Column({ select: false, nullable: true })
+  @Index()
   @ApiProperty({
     description: 'Покупатель ID',
     format: 'uuid',
@@ -73,6 +74,7 @@ export class ApplicationEntity {
   seller!: UserEntity;
 
   @Column({ select: false })
+  @Index()
   @ApiProperty({
     description: 'Продавец ID',
     format: 'uuid',
@@ -185,6 +187,7 @@ export class ApplicationEntity {
   user!: UserEntity;
 
   @Column({ select: false })
+  @Index()
   @IsUUID()
   userId!: string;
 

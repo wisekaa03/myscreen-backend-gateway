@@ -4,6 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToMany,
   ManyToOne,
@@ -200,6 +201,7 @@ export class FileEntity {
   user!: UserEntity;
 
   @Column()
+  @Index()
   userId!: string;
 
   @OneToOne(() => FilePreviewEntity, (filePreview) => filePreview.file, {
