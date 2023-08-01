@@ -29,9 +29,10 @@ import {
   DeepPartial,
   DeleteResult,
   In,
+  FindOptionsWhere,
 } from 'typeorm';
 
-import { FileCategory, VideoType } from '@/enums';
+import { FileCategory, UserRoleEnum, VideoType } from '@/enums';
 import { ConflictData, FileUploadRequest } from '@/dto';
 import { EditorService } from '@/database/editor.service';
 import { getS3Name } from '@/utils/get-name';
@@ -44,6 +45,7 @@ import { MonitorService } from './monitor.service';
 import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
 import { PlaylistService } from './playlist.service';
+import { UserEntity } from './user.entity';
 
 @Injectable()
 export class FileService {
@@ -184,12 +186,12 @@ export class FileService {
   /**
    * Upload files
    * @async
-   * @param {string} userId User ID
+   * @param {UserEntity} user User ID
    * @param {FileUploadRequest} {FileUploadRequest} File upload request
    * @param {Array<Express.Multer.File>} {Array<Express.Multer.File>} files The Express files
    */
   async upload(
-    userId: string,
+    user: UserEntity,
     {
       folderId: folderIdOrig = undefined,
       category = FileCategory.Media,
@@ -200,11 +202,11 @@ export class FileService {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
       let folder: FolderEntity | null = null;
       if (!folderIdOrig) {
-        folder = await this.folderService.rootFolder(userId);
+        folder = await this.folderService.rootFolder(user.id);
       } else {
         folder =
           (await this.folderService.findOne({
-            where: { userId, id: folderIdOrig },
+            where: { userId: user.id, id: folderIdOrig },
           })) ?? null;
         if (!folder) {
           throw new NotFoundException(`Folder '${folderIdOrig}' not found`);
@@ -221,8 +223,8 @@ export class FileService {
       }
       if (monitorId) {
         monitor =
-          (await this.monitorService.findOne(userId, {
-            where: { userId, id: monitorId },
+          (await this.monitorService.findOne(user.id, {
+            where: { userId: user.id, id: monitorId },
           })) ?? null;
         if (!monitor) {
           throw new NotFoundException(`Monitor '${monitorId}' not found`);
@@ -249,7 +251,7 @@ export class FileService {
           await this.metaInformation(file);
 
         const media: DeepPartial<FileEntity> = {
-          userId,
+          userId: user.id,
           folder: folder ?? undefined,
           name: file.originalname,
           filesize: meta.filesize,
@@ -522,13 +524,17 @@ export class FileService {
   /**
    * Delete files
    * @async
-   * @param {string} userId User ID
+   * @param {UserEntity} user User
    * @param {string} filesId Files ID
    * @return {DeleteResult} {DeleteResult}
    */
-  async delete(userId: string, filesId: string[]): Promise<DeleteResult> {
+  async delete(user: UserEntity, filesId: string[]): Promise<DeleteResult> {
+    const where: FindOptionsWhere<FileEntity> = { id: In(filesId) };
+    if (user.role !== UserRoleEnum.Administrator) {
+      where.userId = user.id;
+    }
     const files = await this.fileRepository.find({
-      where: { userId, id: In(filesId) },
+      where,
     });
 
     /* await */ Promise.allSettled(
@@ -549,7 +555,7 @@ export class FileService {
 
     return this.fileRepository.delete({
       id: In(files.map((file) => file.id)),
-      userId,
+      userId: user.id,
     });
   }
 

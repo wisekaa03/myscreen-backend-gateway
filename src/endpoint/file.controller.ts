@@ -4,7 +4,7 @@ import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { In } from 'typeorm';
+import { FindOptionsWhere, In } from 'typeorm';
 import {
   BadRequestException,
   Body,
@@ -123,7 +123,7 @@ export class FileController {
     private readonly monitorService: MonitorService,
   ) {}
 
-  @Post('/')
+  @Post()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'files-get',
@@ -141,7 +141,10 @@ export class FileController {
     const [data, count] = await this.fileService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where, user),
+      where: TypeOrmFind.Where(
+        where,
+        user.role !== UserRoleEnum.Administrator ? user : undefined,
+      ),
     });
 
     return {
@@ -344,7 +347,9 @@ export class FileController {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
 
-    const data = await this.fileService.getS3Object(file);
+    const data = await this.fileService.getS3Object(file).catch(() => {
+      throw new NotFoundException(`File '${id}' is not exists`);
+    });
     if (data.Body instanceof internal.Readable) {
       res.setHeader(
         'Content-Length',
@@ -385,14 +390,11 @@ export class FileController {
     type: FileGetResponse,
   })
   async getFileDB(
-    /* @Req() { user: { id: userId } }: ExpressRequest, */
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<FileGetResponse> {
+    const where: FindOptionsWhere<FileEntity> = { id };
     const data = await this.fileService.findOne({
-      where: {
-        /* userId, */
-        id,
-      },
+      where,
     });
     if (!data) {
       throw new NotFoundException('File not found');
@@ -431,15 +433,12 @@ export class FileController {
     },
   })
   async getFilePreview(
-    /* @Req() { user: { id: userId } }: ExpressRequest, */
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<void> {
+    const where: FindOptionsWhere<FileEntity> = { id: fileId };
     const file = await this.fileService.findOne({
-      where: {
-        /* userId, */
-        id: fileId,
-      },
+      where,
       select: [
         'id',
         'userId',
@@ -565,12 +564,12 @@ export class FileController {
     type: SuccessResponse,
   })
   async deleteFiles(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { filesId }: FilesDeleteRequest,
   ): Promise<SuccessResponse> {
     await this.fileService.deletePrep(filesId);
 
-    const { affected } = await this.fileService.delete(userId, filesId);
+    const { affected } = await this.fileService.delete(user, filesId);
     if (!affected) {
       throw new NotFoundException('This file is not exists');
     }

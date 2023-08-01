@@ -34,6 +34,7 @@ import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
+import { UserEntity } from './user.entity';
 
 const exec = util.promisify(child.exec);
 
@@ -457,13 +458,13 @@ export class EditorService {
   /**
    * Start Export
    * @async
-   * @param {string} userId The user ID
+   * @param {UserEntity} user The user
    * @param {string} id Editor ID
    * @param {boolean} rerender Re-render
    * @returns {EditorEntity} Result
    */
   async export(
-    userId: string,
+    user: UserEntity,
     id: string,
     rerender = false,
   ): Promise<EditorEntity | undefined> {
@@ -513,7 +514,7 @@ export class EditorService {
           renderedFile: null,
         });
         await this.fileService
-          .delete(userId, [editor.renderedFile.id])
+          .delete(user, [editor.renderedFile.id])
           .catch((reason) => {
             this.logger.error(`Delete from editor failed: ${reason}`);
             throw reason;
@@ -605,13 +606,13 @@ export class EditorService {
 
         const { size } = await fs.stat(outPath);
         const folder = await this.folderService
-          .rootFolder(userId)
+          .rootFolder(user.id)
           .then(async (rootFolder) => {
             const renderedFolder = await this.folderService.findOne({
               where: {
                 name: '<Исполненные>',
                 parentFolderId: rootFolder.id,
-                userId,
+                userId: user.id,
               },
             });
             return (
@@ -619,7 +620,7 @@ export class EditorService {
               this.folderService.update({
                 name: '<Исполненные>',
                 parentFolderId: rootFolder.id,
-                userId,
+                userId: user.id,
               })
             );
           });
@@ -651,11 +652,9 @@ export class EditorService {
           buffer: null as unknown as Buffer,
         };
         await this.fileService
-          .upload(
-            userId,
-            { folderId: folder.id, category: FileCategory.Media },
-            [files],
-          )
+          .upload(user, { folderId: folder.id, category: FileCategory.Media }, [
+            files,
+          ])
           .then((value) => {
             if (value[0]) {
               this.editorRepository.update(renderEditor.id, {

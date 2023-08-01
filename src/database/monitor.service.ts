@@ -11,6 +11,7 @@ import { MonitorStatus } from '@/enums/monitor-status.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
+import { UserEntity } from './user.entity';
 
 @Injectable()
 export class MonitorService {
@@ -123,11 +124,11 @@ export class MonitorService {
   }
 
   async favorite(
-    userId: string,
+    user: UserEntity,
     monitorId: string,
     favorite = true,
   ): Promise<MonitorEntity | null> {
-    const monitor = await this.findOne(userId, {
+    const monitor = await this.findOne(user.id, {
       where: { id: monitorId },
     });
     if (!monitor) {
@@ -136,7 +137,7 @@ export class MonitorService {
     if (favorite && !monitor.favorite) {
       const insertResult = await this.monitorFavoriteRepository.insert({
         monitorId,
-        userId,
+        userId: user.id,
       });
       if (!insertResult) {
         throw new NotFoundException('Monitor not found');
@@ -144,14 +145,14 @@ export class MonitorService {
     } else if (!favorite && monitor.favorite) {
       const { affected } = await this.monitorFavoriteRepository.delete({
         monitorId: monitor.id,
-        userId,
+        userId: user.id,
       });
       if (!affected) {
         throw new NotFoundException('Monitor not found');
       }
     }
 
-    return this.findOne(userId, { where: { id: monitorId } });
+    return this.findOne(user.id, { where: { id: monitorId } });
   }
 
   async delete(userId: string, id: string): Promise<DeleteResult> {

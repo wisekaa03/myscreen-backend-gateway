@@ -12,6 +12,7 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderFileNumberEntity } from './folder.view.entity';
+import { UserEntity } from './user.entity';
 
 @Injectable()
 export class FolderService {
@@ -108,12 +109,12 @@ export class FolderService {
     );
   }
 
-  async delete(userId: string, foldersId: string[]): Promise<DeleteResult> {
+  async delete(user: UserEntity, foldersId: string[]): Promise<DeleteResult> {
     return this.folderRepository.manager.transaction(
       async (folderRepository) => {
         const folderSubId = await folderRepository
           .find<FolderEntity>(FolderEntity, {
-            where: { userId, parentFolderId: In(foldersId) },
+            where: { userId: user.id, parentFolderId: In(foldersId) },
             relations: [],
             loadEagerRelations: false,
             select: ['id'],
@@ -123,17 +124,17 @@ export class FolderService {
         const fullFolders = [...foldersId, ...folderSubId];
         const filesId = await this.fileService
           .find({
-            where: { userId, folderId: In(fullFolders) },
+            where: { userId: user.id, folderId: In(fullFolders) },
             relations: [],
             loadEagerRelations: false,
             select: ['id'],
           })
           .then((files) => files.map((file) => file.id));
         await this.fileService.deletePrep(filesId);
-        await this.fileService.delete(userId, filesId);
+        await this.fileService.delete(user, filesId);
 
         return folderRepository.delete<FolderEntity>(FolderEntity, {
-          userId,
+          userId: user.id,
           id: In(fullFolders),
         });
       },
