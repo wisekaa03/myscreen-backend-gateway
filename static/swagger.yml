@@ -2948,28 +2948,6 @@ components:
           type: string
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
-        createdAt:
-          format: date-time
-          type: string
-          description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
-          format: date-time
-          type: string
-          description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
-        countUsedSpace:
-          type: number
-          description: Использованное место
-          example: 0
-        countMonitors:
-          type: number
-          description: Использованные мониторы
-          example: 0
-        wallet:
-          description: Баланс
-          allOf:
-            - $ref: "#/components/schemas/Wallet"
         role:
           description: Роль пользователя
           example: advertiser
@@ -2989,8 +2967,6 @@ components:
             ])(?=.*[A-Z])(?=.*[a-z]).*$/
       required:
         - email
-        - createdAt
-        - updatedAt
         - role
         - password
     AuthRefreshRequest:

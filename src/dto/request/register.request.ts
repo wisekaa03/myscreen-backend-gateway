@@ -19,6 +19,15 @@ export class RegisterRequest extends OmitType(UserExtEntity, [
   'role',
   'plan',
   'password',
+  'wallet',
+  'walletSum',
+  'countMonitors',
+  'countUsedSpace',
+  'emailConfirmKey',
+  'forgotConfirmKey',
+  'monitors',
+  'createdAt',
+  'updatedAt',
 ]) {
   @ApiProperty({
     description: 'Роль пользователя',
