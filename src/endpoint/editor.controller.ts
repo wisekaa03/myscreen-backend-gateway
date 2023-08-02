@@ -605,11 +605,11 @@ export class EditorController {
     type: EditorGetRenderingStatusResponse,
   })
   async postEditorExport(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Body() body?: EditorExportRequest,
   ): Promise<EditorGetRenderingStatusResponse> {
-    const data = await this.editorService.export(userId, id, body?.rerender);
+    const data = await this.editorService.export(user, id, body?.rerender);
     if (!data) {
       throw new InternalServerErrorException();
     }

@@ -5,6 +5,7 @@ import {
   ReadStream,
 } from 'node:fs';
 import internal from 'stream';
+import StreamPromises from 'node:stream/promises';
 import path from 'node:path';
 import child from 'node:child_process';
 import util from 'node:util';
@@ -34,6 +35,7 @@ import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
+import { UserEntity } from './user.entity';
 
 const exec = util.promisify(child.exec);
 
@@ -285,7 +287,7 @@ export class EditorService {
       const outputStream = createWriteStream(filePath);
       const data = await this.fileService.getS3Object(file);
       if (data.Body instanceof internal.Readable) {
-        data.Body.pipe(outputStream);
+        await StreamPromises.pipeline(data.Body, outputStream);
       }
     }
 
@@ -457,13 +459,13 @@ export class EditorService {
   /**
    * Start Export
    * @async
-   * @param {string} userId The user ID
+   * @param {UserEntity} user The user
    * @param {string} id Editor ID
    * @param {boolean} rerender Re-render
    * @returns {EditorEntity} Result
    */
   async export(
-    userId: string,
+    user: UserEntity,
     id: string,
     rerender = false,
   ): Promise<EditorEntity | undefined> {
@@ -513,7 +515,7 @@ export class EditorService {
           renderedFile: null,
         });
         await this.fileService
-          .delete(userId, [editor.renderedFile.id])
+          .delete(user, [editor.renderedFile.id])
           .catch((reason) => {
             this.logger.error(`Delete from editor failed: ${reason}`);
             throw reason;
@@ -572,7 +574,7 @@ export class EditorService {
               `Editly on '${renderEditor.id}' / '${renderEditor.name}': ${msg}`,
               'Editly',
             );
-            // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
+            // Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
             const percent = msg.match(/(\d+%)/g);
             if (Array.isArray(percent) && percent.length > 0) {
               this.editorRepository
@@ -604,28 +606,7 @@ export class EditorService {
         }
 
         const { size } = await fs.stat(outPath);
-        const folder = await this.folderService
-          .rootFolder(userId)
-          .then(async (rootFolder) => {
-            const renderedFolder = await this.folderService.findOne({
-              where: {
-                name: '<Исполненные>',
-                parentFolderId: rootFolder.id,
-                userId,
-              },
-            });
-            return (
-              renderedFolder ||
-              this.folderService.update({
-                name: '<Исполненные>',
-                parentFolderId: rootFolder.id,
-                userId,
-              })
-            );
-          });
-        if (!folder) {
-          throw new Error('The file system has run out of space ?');
-        }
+        const exportFolder = await this.folderService.exportFolder(user);
         const media = await ffprobe(outPath, {
           showFormat: true,
           showStreams: true,
@@ -652,8 +633,8 @@ export class EditorService {
         };
         await this.fileService
           .upload(
-            userId,
-            { folderId: folder.id, category: FileCategory.Media },
+            user,
+            { folderId: exportFolder.id, category: FileCategory.Media },
             [files],
           )
           .then((value) => {

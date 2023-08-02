@@ -41,7 +41,7 @@ import {
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { Status } from '@/enums/status.enum';
-import { UserRoleEnum } from '@/enums/role.enum';
+import { UserRoleEnum } from '@/enums/user-role.enum';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';

@@ -130,14 +130,14 @@ export class FolderController {
     type: FolderGetResponse,
   })
   async createFolder(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { name, parentFolderId }: FolderCreateRequest,
   ): Promise<FolderGetResponse> {
     const parentFolder = parentFolderId
       ? await this.folderService.findOne({
-          where: { userId, id: parentFolderId },
+          where: { userId: user.id, id: parentFolderId },
         })
-      : await this.folderService.rootFolder(userId);
+      : await this.folderService.rootFolder(user);
     if (!parentFolder) {
       throw new BadRequestException(`Folder '${parentFolderId}' is not exists`);
     }
@@ -145,7 +145,7 @@ export class FolderController {
     return {
       status: Status.Success,
       data: await this.folderService.update({
-        userId,
+        userId: user.id,
         name,
         parentFolderId: parentFolder.id,
       }),
@@ -269,14 +269,14 @@ export class FolderController {
     type: SuccessResponse,
   })
   async deleteFolders(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { foldersId }: FoldersDeleteRequest,
   ): Promise<SuccessResponse> {
-    const rootFolder = await this.folderService.rootFolder(userId);
+    const rootFolder = await this.folderService.rootFolder(user);
     if (foldersId.includes(rootFolder.id)) {
       throw new BadRequestException('This is a root folder in a list');
     }
-    const { affected } = await this.folderService.delete(userId, foldersId);
+    const { affected } = await this.folderService.delete(user, foldersId);
     if (!affected) {
       throw new NotFoundException('This folder is not exists');
     }
@@ -368,14 +368,14 @@ export class FolderController {
     type: SuccessResponse,
   })
   async deleteFolder(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) folderId: string,
   ): Promise<SuccessResponse> {
-    const rootFolder = await this.folderService.rootFolder(userId);
+    const rootFolder = await this.folderService.rootFolder(user);
     if (folderId === rootFolder.id) {
       throw new BadRequestException('This is a root folder in a list');
     }
-    const { affected } = await this.folderService.delete(userId, [folderId]);
+    const { affected } = await this.folderService.delete(user, [folderId]);
     if (!affected) {
       throw new NotFoundException('This folder is not exists');
     }

@@ -14,12 +14,13 @@ import {
   IsISO31661Alpha2,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsPhoneNumber,
   IsString,
   IsUUID,
 } from 'class-validator';
 
-import { UserRole, UserRoleEnum } from '@/enums';
+import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
@@ -202,11 +203,15 @@ export class UserExtEntity implements UserEntity {
 
   @ViewColumn()
   @ApiProperty({
-    description: 'Демо пользователь (дата когда включится подписка)',
-    example: false,
+    description: 'План пользователя',
+    enum: UserPlanEnum,
+    enumName: 'UserPlan',
+    example: UserPlanEnum.Full,
     required: false,
   })
-  isDemoUser?: boolean;
+  @IsOptional()
+  @IsEnum(UserPlanEnum)
+  plan?: UserPlanEnum;
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
   monitors?: MonitorEntity[];

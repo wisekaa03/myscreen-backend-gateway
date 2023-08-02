@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
 import { Token } from '@/dto/interface';
-import { UserExtEntity } from '@/database/user.view.entity';
+import { UserExtEntity } from '@/database/user-ext.entity';
 
 export class AuthenticationPayload {
   @ApiProperty({ description: 'Тип: Bearer', example: 'bearer' })

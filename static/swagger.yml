@@ -38,25 +38,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "412": &ref_4
+        "406": &ref_4
+          description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
+        "412": &ref_5
           description: Пользователь уже существует
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/PreconditionFailedError"
-        "500": &ref_5
+        "500": &ref_6
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503": &ref_6
+        "503": &ref_7
           description: Не доступен сервис
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags: &ref_7
+      tags: &ref_8
         - auth
       security:
         - bearer: []
@@ -81,10 +87,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
       security:
         - bearer: []
   /api/v2/auth/login:
@@ -109,10 +116,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
   /api/v2/auth/register:
     post:
       operationId: auth-register
@@ -135,10 +143,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
   /api/v2/auth/refresh:
     post:
       operationId: refresh
@@ -161,10 +170,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
   /api/v2/auth/email-verify:
     post:
       operationId: auth-email-verify
@@ -187,10 +197,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
   /api/v2/auth/reset-password:
     post:
       operationId: auth-reset-password
@@ -213,10 +224,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
   /api/v2/auth/reset-password-verify:
     post:
       operationId: auth-reset-password-verify
@@ -239,10 +251,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
   /api/v2/auth/disable:
     patch:
       operationId: auth-disable
@@ -259,10 +272,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
       security:
         - bearer: []
   /api/v2/auth/monitor:
@@ -287,10 +301,11 @@ paths:
         "401": *ref_1
         "403": *ref_2
         "404": *ref_3
-        "412": *ref_4
-        "500": *ref_5
-        "503": *ref_6
-      tags: *ref_7
+        "406": *ref_4
+        "412": *ref_5
+        "500": *ref_6
+        "503": *ref_7
+      tags: *ref_8
   /api/v2/monitor:
     post:
       operationId: monitors-get
@@ -309,45 +324,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonitorsGetResponse"
-        "400": &ref_8
+        "400": &ref_9
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_9
+        "401": &ref_10
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_10
+        "403": &ref_11
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_11
+        "404": &ref_12
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500": &ref_12
+        "500": &ref_13
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503": &ref_13
+        "503": &ref_14
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags: &ref_14
+      tags: &ref_15
         - monitor
-      security: &ref_15
+      security: &ref_16
         - bearer: []
     put:
       operationId: monitor-create
@@ -366,14 +381,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonitorGetResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
   /api/v2/monitor/playlist:
     patch:
       operationId: monitor-playlist-create
@@ -392,14 +407,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonitorsGetResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
     delete:
       operationId: monitor-playlist-delete
       summary: Удаление связки плэйлиста и монитора
@@ -417,14 +432,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonitorsGetResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
   /api/v2/monitor/{monitorId}:
     get:
       operationId: monitor-get
@@ -442,14 +457,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonitorGetResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
     patch:
       operationId: monitor-update
       summary: Изменение монитора
@@ -472,14 +487,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonitorGetResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
     delete:
       operationId: monitor-delete
       summary: Удаление монитора
@@ -496,14 +511,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
   /api/v2/monitor/{monitorId}/favoritePlus:
     get:
       operationId: monitor-favorite-plus
@@ -521,14 +536,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonitorGetResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
   /api/v2/monitor/{monitorId}/favoriteMinus:
     get:
       operationId: monitor-favorite-minus
@@ -546,14 +561,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MonitorGetResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
   /api/v2/monitor/{monitorId}/applications:
     get:
       operationId: monitor-get-applications
@@ -571,14 +586,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationsGetResponse"
-        "400": *ref_8
-        "401": *ref_9
-        "403": *ref_10
-        "404": *ref_11
-        "500": *ref_12
-        "503": *ref_13
-      tags: *ref_14
-      security: *ref_15
+        "400": *ref_9
+        "401": *ref_10
+        "403": *ref_11
+        "404": *ref_12
+        "500": *ref_13
+        "503": *ref_14
+      tags: *ref_15
+      security: *ref_16
   /api/v2/editor:
     post:
       operationId: editors-get
@@ -597,51 +612,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorsGetResponse"
-        "400": &ref_16
+        "400": &ref_17
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_17
+        "401": &ref_18
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_18
+        "403": &ref_19
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_19
+        "404": &ref_20
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "406": &ref_20
+        "406": &ref_21
           description: Не принято значение
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotAcceptableError"
-        "500": &ref_21
+        "500": &ref_22
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503": &ref_22
+        "503": &ref_23
           description: Не доступен сервис
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags: &ref_23
+      tags: &ref_24
         - editor
-      security: &ref_24
+      security: &ref_25
         - bearer: []
     put:
       operationId: editor-create
@@ -660,15 +675,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorGetResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
   /api/v2/editor/{editorId}:
     get:
       operationId: editor-get
@@ -686,15 +701,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorGetResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
     patch:
       operationId: editor-update
       summary: Изменить редактор
@@ -717,15 +732,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorGetResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
     delete:
       operationId: editor-delete
       summary: Удаление редактора
@@ -742,15 +757,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
   /api/v2/editor/layer/{editorId}:
     put:
       operationId: editor-layer-create
@@ -774,15 +789,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorLayerGetResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
   /api/v2/editor/layer/{editorId}/{layerId}:
     get:
       operationId: editor-layer-get
@@ -805,15 +820,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorLayerGetResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
     patch:
       operationId: editor-layer-update
       summary: Изменить слой редактора
@@ -841,15 +856,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorLayerGetResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
     delete:
       operationId: editor-layer-delete
       summary: Удаление слоя редактора
@@ -871,15 +886,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
   /api/v2/editor/layer/{editorId}/{layerId}/{moveIndex}:
     put:
       operationId: editor-layer-move
@@ -907,15 +922,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
   /api/v2/editor/frame/{editorId}/{time}:
     post:
       operationId: editor-frame-get
@@ -939,15 +954,15 @@ paths:
               encoding:
                 image_jpeg:
                   contentType: image/jpeg
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
   /api/v2/editor/export/{editorId}:
     get:
       operationId: editor-export-status
@@ -965,15 +980,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorGetRenderingStatusResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
     post:
       operationId: editor-export
       summary: Экспорт видео из редактора
@@ -996,15 +1011,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EditorGetRenderingStatusResponse"
-        "400": *ref_16
-        "401": *ref_17
-        "403": *ref_18
-        "404": *ref_19
-        "406": *ref_20
-        "500": *ref_21
-        "503": *ref_22
-      tags: *ref_23
-      security: *ref_24
+        "400": *ref_17
+        "401": *ref_18
+        "403": *ref_19
+        "404": *ref_20
+        "406": *ref_21
+        "500": *ref_22
+        "503": *ref_23
+      tags: *ref_24
+      security: *ref_25
   /api/v2/file:
     post:
       operationId: files-get
@@ -1023,51 +1038,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FilesGetResponse"
-        "400": &ref_25
+        "400": &ref_26
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_26
+        "401": &ref_27
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_27
+        "403": &ref_28
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_28
+        "404": &ref_29
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "409": &ref_29
+        "409": &ref_30
           description: Ответ для конфликта файлов
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ConflictError"
-        "500": &ref_30
+        "500": &ref_31
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503": &ref_31
+        "503": &ref_32
           description: Не доступен сервис
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags: &ref_32
+      tags: &ref_33
         - file
-      security: &ref_33
+      security: &ref_34
         - bearer: []
     put:
       operationId: file-upload
@@ -1100,15 +1115,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FilesUploadResponse"
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
     patch:
       operationId: files-update
       summary: Изменить файлы
@@ -1126,15 +1141,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FileGetResponse"
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
     delete:
       operationId: files-delete
       summary: Удаление файла
@@ -1152,15 +1167,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
   /api/v2/file/copy:
     patch:
       operationId: files-copy
@@ -1179,15 +1194,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FileGetResponse"
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
   /api/v2/file/{fileId}:
     get:
       operationId: file-download
@@ -1214,15 +1229,15 @@ paths:
               encoding:
                 image_png:
                   contentType: image/png
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
     post:
       operationId: file-get
       summary: Получить файл
@@ -1239,15 +1254,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FileGetResponse"
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
     patch:
       operationId: file-update
       summary: Изменить файл
@@ -1270,15 +1285,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FileGetResponse"
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
     delete:
       operationId: file-delete
       summary: Удаление файла
@@ -1295,15 +1310,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
   /api/v2/file/{fileId}/preview:
     get:
       operationId: file-download-preview
@@ -1326,15 +1341,15 @@ paths:
               encoding:
                 image_jpeg:
                   contentType: image/jpeg
-        "400": *ref_25
-        "401": *ref_26
-        "403": *ref_27
-        "404": *ref_28
-        "409": *ref_29
-        "500": *ref_30
-        "503": *ref_31
-      tags: *ref_32
-      security: *ref_33
+        "400": *ref_26
+        "401": *ref_27
+        "403": *ref_28
+        "404": *ref_29
+        "409": *ref_30
+        "500": *ref_31
+        "503": *ref_32
+      tags: *ref_33
+      security: *ref_34
   /api/v2/folder:
     post:
       operationId: folders-get
@@ -1353,39 +1368,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FoldersGetResponse"
-        "400": &ref_34
+        "400": &ref_35
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_35
+        "401": &ref_36
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_36
+        "403": &ref_37
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_37
+        "404": &ref_38
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500": &ref_38
+        "500": &ref_39
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-      tags: &ref_39
+      tags: &ref_40
         - folder
-      security: &ref_40
+      security: &ref_41
         - bearer: []
     put:
       operationId: folder-create
@@ -1404,13 +1419,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
-        "400": *ref_34
-        "401": *ref_35
-        "403": *ref_36
-        "404": *ref_37
-        "500": *ref_38
-      tags: *ref_39
-      security: *ref_40
+        "400": *ref_35
+        "401": *ref_36
+        "403": *ref_37
+        "404": *ref_38
+        "500": *ref_39
+      tags: *ref_40
+      security: *ref_41
     patch:
       operationId: folders-update
       summary: Изменение информации о папках
@@ -1428,13 +1443,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
-        "400": *ref_34
-        "401": *ref_35
-        "403": *ref_36
-        "404": *ref_37
-        "500": *ref_38
-      tags: *ref_39
-      security: *ref_40
+        "400": *ref_35
+        "401": *ref_36
+        "403": *ref_37
+        "404": *ref_38
+        "500": *ref_39
+      tags: *ref_40
+      security: *ref_41
     delete:
       operationId: folders-delete
       summary: Удаление папок
@@ -1452,13 +1467,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_34
-        "401": *ref_35
-        "403": *ref_36
-        "404": *ref_37
-        "500": *ref_38
-      tags: *ref_39
-      security: *ref_40
+        "400": *ref_35
+        "401": *ref_36
+        "403": *ref_37
+        "404": *ref_38
+        "500": *ref_39
+      tags: *ref_40
+      security: *ref_41
   /api/v2/folder/copy:
     patch:
       operationId: folders-copy
@@ -1477,13 +1492,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
-        "400": *ref_34
-        "401": *ref_35
-        "403": *ref_36
-        "404": *ref_37
-        "500": *ref_38
-      tags: *ref_39
-      security: *ref_40
+        "400": *ref_35
+        "401": *ref_36
+        "403": *ref_37
+        "404": *ref_38
+        "500": *ref_39
+      tags: *ref_40
+      security: *ref_41
   /api/v2/folder/{folderId}:
     get:
       operationId: folder-get
@@ -1501,13 +1516,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
-        "400": *ref_34
-        "401": *ref_35
-        "403": *ref_36
-        "404": *ref_37
-        "500": *ref_38
-      tags: *ref_39
-      security: *ref_40
+        "400": *ref_35
+        "401": *ref_36
+        "403": *ref_37
+        "404": *ref_38
+        "500": *ref_39
+      tags: *ref_40
+      security: *ref_41
     patch:
       operationId: folder-update
       summary: Изменение информации о папке
@@ -1530,13 +1545,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FolderGetResponse"
-        "400": *ref_34
-        "401": *ref_35
-        "403": *ref_36
-        "404": *ref_37
-        "500": *ref_38
-      tags: *ref_39
-      security: *ref_40
+        "400": *ref_35
+        "401": *ref_36
+        "403": *ref_37
+        "404": *ref_38
+        "500": *ref_39
+      tags: *ref_40
+      security: *ref_41
     delete:
       operationId: folder-delete
       summary: Удаление папки
@@ -1553,13 +1568,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_34
-        "401": *ref_35
-        "403": *ref_36
-        "404": *ref_37
-        "500": *ref_38
-      tags: *ref_39
-      security: *ref_40
+        "400": *ref_35
+        "401": *ref_36
+        "403": *ref_37
+        "404": *ref_38
+        "500": *ref_39
+      tags: *ref_40
+      security: *ref_41
   /api/v2/user:
     post:
       operationId: users-get
@@ -1578,39 +1593,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UsersGetResponse"
-        "400": &ref_41
+        "400": &ref_42
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_42
+        "401": &ref_43
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_43
+        "403": &ref_44
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_44
+        "404": &ref_45
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500": &ref_45
+        "500": &ref_46
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-      tags: &ref_46
+      tags: &ref_47
         - user
-      security: &ref_47
+      security: &ref_48
         - bearer: []
   /api/v2/user/disable/{userId}:
     patch:
@@ -1629,13 +1644,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_41
-        "401": *ref_42
-        "403": *ref_43
-        "404": *ref_44
-        "500": *ref_45
-      tags: *ref_46
-      security: *ref_47
+        "400": *ref_42
+        "401": *ref_43
+        "403": *ref_44
+        "404": *ref_45
+        "500": *ref_46
+      tags: *ref_47
+      security: *ref_48
   /api/v2/user/enable/{userId}:
     patch:
       operationId: user-enable
@@ -1653,13 +1668,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_41
-        "401": *ref_42
-        "403": *ref_43
-        "404": *ref_44
-        "500": *ref_45
-      tags: *ref_46
-      security: *ref_47
+        "400": *ref_42
+        "401": *ref_43
+        "403": *ref_44
+        "404": *ref_45
+        "500": *ref_46
+      tags: *ref_47
+      security: *ref_48
   /api/v2/user/{userId}:
     get:
       operationId: user-get
@@ -1677,13 +1692,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserGetResponse"
-        "400": *ref_41
-        "401": *ref_42
-        "403": *ref_43
-        "404": *ref_44
-        "500": *ref_45
-      tags: *ref_46
-      security: *ref_47
+        "400": *ref_42
+        "401": *ref_43
+        "403": *ref_44
+        "404": *ref_45
+        "500": *ref_46
+      tags: *ref_47
+      security: *ref_48
     patch:
       operationId: user-update
       summary: Изменение информации о пользователе (только администратор)
@@ -1706,13 +1721,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserGetResponse"
-        "400": *ref_41
-        "401": *ref_42
-        "403": *ref_43
-        "404": *ref_44
-        "500": *ref_45
-      tags: *ref_46
-      security: *ref_47
+        "400": *ref_42
+        "401": *ref_43
+        "403": *ref_44
+        "404": *ref_45
+        "500": *ref_46
+      tags: *ref_47
+      security: *ref_48
     delete:
       operationId: user-delete
       summary: Удаление аккаунта пользователя (только администратор)
@@ -1729,13 +1744,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_41
-        "401": *ref_42
-        "403": *ref_43
-        "404": *ref_44
-        "500": *ref_45
-      tags: *ref_46
-      security: *ref_47
+        "400": *ref_42
+        "401": *ref_43
+        "403": *ref_44
+        "404": *ref_45
+        "500": *ref_46
+      tags: *ref_47
+      security: *ref_48
   /api/v2/invoice:
     post:
       operationId: invoices-get
@@ -1754,51 +1769,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InvoicesGetResponse"
-        "400": &ref_48
+        "400": &ref_49
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_49
+        "401": &ref_50
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_50
+        "403": &ref_51
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_51
+        "404": &ref_52
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "406": &ref_52
+        "406": &ref_53
           description: Не принято значение
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotAcceptableError"
-        "500": &ref_53
+        "500": &ref_54
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503": &ref_54
+        "503": &ref_55
           description: Не доступен сервис
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags: &ref_55
+      tags: &ref_56
         - invoice
-      security: &ref_56
+      security: &ref_57
         - bearer: []
     put:
       operationId: invoice-create
@@ -1817,15 +1832,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InvoiceGetResponse"
-        "400": *ref_48
-        "401": *ref_49
-        "403": *ref_50
-        "404": *ref_51
-        "406": *ref_52
-        "500": *ref_53
-        "503": *ref_54
-      tags: *ref_55
-      security: *ref_56
+        "400": *ref_49
+        "401": *ref_50
+        "403": *ref_51
+        "404": *ref_52
+        "406": *ref_53
+        "500": *ref_54
+        "503": *ref_55
+      tags: *ref_56
+      security: *ref_57
   /api/v2/invoice/confirmed/{invoiceId}:
     get:
       operationId: invoice-confirmed
@@ -1843,15 +1858,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InvoiceGetResponse"
-        "400": *ref_48
-        "401": *ref_49
-        "403": *ref_50
-        "404": *ref_51
-        "406": *ref_52
-        "500": *ref_53
-        "503": *ref_54
-      tags: *ref_55
-      security: *ref_56
+        "400": *ref_49
+        "401": *ref_50
+        "403": *ref_51
+        "404": *ref_52
+        "406": *ref_53
+        "500": *ref_54
+        "503": *ref_55
+      tags: *ref_56
+      security: *ref_57
   /api/v2/invoice/payed/{invoiceId}:
     get:
       operationId: invoice-payed
@@ -1865,15 +1880,15 @@ paths:
       responses:
         "200":
           description: Успешный ответ
-        "400": *ref_48
-        "401": *ref_49
-        "403": *ref_50
-        "404": *ref_51
-        "406": *ref_52
-        "500": *ref_53
-        "503": *ref_54
-      tags: *ref_55
-      security: *ref_56
+        "400": *ref_49
+        "401": *ref_50
+        "403": *ref_51
+        "404": *ref_52
+        "406": *ref_53
+        "500": *ref_54
+        "503": *ref_55
+      tags: *ref_56
+      security: *ref_57
   /api/v2/invoice/download/{invoiceId}/{format}:
     get:
       operationId: invoice-download
@@ -1901,15 +1916,15 @@ paths:
               encoding:
                 pdf:
                   contentType: application/pdf
-        "400": *ref_48
-        "401": *ref_49
-        "403": *ref_50
-        "404": *ref_51
-        "406": *ref_52
-        "500": *ref_53
-        "503": *ref_54
-      tags: *ref_55
-      security: *ref_56
+        "400": *ref_49
+        "401": *ref_50
+        "403": *ref_51
+        "404": *ref_52
+        "406": *ref_53
+        "500": *ref_54
+        "503": *ref_55
+      tags: *ref_56
+      security: *ref_57
   /api/v2/playlist:
     post:
       operationId: playlists-get
@@ -1928,45 +1943,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistsGetResponse"
-        "400": &ref_57
+        "400": &ref_58
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_58
+        "401": &ref_59
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_59
+        "403": &ref_60
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_60
+        "404": &ref_61
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500": &ref_61
+        "500": &ref_62
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503": &ref_62
+        "503": &ref_63
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags: &ref_63
+      tags: &ref_64
         - playlist
-      security: &ref_64
+      security: &ref_65
         - bearer: []
     put:
       operationId: playlist-create
@@ -1985,14 +2000,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *ref_57
-        "401": *ref_58
-        "403": *ref_59
-        "404": *ref_60
-        "500": *ref_61
-        "503": *ref_62
-      tags: *ref_63
-      security: *ref_64
+        "400": *ref_58
+        "401": *ref_59
+        "403": *ref_60
+        "404": *ref_61
+        "500": *ref_62
+        "503": *ref_63
+      tags: *ref_64
+      security: *ref_65
   /api/v2/playlist/{playlistId}:
     get:
       operationId: playlist-get
@@ -2010,14 +2025,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *ref_57
-        "401": *ref_58
-        "403": *ref_59
-        "404": *ref_60
-        "500": *ref_61
-        "503": *ref_62
-      tags: *ref_63
-      security: *ref_64
+        "400": *ref_58
+        "401": *ref_59
+        "403": *ref_60
+        "404": *ref_61
+        "500": *ref_62
+        "503": *ref_63
+      tags: *ref_64
+      security: *ref_65
     patch:
       operationId: playlist-update
       summary: Обновление плэйлиста
@@ -2040,14 +2055,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PlaylistGetResponse"
-        "400": *ref_57
-        "401": *ref_58
-        "403": *ref_59
-        "404": *ref_60
-        "500": *ref_61
-        "503": *ref_62
-      tags: *ref_63
-      security: *ref_64
+        "400": *ref_58
+        "401": *ref_59
+        "403": *ref_60
+        "404": *ref_61
+        "500": *ref_62
+        "503": *ref_63
+      tags: *ref_64
+      security: *ref_65
     delete:
       operationId: playlist-delete
       summary: Удаление плэйлиста
@@ -2064,14 +2079,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_57
-        "401": *ref_58
-        "403": *ref_59
-        "404": *ref_60
-        "500": *ref_61
-        "503": *ref_62
-      tags: *ref_63
-      security: *ref_64
+        "400": *ref_58
+        "401": *ref_59
+        "403": *ref_60
+        "404": *ref_61
+        "500": *ref_62
+        "503": *ref_63
+      tags: *ref_64
+      security: *ref_65
   /api/v2/statistics:
     get:
       operationId: statistics
@@ -2084,45 +2099,45 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/StatisticsResponse"
-        "400": &ref_65
+        "400": &ref_66
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_66
+        "401": &ref_67
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_67
+        "403": &ref_68
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_68
+        "404": &ref_69
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500": &ref_69
+        "500": &ref_70
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-        "503": &ref_70
+        "503": &ref_71
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ServiceUnavailableError"
-      tags: &ref_71
+      tags: &ref_72
         - statistics
-      security: &ref_72
+      security: &ref_73
         - bearer: []
   /api/v2/statistics/deviceStatus:
     post:
@@ -2147,14 +2162,14 @@ paths:
               encoding:
                 pdf:
                   contentType: application/pdf
-        "400": *ref_65
-        "401": *ref_66
-        "403": *ref_67
-        "404": *ref_68
-        "500": *ref_69
-        "503": *ref_70
-      tags: *ref_71
-      security: *ref_72
+        "400": *ref_66
+        "401": *ref_67
+        "403": *ref_68
+        "404": *ref_69
+        "500": *ref_70
+        "503": *ref_71
+      tags: *ref_72
+      security: *ref_73
   /api/v2/statistics/reportViews:
     post:
       operationId: reportViews
@@ -2178,14 +2193,14 @@ paths:
               encoding:
                 pdf:
                   contentType: application/pdf
-        "400": *ref_65
-        "401": *ref_66
-        "403": *ref_67
-        "404": *ref_68
-        "500": *ref_69
-        "503": *ref_70
-      tags: *ref_71
-      security: *ref_72
+        "400": *ref_66
+        "401": *ref_67
+        "403": *ref_68
+        "404": *ref_69
+        "500": *ref_70
+        "503": *ref_71
+      tags: *ref_72
+      security: *ref_73
   /api/v2/application:
     post:
       operationId: applications-get
@@ -2204,39 +2219,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationsGetResponse"
-        "400": &ref_73
+        "400": &ref_74
           description: Ответ будет таким если с данным что-то не так
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/BadRequestError"
-        "401": &ref_74
+        "401": &ref_75
           description: Ответ для незарегистрированного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
-        "403": &ref_75
+        "403": &ref_76
           description: Ответ для неавторизованного пользователя
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ForbiddenError"
-        "404": &ref_76
+        "404": &ref_77
           description: Не найдено
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotFoundError"
-        "500": &ref_77
+        "500": &ref_78
           description: Ошибка сервера
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalServerError"
-      tags: &ref_78
+      tags: &ref_79
         - application
-      security: &ref_79
+      security: &ref_80
         - bearer: []
   /api/v2/application/{applicationId}:
     get:
@@ -2255,13 +2270,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationGetResponse"
-        "400": *ref_73
-        "401": *ref_74
-        "403": *ref_75
-        "404": *ref_76
-        "500": *ref_77
-      tags: *ref_78
-      security: *ref_79
+        "400": *ref_74
+        "401": *ref_75
+        "403": *ref_76
+        "404": *ref_77
+        "500": *ref_78
+      tags: *ref_79
+      security: *ref_80
     patch:
       operationId: application-update
       summary: Изменить заявку
@@ -2284,13 +2299,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationGetResponse"
-        "400": *ref_73
-        "401": *ref_74
-        "403": *ref_75
-        "404": *ref_76
-        "500": *ref_77
-      tags: *ref_78
-      security: *ref_79
+        "400": *ref_74
+        "401": *ref_75
+        "403": *ref_76
+        "404": *ref_77
+        "500": *ref_78
+      tags: *ref_79
+      security: *ref_80
     delete:
       operationId: application-delete
       summary: Удаление заявки
@@ -2307,17 +2322,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_73
-        "401": *ref_74
-        "403": *ref_75
-        "404": *ref_76
-        "500": *ref_77
-      tags: *ref_78
-      security: *ref_79
+        "400": *ref_74
+        "401": *ref_75
+        "403": *ref_76
+        "404": *ref_77
+        "500": *ref_78
+      tags: *ref_79
+      security: *ref_80
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.39.31
+  version: 2.40.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2417,6 +2432,22 @@ components:
         - statusCode
         - code
         - message
+    NotAcceptableError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 406
+        code:
+          type: string
+          example: server-error.10000
+        message:
+          type: string
+          example: Not Acceptable
+      required:
+        - statusCode
+        - code
+        - message
     PreconditionFailedError:
       type: object
       properties:
@@ -2478,6 +2509,12 @@ components:
         - advertiser
         - administrator
         - accountant
+    UserPlan:
+      type: string
+      enum:
+        - DEMO
+        - FULL
+        - VIP
     Wallet:
       type: object
       properties:
@@ -2539,10 +2576,10 @@ components:
           type: boolean
           description: EMail подтвержден
           example: true
-        isDemoUser:
-          type: boolean
-          description: Демо пользователь (дата когда включится подписка)
-          example: false
+        plan:
+          description: План пользователя
+          example: FULL
+          $ref: "#/components/schemas/UserPlan"
         company:
           type: string
           description: Компания
@@ -2689,10 +2726,6 @@ components:
           type: boolean
           description: EMail подтвержден
           example: true
-        isDemoUser:
-          type: boolean
-          description: Демо пользователь (дата когда включится подписка)
-          example: false
         company:
           type: string
           description: Компания
@@ -2750,18 +2783,14 @@ components:
           type: string
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
-        countUsedSpace:
-          type: number
-          description: Использованное место
-          example: 0
-        wallet:
-          description: Баланс
-          allOf:
-            - $ref: "#/components/schemas/Wallet"
         role:
           description: Роль пользователя
           example: advertiser
           $ref: "#/components/schemas/UserRoleRequest"
+        plan:
+          description: План пользователя
+          example: FULL
+          $ref: "#/components/schemas/UserPlan"
     LoginRequest:
       type: object
       properties:
@@ -2843,15 +2872,6 @@ components:
           description: Отчество
           example: Doe
           nullable: true
-        password:
-          type: string
-          example: Secret~12345678
-          description: Пароля пользователя (должен удовлетворять минимальным требованиям)
-          minLength: 8
-          maxLength: 30
-          pattern: |-
-            /((?=.*d)|(?=.*W+))(?![.
-            ])(?=.*[A-Z])(?=.*[a-z]).*$/
         phoneNumber:
           type: string
           description: Телефон пользователя
@@ -2867,19 +2887,84 @@ components:
           description: Страна
           example: RU
           nullable: true
+        storageSpace:
+          type: number
+          description: Дисковое пространство
+          example: 20000000
         company:
           type: string
           description: Компания
           example: ACME corporation
           nullable: true
+        companyLegalAddress:
+          type: string
+          description: Юридический адрес
+          example: г. Краснодар, ул. Красная, д. 1
+        companyActualAddress:
+          type: string
+          description: Фактический адрес
+          example: г. Краснодар, ул. Красная, д. 1
+        companyTIN:
+          type: string
+          description: Идентификационный номер налогоплательщика (ИНН)
+          example: "012345678901"
+        companyRRC:
+          type: string
+          description: Код Причины Постановки на учет (КПП)
+          example: "012345678901"
+        companyPSRN:
+          type: string
+          description: Основной Государственный Регистрационный Номер (ОГРН)
+          example: "012345678901"
+        companyPhone:
+          type: string
+          description: Телефон организации
+          example: "+78002000000"
+        companyEmail:
+          type: string
+          description: Email организации
+          example: we@are.the.best
+        companyBank:
+          type: string
+          description: Наименование банка
+          example: Банк
+        companyBIC:
+          type: string
+          description: Банковский идентификационный код (БИК)
+          example: "012345678"
+        companyCorrespondentAccount:
+          type: string
+          description: Корреспондентский счет
+          example: "30101810400000000000"
+        companyPaymentAccount:
+          type: string
+          description: Расчетный счет
+          example: "40802810064580000000"
+        companyFax:
+          type: string
+          description: Факс организации
+          example: "+78002000000"
+        companyRepresentative:
+          type: string
+          description: Представитель организации
+          example: Тухбатуллина Юлия Евгеньевна
         role:
           description: Роль пользователя
           example: advertiser
           $ref: "#/components/schemas/UserRoleRequest"
+        password:
+          type: string
+          example: Secret~12345678
+          description: Пароля пользователя (должен удовлетворять минимальным требованиям)
+          minLength: 8
+          maxLength: 30
+          pattern: |-
+            /((?=.*d)|(?=.*W+))(?![.
+            ])(?=.*[A-Z])(?=.*[a-z]).*$/
       required:
         - email
-        - password
         - role
+        - password
     AuthRefreshRequest:
       type: object
       properties:
@@ -3054,7 +3139,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: &ref_80
+          example: &ref_81
             city: Krasnodar
             country: Russia
             street: Krasnaya
@@ -3084,7 +3169,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: &ref_81
+          example: &ref_82
             model: Samsung
             resolution: 1920 x 1080 px
             angle: 0
@@ -3114,7 +3199,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: &ref_82
+          example: &ref_83
             type: Point
             coordinates:
               - 38.97603
@@ -3517,7 +3602,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_80
+          example: *ref_81
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3542,7 +3627,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_81
+          example: *ref_82
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3568,7 +3653,7 @@ components:
           example: "2021-10-01T10:00:00.147Z"
           nullable: true
         location:
-          example: *ref_82
+          example: *ref_83
           allOf:
             - $ref: "#/components/schemas/PointClass"
         favorite:
@@ -3641,7 +3726,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_80
+          example: *ref_81
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3666,7 +3751,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_81
+          example: *ref_82
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         sound:
@@ -3674,7 +3759,7 @@ components:
           description: Есть звуковая дорожка
           example: true
         location:
-          example: *ref_82
+          example: *ref_83
           allOf:
             - $ref: "#/components/schemas/PointClass"
         code:
@@ -3845,7 +3930,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_80
+          example: *ref_81
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3870,7 +3955,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_81
+          example: *ref_82
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3895,25 +3980,9 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: *ref_82
+          example: *ref_83
           allOf:
             - $ref: "#/components/schemas/PointClass"
-    NotAcceptableError:
-      type: object
-      properties:
-        statusCode:
-          type: number
-          example: 406
-        code:
-          type: string
-          example: server-error.10000
-        message:
-          type: string
-          example: Not Acceptable
-      required:
-        - statusCode
-        - code
-        - message
     RenderingStatus:
       type: string
       enum:
@@ -4086,7 +4155,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: &ref_83
+          allOf: &ref_84
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -4326,7 +4395,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: *ref_83
+          allOf: *ref_84
       required:
         - id
         - renderingStatus
@@ -4804,7 +4873,7 @@ components:
           type: string
           description: Родительская папка
           format: uuid
-    UserPartialRequest:
+    UserRequest:
       type: object
       properties:
         id:
@@ -4867,10 +4936,10 @@ components:
           type: boolean
           description: EMail подтвержден
           example: true
-        isDemoUser:
-          type: boolean
-          description: Демо пользователь (дата когда включится подписка)
-          example: false
+        plan:
+          description: План пользователя
+          example: FULL
+          $ref: "#/components/schemas/UserPlan"
         company:
           type: string
           description: Компания
@@ -4950,7 +5019,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/UserPartialRequest"
+            - $ref: "#/components/schemas/UserRequest"
         select:
           type: array
           description: Выбрать поля
@@ -4969,7 +5038,7 @@ components:
               - storageSpace
               - role
               - verified
-              - isDemoUser
+              - plan
               - company
               - companyLegalAddress
               - companyActualAddress

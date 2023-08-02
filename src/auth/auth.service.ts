@@ -2,9 +2,8 @@ import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
-import addMonths from 'date-fns/addMonths';
 
-import { UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
+import { UserRoleEnum } from '@/enums';
 import { JWT_BASE_OPTIONS, type MyscreenJwtPayload } from '@/utils/jwt.payload';
 import { decodeMailToken } from '@/utils/mail-token';
 import {
@@ -16,7 +15,8 @@ import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
-import { UserExtEntity } from '@/database/user.view.entity';
+import { UserExtEntity } from '@/database/user-ext.entity';
+import { JwtStrategy } from './jwt.strategy';
 
 @Injectable()
 export class AuthService {
@@ -33,6 +33,7 @@ export class AuthService {
     private readonly refreshTokenService: RefreshTokenService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly jwtStrategy: JwtStrategy,
   ) {
     this.accessTokenExpires = this.configService.get<string>(
       'JWT_ACCESS_EXPIRES',
@@ -72,23 +73,7 @@ export class AuthService {
       throw new ForbiddenException('Password mismatched', password);
     }
 
-    if (user.isDemoUser) {
-      if (user.createdAt && addMonths(user.createdAt, 1) <= new Date()) {
-        throw new ForbiddenException(
-          'You have a Demo User account. Time to pay.',
-        );
-      }
-      if ((user.storageSpace || 0) > UserStoreSpaceEnum.DEMO) {
-        throw new ForbiddenException(
-          'You have a Demo User account. Time to pay..',
-        );
-      }
-      if ((user.countUsedSpace || 0) > UserStoreSpaceEnum.DEMO) {
-        throw new ForbiddenException(
-          'You have a Demo User account. Time to pay...',
-        );
-      }
-    }
+    this.jwtStrategy.verify(user);
 
     const [token, refresh] = await Promise.all([
       this.generateAccessToken(user),
@@ -261,6 +246,8 @@ export class AuthService {
       ...JWT_BASE_OPTIONS,
     });
   }
+
+  verifyAfter = (user: UserExtEntity) => this.jwtStrategy.verify(user);
 
   /**
    * Проверяет почту на соответствие

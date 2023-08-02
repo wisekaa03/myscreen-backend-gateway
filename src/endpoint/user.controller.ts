@@ -36,7 +36,7 @@ import {
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
 import { Status } from '@/enums/status.enum';
-import { UserRoleEnum } from '@/enums/role.enum';
+import { UserRoleEnum } from '@/enums/user-role.enum';
 import { UserService } from '@/database/user.service';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 

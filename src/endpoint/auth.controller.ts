@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Ip,
   Logger,
+  NotAcceptableException,
   NotFoundException,
   Patch,
   Post,
@@ -43,6 +44,7 @@ import {
   AuthMonitorRequest,
   NotFoundError,
   ForbiddenError,
+  NotAcceptableError,
 } from '@/dto';
 import { Status, UserRoleEnum } from '@/enums';
 import { Roles, RolesGuard, JwtAuthGuard } from '@/guards';
@@ -59,6 +61,11 @@ import { MonitorService } from '@/database/monitor.service';
   status: HttpStatus.UNAUTHORIZED,
   description: 'Ответ для незарегистрированного пользователя',
   type: UnauthorizedError,
+})
+@ApiResponse({
+  status: HttpStatus.NOT_ACCEPTABLE,
+  description: 'Не принято значение',
+  type: NotAcceptableError,
 })
 @ApiResponse({
   status: HttpStatus.FORBIDDEN,
@@ -96,7 +103,7 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('/')
+  @Get()
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -119,7 +126,7 @@ export class AuthController {
     };
   }
 
-  @Patch('/')
+  @Patch()
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
@@ -138,10 +145,37 @@ export class AuthController {
     type: UserGetResponse,
   })
   async update(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() update: UserUpdateRequest,
   ): Promise<UserGetResponse> {
-    const data = await this.userService.update(userId, update);
+    if (user.role !== UserRoleEnum.Administrator && update.role !== undefined) {
+      throw new NotAcceptableException(
+        'Role is updated when Administrator logged in',
+      );
+    }
+    if (user.role !== UserRoleEnum.Administrator && update.plan !== undefined) {
+      throw new NotAcceptableException(
+        'Plan is updated when Administrator logged in',
+      );
+    }
+    if (
+      user.role !== UserRoleEnum.Administrator &&
+      update.disabled !== undefined
+    ) {
+      throw new NotAcceptableException(
+        'Disabled is updated when Administrator logged in',
+      );
+    }
+    if (
+      user.role !== UserRoleEnum.Administrator &&
+      update.verified !== undefined
+    ) {
+      throw new NotAcceptableException(
+        'Verified is updated when Administrator logged in',
+      );
+    }
+
+    const data = await this.userService.update(user.id, update);
     if (!data) {
       throw new UnauthorizedException();
     }

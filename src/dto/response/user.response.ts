@@ -1,7 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
 import { FindOptionsSelect } from 'typeorm';
 
-import { UserExtEntity } from '@/database/user.view.entity';
+import { UserExtEntity } from '@/database/user-ext.entity';
 
 export const selectUserOptions: FindOptionsSelect<UserExtEntity> = {
   id: true,
@@ -14,7 +14,7 @@ export const selectUserOptions: FindOptionsSelect<UserExtEntity> = {
   city: true,
   country: true,
   storageSpace: true,
-  isDemoUser: true,
+  plan: true,
   company: true,
   companyEmail: true,
   companyLegalAddress: true,
@@ -53,7 +53,7 @@ export const userEntityToUser = ({
   ...data
 }: UserExtEntity): UserExtEntity => ({
   ...data,
-  countUsedSpace: data.countUsedSpace ?? 0,
-  countMonitors: data.countMonitors ?? 0,
+  countUsedSpace: parseInt(`${data.countUsedSpace}`, 10) ?? 0,
+  countMonitors: parseInt(`${data.countMonitors}`, 10) ?? 0,
   wallet: { total: wallet ? wallet.total : parseFloat(walletSum ?? '0') ?? 0 },
 });

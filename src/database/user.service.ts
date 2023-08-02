@@ -17,14 +17,14 @@ import {
   FindManyOptions,
 } from 'typeorm';
 
-import { selectUserOptions } from '@/dto';
-import { UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
+import { RegisterRequest, selectUserOptions } from '@/dto';
+import { UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
-import { UserExtEntity } from './user.view.entity';
+import { UserExtEntity } from './user-ext.entity';
 
 @Injectable()
 export class UserService {
@@ -36,7 +36,7 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserExtEntity)
-    private readonly userSizeRepository: Repository<UserExtEntity>,
+    private readonly userExtRepository: Repository<UserExtEntity>,
     @Inject(forwardRef(() => MailService))
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
@@ -63,7 +63,7 @@ export class UserService {
       throw new ForbiddenException();
     }
 
-    if (typeof update.email !== 'undefined' && user.email !== update.email) {
+    if (update.email !== undefined && user.email !== update.email) {
       const emailConfirmKey = genKey();
 
       const verifyToken = generateMailToken(update.email, emailConfirmKey);
@@ -83,7 +83,7 @@ export class UserService {
       this.userRepository.create(Object.assign(user, update)),
     );
 
-    return this.userSizeRepository.findOne({ where: { id: userSaved.id } });
+    return this.userExtRepository.findOne({ where: { id: userSaved.id } });
   }
 
   /**
@@ -102,8 +102,8 @@ export class UserService {
    * @param {Partial<UserEntity>} create
    * @returns {UserEntity} Пользователь
    */
-  async register(create: Partial<UserEntity>): Promise<UserExtEntity | null> {
-    const { email, password, role } = create;
+  async register(create: RegisterRequest): Promise<UserExtEntity | null> {
+    const { email, password, role, ...createUser } = create;
     if (!email) {
       throw new BadRequestException();
     }
@@ -125,18 +125,28 @@ export class UserService {
       throw new PreconditionFailedException('User exists', create.email);
     }
 
-    let { storageSpace } = create;
-    if (create.isDemoUser) {
+    const plan =
+      role === UserRoleEnum.MonitorOwner
+        ? UserPlanEnum.Demo
+        : UserPlanEnum.Full;
+
+    let { storageSpace } = createUser;
+    if (plan === UserPlanEnum.Demo) {
       storageSpace = UserStoreSpaceEnum.DEMO;
+    } else if (storageSpace === undefined) {
+      storageSpace = UserStoreSpaceEnum.FULL;
     }
 
     const user: DeepPartial<UserEntity> = {
-      ...create,
-      disabled: false,
-      password: createHmac('sha256', password.normalize()).digest('hex'),
-      emailConfirmKey: genKey(),
-      verified: false,
+      ...createUser,
+      email,
       storageSpace,
+      role,
+      plan,
+      password: createHmac('sha256', password.normalize()).digest('hex'),
+      disabled: false,
+      verified: false,
+      emailConfirmKey: genKey(),
     };
     const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
@@ -145,7 +155,7 @@ export class UserService {
       const { id } = await this.userRepository.save(
         this.userRepository.create(user),
       );
-      return this.userSizeRepository.findOne({ where: { id } });
+      return this.userExtRepository.findOne({ where: { id } });
     }
 
     const [{ id }] = await Promise.all([
@@ -160,7 +170,7 @@ export class UserService {
         }),
     ]);
 
-    return this.userSizeRepository.findOneBy({ id });
+    return this.userExtRepository.findOneBy({ id });
   }
 
   /**
@@ -180,7 +190,7 @@ export class UserService {
 
       emailConfirmKey: genKey(),
       verified: false,
-      isDemoUser: false,
+      plan: UserPlanEnum.VIP,
     };
 
     return this.userRepository.save(this.userRepository.create(user));
@@ -287,7 +297,7 @@ export class UserService {
     email: string,
     options?: FindManyOptions<UserEntity>,
   ): Promise<UserExtEntity | null> {
-    return this.userSizeRepository.findOne({
+    return this.userExtRepository.findOne({
       ...options,
       where: { email },
     });
@@ -302,6 +312,7 @@ export class UserService {
       return {
         id,
         role: UserRoleEnum.Monitor,
+        plan: UserPlanEnum.Full,
         name: null,
         surname: null,
         middleName: null,
@@ -316,7 +327,7 @@ export class UserService {
     const conditions: FindManyOptions<UserEntity> = disabled
       ? { where: { id } }
       : { where: { id, disabled } };
-    return this.userSizeRepository.findOne(conditions);
+    return this.userExtRepository.findOne(conditions);
   }
 
   validateCredentials = (user: UserEntity, password: string): boolean => {
