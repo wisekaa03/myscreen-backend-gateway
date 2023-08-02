@@ -110,7 +110,7 @@ export class FileService {
     caseInsensitive = true,
   ): Promise<[Array<FileEntity>, number]> {
     const conditional = TypeOrmFind.Nullable(find);
-    if (!find.relations) {
+    if (find.relations === undefined) {
       conditional.relations = ['monitors', 'playlists'];
     }
     return caseInsensitive
