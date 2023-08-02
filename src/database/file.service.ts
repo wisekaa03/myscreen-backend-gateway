@@ -1,5 +1,6 @@
 import { createReadStream, promises as fs, createWriteStream } from 'node:fs';
 import internal from 'node:stream';
+import StreamPromises from 'node:stream/promises';
 import { join as pathJoin, parse as pathParse } from 'node:path';
 import {
   BadRequestException,
@@ -569,12 +570,14 @@ export class FileService {
     outPath += file.videoType === VideoType.Video ? '.webm' : '.jpg';
 
     if (await fs.access(outPath).catch(() => true)) {
-      const filenameStream = createWriteStream(filename);
-      const data = await this.getS3Object(file);
+      const outputStream = createWriteStream(filename);
+      const data: GetObjectCommandOutput = await this.getS3Object(file);
       if (data.Body instanceof internal.Readable) {
-        data.Body.pipe(filenameStream);
-        this.logger.debug(`The file ${file.name} has been downloaded`);
+        await StreamPromises.pipeline(data.Body, outputStream);
+        this.logger.debug(`The file "${file.name}" has been downloaded`);
       }
+    } else {
+      this.logger.debug(`The file "${file.name}" has cached`);
     }
 
     await FfMpegPreview(file.videoType, file.meta, filename, outPath).catch(

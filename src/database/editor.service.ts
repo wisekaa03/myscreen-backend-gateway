@@ -5,6 +5,7 @@ import {
   ReadStream,
 } from 'node:fs';
 import internal from 'stream';
+import StreamPromises from 'node:stream/promises';
 import path from 'node:path';
 import child from 'node:child_process';
 import util from 'node:util';
@@ -286,7 +287,7 @@ export class EditorService {
       const outputStream = createWriteStream(filePath);
       const data = await this.fileService.getS3Object(file);
       if (data.Body instanceof internal.Readable) {
-        data.Body.pipe(outputStream);
+        await StreamPromises.pipeline(data.Body, outputStream);
       }
     }
 
