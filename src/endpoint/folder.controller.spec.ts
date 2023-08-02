@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { JwtAuthGuard } from '@/guards';
 import { FolderService } from '@/database/folder.service';
+import { UserService } from '@/database/user.service';
 import { FolderController } from './folder.controller';
 
 export const mockRepository = jest.fn(() => ({
@@ -25,6 +26,10 @@ describe(FolderController.name, () => {
       providers: [
         {
           provide: FolderService,
+          useClass: mockRepository,
+        },
+        {
+          provide: UserService,
           useClass: mockRepository,
         },
       ],

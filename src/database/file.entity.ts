@@ -200,7 +200,7 @@ export class FileEntity {
   @JoinColumn({ name: 'userId' })
   user!: UserEntity;
 
-  @Column()
+  @Column({ select: false })
   @Index()
   userId!: string;
 
