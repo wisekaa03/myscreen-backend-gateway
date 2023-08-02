@@ -5,6 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { AuthService } from './auth.service';
+import { JwtStrategy } from './jwt.strategy';
+import { UserPlanEnum } from '@/enums';
 
 const email = 'foo@bar.baz';
 const password = 'Secret~123456';
@@ -22,7 +24,7 @@ const user = {
   company: 'ACME corporation',
   role: 'advertiser',
   verified: true,
-  // isDemoUser: false,
+  plan: UserPlanEnum.Full,
   createdAt: '1000-01-01T01:00:50.804Z',
   updatedAt: '1000-01-01T01:00:43.121Z',
   countUsedSpace: 0,
@@ -37,6 +39,7 @@ export const mockRepository = jest.fn(() => ({
   validateCredentials: () => true,
   signAsync: async () => Promise.resolve(token),
   create: async () => Promise.resolve({ id: '1' }),
+  verify: () => true,
 }));
 
 describe(AuthService.name, () => {
@@ -57,6 +60,10 @@ describe(AuthService.name, () => {
         },
         {
           provide: JwtService,
+          useClass: mockRepository,
+        },
+        {
+          provide: JwtStrategy,
           useClass: mockRepository,
         },
       ],

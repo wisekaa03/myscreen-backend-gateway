@@ -3,7 +3,7 @@ import { IsDateString, IsOptional } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 
-export class UserPartialRequest extends PartialType(
+export class UserRequest extends PartialType(
   OmitType(UserEntity, ['createdAt', 'updatedAt']),
 ) {
   @ApiProperty({

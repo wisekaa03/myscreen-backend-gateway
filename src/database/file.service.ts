@@ -171,7 +171,11 @@ export class FileService {
           });
 
         return fileRepository.save(
-          fileRepository.create<FileEntity>(FileEntity, update),
+          fileRepository.create<FileEntity>(FileEntity, {
+            ...file,
+            ...update,
+            id: file.id,
+          }),
         );
       }
 

@@ -24,7 +24,7 @@ import {
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
-import { UserRole, UserRoleEnum } from '@/enums';
+import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
 import { MonitorEntity } from '@/database/monitor.entity';
 
 @Entity('user')
@@ -123,7 +123,11 @@ export class UserEntity {
   @IsString()
   city?: string;
 
-  @Column({ default: 'RU', nullable: true })
+  @Column({
+    default: 'RU',
+    length: 2,
+    comment: 'Страна',
+  })
   @ApiProperty({
     description: 'Страна',
     example: 'RU',
@@ -133,7 +137,11 @@ export class UserEntity {
   @IsISO31661Alpha2()
   country?: string;
 
-  @Column({ type: 'bigint', default: 20000000000 })
+  @Column({
+    type: 'bigint',
+    default: 20000000000,
+    comment: 'Дисковое пространство',
+  })
   @ApiProperty({
     description: 'Дисковое пространство',
     example: 20000000,
@@ -146,6 +154,7 @@ export class UserEntity {
     type: 'enum',
     enum: UserRoleEnum,
     default: UserRoleEnum.Advertiser,
+    comment: 'Роль пользователя',
   })
   @ApiProperty({
     description: 'Роль пользователя',
@@ -173,13 +182,23 @@ export class UserEntity {
   })
   verified!: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({
+    type: 'enum',
+    enum: UserPlanEnum,
+    default: UserPlanEnum.Full,
+    comment: 'План пользователя',
+  })
   @ApiProperty({
-    description: 'Демо пользователь (дата когда включится подписка)',
-    example: false,
+    description: 'План пользователя',
+    enum: UserPlanEnum,
+    enumName: 'UserPlan',
+    example: UserPlanEnum.Full,
     required: false,
   })
-  isDemoUser?: boolean;
+  @IsDefined()
+  @IsNotEmpty()
+  @IsEnum(UserPlanEnum)
+  plan?: UserPlanEnum;
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
   monitors?: MonitorEntity[];

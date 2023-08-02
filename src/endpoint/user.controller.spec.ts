@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { JwtAuthGuard, RolesGuard } from '@/guards';
-import { UserRoleEnum } from '@/enums/role.enum';
+import { UserRoleEnum } from '@/enums/user-role.enum';
 import { UserService } from '@/database/user.service';
 import { UserController } from './user.controller';
 

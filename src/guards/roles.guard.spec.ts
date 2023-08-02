@@ -2,7 +2,7 @@ import { Reflector } from '@nestjs/core';
 import { createMock } from '@golevelup/ts-jest';
 import { ExecutionContext, UseGuards } from '@nestjs/common';
 
-import { UserRoleEnum } from '@/enums/role.enum';
+import { UserRoleEnum } from '@/enums/user-role.enum';
 import { Roles } from './roles.decorator';
 import { RolesGuard } from './roles.guard';
 

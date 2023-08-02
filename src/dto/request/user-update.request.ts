@@ -1,11 +1,13 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 
-import { UserRole, UserRoleEnum } from '@/enums';
-import { UserExtEntity } from '@/database/user.view.entity';
+import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
+import { UserExtEntity } from '@/database/user-ext.entity';
 
 export class UserUpdateRequest extends PartialType(
   PickType(UserExtEntity, [
+    'disabled',
+    'verified',
     'email',
     'city',
     'country',
@@ -28,11 +30,6 @@ export class UserUpdateRequest extends PartialType(
     'companyEmail',
     'companyRepresentative',
     'companyFax',
-    'disabled',
-    'isDemoUser',
-    'verified',
-    'wallet',
-    'countUsedSpace',
   ]),
 ) {
   @ApiProperty({
@@ -45,4 +42,15 @@ export class UserUpdateRequest extends PartialType(
   @IsOptional()
   @IsEnum(UserRole)
   role?: UserRoleEnum;
+
+  @ApiProperty({
+    description: 'План пользователя',
+    enum: UserPlanEnum,
+    enumName: 'UserPlan',
+    example: UserPlanEnum.Full,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(UserPlanEnum)
+  plan?: UserPlanEnum;
 }

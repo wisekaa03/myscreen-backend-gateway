@@ -1,19 +1,15 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { IsDefined, IsEnum, IsNotEmpty } from 'class-validator';
 
 import { UserRole, UserRoleEnum } from '@/enums';
-import { UserEntity } from '@/database/user.entity';
+import { UserExtEntity } from '@/database/user-ext.entity';
 
-export class RegisterRequest extends PickType(UserEntity, [
-  'email',
+export class RegisterRequest extends OmitType(UserExtEntity, [
+  'id',
+  'disabled',
+  'verified',
+  'role',
   'password',
-  'name',
-  'surname',
-  'middleName',
-  'city',
-  'country',
-  'company',
-  'phoneNumber',
 ]) {
   @ApiProperty({
     description: 'Роль пользователя',

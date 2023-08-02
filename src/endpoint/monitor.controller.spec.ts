@@ -7,6 +7,7 @@ import { PlaylistService } from '@/database/playlist.service';
 import { ApplicationService } from '@/database/application.service';
 import { UserService } from '@/database/user.service';
 import { MonitorController } from './monitor.controller';
+import { AuthService } from '@/auth/auth.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -45,6 +46,10 @@ describe(MonitorController.name, () => {
         },
         {
           provide: WSGateway,
+          useClass: mockRepository,
+        },
+        {
+          provide: AuthService,
           useClass: mockRepository,
         },
       ],

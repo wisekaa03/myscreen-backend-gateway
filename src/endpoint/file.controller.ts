@@ -186,7 +186,7 @@ export class FileController {
   })
   @UseInterceptors(FilesInterceptor('files'))
   async uploadFiles(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() body: FileUploadRequestBody,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<FilesUploadResponse> {
@@ -200,7 +200,7 @@ export class FileController {
     } catch (err) {
       throw new BadRequestException('The param must be a string');
     }
-    const data = await this.fileService.upload(userId, param, files);
+    const data = await this.fileService.upload(user, param, files);
 
     return {
       status: Status.Success,
@@ -347,9 +347,11 @@ export class FileController {
       throw new NotFoundException(`File '${id}' is not exists`);
     }
 
-    const data = await this.fileService.getS3Object(file).catch(() => {
-      throw new NotFoundException(`File '${id}' is not exists`);
-    });
+    const data = await this.fileService
+      .getS3Object(file)
+      .catch((error: unknown) => {
+        throw new NotFoundException(`File '${id}' is not exists`);
+      });
     if (data.Body instanceof internal.Readable) {
       res.setHeader(
         'Content-Length',
@@ -591,12 +593,12 @@ export class FileController {
     type: SuccessResponse,
   })
   async deleteFile(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<SuccessResponse> {
     await this.fileService.deletePrep([fileId]);
 
-    const { affected } = await this.fileService.delete(userId, [fileId]);
+    const { affected } = await this.fileService.delete(user, [fileId]);
     if (!affected) {
       throw new NotFoundException('This file is not exists');
     }
