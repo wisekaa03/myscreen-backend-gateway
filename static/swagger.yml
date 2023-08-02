@@ -2332,7 +2332,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.40.1
+  version: 2.40.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2952,10 +2952,6 @@ components:
           description: Роль пользователя
           example: advertiser
           $ref: "#/components/schemas/UserRoleRequest"
-        plan:
-          description: План пользователя
-          example: FULL
-          $ref: "#/components/schemas/UserPlan"
         password:
           type: string
           example: Secret~12345678

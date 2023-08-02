@@ -3,13 +3,12 @@ import {
   IsDefined,
   IsEnum,
   IsNotEmpty,
-  IsOptional,
   Matches,
   MaxLength,
   MinLength,
 } from 'class-validator';
 
-import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
+import { UserRole, UserRoleEnum } from '@/enums';
 import { UserExtEntity } from '@/database/user-ext.entity';
 
 export class RegisterRequest extends OmitType(UserExtEntity, [
@@ -40,17 +39,6 @@ export class RegisterRequest extends OmitType(UserExtEntity, [
   @IsNotEmpty()
   @IsEnum(UserRole)
   role!: UserRoleEnum;
-
-  @ApiProperty({
-    description: 'План пользователя',
-    enum: UserPlanEnum,
-    enumName: 'UserPlan',
-    example: UserPlanEnum.Full,
-    required: false,
-  })
-  @IsOptional()
-  @IsEnum(UserPlanEnum)
-  plan?: UserPlanEnum;
 
   @ApiProperty({
     example: 'Secret~12345678',

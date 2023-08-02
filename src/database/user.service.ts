@@ -17,7 +17,7 @@ import {
   FindManyOptions,
 } from 'typeorm';
 
-import { selectUserOptions } from '@/dto';
+import { RegisterRequest, selectUserOptions } from '@/dto';
 import { UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
@@ -102,8 +102,8 @@ export class UserService {
    * @param {Partial<UserEntity>} create
    * @returns {UserEntity} Пользователь
    */
-  async register(create: Partial<UserEntity>): Promise<UserExtEntity | null> {
-    const { email, password, role } = create;
+  async register(create: RegisterRequest): Promise<UserExtEntity | null> {
+    const { email, password, role, ...createUser } = create;
     if (!email) {
       throw new BadRequestException();
     }
@@ -125,18 +125,28 @@ export class UserService {
       throw new PreconditionFailedException('User exists', create.email);
     }
 
-    let { storageSpace } = create;
-    if (create.plan === UserPlanEnum.Demo) {
+    const plan =
+      role === UserRoleEnum.MonitorOwner
+        ? UserPlanEnum.Demo
+        : UserPlanEnum.Full;
+
+    let { storageSpace } = createUser;
+    if (plan === UserPlanEnum.Demo) {
       storageSpace = UserStoreSpaceEnum.DEMO;
+    } else if (storageSpace === undefined) {
+      storageSpace = UserStoreSpaceEnum.FULL;
     }
 
     const user: DeepPartial<UserEntity> = {
-      ...create,
-      disabled: false,
-      password: createHmac('sha256', password.normalize()).digest('hex'),
-      emailConfirmKey: genKey(),
-      verified: false,
+      ...createUser,
+      email,
       storageSpace,
+      role,
+      plan,
+      password: createHmac('sha256', password.normalize()).digest('hex'),
+      disabled: false,
+      verified: false,
+      emailConfirmKey: genKey(),
     };
     const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;

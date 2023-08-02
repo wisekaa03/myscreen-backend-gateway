@@ -103,7 +103,7 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('/')
+  @Get()
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
