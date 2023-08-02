@@ -1,10 +1,7 @@
 /* eslint max-len:0 */
-import { readFileSync } from 'node:fs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-// import { ConfigService } from '@nestjs/config';
-// import { WinstonModule } from 'nest-winston';
 import superAgentRequest from 'supertest';
 import { LoggerModule } from 'nestjs-pino';
 
@@ -20,7 +17,6 @@ import {
   FilesGetResponse,
   FilesUploadResponse,
   UserGetResponse,
-  FileGetResponse,
   VerifyEmailRequest,
   ResetPasswordInvitationRequest,
   FilesGetRequest,
@@ -50,10 +46,9 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 const registerRequest: RegisterRequest = {
-  email: 'foo@bar.baz', // 'wisekaa03@gmail.com',
+  email: 'foo@bar.baz',
   password: 'Secret~123456',
   role: UserRoleEnum.Advertiser,
-  plan: UserPlanEnum.Full,
   name: 'John',
   surname: 'Steve',
   middleName: 'Doe',
@@ -110,8 +105,6 @@ describe('Backend API (e2e)', () => {
     app = moduleFixture.createNestApplication();
     const httpAdaper = app.get(HttpAdapterHost);
 
-    // const configService = app.get(ConfigService);
-    // app.useLogger(app.get(Logger));
     app.useLogger(false);
 
     app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
@@ -468,21 +461,10 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.name).toBe('bar');
-          // expect(body.data.parentFolderId).toBe(null);
-          // expect(body.data.userId).toBe(userId);
           expect((body.data as any)?.user?.password).toBeUndefined();
           parentFolderId = body.data.id;
         });
     });
-
-    // test('PUT /folder [name: "```"] [unsuccess] (Создание новой папки)', async () =>
-    //   request
-    //     .put('/folder')
-    //     .auth(token, { type: 'bearer' })
-    //     .send({ name: '```' })
-    //     .set('Accept', 'application/json')
-    //     .expect('Content-Type', /json/)
-    //     .expect(400));
 
     test('PUT /folder [name: "baz"] (Создание новой папки)', async () => {
       await request
@@ -495,8 +477,6 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.name).toBe('baz');
-          // expect(body.data.parentFolderId).toBe(null);
-          // expect(body.data.userId).toBe(userId);
           expect((body.data as any)?.user?.password).toBeUndefined();
           parentFolderId2 = body.data.id;
           folderId3 = body.data.id;
@@ -518,7 +498,6 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.name).toBe('foo');
           expect(body.data.parentFolderId).toBe(parentFolderId);
-          // expect(body.data.userId).toBe(userId);
           expect((body.data as any)?.user?.password).toBeUndefined();
           folderId1 = body.data.id;
         });
@@ -539,7 +518,6 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.name).toBe('baz');
           expect(body.data.parentFolderId).toBe(parentFolderId2);
-          // expect(body.data.userId).toBe(userId);
           expect((body.data as any)?.user?.password).toBeUndefined();
           folderId2 = body.data.id;
         });
@@ -755,29 +733,6 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Изменение файлов
-     */
-    // test('PATCH /file [success] (Изменение файлов)', async () => {
-    //   if (!token || !folderId2) {
-    //     expect(false).toEqual(true);
-    //   }
-
-    //   const { body }: { body: FileGetResponse } = await request
-    //     .patch(`/file/${mediaId1}`)
-    //     .auth(token, { type: 'bearer' })
-    //     .set('Accept', 'application/json')
-    //     .send({ folderId: folderId3 })
-    //     .expect('Content-Type', /json/)
-    //     .expect(200);
-
-    //   expect(body.status).toBe(Status.Success);
-    //   expect(body.data).toBeDefined();
-    //   expect(body.data.id).toBeDefined();
-    //   mediaId1 = body.data.id;
-    //   expect(body.data.user?.password).toBeUndefined();
-    // });
-
-    /**
      * Скачивание медиа [success]
      */
     test('GET /file/{mediaId} [success] (Скачивание медиа)', async () => {
@@ -792,8 +747,6 @@ describe('Backend API (e2e)', () => {
         .expect(200);
 
       expect(body).toBeDefined();
-      // const file = readFileSync(`${__dirname}/testing.png`);
-      // expect(body).toStrictEqual(file);
     });
 
     /**
