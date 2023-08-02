@@ -574,7 +574,7 @@ export class EditorService {
               `Editly on '${renderEditor.id}' / '${renderEditor.name}': ${msg}`,
               'Editly',
             );
-            // DEBUG: Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
+            // Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
             const percent = msg.match(/(\d+%)/g);
             if (Array.isArray(percent) && percent.length > 0) {
               this.editorRepository
@@ -606,28 +606,7 @@ export class EditorService {
         }
 
         const { size } = await fs.stat(outPath);
-        const folder = await this.folderService
-          .rootFolder(user.id)
-          .then(async (rootFolder) => {
-            const renderedFolder = await this.folderService.findOne({
-              where: {
-                name: '<Исполненные>',
-                parentFolderId: rootFolder.id,
-                userId: user.id,
-              },
-            });
-            return (
-              renderedFolder ||
-              this.folderService.update({
-                name: '<Исполненные>',
-                parentFolderId: rootFolder.id,
-                userId: user.id,
-              })
-            );
-          });
-        if (!folder) {
-          throw new Error('The file system has run out of space ?');
-        }
+        const exportFolder = await this.folderService.exportFolder(user);
         const media = await ffprobe(outPath, {
           showFormat: true,
           showStreams: true,
@@ -653,9 +632,11 @@ export class EditorService {
           buffer: null as unknown as Buffer,
         };
         await this.fileService
-          .upload(user, { folderId: folder.id, category: FileCategory.Media }, [
-            files,
-          ])
+          .upload(
+            user,
+            { folderId: exportFolder.id, category: FileCategory.Media },
+            [files],
+          )
           .then((value) => {
             if (value[0]) {
               this.editorRepository.update(renderEditor.id, {

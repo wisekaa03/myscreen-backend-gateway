@@ -203,7 +203,7 @@ export class FileService {
     return this.fileRepository.manager.transaction(async (fileRepository) => {
       let folder: FolderEntity | null = null;
       if (!folderIdOrig) {
-        folder = await this.folderService.rootFolder(user.id);
+        folder = await this.folderService.rootFolder(user);
       } else {
         folder =
           (await this.folderService.findOne({

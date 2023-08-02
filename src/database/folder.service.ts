@@ -56,18 +56,39 @@ export class FolderService {
     return this.folderFilenumberRepository.findOne(TypeOrmFind.Nullable(find));
   }
 
-  async rootFolder(userId: string): Promise<FolderEntity> {
+  async rootFolder(user: UserEntity): Promise<FolderEntity> {
     const folder = await this.folderRepository.findOne({
-      where: { userId, name: '<Корень>' },
+      where: { name: '<Корень>', userId: user.id },
     });
 
-    return this.folderRepository.save(
-      this.folderRepository.create({
-        ...folder,
-        userId,
+    return (
+      folder ??
+      this.update({
         name: '<Корень>',
         parentFolderId: null,
-      }),
+        userId: user.id,
+      })
+    );
+  }
+
+  async exportFolder(user: UserEntity): Promise<FolderEntity> {
+    const rootFolder = await this.rootFolder(user);
+
+    const folder = await this.findOne({
+      where: {
+        name: '<Исполненные>',
+        parentFolderId: rootFolder.id,
+        userId: user.id,
+      },
+    });
+
+    return (
+      folder ??
+      this.update({
+        name: '<Исполненные>',
+        parentFolderId: rootFolder.id,
+        userId: user.id,
+      })
     );
   }
 
