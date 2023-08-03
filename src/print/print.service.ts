@@ -36,11 +36,11 @@ export class PrintService {
       invoiceUser || (await this.userService.findById(invoice.userId));
     switch (format) {
       case SpecificFormat.PDF:
-        return printSpecific.invoice.pdf({ user, invoice });
+        return printSpecific.invoice.pdf({ invoice, user });
 
       case SpecificFormat.XLSX:
       default:
-        return printSpecific.invoice.xls({ user, invoice });
+        return printSpecific.invoice.xls({ invoice, user });
     }
   }
 

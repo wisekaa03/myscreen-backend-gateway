@@ -198,9 +198,7 @@ export class MailService {
       user,
     );
     const message: ISendMailOptions = {
-      to: [
-        { name: `"${this.userService.fullName(user)}"`, address: user.email },
-      ],
+      to: [{ name: this.userService.fullName(user), address: user.email }],
       from: this.from,
       subject: `Счет на оплату №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
@@ -235,9 +233,7 @@ export class MailService {
       locale: dateRu,
     });
     const message: ISendMailOptions = {
-      to: [
-        { name: `"${this.userService.fullName(user)}"`, address: user.email },
-      ],
+      to: [{ name: this.userService.fullName(user), address: user.email }],
       from: this.from,
       subject: `Поступление по Счету №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
