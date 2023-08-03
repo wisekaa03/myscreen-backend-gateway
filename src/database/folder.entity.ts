@@ -56,7 +56,7 @@ export class FolderEntity {
   @Index()
   user!: UserEntity;
 
-  @Column()
+  @Column({ select: false })
   @Index()
   @IsUUID()
   userId!: string;

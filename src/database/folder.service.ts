@@ -14,6 +14,9 @@ import { FolderEntity } from './folder.entity';
 import { FolderFileNumberEntity } from './folder.view.entity';
 import { UserEntity } from './user.entity';
 
+export const administratorFolderId = '00000000-0000-0000-0000-000000000000';
+export const administratorFolderName = '<Администраторская папка>';
+
 @Injectable()
 export class FolderService {
   private logger = new Logger(FolderService.name);
@@ -90,6 +93,18 @@ export class FolderService {
         userId: user.id,
       })
     );
+  }
+
+  async administratorFolder(user: UserEntity): Promise<FolderEntity> {
+    const parentFolder = await this.rootFolder(user);
+
+    return {
+      id: administratorFolderId,
+      name: administratorFolderName,
+      parentFolderId: parentFolder.id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as FolderEntity;
   }
 
   async update(folder: Partial<FolderEntity>): Promise<FolderEntity> {

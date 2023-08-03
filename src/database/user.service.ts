@@ -173,6 +173,10 @@ export class UserService {
     return this.userExtRepository.findOneBy({ id });
   }
 
+  fullName(item: UserEntity): string {
+    return [item.surname, item.name, item.middleName].join(' ');
+  }
+
   /**
    * createTest
    * Используется в /test/app.e2e-spec.ts

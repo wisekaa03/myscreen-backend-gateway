@@ -140,11 +140,9 @@ export class FileController {
   ): Promise<FilesGetResponse> {
     const [data, count] = await this.fileService.findAndCount({
       ...paginationQueryToConfig(scope),
+      relations: [],
       select,
-      where: TypeOrmFind.Where(
-        where,
-        user.role !== UserRoleEnum.Administrator ? user : undefined,
-      ),
+      where: TypeOrmFind.Where(where, user),
     });
 
     return {
