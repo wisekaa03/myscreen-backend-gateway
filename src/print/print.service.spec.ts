@@ -6,11 +6,12 @@ import { InvoiceService } from '@/database/invoice.service';
 import { PrintService } from './print.service';
 
 export const mockRepository = jest.fn(() => ({
-  findOne: async () => Promise.resolve([]),
+  findById: async () => Promise.resolve({}),
+  findOne: async () => Promise.resolve({}),
   findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
-  remove: async () => Promise.resolve([]),
+  save: async () => Promise.resolve({}),
+  create: () => {},
+  remove: async () => Promise.resolve({}),
   metadata: {
     columns: [],
     relations: [],
@@ -18,10 +19,11 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 describe(PrintService.name, () => {
-  let xlsxService: PrintService;
+  let printService: PrintService;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      // imports: [DatabaseModule],
       providers: [
         PrintService,
         {
@@ -39,10 +41,10 @@ describe(PrintService.name, () => {
       ],
     }).compile();
 
-    xlsxService = module.get(PrintService);
+    printService = module.get(PrintService);
   });
 
   it('should be defined', () => {
-    expect(xlsxService).toBeDefined();
+    expect(printService).toBeDefined();
   });
 });

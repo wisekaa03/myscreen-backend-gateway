@@ -6,6 +6,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { MailService } from './mail.service';
 import { PrintModule } from '@/print/print.module';
 import { MailLogger } from '@/utils/mail.logger';
+import { DatabaseModule } from '@/database/database.module';
 
 // TODO: заменить это все микросервисной архитектурой
 
@@ -46,6 +47,7 @@ import { MailLogger } from '@/utils/mail.logger';
       inject: [ConfigService],
     }),
 
+    forwardRef(() => DatabaseModule),
     forwardRef(() => PrintModule),
   ],
   providers: [MailService],

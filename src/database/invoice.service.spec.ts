@@ -6,6 +6,7 @@ import { MailService } from '@/mail/mail.service';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
+import { UserService } from './user.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -40,6 +41,10 @@ describe(InvoiceService.name, () => {
         },
         {
           provide: PrintService,
+          useClass: mockRepository,
+        },
+        {
+          provide: UserService,
           useClass: mockRepository,
         },
       ],
