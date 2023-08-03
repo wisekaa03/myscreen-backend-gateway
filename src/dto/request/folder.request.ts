@@ -14,7 +14,7 @@ export class FolderRequest {
     required: true,
   })
   @IsNotEmpty()
-  @IsUUID()
+  @IsString()
   id!: string;
 
   @ApiProperty({

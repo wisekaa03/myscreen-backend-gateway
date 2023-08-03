@@ -53,7 +53,7 @@ export const userEntityToUser = ({
   ...data
 }: UserExtEntity): UserExtEntity => ({
   ...data,
-  countUsedSpace: parseInt(`${data.countUsedSpace}`, 10) ?? 0,
-  countMonitors: parseInt(`${data.countMonitors}`, 10) ?? 0,
-  wallet: { total: wallet ? wallet.total : parseFloat(walletSum ?? '0') ?? 0 },
+  countUsedSpace: parseInt(`${data.countUsedSpace ?? 0}`, 10),
+  countMonitors: parseInt(`${data.countMonitors ?? 0}`, 10),
+  wallet: { total: wallet ? wallet.total : parseFloat(walletSum ?? '0') },
 });

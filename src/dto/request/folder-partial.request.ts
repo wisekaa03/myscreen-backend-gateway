@@ -1,11 +1,20 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsDateString, IsOptional } from 'class-validator';
+import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 import { FolderEntity } from '@/database/folder.entity';
 
 export class FolderPartialRequest extends PartialType(
-  PickType(FolderEntity, ['id', 'name', 'parentFolderId']),
+  PickType(FolderEntity, ['name', 'parentFolderId']),
 ) {
+  @ApiProperty({
+    description: 'Идентификатор файла',
+    format: 'uuid',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  id!: string;
+
   @ApiProperty({
     description: 'Время создания',
     example: ['2021-01-01', '2021-12-31'],

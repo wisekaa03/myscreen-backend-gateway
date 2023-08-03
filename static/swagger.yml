@@ -2332,7 +2332,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.40.4
+  version: 2.40.5
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4700,10 +4700,6 @@ components:
     FolderPartialRequest:
       type: object
       properties:
-        id:
-          type: string
-          description: Идентификатор файла
-          format: uuid
         name:
           type: string
           description: Наименование папки
@@ -4713,6 +4709,10 @@ components:
           description: Родительская папка
           format: uuid
           nullable: true
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
         createdAt:
           description: Время создания
           example:
