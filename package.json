@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.40.6",
+  "version": "2.40.7",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -125,9 +125,9 @@
     "passport-jwt": "^4.0.1",
     "pdfmake": "0.3.0-beta.5",
     "pg": "^8.11.2",
-    "pino": "^8.14.2",
+    "pino": "^8.15.0",
     "pino-elasticsearch": "^6.5.0",
-    "pino-http": "^8.3.3",
+    "pino-http": "^8.4.0",
     "pino-pretty": "^10.2.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^5.0.1",
@@ -149,7 +149,7 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/ms": "^0.7.31",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.4.6",
+    "@types/node": "^20.4.7",
     "@types/nodemailer": "^6.4.9",
     "@types/passport": "^1.0.12",
     "@types/passport-jwt": "^3.0.9",

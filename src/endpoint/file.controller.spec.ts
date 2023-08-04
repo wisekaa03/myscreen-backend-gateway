@@ -6,6 +6,7 @@ import { FileService } from '@/database/file.service';
 import { MonitorService } from '@/database/monitor.service';
 import { FolderService } from '@/database/folder.service';
 import { FileController } from './file.controller';
+import { UserService } from '@/database/user.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -40,6 +41,10 @@ describe(FileController.name, () => {
         },
         {
           provide: MonitorService,
+          useClass: mockRepository,
+        },
+        {
+          provide: UserService,
           useClass: mockRepository,
         },
       ],

@@ -116,13 +116,13 @@ export class FolderController {
   ): Promise<FoldersGetResponse> {
     let count: number = 0;
     let data: FolderResponse[] = [];
-    const id = where?.id?.toString();
+    const parentFolderId = where?.parentFolderId?.toString();
     if (
       user.role === UserRoleEnum.Administrator &&
-      id?.startsWith(administratorFolderId)
+      parentFolderId?.startsWith(administratorFolderId)
     ) {
       // мы в режиме администратора
-      const fromRegex = id.match(
+      const fromRegex = parentFolderId.match(
         /^([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})\/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/,
       );
       if (fromRegex?.length === 3) {
@@ -134,13 +134,16 @@ export class FolderController {
         if (!userExpression) {
           throw new NotFoundException();
         }
+        const parentFolder = await this.folderService.rootFolder(
+          userExpression,
+        );
         [data, count] = await this.folderService.findAndCount({
           ...paginationQueryToConfig(scope),
           select,
           where: TypeOrmFind.Where(
             {
               ...where,
-              id: undefined,
+              parentFolderId: parentFolder.id,
             },
             userExpression,
           ),
@@ -148,7 +151,6 @@ export class FolderController {
       } else {
         // в режиме администратора выводим всех пользователей
         let userData: UserEntity[];
-        const parentFolderId = id;
         [userData, count] = await this.userService.findAndCount({});
         data = userData.map((item) => ({
           id: `${administratorFolderId}/${item.id}`,
@@ -163,8 +165,8 @@ export class FolderController {
       // в любом другом режиме выводим все папки
       if (
         user.role !== UserRoleEnum.Administrator &&
-        where?.id &&
-        !isUUID(where.id)
+        parentFolderId &&
+        !isUUID(parentFolderId)
       ) {
         throw new BadRequestException('id must be a UUID');
       }
@@ -173,7 +175,10 @@ export class FolderController {
         select,
         where: TypeOrmFind.Where(where, user),
       });
-      if (user.role === UserRoleEnum.Administrator) {
+      if (
+        user.role === UserRoleEnum.Administrator &&
+        parentFolderId === (await this.folderService.rootFolder(user)).id
+      ) {
         count += 1;
         data = [...data, await this.folderService.administratorFolder(user)];
       }

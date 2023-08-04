@@ -14,6 +14,7 @@ import {
   NotAcceptableException,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
+import { TypeORMError } from 'typeorm';
 
 import {
   UnauthorizedError,
@@ -70,24 +71,26 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
       } else {
         exceptionAfter = new InternalServerError(exception.message);
       }
-    } else if (exception instanceof Error) {
+
+      return super.catch(
+        exceptionAfter ? Object.assign(exception, exceptionAfter) : exception,
+        host,
+      );
+    }
+
+    if (exception instanceof TypeORMError) {
       this.logger.error(
         exception.message,
         exception.stack,
         'ExceptionsFilter: TypeORM',
       );
-      exceptionAfter = new InternalServerError();
-    } else {
-      this.logger.error(
-        (exception as any)?.message || (exception as any).toString(),
-        (exception as any)?.stack || exception,
-        'ExceptionsFilter: Unknown',
+      return super.catch(
+        new InternalServerError(`TypeORM: ${exception.message}`),
+        host,
       );
     }
 
-    super.catch(
-      exceptionAfter ? Object.assign(exception, exceptionAfter) : exception,
-      host,
-    );
+    this.logger.error(exception.message, exception.stack, 'ExceptionsFilter');
+    return super.catch(new InternalServerError(exception.message), host);
   }
 }

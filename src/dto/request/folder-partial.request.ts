@@ -4,7 +4,7 @@ import { IsDateString, IsOptional, IsString } from 'class-validator';
 import { FolderEntity } from '@/database/folder.entity';
 
 export class FolderPartialRequest extends PartialType(
-  PickType(FolderEntity, ['name', 'parentFolderId']),
+  PickType(FolderEntity, ['name']),
 ) {
   @ApiProperty({
     description: 'Идентификатор файла',
@@ -14,6 +14,16 @@ export class FolderPartialRequest extends PartialType(
   @IsOptional()
   @IsString()
   id!: string;
+
+  @ApiProperty({
+    description: 'Родительская папка',
+    format: 'uuid',
+    nullable: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  parentFolderId!: string;
 
   @ApiProperty({
     description: 'Время создания',

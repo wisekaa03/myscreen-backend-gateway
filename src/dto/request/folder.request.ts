@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-  MinLength,
-} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class FolderRequest {
   @ApiProperty({
@@ -35,6 +29,6 @@ export class FolderRequest {
     required: false,
   })
   @IsOptional()
-  @IsUUID()
+  @IsString()
   parentFolderId?: string;
 }
