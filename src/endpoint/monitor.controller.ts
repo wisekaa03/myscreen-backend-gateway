@@ -232,7 +232,7 @@ export class MonitorController {
       throw new ForbiddenException();
     }
     if (user.plan === UserPlanEnum.Demo) {
-      this.authService.verifyAfter(user);
+      this.authService.verify(user);
     }
     const [, countMonitors] = await this.monitorService.findAndCount(userId, {
       select: ['id'],

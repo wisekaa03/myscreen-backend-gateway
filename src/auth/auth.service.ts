@@ -247,7 +247,7 @@ export class AuthService {
     });
   }
 
-  verifyAfter = (user: UserExtEntity) => this.jwtStrategy.verify(user);
+  verify = (user: UserExtEntity) => this.jwtStrategy.verify(user);
 
   /**
    * Проверяет почту на соответствие

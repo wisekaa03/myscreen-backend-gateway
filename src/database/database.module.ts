@@ -32,6 +32,8 @@ import { ApplicationService } from './application.service';
 import { ApplicationEntity } from './application.entity';
 import { WalletEntity } from './wallet.entity';
 import { WalletService } from './wallet.service';
+import { ActService } from './act.service';
+import { ActEntity } from './act.entity';
 
 @Module({
   imports: [
@@ -60,6 +62,7 @@ import { WalletService } from './wallet.service';
       ApplicationEntity,
       UserExtEntity,
       WalletEntity,
+      ActEntity,
     ]),
   ],
 
@@ -76,6 +79,7 @@ import { WalletService } from './wallet.service';
     RefreshTokenService,
     ApplicationService,
     WalletService,
+    ActService,
   ],
 
   exports: [

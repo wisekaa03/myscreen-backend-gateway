@@ -13,3 +13,4 @@ export * from './playlist-status.enum';
 export * from './store-space.enum';
 export * from './invoice-status.enum';
 export * from './specific-format.enum';
+export * from './act-status.enum';

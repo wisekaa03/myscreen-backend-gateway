@@ -8,8 +8,9 @@ import {
 } from 'typeorm';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
+import { InvoiceEntity } from './invoice.entity';
+import { ActEntity } from './act.entity';
 import { WalletEntity } from './wallet.entity';
 
 @Injectable()
@@ -31,10 +32,19 @@ export class WalletService {
     return this.walletRepository.findOne(TypeOrmFind.Nullable(find));
   }
 
-  create(user: UserEntity, invoice: InvoiceEntity): WalletEntity {
+  create({
+    user,
+    invoice,
+    act,
+  }: {
+    user: UserEntity;
+    invoice?: InvoiceEntity;
+    act?: ActEntity;
+  }): WalletEntity {
     const wallet: DeepPartial<WalletEntity> = {
-      sum: invoice.sum,
+      sum: (invoice?.sum ?? 0) - (act?.sum ?? 0),
       invoice,
+      act,
       user,
     };
 

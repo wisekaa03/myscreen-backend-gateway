@@ -48,33 +48,38 @@ export class InvoiceService {
     sum: number,
     description?: string,
   ): Promise<InvoiceEntity> {
-    // Если у пользователя есть счет со статусом "Ожидает подтверждения",
-    // "Подтвержден, ожидает оплаты", то нужно присвоить ему статус "Аннулирован".
-    const invoices = await this.invoiceRepository.find({
-      where: [
-        { userId: user.id, status: InvoiceStatus.AWAITING_CONFIRMATION },
-        { userId: user.id, status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT },
-      ],
-    });
-    if (invoices.length > 0) {
-      const invoicesPromise = Object.values(invoices).map((invoice) =>
-        this.invoiceRepository.save({
-          ...invoice,
-          user: undefined,
-          status: InvoiceStatus.CANCELLED,
-        }),
+    return this.invoiceRepository.manager.transaction(async (tManager) => {
+      // Если у пользователя есть счет со статусом "Ожидает подтверждения",
+      // "Подтвержден, ожидает оплаты", то нужно присвоить ему статус "Аннулирован".
+      const invoices = await this.invoiceRepository.find({
+        where: [
+          { userId: user.id, status: InvoiceStatus.AWAITING_CONFIRMATION },
+          { userId: user.id, status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT },
+        ],
+      });
+      if (invoices.length > 0) {
+        const invoicesPromise = Object.values(invoices).map((invoice) =>
+          tManager.save(InvoiceEntity, {
+            ...invoice,
+            user: undefined,
+            status: InvoiceStatus.CANCELLED,
+          }),
+        );
+        await Promise.all(invoicesPromise);
+      }
+
+      const invoice: DeepPartial<InvoiceEntity> = {
+        sum,
+        description,
+        userId: user.id,
+        status: InvoiceStatus.AWAITING_CONFIRMATION,
+      };
+
+      return tManager.save(
+        InvoiceEntity,
+        tManager.create(InvoiceEntity, invoice),
       );
-      await Promise.all(invoicesPromise);
-    }
-
-    const invoice: DeepPartial<InvoiceEntity> = {
-      sum,
-      description,
-      userId: user.id,
-      status: InvoiceStatus.AWAITING_CONFIRMATION,
-    };
-
-    return this.invoiceRepository.save(this.invoiceRepository.create(invoice));
+    });
   }
 
   async statusChange(
@@ -82,58 +87,53 @@ export class InvoiceService {
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
     const invoiceChanged: InvoiceEntity =
-      await this.invoiceRepository.manager.transaction(
-        async (transactionManager) => {
-          const invoiceTransaction = await transactionManager.save(
-            InvoiceEntity,
-            {
-              ...invoice,
-              status,
-            },
+      await this.invoiceRepository.manager.transaction(async (tManager) => {
+        const tInvoiceCreate = await tManager.save(InvoiceEntity, {
+          ...invoice,
+          status,
+        });
+
+        if (status === InvoiceStatus.PAID) {
+          // здесь записывается в базу сумма баланса
+          await tManager.save(
+            WalletEntity,
+            this.walletService.create({
+              user: tInvoiceCreate.user,
+              invoice: tInvoiceCreate,
+            }),
           );
 
-          if (status === InvoiceStatus.PAID) {
-            // здесь записывается в базу сумма баланса
-            await transactionManager.save(
-              WalletEntity,
-              this.walletService.create(
-                invoiceTransaction.user,
-                invoiceTransaction,
-              ),
-            );
+          const sum = await this.walletService.walletSum(
+            tInvoiceCreate.userId,
+            tManager,
+          );
 
-            const sum = await this.walletService.walletSum(
-              invoiceTransaction.userId,
-              transactionManager,
-            );
+          await this.mailService.invoicePayed(
+            tInvoiceCreate.user,
+            tInvoiceCreate,
+            sum,
+          );
+        } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
+          await this.mailService.invoiceConfirmed(
+            tInvoiceCreate.user,
+            tInvoiceCreate,
+          );
+        } else if (status === InvoiceStatus.AWAITING_CONFIRMATION) {
+          const accountantUsers = await this.userService.find({
+            where: {
+              role: UserRoleEnum.Accountant,
+              disabled: false,
+              verified: true,
+            },
+          });
+          await this.mailService.invoiceAwaitingConfirmation(
+            accountantUsers,
+            tInvoiceCreate,
+          );
+        }
 
-            await this.mailService.invoicePayed(
-              invoiceTransaction.user,
-              invoiceTransaction,
-              sum,
-            );
-          } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
-            await this.mailService.invoiceConfirmed(
-              invoiceTransaction.user,
-              invoiceTransaction,
-            );
-          } else if (status === InvoiceStatus.AWAITING_CONFIRMATION) {
-            const accountantUsers = await this.userService.find({
-              where: {
-                role: UserRoleEnum.Accountant,
-                disabled: false,
-                verified: true,
-              },
-            });
-            await this.mailService.invoiceAwaitingConfirmation(
-              accountantUsers,
-              invoiceTransaction,
-            );
-          }
-
-          return invoiceTransaction;
-        },
-      );
+        return tInvoiceCreate;
+      });
 
     return Object.assign(invoiceChanged, { user: undefined });
   }
