@@ -14,6 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
 import { PrintModule } from './print/print.module';
+import { CrontabModule } from './crontab/crontab.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { PrintModule } from './print/print.module';
     DatabaseModule,
     EndpointModule,
     PrintModule,
+    CrontabModule,
   ],
   providers: [Logger],
 })

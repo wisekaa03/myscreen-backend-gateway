@@ -94,7 +94,7 @@ async function bootstrap() {
     .addTag('application', 'Взаимодействия покупателей и продавца')
     .addTag('statistics', 'Cтатистика')
     .addTag('invoice', 'Счета')
-    // .addTag('payment', 'Оплата')
+    .addTag('crontab', 'CronTab (только администратор)')
 
     .build();
 

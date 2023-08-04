@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 
@@ -11,6 +11,8 @@ import { ActStatus } from '@/enums';
 
 @Injectable()
 export class ActService {
+  private logger = new Logger(ActService.name);
+
   constructor(
     private readonly walletService: WalletService,
     @InjectRepository(ActEntity)

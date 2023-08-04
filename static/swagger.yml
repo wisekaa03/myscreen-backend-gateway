@@ -2329,10 +2329,75 @@ paths:
         "500": *ref_78
       tags: *ref_79
       security: *ref_80
+  /api/v2/crontab/create/users:
+    get:
+      operationId: crontab-create-users
+      summary: Включение CronTab для пользователей (только администратор)
+      parameters: []
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": &ref_81
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401": &ref_82
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403": &ref_83
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404": &ref_84
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "500": &ref_85
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+      tags: &ref_86
+        - crontab
+      security: &ref_87
+        - bearer: []
+  /api/v2/crontab/delete/users:
+    get:
+      operationId: crontab-delete-users
+      summary: Выключение CronTab для пользователей (только администратор)
+      parameters: []
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *ref_81
+        "401": *ref_82
+        "403": *ref_83
+        "404": *ref_84
+        "500": *ref_85
+      tags: *ref_86
+      security: *ref_87
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.40.8
+  version: 2.41.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2358,6 +2423,8 @@ tags:
     description: Cтатистика
   - name: invoice
     description: Счета
+  - name: crontab
+    description: CronTab (только администратор)
 servers: []
 components:
   securitySchemes:
@@ -3139,7 +3206,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: &ref_81
+          example: &ref_88
             city: Krasnodar
             country: Russia
             street: Krasnaya
@@ -3169,7 +3236,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: &ref_82
+          example: &ref_89
             model: Samsung
             resolution: 1920 x 1080 px
             angle: 0
@@ -3199,7 +3266,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: &ref_83
+          example: &ref_90
             type: Point
             coordinates:
               - 38.97603
@@ -3602,7 +3669,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_81
+          example: *ref_88
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3627,7 +3694,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_82
+          example: *ref_89
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3653,7 +3720,7 @@ components:
           example: "2021-10-01T10:00:00.147Z"
           nullable: true
         location:
-          example: *ref_83
+          example: *ref_90
           allOf:
             - $ref: "#/components/schemas/PointClass"
         favorite:
@@ -3726,7 +3793,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_81
+          example: *ref_88
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3751,7 +3818,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_82
+          example: *ref_89
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         sound:
@@ -3759,7 +3826,7 @@ components:
           description: Есть звуковая дорожка
           example: true
         location:
-          example: *ref_83
+          example: *ref_90
           allOf:
             - $ref: "#/components/schemas/PointClass"
         code:
@@ -3930,7 +3997,7 @@ components:
           example: имя монитора
         address:
           description: Адрес монитора
-          example: *ref_81
+          example: *ref_88
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
@@ -3955,7 +4022,7 @@ components:
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
           description: Модель и прочие характеристики монитора
-          example: *ref_82
+          example: *ref_89
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
         attached:
@@ -3980,7 +4047,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: *ref_83
+          example: *ref_90
           allOf:
             - $ref: "#/components/schemas/PointClass"
     RenderingStatus:
@@ -4155,7 +4222,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: &ref_84
+          allOf: &ref_91
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -4395,7 +4462,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: *ref_84
+          allOf: *ref_91
       required:
         - id
         - renderingStatus

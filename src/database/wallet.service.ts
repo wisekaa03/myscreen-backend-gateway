@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
@@ -15,6 +15,8 @@ import { WalletEntity } from './wallet.entity';
 
 @Injectable()
 export class WalletService {
+  private logger = new Logger(WalletService.name);
+
   constructor(
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
@@ -60,5 +62,9 @@ export class WalletService {
           .sum(WalletEntity, 'sum', { userId })
           .then((sum) => sum ?? 0)
       : this.walletRepository.sum('sum', { userId }).then((sum) => sum ?? 0);
+  }
+
+  async balance(user?: UserEntity) {
+    this.logger.warn('Эта функция не реализована');
   }
 }

@@ -87,6 +87,7 @@ import { ActEntity } from './act.entity';
     FileService,
     FolderService,
     MonitorService,
+    ActService,
     InvoiceService,
     PlaylistService,
     UserService,
