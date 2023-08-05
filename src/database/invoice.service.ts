@@ -1,5 +1,6 @@
 import type { Response as ExpressResponse } from 'express';
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
@@ -17,19 +18,37 @@ import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
 import { UserRoleEnum } from '@/enums';
+import { ActService } from './act.service';
 
 @Injectable()
 export class InvoiceService {
+  private logger = new Logger(InvoiceService.name);
+
+  private acceptanceActSum: number;
+
+  private acceptanceActDescription: string;
+
   constructor(
     @Inject(forwardRef(() => PrintService))
     private readonly printService: PrintService,
     @Inject(forwardRef(() => MailService))
     private readonly mailService: MailService,
+    private readonly actService: ActService,
+    private readonly configService: ConfigService,
     private readonly walletService: WalletService,
     private readonly userService: UserService,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
-  ) {}
+  ) {
+    this.acceptanceActSum = parseInt(
+      this.configService.get<string>('ACCEPTANCE_ACT_SUM', '250'),
+      10,
+    );
+    this.acceptanceActDescription = this.configService.get<string>(
+      'ACCEPTANCE_ACT_DESCRIPTION',
+      'Оплата за услуги',
+    );
+  }
 
   async find(
     find: FindManyOptions<InvoiceEntity>,
@@ -93,43 +112,90 @@ export class InvoiceService {
           status,
         });
 
-        if (status === InvoiceStatus.PAID) {
-          // здесь записывается в базу сумма баланса
-          await tManager.save(
-            WalletEntity,
-            this.walletService.create({
-              user: tInvoiceCreate.user,
-              invoice: tInvoiceCreate,
-            }),
-          );
+        switch (status) {
+          // Если статус счета "Оплачен", то нужно записать в базу
+          // сумму баланса и отправить письмо пользователю
+          case InvoiceStatus.PAID: {
+            // здесь записывается в базу сумма баланса
+            await tManager.save(
+              WalletEntity,
+              this.walletService.create({
+                user: tInvoiceCreate.user,
+                invoice: tInvoiceCreate,
+              }),
+            );
 
-          const sum = await this.walletService.walletSum(
-            tInvoiceCreate.userId,
-            tManager,
-          );
+            let balance = await this.walletService.walletSum(
+              tInvoiceCreate.userId,
+              tManager,
+            );
 
-          await this.mailService.invoicePayed(
-            tInvoiceCreate.user,
-            tInvoiceCreate,
-            sum,
-          );
-        } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
-          await this.mailService.invoiceConfirmed(
-            tInvoiceCreate.user,
-            tInvoiceCreate,
-          );
-        } else if (status === InvoiceStatus.AWAITING_CONFIRMATION) {
-          const accountantUsers = await this.userService.find({
-            where: {
-              role: UserRoleEnum.Accountant,
-              disabled: false,
-              verified: true,
-            },
-          });
-          await this.mailService.invoiceAwaitingConfirmation(
-            accountantUsers,
-            tInvoiceCreate,
-          );
+            // и выводится письмо о том, что счет оплачен
+            await this.mailService.invoicePayed(
+              tInvoiceCreate.user,
+              tInvoiceCreate,
+              balance,
+            );
+
+            if (balance >= this.acceptanceActSum) {
+              // теперь списание средств с баланса и создание акта
+              await this.actService.create(
+                tInvoiceCreate.user,
+                this.acceptanceActSum,
+                this.acceptanceActDescription,
+              );
+
+              // опять получаем баланс
+              balance = await this.walletService.walletSum(
+                tInvoiceCreate.userId,
+                tManager,
+              );
+
+              this.logger.warn(
+                `Balance of user ${this.userService.fullName(
+                  tInvoiceCreate.user,
+                )}: ${balance}`,
+              );
+
+              // и направляем письмо о списании средств
+              // await this.mailService.acceptanceAct(
+              //   tInvoiceCreate.user,
+              //   tInvoiceCreate,
+              //   balance,
+              // );
+            }
+
+            break;
+          }
+
+          // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
+          case InvoiceStatus.AWAITING_CONFIRMATION: {
+            const accountantUsers = await this.userService.find({
+              where: {
+                role: UserRoleEnum.Accountant,
+                disabled: false,
+                verified: true,
+              },
+            });
+            await this.mailService.invoiceAwaitingConfirmation(
+              accountantUsers,
+              tInvoiceCreate,
+            );
+            break;
+          }
+
+          // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
+          case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
+            await this.mailService.invoiceConfirmed(
+              tInvoiceCreate.user,
+              tInvoiceCreate,
+            );
+
+            break;
+          }
+
+          default:
+            break;
         }
 
         return tInvoiceCreate;
@@ -138,6 +204,15 @@ export class InvoiceService {
     return Object.assign(invoiceChanged, { user: undefined });
   }
 
+  /**
+   * Скачивание счета
+   *
+   * @param {ExpressResponse} res Ответ сервера
+   * @param {SpecificFormat} format Формат вывода
+   * @param {InvoiceEntity} invoice Счет
+   * @return {*}  {Promise<void>}
+   * @memberof InvoiceService
+   */
   async download(
     res: ExpressResponse,
     format: SpecificFormat,

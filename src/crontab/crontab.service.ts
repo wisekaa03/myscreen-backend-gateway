@@ -17,12 +17,11 @@ export class CrontabService {
 
   @Cron('0 0 0 * * *', { name: CrontabService.nameBalance })
   handleAct() {
-    this.logger.warn('Wallet service is calculating balance...');
-    this.walletService.balance();
+    this.walletService.calculateBalance();
   }
 
   addCronJob() {
-    const job = new CronJob('0 * * * * *', () => this.handleAct());
+    const job = new CronJob('0 0 0 * * *', () => this.handleAct());
 
     this.schedulerRegistry.addCronJob(CrontabService.nameBalance, job);
     job.start();

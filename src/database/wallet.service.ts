@@ -9,8 +9,8 @@ import {
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
-import { InvoiceEntity } from './invoice.entity';
 import { ActEntity } from './act.entity';
+import { InvoiceEntity } from './invoice.entity';
 import { WalletEntity } from './wallet.entity';
 
 @Injectable()
@@ -64,7 +64,7 @@ export class WalletService {
       : this.walletRepository.sum('sum', { userId }).then((sum) => sum ?? 0);
   }
 
-  async balance(user?: UserEntity) {
-    this.logger.warn('Эта функция не реализована');
+  async calculateBalance(): Promise<void> {
+    this.logger.warn('Wallet service is calculating balance...');
   }
 }

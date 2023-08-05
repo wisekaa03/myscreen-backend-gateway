@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { PrintService } from '@/print/print.service';
@@ -7,6 +8,7 @@ import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
 import { UserService } from './user.service';
+import { ActService } from './act.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -14,6 +16,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: async () => Promise.resolve(250),
   metadata: {
     columns: [],
     relations: [],
@@ -32,6 +35,10 @@ describe(InvoiceService.name, () => {
           useClass: mockRepository,
         },
         {
+          provide: ConfigService,
+          useClass: mockRepository,
+        },
+        {
           provide: getRepositoryToken(InvoiceEntity),
           useClass: mockRepository,
         },
@@ -45,6 +52,10 @@ describe(InvoiceService.name, () => {
         },
         {
           provide: UserService,
+          useClass: mockRepository,
+        },
+        {
+          provide: ActService,
           useClass: mockRepository,
         },
       ],

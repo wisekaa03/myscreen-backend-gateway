@@ -55,10 +55,10 @@ export class MailService {
     'Счет во вложении. \n\n\
     Напоминаем, что деньги на балансе отобразятся не сразу, а в течении нескольких дней с момента оплаты.';
 
-  private static invoicePayedText = (invoiceSum: number, sum: number) =>
+  private static invoicePayedText = (invoiceSum: number, balance: number) =>
     `Спасибо за оплату. \n\
     Сумма счета: ${invoiceSum} рублей. \n\
-    Баланс: ${sum} рублей. \n\
+    Баланс: ${balance} рублей. \n\
     \n`;
 
   private invoiceAwaitingConfirmationText = (
@@ -226,7 +226,7 @@ export class MailService {
   async invoicePayed(
     user: UserEntity,
     invoice: InvoiceEntity,
-    sum: number,
+    balance: number,
   ): Promise<SentMessageInfo> {
     const { seqNo, createdAt } = invoice;
     const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
@@ -238,7 +238,7 @@ export class MailService {
       subject: `Поступление по Счету №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
       context: {
-        text: MailService.invoicePayedText(invoice.sum, sum ?? 0),
+        text: MailService.invoicePayedText(invoice.sum, balance ?? 0),
       },
     };
     return this.mailerService.sendMail(message);
