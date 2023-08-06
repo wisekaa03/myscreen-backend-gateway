@@ -24,7 +24,6 @@ export class MailService {
   constructor(
     private readonly mailerService: MailerService,
     private readonly printService: PrintService,
-    private readonly userService: UserService,
     private readonly configService: ConfigService,
   ) {
     this.domain = configService.get('MAIL_DOMAIN', 'myscreen.ru');
@@ -64,7 +63,7 @@ export class MailService {
   private invoiceAwaitingConfirmationText = (
     invoiceSum: number,
     user: UserEntity,
-  ) => `Пользователь ${this.userService.fullName(user)} \
+  ) => `Пользователь ${UserService.fullName(user)} \
     (${user.company}) запросил(а) счет на оплату. \n\
     Пожалуйста, проверьте правильность сгенерированного файла, а после подтвердите \
     или отредактируйте его в панеле управления счетами: \n\
@@ -195,10 +194,9 @@ export class MailService {
     const invoicePrint = await this.printService.invoice(
       SpecificFormat.XLSX,
       invoice,
-      user,
     );
     const message: ISendMailOptions = {
-      to: [{ name: this.userService.fullName(user), address: user.email }],
+      to: [{ name: UserService.fullName(user), address: user.email }],
       from: this.from,
       subject: `Счет на оплату №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
@@ -233,7 +231,7 @@ export class MailService {
       locale: dateRu,
     });
     const message: ISendMailOptions = {
-      to: [{ name: this.userService.fullName(user), address: user.email }],
+      to: [{ name: UserService.fullName(user), address: user.email }],
       from: this.from,
       subject: `Поступление по Счету №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
@@ -263,15 +261,12 @@ export class MailService {
     const createdAtFormatFile = dateFormat(createdAt, 'dd_LLLL_yyyy', {
       locale: dateRu,
     });
-    const invoiceUser =
-      invoice.user || (await this.userService.findById(invoice.userId));
     const invoicePrint = await this.printService.invoice(
       SpecificFormat.XLSX,
       invoice,
-      invoiceUser,
     );
     const emails = accountantUsers.map((user) => ({
-      name: this.userService.fullName(user),
+      name: UserService.fullName(user),
       address: user.email,
     }));
     const message: ISendMailOptions = {
@@ -280,7 +275,7 @@ export class MailService {
       subject: `Новый счет на оплату №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
       context: {
-        text: this.invoiceAwaitingConfirmationText(invoice.sum, invoiceUser),
+        text: this.invoiceAwaitingConfirmationText(invoice.sum, invoice.user),
       },
       attachments: [
         {

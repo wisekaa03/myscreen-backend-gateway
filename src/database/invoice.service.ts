@@ -1,5 +1,11 @@
 import type { Response as ExpressResponse } from 'express';
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
@@ -29,14 +35,14 @@ export class InvoiceService {
   private acceptanceActDescription: string;
 
   constructor(
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
+    private readonly walletService: WalletService,
+    private readonly actService: ActService,
     @Inject(forwardRef(() => PrintService))
     private readonly printService: PrintService,
     @Inject(forwardRef(() => MailService))
     private readonly mailService: MailService,
-    private readonly actService: ActService,
-    private readonly configService: ConfigService,
-    private readonly walletService: WalletService,
-    private readonly userService: UserService,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
   ) {
@@ -66,7 +72,7 @@ export class InvoiceService {
     user: UserEntity,
     sum: number,
     description?: string,
-  ): Promise<InvoiceEntity> {
+  ): Promise<InvoiceEntity | null> {
     return this.invoiceRepository.manager.transaction(async (tManager) => {
       // Если у пользователя есть счет со статусом "Ожидает подтверждения",
       // "Подтвержден, ожидает оплаты", то нужно присвоить ему статус "Аннулирован".
@@ -87,17 +93,22 @@ export class InvoiceService {
         await Promise.all(invoicesPromise);
       }
 
-      const invoice: DeepPartial<InvoiceEntity> = {
+      const invoiceEntity: DeepPartial<InvoiceEntity> = {
         sum,
         description,
         userId: user.id,
         status: InvoiceStatus.AWAITING_CONFIRMATION,
       };
 
-      return tManager.save(
+      const invoice = await tManager.save(
         InvoiceEntity,
-        tManager.create(InvoiceEntity, invoice),
+        tManager.create(InvoiceEntity, invoiceEntity),
       );
+
+      return tManager.findOne(InvoiceEntity, {
+        where: { id: invoice.id },
+        relations: ['user'],
+      });
     });
   }
 
@@ -152,7 +163,7 @@ export class InvoiceService {
               );
 
               this.logger.warn(
-                `Balance of user ${this.userService.fullName(
+                `Balance of user ${UserService.fullName(
                   tInvoiceCreate.user,
                 )}: ${balance}`,
               );
@@ -218,6 +229,9 @@ export class InvoiceService {
     format: SpecificFormat,
     invoice: InvoiceEntity,
   ): Promise<void> {
+    if (!invoice.user) {
+      throw new NotFoundException('Invoice: user not found');
+    }
     const data = await this.printService.invoice(format, invoice);
 
     const specificFormat = formatToContentType[format]

@@ -36,11 +36,11 @@ const user = {
 
 export const mockRepository = jest.fn(() => ({
   findByEmail: async () => Promise.resolve({ ...user, password }),
-  validateCredentials: () => true,
   signAsync: async () => Promise.resolve(token),
   create: async () => Promise.resolve({ id: '1' }),
   verify: () => true,
 }));
+UserService.validateCredentials = () => true;
 
 describe(AuthService.name, () => {
   let service: AuthService;

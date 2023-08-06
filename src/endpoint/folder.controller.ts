@@ -154,7 +154,7 @@ export class FolderController {
         [userData, count] = await this.userService.findAndCount({});
         data = userData.map((item) => ({
           id: `${administratorFolderId}/${item.id}`,
-          name: this.userService.fullName(item),
+          name: UserService.fullName(item),
           parentFolderId,
           empty: false,
           createdAt: item.createdAt ?? new Date(),

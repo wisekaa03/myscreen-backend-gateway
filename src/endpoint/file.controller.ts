@@ -38,6 +38,7 @@ import {
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
+import { isUUID } from 'class-validator';
 import {
   BadRequestError,
   UnauthorizedError,
@@ -159,6 +160,9 @@ export class FileController {
         if (!userExpression) {
           throw new NotFoundException();
         }
+        if (!isUUID(userExpressionId)) {
+          throw new BadRequestException('folderId: must be UUID');
+        }
         [data, count] = await this.fileService.findAndCount({
           ...paginationQueryToConfig(scope),
           relations: [],
@@ -170,6 +174,9 @@ export class FileController {
         });
       }
     } else {
+      if (where?.folderId && !isUUID(where?.folderId)) {
+        throw new BadRequestException('folderId: must be UUID');
+      }
       [data, count] = await this.fileService.findAndCount({
         ...paginationQueryToConfig(scope),
         relations: [],
@@ -384,7 +391,7 @@ export class FileController {
     const data = await this.fileService
       .getS3Object(file)
       .catch((error: unknown) => {
-        throw new NotFoundException(`File '${id}' is not exists`);
+        throw new NotFoundException(`File '${id}' is not exists: ${error}`);
       });
     if (data.Body instanceof internal.Readable) {
       res.setHeader(

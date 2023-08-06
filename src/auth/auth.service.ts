@@ -67,7 +67,7 @@ export class AuthService {
     }
 
     const valid = user.password
-      ? this.userService.validateCredentials(user, password)
+      ? UserService.validateCredentials(user, password)
       : false;
     if (!valid) {
       throw new ForbiddenException('Password mismatched', password);

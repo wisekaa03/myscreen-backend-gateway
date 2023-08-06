@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { MonitorStatus } from '@/enums/monitor-status.enum';
 import { TypeOrmOptionsClass } from '@/utils/typeorm.options';
+import { PrintModule } from '@/print/print.module';
 import { MailModule } from '@/mail/mail.module';
 import { WSModule } from '@/websocket/ws.module';
 import { EditorEntity } from './editor.entity';
@@ -37,6 +38,7 @@ import { ActEntity } from './act.entity';
 
 @Module({
   imports: [
+    PrintModule,
     forwardRef(() => MailModule),
     forwardRef(() => WSModule),
 

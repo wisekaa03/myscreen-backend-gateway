@@ -9,6 +9,9 @@ import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
 import { UserService } from './user.service';
 import { ActService } from './act.service';
+import { MonitorService } from './monitor.service';
+import { UserExtEntity } from './user-ext.entity';
+import { UserEntity } from './user.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -28,10 +31,17 @@ describe(InvoiceService.name, () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [],
       providers: [
         InvoiceService,
+        PrintService,
+        UserService,
         {
           provide: WalletService,
+          useClass: mockRepository,
+        },
+        {
+          provide: MailService,
           useClass: mockRepository,
         },
         {
@@ -43,19 +53,19 @@ describe(InvoiceService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: MailService,
+          provide: getRepositoryToken(UserExtEntity),
           useClass: mockRepository,
         },
         {
-          provide: PrintService,
-          useClass: mockRepository,
-        },
-        {
-          provide: UserService,
+          provide: getRepositoryToken(UserEntity),
           useClass: mockRepository,
         },
         {
           provide: ActService,
+          useClass: mockRepository,
+        },
+        {
+          provide: MonitorService,
           useClass: mockRepository,
         },
       ],

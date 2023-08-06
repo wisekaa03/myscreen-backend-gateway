@@ -1,10 +1,15 @@
 /* eslint max-len:0 */
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
 import superAgentRequest from 'supertest';
 import { LoggerModule } from 'nestjs-pino';
 
+import { ValidationError } from 'class-validator';
 import {
   AuthResponse,
   RegisterRequest,
@@ -22,7 +27,7 @@ import {
   FilesGetRequest,
   AuthRefreshRequest,
 } from '@/dto';
-import { Status, UserRoleEnum, UserPlanEnum } from '@/enums';
+import { Status, UserRoleEnum } from '@/enums';
 import { generateMailToken } from '@/utils/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
 import { UserEntity } from '@/database/user.entity';
@@ -115,6 +120,14 @@ describe('Backend API (e2e)', () => {
         forbidUnknownValues: true,
         skipUndefinedProperties: true,
         stopAtFirstError: true,
+        exceptionFactory: (errors: ValidationError[]) => {
+          const message = errors
+            .map(
+              (error) => error.constraints && Object.values(error.constraints),
+            )
+            .join(', ');
+          return new BadRequestException(message);
+        },
       }),
     );
     app.useWebSocketAdapter(new WsAdapter(app));

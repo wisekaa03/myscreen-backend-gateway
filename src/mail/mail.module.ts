@@ -47,8 +47,7 @@ import { DatabaseModule } from '@/database/database.module';
       inject: [ConfigService],
     }),
 
-    forwardRef(() => DatabaseModule),
-    forwardRef(() => PrintModule),
+    PrintModule,
   ],
   providers: [MailService],
   exports: [MailService],

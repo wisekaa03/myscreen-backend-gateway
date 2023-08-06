@@ -33,15 +33,15 @@ export class UserService {
   private frontendUrl: string;
 
   constructor(
+    private readonly configService: ConfigService,
+    @Inject(forwardRef(() => MailService))
+    private readonly mailService: MailService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserExtEntity)
     private readonly userExtRepository: Repository<UserExtEntity>,
-    @Inject(forwardRef(() => MailService))
-    private readonly mailService: MailService,
-    private readonly configService: ConfigService,
   ) {
-    this.frontendUrl = configService.get<string>(
+    this.frontendUrl = this.configService.get(
       'FRONTEND_URL',
       'http://localhost',
     );
@@ -173,7 +173,7 @@ export class UserService {
     return this.userExtRepository.findOneBy({ id });
   }
 
-  fullName(item: UserEntity): string {
+  static fullName(item: UserEntity): string {
     return [item.surname, item.name, item.middleName].join(' ');
   }
 
@@ -334,7 +334,10 @@ export class UserService {
     return this.userExtRepository.findOne(conditions);
   }
 
-  validateCredentials = (user: UserEntity, password: string): boolean => {
+  static validateCredentials = (
+    user: UserEntity,
+    password: string,
+  ): boolean => {
     const passwordSha256 = createHmac('sha256', password.normalize()).digest(
       'hex',
     );
