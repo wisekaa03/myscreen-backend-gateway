@@ -7,17 +7,20 @@ import {
   Repository,
 } from 'typeorm';
 
+import { UserRoleEnum } from '@/enums/user-role.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
 import { ActEntity } from './act.entity';
 import { InvoiceEntity } from './invoice.entity';
 import { WalletEntity } from './wallet.entity';
+import { UserService } from './user.service';
 
 @Injectable()
 export class WalletService {
   private logger = new Logger(WalletService.name);
 
   constructor(
+    private readonly userService: UserService,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
   ) {}
@@ -65,6 +68,17 @@ export class WalletService {
   }
 
   async calculateBalance(): Promise<void> {
-    this.logger.warn('Wallet service is calculating balance...');
+    this.logger.warn('Wallet service is calculating balance:');
+
+    const users = await this.userService.find({
+      where: [
+        { verified: true, disabled: false, role: UserRoleEnum.Advertiser },
+        { verified: true, disabled: false, role: UserRoleEnum.MonitorOwner },
+      ],
+    });
+
+    const promiseUsers = users.map(async (user) => {});
+
+    await Promise.allSettled(promiseUsers);
   }
 }

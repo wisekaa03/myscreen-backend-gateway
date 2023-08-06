@@ -1,4 +1,4 @@
-name: Test Package
+name: Yarn test:e2e
 
 on: [push, pull_request]
 

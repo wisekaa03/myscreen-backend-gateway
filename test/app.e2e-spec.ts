@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import superAgentRequest from 'supertest';
 import { LoggerModule } from 'nestjs-pino';
+import Jabber from 'jabber';
 
 import { ValidationError } from 'class-validator';
 import {
@@ -38,6 +39,10 @@ import { WsAdapter } from '@/websocket/ws-adapter';
 
 type UserFileEntity = UserEntity & Partial<UserExtEntity>;
 
+const jabber = new Jabber();
+const email = jabber.createEmail();
+const password = jabber.createWord(8);
+
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
   findAndCount: async () => Promise.resolve([]),
@@ -51,8 +56,8 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 const registerRequest: RegisterRequest = {
-  email: 'foo@bar.baz',
-  password: 'Secret~123456',
+  email,
+  password,
   role: UserRoleEnum.Advertiser,
   name: 'John',
   surname: 'Steve',
@@ -64,31 +69,31 @@ const registerRequest: RegisterRequest = {
 };
 
 const loginRequest: LoginRequest = {
-  email: 'foo@bar.baz',
-  password: 'Secret~123456',
+  email,
+  password,
 };
 
 const updateUser: UserUpdateRequest = {
-  surname: 'Steve',
-  name: 'John',
-  middleName: 'Doe',
-  phoneNumber: '+78002000000',
+  surname: 'Steve 2',
+  name: 'John 2',
+  middleName: 'Doe 2',
+  phoneNumber: '+78003000000',
   city: 'Krasnodar',
   country: 'RU',
   company: 'ACME corporation',
   companyLegalAddress: 'г. Краснодар, ул. Красная, д. 1',
   companyActualAddress: 'г. Краснодар, ул. Красная, д. 1',
-  companyTIN: '012345678901',
-  companyRRC: '012345678901',
-  companyPSRN: '012345678901',
-  companyPhone: '+78002000000',
+  companyTIN: '112345678901',
+  companyRRC: '112345678901',
+  companyPSRN: '112345678901',
+  companyPhone: '+78003000000',
   companyEmail: 'we@are.the.best',
-  companyBank: 'Банк',
-  companyBIC: '012345678',
-  companyCorrespondentAccount: '30101810400000000000',
-  companyPaymentAccount: '40802810064580000000',
-  companyFax: '+78002000000',
-  companyRepresentative: 'Тухбатуллина Юлия Евгеньевна',
+  companyBank: 'Банк 1',
+  companyBIC: '012345679',
+  companyCorrespondentAccount: '30101810400000000001',
+  companyPaymentAccount: '40802810064580000001',
+  companyFax: '+78003000000',
+  companyRepresentative: 'Тухбатуллина Евгеньевна Юлия',
 };
 
 describe('Backend API (e2e)', () => {
