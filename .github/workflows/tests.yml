@@ -1,0 +1,47 @@
+name: Test Package
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 18
+      - run: yarn install
+      - run: yarn build
+      - env:
+          PORT: ${{ vars.PORT }}
+          LOG_LEVEL: ${{ vars.LOG_LEVEL }}
+          API_PATH: ${{ vars.API_PATH }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_DATABASE: ${{ secrets.DB_DATABASE }}
+          JWT_ACCESS_TOKEN: ${{ secrets.JWT_ACCESS_TOKEN }}
+          JWT_ACCESS_EXPIRES: ${{ secrets.JWT_ACCESS_EXPIRES }}
+          JWT_REFRESH_TOKEN: ${{ secrets.JWT_REFRESH_TOKEN }}
+          JWT_REFRESH_EXPIRES: ${{ secrets.JWT_REFRESH_EXPIRES }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          MAIL_DOMAIN: ${{ secrets.MAIL_DOMAIN }}
+          MAIL_KEY_SELECTOR: ${{ secrets.MAIL_KEY_SELECTOR }}
+          MAIL_PRIVATE_KEY: ${{ secrets.MAIL_PRIVATE_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          MAIL_HOST: ${{ secrets.MAIL_HOST }}
+          MAIL_PORT: ${{ secrets.MAIL_PORT }}
+          MAIL_USER: ${{ secrets.MAIL_USER }}
+          MAIL_PASS: ${{ secrets.MAIL_PASS }}
+          FILES_UPLOAD: ${{ vars.FILES_UPLOAD }}
+          AWS_HOST: ${{ secrets.AWS_HOST }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
+          ACCEPTANCE_ACT_SUM: ${{ secrets.ACCEPTANCE_ACT_SUM }}
+          ACCEPTANCE_ACT_DESCRIPTION: ${{ secrets.ACCEPTANCE_ACT_DESCRIPTION }}
+          KIBANA_HOST: ${{ secrets.KIBANA_HOST }}
+          KIBANA_PORT: ${{ secrets.KIBANA_PORT }}
+        run: yarn test && yarn test:e2e
