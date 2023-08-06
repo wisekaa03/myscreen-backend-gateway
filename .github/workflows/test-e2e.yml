@@ -9,34 +9,34 @@ jobs:
       PORT: ${{ vars.PORT }}
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       API_PATH: ${{ vars.API_PATH }}
-      DB_HOST: ${{ secrets.DB_HOST }}
-      DB_PORT: ${{ secrets.DB_PORT }}
-      DB_USERNAME: ${{ secrets.DB_USERNAME }}
-      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-      DB_DATABASE: ${{ secrets.DB_DATABASE }}
-      JWT_ACCESS_TOKEN: ${{ secrets.JWT_ACCESS_TOKEN }}
-      JWT_ACCESS_EXPIRES: ${{ secrets.JWT_ACCESS_EXPIRES }}
-      JWT_REFRESH_TOKEN: ${{ secrets.JWT_REFRESH_TOKEN }}
-      JWT_REFRESH_EXPIRES: ${{ secrets.JWT_REFRESH_EXPIRES }}
+      DB_HOST: ${{ vars.DB_HOST }}
+      DB_PORT: ${{ vars.DB_PORT }}
+      DB_USERNAME: ${{ vars.DB_USERNAME }}
+      DB_PASSWORD: ${{ vars.DB_PASSWORD }}
+      DB_DATABASE: ${{ vars.DB_DATABASE }}
+      JWT_ACCESS_TOKEN: ${{ vars.JWT_ACCESS_TOKEN }}
+      JWT_ACCESS_EXPIRES: ${{ vars.JWT_ACCESS_EXPIRES }}
+      JWT_REFRESH_TOKEN: ${{ vars.JWT_REFRESH_TOKEN }}
+      JWT_REFRESH_EXPIRES: ${{ vars.JWT_REFRESH_EXPIRES }}
       FRONTEND_URL: ${{ vars.FRONTEND_URL }}
-      MAIL_DOMAIN: ${{ secrets.MAIL_DOMAIN }}
-      MAIL_KEY_SELECTOR: ${{ secrets.MAIL_KEY_SELECTOR }}
-      MAIL_PRIVATE_KEY: ${{ secrets.MAIL_PRIVATE_KEY }}
-      MAIL_FROM: ${{ secrets.MAIL_FROM }}
-      MAIL_HOST: ${{ secrets.MAIL_HOST }}
-      MAIL_PORT: ${{ secrets.MAIL_PORT }}
-      MAIL_USER: ${{ secrets.MAIL_USER }}
-      MAIL_PASS: ${{ secrets.MAIL_PASS }}
+      MAIL_DOMAIN: ${{ vars.MAIL_DOMAIN }}
+      MAIL_KEY_SELECTOR: ${{ vars.MAIL_KEY_SELECTOR }}
+      MAIL_PRIVATE_KEY: ${{ vars.MAIL_PRIVATE_KEY }}
+      MAIL_FROM: ${{ vars.MAIL_FROM }}
+      MAIL_HOST: ${{ vars.MAIL_HOST }}
+      MAIL_PORT: ${{ vars.MAIL_PORT }}
+      MAIL_USER: ${{ vars.MAIL_USER }}
+      MAIL_PASS: ${{ vars.MAIL_PASS }}
       FILES_UPLOAD: ${{ vars.FILES_UPLOAD }}
-      AWS_HOST: ${{ secrets.AWS_HOST }}
-      AWS_REGION: ${{ secrets.AWS_REGION }}
-      AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-      AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-      AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
-      ACCEPTANCE_ACT_SUM: ${{ secrets.ACCEPTANCE_ACT_SUM }}
-      ACCEPTANCE_ACT_DESCRIPTION: ${{ secrets.ACCEPTANCE_ACT_DESCRIPTION }}
-      KIBANA_HOST: ${{ secrets.KIBANA_HOST }}
-      KIBANA_PORT: ${{ secrets.KIBANA_PORT }}
+      AWS_HOST: ${{ vars.AWS_HOST }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ACCESS_KEY: ${{ vars.AWS_ACCESS_KEY }}
+      AWS_SECRET_KEY: ${{ vars.AWS_SECRET_KEY }}
+      AWS_BUCKET: ${{ vars.AWS_BUCKET }}
+      ACCEPTANCE_ACT_SUM: ${{ vars.ACCEPTANCE_ACT_SUM }}
+      ACCEPTANCE_ACT_DESCRIPTION: ${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}
+      KIBANA_HOST: ${{ vars.KIBANA_HOST }}
+      KIBANA_PORT: ${{ vars.KIBANA_PORT }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
