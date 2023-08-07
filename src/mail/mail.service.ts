@@ -71,6 +71,13 @@ export class MailService {
     \n\
     Счет во вложении.`;
 
+  private static balanceChangedText = (
+    sum: number,
+    balance: number,
+  ) => `Списалась абонентская плата -${sum}.\n\
+  Баланс: ${balance}.\n\
+  `;
+
   /**
    * Отправляет приветственное письмо
    * @async
@@ -284,6 +291,24 @@ export class MailService {
         },
       ],
     };
+    return this.mailerService.sendMail(message);
+  }
+
+  async balanceChanged(
+    user: UserEntity,
+    sum: number,
+    balance: number,
+  ): Promise<SentMessageInfo> {
+    const message: ISendMailOptions = {
+      to: [{ name: UserService.fullName(user), address: user.email }],
+      from: this.from,
+      subject: 'Изменение баланса',
+      template: this.template,
+      context: {
+        text: MailService.balanceChangedText(sum, balance),
+      },
+    };
+
     return this.mailerService.sendMail(message);
   }
 }
