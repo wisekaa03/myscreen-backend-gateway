@@ -113,18 +113,10 @@ describe('Backend API (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-      providers: [
-        {
-          provide: LoggerModule,
-          useClass: mockRepository,
-        },
-      ],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     const httpAdaper = app.get(HttpAdapterHost);
-
-    app.useLogger(false);
 
     app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
     app.useGlobalPipes(
@@ -741,14 +733,17 @@ describe('Backend API (e2e)', () => {
         expect(false).toEqual(true);
       }
 
+      const field = {
+        param: `{ "folderId": "${folderId1}", "category": "media" }`,
+      };
+      const files = `${__dirname}/testing.png`;
+
       const { body }: { body: FilesUploadResponse } = await request
         .put('/file')
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
-        .field({
-          param: `{ "folderId": "${folderId1}", "category": "media" }`,
-        })
-        .attach('files', `${__dirname}/testing.png`)
+        .field(field)
+        .attach('files', files)
         .expect('Content-Type', /json/)
         .expect(200);
 
