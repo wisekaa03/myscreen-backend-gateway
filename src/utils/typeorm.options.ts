@@ -16,12 +16,13 @@ export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
   async createTypeOrmOptions(): Promise<TypeOrmModuleOptions> {
     const cacheHost = this.configService.get<string>('REDIS_HOST');
     return {
-      type: this.configService.get<any>('DB_TYPE', 'postgres'),
+      type: this.configService.get<any>('DB_TYPE') ?? 'postgres',
       host: this.configService.get<string>('DB_HOST'),
       port: parseInt(this.configService.get<string>('DB_PORT', '5432'), 10),
       username: this.configService.get<string>('DB_USERNAME'),
       password: this.configService.get<string>('DB_PASSWORD'),
       database: this.configService.get<string>('DB_DATABASE'),
+      ssl: this.configService.get<string>('DB_SSL', 'true') === 'true',
       nativeDriver: true,
       logging: this.configService
         .get<string>('LOG_LEVEL', 'debug')

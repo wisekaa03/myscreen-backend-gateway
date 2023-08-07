@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.41.7",
+  "version": "2.41.8",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -67,6 +67,7 @@
     "**/**/rimraf": ">=5.0.1",
     "**/**/proxy-agent": ">=6.3.0",
     "**/url/punycode": "^1.3.2",
+    "**/**/safe-buffer": ">=5.2.1",
     "**/**/send": ">=0.18.0",
     "**/**/serve-static": ">=1.15.0",
     "**/**/split2": ">=4.2.0",
