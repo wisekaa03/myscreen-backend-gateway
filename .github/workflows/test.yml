@@ -9,6 +9,7 @@ jobs:
       PORT: ${{ vars.PORT }}
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       API_PATH: ${{ vars.API_PATH }}
+      DB_TYPE: ${{ vars.DB_TYPE }}
       DB_HOST: ${{ vars.DB_HOST }}
       DB_PORT: ${{ vars.DB_PORT }}
       DB_USERNAME: ${{ vars.DB_USERNAME }}

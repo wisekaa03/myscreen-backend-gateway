@@ -6,9 +6,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: tests
     env:
+      # CXXFLAGS: -include /usr/include/c++/11/limits
       PORT: ${{ vars.PORT }}
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       API_PATH: ${{ vars.API_PATH }}
+      DB_TYPE: ${{ vars.DB_TYPE }}
       DB_HOST: ${{ vars.DB_HOST }}
       DB_PORT: ${{ vars.DB_PORT }}
       DB_USERNAME: ${{ vars.DB_USERNAME }}
@@ -44,7 +46,6 @@ jobs:
           node-version: 18
       - run: sudo apt-get update
       - run: sudo apt-get install -y rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
-      - run: export CXXFLAGS='-include /usr/include/c++/11/limits'
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: yarn test:e2e
