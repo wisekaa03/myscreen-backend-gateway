@@ -45,7 +45,7 @@ jobs:
         with:
           node-version: 18
       - run: sudo apt-get update
-      - run: sudo apt-get install -y rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: yarn test:e2e
