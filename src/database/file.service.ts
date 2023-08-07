@@ -519,10 +519,7 @@ export class FileService {
           file: playlist.files?.find((file) => filesId.includes(file.id)),
         }));
       }
-      throw new ConflictException(
-        errorMsg,
-        'Файл, который Вы пытаетесь удалить используется в редакторе или в плэйлисте',
-      );
+      throw new ConflictException(errorMsg);
     }
   }
 
@@ -540,21 +537,18 @@ export class FileService {
     }
     const files = await this.fileRepository.find({
       where,
+      relations: ['folder'],
     });
 
     /* await */ Promise.allSettled(
       files.map(async (file) => {
-        this.headS3Object(file)
-          .then(() => {
-            this.deleteS3Object(file).catch((error) => {
-              this.logger.error(
-                `S3 Error deleteObject: ${JSON.stringify(error)}`,
-              );
-            });
-          })
-          .catch((error: unknown) => {
-            this.logger.error(`S3 Error headObject: ${JSON.stringify(error)}`);
+        this.headS3Object(file).then(() => {
+          this.deleteS3Object(file).catch((error) => {
+            this.logger.error(
+              `S3 Error deleteObject: ${JSON.stringify(error)}`,
+            );
           });
+        });
       }),
     );
 

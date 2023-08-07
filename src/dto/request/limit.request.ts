@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, Max, Min } from 'class-validator';
+import { IsNumber, IsOptional, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { LimitOrderRequest } from './limit-order.request';
@@ -10,7 +10,9 @@ export class LimitRequest<T = Record<string, 'DESC' | 'ASC'>> {
     example: 20,
     required: false,
   })
-  @Min(5)
+  @IsOptional()
+  @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 0 })
+  @Min(1)
   @Max(100)
   limit?: number;
 
@@ -19,6 +21,8 @@ export class LimitRequest<T = Record<string, 'DESC' | 'ASC'>> {
     example: 1,
     required: false,
   })
+  @IsOptional()
+  @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 0 })
   @Min(1)
   @Max(100)
   page?: number;

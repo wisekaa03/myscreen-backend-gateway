@@ -132,7 +132,7 @@ export class FolderController {
           userExpressionId,
         );
         if (!userExpression) {
-          throw new NotFoundException();
+          throw new NotFoundException('not found user expression');
         }
         const parentFolder = await this.folderService.rootFolder(
           userExpression,

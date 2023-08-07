@@ -105,13 +105,13 @@ export class UserService {
   async register(create: RegisterRequest): Promise<UserExtEntity | null> {
     const { email, password, role, ...createUser } = create;
     if (!email) {
-      throw new BadRequestException();
+      throw new BadRequestException('email must be defined');
     }
     if (!password) {
-      throw new BadRequestException();
+      throw new BadRequestException('password must be defined');
     }
     if (!role) {
-      throw new BadRequestException();
+      throw new BadRequestException('role must be defined');
     }
 
     // TODO: verify email domain
@@ -122,7 +122,7 @@ export class UserService {
       },
     });
     if (existingUser) {
-      throw new PreconditionFailedException('User exists', create.email);
+      throw new PreconditionFailedException(`User exists: ${create.email}`);
     }
 
     const plan =
