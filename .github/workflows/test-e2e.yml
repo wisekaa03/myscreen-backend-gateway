@@ -1,10 +1,14 @@
 name: Yarn test:e2e
+on: push
 
-on: [push, pull_request]
+defaults:
+  run:
+    working-directory: ~/project/myscreen/api-backend
 
 jobs:
-  test:
+  test-e2e:
     runs-on: ubuntu-latest
+    environment: tests
     env:
       PORT: ${{ vars.PORT }}
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
@@ -42,6 +46,9 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 18
-      - run: yarn install
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - run: export CXXFLAGS='-include /usr/include/c++/11/limits'
+      - run: yarn install --frozen-lockfile
       - run: yarn build
       - run: yarn test:e2e

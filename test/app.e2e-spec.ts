@@ -1,4 +1,5 @@
 /* eslint max-len:0 */
+import crypto from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
 import {
@@ -39,9 +40,17 @@ import { WsAdapter } from '@/websocket/ws-adapter';
 
 type UserFileEntity = UserEntity & Partial<UserExtEntity>;
 
+const generatePassword = (
+  length = 20,
+  wishlist = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$',
+) =>
+  Array.from(crypto.randomFillSync(new Uint32Array(length)))
+    .map((x) => wishlist[x % wishlist.length])
+    .join('');
+
 const jabber = new Jabber();
 const email = jabber.createEmail();
-const password = jabber.createWord(8);
+const password = generatePassword(12);
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
