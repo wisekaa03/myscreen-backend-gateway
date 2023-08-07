@@ -9,6 +9,7 @@ import { SpecificFormat } from '@/enums';
 import { InvoiceEntity } from '@/database/invoice.entity';
 import { PrintService } from '@/print/print.service';
 import { UserEntity } from '@/database/user.entity';
+import { UserService } from '@/database/user.service';
 
 @Injectable()
 export class MailService {
@@ -23,6 +24,7 @@ export class MailService {
   constructor(
     private readonly mailerService: MailerService,
     private readonly printService: PrintService,
+    private readonly userService: UserService,
     private readonly configService: ConfigService,
   ) {
     this.domain = configService.get('MAIL_DOMAIN', 'myscreen.ru');
@@ -59,11 +61,22 @@ export class MailService {
     Баланс: ${sum} рублей. \n\
     \n`;
 
+  private invoiceAwaitingConfirmationText = (
+    invoiceSum: number,
+    user: UserEntity,
+  ) => `Пользователь ${this.userService.fullName(user)} \
+    (${user.company}) запросил(а) счет на оплату. \n\
+    Пожалуйста, проверьте правильность сгенерированного файла, а после подтвердите \
+    или отредактируйте его в панеле управления счетами: \n\
+    ${this.configService.get('FRONTEND_URL')}/accountant/invoices \n\
+    \n\
+    Счет во вложении.`;
+
   /**
    * Отправляет приветственное письмо
    * @async
    * @param {string} email Почта пользователя
-   * @returns {any}
+   * @returns {SentMessageInfo}
    */
   async sendWelcomeMessage(email: string): Promise<SentMessageInfo> {
     const message: ISendMailOptions = {
@@ -82,7 +95,7 @@ export class MailService {
    * Отправляет сообщение о поступившей заявке
    * @async
    * @param {string} email Почта пользователя
-   * @returns {any}
+   * @returns {SentMessageInfo}
    */
   async sendApplicationWarningMessage(
     email: string,
@@ -110,7 +123,7 @@ export class MailService {
    * @async
    * @param {string} email Почта пользователя
    * @param {string} confirmUrl URL по которому нужно пройти
-   * @returns {any}
+   * @returns {SentMessageInfo}
    */
   async sendVerificationCode(
     email: string,
@@ -138,7 +151,7 @@ export class MailService {
    * @async
    * @param {string} email Почта
    * @param {string} forgotPasswordUrl URL по которому нужно пройти
-   * @returns {any}
+   * @returns {SentMessageInfo}
    */
   async forgotPassword(
     email: string,
@@ -166,7 +179,7 @@ export class MailService {
    * @async
    * @param {UserEntity} user Почта
    * @param {InvoiceEntity} invoice Счёт
-   * @returns {any}
+   * @returns {SentMessageInfo}
    */
   async invoiceConfirmed(
     user: UserEntity,
@@ -180,12 +193,12 @@ export class MailService {
       locale: dateRu,
     });
     const invoicePrint = await this.printService.invoice(
-      user,
       SpecificFormat.XLSX,
       invoice,
+      user,
     );
     const message: ISendMailOptions = {
-      to: user.email,
+      to: [{ name: this.userService.fullName(user), address: user.email }],
       from: this.from,
       subject: `Счет на оплату №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
@@ -208,10 +221,10 @@ export class MailService {
    * @param {string} email Почта
    * @param {InvoiceEntity} invoice Счёт
    * @param {number} sum Баланс
-   * @returns {any}
+   * @returns {SentMessageInfo}
    */
   async invoicePayed(
-    email: string,
+    user: UserEntity,
     invoice: InvoiceEntity,
     sum: number,
   ): Promise<SentMessageInfo> {
@@ -220,13 +233,61 @@ export class MailService {
       locale: dateRu,
     });
     const message: ISendMailOptions = {
-      to: email,
+      to: [{ name: this.userService.fullName(user), address: user.email }],
       from: this.from,
       subject: `Поступление по Счету №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
       template: this.template,
       context: {
         text: MailService.invoicePayedText(invoice.sum, sum ?? 0),
       },
+    };
+    return this.mailerService.sendMail(message);
+  }
+
+  /**
+   * После создания счета пользователем /invoice/create нужно
+   * отправлять письмо бухгалтеру с этим счетом.
+   * @async
+   * @param {UserEntity[]} accountantUsers Пользователи бухгалтеры
+   * @param {InvoiceEntity} invoice Счёт
+   * @returns {SentMessageInfo}
+   */
+  async invoiceAwaitingConfirmation(
+    accountantUsers: UserEntity[],
+    invoice: InvoiceEntity,
+  ): Promise<SentMessageInfo> {
+    const { seqNo, createdAt } = invoice;
+    const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+      locale: dateRu,
+    });
+    const createdAtFormatFile = dateFormat(createdAt, 'dd_LLLL_yyyy', {
+      locale: dateRu,
+    });
+    const invoiceUser =
+      invoice.user || (await this.userService.findById(invoice.userId));
+    const invoicePrint = await this.printService.invoice(
+      SpecificFormat.XLSX,
+      invoice,
+      invoiceUser,
+    );
+    const emails = accountantUsers.map((user) => ({
+      name: this.userService.fullName(user),
+      address: user.email,
+    }));
+    const message: ISendMailOptions = {
+      bcc: emails,
+      from: this.from,
+      subject: `Новый счет на оплату №${seqNo} от ${createdAtFormat} на сумму ${invoice.sum} рублей`,
+      template: this.template,
+      context: {
+        text: this.invoiceAwaitingConfirmationText(invoice.sum, invoiceUser),
+      },
+      attachments: [
+        {
+          filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
+          content: Buffer.from(invoicePrint),
+        },
+      ],
     };
     return this.mailerService.sendMail(message);
   }

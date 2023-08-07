@@ -64,7 +64,7 @@ export class WalletEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column({ select: false })
+  @Column()
   @Index()
   @IsUUID()
   userId!: string;

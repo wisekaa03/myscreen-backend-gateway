@@ -83,7 +83,7 @@ export class InvoiceEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column({ select: false })
+  @Column()
   @IsUUID()
   userId!: string;
 

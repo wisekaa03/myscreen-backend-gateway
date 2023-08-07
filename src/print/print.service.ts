@@ -3,6 +3,7 @@ import excelJS from 'exceljs';
 
 import { SpecificFormat } from '@/enums/specific-format.enum';
 import { UserEntity } from '@/database/user.entity';
+import { UserService } from '@/database/user.service';
 import { InvoiceEntity } from '@/database/invoice.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { InvoiceService } from '@/database/invoice.service';
@@ -14,6 +15,8 @@ export class PrintService {
 
   constructor(
     private readonly monitorService: MonitorService,
+    @Inject(forwardRef(() => UserService))
+    private readonly userService: UserService,
     @Inject(forwardRef(() => InvoiceService))
     private readonly invoiceService: InvoiceService,
   ) {}
@@ -25,17 +28,19 @@ export class PrintService {
    * @returns Buffer XLSX file buffer
    */
   async invoice(
-    user: UserEntity,
     format: SpecificFormat,
     invoice: InvoiceEntity,
+    invoiceUser?: UserEntity,
   ): Promise<excelJS.Buffer> {
+    const user =
+      invoiceUser || (await this.userService.findById(invoice.userId));
     switch (format) {
       case SpecificFormat.PDF:
-        return printSpecific.invoice.pdf({ user, invoice });
+        return printSpecific.invoice.pdf({ invoice, user });
 
       case SpecificFormat.XLSX:
       default:
-        return printSpecific.invoice.xls({ user, invoice });
+        return printSpecific.invoice.xls({ invoice, user });
     }
   }
 

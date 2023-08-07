@@ -4,6 +4,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 
 import { MailService } from './mail.service';
 import { PrintService } from '@/print/print.service';
+import { UserService } from '@/database/user.service';
 
 const email = 'foo@baz.bar';
 const data = { data: 'body' };
@@ -34,6 +35,10 @@ describe(MailService.name, () => {
         },
         {
           provide: MailerService,
+          useClass: mockRepository,
+        },
+        {
+          provide: UserService,
           useClass: mockRepository,
         },
         {

@@ -37,7 +37,6 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { ConfigService } from '@nestjs/config';
 
 import {
   BadRequestError,
@@ -65,8 +64,11 @@ import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FileEntity } from '@/database/file.entity';
-import { MonitorService } from '@/database/monitor.service';
-import { FolderService } from '@/database/folder.service';
+import {
+  FolderService,
+  administratorFolderId,
+} from '@/database/folder.service';
+import { UserService } from '@/database/user.service';
 
 @ApiResponse({
   status: HttpStatus.BAD_REQUEST,
@@ -117,10 +119,9 @@ export class FileController {
   logger = new Logger(FileController.name);
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly fileService: FileService,
     private readonly folderService: FolderService,
-    private readonly monitorService: MonitorService,
+    private readonly userService: UserService,
   ) {}
 
   @Post()
@@ -138,12 +139,47 @@ export class FileController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
-    const [data, count] = await this.fileService.findAndCount({
-      ...paginationQueryToConfig(scope),
-      relations: [],
-      select,
-      where: TypeOrmFind.Where(where, user),
-    });
+    let count: number = 0;
+    let data: Array<FileEntity> = [];
+    const folderId = where?.folderId?.toString();
+    if (
+      user.role === UserRoleEnum.Administrator &&
+      folderId?.startsWith(administratorFolderId)
+    ) {
+      // мы в режиме администратора
+      const fromRegex = folderId.match(
+        /^([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})\/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/,
+      );
+      if (fromRegex?.length === 3) {
+        // получили имя папки
+        const userExpressionId = fromRegex[2];
+        const userExpression = await this.userService.findById(
+          userExpressionId,
+        );
+        if (!userExpression) {
+          throw new NotFoundException();
+        }
+        [data, count] = await this.fileService.findAndCount({
+          ...paginationQueryToConfig(scope),
+          relations: [],
+          select,
+          where: TypeOrmFind.Where(
+            { ...where, folderId: undefined },
+            userExpression,
+          ),
+        });
+      }
+    } else {
+      [data, count] = await this.fileService.findAndCount({
+        ...paginationQueryToConfig(scope),
+        relations: [],
+        select,
+        where: TypeOrmFind.Where(
+          where,
+          user.role === UserRoleEnum.Administrator ? undefined : user,
+        ),
+      });
+    }
 
     return {
       status: Status.Success,

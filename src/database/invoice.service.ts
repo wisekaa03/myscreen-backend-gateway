@@ -15,6 +15,8 @@ import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
 import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
+import { UserService } from './user.service';
+import { UserRoleEnum } from '@/enums';
 
 @Injectable()
 export class InvoiceService {
@@ -24,6 +26,7 @@ export class InvoiceService {
     @Inject(forwardRef(() => MailService))
     private readonly mailService: MailService,
     private readonly walletService: WalletService,
+    private readonly userService: UserService,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
   ) {}
@@ -75,52 +78,72 @@ export class InvoiceService {
   }
 
   async statusChange(
-    user: UserEntity,
     invoice: InvoiceEntity,
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
-    const newInvoice: DeepPartial<InvoiceEntity> = {
-      ...invoice,
-      user: undefined,
-      status,
-    };
-
-    return this.invoiceRepository.manager.transaction(
-      async (transactionalEntityManager) => {
-        const invoiceChanged = await transactionalEntityManager.save(
-          InvoiceEntity,
-          newInvoice,
-        );
-
-        if (status === InvoiceStatus.PAID) {
-          // здесь записывается в базу сумма баланса
-          await transactionalEntityManager.save(
-            WalletEntity,
-            this.walletService.create(user, invoiceChanged),
+    const invoiceChanged: InvoiceEntity =
+      await this.invoiceRepository.manager.transaction(
+        async (transactionManager) => {
+          const invoiceTransaction = await transactionManager.save(
+            InvoiceEntity,
+            {
+              ...invoice,
+              status,
+            },
           );
 
-          const sum = await this.walletService.walletSum(
-            invoice.userId,
-            transactionalEntityManager,
-          );
+          if (status === InvoiceStatus.PAID) {
+            // здесь записывается в базу сумма баланса
+            await transactionManager.save(
+              WalletEntity,
+              this.walletService.create(
+                invoiceTransaction.user,
+                invoiceTransaction,
+              ),
+            );
 
-          await this.mailService.invoicePayed(invoice.user.email, invoice, sum);
-        } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
-          await this.mailService.invoiceConfirmed(invoice.user, invoice);
-        }
+            const sum = await this.walletService.walletSum(
+              invoiceTransaction.userId,
+              transactionManager,
+            );
 
-        return invoiceChanged;
-      },
-    );
+            await this.mailService.invoicePayed(
+              invoiceTransaction.user,
+              invoiceTransaction,
+              sum,
+            );
+          } else if (status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
+            await this.mailService.invoiceConfirmed(
+              invoiceTransaction.user,
+              invoiceTransaction,
+            );
+          } else if (status === InvoiceStatus.AWAITING_CONFIRMATION) {
+            const accountantUsers = await this.userService.find({
+              where: {
+                role: UserRoleEnum.Accountant,
+                disabled: false,
+                verified: true,
+              },
+            });
+            await this.mailService.invoiceAwaitingConfirmation(
+              accountantUsers,
+              invoiceTransaction,
+            );
+          }
+
+          return invoiceTransaction;
+        },
+      );
+
+    return Object.assign(invoiceChanged, { user: undefined });
   }
 
   async download(
-    user: UserEntity,
     res: ExpressResponse,
-    invoice: InvoiceEntity,
     format: SpecificFormat,
+    invoice: InvoiceEntity,
   ): Promise<void> {
-    const data = await this.printService.invoice(user, format, invoice);
+    const data = await this.printService.invoice(format, invoice);
 
     const specificFormat = formatToContentType[format]
       ? format

@@ -1,4 +1,5 @@
 import type { Request as ExpressRequest } from 'express';
+import { isUUID } from 'class-validator';
 import { In } from 'typeorm';
 import {
   Controller,
@@ -48,7 +49,12 @@ import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FolderEntity } from '@/database/folder.entity';
-import { FolderService } from '@/database/folder.service';
+import {
+  FolderService,
+  administratorFolderId,
+} from '@/database/folder.service';
+import { UserService } from '@/database/user.service';
+import { UserEntity } from '@/database/user.entity';
 
 @ApiResponse({
   status: HttpStatus.BAD_REQUEST,
@@ -88,7 +94,10 @@ import { FolderService } from '@/database/folder.service';
 export class FolderController {
   logger = new Logger(FolderController.name);
 
-  constructor(private readonly folderService: FolderService) {}
+  constructor(
+    private readonly folderService: FolderService,
+    private readonly userService: UserService,
+  ) {}
 
   @Post()
   @HttpCode(200)
@@ -105,11 +114,75 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { scope, select, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
-    const [data, count] = await this.folderService.findAndCount({
-      ...paginationQueryToConfig(scope),
-      select,
-      where: TypeOrmFind.Where(where, user),
-    });
+    let count: number = 0;
+    let data: FolderResponse[] = [];
+    const parentFolderId = where?.parentFolderId?.toString();
+    if (
+      user.role === UserRoleEnum.Administrator &&
+      parentFolderId?.startsWith(administratorFolderId)
+    ) {
+      // мы в режиме администратора
+      const fromRegex = parentFolderId.match(
+        /^([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})\/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/,
+      );
+      if (fromRegex?.length === 3) {
+        // получили имя папки
+        const userExpressionId = fromRegex[2];
+        const userExpression = await this.userService.findById(
+          userExpressionId,
+        );
+        if (!userExpression) {
+          throw new NotFoundException();
+        }
+        const parentFolder = await this.folderService.rootFolder(
+          userExpression,
+        );
+        [data, count] = await this.folderService.findAndCount({
+          ...paginationQueryToConfig(scope),
+          select,
+          where: TypeOrmFind.Where(
+            {
+              ...where,
+              parentFolderId: parentFolder.id,
+            },
+            userExpression,
+          ),
+        });
+      } else {
+        // в режиме администратора выводим всех пользователей
+        let userData: UserEntity[];
+        [userData, count] = await this.userService.findAndCount({});
+        data = userData.map((item) => ({
+          id: `${administratorFolderId}/${item.id}`,
+          name: this.userService.fullName(item),
+          parentFolderId,
+          empty: false,
+          createdAt: item.createdAt ?? new Date(),
+          updatedAt: item.updatedAt ?? new Date(),
+        }));
+      }
+    } else {
+      // в любом другом режиме выводим все папки
+      if (
+        user.role !== UserRoleEnum.Administrator &&
+        parentFolderId &&
+        !isUUID(parentFolderId)
+      ) {
+        throw new BadRequestException('id must be a UUID');
+      }
+      [data, count] = await this.folderService.findAndCount({
+        ...paginationQueryToConfig(scope),
+        select,
+        where: TypeOrmFind.Where(where, user),
+      });
+      if (
+        user.role === UserRoleEnum.Administrator &&
+        parentFolderId === (await this.folderService.rootFolder(user)).id
+      ) {
+        count += 1;
+        data = [...data, await this.folderService.administratorFolder(user)];
+      }
+    }
 
     return {
       status: Status.Success,
