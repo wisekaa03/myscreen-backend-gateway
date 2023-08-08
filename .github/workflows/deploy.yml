@@ -1,13 +1,13 @@
-name: Test
+name: Deploy
 
 concurrency: production
 
 on: push
 
 jobs:
-  test:
+  deployment:
     runs-on: ubuntu-latest
-    environment: tests
+    environment: develop
     env:
       # CXXFLAGS: -include /usr/include/c++/11/limits
       PORT: ${{ vars.PORT }}
@@ -57,7 +57,3 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Build
         run: yarn build
-      - name: Testing
-        run: yarn test
-      - name: Testing E2E
-        run: yarn test:e2e
