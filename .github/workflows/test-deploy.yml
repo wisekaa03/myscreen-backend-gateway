@@ -166,9 +166,9 @@ jobs:
       - name: Deploying to Production
         uses: easingthemes/ssh-deploy@main
         with:
-          EXCLUDE: 'node_modules/**/LICENSE, node_modules/**/license, node_modules/**/LICENSE.txt, node_modules/**/*.lock, node_modules/**.ts, node_modules/**.md, node_modules/**.map, dist/**.ts, dist/**.map'
+          EXCLUDE: '"node_modules/**/LICENSE", "node_modules/**/license", "node_modules/**/LICENSE.txt", "node_modules/**/*.lock", "node_modules/**.ts", "node_modules/**.md", "node_modules/**.map", "dist/**.ts", "dist/**.map"'
           SOURCE: 'dist/***, templates/***, static/***, upload/***, node_modules/***, .env, ecosystem.config.js, package.json, yarn.lock'
-          ARGS: '-avz -e  --delete'
+          ARGS: '-lDzvc -i --del'
           SSH_CMD_ARGS: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
           SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ vars.REMOTE_HOST }}
