@@ -6,7 +6,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   test:
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
     environment: tests
     steps:
       - name: Initializing the repository
@@ -85,7 +85,7 @@ jobs:
   deployment:
     needs: 'test'
     # if: github.ref_name == 'develop'
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
     environment: develop
     steps:
       - name: Initializing the repository
