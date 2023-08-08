@@ -168,13 +168,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           name: id_rsa
-      - name: SSH parameters
-        run: |
-          export SSH_PARAMS="ssh -o StrictHostKeyChecking=no"
       - name: Deploying to Production
+        env:
+          SSH_PARAMS: "ssh -o StrictHostKeyChecking=no"
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_TARGET: ${{ secrets.REMOTE_TARGET }}
         run: |
           rsync -rlDzc -i --del -e "$SSH_PARAMS" "./" \
-            "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}":"${{ secrets.REMOTE_TARGET }}" \
+            "$REMOTE_USER"@"$REMOTE_HOST":"$REMOTE_TARGET" \
             --exclude="node_modules/**/LICENSE" \
             --exclude="node_modules/**/license" \
             --exclude="node_modules/**/LICENSE.txt" \
@@ -195,9 +197,14 @@ jobs:
             --include="yarn.lock" \
             --exclude='*'
       - name: Run remote commands
+        env:
+          SSH_PARAMS: "ssh -o StrictHostKeyChecking=no"
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_TARGET: ${{ secrets.REMOTE_TARGET }}
         run: |
           # Go-to dir
-          SSH_COMMAND='cd "${{ secrets.REMOTE_TARGET }}" && '
+          SSH_COMMAND='cd "$REMOTE_TARGET" && '
 
           # Copy the Yandex.Cloud certificate
           SSH_COMMAND+="mkdir -p certs && "
@@ -210,4 +217,4 @@ jobs:
           SSH_COMMAND+="yarn pm2:start"
 
           # Run command
-          $SSH_PARAMS -t "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}" $SSH_COMMAND
+          $SSH_PARAMS -t "$REMOTE_USER"@"$REMOTE_HOST" $SSH_COMMAND
