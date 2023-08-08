@@ -8,94 +8,77 @@ jobs:
   test:
     runs-on: ubuntu-latest
     environment: tests
-    env:
-      PORT: ${{ vars.PORT }}
-      LOG_LEVEL: ${{ vars.LOG_LEVEL }}
-      API_PATH: ${{ vars.API_PATH }}
-      DB_TYPE: ${{ vars.DB_TYPE }}
-      DB_HOST: ${{ vars.DB_HOST }}
-      DB_PORT: ${{ vars.DB_PORT }}
-      DB_USERNAME: ${{ vars.DB_USERNAME }}
-      DB_PASSWORD: ${{ vars.DB_PASSWORD }}
-      DB_DATABASE: ${{ vars.DB_DATABASE }}
-      JWT_ACCESS_TOKEN: ${{ vars.JWT_ACCESS_TOKEN }}
-      JWT_ACCESS_EXPIRES: ${{ vars.JWT_ACCESS_EXPIRES }}
-      JWT_REFRESH_TOKEN: ${{ vars.JWT_REFRESH_TOKEN }}
-      JWT_REFRESH_EXPIRES: ${{ vars.JWT_REFRESH_EXPIRES }}
-      FRONTEND_URL: ${{ vars.FRONTEND_URL }}
-      MAIL_DOMAIN: ${{ vars.MAIL_DOMAIN }}
-      MAIL_KEY_SELECTOR: ${{ vars.MAIL_KEY_SELECTOR }}
-      MAIL_PRIVATE_KEY: ${{ vars.MAIL_PRIVATE_KEY }}
-      MAIL_FROM: ${{ vars.MAIL_FROM }}
-      MAIL_HOST: ${{ vars.MAIL_HOST }}
-      MAIL_PORT: ${{ vars.MAIL_PORT }}
-      MAIL_USER: ${{ vars.MAIL_USER }}
-      MAIL_PASS: ${{ vars.MAIL_PASS }}
-      FILES_UPLOAD: ${{ vars.FILES_UPLOAD }}
-      AWS_HOST: ${{ vars.AWS_HOST }}
-      AWS_REGION: ${{ vars.AWS_REGION }}
-      AWS_ACCESS_KEY: ${{ vars.AWS_ACCESS_KEY }}
-      AWS_SECRET_KEY: ${{ vars.AWS_SECRET_KEY }}
-      AWS_BUCKET: ${{ vars.AWS_BUCKET }}
-      ACCEPTANCE_ACT_SUM: ${{ vars.ACCEPTANCE_ACT_SUM }}
-      ACCEPTANCE_ACT_DESCRIPTION: ${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}
-      KIBANA_HOST: ${{ vars.KIBANA_HOST }}
-      KIBANA_PORT: ${{ vars.KIBANA_PORT }}
     steps:
       - uses: actions/checkout@v3
-      # - name: Use Node.js
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version-file: '.nvmrc'
-      #     cache: 'yarn'
-      # - name: Update Ubuntu
-      #   run: sudo apt-get update -y
-      # - name: Install Ubuntu dependencies
-      #   run: sudo apt-get install -y ffmpeg
-      # - name: Install Yarn dependencies
-      #   run: yarn install --frozen-lockfile
-      # - name: Test
-      #   run: yarn test
-      # - name: Test end to end
-      #   run: yarn test:e2e
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+      - name: Update Ubuntu
+        run: sudo apt-get update -y
+      - name: Install Ubuntu dependencies
+        run: sudo apt-get install -y ffmpeg
+      - name: Install Yarn dependencies
+        run: yarn install --frozen-lockfile
+      - name: Environment variables
+        run: |
+          rm -rf .env
+          touch .env
+
+          # Server config
+          echo "PORT=${{ vars.PORT }}" >>.env
+          echo "API_PATH=${{ vars.API_PATH }}" >>.env
+          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >>.env
+          echo "FILES_UPLOAD=${{ vars.FILES_UPLOAD }}" >>.env
+          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >>.env
+
+          # PostgreSQL Credentials
+          echo "DB_DATABASE=${{ vars.DB_DATABASE }}" >>.env
+          echo "DB_USERNAME=${{ vars.DB_USERNAME }}" >>.env
+          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >>.env
+          echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
+          echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
+          echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
+
+          # JWT Credentials
+          echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
+          echo "JWT_ACCESS_EXPIRES=${{ vars.JWT_ACCESS_EXPIRES }}" >>.env
+          echo "JWT_REFRESH_TOKEN=${{ vars.JWT_REFRESH_TOKEN }}" >>.env
+          echo "JWT_REFRESH_EXPIRES=${{ vars.JWT_REFRESH_EXPIRES }}" >>.env
+
+          # Logstash config
+          # echo "KIBANA_HOST=${{ vars.KIBANA_HOST }}" >>.env
+          # echo "KIBANA_PORT=${{ vars.KIBANA_PORT }}" >>.env
+
+          # Secrets
+          echo "AWS_HOST=${{ vars.AWS_HOST }}" >>.env
+          echo "AWS_ACCESS_KEY=${{ vars.AWS_ACCESS_KEY }}" >>.env
+          echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env
+          echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env
+          echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env
+
+          echo "MAIL_DOMAIN=${{ vars.MAIL_DOMAIN }}" >>.env
+          echo "MAIL_KEY_SELECTOR=${{ vars.MAIL_KEY_SELECTOR }}" >>.env
+          echo "MAIL_PRIVATE_KEY=${{ vars.MAIL_PRIVATE_KEY }}" >>.env
+          echo "MAIL_HOST=${{ vars.MAIL_HOST }}" >>.env
+          echo "MAIL_PORT=${{ vars.MAIL_PORT }}" >>.env
+          echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >>.env
+          echo "MAIL_USER=${{ vars.MAIL_USER }}" >>.env
+          echo "MAIL_PASS=${{ vars.MAIL_PASS }}" >>.env
+
+          echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
+          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+      - name: Test
+        run: yarn test
+      - name: Test end to end
+        run: yarn test:e2e
+
   deployment:
     needs: 'test'
     # if: github.ref_name == 'develop'
     runs-on: ubuntu-latest
     environment: develop
-    env:
-      PORT: ${{ vars.PORT }}
-      LOG_LEVEL: ${{ vars.LOG_LEVEL }}
-      API_PATH: ${{ vars.API_PATH }}
-      DB_TYPE: ${{ vars.DB_TYPE }}
-      DB_HOST: ${{ vars.DB_HOST }}
-      DB_PORT: ${{ vars.DB_PORT }}
-      DB_USERNAME: ${{ vars.DB_USERNAME }}
-      DB_PASSWORD: ${{ vars.DB_PASSWORD }}
-      DB_DATABASE: ${{ vars.DB_DATABASE }}
-      JWT_ACCESS_TOKEN: ${{ vars.JWT_ACCESS_TOKEN }}
-      JWT_ACCESS_EXPIRES: ${{ vars.JWT_ACCESS_EXPIRES }}
-      JWT_REFRESH_TOKEN: ${{ vars.JWT_REFRESH_TOKEN }}
-      JWT_REFRESH_EXPIRES: ${{ vars.JWT_REFRESH_EXPIRES }}
-      FRONTEND_URL: ${{ vars.FRONTEND_URL }}
-      MAIL_DOMAIN: ${{ vars.MAIL_DOMAIN }}
-      MAIL_KEY_SELECTOR: ${{ vars.MAIL_KEY_SELECTOR }}
-      MAIL_PRIVATE_KEY: ${{ vars.MAIL_PRIVATE_KEY }}
-      MAIL_FROM: ${{ vars.MAIL_FROM }}
-      MAIL_HOST: ${{ vars.MAIL_HOST }}
-      MAIL_PORT: ${{ vars.MAIL_PORT }}
-      MAIL_USER: ${{ vars.MAIL_USER }}
-      MAIL_PASS: ${{ vars.MAIL_PASS }}
-      FILES_UPLOAD: ${{ vars.FILES_UPLOAD }}
-      AWS_HOST: ${{ vars.AWS_HOST }}
-      AWS_REGION: ${{ vars.AWS_REGION }}
-      AWS_ACCESS_KEY: ${{ vars.AWS_ACCESS_KEY }}
-      AWS_SECRET_KEY: ${{ vars.AWS_SECRET_KEY }}
-      AWS_BUCKET: ${{ vars.AWS_BUCKET }}
-      ACCEPTANCE_ACT_SUM: ${{ vars.ACCEPTANCE_ACT_SUM }}
-      ACCEPTANCE_ACT_DESCRIPTION: ${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}
-      KIBANA_HOST: ${{ vars.KIBANA_HOST }}
-      KIBANA_PORT: ${{ vars.KIBANA_PORT }}
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
@@ -117,63 +100,60 @@ jobs:
           touch .env
 
           # Server config
-          echo "PORT=${{ env.PORT }}" >>.env
-          echo "API_PATH=${{ env.API_PATH }}" >>.env
-          echo "FRONTEND_URL=${{ env.FRONTEND_URL }}" >>.env
-          echo "FILES_UPLOAD=${{ env.FILES_UPLOAD }}" >>.env
-          echo "LOG_LEVEL=${{ env.LOG_LEVEL }}" >>.env
+          echo "PORT=${{ vars.PORT }}" >>.env
+          echo "API_PATH=${{ vars.API_PATH }}" >>.env
+          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >>.env
+          echo "FILES_UPLOAD=${{ vars.FILES_UPLOAD }}" >>.env
+          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >>.env
 
           # PostgreSQL Credentials
-          echo "DB_DATABASE=${{ env.DB_DATABASE }}" >>.env
-          echo "DB_USERNAME=${{ env.DB_USERNAME }}" >>.env
-          echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >>.env
-          echo "DB_PORT=${{ env.DB_PORT }}" >>.env
-          echo "DB_HOST=${{ env.DB_HOST }}" >>.env
-          echo "DB_TYPE=${{ env.DB_TYPE }}" >>.env
+          echo "DB_DATABASE=${{ vars.DB_DATABASE }}" >>.env
+          echo "DB_USERNAME=${{ vars.DB_USERNAME }}" >>.env
+          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >>.env
+          echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
+          echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
+          echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
 
           # JWT Credentials
-          echo "JWT_ACCESS_TOKEN=${{ env.JWT_ACCESS_TOKEN }}" >>.env
-          echo "JWT_ACCESS_EXPIRES=${{ env.JWT_ACCESS_EXPIRES }}" >>.env
-          echo "JWT_REFRESH_TOKEN=${{ env.JWT_REFRESH_TOKEN }}" >>.env
-          echo "JWT_REFRESH_EXPIRES=${{ env.JWT_REFRESH_EXPIRES }}" >>.env
+          echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
+          echo "JWT_ACCESS_EXPIRES=${{ vars.JWT_ACCESS_EXPIRES }}" >>.env
+          echo "JWT_REFRESH_TOKEN=${{ vars.JWT_REFRESH_TOKEN }}" >>.env
+          echo "JWT_REFRESH_EXPIRES=${{ vars.JWT_REFRESH_EXPIRES }}" >>.env
 
           # Logstash config
-          # echo "KIBANA_HOST=${{ env.KIBANA_HOST }}" >>.env
-          # echo "KIBANA_PORT=${{ env.KIBANA_PORT }}" >>.env
+          # echo "KIBANA_HOST=${{ vars.KIBANA_HOST }}" >>.env
+          # echo "KIBANA_PORT=${{ vars.KIBANA_PORT }}" >>.env
 
           # Secrets
-          echo "AWS_HOST=${{ env.AWS_HOST }}" >>.env
-          echo "AWS_ACCESS_KEY=${{ env.AWS_ACCESS_KEY }}" >>.env
-          echo "AWS_SECRET_KEY=${{ env.AWS_SECRET_KEY }}" >>.env
-          echo "AWS_REGION=${{ env.AWS_REGION }}" >>.env
-          echo "AWS_BUCKET=${{ env.AWS_BUCKET }}" >>.env
+          echo "AWS_HOST=${{ vars.AWS_HOST }}" >>.env
+          echo "AWS_ACCESS_KEY=${{ vars.AWS_ACCESS_KEY }}" >>.env
+          echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env
+          echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env
+          echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env
 
-          echo "MAIL_DOMAIN=${{ env.MAIL_DOMAIN }}" >>.env
-          echo "MAIL_KEY_SELECTOR=${{ env.MAIL_KEY_SELECTOR }}" >>.env
-          echo "MAIL_PRIVATE_KEY=${{ env.MAIL_PRIVATE_KEY }}" >>.env
-          echo "MAIL_HOST=${{ env.MAIL_HOST }}" >>.env
-          echo "MAIL_PORT=${{ env.MAIL_PORT }}" >>.env
-          echo "MAIL_FROM=${{ env.MAIL_FROM }}" >>.env
-          echo "MAIL_USER=${{ env.MAIL_USER }}" >>.env
-          echo "MAIL_PASS=${{ env.MAIL_PASS }}" >>.env
+          echo "MAIL_DOMAIN=${{ vars.MAIL_DOMAIN }}" >>.env
+          echo "MAIL_KEY_SELECTOR=${{ vars.MAIL_KEY_SELECTOR }}" >>.env
+          echo "MAIL_PRIVATE_KEY=${{ vars.MAIL_PRIVATE_KEY }}" >>.env
+          echo "MAIL_HOST=${{ vars.MAIL_HOST }}" >>.env
+          echo "MAIL_PORT=${{ vars.MAIL_PORT }}" >>.env
+          echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >>.env
+          echo "MAIL_USER=${{ vars.MAIL_USER }}" >>.env
+          echo "MAIL_PASS=${{ vars.MAIL_PASS }}" >>.env
 
-          echo "ACCEPTANCE_ACT_SUM=${{ env.ACCEPTANCE_ACT_SUM }}" >>.env
-          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ env.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+          echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
+          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           name: id_rsa
-      - name: SSH-KEYSCAN
-        run: ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
-      - name: CAT KNOWN_HOSTS
-        run: cat ~/.ssh/known_hosts
-      - name: CAT ID_RSA
-        run: cat ~/.ssh/id_rsa
       - name: Deploying to Production
         run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" "./" "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}":"${{ secrets.REMOTE_TARGET }}" --del \
+          SSH_PARAMS="ssh -o StrictHostKeyChecking=no"
+
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" "./" \
+            "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}":"${{ secrets.REMOTE_TARGET }}" --del \
             --exclude="node_modules/**/LICENSE" \
             --exclude="node_modules/**/license" \
             --exclude="node_modules/**/LICENSE.txt" \
@@ -193,4 +173,19 @@ jobs:
             --include="package.json" \
             --include="yarn.lock" \
             --exclude='*'
-          ssh -o StrictHostKeyChecking=no  -t "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}" "mkdir -p certs && wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && find upload -type f -atime +7 -delete && yarn pm2:start"
+
+          # Go-to dir
+          SSH_COMMAND="cd $2 && "
+
+          # Copy the Yandex.Cloud certificate
+          SSH_COMMAND+="mkdir -p certs && "
+          SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && '
+
+          # Cleanup `upload` folder
+          SSH_COMMAND+="find ${{ secrets.REMOTE_HOST }}/upload -type f -atime +7 -delete && "
+
+          # Yarn pm2 starting
+          SSH_COMMAND+="yarn pm2:start"
+
+          # Run command
+          $SSH_PARAMS -t "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}" $SSH_COMMAND
