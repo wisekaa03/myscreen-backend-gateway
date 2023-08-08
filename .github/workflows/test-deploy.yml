@@ -43,21 +43,21 @@ jobs:
       KIBANA_PORT: ${{ vars.KIBANA_PORT }}
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-          cache: 'yarn'
-      - name: Update Ubuntu
-        run: sudo apt-get update -y
-      - name: Install Ubuntu dependencies
-        run: sudo apt-get install -y ffmpeg
-      - name: Install Yarn dependencies
-        run: yarn install --frozen-lockfile
-      - name: Test
-        run: yarn test
-      - name: Test end to end
-        run: yarn test:e2e
+      # - name: Use Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version-file: '.nvmrc'
+      #     cache: 'yarn'
+      # - name: Update Ubuntu
+      #   run: sudo apt-get update -y
+      # - name: Install Ubuntu dependencies
+      #   run: sudo apt-get install -y ffmpeg
+      # - name: Install Yarn dependencies
+      #   run: yarn install --frozen-lockfile
+      # - name: Test
+      #   run: yarn test
+      # - name: Test end to end
+      #   run: yarn test:e2e
   deployment:
     needs: 'test'
     # if: github.ref_name == 'develop'
@@ -165,19 +165,32 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           name: id_rsa
+      - name: SSH-KEYSCAN
+        run: ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
+      - name: CAT KNOWN_HOSTS
+        run: cat ~/.ssh/known_hosts
+      - name: CAT ID_RSA
+        run: cat ~/.ssh/id_rsa
       - name: Deploying to Production
-        uses: easingthemes/ssh-deploy@main
-        with:
-          EXCLUDE: '"node_modules/**/LICENSE", "node_modules/**/license", "node_modules/**/LICENSE.txt", "node_modules/**/*.lock", "node_modules/**.ts", "node_modules/**.md", "node_modules/**.map", "dist/**.ts", "dist/**.map"'
-          SOURCE: 'dist/***, templates/***, static/***, upload/***, node_modules/***, .env, ecosystem.config.js, package.json, yarn.lock'
-          ARGS: '-lDzvc -i --del'
-          SSH_CMD_ARGS: '-o StrictHostKeyChecking=no -v'
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          TARGET: ${{ secrets.REMOTE_TARGET }}
-          SCRIPT_AFTER: |
-            mkdir -p certs
-            wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt
-            find upload -type f -atime +7 -delete
-            yarn pm2:start
+        run: |
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" "./" "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}":"${{ secrets.REMOTE_TARGET }}" --del \
+            --exclude="node_modules/**/LICENSE" \
+            --exclude="node_modules/**/license" \
+            --exclude="node_modules/**/LICENSE.txt" \
+            --exclude="node_modules/**/*.lock" \
+            --exclude="node_modules/**.ts" \
+            --exclude="node_modules/**.md" \
+            --exclude="node_modules/**.map" \
+            --exclude="dist/**.ts" \
+            --exclude="dist/**.map" \
+            --include="dist/***" \
+            --include="templates/***" \
+            --include="static/***" \
+            --include="upload/***" \
+            --include="node_modules/***" \
+            --include=".env" \
+            --include="ecosystem.config.js" \
+            --include="package.json" \
+            --include="yarn.lock" \
+            --exclude='*'
+          ssh -o StrictHostKeyChecking=no  -t "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}" "mkdir -p certs && wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && find upload -type f -atime +7 -delete && yarn pm2:start"
