@@ -198,9 +198,6 @@ jobs:
             --exclude='*'
       - name: Run remote commands
         run: |
-          # Go-to dir
-          SSH_COMMAND='cd "$REMOTE_TARGET" && '
-
           # Copy the Yandex.Cloud certificate
           SSH_COMMAND+="mkdir -p certs && "
           SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && '
@@ -212,4 +209,4 @@ jobs:
           SSH_COMMAND+="yarn pm2:start"
 
           # Run command
-          $SSH_PARAMS -t "$REMOTE_USER"@"$REMOTE_HOST" $SSH_COMMAND
+          $SSH_PARAMS -t "$REMOTE_USER"@"$REMOTE_HOST":"$REMOTE_TARGET" $SSH_COMMAND
