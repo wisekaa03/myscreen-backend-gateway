@@ -9,12 +9,22 @@ jobs:
     runs-on: ubuntu-latest
     environment: tests
     steps:
-      - uses: actions/checkout@v3
+      - name: Initializing the repository
+        uses: actions/checkout@v3
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-          cache: 'yarn'
+      - name: Cache Yarn
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/yarn
+            ~/node_modules
+          key: ${{ runner.os }}-yarn-tests-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-tests-
+            ${{ runner.os }}-yarn-
       - name: Update Ubuntu
         run: sudo apt-get update -y
       - name: Install Ubuntu dependencies
@@ -80,18 +90,28 @@ jobs:
     runs-on: ubuntu-latest
     environment: develop
     steps:
-      - uses: actions/checkout@v3
+      - name: Initializing the repository
+        uses: actions/checkout@v3
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-          cache: 'yarn'
+      - name: Cache Yarn
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/yarn
+            ~/node_modules
+          key: ${{ runner.os }}-yarn-deploy-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-deploy-
+            ${{ runner.os }}-yarn-
       - name: Update Ubuntu
         run: sudo apt-get update -y
       - name: Install Ubuntu dependencies
         run: sudo apt-get install -y ffmpeg
       - name: Install Yarn dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --production --frozen-lockfile
       - name: Build
         run: yarn build
       - name: Environment variables
@@ -152,8 +172,8 @@ jobs:
         run: |
           SSH_PARAMS="ssh -o StrictHostKeyChecking=no"
 
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" "./" \
-            "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}":"${{ secrets.REMOTE_TARGET }}" --del \
+          rsync -rlDzc -i --del -e "$SSH_PARAMS" "./" \
+            "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}":"${{ secrets.REMOTE_TARGET }}" \
             --exclude="node_modules/**/LICENSE" \
             --exclude="node_modules/**/license" \
             --exclude="node_modules/**/LICENSE.txt" \
@@ -182,7 +202,7 @@ jobs:
           SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && '
 
           # Cleanup `upload` folder
-          SSH_COMMAND+="find ${{ secrets.REMOTE_HOST }}/upload -type f -atime +7 -delete && "
+          SSH_COMMAND+="find upload -type f -atime +7 -delete && "
 
           # Yarn pm2 starting
           SSH_COMMAND+="yarn pm2:start"
