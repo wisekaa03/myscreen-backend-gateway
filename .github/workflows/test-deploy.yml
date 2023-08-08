@@ -48,13 +48,11 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
-      - name: Upgrade Ubuntu
-        run: sudo apt-get update
-      # - name: Install Ubuntu dependencies
-      #   run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: Update Ubuntu
+        run: sudo apt-get update -y
       - name: Install Ubuntu dependencies
         run: sudo apt-get install -y ffmpeg
-      - name: Install dependencies
+      - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Test
         run: yarn test
@@ -105,15 +103,11 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
-      - name: Upgrade Ubuntu
-        run: |
-          sudo apt-get update -y
-          sudo apt-get upgrade -y
-      # - name: Install Ubuntu dependencies
-      #   run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: Update Ubuntu
+        run: sudo apt-get update -y
       - name: Install Ubuntu dependencies
         run: sudo apt-get install -y ffmpeg
-      - name: Install dependencies
+      - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Build
         run: yarn build
@@ -165,6 +159,11 @@ jobs:
 
           echo "ACCEPTANCE_ACT_SUM=${{ env.ACCEPTANCE_ACT_SUM }}" >>.env
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ env.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          name: id_rsa
       - name: Deploying to Production
         uses: easingthemes/ssh-deploy@main
         with:
@@ -172,10 +171,10 @@ jobs:
           SOURCE: 'dist/***, templates/***, static/***, upload/***, node_modules/***, .env, ecosystem.config.js, package.json, yarn.lock'
           ARGS: '-lDzvc -i --del'
           SSH_CMD_ARGS: '-o StrictHostKeyChecking=no -v'
-          SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ vars.REMOTE_HOST }}
-          REMOTE_USER: ${{ vars.REMOTE_USER }}
-          TARGET: ${{ vars.REMOTE_TARGET }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_TARGET }}
           SCRIPT_AFTER: |
             mkdir -p certs
             wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt
