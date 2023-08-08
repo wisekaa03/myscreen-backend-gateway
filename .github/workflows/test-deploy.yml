@@ -6,7 +6,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   test:
-    runs-on: debian-11
+    runs-on: debian-latest
     environment: tests
     steps:
       - name: Initializing the repository
@@ -20,10 +20,8 @@ jobs:
         with:
           path: |
             ~/.cache/yarn
-            ~/node_modules
-          key: ${{ runner.os }}-yarn-tests-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-tests-
             ${{ runner.os }}-yarn-
       - name: Update Ubuntu
         run: sudo apt-get update -y
@@ -87,7 +85,7 @@ jobs:
   deployment:
     needs: 'test'
     # if: github.ref_name == 'develop'
-    runs-on: debian-11
+    runs-on: debian-latest
     environment: develop
     steps:
       - name: Initializing the repository
@@ -101,10 +99,8 @@ jobs:
         with:
           path: |
             ~/.cache/yarn
-            ~/node_modules
-          key: ${{ runner.os }}-yarn-deploy-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-yarn-deploy-
             ${{ runner.os }}-yarn-
       - name: Update Ubuntu
         run: sudo apt-get update -y
@@ -113,7 +109,9 @@ jobs:
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Build
-        run: yarn build
+        run: |
+          yarn build
+          rm -rf node_modules
       - name: Install Yarn dependencies (production)
         run: yarn install --production --frozen-lockfile
       - name: Environment variables
