@@ -2,7 +2,7 @@ name: Deploy
 
 concurrency: production
 
-on: push
+on: [push, workflow_dispatch]
 
 jobs:
   test:
@@ -61,7 +61,7 @@ jobs:
         run: yarn test:e2e
   deployment:
     needs: 'test'
-    if: github.ref_name == 'act'
+    # if: github.ref_name == 'develop'
     runs-on: ubuntu-latest
     environment: develop
     env:
@@ -105,11 +105,78 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
-      - name: Upgrade Ubuntu
-        run: sudo apt-get update
+      # - name: Upgrade Ubuntu
+      #   run: sudo apt-get update
+      # - name: Install Ubuntu dependencies
+      #   run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Ubuntu dependencies
-        run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+        run: sudo apt-get install -y ffmpeg
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Build
         run: yarn build
+      - name: Environment variables
+        run: |
+          rm -rf .env
+          touch .env
+
+          # Server config
+          echo "PORT=${{ env.PORT }}" >>.env
+          echo "API_PATH=${{ env.API_PATH }}" >>.env
+          echo "FRONTEND_URL=${{ env.FRONTEND_URL }}" >>.env
+          echo "FILES_UPLOAD=${{ env.FILES_UPLOAD }}" >>.env
+          echo "LOG_LEVEL=${{ env.LOG_LEVEL }}" >>.env
+
+          # PostgreSQL Credentials
+          echo "DB_DATABASE=${{ env.DB_DATABASE }}" >>.env
+          echo "DB_USERNAME=${{ env.DB_USERNAME }}" >>.env
+          echo "DB_PASSWORD=${{ env.DB_PASSWORD }}" >>.env
+          echo "DB_PORT=${{ env.DB_PORT }}" >>.env
+          echo "DB_HOST=${{ env.DB_HOST }}" >>.env
+          echo "DB_TYPE=${{ env.DB_TYPE }}" >>.env
+
+          # JWT Credentials
+          echo "JWT_ACCESS_TOKEN=${{ env.JWT_ACCESS_TOKEN }}" >>.env
+          echo "JWT_ACCESS_EXPIRES=${{ env.JWT_ACCESS_EXPIRES }}" >>.env
+          echo "JWT_REFRESH_TOKEN=${{ env.JWT_REFRESH_TOKEN }}" >>.env
+          echo "JWT_REFRESH_EXPIRES=${{ env.JWT_REFRESH_EXPIRES }}" >>.env
+
+          # Logstash config
+          # echo "KIBANA_HOST=${{ env.KIBANA_HOST }}" >>.env
+          # echo "KIBANA_PORT=${{ env.KIBANA_PORT }}" >>.env
+
+          # Secrets
+          echo "AWS_HOST=${{ env.AWS_HOST }}" >>.env
+          echo "AWS_ACCESS_KEY=${{ env.AWS_ACCESS_KEY }}" >>.env
+          echo "AWS_SECRET_KEY=${{ env.AWS_SECRET_KEY }}" >>.env
+          echo "AWS_REGION=${{ env.AWS_REGION }}" >>.env
+          echo "AWS_BUCKET=${{ env.AWS_BUCKET }}" >>.env
+
+          echo "MAIL_DOMAIN=${{ env.MAIL_DOMAIN }}" >>.env
+          echo "MAIL_KEY_SELECTOR=${{ env.MAIL_KEY_SELECTOR }}" >>.env
+          echo "MAIL_PRIVATE_KEY=${{ env.MAIL_PRIVATE_KEY }}" >>.env
+          echo "MAIL_HOST=${{ env.MAIL_HOST }}" >>.env
+          echo "MAIL_PORT=${{ env.MAIL_PORT }}" >>.env
+          echo "MAIL_FROM=${{ env.MAIL_FROM }}" >>.env
+          echo "MAIL_USER=${{ env.MAIL_USER }}" >>.env
+          echo "MAIL_PASS=${{ env.MAIL_PASS }}" >>.env
+
+          echo "ACCEPTANCE_ACT_SUM=${{ env.ACCEPTANCE_ACT_SUM }}" >>.env
+          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ env.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+      - name: Deploying to Production
+        uses: easingthemes/ssh-deploy@main
+        with:
+          EXCLUDE: 'node_modules/**/LICENSE, node_modules/**/license, node_modules/**/LICENSE.txt, node_modules/**/*.lock, node_modules/**.ts, node_modules/**.md, node_modules/**.map, dist/**.ts, dist/**.map'
+          SOURCE: 'dist/***, templates/***, static/***, upload/***, node_modules/***, .env, ecosystem.config.js, package.json, yarn.lock'
+          ARGS: '-avz -e  --delete'
+          SSH_CMD_ARGS: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+          SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ vars.REMOTE_HOST }}
+          REMOTE_USER: ${{ vars.REMOTE_USER }}
+          TARGET: ${{ vars.REMOTE_TARGET }}
+          SCRIPT_AFTER: |
+            mkdir -p certs
+            wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt
+            find $2/upload -type f -atime +7 -delete
+            # yarn pm2:start
+

@@ -51,6 +51,8 @@ function load_env() {
   echo "MAIL_FROM=$MAIL_FROM" >>.env
   echo "MAIL_USER=$MAIL_USER" >>.env
   echo "MAIL_PASS=$MAIL_PASS" >>.env
+  echo "ACCEPTANCE_ACT_SUM=$ACCEPTANCE_ACT_SUM" >>.env
+  echo "ACCEPTANCE_ACT_DESCRIPTION=$ACCEPTANCE_ACT_DESCRIPTION" >>.env
 
   echo "Environments was loaded!"
 }

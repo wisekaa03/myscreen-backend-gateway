@@ -50,7 +50,7 @@ const generatePassword = (
 
 const jabber = new Jabber();
 const email = jabber.createEmail();
-const password = generatePassword(12);
+const password = generatePassword(20);
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
