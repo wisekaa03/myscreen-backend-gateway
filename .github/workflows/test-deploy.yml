@@ -6,7 +6,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: debian-11
     environment: tests
     steps:
       - name: Initializing the repository
@@ -87,7 +87,7 @@ jobs:
   deployment:
     needs: 'test'
     # if: github.ref_name == 'develop'
-    runs-on: ubuntu-latest
+    runs-on: debian-11
     environment: develop
     steps:
       - name: Initializing the repository
@@ -170,10 +170,11 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           name: id_rsa
-      - name: Deploying to Production
+      - name: SSH parameters
         run: |
           SSH_PARAMS="ssh -o StrictHostKeyChecking=no"
-
+      - name: Deploying to Production
+        run: |
           rsync -rlDzc -i --del -e "$SSH_PARAMS" "./" \
             "${{ secrets.REMOTE_USER }}"@"${{ secrets.REMOTE_HOST }}":"${{ secrets.REMOTE_TARGET }}" \
             --exclude="node_modules/**/LICENSE" \
@@ -195,9 +196,10 @@ jobs:
             --include="package.json" \
             --include="yarn.lock" \
             --exclude='*'
-
+      - name: Run remote commands
+        run: |
           # Go-to dir
-          SSH_COMMAND="cd $2 && "
+          SSH_COMMAND='cd "${{ secrets.REMOTE_TARGET }}" && '
 
           # Copy the Yandex.Cloud certificate
           SSH_COMMAND+="mkdir -p certs && "
