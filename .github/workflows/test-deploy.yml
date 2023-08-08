@@ -95,7 +95,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Cache Yarn
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: |
             ~/.cache/yarn
@@ -170,7 +170,7 @@ jobs:
           name: id_rsa
       - name: SSH parameters
         run: |
-          SSH_PARAMS="ssh -o StrictHostKeyChecking=no"
+          export SSH_PARAMS="ssh -o StrictHostKeyChecking=no"
       - name: Deploying to Production
         run: |
           rsync -rlDzc -i --del -e "$SSH_PARAMS" "./" \
