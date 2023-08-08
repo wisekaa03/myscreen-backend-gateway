@@ -111,9 +111,11 @@ jobs:
       - name: Install Ubuntu dependencies
         run: sudo apt-get install -y ffmpeg
       - name: Install Yarn dependencies
-        run: yarn install --production --frozen-lockfile
+        run: yarn install --frozen-lockfile
       - name: Build
         run: yarn build
+      - name: Install Yarn dependencies (production)
+        run: yarn install --production --frozen-lockfile
       - name: Environment variables
         run: |
           rm -rf .env
