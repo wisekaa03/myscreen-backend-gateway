@@ -214,7 +214,7 @@ jobs:
         if: ${{ success() }}
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_TO }}
+          to: ${{ vars.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             ${{ github.actor }} created commit with successfull deploy:
@@ -225,7 +225,7 @@ jobs:
         if: ${{ failure() }}
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_TO }}
+          to: ${{ vars.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             ${{ github.actor }} created commit with some error:
