@@ -169,7 +169,7 @@ jobs:
           EXCLUDE: '"node_modules/**/LICENSE", "node_modules/**/license", "node_modules/**/LICENSE.txt", "node_modules/**/*.lock", "node_modules/**.ts", "node_modules/**.md", "node_modules/**.map", "dist/**.ts", "dist/**.map"'
           SOURCE: 'dist/***, templates/***, static/***, upload/***, node_modules/***, .env, ecosystem.config.js, package.json, yarn.lock'
           ARGS: '-lDzvc -i --del'
-          SSH_CMD_ARGS: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+          SSH_CMD_ARGS: '-o StrictHostKeyChecking=no -v'
           SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ vars.REMOTE_HOST }}
           REMOTE_USER: ${{ vars.REMOTE_USER }}
@@ -177,5 +177,5 @@ jobs:
           SCRIPT_AFTER: |
             mkdir -p certs
             wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt
-            find $2/upload -type f -atime +7 -delete
+            find upload -type f -atime +7 -delete
             yarn pm2:start
