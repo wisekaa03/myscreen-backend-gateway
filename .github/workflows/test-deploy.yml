@@ -87,6 +87,11 @@ jobs:
     # if: github.ref_name == 'develop'
     runs-on: ubuntu-latest
     environment: develop
+    env:
+      SSH_PARAMS: "ssh -o StrictHostKeyChecking=no"
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      REMOTE_TARGET: ${{ vars.REMOTE_TARGET }}
     steps:
       - name: Initializing the repository
         uses: actions/checkout@v3
@@ -169,11 +174,6 @@ jobs:
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
           name: id_rsa
       - name: Deploying to Production
-        env:
-          SSH_PARAMS: "ssh -o StrictHostKeyChecking=no"
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_TARGET: ${{ secrets.REMOTE_TARGET }}
         run: |
           rsync -rlDzc -i --del -e "$SSH_PARAMS" "./" \
             "$REMOTE_USER"@"$REMOTE_HOST":"$REMOTE_TARGET" \
@@ -197,11 +197,6 @@ jobs:
             --include="yarn.lock" \
             --exclude='*'
       - name: Run remote commands
-        env:
-          SSH_PARAMS: "ssh -o StrictHostKeyChecking=no"
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_TARGET: ${{ secrets.REMOTE_TARGET }}
         run: |
           # Go-to dir
           SSH_COMMAND='cd "$REMOTE_TARGET" && '
@@ -211,7 +206,7 @@ jobs:
           SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt && '
 
           # Cleanup `upload` folder
-          SSH_COMMAND+="find upload -type f -atime +7 -delete && "
+          SSH_COMMAND+="find "$REMOTE_TARGET"/upload -type f -atime +7 -delete && "
 
           # Yarn pm2 starting
           SSH_COMMAND+="yarn pm2:start"
