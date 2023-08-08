@@ -61,7 +61,7 @@ jobs:
         run: yarn test:e2e
   deployment:
     needs: 'test'
-    if: github.ref_name == 'develop'
+    if: github.ref_name == 'act'
     runs-on: ubuntu-latest
     environment: develop
     env:
