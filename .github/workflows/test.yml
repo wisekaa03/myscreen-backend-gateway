@@ -1,4 +1,4 @@
-name: Yarn test
+name: Test
 on: push
 
 jobs:
@@ -6,6 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: tests
     env:
+      # CXXFLAGS: -include /usr/include/c++/11/limits
       PORT: ${{ vars.PORT }}
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       API_PATH: ${{ vars.API_PATH }}
@@ -43,5 +44,9 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 18
+      - run: sudo apt-get update
+      - run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - run: yarn install --frozen-lockfile
+      - run: yarn build
       - run: yarn test
+      - run: yarn test:e2e
