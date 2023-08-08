@@ -199,14 +199,14 @@ jobs:
       - name: Run remote commands
         run: |
           # Copy the Yandex.Cloud certificate
-          SSH_COMMAND+='mkdir -p "$REMOTE_TARGET"/certs && '
-          SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O "$REMOTE_TARGET"/certs/root.crt && '
+          SSH_COMMAND+='mkdir -p $REMOTE_TARGET/certs && '
+          SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O $REMOTE_TARGET/certs/root.crt && '
 
           # Cleanup `upload` folder
-          SSH_COMMAND+='find "$REMOTE_TARGET"/upload -type f -atime +7 -delete && '
+          SSH_COMMAND+='find $REMOTE_TARGET/upload -type f -atime +7 -delete && '
 
           # Yarn pm2 starting
-          SSH_COMMAND+='cd "$REMOTE_TARGET" && yarn pm2:start'
+          SSH_COMMAND+='cd $REMOTE_TARGET && yarn pm2:start'
 
           # Run command
           $SSH_PARAMS -t "$REMOTE_USER"@"$REMOTE_HOST" $SSH_COMMAND
