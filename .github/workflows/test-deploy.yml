@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: tests
     env:
-      # CXXFLAGS: -include /usr/include/c++/11/limits
       PORT: ${{ vars.PORT }}
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       API_PATH: ${{ vars.API_PATH }}
@@ -51,8 +50,10 @@ jobs:
           cache: 'yarn'
       - name: Upgrade Ubuntu
         run: sudo apt-get update
+      # - name: Install Ubuntu dependencies
+      #   run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Ubuntu dependencies
-        run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+        run: sudo apt-get install -y ffmpeg
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       - name: Test
@@ -65,7 +66,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: develop
     env:
-      # CXXFLAGS: -include /usr/include/c++/11/limits
       PORT: ${{ vars.PORT }}
       LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       API_PATH: ${{ vars.API_PATH }}
@@ -105,8 +105,8 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
-      # - name: Upgrade Ubuntu
-      #   run: sudo apt-get update
+      - name: Upgrade Ubuntu
+        run: sudo apt-get update
       # - name: Install Ubuntu dependencies
       #   run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Ubuntu dependencies
@@ -178,5 +178,4 @@ jobs:
             mkdir -p certs
             wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O certs/root.crt
             find $2/upload -type f -atime +7 -delete
-            # yarn pm2:start
-
+            yarn pm2:start
