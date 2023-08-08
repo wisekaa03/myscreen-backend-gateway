@@ -106,7 +106,9 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'yarn'
       - name: Upgrade Ubuntu
-        run: sudo apt-get update
+        run: |
+          sudo apt-get update -y
+          sudo apt-get upgrade -y
       # - name: Install Ubuntu dependencies
       #   run: sudo apt-get install -y ffmpeg rsync curl wget make g++ python2 build-essential libxi-dev libglu1-mesa-dev libglew-dev libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Ubuntu dependencies
