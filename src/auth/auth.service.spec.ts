@@ -39,6 +39,7 @@ export const mockRepository = jest.fn(() => ({
   signAsync: async () => Promise.resolve(token),
   create: async () => Promise.resolve({ id: '1' }),
   verify: () => true,
+  get: (key: string, defaultValue?: string) => defaultValue,
 }));
 UserService.validateCredentials = () => true;
 
@@ -49,23 +50,11 @@ describe(AuthService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        ConfigService,
-        {
-          provide: UserService,
-          useClass: mockRepository,
-        },
-        {
-          provide: RefreshTokenService,
-          useClass: mockRepository,
-        },
-        {
-          provide: JwtService,
-          useClass: mockRepository,
-        },
-        {
-          provide: JwtStrategy,
-          useClass: mockRepository,
-        },
+        { provide: ConfigService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
+        { provide: RefreshTokenService, useClass: mockRepository },
+        { provide: JwtService, useClass: mockRepository },
+        { provide: JwtStrategy, useClass: mockRepository },
       ],
     }).compile();
 

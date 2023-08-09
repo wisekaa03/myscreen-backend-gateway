@@ -19,7 +19,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
-  get: async () => Promise.resolve(250),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -34,20 +34,13 @@ describe(InvoiceService.name, () => {
       imports: [],
       providers: [
         InvoiceService,
-        PrintService,
-        UserService,
-        {
-          provide: WalletService,
-          useClass: mockRepository,
-        },
-        {
-          provide: MailService,
-          useClass: mockRepository,
-        },
-        {
-          provide: ConfigService,
-          useClass: mockRepository,
-        },
+        { provide: PrintService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
+        { provide: WalletService, useClass: mockRepository },
+        { provide: MailService, useClass: mockRepository },
+        { provide: ConfigService, useClass: mockRepository },
+        { provide: ActService, useClass: mockRepository },
+        { provide: MonitorService, useClass: mockRepository },
         {
           provide: getRepositoryToken(InvoiceEntity),
           useClass: mockRepository,
@@ -58,14 +51,6 @@ describe(InvoiceService.name, () => {
         },
         {
           provide: getRepositoryToken(UserEntity),
-          useClass: mockRepository,
-        },
-        {
-          provide: ActService,
-          useClass: mockRepository,
-        },
-        {
-          provide: MonitorService,
           useClass: mockRepository,
         },
       ],

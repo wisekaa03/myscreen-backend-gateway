@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 
 import { WalletService } from './wallet.service';
 import { ActEntity } from './act.entity';
@@ -11,6 +12,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -24,10 +26,8 @@ describe(ActService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ActService,
-        {
-          provide: WalletService,
-          useClass: mockRepository,
-        },
+        { provide: WalletService, useClass: mockRepository },
+        { provide: ConfigService, useClass: mockRepository },
         {
           provide: getRepositoryToken(ActEntity),
           useClass: mockRepository,

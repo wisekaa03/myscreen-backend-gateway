@@ -8,31 +8,36 @@ import { WalletService } from '@/database/wallet.service';
 export class CrontabService {
   logger = new Logger(CrontabService.name);
 
-  static nameBalance = 'CrontabBalance';
-
   constructor(
     private readonly walletService: WalletService,
     private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
-  @Cron('0 0 0 * * *', { name: CrontabService.nameBalance })
+  /**
+   * @description: Запускается каждый день в 00:00:00
+   */
+  @Cron('0 0 0 * * *', { name: CrontabService.name })
   handleAct() {
     this.walletService.calculateBalance();
   }
 
-  addCronJob() {
-    const job = new CronJob('0 0 0 * * *', () => this.handleAct());
+  /**
+   * @description: Добавляет задачу в планировщик
+   */
+  addCronJob(crontab = '0 0 0 * * *') {
+    const job = new CronJob(crontab, () => this.handleAct());
 
-    this.schedulerRegistry.addCronJob(CrontabService.nameBalance, job);
+    this.schedulerRegistry.addCronJob(CrontabService.name, job);
     job.start();
 
-    this.logger.warn(
-      `job ${CrontabService.nameBalance} added for each minute!`,
-    );
+    this.logger.warn(`Job "${CrontabService.name}" added: "${crontab}" !`);
   }
 
+  /**
+   * @description: Удаляет задачу из планировщика
+   */
   deleteCron() {
-    this.schedulerRegistry.deleteCronJob(CrontabService.nameBalance);
-    this.logger.warn(`job ${CrontabService.nameBalance} deleted!`);
+    this.schedulerRegistry.deleteCronJob(CrontabService.name);
+    this.logger.warn(`Job "${CrontabService.name}" deleted!`);
   }
 }

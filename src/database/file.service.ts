@@ -146,13 +146,13 @@ export class FileService {
     file: FileEntity,
     update: Partial<FileEntity>,
   ): Promise<FileEntity> {
-    return this.fileRepository.manager.transaction(async (fileRepository) => {
+    return this.fileRepository.manager.transaction(async (transact) => {
       if (update.folderId !== undefined && update.folderId !== file.folder.id) {
         const s3Name = getS3Name(file.name);
         const Key = `${update.folderId}/${file.hash}-${s3Name}`;
         const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
 
-        /* await */ this.s3Service
+        await this.s3Service
           .copyObject({
             Bucket: this.bucket,
             Key,
@@ -160,30 +160,21 @@ export class FileService {
             MetadataDirective: 'REPLACE',
           })
           .then(() =>
-            this.s3Service
-              .deleteObject({ Bucket: this.bucket, Key: CopySource })
-              .catch((error) => {
-                this.logger.error('S3 Error deleteObject:', error);
-              }),
-          )
-          .catch((error) => {
-            this.logger.error('S3 Error copyObject:', error);
-          });
+            this.s3Service.deleteObject({
+              Bucket: this.bucket,
+              Key: CopySource,
+            }),
+          );
 
-        return fileRepository.save(
-          fileRepository.create<FileEntity>(FileEntity, {
-            ...file,
-            ...update,
-            id: file.id,
-          }),
+        return transact.save(
+          FileEntity,
+          transact.create(FileEntity, { ...file, ...update, id: file.id }),
         );
       }
 
-      return fileRepository.save<FileEntity>(
-        fileRepository.create<FileEntity>(FileEntity, {
-          ...update,
-          id: file.id,
-        }),
+      return transact.save(
+        FileEntity,
+        transact.create(FileEntity, { ...update, id: file.id }),
       );
     });
   }
@@ -204,7 +195,7 @@ export class FileService {
     }: FileUploadRequest,
     files: Array<Express.Multer.File>,
   ): Promise<Array<FileEntity>> {
-    return this.fileRepository.manager.transaction(async (fileRepository) => {
+    return this.fileRepository.manager.transaction(async (transact) => {
       let folder: FolderEntity | null = null;
       if (!folderIdOrig) {
         folder = await this.folderService.rootFolder(user);
@@ -291,9 +282,7 @@ export class FileService {
           throw new ServiceUnavailableException(error);
         }
 
-        return fileRepository.save(
-          fileRepository.create<FileEntity>(FileEntity, media),
-        );
+        return transact.save(FileEntity, transact.create(FileEntity, media));
       });
 
       return Promise.all(filesPromises);
@@ -396,13 +385,13 @@ export class FileService {
     toFolder: FolderEntity,
     originalFiles: FileEntity[],
   ): Promise<FileEntity[]> {
-    return this.fileRepository.manager.transaction(async (fileRepository) => {
+    return this.fileRepository.manager.transaction(async (transact) => {
       const filePromises = originalFiles.map(async (file) => {
         await this.copyS3Object(toFolder, file).catch((error) => {
           this.logger.error(`S3 Error copyObject: ${JSON.stringify(error)}`);
         });
 
-        const fileCopy = fileRepository.create(FileEntity, {
+        const fileCopy = transact.create(FileEntity, {
           ...file,
           userId,
           folderId: toFolder.id,
@@ -414,7 +403,7 @@ export class FileService {
           createdAt: undefined,
           updatedAt: undefined,
         });
-        return fileRepository.save(FileEntity, fileCopy);
+        return transact.save(FileEntity, fileCopy);
       });
 
       return Promise.all(filePromises);

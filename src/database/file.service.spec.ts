@@ -19,7 +19,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
-  get: async () => Promise.resolve(''),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -33,30 +33,12 @@ describe(FileService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         FileService,
-        {
-          provide: ConfigService,
-          useClass: mockRepository,
-        },
-        {
-          provide: MailService,
-          useClass: mockRepository,
-        },
-        {
-          provide: FolderService,
-          useClass: mockRepository,
-        },
-        {
-          provide: MonitorService,
-          useClass: mockRepository,
-        },
-        {
-          provide: EditorService,
-          useClass: mockRepository,
-        },
-        {
-          provide: PlaylistService,
-          useClass: mockRepository,
-        },
+        { provide: ConfigService, useClass: mockRepository },
+        { provide: MailService, useClass: mockRepository },
+        { provide: FolderService, useClass: mockRepository },
+        { provide: MonitorService, useClass: mockRepository },
+        { provide: EditorService, useClass: mockRepository },
+        { provide: PlaylistService, useClass: mockRepository },
         {
           provide: getS3ConnectionToken(S3_MODULE_CONNECTION),
           useClass: mockRepository,

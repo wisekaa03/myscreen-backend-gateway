@@ -6,18 +6,18 @@ import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
 import { InvoiceEntity } from '@/database/invoice.entity';
 import { LimitRequest } from './limit.request';
-import { InvoicePartialRequest } from './invoice-partial.request';
+import { InvoicesRequest } from './invoices.request';
 
 export class InvoicesGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: InvoicePartialRequest,
+    type: InvoicesRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => InvoicePartialRequest)
-  where?: FindOptionsWhere<InvoicePartialRequest>;
+  @Type(() => InvoicesRequest)
+  where?: FindOptionsWhere<InvoicesRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
@@ -27,15 +27,15 @@ export class InvoicesGetRequest {
     required: false,
   })
   @IsOptional()
-  select?: FindOptionsSelect<InvoicePartialRequest>;
+  select?: FindOptionsSelect<InvoicesRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest,
+    type: LimitRequest<InvoicesRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest)
-  scope?: LimitRequest<InvoicePartialRequest>;
+  @Type(() => LimitRequest<InvoicesRequest>)
+  scope?: LimitRequest<InvoicesRequest>;
 }

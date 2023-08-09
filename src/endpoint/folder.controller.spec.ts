@@ -11,6 +11,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -24,14 +25,8 @@ describe(FolderController.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [FolderController],
       providers: [
-        {
-          provide: FolderService,
-          useClass: mockRepository,
-        },
-        {
-          provide: UserService,
-          useClass: mockRepository,
-        },
+        { provide: FolderService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
       ],
     }).compile();
 

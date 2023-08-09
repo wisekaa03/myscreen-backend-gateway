@@ -38,7 +38,7 @@ export class ActEntity {
     description: 'Номер акта выполненных работ',
   })
   @IsNumber()
-  seqNo?: number;
+  seqNo!: number;
 
   @Column()
   @ApiProperty({

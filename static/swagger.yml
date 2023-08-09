@@ -2211,7 +2211,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ApplicationGetRequest"
+              $ref: "#/components/schemas/ApplicationsGetRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -2330,10 +2330,16 @@ paths:
       tags: *ref_79
       security: *ref_80
   /api/v2/crontab/create/users:
-    get:
+    post:
       operationId: crontab-create-users
       summary: Включение CronTab для пользователей (только администратор)
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CrontabCreateRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -2376,7 +2382,7 @@ paths:
       security: &ref_87
         - bearer: []
   /api/v2/crontab/delete/users:
-    get:
+    post:
       operationId: crontab-delete-users
       summary: Выключение CronTab для пользователей (только администратор)
       parameters: []
@@ -2397,7 +2403,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.41.10
+  version: 2.41.12
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -5154,7 +5160,7 @@ components:
         - CONFIRMED_PENDING_PAYMENT
         - PAID
         - CANCELLED
-    InvoicePartialRequest:
+    InvoicesRequest:
       type: object
       properties:
         id:
@@ -5198,7 +5204,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/InvoicePartialRequest"
+            - $ref: "#/components/schemas/InvoicesRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5531,7 +5537,7 @@ components:
         - format
         - dateFrom
         - dateTo
-    ApplicationPartialRequest:
+    ApplicationsRequest:
       type: object
       properties:
         id:
@@ -5594,13 +5600,13 @@ components:
           type: array
           items:
             type: array
-    ApplicationGetRequest:
+    ApplicationsGetRequest:
       type: object
       properties:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/ApplicationPartialRequest"
+            - $ref: "#/components/schemas/ApplicationsRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5650,6 +5656,13 @@ components:
           $ref: "#/components/schemas/ApplicationApproved"
       required:
         - approved
+    CrontabCreateRequest:
+      type: object
+      properties:
+        crontab:
+          type: string
+          description: "Crontab: \"Second Minute Hour DayOfMonth Month DayOfWeek\""
+          example: 0 0 0 * * *
 externalDocs:
   description: MyScreen backend API
   url: https://api.myscreen.ru

@@ -11,6 +11,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -24,14 +25,8 @@ describe(EditorController.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EditorController],
       providers: [
-        {
-          provide: EditorService,
-          useClass: mockRepository,
-        },
-        {
-          provide: FileService,
-          useClass: mockRepository,
-        },
+        { provide: EditorService, useClass: mockRepository },
+        { provide: FileService, useClass: mockRepository },
       ],
     }).compile();
 

@@ -31,11 +31,11 @@ export class MonitorsGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest,
+    type: LimitRequest<MonitorPartialRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest)
+  @Type(() => LimitRequest<MonitorPartialRequest>)
   scope?: LimitRequest<MonitorPartialRequest>;
 }

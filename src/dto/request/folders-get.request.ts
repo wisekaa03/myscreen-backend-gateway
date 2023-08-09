@@ -31,11 +31,11 @@ export class FoldersGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest,
+    type: LimitRequest<FolderPartialRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest)
+  @Type(() => LimitRequest<FolderPartialRequest>)
   scope?: LimitRequest<FolderPartialRequest>;
 }

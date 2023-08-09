@@ -6,18 +6,18 @@ import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
 import { ApplicationEntity } from '@/database/application.entity';
 import { LimitRequest } from './limit.request';
-import { ApplicationPartialRequest } from './application-partial.request';
+import { ApplicationsRequest } from './applications.request';
 
-export class ApplicationGetRequest {
+export class ApplicationsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: ApplicationPartialRequest,
+    type: ApplicationsRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => ApplicationPartialRequest)
-  where?: FindOptionsWhere<ApplicationPartialRequest>;
+  @Type(() => ApplicationsRequest)
+  where?: FindOptionsWhere<ApplicationsRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
@@ -27,15 +27,15 @@ export class ApplicationGetRequest {
     required: false,
   })
   @IsOptional()
-  select?: FindOptionsSelect<ApplicationPartialRequest>;
+  select?: FindOptionsSelect<ApplicationsRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest,
+    type: LimitRequest<ApplicationsRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest)
-  scope?: LimitRequest<ApplicationPartialRequest>;
+  @Type(() => LimitRequest<ApplicationsRequest>)
+  scope?: LimitRequest<ApplicationsRequest>;
 }

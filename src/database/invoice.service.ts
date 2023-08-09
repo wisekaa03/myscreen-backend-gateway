@@ -73,10 +73,10 @@ export class InvoiceService {
     sum: number,
     description?: string,
   ): Promise<InvoiceEntity | null> {
-    return this.invoiceRepository.manager.transaction(async (tManager) => {
+    return this.invoiceRepository.manager.transaction(async (transact) => {
       // Если у пользователя есть счет со статусом "Ожидает подтверждения",
       // "Подтвержден, ожидает оплаты", то нужно присвоить ему статус "Аннулирован".
-      const invoices = await this.invoiceRepository.find({
+      const invoices = await transact.find(InvoiceEntity, {
         where: [
           { userId: user.id, status: InvoiceStatus.AWAITING_CONFIRMATION },
           { userId: user.id, status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT },
@@ -84,29 +84,28 @@ export class InvoiceService {
       });
       if (invoices.length > 0) {
         const invoicesPromise = Object.values(invoices).map((invoice) =>
-          tManager.save(InvoiceEntity, {
+          transact.save(InvoiceEntity, {
             ...invoice,
-            user: undefined,
             status: InvoiceStatus.CANCELLED,
           }),
         );
         await Promise.all(invoicesPromise);
       }
 
-      const invoiceEntity: DeepPartial<InvoiceEntity> = {
+      const invoiceChanged: DeepPartial<InvoiceEntity> = {
         sum,
         description,
         userId: user.id,
         status: InvoiceStatus.AWAITING_CONFIRMATION,
       };
 
-      const invoice = await tManager.save(
+      const { id } = await transact.save(
         InvoiceEntity,
-        tManager.create(InvoiceEntity, invoiceEntity),
+        transact.create(InvoiceEntity, invoiceChanged),
       );
 
-      return tManager.findOne(InvoiceEntity, {
-        where: { id: invoice.id },
+      return transact.findOne(InvoiceEntity, {
+        where: { id },
         relations: ['user'],
       });
     });
@@ -116,103 +115,107 @@ export class InvoiceService {
     invoice: InvoiceEntity,
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
-    const invoiceChanged: InvoiceEntity =
-      await this.invoiceRepository.manager.transaction(async (tManager) => {
-        const tInvoiceCreate = await tManager.save(InvoiceEntity, {
-          ...invoice,
-          status,
-        });
-
-        switch (status) {
-          // Если статус счета "Оплачен", то нужно записать в базу
-          // сумму баланса и отправить письмо пользователю
-          case InvoiceStatus.PAID: {
-            // здесь записывается в базу сумма баланса
-            await tManager.save(
-              WalletEntity,
-              this.walletService.create({
-                user: tInvoiceCreate.user,
-                invoice: tInvoiceCreate,
-              }),
-            );
-
-            let balance = await this.walletService.walletSum(
-              tInvoiceCreate.userId,
-              tManager,
-            );
-
-            // и выводится письмо о том, что счет оплачен
-            await this.mailService.invoicePayed(
-              tInvoiceCreate.user,
-              tInvoiceCreate,
-              balance,
-            );
-
-            if (balance >= this.acceptanceActSum) {
-              // теперь списание средств с баланса и создание акта
-              await this.actService.create(
-                tInvoiceCreate.user,
-                this.acceptanceActSum,
-                this.acceptanceActDescription,
-              );
-
-              // опять получаем баланс
-              balance = await this.walletService.walletSum(
-                tInvoiceCreate.userId,
-                tManager,
-              );
-
-              this.logger.warn(
-                `Balance of user ${UserService.fullName(
-                  tInvoiceCreate.user,
-                )}: ${balance}`,
-              );
-
-              // и направляем письмо о списании средств
-              // await this.mailService.acceptanceAct(
-              //   tInvoiceCreate.user,
-              //   tInvoiceCreate,
-              //   balance,
-              // );
-            }
-
-            break;
-          }
-
-          // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
-          case InvoiceStatus.AWAITING_CONFIRMATION: {
-            const accountantUsers = await this.userService.find({
-              where: {
-                role: UserRoleEnum.Accountant,
-                disabled: false,
-                verified: true,
-              },
-            });
-            await this.mailService.invoiceAwaitingConfirmation(
-              accountantUsers,
-              tInvoiceCreate,
-            );
-            break;
-          }
-
-          // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
-          case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
-            await this.mailService.invoiceConfirmed(
-              tInvoiceCreate.user,
-              tInvoiceCreate,
-            );
-
-            break;
-          }
-
-          default:
-            break;
-        }
-
-        return tInvoiceCreate;
+    return this.invoiceRepository.manager.transaction(async (transact) => {
+      const invoiceCreate = await transact.save(InvoiceEntity, {
+        ...invoice,
+        status,
       });
 
-    return Object.assign(invoiceChanged, { user: undefined });
+      switch (status) {
+        // Если статус счета "Оплачен", то нужно записать в базу
+        // сумму баланса и отправить письмо пользователю
+        case InvoiceStatus.PAID: {
+          // здесь записывается в базу сумма баланса
+          await transact.save(
+            WalletEntity,
+            this.walletService.create({
+              user: invoiceCreate.user,
+              invoice: invoiceCreate,
+            }),
+          );
+
+          let balance = await this.walletService.walletSum({
+            userId: invoiceCreate.userId,
+            transact,
+          });
+
+          // и выводится письмо о том, что счет оплачен
+          await this.mailService.invoicePayed(
+            invoiceCreate.user,
+            invoiceCreate,
+            balance,
+          );
+
+          if (balance >= this.acceptanceActSum) {
+            // теперь списание средств с баланса и создание акта
+            await this.actService.create({
+              user: invoiceCreate.user,
+              sum: this.acceptanceActSum,
+              description: this.acceptanceActDescription,
+            });
+
+            // опять получаем баланс
+            balance = await this.walletService.walletSum({
+              userId: invoiceCreate.userId,
+              transact,
+            });
+
+            this.logger.warn(
+              `Balance of user ${UserService.fullName(
+                invoiceCreate.user,
+              )}: ${balance}`,
+            );
+
+            // и направляем письмо о списании средств
+            await this.mailService.balanceChanged(
+              invoiceCreate.user,
+              invoiceCreate.sum,
+              balance,
+            );
+          } else {
+            // и направляем письмо о не-списании средств
+            await this.mailService.balanceNotChanged(
+              invoiceCreate.user,
+              this.acceptanceActSum,
+              balance,
+            );
+          }
+
+          break;
+        }
+
+        // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
+        case InvoiceStatus.AWAITING_CONFIRMATION: {
+          const accountantUsers = await this.userService.find({
+            where: {
+              role: UserRoleEnum.Accountant,
+              disabled: false,
+              verified: true,
+            },
+          });
+          await this.mailService.invoiceAwaitingConfirmation(
+            accountantUsers,
+            invoiceCreate,
+          );
+          break;
+        }
+
+        // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
+        case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
+          await this.mailService.invoiceConfirmed(
+            invoiceCreate.user,
+            invoiceCreate,
+          );
+
+          break;
+        }
+
+        default:
+          break;
+      }
+
+      return Object.assign(invoiceCreate, { user: undefined });
+    });
   }
 
   /**

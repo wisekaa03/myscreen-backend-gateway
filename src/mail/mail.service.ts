@@ -56,8 +56,8 @@ export class MailService {
 
   private static invoicePayedText = (invoiceSum: number, balance: number) =>
     `Спасибо за оплату. \n\
-    Сумма счета: ${invoiceSum} рублей. \n\
-    Баланс: ${balance} рублей. \n\
+    Сумма счета: ${invoiceSum} руб. \n\
+    Баланс: ${balance} руб. \n\
     \n`;
 
   private invoiceAwaitingConfirmationText = (
@@ -75,8 +75,17 @@ export class MailService {
     sum: number,
     balance: number,
   ) => `Списалась абонентская плата -${sum}.\n\
-  Баланс: ${balance}.\n\
-  `;
+    Баланс: ${balance} руб. \n\
+    `;
+
+  private static balanceNotChangedText = (
+    sum: number,
+    balance: number,
+  ) => `Внимание! \n\
+    Недостаточно средств для списания абонентской платы (${sum} руб.)\n\
+    Пополните баланс. Премиум подписка не доступна. \n\
+    Баланс: ${balance} руб. \n\
+    `;
 
   /**
    * Отправляет приветственное письмо
@@ -306,6 +315,24 @@ export class MailService {
       template: this.template,
       context: {
         text: MailService.balanceChangedText(sum, balance),
+      },
+    };
+
+    return this.mailerService.sendMail(message);
+  }
+
+  async balanceNotChanged(
+    user: UserEntity,
+    sum: number,
+    balance: number,
+  ): Promise<SentMessageInfo> {
+    const message: ISendMailOptions = {
+      to: [{ name: UserService.fullName(user), address: user.email }],
+      from: this.from,
+      subject: 'Недостаточно средств!',
+      template: this.template,
+      context: {
+        text: MailService.balanceNotChangedText(sum, balance),
       },
     };
 

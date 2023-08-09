@@ -31,11 +31,11 @@ export class PlaylistsGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest,
+    type: LimitRequest<PlaylistPartialRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest)
+  @Type(() => LimitRequest<PlaylistPartialRequest>)
   scope?: LimitRequest<PlaylistPartialRequest>;
 }

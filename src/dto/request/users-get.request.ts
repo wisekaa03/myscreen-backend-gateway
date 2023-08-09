@@ -33,11 +33,11 @@ export class UsersGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest,
+    type: LimitRequest<UserRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest)
+  @Type(() => LimitRequest<UserRequest>)
   scope?: LimitRequest<UserRequest>;
 }

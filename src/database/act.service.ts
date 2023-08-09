@@ -1,10 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import {
+  DeepPartial,
+  EntityManager,
+  FindManyOptions,
+  Repository,
+} from 'typeorm';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
+// eslint-disable-next-line import/no-cycle
 import { WalletService } from './wallet.service';
 import { ActEntity } from './act.entity';
 import { ActStatus } from '@/enums';
@@ -13,11 +20,20 @@ import { ActStatus } from '@/enums';
 export class ActService {
   private logger = new Logger(ActService.name);
 
+  private acceptanceActDescription: string;
+
   constructor(
+    private readonly configService: ConfigService,
+    @Inject(forwardRef(() => WalletService))
     private readonly walletService: WalletService,
     @InjectRepository(ActEntity)
     private readonly actRepository: Repository<ActEntity>,
-  ) {}
+  ) {
+    this.acceptanceActDescription = this.configService.get<string>(
+      'ACCEPTANCE_ACT_DESCRIPTION',
+      'Оплата за услуги',
+    );
+  }
 
   async find(
     find: FindManyOptions<ActEntity>,
@@ -29,30 +45,34 @@ export class ActService {
     return this.actRepository.findOne(TypeOrmFind.Nullable(find));
   }
 
-  async create(
-    user: UserEntity,
-    sum: number,
-    description?: string,
-  ): Promise<ActEntity> {
-    return this.actRepository.manager.transaction(async (tManager) => {
-      const act: DeepPartial<ActEntity> = {
+  async create({
+    user,
+    sum,
+    description,
+  }: {
+    user: UserEntity;
+    sum: number;
+    description?: string;
+  }): Promise<ActEntity> {
+    return this.actRepository.manager.transaction(async (transact) => {
+      const actCreated: DeepPartial<ActEntity> = {
         sum,
-        description,
+        description: description ?? this.acceptanceActDescription,
         status: ActStatus.COMPLETE,
         userId: user.id,
       };
 
-      const tActCreate = await tManager.save(
+      const actCreate = await transact.save(
         ActEntity,
-        tManager.create(ActEntity, act),
+        transact.create(ActEntity, actCreated),
       );
 
-      await tManager.save(
+      await transact.save(
         WalletEntity,
-        this.walletService.create({ user, act: tActCreate }),
+        this.walletService.create({ user, act: actCreate }),
       );
 
-      return tActCreate;
+      return actCreate;
     });
   }
 }

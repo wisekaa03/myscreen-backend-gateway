@@ -31,11 +31,11 @@ export class EditorGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest,
+    type: LimitRequest<EditorPartialRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest)
+  @Type(() => LimitRequest<EditorPartialRequest>)
   scope?: LimitRequest<EditorPartialRequest>;
 }

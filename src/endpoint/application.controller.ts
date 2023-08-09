@@ -29,7 +29,7 @@ import { Not } from 'typeorm';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
   BadRequestError,
-  ApplicationGetRequest,
+  ApplicationsGetRequest,
   ApplicationGetResponse,
   ApplicationsGetResponse,
   ApplicationUpdateRequest,
@@ -101,7 +101,7 @@ export class ApplicationController {
   })
   async getApplications(
     @Req() { user: { id: userId, role } }: ExpressRequest,
-    @Body() { where, select, scope }: ApplicationGetRequest,
+    @Body() { where, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
     const sqlWhere = TypeOrmFind.Where(where);
     if (role === UserRoleEnum.MonitorOwner) {

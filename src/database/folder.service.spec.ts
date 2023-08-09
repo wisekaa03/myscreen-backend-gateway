@@ -13,6 +13,7 @@ export const mockRepository = jest.fn(() => ({
   create: () => [],
   remove: async () => Promise.resolve([]),
   delete: async () => Promise.resolve([]),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -26,10 +27,7 @@ describe(FolderService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         FolderService,
-        {
-          provide: FileService,
-          useClass: mockRepository,
-        },
+        { provide: FileService, useClass: mockRepository },
         {
           provide: getRepositoryToken(FolderEntity),
           useClass: mockRepository,

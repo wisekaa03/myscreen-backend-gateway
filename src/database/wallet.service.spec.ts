@@ -1,9 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 
 import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
+import { MailService } from '@/mail/mail.service';
+import { ActService } from './act.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -11,6 +14,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -24,12 +28,12 @@ describe(WalletService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WalletService,
+        { provide: UserService, useClass: mockRepository },
+        { provide: ConfigService, useClass: mockRepository },
+        { provide: MailService, useClass: mockRepository },
+        { provide: ActService, useClass: mockRepository },
         {
           provide: getRepositoryToken(WalletEntity),
-          useClass: mockRepository,
-        },
-        {
-          provide: UserService,
           useClass: mockRepository,
         },
       ],

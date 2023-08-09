@@ -2,10 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { JwtAuthGuard } from '@/guards';
 import { InvoiceService } from '@/database/invoice.service';
-import { PrintService } from '@/print/print.service';
-import { UserService } from '@/database/user.service';
-import { MailService } from '@/mail/mail.service';
-import { WalletService } from '@/database/wallet.service';
 import { InvoiceController } from './invoice.controller';
 
 export const mockRepository = jest.fn(() => ({
@@ -14,6 +10,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -26,12 +23,7 @@ describe(InvoiceController.name, () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [InvoiceController],
-      providers: [
-        {
-          provide: InvoiceService,
-          useClass: mockRepository,
-        },
-      ],
+      providers: [{ provide: InvoiceService, useClass: mockRepository }],
     }).compile();
 
     controller = module.get(InvoiceController);

@@ -34,6 +34,6 @@ export class LimitRequest<T = Record<string, 'DESC' | 'ASC'>> {
   })
   @IsOptional()
   // @ValidateNested()
-  @Type(() => LimitOrderRequest)
+  @Type(() => LimitOrderRequest<T>)
   order?: LimitOrderRequest<T>;
 }

@@ -1,9 +1,10 @@
 import {
+  Body,
   Controller,
-  Get,
   HttpCode,
   HttpStatus,
   Logger,
+  Post,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -20,6 +21,7 @@ import {
   InternalServerError,
   SuccessResponse,
   NotFoundError,
+  CrontabCreateRequest,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
 import { Status } from '@/enums/status.enum';
@@ -61,7 +63,7 @@ export class CrontabController {
 
   constructor(private readonly crontabService: CrontabService) {}
 
-  @Get('create/users')
+  @Post('create/users')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'crontab-create-users',
@@ -72,15 +74,17 @@ export class CrontabController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
-  async crontabCreate(): Promise<SuccessResponse> {
-    this.crontabService.addCronJob();
+  async crontabCreate(
+    @Body() { crontab }: CrontabCreateRequest,
+  ): Promise<SuccessResponse> {
+    this.crontabService.addCronJob(crontab);
 
     return {
       status: Status.Success,
     };
   }
 
-  @Get('delete/users')
+  @Post('delete/users')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'crontab-delete-users',

@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { JwtAuthGuard, RolesGuard } from '@/guards';
-import { UserRoleEnum } from '@/enums/user-role.enum';
-import { UserService } from '@/database/user.service';
-import { UserController } from './user.controller';
+import { UserRoleEnum } from '@/enums';
+import { CrontabService } from '@/crontab/crontab.service';
+import { CrontabController } from './crontab.controller';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -18,16 +18,16 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(UserController.name, () => {
-  let controller: UserController;
+describe(CrontabController.name, () => {
+  let controller: CrontabController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UserController],
-      providers: [{ provide: UserService, useClass: mockRepository }],
+      controllers: [CrontabController],
+      providers: [{ provide: CrontabService, useClass: mockRepository }],
     }).compile();
 
-    controller = module.get<UserController>(UserController);
+    controller = module.get<CrontabController>(CrontabController);
   });
 
   it('should be defined', () => {
@@ -35,17 +35,17 @@ describe(UserController.name, () => {
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
-    const guards = Reflect.getMetadata('__guards__', UserController);
+    const guards = Reflect.getMetadata('__guards__', CrontabController);
     const guardJwt = new guards[0]();
     const guardRoles = new guards[1]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);
     expect(guardRoles).toBeInstanceOf(RolesGuard);
 
-    const roles = Reflect.getMetadata('roles', UserController);
+    const roles = Reflect.getMetadata('roles', CrontabController);
     expect(roles).toStrictEqual([UserRoleEnum.Administrator]);
   });
 
-  // DEBUG: should inspect:
-  // DEBUG: - users, user, userUpdate, disableUser, enableUser, deleteUser
+  // TODO: should inspect:
+  // TODO: -
 });
