@@ -16,9 +16,16 @@ import {
   type DeepPartial,
   FindManyOptions,
 } from 'typeorm';
+import addDays from 'date-fns/addDays';
 
 import { RegisterRequest, selectUserOptions } from '@/dto';
-import { UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
+import {
+  CRUDS,
+  Controllers,
+  UserPlanEnum,
+  UserRoleEnum,
+  UserStoreSpaceEnum,
+} from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -45,6 +52,104 @@ export class UserService {
       'FRONTEND_URL',
       'http://localhost',
     );
+  }
+
+  async verify(
+    controllers: Controllers,
+    ascrud: CRUDS,
+    user: UserExtEntity,
+  ): Promise<void> {
+    const fullName = `${UserService.fullName(user)} <${user.email}>`;
+    this.logger.debug(
+      `User: "${fullName}" Controllers: "${controllers}" ASCRUD: "${ascrud}"`,
+    );
+
+    switch (user.role) {
+      case UserRoleEnum.MonitorOwner: {
+        switch (user.plan) {
+          case UserPlanEnum.Demo: {
+            if (controllers === Controllers.INVOICE) {
+              break;
+            }
+
+            let demoDays = 28;
+            if (controllers === Controllers.MONITOR) {
+              demoDays = 14;
+            }
+            if (
+              user.createdAt &&
+              addDays(user.createdAt, demoDays) <= new Date()
+            ) {
+              throw new ForbiddenException(
+                'You have a Demo User account. Time to pay.',
+              );
+            }
+
+            if ((user.countMonitors ?? 0) > 5) {
+              throw new ForbiddenException(
+                'You have a Demo User account. Time to pay..',
+              );
+            }
+
+            if ((user.countUsedSpace ?? 0) > UserStoreSpaceEnum.DEMO) {
+              throw new ForbiddenException(
+                'You have a Demo User account. Time to pay...',
+              );
+            }
+
+            if (controllers === Controllers.APPLICATION) {
+              throw new ForbiddenException(
+                'You have a Demo User account. Time to pay...',
+              );
+            }
+
+            break;
+          }
+
+          case UserPlanEnum.Full: {
+            if (
+              controllers === Controllers.FILE &&
+              (user.countUsedSpace || 0) >= UserStoreSpaceEnum.FULL &&
+              ascrud === CRUDS.CREATE
+            ) {
+              throw new ForbiddenException();
+            }
+
+            break;
+          }
+
+          default:
+        }
+
+        break;
+      }
+
+      case UserRoleEnum.Advertiser: {
+        if (controllers === Controllers.MONITOR) {
+          throw new ForbiddenException();
+        }
+
+        if (
+          controllers === Controllers.FILE &&
+          (user.countUsedSpace || 0) >= UserStoreSpaceEnum.FULL &&
+          ascrud === CRUDS.CREATE
+        ) {
+          throw new ForbiddenException(
+            `You have a limited User account to store space: ${user.countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
+          );
+        }
+
+        break;
+      }
+
+      /**
+        Сюда проваливаются все остальные роли:
+          UserRoleEnum.Administrator
+          UserRoleEnum.Accountant
+          UserRoleEnum.Monitor
+      */
+      default:
+    }
   }
 
   /**

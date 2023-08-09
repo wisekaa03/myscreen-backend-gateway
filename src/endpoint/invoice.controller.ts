@@ -41,13 +41,21 @@ import {
   UnauthorizedError,
   NotAcceptableError,
 } from '@/dto';
-import { Status, UserRoleEnum, SpecificFormat, InvoiceStatus } from '@/enums';
+import {
+  Status,
+  UserRoleEnum,
+  SpecificFormat,
+  InvoiceStatus,
+  CRUDS,
+  Controllers,
+} from '@/enums';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { InvoiceService } from '@/database/invoice.service';
 import { InvoiceEntity } from '@/database/invoice.entity';
+import { UserService } from '@/database/user.service';
 
 @ApiResponse({
   status: HttpStatus.BAD_REQUEST,
@@ -97,7 +105,10 @@ import { InvoiceEntity } from '@/database/invoice.entity';
 export class InvoiceController {
   logger = new Logger(InvoiceController.name);
 
-  constructor(private readonly invoiceService: InvoiceService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly invoiceService: InvoiceService,
+  ) {}
 
   @Post()
   @HttpCode(200)
@@ -114,6 +125,9 @@ export class InvoiceController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: InvoicesGetRequest,
   ): Promise<InvoicesGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.INVOICE, CRUDS.READ, user);
+
     const whenUser =
       user.role === UserRoleEnum.Administrator ||
       user.role === UserRoleEnum.Accountant
@@ -147,6 +161,9 @@ export class InvoiceController {
     @Req() { user }: ExpressRequest,
     @Body() { sum, description }: InvoiceCreateRequest,
   ): Promise<InvoiceGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.INVOICE, CRUDS.CREATE, user);
+
     const invoice = await this.invoiceService.create(
       user,
       sum,
@@ -181,8 +198,12 @@ export class InvoiceController {
   @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async confirmed(
+    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.INVOICE, CRUDS.UPDATE, user);
+
     const invoice = await this.invoiceService.findOne({
       where: { id },
       relations: ['user'],
@@ -218,8 +239,12 @@ export class InvoiceController {
   @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
   @UseGuards(JwtAuthGuard, RolesGuard)
   async payed(
+    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.INVOICE, CRUDS.UPDATE, user);
+
     const invoice = await this.invoiceService.findOne({
       where: { id },
       relations: ['user'],
@@ -274,6 +299,9 @@ export class InvoiceController {
     @Param('invoiceId', ParseUUIDPipe) id: string,
     @Param('format', new ParseEnumPipe(SpecificFormat)) format: SpecificFormat,
   ): Promise<void> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.INVOICE, CRUDS.READ, user);
+
     const where: FindOptionsWhere<InvoiceEntity> = { id };
     if (
       user.role !== UserRoleEnum.Administrator &&

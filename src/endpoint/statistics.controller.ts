@@ -35,7 +35,13 @@ import {
   StatisticsResponse,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status, UserRoleEnum, SpecificFormat } from '@/enums';
+import {
+  Status,
+  UserRoleEnum,
+  SpecificFormat,
+  CRUDS,
+  Controllers,
+} from '@/enums';
 import { UserService } from '@/database/user.service';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { PlaylistService } from '@/database/playlist.service';
@@ -108,6 +114,9 @@ export class StatisticsController {
   async getPlaylists(
     @Req() { user }: ExpressRequest,
   ): Promise<StatisticsResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.OTHER, CRUDS.STATUS, user);
+
     const [[, added], [, played]] = await Promise.all([
       this.playlistService.findAndCount({
         where: { userId: user.id },
@@ -156,12 +165,15 @@ export class StatisticsController {
     },
   })
   async reportDeviceStatus(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Body() { format, dateFrom, dateTo }: ReportDeviceStatusRequest,
   ): Promise<void> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.OTHER, CRUDS.STATUS, user);
+
     const data = await this.printService.reportDeviceStatus({
-      userId,
+      userId: user.id,
       format,
       dateFrom,
       dateTo,
@@ -208,12 +220,15 @@ export class StatisticsController {
     },
   })
   async reportViews(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Body() { format, dateFrom, dateTo }: ReportViewsRequest,
   ): Promise<void> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.OTHER, CRUDS.STATUS, user);
+
     const data = await this.printService.reportViews({
-      userId,
+      userId: user.id,
       format,
       dateFrom,
       dateTo,

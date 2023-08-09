@@ -73,8 +73,6 @@ export class AuthService {
       throw new ForbiddenException('Password mismatched');
     }
 
-    this.jwtStrategy.verify(user);
-
     const [token, refresh] = await Promise.all([
       this.generateAccessToken(user),
       this.generateRefreshToken(user.id, fingerprint),
@@ -246,8 +244,6 @@ export class AuthService {
       ...JWT_BASE_OPTIONS,
     });
   }
-
-  verify = (user: UserExtEntity) => this.jwtStrategy.verify(user);
 
   /**
    * Проверяет почту на соответствие

@@ -132,66 +132,60 @@ export class WalletService {
     this.walletRepository.manager.transaction(async (transact) => {
       const users = await transact.find(UserEntity, {
         where: [
-          { verified: true, disabled: false, role: UserRoleEnum.Advertiser },
           { verified: true, disabled: false, role: UserRoleEnum.MonitorOwner },
         ],
       });
 
       const promiseUsers = users.map(async (user) => {
+        const fullName = `${UserService.fullName(user)} <${user.email}> ${
+          user.role
+        } / ${user.plan}`;
         const isActInPastMonth = await this.walletAcceptanceActFromDate(user, [
           fromDate,
           toDate,
         ]);
         let balance = await this.walletSum({ userId: user.id, transact });
-        this.logger.warn(
-          `[✓] User "${UserService.fullName(user)}" balance: ${balance} руб.`,
-        );
-        if (!isActInPastMonth) {
-          if (balance >= this.acceptanceActSum) {
-            this.logger.warn(
-              ` [+] Issue an acceptance act to the user "${UserService.fullName(
-                user,
-              )}"`,
-            );
-            await this.actService.create({
-              user,
-              sum: this.acceptanceActSum,
-              description: this.acceptanceActDescription,
+        this.logger.warn(`[✓] User "${fullName}" balance: ${balance} rub.`);
+        if (isActInPastMonth) {
+          this.logger.warn(
+            ` [ ] Skipping "${fullName}" because acceptance act was issued in the last month. Balance ${balance} rub.`,
+          );
+        } else if (balance >= this.acceptanceActSum) {
+          this.logger.warn(
+            ` [+] Issue an acceptance act to the user "${fullName}"`,
+          );
+          await this.actService.create({
+            user,
+            sum: this.acceptanceActSum,
+            description: this.acceptanceActDescription,
+          });
+          if (user.plan === UserPlanEnum.Demo) {
+            await this.userService.update(user.id, {
+              plan: UserPlanEnum.Full,
             });
-            if (user.plan === UserPlanEnum.Demo) {
-              await this.userService.update(user.id, {
-                plan: UserPlanEnum.Full,
-              });
-            }
-            balance = await this.walletSum({ userId: user.id, transact });
-            this.logger.warn(
-              ` [✓] Balance of user "${UserService.fullName(
-                user,
-              )}: ${balance} руб."`,
-            );
-            await this.mailService.balanceChanged(
-              user,
-              this.acceptanceActSum,
-              balance,
-            );
-          } else {
-            this.logger.warn(
-              ` [!] User "${UserService.fullName(user)}" balance is less than ${
-                this.acceptanceActSum
-              } руб.`,
-            );
-            await this.userService.update(user.id, { plan: UserPlanEnum.Demo });
-            await this.mailService.balanceNotChanged(
-              user,
-              this.acceptanceActSum,
-              balance,
-            );
           }
+          balance = await this.walletSum({ userId: user.id, transact });
+          this.logger.warn(
+            ` [✓] Balance of user "${fullName}: ${balance} rub."`,
+          );
+          await this.mailService.balanceChanged(
+            user,
+            this.acceptanceActSum,
+            balance,
+          );
         } else {
           this.logger.warn(
-            ` [ ] Skipping "${UserService.fullName(
-              user,
-            )}" because acceptance act was issued in the last month. Balance ${balance} руб.`,
+            ` [!] User "${fullName}" balance is less than ${this.acceptanceActSum} rub.`,
+          );
+          if (user.plan !== UserPlanEnum.Demo) {
+            await this.userService.update(user.id, {
+              plan: UserPlanEnum.Demo,
+            });
+          }
+          await this.mailService.balanceNotChanged(
+            user,
+            this.acceptanceActSum,
+            balance,
           );
         }
       });

@@ -40,14 +40,14 @@ import {
   PlaylistUpdateRequest,
 } from '@/dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status } from '@/enums/status.enum';
-import { UserRoleEnum } from '@/enums/user-role.enum';
+import { Status, UserRoleEnum, CRUDS, Controllers } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
-import { TypeOrmFind } from '@/utils/typeorm.find';
 import { PlaylistEntity } from '@/database/playlist.entity';
+import { UserService } from '@/database/user.service';
 
 @ApiResponse({
   status: HttpStatus.BAD_REQUEST,
@@ -94,6 +94,7 @@ export class PlaylistController {
   constructor(
     private readonly playlistService: PlaylistService,
     private readonly fileService: FileService,
+    private readonly userService: UserService,
   ) {}
 
   @Post('/')
@@ -111,6 +112,9 @@ export class PlaylistController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.PLAYLIST, CRUDS.READ, user);
+
     const [data, count] = await this.playlistService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
@@ -139,21 +143,24 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   async createPlaylists(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() body: PlaylistCreateRequest,
   ): Promise<PlaylistGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.PLAYLIST, CRUDS.CREATE, user);
+
     if (!(Array.isArray(body.files) && body.files.length > 0)) {
       throw new BadRequestException('Files must exist');
     }
     const files = await this.fileService.find({
-      where: { id: In(body.files), userId },
+      where: { id: In(body.files), userId: user.id },
     });
     if (!Array.isArray(files) || body.files.length !== files.length) {
       throw new NotFoundException('Files specified does not exist');
     }
 
     const data = await this.playlistService
-      .update(userId, {
+      .update(user.id, {
         ...body,
         files,
       })
@@ -186,11 +193,14 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   async getPlaylist(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
   ): Promise<PlaylistGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.PLAYLIST, CRUDS.READ, user);
+
     const data = await this.playlistService.findOne({
-      where: { userId, id },
+      where: { userId: user.id, id },
     });
     if (!data) {
       throw new NotFoundException(`Playlist '${id}' not found`);
@@ -214,14 +224,17 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   async updatePlaylists(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
     @Body() body: PlaylistUpdateRequest,
   ): Promise<PlaylistGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.PLAYLIST, CRUDS.UPDATE, user);
+
     let files: FileEntity[] | undefined;
     if (Array.isArray(body.files) && body.files.length > 0) {
       files = await this.fileService.find({
-        where: { id: In(body.files), userId },
+        where: { id: In(body.files), userId: user.id },
       });
       if (!Array.isArray(files) || body.files.length !== files.length) {
         throw new NotFoundException('Files specified does not exist');
@@ -229,7 +242,7 @@ export class PlaylistController {
     }
 
     const data = await this.playlistService
-      .update(userId, {
+      .update(user.id, {
         id,
         ...body,
         files,
@@ -261,6 +274,9 @@ export class PlaylistController {
     @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.PLAYLIST, CRUDS.DELETE, user);
+
     const where: FindOptionsWhere<PlaylistEntity> = { id };
     if (user.role !== UserRoleEnum.Administrator) {
       where.userId = user.id;

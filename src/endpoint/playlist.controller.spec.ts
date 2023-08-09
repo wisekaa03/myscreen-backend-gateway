@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { PlaylistService } from '@/database/playlist.service';
 import { FileService } from '@/database/file.service';
+import { UserService } from '@/database/user.service';
 import { PlaylistController } from './playlist.controller';
 
 export const mockRepository = jest.fn(() => ({
@@ -25,6 +26,7 @@ describe(PlaylistController.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PlaylistController],
       providers: [
+        { provide: UserService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
       ],

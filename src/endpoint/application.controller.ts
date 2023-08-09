@@ -39,10 +39,11 @@ import {
   SuccessResponse,
   UnauthorizedError,
 } from '@/dto';
-import { Status, UserRoleEnum } from '@/enums';
+import { Controllers, CRUDS, Status, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { WSGateway } from '@/websocket/ws.gateway';
+import { UserService } from '@/database/user.service';
 import { ApplicationService } from '@/database/application.service';
 
 @ApiResponse({
@@ -83,6 +84,7 @@ export class ApplicationController {
   logger = new Logger(ApplicationController.name);
 
   constructor(
+    private readonly userService: UserService,
     private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
@@ -100,17 +102,20 @@ export class ApplicationController {
     type: ApplicationsGetResponse,
   })
   async getApplications(
-    @Req() { user: { id: userId, role } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.APPLICATION, CRUDS.READ, user);
+
     const sqlWhere = TypeOrmFind.Where(where);
-    if (role === UserRoleEnum.MonitorOwner) {
+    if (user.role === UserRoleEnum.MonitorOwner) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { ...sqlWhere, buyerId: Not(userId) },
-          { ...sqlWhere, sellerId: Not(userId) },
+          { ...sqlWhere, buyerId: Not(user.id) },
+          { ...sqlWhere, sellerId: Not(user.id) },
         ],
       });
 
@@ -121,13 +126,13 @@ export class ApplicationController {
       };
     }
 
-    if (role === UserRoleEnum.Advertiser) {
+    if (user.role === UserRoleEnum.Advertiser) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { ...sqlWhere, buyerId: userId },
-          { ...sqlWhere, sellerId: userId },
+          { ...sqlWhere, buyerId: user.id },
+          { ...sqlWhere, sellerId: user.id },
         ],
       });
 
@@ -162,8 +167,12 @@ export class ApplicationController {
     type: ApplicationGetResponse,
   })
   async getApplication(
+    @Req() { user }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.APPLICATION, CRUDS.READ, user);
+
     const data = await this.applicationService.findOne({
       where: {
         id,
@@ -190,19 +199,22 @@ export class ApplicationController {
     type: ApplicationGetResponse,
   })
   async updateApplication(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
     @Body() update: ApplicationUpdateRequest,
   ): Promise<ApplicationGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.APPLICATION, CRUDS.UPDATE, user);
+
     const application = await this.applicationService.findOne({
       where: [
         {
           id: applicationId,
-          sellerId: userId,
+          sellerId: user.id,
         },
         {
           id: applicationId,
-          buyerId: userId,
+          buyerId: user.id,
         },
       ],
     });
@@ -236,13 +248,16 @@ export class ApplicationController {
     type: SuccessResponse,
   })
   async deleteApplication(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.APPLICATION, CRUDS.DELETE, user);
+
     const application = await this.applicationService.findOne({
       where: [
-        { id, sellerId: userId },
-        { id, buyerId: userId },
+        { id, sellerId: user.id },
+        { id, buyerId: user.id },
       ],
       relations: ['monitor'],
     });
@@ -251,7 +266,7 @@ export class ApplicationController {
     }
 
     const { affected } = await this.applicationService.delete(
-      userId,
+      user.id,
       application,
     );
     if (!affected) {

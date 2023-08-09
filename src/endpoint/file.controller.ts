@@ -59,7 +59,7 @@ import {
   FilesUpdateRequest,
   FilesCopyRequest,
 } from '@/dto';
-import { UserRoleEnum, VideoType, Status } from '@/enums';
+import { UserRoleEnum, VideoType, Status, CRUDS, Controllers } from '@/enums';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -140,6 +140,9 @@ export class FileController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.READ, user);
+
     let count: number = 0;
     let data: Array<FileEntity> = [];
     const folderId = where?.folderId?.toString();
@@ -231,6 +234,9 @@ export class FileController {
     @Body() body: FileUploadRequestBody,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<FilesUploadResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.CREATE, user);
+
     if (files.length < 1) {
       throw new BadRequestException('Files expected');
     }
@@ -262,13 +268,16 @@ export class FileController {
     type: FileGetResponse,
   })
   async updateFilesDB(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { files }: FilesUpdateRequest,
   ): Promise<FilesGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.UPDATE, user);
+
     const filesPromise = files.map(async (file) => {
       const fileDB = await this.fileService.findOne({
         where: {
-          userId,
+          userId: user.id,
           id: file.id,
         },
       });
@@ -305,24 +314,27 @@ export class FileController {
     type: FileGetResponse,
   })
   async copyFiles(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { toFolder, files }: FilesCopyRequest,
   ): Promise<FilesGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.UPDATE, user);
+
     const filesIds = files.map((file) => file.id);
     const filesCopy = await this.fileService.find({
-      where: { userId, id: In(filesIds) },
+      where: { userId: user.id, id: In(filesIds) },
     });
     if (filesCopy.length !== files.length) {
       throw new BadRequestError();
     }
     const folder = await this.folderService.findOne({
-      where: { userId, id: toFolder },
+      where: { userId: user.id, id: toFolder },
     });
     if (!folder) {
       throw new NotFoundException(`Folder '${toFolder}' is not exist`);
     }
 
-    const data = await this.fileService.copy(userId, folder, filesCopy);
+    const data = await this.fileService.copy(user.id, folder, filesCopy);
 
     return {
       status: Status.Success,
@@ -372,10 +384,13 @@ export class FileController {
     },
   })
   async getFileS3(
-    /* @Req() { user: { id: userId, role } }: ExpressRequest, */
+    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.READ, user);
+
     const file = await this.fileService.findOne({
       // TODO: where: {id, userId} - посмотреть если в заявках (application) участвует
       // TODO: то выдавать его, нужно продумать
@@ -433,8 +448,12 @@ export class FileController {
     type: FileGetResponse,
   })
   async getFileDB(
+    @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<FileGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.READ, user);
+
     const where: FindOptionsWhere<FileEntity> = { id };
     const data = await this.fileService.findOne({
       where,
@@ -476,9 +495,13 @@ export class FileController {
     },
   })
   async getFilePreview(
+    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<void> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.READ, user);
+
     const where: FindOptionsWhere<FileEntity> = { id: fileId };
     const file = await this.fileService.findOne({
       where,
@@ -555,13 +578,16 @@ export class FileController {
     type: FileGetResponse,
   })
   async updateFileDB(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) id: string,
     @Body() update: FileUpdateRequest,
   ): Promise<FileGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.UPDATE, user);
+
     const file = await this.fileService.findOne({
       where: {
-        userId,
+        userId: user.id,
         id,
       },
     });
@@ -610,6 +636,9 @@ export class FileController {
     @Req() { user }: ExpressRequest,
     @Body() { filesId }: FilesDeleteRequest,
   ): Promise<SuccessResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.DELETE, user);
+
     await this.fileService.deletePrep(filesId);
 
     const { affected } = await this.fileService.delete(user, filesId);
@@ -637,6 +666,9 @@ export class FileController {
     @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<SuccessResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FILE, CRUDS.DELETE, user);
+
     await this.fileService.deletePrep([fileId]);
 
     const { affected } = await this.fileService.delete(user, [fileId]);

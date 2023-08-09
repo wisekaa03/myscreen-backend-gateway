@@ -44,7 +44,7 @@ import {
   FoldersUpdateRequest,
   FoldersCopyRequest,
 } from '@/dto';
-import { Status, UserRoleEnum } from '@/enums';
+import { CRUDS, Controllers, Status, UserRoleEnum } from '@/enums';
 import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -114,6 +114,9 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { scope, select, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FOLDER, CRUDS.READ, user);
+
     let count: number = 0;
     let data: FolderResponse[] = [];
     const parentFolderId = where?.parentFolderId?.toString();
@@ -206,6 +209,9 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { name, parentFolderId }: FolderCreateRequest,
   ): Promise<FolderGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FOLDER, CRUDS.CREATE, user);
+
     const parentFolder = parentFolderId
       ? await this.folderService.findOne({
           where: { userId: user.id, id: parentFolderId },
@@ -237,15 +243,18 @@ export class FolderController {
     type: FolderGetResponse,
   })
   async updateFolders(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { folders }: FoldersUpdateRequest,
   ): Promise<FoldersGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FOLDER, CRUDS.UPDATE, user);
+
     const parentFoldersId = folders.map((folder) => folder.id);
     let parentFolders: FolderEntity[] | undefined;
     if (parentFoldersId) {
       parentFolders = await this.folderService.find({
         where: {
-          userId,
+          userId: user.id,
           id: In(parentFoldersId),
         },
       });
@@ -262,7 +271,7 @@ export class FolderController {
     }
 
     const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
-      this.folderService.update({ id, name, userId, parentFolderId }),
+      this.folderService.update({ id, name, userId: user.id, parentFolderId }),
     );
 
     const data = await Promise.all(foldersPromise);
@@ -286,18 +295,21 @@ export class FolderController {
     type: FolderGetResponse,
   })
   async copyFolders(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { toFolder, folders }: FoldersCopyRequest,
   ): Promise<FoldersGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FOLDER, CRUDS.UPDATE, user);
+
     const foldersIds = folders.map((folder) => folder.id);
     const toFolderEntity = await this.folderService.findOne({
-      where: { userId, id: toFolder },
+      where: { userId: user.id, id: toFolder },
     });
     if (!toFolderEntity) {
       throw new BadRequestError(`Folder ${toFolder} is not exist`);
     }
     const foldersCopy = await this.folderService.find({
-      where: { userId, id: In(foldersIds) },
+      where: { userId: user.id, id: In(foldersIds) },
       relations: ['files'],
     });
     if (foldersCopy.length !== folders.length) {
@@ -318,7 +330,7 @@ export class FolderController {
     }
 
     const data = await this.folderService.copy(
-      userId,
+      user.id,
       toFolderEntity,
       foldersCopy,
     );
@@ -345,6 +357,9 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { foldersId }: FoldersDeleteRequest,
   ): Promise<SuccessResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FOLDER, CRUDS.DELETE, user);
+
     const rootFolder = await this.folderService.rootFolder(user);
     if (foldersId.includes(rootFolder.id)) {
       throw new BadRequestException('This is a root folder in a list');
@@ -371,11 +386,14 @@ export class FolderController {
     type: FolderGetResponse,
   })
   async getFolder(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
   ): Promise<FolderGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FOLDER, CRUDS.READ, user);
+
     const data = await this.folderService.findOne({
-      where: { userId, id },
+      where: { userId: user.id, id },
     });
     if (!data) {
       throw new NotFoundException(`Folder ${id} is not exists`);
@@ -399,15 +417,18 @@ export class FolderController {
     type: FolderGetResponse,
   })
   async updateFolder(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
     @Body() { name, parentFolderId }: FolderUpdateRequest,
   ): Promise<FolderGetResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FOLDER, CRUDS.UPDATE, user);
+
     let parentFolder: FolderEntity | null | undefined;
     if (parentFolderId) {
       parentFolder = await this.folderService.findOne({
         where: {
-          userId,
+          userId: user.id,
           id: parentFolderId,
         },
       });
@@ -417,7 +438,7 @@ export class FolderController {
     }
 
     const data = await this.folderService.update({
-      userId,
+      userId: user.id,
       id,
       name,
       parentFolder,
@@ -444,6 +465,9 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) folderId: string,
   ): Promise<SuccessResponse> {
+    // Verify user to role and plan
+    await this.userService.verify(Controllers.FOLDER, CRUDS.DELETE, user);
+
     const rootFolder = await this.folderService.rootFolder(user);
     if (folderId === rootFolder.id) {
       throw new BadRequestException('This is a root folder in a list');

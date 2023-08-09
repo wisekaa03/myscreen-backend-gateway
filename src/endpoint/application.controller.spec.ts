@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 // import { JwtAuthGuard } from '@/guards';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { ApplicationService } from '@/database/application.service';
+import { UserService } from '@/database/user.service';
 import { ApplicationController } from './application.controller';
 
 export const mockRepository = jest.fn(() => ({
@@ -26,6 +27,7 @@ describe(ApplicationController.name, () => {
       controllers: [ApplicationController],
       providers: [
         { provide: ApplicationService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
         { provide: WSGateway, useClass: mockRepository },
       ],
     }).compile();
