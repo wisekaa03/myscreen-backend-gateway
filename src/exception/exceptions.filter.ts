@@ -1,6 +1,6 @@
 import {
   Catch,
-  type ArgumentsHost,
+  ArgumentsHost,
   Logger,
   HttpException,
   HttpServer,
@@ -18,16 +18,14 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   debugLevel: boolean;
 
   constructor(
-    applicationRef?: HttpServer<any, any, any>,
-    configService?: ConfigService,
+    applicationRef: HttpServer<any, any, any>,
+    configService: ConfigService,
   ) {
     super(applicationRef);
-    this.debugLevel = configService?.get('LOG_LEVEL') === 'debug';
+    this.debugLevel = configService.get('LOG_LEVEL') === 'debug';
   }
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
-    let exceptionAfter: HttpException;
-
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
       let { message } = exception;
@@ -37,17 +35,15 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
       }
       this.logger.error(message, this.debugLevel ? exception.stack : undefined);
 
+      let exceptionHttp: HttpException;
       const { name } = exception;
       if (HttpError[name as keyof typeof HttpError]) {
-        exceptionAfter = new HttpError[name as keyof typeof HttpError](message);
+        exceptionHttp = new HttpError[name as keyof typeof HttpError](message);
       } else {
-        exceptionAfter = new InternalServerError(message);
+        exceptionHttp = new InternalServerError(message);
       }
 
-      return super.catch(
-        exceptionAfter ? Object.assign(exception, exceptionAfter) : exception,
-        host,
-      );
+      return super.catch(Object.assign(exception, exceptionHttp), host);
     }
 
     if (exception instanceof TypeORMError) {

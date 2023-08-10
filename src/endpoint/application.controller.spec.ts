@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-// import { JwtAuthGuard } from '@/guards';
+import { UserRoleEnum } from '@/enums';
+import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { ApplicationService } from '@/database/application.service';
 import { UserService } from '@/database/user.service';
@@ -32,11 +33,27 @@ describe(ApplicationController.name, () => {
       ],
     }).compile();
 
-    controller = module.get<ApplicationController>(ApplicationController);
+    controller = module.get(ApplicationController);
   });
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
+    const guards = Reflect.getMetadata('__guards__', ApplicationController);
+    const guardJwt = new guards[0]();
+    const guardRoles = new guards[1]();
+
+    expect(guardJwt).toBeInstanceOf(JwtAuthGuard);
+    expect(guardRoles).toBeInstanceOf(RolesGuard);
+
+    const roles = Reflect.getMetadata('roles', ApplicationController);
+    expect(roles).toEqual([
+      UserRoleEnum.Administrator,
+      UserRoleEnum.Advertiser,
+      UserRoleEnum.MonitorOwner,
+    ]);
   });
 
   // TODO: should inspect:

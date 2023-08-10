@@ -19,13 +19,7 @@ import {
 import addDays from 'date-fns/addDays';
 
 import { RegisterRequest, selectUserOptions } from '@/dto';
-import {
-  CRUDS,
-  Controllers,
-  UserPlanEnum,
-  UserRoleEnum,
-  UserStoreSpaceEnum,
-} from '@/enums';
+import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -54,52 +48,80 @@ export class UserService {
     );
   }
 
-  async verify(
-    controllers: Controllers,
-    ascrud: CRUDS,
-    user: UserExtEntity,
-  ): Promise<void> {
+  /**
+   * Return full name of user.
+   * @param {UserEntity} u user - UserEntity
+   * @param {boolean} e email (default: true) - add email
+   * @returns string
+   * @memberof UserService
+   */
+  static fullName = (u: UserEntity, e = true) =>
+    [u.surname, u.name, u.middleName].join(' ') + (e ? ` <${u.email}>` : '');
+
+  /**
+   * Verify user permissions.
+   *
+   * @param {string} controllers Controller name (monitor, application, etc.)
+   * @param {CRUDS} crud CRUDS (CREATE, READ, UPDATE, DELETE, STATUS)
+   * @param {UserExtEntity} user User
+   * @returns void
+   * @throws {ForbiddenException} ForbiddenException
+   * @memberof UserService
+   */
+  verify(controllers: string, crud: CRUD, user: UserExtEntity): void {
     const fullName = `${UserService.fullName(user)} <${user.email}>`;
     this.logger.debug(
-      `User: "${fullName}" Controllers: "${controllers}" ASCRUD: "${ascrud}"`,
+      `User: "${fullName}" Controllers: "${controllers}" ASCRUD: "${crud}"`,
     );
 
     switch (user.role) {
       case UserRoleEnum.MonitorOwner: {
         switch (user.plan) {
           case UserPlanEnum.Demo: {
-            if (controllers === Controllers.INVOICE) {
+            if (controllers === 'auth' || controllers === 'invoice') {
               break;
             }
 
-            let demoDays = 28;
-            if (controllers === Controllers.MONITOR) {
-              demoDays = 14;
-            }
             if (
-              user.createdAt &&
-              addDays(user.createdAt, demoDays) <= new Date()
+              (user.countMonitors ?? 0) > 5 ||
+              (controllers === 'monitor' &&
+                crud === CRUD.CREATE &&
+                1 + (user.countMonitors ?? 0) > 5)
             ) {
               throw new ForbiddenException(
                 'You have a Demo User account. Time to pay.',
               );
             }
 
-            if ((user.countMonitors ?? 0) > 5) {
+            if (
+              controllers === 'monitor' &&
+              crud !== CRUD.READ &&
+              addDays(user.createdAt ?? Date.now(), 14 + 1) < new Date()
+            ) {
               throw new ForbiddenException(
-                'You have a Demo User account. Time to pay..',
+                'You have a Demo User account. Time to pay.',
+              );
+            }
+
+            if (
+              controllers === 'file' &&
+              crud !== CRUD.READ &&
+              addDays(user.createdAt ?? Date.now(), 28 + 1) < new Date()
+            ) {
+              throw new ForbiddenException(
+                'You have a Demo User account. Time to pay.',
               );
             }
 
             if ((user.countUsedSpace ?? 0) > UserStoreSpaceEnum.DEMO) {
               throw new ForbiddenException(
-                'You have a Demo User account. Time to pay...',
+                'You have a Demo User account. Time to pay.',
               );
             }
 
-            if (controllers === Controllers.APPLICATION) {
+            if (controllers === 'application') {
               throw new ForbiddenException(
-                'You have a Demo User account. Time to pay...',
+                'You have a Demo User account. Time to pay.',
               );
             }
 
@@ -108,9 +130,9 @@ export class UserService {
 
           case UserPlanEnum.Full: {
             if (
-              controllers === Controllers.FILE &&
+              controllers === 'file' &&
               (user.countUsedSpace || 0) >= UserStoreSpaceEnum.FULL &&
-              ascrud === CRUDS.CREATE
+              crud === CRUD.CREATE
             ) {
               throw new ForbiddenException();
             }
@@ -125,14 +147,14 @@ export class UserService {
       }
 
       case UserRoleEnum.Advertiser: {
-        if (controllers === Controllers.MONITOR) {
+        if (controllers === 'monitor') {
           throw new ForbiddenException();
         }
 
         if (
-          controllers === Controllers.FILE &&
+          controllers === 'file' &&
           (user.countUsedSpace || 0) >= UserStoreSpaceEnum.FULL &&
-          ascrud === CRUDS.CREATE
+          crud === CRUD.CREATE
         ) {
           throw new ForbiddenException(
             `You have a limited User account to store space: ${user.countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
@@ -276,10 +298,6 @@ export class UserService {
     ]);
 
     return this.userExtRepository.findOneBy({ id });
-  }
-
-  static fullName(item: UserEntity): string {
-    return [item.surname, item.name, item.middleName].join(' ');
   }
 
   /**

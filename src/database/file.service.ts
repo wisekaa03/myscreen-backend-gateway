@@ -12,7 +12,6 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
-  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -279,7 +278,7 @@ export class FileService {
           );
         } catch (error) {
           this.logger.error('S3 Error: upload', error);
-          throw new ServiceUnavailableException(error);
+          throw new InternalServerErrorException(error);
         }
 
         return transact.save(FileEntity, transact.create(FileEntity, media));

@@ -3,11 +3,10 @@ import type {
   Response as ExpressResponse,
 } from 'express';
 import {
+  BadRequestException,
   Body,
-  Controller,
   Get,
   HttpCode,
-  HttpStatus,
   Logger,
   NotAcceptableException,
   NotFoundException,
@@ -20,95 +19,42 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FindOptionsWhere } from 'typeorm';
 
 import {
-  BadRequestError,
-  ForbiddenError,
   InternalServerError,
   InvoiceCreateRequest,
   InvoicesGetRequest,
   InvoicesGetResponse,
-  NotFoundError,
   InvoiceGetResponse,
-  ServiceUnavailableError,
-  UnauthorizedError,
-  NotAcceptableError,
 } from '@/dto';
 import {
   Status,
   UserRoleEnum,
   SpecificFormat,
   InvoiceStatus,
-  CRUDS,
-  Controllers,
+  CRUD,
 } from '@/enums';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { Crud, Roles, Standard } from '@/decorators';
+import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { InvoiceService } from '@/database/invoice.service';
 import { InvoiceEntity } from '@/database/invoice.entity';
-import { UserService } from '@/database/user.service';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данными что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_ACCEPTABLE,
-  description: 'Не принято значение',
-  type: NotAcceptableError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@ApiResponse({
-  status: HttpStatus.SERVICE_UNAVAILABLE,
-  description: 'Не доступен сервис',
-  type: ServiceUnavailableError,
-})
-@Roles(
+@Standard(
+  'invoice',
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
   UserRoleEnum.Accountant,
 )
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('invoice')
-@Controller('invoice')
 export class InvoiceController {
   logger = new Logger(InvoiceController.name);
 
-  constructor(
-    private readonly userService: UserService,
-    private readonly invoiceService: InvoiceService,
-  ) {}
+  constructor(private readonly invoiceService: InvoiceService) {}
 
   @Post()
   @HttpCode(200)
@@ -121,13 +67,11 @@ export class InvoiceController {
     description: 'Успешный ответ',
     type: InvoicesGetResponse,
   })
+  @Crud(CRUD.READ)
   async getOrders(
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: InvoicesGetRequest,
   ): Promise<InvoicesGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.INVOICE, CRUDS.READ, user);
-
     const whenUser =
       user.role === UserRoleEnum.Administrator ||
       user.role === UserRoleEnum.Accountant
@@ -157,13 +101,11 @@ export class InvoiceController {
     description: 'Успешный ответ',
     type: InvoiceGetResponse,
   })
+  @Crud(CRUD.CREATE)
   async invoice(
     @Req() { user }: ExpressRequest,
     @Body() { sum, description }: InvoiceCreateRequest,
   ): Promise<InvoiceGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.INVOICE, CRUDS.CREATE, user);
-
     const invoice = await this.invoiceService.create(
       user,
       sum,
@@ -197,13 +139,10 @@ export class InvoiceController {
   })
   @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Crud(CRUD.UPDATE)
   async confirmed(
-    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.INVOICE, CRUDS.UPDATE, user);
-
     const invoice = await this.invoiceService.findOne({
       where: { id },
       relations: ['user'],
@@ -212,7 +151,7 @@ export class InvoiceController {
       throw new NotFoundException();
     }
     if (invoice.status !== InvoiceStatus.AWAITING_CONFIRMATION) {
-      throw new NotAcceptableException();
+      throw new NotAcceptableException('Invoice is not awaiting confirmation');
     }
 
     const data = await this.invoiceService.statusChange(
@@ -238,13 +177,10 @@ export class InvoiceController {
   })
   @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @Crud(CRUD.UPDATE)
   async payed(
-    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.INVOICE, CRUDS.UPDATE, user);
-
     const invoice = await this.invoiceService.findOne({
       where: { id },
       relations: ['user'],
@@ -253,7 +189,7 @@ export class InvoiceController {
       throw new NotFoundException();
     }
     if (invoice.status !== InvoiceStatus.CONFIRMED_PENDING_PAYMENT) {
-      throw new NotAcceptableException();
+      throw new NotAcceptableException('Invoice is not confirmed');
     }
 
     const data = await this.invoiceService.statusChange(
@@ -293,15 +229,13 @@ export class InvoiceController {
       },
     },
   })
+  @Crud(CRUD.READ)
   async download(
     @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('invoiceId', ParseUUIDPipe) id: string,
     @Param('format', new ParseEnumPipe(SpecificFormat)) format: SpecificFormat,
   ): Promise<void> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.INVOICE, CRUDS.READ, user);
-
     const where: FindOptionsWhere<InvoiceEntity> = { id };
     if (
       user.role !== UserRoleEnum.Administrator &&

@@ -3,7 +3,6 @@ import {
   Inject,
   Injectable,
   Logger,
-  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +18,7 @@ import {
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { ApplicationApproved, UserPlanEnum } from '@/enums';
+import { ApplicationApproved } from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { UserService } from './user.service';
 import { ApplicationEntity } from './application.entity';
@@ -148,9 +147,6 @@ export class ApplicationService {
     id: string | undefined,
     update: Partial<ApplicationEntity>,
   ): Promise<ApplicationEntity | null> {
-    if (update.user?.plan === UserPlanEnum.Demo) {
-      throw new NotAcceptableException('You must buy the full plan');
-    }
     await this.applicationRepository.manager.transaction(async (transact) => {
       let application: ApplicationEntity | null = await transact.save(
         ApplicationEntity,

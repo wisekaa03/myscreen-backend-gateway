@@ -31,7 +31,7 @@ describe(CrontabService.name, () => {
       ],
     }).compile();
 
-    service = module.get<CrontabService>(CrontabService);
+    service = module.get(CrontabService);
   });
 
   it('should be defined', () => {

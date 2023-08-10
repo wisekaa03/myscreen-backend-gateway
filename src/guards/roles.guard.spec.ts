@@ -2,19 +2,22 @@ import { Reflector } from '@nestjs/core';
 import { createMock } from '@golevelup/ts-jest';
 import { ExecutionContext, UseGuards } from '@nestjs/common';
 
-import { UserRoleEnum } from '@/enums/user-role.enum';
-import { Roles } from './roles.decorator';
+import { UserRoleEnum, CRUD } from '@/enums';
+import { Roles, Crud } from '@/decorators';
+import { UserService } from '@/database/user.service';
 import { RolesGuard } from './roles.guard';
 
 @Roles(UserRoleEnum.Administrator)
 @UseGuards(RolesGuard)
+@Crud(CRUD.UPDATE)
 class MockRole {}
 
 describe(RolesGuard.name, () => {
   let rolesGuard: RolesGuard;
 
   it('should be defined', () => {
-    rolesGuard = new RolesGuard(new Reflector());
+    const userService = createMock<UserService>();
+    rolesGuard = new RolesGuard(new Reflector(), userService);
     expect(rolesGuard).toBeDefined();
   });
 
@@ -30,6 +33,6 @@ describe(RolesGuard.name, () => {
     expect(guardRoles).toEqual({ reflector });
     const mockExecutionContext = createMock<ExecutionContext>();
     const result = guardRoles.canActivate(mockExecutionContext);
-    expect(result).toBe(true);
+    expect(result).toBeTruthy();
   });
 });

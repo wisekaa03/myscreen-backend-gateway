@@ -1,75 +1,32 @@
 import {
   BadRequestException,
   Body,
-  Controller,
   Delete,
   ForbiddenException,
   Get,
   HttpCode,
-  HttpStatus,
   Logger,
   NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import {
-  BadRequestError,
-  ForbiddenError,
-  UnauthorizedError,
-  InternalServerError,
   UserUpdateRequest,
   SuccessResponse,
   UsersGetResponse,
   UserGetResponse,
   UsersGetRequest,
-  NotFoundError,
 } from '@/dto';
-import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
-import { Status } from '@/enums/status.enum';
-import { UserRoleEnum } from '@/enums/user-role.enum';
-import { UserService } from '@/database/user.service';
+import { CRUD, UserRoleEnum, Status } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { UserService } from '@/database/user.service';
+import { Crud, Standard } from '@/decorators';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@Roles(UserRoleEnum.Administrator)
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('user')
-@Controller('user')
+@Standard('user', UserRoleEnum.Administrator)
 export class UserController {
   logger = new Logger(UserController.name);
 
@@ -85,6 +42,7 @@ export class UserController {
     description: 'Успешный ответ',
     type: UsersGetResponse,
   })
+  @Crud(CRUD.READ)
   async users(
     @Body() { where, select, scope }: UsersGetRequest,
   ): Promise<UsersGetResponse> {
@@ -103,7 +61,7 @@ export class UserController {
     };
   }
 
-  @Patch('/disable/:userId')
+  @Patch('disable/:userId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'user-disable',
@@ -114,6 +72,7 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async disableUser(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<SuccessResponse> {
@@ -129,7 +88,7 @@ export class UserController {
     };
   }
 
-  @Patch('/enable/:userId')
+  @Patch('enable/:userId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'user-enable',
@@ -140,6 +99,7 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.UPDATE)
   async enableUser(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<SuccessResponse> {
@@ -155,7 +115,7 @@ export class UserController {
     };
   }
 
-  @Get('/:userId')
+  @Get(':userId')
   @ApiOperation({
     operationId: 'user-get',
     summary: 'Получение информации о пользователе (только администратор)',
@@ -165,6 +125,7 @@ export class UserController {
     description: 'Успешный ответ',
     type: UserGetResponse,
   })
+  @Crud(CRUD.READ)
   async user(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<UserGetResponse> {
@@ -180,7 +141,7 @@ export class UserController {
     };
   }
 
-  @Patch('/:userId')
+  @Patch(':userId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'user-update',
@@ -191,6 +152,7 @@ export class UserController {
     description: 'Успешный ответ',
     type: UserGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async userUpdate(
     @Param('userId', ParseUUIDPipe) userId: string,
     @Body() update: UserUpdateRequest,
@@ -211,7 +173,7 @@ export class UserController {
     };
   }
 
-  @Delete('/:userId')
+  @Delete(':userId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'user-delete',
@@ -222,6 +184,7 @@ export class UserController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteUser(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<SuccessResponse> {

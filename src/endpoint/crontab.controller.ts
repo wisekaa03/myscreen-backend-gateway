@@ -1,63 +1,12 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Logger,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Body, HttpCode, Logger, Post } from '@nestjs/common';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
-import {
-  BadRequestError,
-  ForbiddenError,
-  UnauthorizedError,
-  InternalServerError,
-  SuccessResponse,
-  NotFoundError,
-  CrontabCreateRequest,
-} from '@/dto';
-import { JwtAuthGuard, RolesGuard, Roles } from '@/guards';
-import { Status } from '@/enums/status.enum';
-import { UserRoleEnum } from '@/enums/user-role.enum';
+import { SuccessResponse, CrontabCreateRequest } from '@/dto';
+import { Crud, Standard } from '@/decorators';
+import { Status, CRUD, UserRoleEnum } from '@/enums';
 import { CrontabService } from '@/crontab/crontab.service';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@Roles(UserRoleEnum.Administrator)
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('crontab')
-@Controller('crontab')
+@Standard('crontab', UserRoleEnum.Administrator)
 export class CrontabController {
   logger = new Logger(CrontabController.name);
 
@@ -74,6 +23,7 @@ export class CrontabController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.CREATE)
   async crontabCreate(
     @Body() { crontab }: CrontabCreateRequest,
   ): Promise<SuccessResponse> {
@@ -95,6 +45,7 @@ export class CrontabController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async crontabDelete(): Promise<SuccessResponse> {
     this.crontabService.deleteCron();
 

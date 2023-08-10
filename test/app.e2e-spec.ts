@@ -7,11 +7,13 @@ import {
   INestApplication,
   ValidationPipe,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import superAgentRequest from 'supertest';
 import { LoggerModule } from 'nestjs-pino';
 import Jabber from 'jabber';
 
 import { ValidationError } from 'class-validator';
+import { createMock } from '@golevelup/ts-jest';
 import {
   AuthResponse,
   RegisterRequest,
@@ -58,6 +60,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: () => '',
   metadata: {
     columns: [],
     relations: [],
@@ -126,7 +129,10 @@ describe('Backend API (e2e)', () => {
 
     app.useLogger(['debug']);
 
-    app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
+    const configService = createMock<ConfigService>();
+    app.useGlobalFilters(
+      new ExceptionsFilter(httpAdaper.httpAdapter, configService),
+    );
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,

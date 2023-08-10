@@ -1,9 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 
 import { JwtAuthGuard, RolesGuard } from '@/guards';
-import { UserRoleEnum } from '@/enums';
+import { UserRoleEnum } from '@/enums/user-role.enum';
 import { CrontabService } from '@/crontab/crontab.service';
 import { CrontabController } from './crontab.controller';
+import { WalletService } from '@/database/wallet.service';
+import { UserService } from '@/database/user.service';
+
+jest.mock('cron');
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -24,10 +29,15 @@ describe(CrontabController.name, () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [CrontabController],
-      providers: [{ provide: CrontabService, useClass: mockRepository }],
+      providers: [
+        { provide: ConfigService, useClass: mockRepository },
+        { provide: CrontabService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
+        { provide: WalletService, useClass: mockRepository },
+      ],
     }).compile();
 
-    controller = module.get<CrontabController>(CrontabController);
+    controller = module.get(CrontabController);
   });
 
   it('should be defined', () => {

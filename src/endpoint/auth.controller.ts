@@ -1,9 +1,7 @@
 import {
   Body,
-  Controller,
   Get,
   HttpCode,
-  HttpStatus,
   Ip,
   Logger,
   NotAcceptableException,
@@ -15,20 +13,10 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Request as ExpressRequest } from 'express';
 
 import {
-  PreconditionFailedError,
-  UnauthorizedError,
-  BadRequestError,
-  InternalServerError,
-  ServiceUnavailableError,
   LoginRequest,
   UserUpdateRequest,
   RegisterRequest,
@@ -42,58 +30,15 @@ import {
   userEntityToUser,
   UserGetResponse,
   AuthMonitorRequest,
-  NotFoundError,
-  ForbiddenError,
-  NotAcceptableError,
 } from '@/dto';
-import { Status, UserRoleEnum } from '@/enums';
-import { Roles, RolesGuard, JwtAuthGuard } from '@/guards';
+import { Crud, Roles, Standard } from '@/decorators';
+import { CRUD, Status, UserRoleEnum } from '@/enums';
+import { RolesGuard, JwtAuthGuard } from '@/guards';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_ACCEPTABLE,
-  description: 'Не принято значение',
-  type: NotAcceptableError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.PRECONDITION_FAILED,
-  description: 'Пользователь уже существует',
-  type: PreconditionFailedError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@ApiResponse({
-  status: HttpStatus.SERVICE_UNAVAILABLE,
-  description: 'Не доступен сервис',
-  type: ServiceUnavailableError,
-})
-@ApiTags('auth')
-@Controller('auth')
+@Standard('auth')
 export class AuthController {
   logger = new Logger(AuthController.name);
 
@@ -117,6 +62,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: UserGetResponse,
   })
+  @Crud(CRUD.READ)
   async authorization(
     @Req() { user: data }: ExpressRequest,
   ): Promise<UserGetResponse> {
@@ -144,6 +90,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: UserGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async update(
     @Req() { user }: ExpressRequest,
     @Body() update: UserUpdateRequest,
@@ -197,6 +144,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: AuthResponse,
   })
+  @Crud(CRUD.UPDATE)
   async login(
     @Ip() fingerprint: string,
     @Body() { email, password }: LoginRequest,
@@ -226,6 +174,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: UserGetResponse,
   })
+  @Crud(CRUD.CREATE)
   async register(@Body() body: RegisterRequest): Promise<UserGetResponse> {
     const user = await this.userService.register(body);
     if (!user) {
@@ -238,7 +187,7 @@ export class AuthController {
     };
   }
 
-  @Post('/refresh')
+  @Post('refresh')
   @HttpCode(200)
   @ApiOperation({ operationId: 'refresh', summary: 'Обновление токена' })
   @ApiResponse({
@@ -246,6 +195,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: AuthRefreshResponse,
   })
+  @Crud(CRUD.UPDATE)
   async refresh(
     @Ip() fingerprint: string,
     @Body() { refreshToken }: AuthRefreshRequest,
@@ -262,7 +212,7 @@ export class AuthController {
     };
   }
 
-  @Post('/email-verify')
+  @Post('email-verify')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'auth-email-verify',
@@ -273,6 +223,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.UPDATE)
   async verifyEmail(
     @Body() { verify }: VerifyEmailRequest,
   ): Promise<SuccessResponse> {
@@ -283,7 +234,7 @@ export class AuthController {
     };
   }
 
-  @Post('/reset-password')
+  @Post('reset-password')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'auth-reset-password',
@@ -294,6 +245,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.UPDATE)
   async resetPasswordInvitation(
     @Body() { email }: ResetPasswordInvitationRequest,
   ): Promise<SuccessResponse> {
@@ -304,7 +256,7 @@ export class AuthController {
     };
   }
 
-  @Post('/reset-password-verify')
+  @Post('reset-password-verify')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'auth-reset-password-verify',
@@ -315,6 +267,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.UPDATE)
   async resetPasswordVerify(
     @Body() { verify, password }: ResetPasswordVerifyRequest,
   ): Promise<SuccessResponse> {
@@ -325,7 +278,7 @@ export class AuthController {
     };
   }
 
-  @Patch('/disable')
+  @Patch('disable')
   @HttpCode(200)
   @Roles(
     UserRoleEnum.Administrator,
@@ -343,6 +296,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async disable(
     @Req() { user: { id: userId } }: ExpressRequest,
   ): Promise<SuccessResponse> {
@@ -353,7 +307,7 @@ export class AuthController {
     };
   }
 
-  @Post('/monitor')
+  @Post('monitor')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'auth-monitor',
@@ -364,6 +318,7 @@ export class AuthController {
     description: 'Успешный ответ',
     type: AuthRefreshResponse,
   })
+  @Crud(CRUD.UPDATE)
   async monitor(
     @Body() { code }: AuthMonitorRequest,
   ): Promise<AuthRefreshResponse> {

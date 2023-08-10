@@ -32,7 +32,7 @@ describe(AuthController.name, () => {
       ],
     }).compile();
 
-    controller = module.get<AuthController>(AuthController);
+    controller = module.get(AuthController);
   });
 
   it('should be defined', () => {

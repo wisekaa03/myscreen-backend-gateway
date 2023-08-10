@@ -18,7 +18,7 @@ import { CrontabModule } from './crontab/crontab.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, expandVariables: true }),
     LoggerModule.forRootAsync({
       useFactory: async (
         configService: ConfigService,
@@ -67,6 +67,8 @@ import { CrontabModule } from './crontab/crontab.module';
 
     AuthModule,
     MailModule,
+    PrintModule,
+    CrontabModule,
     WSModule,
     S3Module.forRootAsync({
       useClass: S3ModuleOptionsClass,
@@ -74,8 +76,6 @@ import { CrontabModule } from './crontab/crontab.module';
     }),
     DatabaseModule,
     EndpointModule,
-    PrintModule,
-    CrontabModule,
   ],
   providers: [Logger],
 })

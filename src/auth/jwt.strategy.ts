@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 
 import type { MyscreenJwtPayload } from '@/utils/jwt.payload';
-import { CRUDS, Controllers } from '@/enums';
 import { userEntityToUser } from '@/dto/response/user.response';
 import { UserService } from '@/database/user.service';
 import { UserExtEntity } from '@/database/user-ext.entity';
@@ -36,8 +35,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       return null;
     }
     user = userEntityToUser(user);
-
-    await this.userService.verify(Controllers.AUTH, CRUDS.READ, user);
 
     return user;
   }

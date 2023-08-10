@@ -1,4 +1,4 @@
-export enum CRUDS {
+export enum CRUD {
   CREATE = 'CREATE',
   READ = 'READ',
   UPDATE = 'UPDATE',

@@ -13,7 +13,6 @@ import { MonitorController } from './monitor.controller';
 import { EditorController } from './editor.controller';
 import { FolderController } from './folder.controller';
 import { InvoiceController } from './invoice.controller';
-import { UptimeController } from './uptime.controller';
 import { PlaylistController } from './playlist.controller';
 import { RootController } from './root.controller';
 import { StatisticsController } from './statistics.controller';
@@ -40,7 +39,6 @@ import { CrontabController } from './crontab.controller';
     FolderController,
     UserController,
     InvoiceController,
-    UptimeController,
     PlaylistController,
     StatisticsController,
     ApplicationController,

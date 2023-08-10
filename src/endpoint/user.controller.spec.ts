@@ -27,7 +27,7 @@ describe(UserController.name, () => {
       providers: [{ provide: UserService, useClass: mockRepository }],
     }).compile();
 
-    controller = module.get<UserController>(UserController);
+    controller = module.get(UserController);
   });
 
   it('should be defined', () => {

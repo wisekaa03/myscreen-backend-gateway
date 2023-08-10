@@ -8,11 +8,9 @@ import { FindOptionsWhere, In } from 'typeorm';
 import {
   BadRequestException,
   Body,
-  Controller,
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Logger,
   NotFoundException,
   Param,
@@ -27,13 +25,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiExtraModels,
   ApiOperation,
   ApiResponse,
-  ApiTags,
   getSchemaPath,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -41,11 +37,6 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { isUUID } from 'class-validator';
 import {
   BadRequestError,
-  UnauthorizedError,
-  ForbiddenError,
-  InternalServerError,
-  ServiceUnavailableError,
-  NotFoundError,
   SuccessResponse,
   FilesGetRequest,
   FilesGetResponse,
@@ -54,13 +45,13 @@ import {
   FileUploadRequest,
   FileUploadRequestBody,
   FileUpdateRequest,
-  ConflictError,
   FilesDeleteRequest,
   FilesUpdateRequest,
   FilesCopyRequest,
 } from '@/dto';
-import { UserRoleEnum, VideoType, Status, CRUDS, Controllers } from '@/enums';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { UserRoleEnum, VideoType, Status, CRUD } from '@/enums';
+import { Crud, Roles, Standard } from '@/decorators';
+import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
@@ -71,51 +62,13 @@ import {
 } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.CONFLICT,
-  description: 'Ответ для конфликта файлов',
-  type: ConflictError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@ApiResponse({
-  status: HttpStatus.SERVICE_UNAVAILABLE,
-  description: 'Не доступен сервис',
-  type: ServiceUnavailableError,
-})
-@Roles(
+@ApiExtraModels(FileUploadRequest)
+@Standard(
+  'file',
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
 )
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiExtraModels(FileUploadRequest)
-@ApiTags('file')
-@Controller('file')
 export class FileController {
   logger = new Logger(FileController.name);
 
@@ -136,13 +89,11 @@ export class FileController {
     description: 'Успешный ответ',
     type: FilesGetResponse,
   })
+  @Crud(CRUD.READ)
   async getFiles(
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.READ, user);
-
     let count: number = 0;
     let data: Array<FileEntity> = [];
     const folderId = where?.folderId?.toString();
@@ -229,14 +180,12 @@ export class FileController {
     },
   })
   @UseInterceptors(FilesInterceptor('files'))
+  @Crud(CRUD.CREATE)
   async uploadFiles(
     @Req() { user }: ExpressRequest,
     @Body() body: FileUploadRequestBody,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<FilesUploadResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.CREATE, user);
-
     if (files.length < 1) {
       throw new BadRequestException('Files expected');
     }
@@ -267,13 +216,11 @@ export class FileController {
     description: 'Успешный ответ',
     type: FileGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updateFilesDB(
     @Req() { user }: ExpressRequest,
     @Body() { files }: FilesUpdateRequest,
   ): Promise<FilesGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.UPDATE, user);
-
     const filesPromise = files.map(async (file) => {
       const fileDB = await this.fileService.findOne({
         where: {
@@ -302,7 +249,7 @@ export class FileController {
     };
   }
 
-  @Patch('/copy')
+  @Patch('copy')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'files-copy',
@@ -313,13 +260,11 @@ export class FileController {
     description: 'Успешный ответ',
     type: FileGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async copyFiles(
     @Req() { user }: ExpressRequest,
     @Body() { toFolder, files }: FilesCopyRequest,
   ): Promise<FilesGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.UPDATE, user);
-
     const filesIds = files.map((file) => file.id);
     const filesCopy = await this.fileService.find({
       where: { userId: user.id, id: In(filesIds) },
@@ -343,9 +288,10 @@ export class FileController {
     };
   }
 
-  @Get('/:fileId')
+  @Get(':fileId')
   @Roles(
     UserRoleEnum.Administrator,
+    UserRoleEnum.Accountant,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
@@ -383,14 +329,11 @@ export class FileController {
       },
     },
   })
+  @Crud(CRUD.READ)
   async getFileS3(
-    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.READ, user);
-
     const file = await this.fileService.findOne({
       // TODO: where: {id, userId} - посмотреть если в заявках (application) участвует
       // TODO: то выдавать его, нужно продумать
@@ -430,13 +373,15 @@ export class FileController {
     }
   }
 
-  @Post('/:fileId')
+  @Post(':fileId')
   @Roles(
     UserRoleEnum.Administrator,
+    UserRoleEnum.Accountant,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
   )
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-get',
@@ -447,13 +392,10 @@ export class FileController {
     description: 'Успешный ответ',
     type: FileGetResponse,
   })
+  @Crud(CRUD.READ)
   async getFileDB(
-    @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<FileGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.READ, user);
-
     const where: FindOptionsWhere<FileEntity> = { id };
     const data = await this.fileService.findOne({
       where,
@@ -468,7 +410,7 @@ export class FileController {
     };
   }
 
-  @Get('/:fileId/preview')
+  @Get(':fileId/preview')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-download-preview',
@@ -494,14 +436,11 @@ export class FileController {
       },
     },
   })
+  @Crud(CRUD.READ)
   async getFilePreview(
-    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<void> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.READ, user);
-
     const where: FindOptionsWhere<FileEntity> = { id: fileId };
     const file = await this.fileService.findOne({
       where,
@@ -566,7 +505,7 @@ export class FileController {
     }
   }
 
-  @Patch('/:fileId')
+  @Patch(':fileId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-update',
@@ -577,14 +516,12 @@ export class FileController {
     description: 'Успешный ответ',
     type: FileGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updateFileDB(
     @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) id: string,
     @Body() update: FileUpdateRequest,
   ): Promise<FileGetResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.UPDATE, user);
-
     const file = await this.fileService.findOne({
       where: {
         userId: user.id,
@@ -632,13 +569,11 @@ export class FileController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteFiles(
     @Req() { user }: ExpressRequest,
     @Body() { filesId }: FilesDeleteRequest,
   ): Promise<SuccessResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.DELETE, user);
-
     await this.fileService.deletePrep(filesId);
 
     const { affected } = await this.fileService.delete(user, filesId);
@@ -662,13 +597,11 @@ export class FileController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteFile(
     @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<SuccessResponse> {
-    // Verify user to role and plan
-    await this.userService.verify(Controllers.FILE, CRUDS.DELETE, user);
-
     await this.fileService.deletePrep([fileId]);
 
     const { affected } = await this.fileService.delete(user, [fileId]);
