@@ -17,8 +17,10 @@ jobs:
     working_directory: ~/project/myscreen/api-backend
 
     steps:
-      - run: |
-          echo "Checking out code"
+      - checkout
+      - deploy:
+          command: |
+            echo "Deploying to dev"
 
 workflows:
   version: 2
