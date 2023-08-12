@@ -64,114 +64,106 @@ export class UserService {
    * @param {string} controllers Controller name (monitor, application, etc.)
    * @param {CRUDS} crud CRUDS (CREATE, READ, UPDATE, DELETE, STATUS)
    * @param {UserExtEntity} user User
-   * @returns void
+   * @returns {boolean} true - access allowed
    * @throws {ForbiddenException} ForbiddenException
    * @memberof UserService
    */
-  verify(controllers: string, crud: CRUD, user: UserExtEntity): void {
-    const fullName = `${UserService.fullName(user)} <${user.email}>`;
+  verify(controllers: string, crud: CRUD, user: UserExtEntity): boolean {
+    const fullName = UserService.fullName(user);
     this.logger.debug(
       `User: "${fullName}" Controllers: "${controllers}" ASCRUD: "${crud}"`,
     );
+    const {
+      role = UserRoleEnum.Administrator,
+      plan = UserPlanEnum.Full,
+      countMonitors = 0,
+      countUsedSpace = 0,
+      createdAt = new Date(),
+    } = user;
 
-    switch (user.role) {
-      case UserRoleEnum.MonitorOwner: {
-        switch (user.plan) {
-          case UserPlanEnum.Demo: {
-            if (controllers === 'auth' || controllers === 'invoice') {
-              break;
-            }
-
-            if (
-              (user.countMonitors ?? 0) > 5 ||
-              (controllers === 'monitor' &&
-                crud === CRUD.CREATE &&
-                1 + (user.countMonitors ?? 0) > 5)
-            ) {
-              throw new ForbiddenException(
-                'You have a Demo User account. Time to pay.',
-              );
-            }
-
-            if (
-              controllers === 'monitor' &&
-              crud !== CRUD.READ &&
-              addDays(user.createdAt ?? Date.now(), 14 + 1) < new Date()
-            ) {
-              throw new ForbiddenException(
-                'You have a Demo User account. Time to pay.',
-              );
-            }
-
-            if (
-              controllers === 'file' &&
-              crud !== CRUD.READ &&
-              addDays(user.createdAt ?? Date.now(), 28 + 1) < new Date()
-            ) {
-              throw new ForbiddenException(
-                'You have a Demo User account. Time to pay.',
-              );
-            }
-
-            if ((user.countUsedSpace ?? 0) > UserStoreSpaceEnum.DEMO) {
-              throw new ForbiddenException(
-                'You have a Demo User account. Time to pay.',
-              );
-            }
-
-            if (controllers === 'application') {
-              throw new ForbiddenException(
-                'You have a Demo User account. Time to pay.',
-              );
-            }
-
-            break;
-          }
-
-          case UserPlanEnum.Full: {
-            if (
-              controllers === 'file' &&
-              (user.countUsedSpace || 0) >= UserStoreSpaceEnum.FULL &&
-              crud === CRUD.CREATE
-            ) {
-              throw new ForbiddenException();
-            }
-
-            break;
-          }
-
-          default:
+    if (role === UserRoleEnum.MonitorOwner) {
+      if (plan === UserPlanEnum.Demo) {
+        if (controllers === 'auth' || controllers === 'invoice') {
+          return true;
         }
 
-        break;
-      }
+        if (
+          (countMonitors ?? 0) > 5 ||
+          (controllers === 'monitor' &&
+            crud === CRUD.CREATE &&
+            1 + countMonitors > 5)
+        ) {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
+        }
 
-      case UserRoleEnum.Advertiser: {
-        if (controllers === 'monitor') {
-          throw new ForbiddenException();
+        if (
+          controllers === 'monitor' &&
+          crud !== CRUD.READ &&
+          addDays(createdAt, 14 + 1) < new Date()
+        ) {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
         }
 
         if (
           controllers === 'file' &&
-          (user.countUsedSpace || 0) >= UserStoreSpaceEnum.FULL &&
-          crud === CRUD.CREATE
+          crud !== CRUD.READ &&
+          addDays(createdAt, 28 + 1) < new Date()
         ) {
           throw new ForbiddenException(
-            `You have a limited User account to store space: ${user.countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
+            'You have a Demo User account. Time to pay.',
           );
         }
 
-        break;
+        if (countUsedSpace > UserStoreSpaceEnum.DEMO) {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
+        }
+
+        if (controllers === 'application') {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
+        }
+      } else if (plan === UserPlanEnum.Full) {
+        if (
+          controllers === 'file' &&
+          countUsedSpace >= UserStoreSpaceEnum.FULL &&
+          crud === CRUD.CREATE
+        ) {
+          throw new ForbiddenException(
+            `You have a limited User account to store space: ${countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
+          );
+        }
+      }
+    } else if (role === UserRoleEnum.Advertiser) {
+      if (controllers === 'monitor') {
+        throw new ForbiddenException();
       }
 
-      /**
-        Сюда проваливаются все остальные роли:
-          UserRoleEnum.Administrator
-          UserRoleEnum.Accountant
-          UserRoleEnum.Monitor
-      */
-      default:
+      if (
+        controllers === 'file' &&
+        countUsedSpace >= UserStoreSpaceEnum.FULL &&
+        crud === CRUD.CREATE
+      ) {
+        throw new ForbiddenException(
+          `You have a limited User account to store space: ${countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
+        );
+      }
     }
+
+    /**
+      Не трогаем все остальные роли:
+        UserRoleEnum.Administrator
+        UserRoleEnum.Accountant
+        UserRoleEnum.Monitor
+    */
+
+    return true;
   }
 
   /**
@@ -185,7 +177,7 @@ export class UserService {
     userId: string,
     update: Partial<UserEntity>,
   ): Promise<UserExtEntity | null> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
       throw new ForbiddenException();
     }
@@ -203,14 +195,14 @@ export class UserService {
           ),
         ),
         this.mailService.sendVerificationCode(update.email, confirmUrl),
-      ]).then(([saved]) => saved);
+      ]).then(([{ id }]) => this.userExtRepository.findOneBy({ id }));
     }
 
-    const userSaved = await this.userRepository.save(
+    const { id } = await this.userRepository.save(
       this.userRepository.create(Object.assign(user, update)),
     );
 
-    return this.userExtRepository.findOne({ where: { id: userSaved.id } });
+    return this.userExtRepository.findOneBy({ id });
   }
 
   /**
@@ -282,19 +274,13 @@ export class UserService {
       const { id } = await this.userRepository.save(
         this.userRepository.create(user),
       );
-      return this.userExtRepository.findOne({ where: { id } });
+      return this.userExtRepository.findOneBy({ id });
     }
 
     const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(user)),
-      this.mailService.sendWelcomeMessage(email).catch((error) => {
-        this.logger.error(error);
-      }),
-      this.mailService
-        .sendVerificationCode(email, confirmUrl)
-        .catch((error) => {
-          this.logger.error(error);
-        }),
+      this.mailService.sendWelcomeMessage(email),
+      this.mailService.sendVerificationCode(email, confirmUrl),
     ]);
 
     return this.userExtRepository.findOneBy({ id });

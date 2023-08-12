@@ -6,7 +6,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: tests
     steps:
       - name: Initializing the repository
@@ -85,7 +85,7 @@ jobs:
   deployment:
     needs: 'test'
     if: github.ref_name == 'develop'
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: develop
     env:
       SSH_PARAMS: "ssh -o StrictHostKeyChecking=no"

@@ -2,11 +2,11 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 
+import { UserPlanEnum } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-import { UserPlanEnum } from '@/enums';
 
 const email = 'foo@bar.baz';
 const password = 'Secret~123456';
@@ -61,11 +61,11 @@ describe(AuthService.name, () => {
     service = module.get<AuthService>(AuthService);
   });
 
-  it('should be defined', () => {
+  test('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('login', async () => {
+  test('login', async () => {
     const login = await service.login(email, password);
     expect(login).toEqual([
       user,
