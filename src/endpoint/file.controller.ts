@@ -108,9 +108,8 @@ export class FileController {
       if (fromRegex?.length === 3) {
         // получили имя папки
         const userExpressionId = fromRegex[2];
-        const userExpression = await this.userService.findById(
-          userExpressionId,
-        );
+        const userExpression =
+          await this.userService.findById(userExpressionId);
         if (!userExpression) {
           throw new NotFoundException();
         }

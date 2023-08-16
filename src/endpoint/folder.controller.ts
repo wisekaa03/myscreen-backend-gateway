@@ -88,15 +88,13 @@ export class FolderController {
       if (fromRegex?.length === 3) {
         // получили имя папки
         const userExpressionId = fromRegex[2];
-        const userExpression = await this.userService.findById(
-          userExpressionId,
-        );
+        const userExpression =
+          await this.userService.findById(userExpressionId);
         if (!userExpression) {
           throw new NotFoundException('not found user expression');
         }
-        const parentFolder = await this.folderService.rootFolder(
-          userExpression,
-        );
+        const parentFolder =
+          await this.folderService.rootFolder(userExpression);
         [data, count] = await this.folderService.findAndCount({
           ...paginationQueryToConfig(scope),
           select,
