@@ -38,7 +38,7 @@ export class InvoiceEntity {
     description: 'Номер счета',
   })
   @IsNumber()
-  seqNo?: number;
+  seqNo!: number;
 
   @Column()
   @ApiProperty({

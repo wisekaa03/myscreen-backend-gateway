@@ -1,10 +1,19 @@
 /* eslint max-len:0 */
+import crypto from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import {
+  BadRequestException,
+  INestApplication,
+  ValidationPipe,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import superAgentRequest from 'supertest';
 import { LoggerModule } from 'nestjs-pino';
+import Jabber from 'jabber';
 
+import { ValidationError } from 'class-validator';
+import { createMock } from '@golevelup/ts-jest';
 import {
   AuthResponse,
   RegisterRequest,
@@ -22,7 +31,7 @@ import {
   FilesGetRequest,
   AuthRefreshRequest,
 } from '@/dto';
-import { Status, UserRoleEnum, UserPlanEnum } from '@/enums';
+import { Status, UserRoleEnum } from '@/enums';
 import { generateMailToken } from '@/utils/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
 import { UserEntity } from '@/database/user.entity';
@@ -33,12 +42,25 @@ import { WsAdapter } from '@/websocket/ws-adapter';
 
 type UserFileEntity = UserEntity & Partial<UserExtEntity>;
 
+const generatePassword = (
+  length = 20,
+  wishlist = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz~!@-#$',
+) =>
+  Array.from(crypto.randomFillSync(new Uint32Array(length)))
+    .map((x) => wishlist[x % wishlist.length])
+    .join('');
+
+const jabber = new Jabber();
+const email = jabber.createEmail();
+const password = generatePassword(20);
+
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
   findAndCount: async () => Promise.resolve([]),
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: () => '',
   metadata: {
     columns: [],
     relations: [],
@@ -46,8 +68,8 @@ export const mockRepository = jest.fn(() => ({
 }));
 
 const registerRequest: RegisterRequest = {
-  email: 'foo@bar.baz',
-  password: 'Secret~123456',
+  email,
+  password,
   role: UserRoleEnum.Advertiser,
   name: 'John',
   surname: 'Steve',
@@ -59,31 +81,31 @@ const registerRequest: RegisterRequest = {
 };
 
 const loginRequest: LoginRequest = {
-  email: 'foo@bar.baz',
-  password: 'Secret~123456',
+  email,
+  password,
 };
 
 const updateUser: UserUpdateRequest = {
-  surname: 'Steve',
-  name: 'John',
-  middleName: 'Doe',
-  phoneNumber: '+78002000000',
+  surname: 'Steve 2',
+  name: 'John 2',
+  middleName: 'Doe 2',
+  phoneNumber: '+78003000000',
   city: 'Krasnodar',
   country: 'RU',
   company: 'ACME corporation',
   companyLegalAddress: 'г. Краснодар, ул. Красная, д. 1',
   companyActualAddress: 'г. Краснодар, ул. Красная, д. 1',
-  companyTIN: '012345678901',
-  companyRRC: '012345678901',
-  companyPSRN: '012345678901',
-  companyPhone: '+78002000000',
+  companyTIN: '112345678901',
+  companyRRC: '112345678901',
+  companyPSRN: '112345678901',
+  companyPhone: '+78003000000',
   companyEmail: 'we@are.the.best',
-  companyBank: 'Банк',
-  companyBIC: '012345678',
-  companyCorrespondentAccount: '30101810400000000000',
-  companyPaymentAccount: '40802810064580000000',
-  companyFax: '+78002000000',
-  companyRepresentative: 'Тухбатуллина Юлия Евгеньевна',
+  companyBank: 'Банк 1',
+  companyBIC: '012345679',
+  companyCorrespondentAccount: '30101810400000000001',
+  companyPaymentAccount: '40802810064580000001',
+  companyFax: '+78003000000',
+  companyRepresentative: 'Тухбатуллина Евгеньевна Юлия',
 };
 
 describe('Backend API (e2e)', () => {
@@ -105,9 +127,12 @@ describe('Backend API (e2e)', () => {
     app = moduleFixture.createNestApplication();
     const httpAdaper = app.get(HttpAdapterHost);
 
-    app.useLogger(false);
+    app.useLogger(['debug']);
 
-    app.useGlobalFilters(new ExceptionsFilter(httpAdaper.httpAdapter));
+    const configService = createMock<ConfigService>();
+    app.useGlobalFilters(
+      new ExceptionsFilter(httpAdaper.httpAdapter, configService),
+    );
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -115,6 +140,27 @@ describe('Backend API (e2e)', () => {
         forbidUnknownValues: true,
         skipUndefinedProperties: true,
         stopAtFirstError: true,
+        exceptionFactory: (errors: ValidationError[]) => {
+          const message = errors
+            .map((error) => {
+              let ret: Array<string> =
+                (error.constraints && Object.values(error.constraints)) || [];
+              if (error.children && error.children.length > 0) {
+                ret = [
+                  ...ret,
+                  error.children
+                    .map(
+                      (child) =>
+                        child.constraints && Object.values(child.constraints),
+                    )
+                    .join(', '),
+                ];
+              }
+              return ret;
+            })
+            .join(', ');
+          return new BadRequestException(message);
+        },
       }),
     );
     app.useWebSocketAdapter(new WsAdapter(app));
@@ -714,14 +760,17 @@ describe('Backend API (e2e)', () => {
         expect(false).toEqual(true);
       }
 
+      const field = {
+        param: `{ "folderId": "${folderId1}", "category": "media" }`,
+      };
+      const files = `${__dirname}/testing.png`;
+
       const { body }: { body: FilesUploadResponse } = await request
         .put('/file')
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
-        .field({
-          param: `{ "folderId": "${folderId1}", "category": "media" }`,
-        })
-        .attach('files', `${__dirname}/testing.png`)
+        .field(field)
+        .attach('files', files)
         .expect('Content-Type', /json/)
         .expect(200);
 

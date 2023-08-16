@@ -6,6 +6,7 @@ import type {
   TypeOrmModuleOptions,
 } from '@nestjs/typeorm';
 
+import { LogLevel } from 'typeorm';
 import { TypeOrmLogger } from './typeorm.logger';
 
 @Injectable()
@@ -13,16 +14,19 @@ export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
 
   async createTypeOrmOptions(): Promise<TypeOrmModuleOptions> {
-    const cache = this.configService.get<string>('REDIS_HOST');
+    const cacheHost = this.configService.get<string>('REDIS_HOST');
     return {
-      type: 'postgres',
-      host: this.configService.get('DB_HOST', 'localhost'),
-      port: this.configService.get<number>('DB_PORT', 5432),
-      username: this.configService.get('DB_USERNAME', 'postgres'),
-      password: this.configService.get('DB_PASSWORD', 'postgres'),
-      database: this.configService.get('DB_DATABASE', 'postgres'),
+      type: this.configService.get<any>('DB_TYPE') ?? 'postgres',
+      host: this.configService.get<string>('DB_HOST'),
+      port: parseInt(this.configService.get<string>('DB_PORT', '5432'), 10),
+      username: this.configService.get<string>('DB_USERNAME'),
+      password: this.configService.get<string>('DB_PASSWORD'),
+      database: this.configService.get<string>('DB_DATABASE'),
+      ssl: this.configService.get<string>('DB_SSL', 'true') === 'true',
       nativeDriver: true,
-      logging: this.configService.get('LOG_LEVEL', 'debug').split(','),
+      logging: this.configService
+        .get<string>('LOG_LEVEL', 'debug')
+        .split(',') as LogLevel[],
       logger: new TypeOrmLogger(),
       synchronize: true,
       entities: [`${pathResolve(__dirname, '..')}/database/*.entity.{ts,js}`],
@@ -30,13 +34,16 @@ export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
       migrationsRun: false,
       autoLoadEntities: true,
 
-      cache: cache
+      cache: cacheHost
         ? {
             type: 'ioredis',
             options: {
               clientName: 'DATABASE',
-              host: cache,
-              port: this.configService.get<number>('REDIS_PORT', 6379),
+              host: cacheHost,
+              port: parseInt(
+                this.configService.get<string>('REDIS_PORT', '6379'),
+                10,
+              ),
               db: 0,
               keyPrefix: 'DATABASE:',
             },

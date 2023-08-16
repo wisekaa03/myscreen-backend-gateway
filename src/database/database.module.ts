@@ -1,9 +1,11 @@
 import { Module, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
 import { MonitorStatus } from '@/enums/monitor-status.enum';
 import { TypeOrmOptionsClass } from '@/utils/typeorm.options';
+import { PrintModule } from '@/print/print.module';
 import { MailModule } from '@/mail/mail.module';
 import { WSModule } from '@/websocket/ws.module';
 import { EditorEntity } from './editor.entity';
@@ -32,9 +34,12 @@ import { ApplicationService } from './application.service';
 import { ApplicationEntity } from './application.entity';
 import { WalletEntity } from './wallet.entity';
 import { WalletService } from './wallet.service';
+import { ActService } from './act.service';
+import { ActEntity } from './act.entity';
 
 @Module({
   imports: [
+    PrintModule,
     forwardRef(() => MailModule),
     forwardRef(() => WSModule),
 
@@ -60,6 +65,7 @@ import { WalletService } from './wallet.service';
       ApplicationEntity,
       UserExtEntity,
       WalletEntity,
+      ActEntity,
     ]),
   ],
 
@@ -76,6 +82,7 @@ import { WalletService } from './wallet.service';
     RefreshTokenService,
     ApplicationService,
     WalletService,
+    ActService,
   ],
 
   exports: [
@@ -83,6 +90,7 @@ import { WalletService } from './wallet.service';
     FileService,
     FolderService,
     MonitorService,
+    ActService,
     InvoiceService,
     PlaylistService,
     UserService,

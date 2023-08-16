@@ -3,7 +3,6 @@ import {
   Inject,
   Injectable,
   Logger,
-  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,7 +18,7 @@ import {
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { ApplicationApproved, UserPlanEnum } from '@/enums';
+import { ApplicationApproved } from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { UserService } from './user.service';
 import { ApplicationEntity } from './application.entity';
@@ -148,62 +147,52 @@ export class ApplicationService {
     id: string | undefined,
     update: Partial<ApplicationEntity>,
   ): Promise<ApplicationEntity | null> {
-    if (update.user?.plan === UserPlanEnum.Demo) {
-      throw new NotAcceptableException('You must buy the full plan');
-    }
-    await this.applicationRepository.manager.transaction(
-      async (applicationRepository) => {
-        let application: ApplicationEntity | null =
-          await applicationRepository.save<ApplicationEntity>(
-            applicationRepository.create<ApplicationEntity>(
-              ApplicationEntity,
-              update,
-            ),
-          );
-        application = await applicationRepository.findOne(ApplicationEntity, {
-          where: {
-            id: application.id,
-          },
-        });
-        if (!application) {
-          throw new NotFoundException('Application not found');
-        }
+    await this.applicationRepository.manager.transaction(async (transact) => {
+      let application: ApplicationEntity | null = await transact.save(
+        ApplicationEntity,
+        transact.create(ApplicationEntity, update),
+      );
+      application = await transact.findOne(ApplicationEntity, {
+        where: {
+          id: application.id,
+        },
+      });
+      if (!application) {
+        throw new NotFoundException('Application not found');
+      }
 
-        if (update.approved === ApplicationApproved.NotProcessed) {
-          if (application.seller) {
-            await this.mailService
-              .sendApplicationWarningMessage(
-                application.seller.email,
-                `${this.frontendUrl}/applications`,
-              )
-              .catch((error: any) => {
-                this.logger.error(
-                  `ApplicationService seller email=${application?.seller.email}: ${error}`,
-                  error,
-                );
-              });
-          } else {
-            this.logger.error('ApplicationService seller email=undefined');
-          }
-        } else if (update.approved === ApplicationApproved.Allowed) {
-          await this.wsGateway.application(application).catch((error: any) => {
+      if (update.approved === ApplicationApproved.NotProcessed) {
+        if (application.seller) {
+          await this.mailService
+            .sendApplicationWarningMessage(
+              application.seller.email,
+              `${this.frontendUrl}/applications`,
+            )
+            .catch((error: any) => {
+              this.logger.error(
+                `ApplicationService seller email=${application?.seller.email}: ${error}`,
+                error,
+              );
+            });
+        } else {
+          this.logger.error('ApplicationService seller email=undefined');
+        }
+      } else if (update.approved === ApplicationApproved.Allowed) {
+        await this.wsGateway.application(application).catch((error: any) => {
+          this.logger.error(error);
+        });
+      } else if (update.approved === ApplicationApproved.Denied) {
+        await this.wsGateway
+          .application(null, application.monitor)
+          .catch((error: any) => {
             this.logger.error(error);
           });
-        } else if (update.approved === ApplicationApproved.Denied) {
-          await this.wsGateway
-            .application(null, application.monitor)
-            .catch((error: any) => {
-              this.logger.error(error);
-            });
-        }
-      },
-    );
+      }
+    });
 
     return id === undefined
       ? null
-      : this.applicationRepository.findOne({
-          where: { id },
-        });
+      : this.applicationRepository.findOne({ where: { id } });
   }
 
   async delete(

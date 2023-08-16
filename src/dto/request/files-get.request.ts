@@ -31,11 +31,11 @@ export class FilesGetRequest {
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest,
+    type: LimitRequest<FilePartialRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest)
+  @Type(() => LimitRequest<FilePartialRequest>)
   scope?: LimitRequest<FilePartialRequest>;
 }

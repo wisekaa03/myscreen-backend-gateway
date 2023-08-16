@@ -14,10 +14,11 @@ import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
 import { PrintModule } from './print/print.module';
+import { CrontabModule } from './crontab/crontab.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true, expandVariables: true }),
     LoggerModule.forRootAsync({
       useFactory: async (
         configService: ConfigService,
@@ -66,6 +67,8 @@ import { PrintModule } from './print/print.module';
 
     AuthModule,
     MailModule,
+    PrintModule,
+    CrontabModule,
     WSModule,
     S3Module.forRootAsync({
       useClass: S3ModuleOptionsClass,
@@ -73,7 +76,6 @@ import { PrintModule } from './print/print.module';
     }),
     DatabaseModule,
     EndpointModule,
-    PrintModule,
   ],
   providers: [Logger],
 })

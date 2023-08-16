@@ -4,84 +4,38 @@ import {
 } from 'express';
 import {
   Body,
-  Controller,
   forwardRef,
   Get,
   HttpCode,
-  HttpStatus,
   Inject,
   Logger,
   Post,
   Req,
   Res,
-  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import {
-  BadRequestError,
-  ForbiddenError,
-  InternalServerError,
-  NotFoundError,
   ReportDeviceStatusRequest,
   ReportViewsRequest,
-  ServiceUnavailableError,
-  UnauthorizedError,
   StatisticsResponse,
 } from '@/dto';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status, UserRoleEnum, SpecificFormat } from '@/enums';
+import { Status, UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { PlaylistService } from '@/database/playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { PrintService } from '@/print/print.service';
 import { formatToContentType } from '@/utils/format-to-content-type';
+import { Crud, Standard } from '@/decorators';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@ApiResponse({
-  status: 503,
-  description: 'Ошибка сервера',
-  type: ServiceUnavailableError,
-})
-@Roles(
+@Standard(
+  'statistics',
   UserRoleEnum.Administrator,
+  UserRoleEnum.Accountant,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
 )
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('statistics')
-@Controller('statistics')
 export class StatisticsController {
   logger = new Logger(StatisticsController.name);
 
@@ -94,7 +48,7 @@ export class StatisticsController {
     private readonly wsGateway: WSGateway,
   ) {}
 
-  @Get('/')
+  @Get()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'statistics',
@@ -105,6 +59,7 @@ export class StatisticsController {
     description: 'Успешный ответ',
     type: StatisticsResponse,
   })
+  @Crud(CRUD.STATUS)
   async getPlaylists(
     @Req() { user }: ExpressRequest,
   ): Promise<StatisticsResponse> {
@@ -155,13 +110,14 @@ export class StatisticsController {
       },
     },
   })
+  @Crud(CRUD.STATUS)
   async reportDeviceStatus(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Body() { format, dateFrom, dateTo }: ReportDeviceStatusRequest,
   ): Promise<void> {
     const data = await this.printService.reportDeviceStatus({
-      userId,
+      userId: user.id,
       format,
       dateFrom,
       dateTo,
@@ -207,13 +163,14 @@ export class StatisticsController {
       },
     },
   })
+  @Crud(CRUD.STATUS)
   async reportViews(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Body() { format, dateFrom, dateTo }: ReportViewsRequest,
   ): Promise<void> {
     const data = await this.printService.reportViews({
-      userId,
+      userId: user.id,
       format,
       dateFrom,
       dateTo,

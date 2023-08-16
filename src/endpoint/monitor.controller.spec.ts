@@ -15,6 +15,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -28,30 +29,12 @@ describe(MonitorController.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [MonitorController],
       providers: [
-        {
-          provide: MonitorService,
-          useClass: mockRepository,
-        },
-        {
-          provide: UserService,
-          useClass: mockRepository,
-        },
-        {
-          provide: PlaylistService,
-          useClass: mockRepository,
-        },
-        {
-          provide: ApplicationService,
-          useClass: mockRepository,
-        },
-        {
-          provide: WSGateway,
-          useClass: mockRepository,
-        },
-        {
-          provide: AuthService,
-          useClass: mockRepository,
-        },
+        { provide: MonitorService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
+        { provide: PlaylistService, useClass: mockRepository },
+        { provide: ApplicationService, useClass: mockRepository },
+        { provide: WSGateway, useClass: mockRepository },
+        { provide: AuthService, useClass: mockRepository },
       ],
     }).compile();
 

@@ -1,8 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { UserService } from '@/database/user.service';
-import { MonitorService } from '@/database/monitor.service';
-import { InvoiceService } from '@/database/invoice.service';
 import { PrintService } from './print.service';
 
 export const mockRepository = jest.fn(() => ({
@@ -12,6 +9,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve({}),
   create: () => {},
   remove: async () => Promise.resolve({}),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -23,22 +21,7 @@ describe(PrintService.name, () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      // imports: [DatabaseModule],
-      providers: [
-        PrintService,
-        {
-          provide: MonitorService,
-          useClass: mockRepository,
-        },
-        {
-          provide: UserService,
-          useClass: mockRepository,
-        },
-        {
-          provide: InvoiceService,
-          useClass: mockRepository,
-        },
-      ],
+      providers: [PrintService],
     }).compile();
 
     printService = module.get(PrintService);

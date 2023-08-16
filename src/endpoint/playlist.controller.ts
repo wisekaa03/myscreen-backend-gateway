@@ -2,11 +2,9 @@ import { Request as ExpressRequest } from 'express';
 import {
   BadRequestException,
   Body,
-  Controller,
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Logger,
   NotFoundException,
   Param,
@@ -17,21 +15,10 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FindOptionsWhere, In } from 'typeorm';
 
 import {
-  BadRequestError,
-  ForbiddenError,
-  InternalServerError,
-  NotFoundError,
-  ServiceUnavailableError,
-  UnauthorizedError,
   PlaylistsGetRequest,
   PlaylistsGetResponse,
   PlaylistGetResponse,
@@ -39,64 +26,33 @@ import {
   SuccessResponse,
   PlaylistUpdateRequest,
 } from '@/dto';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { Status } from '@/enums/status.enum';
-import { UserRoleEnum } from '@/enums/user-role.enum';
+import { JwtAuthGuard, RolesGuard } from '@/guards';
+import { Status, UserRoleEnum, CRUD } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
-import { TypeOrmFind } from '@/utils/typeorm.find';
 import { PlaylistEntity } from '@/database/playlist.entity';
+import { UserService } from '@/database/user.service';
+import { Crud, Roles, Standard } from '@/decorators';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@ApiResponse({
-  status: 503,
-  description: 'Ошибка сервера',
-  type: ServiceUnavailableError,
-})
-@Roles(
+@Standard(
+  'playlist',
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
 )
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('playlist')
-@Controller('playlist')
 export class PlaylistController {
   logger = new Logger(PlaylistController.name);
 
   constructor(
     private readonly playlistService: PlaylistService,
     private readonly fileService: FileService,
+    private readonly userService: UserService,
   ) {}
 
-  @Post('/')
+  @Post()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'playlists-get',
@@ -107,6 +63,7 @@ export class PlaylistController {
     description: 'Успешный ответ',
     type: PlaylistsGetResponse,
   })
+  @Crud(CRUD.READ)
   async getPlaylists(
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: PlaylistsGetRequest,
@@ -138,22 +95,23 @@ export class PlaylistController {
     description: 'Успешный ответ',
     type: PlaylistGetResponse,
   })
+  @Crud(CRUD.CREATE)
   async createPlaylists(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() body: PlaylistCreateRequest,
   ): Promise<PlaylistGetResponse> {
     if (!(Array.isArray(body.files) && body.files.length > 0)) {
       throw new BadRequestException('Files must exist');
     }
     const files = await this.fileService.find({
-      where: { id: In(body.files), userId },
+      where: { id: In(body.files), userId: user.id },
     });
     if (!Array.isArray(files) || body.files.length !== files.length) {
       throw new NotFoundException('Files specified does not exist');
     }
 
     const data = await this.playlistService
-      .update(userId, {
+      .update(user.id, {
         ...body,
         files,
       })
@@ -167,7 +125,7 @@ export class PlaylistController {
     };
   }
 
-  @Get('/:playlistId')
+  @Get(':playlistId')
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
@@ -185,12 +143,13 @@ export class PlaylistController {
     description: 'Успешный ответ',
     type: PlaylistGetResponse,
   })
+  @Crud(CRUD.READ)
   async getPlaylist(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
   ): Promise<PlaylistGetResponse> {
     const data = await this.playlistService.findOne({
-      where: { userId, id },
+      where: { userId: user.id, id },
     });
     if (!data) {
       throw new NotFoundException(`Playlist '${id}' not found`);
@@ -202,7 +161,7 @@ export class PlaylistController {
     };
   }
 
-  @Patch('/:playlistId')
+  @Patch(':playlistId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'playlist-update',
@@ -213,15 +172,16 @@ export class PlaylistController {
     description: 'Успешный ответ',
     type: PlaylistGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updatePlaylists(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
     @Body() body: PlaylistUpdateRequest,
   ): Promise<PlaylistGetResponse> {
     let files: FileEntity[] | undefined;
     if (Array.isArray(body.files) && body.files.length > 0) {
       files = await this.fileService.find({
-        where: { id: In(body.files), userId },
+        where: { id: In(body.files), userId: user.id },
       });
       if (!Array.isArray(files) || body.files.length !== files.length) {
         throw new NotFoundException('Files specified does not exist');
@@ -229,7 +189,7 @@ export class PlaylistController {
     }
 
     const data = await this.playlistService
-      .update(userId, {
+      .update(user.id, {
         id,
         ...body,
         files,
@@ -246,7 +206,7 @@ export class PlaylistController {
     };
   }
 
-  @Delete('/:playlistId')
+  @Delete(':playlistId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'playlist-delete',
@@ -257,6 +217,7 @@ export class PlaylistController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deletePlaylist(
     @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,

@@ -3,7 +3,6 @@ import { format } from '@vicimpa/rubles';
 import { format as dateFormat } from 'date-fns';
 import dateRu from 'date-fns/locale/ru';
 
-import { UserEntity } from '@/database/user.entity';
 import { InvoiceEntity } from '@/database/invoice.entity';
 
 // сумма прописью для чисел от 0 до 999 триллионов
@@ -20,13 +19,7 @@ export const vat = (num: number) => num * 0.2;
 
 export const printSpecific: Record<string, PrintSpecific> = {
   invoice: {
-    xls: async ({
-      user,
-      invoice,
-    }: {
-      user: UserEntity;
-      invoice: InvoiceEntity;
-    }) => {
+    xls: async ({ invoice }: { invoice: InvoiceEntity }) => {
       const workbook = new excelJS.Workbook();
       const worksheet = workbook.addWorksheet('Счёт');
 
@@ -80,19 +73,19 @@ export const printSpecific: Record<string, PrintSpecific> = {
         [],
         [
           '',
-          `Заказчик: ${user.company}`,
+          `Заказчик: ${invoice.user.company}`,
           '',
           '',
           '',
-          `Телефоны: ${user.companyPhone}`,
+          `Телефоны: ${invoice.user.companyPhone}`,
         ],
         [
           '',
-          `Представитель заказчика: ${user.companyRepresentative}`,
+          `Представитель заказчика: ${invoice.user.companyRepresentative}`,
           '',
           '',
           '',
-          `Факс: ${user.companyFax}`,
+          `Факс: ${invoice.user.companyFax}`,
         ],
         [],
         ['', 'Основание:'],
@@ -550,13 +543,7 @@ export const printSpecific: Record<string, PrintSpecific> = {
       return workbook.xlsx.writeBuffer();
     },
 
-    pdf: async ({
-      user,
-      invoice,
-    }: {
-      user: UserEntity;
-      invoice: InvoiceEntity;
-    }) => {
+    pdf: async ({ invoice }: { invoice: InvoiceEntity }) => {
       const workbook = new excelJS.Workbook();
       const worksheet = workbook.addWorksheet('Счёт');
 

@@ -4,7 +4,7 @@ import { IsDateString, IsEnum, IsOptional } from 'class-validator';
 import { ApplicationEntity } from '@/database/application.entity';
 import { ApplicationApproved } from '@/enums';
 
-export class ApplicationPartialRequest extends PartialType(
+export class ApplicationsRequest extends PartialType(
   OmitType(ApplicationEntity, [
     'buyer',
     'seller',

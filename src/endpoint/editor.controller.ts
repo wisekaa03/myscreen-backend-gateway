@@ -5,7 +5,6 @@ import type {
 import {
   BadRequestException,
   Body,
-  Controller,
   Delete,
   Get,
   HttpCode,
@@ -17,32 +16,19 @@ import {
   Patch,
   Post,
   Put,
-  UseGuards,
   Req,
   Res,
   InternalServerErrorException,
   NotAcceptableException,
-  HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FindOptionsWhere } from 'typeorm';
 
 import {
-  BadRequestError,
   EditorUpdateRequest,
   EditorGetResponse,
   EditorsGetRequest,
   EditorsGetResponse,
-  ForbiddenError,
-  InternalServerError,
-  NotFoundError,
-  ServiceUnavailableError,
-  UnauthorizedError,
   SuccessResponse,
   EditorCreateRequest,
   EditorLayerCreateRequest,
@@ -50,65 +36,28 @@ import {
   EditorLayerUpdateRequest,
   EditorGetRenderingStatusResponse,
   EditorExportRequest,
-  NotAcceptableError,
 } from '@/dto';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
-import { VideoType, Status, UserRoleEnum } from '@/enums';
+import { Standard, Crud } from '@/decorators';
+import { VideoType, Status, UserRoleEnum, CRUD } from '@/enums';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
-import { TypeOrmFind } from '@/utils/typeorm.find';
+import { UserService } from '@/database/user.service';
 import { EditorEntity } from '@/database/editor.entity';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_ACCEPTABLE,
-  description: 'Не принято значение',
-  type: NotAcceptableError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@ApiResponse({
-  status: HttpStatus.SERVICE_UNAVAILABLE,
-  description: 'Не доступен сервис',
-  type: ServiceUnavailableError,
-})
-@Roles(
+@Standard(
+  'editor',
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
 )
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('editor')
-@Controller('editor')
 export class EditorController {
   logger = new Logger(EditorController.name);
 
   constructor(
+    private readonly userService: UserService,
     private readonly editorService: EditorService,
     private readonly fileService: FileService,
   ) {}
@@ -124,6 +73,7 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorsGetResponse,
   })
+  @Crud(CRUD.READ)
   async getEditors(
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: EditorsGetRequest,
@@ -155,17 +105,18 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorGetResponse,
   })
+  @Crud(CRUD.CREATE)
   async createEditor(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() body: EditorCreateRequest,
   ): Promise<EditorGetResponse> {
     const editor = await this.editorService.find({
-      where: { userId, name: body.name },
+      where: { userId: user.id, name: body.name },
     });
     if (Array.isArray(editor) && editor.length > 0) {
       throw new BadRequestException('This name is already taken');
     }
-    const data = await this.editorService.update(userId, body);
+    const data = await this.editorService.update(user.id, body);
     if (!data) {
       throw new NotFoundException('Editor not found');
     }
@@ -187,6 +138,7 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorGetResponse,
   })
+  @Crud(CRUD.READ)
   async getEditor(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
@@ -219,6 +171,7 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updateEditor(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
@@ -269,6 +222,7 @@ export class EditorController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteEditor(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
@@ -306,13 +260,14 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorLayerGetResponse,
   })
+  @Crud(CRUD.CREATE)
   async createEditorLayer(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) editorId: string,
     @Body() body: EditorLayerCreateRequest,
   ): Promise<EditorLayerGetResponse> {
     const editor = await this.editorService.findOne({
-      where: { id: editorId, userId },
+      where: { id: editorId, userId: user.id },
       select: ['id', 'userId'],
       relations: [],
     });
@@ -320,7 +275,7 @@ export class EditorController {
       throw new NotFoundException(`The editor ${editorId} is not found`);
     }
     const file = await this.fileService.findOne({
-      where: { id: body.file, userId },
+      where: { id: body.file, userId: user.id },
       select: ['id', 'userId', 'videoType', 'meta', 'duration'],
       relations: [],
     });
@@ -338,7 +293,11 @@ export class EditorController {
       create.video = [editor];
     }
 
-    const data = await this.editorService.createLayer(userId, editorId, create);
+    const data = await this.editorService.createLayer(
+      user.id,
+      editorId,
+      create,
+    );
     if (!data) {
       throw new NotFoundException('This editor layer is not exists');
     }
@@ -360,14 +319,15 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorLayerGetResponse,
   })
+  @Crud(CRUD.READ)
   async getEditorLayer(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) editorId: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
   ): Promise<EditorLayerGetResponse> {
     const editor = await this.editorService.findOne({
       where: {
-        userId,
+        userId: user.id,
         id: editorId,
       },
     });
@@ -400,15 +360,16 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorLayerGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updateEditorLayer(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) editorId: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
     @Body() body: EditorLayerUpdateRequest,
   ): Promise<EditorLayerGetResponse> {
     const editor = await this.editorService.findOne({
       where: {
-        userId,
+        userId: user.id,
         id: editorId,
       },
     });
@@ -425,7 +386,7 @@ export class EditorController {
     }
 
     const data = await this.editorService.updateLayer(
-      userId,
+      user.id,
       editorId,
       editorLayer,
       body,
@@ -451,15 +412,16 @@ export class EditorController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.UPDATE)
   async moveEditorLayer(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) editorId: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
     @Param('moveIndex', ParseIntPipe) moveIndex: number,
   ): Promise<SuccessResponse> {
     // TODO: catch error
     /* await */ this.editorService.moveIndex(
-      userId,
+      user.id,
       editorId,
       layerId,
       moveIndex,
@@ -481,14 +443,15 @@ export class EditorController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteEditorLayer(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) editorId: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
   ): Promise<SuccessResponse> {
     // TODO: разобраться
     const editor = await this.editorService.findOne({
-      where: { userId, id: editorId },
+      where: { userId: user.id, id: editorId },
       select: ['id', 'userId'],
       relations: [],
     });
@@ -506,7 +469,7 @@ export class EditorController {
     }
 
     const { affected } = await this.editorService.deleteLayer(
-      userId,
+      user.id,
       editorId,
       layerId,
     );
@@ -538,15 +501,16 @@ export class EditorController {
       },
     },
   })
+  @Crud(CRUD.READ)
   async postEditorFrame(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Param('time', ParseIntPipe) time: number,
   ): Promise<void> {
     const editor = await this.editorService.findOne({
       where: {
-        userId,
+        userId: user.id,
         id,
       },
       relations: ['videoLayers', 'audioLayers'],
@@ -559,7 +523,7 @@ export class EditorController {
     capturedFrame.pipe(res);
   }
 
-  @Get('/export/:editorId')
+  @Get('export/:editorId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-export-status',
@@ -570,13 +534,14 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorGetRenderingStatusResponse,
   })
+  @Crud(CRUD.READ)
   async getEditorExportStatus(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
   ): Promise<EditorGetRenderingStatusResponse> {
     const data = await this.editorService.findOne({
       where: {
-        userId,
+        userId: user.id,
         id,
       },
     });
@@ -593,7 +558,7 @@ export class EditorController {
     };
   }
 
-  @Post('/export/:editorId')
+  @Post('export/:editorId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-export',
@@ -604,6 +569,7 @@ export class EditorController {
     description: 'Успешный ответ',
     type: EditorGetRenderingStatusResponse,
   })
+  @Crud(CRUD.UPDATE)
   async postEditorExport(
     @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,

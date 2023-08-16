@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
+import { UserService } from '@/database/user.service';
 import { EditorController } from './editor.controller';
 
 export const mockRepository = jest.fn(() => ({
@@ -11,6 +12,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -24,14 +26,9 @@ describe(EditorController.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [EditorController],
       providers: [
-        {
-          provide: EditorService,
-          useClass: mockRepository,
-        },
-        {
-          provide: FileService,
-          useClass: mockRepository,
-        },
+        { provide: UserService, useClass: mockRepository },
+        { provide: EditorService, useClass: mockRepository },
+        { provide: FileService, useClass: mockRepository },
       ],
     }).compile();
 

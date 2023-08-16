@@ -16,6 +16,7 @@ export const mockRepository = jest.fn(() => ({
   create: () => [],
   remove: async () => Promise.resolve([]),
   sendMail: async () => Promise.resolve(data),
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -29,29 +30,10 @@ describe(MailService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MailService,
-        {
-          provide: PrintService,
-          useClass: mockRepository,
-        },
-        {
-          provide: MailerService,
-          useClass: mockRepository,
-        },
-        {
-          provide: UserService,
-          useClass: mockRepository,
-        },
-        {
-          provide: ConfigService,
-          useValue: {
-            get: jest.fn((key: string) => {
-              if (key === 'MAIL_DOMAIN') {
-                return 'baz.bar';
-              }
-              return null;
-            }),
-          },
-        },
+        { provide: PrintService, useClass: mockRepository },
+        { provide: MailerService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
+        { provide: ConfigService, useClass: mockRepository },
       ],
     }).compile();
 

@@ -3,7 +3,7 @@ import { IsDateString, IsOptional } from 'class-validator';
 
 import { InvoiceEntity } from '@/database/invoice.entity';
 
-export class InvoicePartialRequest extends PartialType(
+export class InvoicesRequest extends PartialType(
   OmitType(InvoiceEntity, ['createdAt', 'updatedAt']),
 ) {
   @ApiProperty({

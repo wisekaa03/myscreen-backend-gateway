@@ -1,81 +1,49 @@
 import {
   Catch,
-  type ArgumentsHost,
+  ArgumentsHost,
   Logger,
   HttpException,
-  UnauthorizedException,
-  BadRequestException,
-  ForbiddenException,
-  PreconditionFailedException,
-  NotFoundException,
-  RequestTimeoutException,
-  ConflictException,
-  NotImplementedException,
-  NotAcceptableException,
+  HttpServer,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
+import { ConfigService } from '@nestjs/config';
 import { TypeORMError } from 'typeorm';
 
-import {
-  UnauthorizedError,
-  BadRequestError,
-  ForbiddenError,
-  PreconditionFailedError,
-  InternalServerError,
-  NotFoundError,
-  ConflictError,
-  NotImplementedError,
-  HttpError,
-  NotAcceptableError,
-} from '@/dto';
+import { InternalServerError, HttpError } from '@/dto';
 
 @Catch()
 export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   logger = new Logger(ExceptionsFilter.name);
 
+  debugLevel: boolean;
+
+  constructor(
+    applicationRef: HttpServer<any, any, any>,
+    configService: ConfigService,
+  ) {
+    super(applicationRef);
+    this.debugLevel = configService.get('LOG_LEVEL') === 'debug';
+  }
+
   catch(exception: HttpException | Error, host: ArgumentsHost) {
-    let exceptionAfter: HttpError | undefined;
-
     if (exception instanceof HttpException) {
-      this.logger.error(exception.message, exception.stack);
+      const response = exception.getResponse();
+      let { message } = exception;
+      const { error } = response as Record<string, string>;
+      if (error) {
+        message = `${error}: ${message}`;
+      }
+      this.logger.error(message, this.debugLevel ? exception.stack : undefined);
 
-      if (exception instanceof UnauthorizedException) {
-        exceptionAfter = new UnauthorizedError(exception.message);
-      } else if (exception instanceof ForbiddenException) {
-        exceptionAfter = new ForbiddenError(exception.message);
-      } else if (exception instanceof NotFoundException) {
-        exceptionAfter = new NotFoundError(exception.message);
-      } else if (exception instanceof RequestTimeoutException) {
-        exceptionAfter = new InternalServerError(exception.message);
-      } else if (exception instanceof PreconditionFailedException) {
-        exceptionAfter = new PreconditionFailedError(exception.message);
-      } else if (exception instanceof NotImplementedException) {
-        exceptionAfter = new NotImplementedError(exception.message);
-      } else if (exception instanceof NotAcceptableException) {
-        exceptionAfter = new NotAcceptableError(exception.message);
-      } else if (exception instanceof BadRequestException) {
-        const response = exception.getResponse();
-        exceptionAfter = new BadRequestError(
-          typeof response === 'object'
-            ? (response as Record<string, string>).message
-            : response,
-        );
-      } else if (exception instanceof ConflictException) {
-        const response = exception.getResponse();
-        exceptionAfter = new ConflictError(
-          exception.message,
-          typeof response === 'object'
-            ? (response as Record<string, unknown>)
-            : { message: response },
-        );
+      let exceptionHttp: HttpException;
+      const { name } = exception;
+      if (HttpError[name as keyof typeof HttpError]) {
+        exceptionHttp = new HttpError[name as keyof typeof HttpError](message);
       } else {
-        exceptionAfter = new InternalServerError(exception.message);
+        exceptionHttp = new InternalServerError(message);
       }
 
-      return super.catch(
-        exceptionAfter ? Object.assign(exception, exceptionAfter) : exception,
-        host,
-      );
+      return super.catch(Object.assign(exception, exceptionHttp), host);
     }
 
     if (exception instanceof TypeORMError) {

@@ -16,9 +16,10 @@ import {
   type DeepPartial,
   FindManyOptions,
 } from 'typeorm';
+import addDays from 'date-fns/addDays';
 
 import { RegisterRequest, selectUserOptions } from '@/dto';
-import { UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
+import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -33,18 +34,136 @@ export class UserService {
   private frontendUrl: string;
 
   constructor(
+    private readonly configService: ConfigService,
+    @Inject(forwardRef(() => MailService))
+    private readonly mailService: MailService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserExtEntity)
     private readonly userExtRepository: Repository<UserExtEntity>,
-    @Inject(forwardRef(() => MailService))
-    private readonly mailService: MailService,
-    private readonly configService: ConfigService,
   ) {
-    this.frontendUrl = configService.get<string>(
+    this.frontendUrl = this.configService.get(
       'FRONTEND_URL',
       'http://localhost',
     );
+  }
+
+  /**
+   * Return full name of user.
+   * @param {UserEntity} u user - UserEntity
+   * @param {boolean} e email (default: true) - add email
+   * @returns string
+   * @memberof UserService
+   */
+  static fullName = (u: UserEntity, e = true) =>
+    [u.surname, u.name, u.middleName].join(' ') + (e ? ` <${u.email}>` : '');
+
+  /**
+   * Verify user permissions.
+   *
+   * @param {string} controllers Controller name (monitor, application, etc.)
+   * @param {CRUDS} crud CRUDS (CREATE, READ, UPDATE, DELETE, STATUS)
+   * @param {UserExtEntity} user User
+   * @returns {boolean} true - access allowed
+   * @throws {ForbiddenException} ForbiddenException
+   * @memberof UserService
+   */
+  verify(controllers: string, crud: CRUD, user: UserExtEntity): boolean {
+    const fullName = UserService.fullName(user);
+    this.logger.debug(
+      `User: "${fullName}" Controllers: "${controllers}" ASCRUD: "${crud}"`,
+    );
+    const {
+      role = UserRoleEnum.Administrator,
+      plan = UserPlanEnum.Full,
+      countMonitors = 0,
+      countUsedSpace = 0,
+      createdAt = new Date(),
+    } = user;
+
+    if (role === UserRoleEnum.MonitorOwner) {
+      if (plan === UserPlanEnum.Demo) {
+        if (controllers === 'auth' || controllers === 'invoice') {
+          return true;
+        }
+
+        if (
+          (countMonitors ?? 0) > 5 ||
+          (controllers === 'monitor' &&
+            crud === CRUD.CREATE &&
+            1 + countMonitors > 5)
+        ) {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
+        }
+
+        if (
+          controllers === 'monitor' &&
+          crud !== CRUD.READ &&
+          addDays(createdAt, 14 + 1) < new Date()
+        ) {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
+        }
+
+        if (
+          controllers === 'file' &&
+          crud !== CRUD.READ &&
+          addDays(createdAt, 28 + 1) < new Date()
+        ) {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
+        }
+
+        if (countUsedSpace > UserStoreSpaceEnum.DEMO) {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
+        }
+
+        if (controllers === 'application') {
+          throw new ForbiddenException(
+            'You have a Demo User account. Time to pay.',
+          );
+        }
+      } else if (plan === UserPlanEnum.Full) {
+        if (
+          controllers === 'file' &&
+          countUsedSpace >= UserStoreSpaceEnum.FULL &&
+          crud === CRUD.CREATE
+        ) {
+          throw new ForbiddenException(
+            `You have a limited User account to store space: ${countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
+          );
+        }
+      }
+    } else if (role === UserRoleEnum.Advertiser) {
+      if (controllers === 'monitor') {
+        throw new ForbiddenException();
+      }
+
+      if (
+        controllers === 'file' &&
+        countUsedSpace >= UserStoreSpaceEnum.FULL &&
+        crud === CRUD.CREATE
+      ) {
+        throw new ForbiddenException(
+          `You have a limited User account to store space: ${countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
+        );
+      }
+    }
+
+    /**
+      Не трогаем все остальные роли:
+        UserRoleEnum.Administrator
+        UserRoleEnum.Accountant
+        UserRoleEnum.Monitor
+    */
+
+    return true;
   }
 
   /**
@@ -58,7 +177,7 @@ export class UserService {
     userId: string,
     update: Partial<UserEntity>,
   ): Promise<UserExtEntity | null> {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
       throw new ForbiddenException();
     }
@@ -76,14 +195,14 @@ export class UserService {
           ),
         ),
         this.mailService.sendVerificationCode(update.email, confirmUrl),
-      ]).then(([saved]) => saved);
+      ]).then(([{ id }]) => this.userExtRepository.findOneBy({ id }));
     }
 
-    const userSaved = await this.userRepository.save(
+    const { id } = await this.userRepository.save(
       this.userRepository.create(Object.assign(user, update)),
     );
 
-    return this.userExtRepository.findOne({ where: { id: userSaved.id } });
+    return this.userExtRepository.findOneBy({ id });
   }
 
   /**
@@ -105,13 +224,13 @@ export class UserService {
   async register(create: RegisterRequest): Promise<UserExtEntity | null> {
     const { email, password, role, ...createUser } = create;
     if (!email) {
-      throw new BadRequestException();
+      throw new BadRequestException('email must be defined');
     }
     if (!password) {
-      throw new BadRequestException();
+      throw new BadRequestException('password must be defined');
     }
     if (!role) {
-      throw new BadRequestException();
+      throw new BadRequestException('role must be defined');
     }
 
     // TODO: verify email domain
@@ -122,7 +241,7 @@ export class UserService {
       },
     });
     if (existingUser) {
-      throw new PreconditionFailedException('User exists', create.email);
+      throw new PreconditionFailedException(`User exists: ${create.email}`);
     }
 
     const plan =
@@ -155,26 +274,16 @@ export class UserService {
       const { id } = await this.userRepository.save(
         this.userRepository.create(user),
       );
-      return this.userExtRepository.findOne({ where: { id } });
+      return this.userExtRepository.findOneBy({ id });
     }
 
     const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(user)),
-      this.mailService.sendWelcomeMessage(email).catch((error) => {
-        this.logger.error(error);
-      }),
-      this.mailService
-        .sendVerificationCode(email, confirmUrl)
-        .catch((error) => {
-          this.logger.error(error);
-        }),
+      this.mailService.sendWelcomeMessage(email),
+      this.mailService.sendVerificationCode(email, confirmUrl),
     ]);
 
     return this.userExtRepository.findOneBy({ id });
-  }
-
-  fullName(item: UserEntity): string {
-    return [item.surname, item.name, item.middleName].join(' ');
   }
 
   /**
@@ -334,7 +443,10 @@ export class UserService {
     return this.userExtRepository.findOne(conditions);
   }
 
-  validateCredentials = (user: UserEntity, password: string): boolean => {
+  static validateCredentials = (
+    user: UserEntity,
+    password: string,
+  ): boolean => {
     const passwordSha256 = createHmac('sha256', password.normalize()).digest(
       'hex',
     );

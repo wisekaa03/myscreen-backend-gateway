@@ -3,13 +3,11 @@ import { Between, FindManyOptions, In, MoreThan, Not } from 'typeorm';
 import {
   BadRequestException,
   Body,
-  Controller,
   Delete,
   ForbiddenException,
   forwardRef,
   Get,
   HttpCode,
-  HttpStatus,
   Inject,
   Logger,
   NotAcceptableException,
@@ -22,38 +20,29 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { isDateString } from 'class-validator';
 
 import {
-  BadRequestError,
-  ForbiddenError,
-  InternalServerError,
   MonitorGetResponse,
   MonitorsGetRequest,
   MonitorsGetResponse,
   MonitorsPlaylistAttachRequest,
-  NotFoundError,
-  ServiceUnavailableError,
   ApplicationsGetResponse,
   SuccessResponse,
-  UnauthorizedError,
   MonitorCreateRequest,
   MonitorUpdateRequest,
   Order,
 } from '@/dto';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { JwtAuthGuard, RolesGuard } from '@/guards';
 import {
+  CRUD,
   ApplicationApproved,
   Status,
   UserPlanEnum,
   UserRoleEnum,
 } from '@/enums';
+import { Crud, Roles, Standard } from '@/decorators';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -64,51 +53,17 @@ import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { ApplicationService } from '@/database/application.service';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@ApiResponse({
-  status: 503,
-  description: 'Ошибка сервера',
-  type: ServiceUnavailableError,
-})
-@Roles(
+@Standard(
+  'monitor',
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
 )
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('monitor')
-@Controller('monitor')
 export class MonitorController {
   logger = new Logger(MonitorController.name);
 
   constructor(
     private readonly monitorService: MonitorService,
-    private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly playlistService: PlaylistService,
     private readonly applicationService: ApplicationService,
@@ -117,7 +72,6 @@ export class MonitorController {
   ) {}
 
   @Post()
-  @HttpCode(200)
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
@@ -125,6 +79,7 @@ export class MonitorController {
     UserRoleEnum.Monitor,
   )
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'monitors-get',
     summary: 'Получение списка мониторов',
@@ -134,6 +89,7 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: MonitorsGetResponse,
   })
+  @Crud(CRUD.READ)
   async getMonitors(
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: MonitorsGetRequest,
@@ -214,11 +170,12 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: MonitorGetResponse,
   })
+  @Crud(CRUD.CREATE)
   async createMonitors(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() monitor: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    const findMonitor = await this.monitorService.findOne(userId, {
+    const findMonitor = await this.monitorService.findOne(user.id, {
       select: ['id', 'name', 'code'],
       where: { code: monitor.code },
     });
@@ -227,16 +184,9 @@ export class MonitorController {
         `Монитор '${findMonitor.name}'/'${findMonitor.code}' уже существует`,
       );
     }
-    const user = await this.userService.findById(userId);
-    if (!user) {
-      throw new ForbiddenException();
-    }
-    if (user.plan === UserPlanEnum.Demo) {
-      this.authService.verifyAfter(user);
-    }
-    const [, countMonitors] = await this.monitorService.findAndCount(userId, {
+    const [, countMonitors] = await this.monitorService.findAndCount(user.id, {
       select: ['id'],
-      where: { userId },
+      where: { userId: user.id },
     });
     if (countMonitors > 5) {
       throw new ForbiddenException(
@@ -245,7 +195,7 @@ export class MonitorController {
     }
 
     const data = await this.monitorService
-      .update(userId, monitor)
+      .update(user.id, monitor)
       .catch((/* error: TypeORMError */) => {
         throw new BadRequestException(
           `Монитор '${monitor.name}' уже существует`,
@@ -258,7 +208,7 @@ export class MonitorController {
     };
   }
 
-  @Patch('/playlist')
+  @Patch('playlist')
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
@@ -275,6 +225,7 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: MonitorsGetResponse,
   })
+  @Crud(CRUD.CREATE)
   async createMonitorPlaylist(
     @Req() { user }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
@@ -343,21 +294,20 @@ export class MonitorController {
         } else {
           approved = ApplicationApproved.NotProcessed;
         }
-        await this.applicationService
-          .update(undefined, {
-            sellerId: monitor.userId,
-            buyerId: user.id,
-            monitor,
-            playlist,
-            approved,
-            user,
-            dateBefore: attach.application.dateBefore,
-            dateWhen: attach.application.dateWhen,
-            playlistChange: attach.application.playlistChange,
-          })
-          .catch((error) => {
-            this.logger.error(error);
-          });
+        // To verify user permissions for application
+        this.userService.verify('application', CRUD.CREATE, user);
+        // To create application
+        await this.applicationService.update(undefined, {
+          sellerId: monitor.userId,
+          buyerId: user.id,
+          monitor,
+          playlist,
+          approved,
+          user,
+          dateBefore: attach.application.dateBefore,
+          dateWhen: attach.application.dateWhen,
+          playlistChange: attach.application.playlistChange,
+        });
       }
 
       return monitor;
@@ -372,7 +322,7 @@ export class MonitorController {
     };
   }
 
-  @Delete('/playlist')
+  @Delete('playlist')
   @HttpCode(200)
   @Roles(
     UserRoleEnum.Administrator,
@@ -389,8 +339,9 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: MonitorsGetResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteMonitorPlaylist(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<MonitorsGetResponse> {
     if (attach.monitors.length === 0) {
@@ -398,7 +349,7 @@ export class MonitorController {
     }
     const playlist = await this.playlistService.findOne({
       where: {
-        userId,
+        userId: user.id,
         id: attach.playlistId,
       },
     });
@@ -407,9 +358,9 @@ export class MonitorController {
     }
 
     const dataPromise = attach.monitors.map(async (monitorId) => {
-      const monitor = await this.monitorService.findOne(userId, {
+      const monitor = await this.monitorService.findOne(user.id, {
         where: {
-          userId,
+          userId: user.id,
           id: monitorId,
         },
       });
@@ -428,7 +379,7 @@ export class MonitorController {
           this.logger.error(error);
         });
 
-      return this.monitorService.update(userId, {
+      return this.monitorService.update(user.id, {
         ...monitor,
         playlist: null,
       });
@@ -442,8 +393,7 @@ export class MonitorController {
     };
   }
 
-  @Get('/:monitorId')
-  @HttpCode(200)
+  @Get(':monitorId')
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
@@ -451,6 +401,7 @@ export class MonitorController {
     UserRoleEnum.Monitor,
   )
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-get',
     summary: 'Получение монитора',
@@ -460,17 +411,18 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: MonitorGetResponse,
   })
+  @Crud(CRUD.READ)
   async getMonitor(
-    @Req() { user: { id: userId, role } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
     const conditional: FindManyOptions<MonitorEntity> = {};
-    if (role === UserRoleEnum.Monitor) {
-      conditional.where = { id: userId };
+    if (user.role === UserRoleEnum.Monitor) {
+      conditional.where = { id: user.id };
     } else {
-      conditional.where = { userId, id };
+      conditional.where = { userId: user.id, id };
     }
-    const data = await this.monitorService.findOne(userId, conditional);
+    const data = await this.monitorService.findOne(user.id, conditional);
     if (!data) {
       throw new NotFoundException(`Monitor '${id}' not found`);
     }
@@ -481,14 +433,14 @@ export class MonitorController {
     };
   }
 
-  @Get('/:monitorId/favoritePlus')
-  @HttpCode(200)
+  @Get(':monitorId/favoritePlus')
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
   )
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-favorite-plus',
     summary: 'Избранное +',
@@ -498,6 +450,7 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: MonitorGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async monitorFavoritePlus(
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) monitorId: string,
@@ -513,14 +466,14 @@ export class MonitorController {
     };
   }
 
-  @Get('/:monitorId/favoriteMinus')
-  @HttpCode(200)
+  @Get(':monitorId/favoriteMinus')
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
   )
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-favorite-minus',
     summary: 'Избранное -',
@@ -530,6 +483,7 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: MonitorGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async monitorFavoriteMinus(
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) monitorId: string,
@@ -545,14 +499,14 @@ export class MonitorController {
     };
   }
 
-  @Get('/:monitorId/applications')
-  @HttpCode(200)
+  @Get(':monitorId/applications')
   @Roles(
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
   )
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-get-applications',
     summary: 'Получение плэйлиста монитора',
@@ -562,19 +516,20 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: ApplicationsGetResponse,
   })
+  @Crud(CRUD.READ)
   async getMonitorApplications(
-    @Req() { user: { id: userId, role } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationsGetResponse> {
     const conditional: FindManyOptions<MonitorEntity> = {
       relations: ['playlist'],
     };
-    if (role === UserRoleEnum.Monitor) {
-      conditional.where = { id: userId };
+    if (user.role === UserRoleEnum.Monitor) {
+      conditional.where = { id: user.id };
     } else {
-      conditional.where = { userId, id };
+      conditional.where = { userId: user.id, id };
     }
-    const monitor = await this.monitorService.findOne(userId, conditional);
+    const monitor = await this.monitorService.findOne(user.id, conditional);
     if (!monitor) {
       throw new NotFoundException(`Monitor '${id}' not found`);
     }
@@ -604,23 +559,24 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: MonitorGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updateMonitor(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
     @Body() update: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
-    const monitor = await this.monitorService.findOne(userId, {
+    const monitor = await this.monitorService.findOne(user.id, {
       select: ['id'],
       loadEagerRelations: false,
       where: {
-        userId,
+        userId: user.id,
         id,
       },
     });
     if (!monitor) {
       throw new NotFoundException(`Monitor ${id} is not found`);
     }
-    const data = await this.monitorService.update(userId, {
+    const data = await this.monitorService.update(user.id, {
       ...update,
       id,
     });
@@ -631,7 +587,7 @@ export class MonitorController {
     };
   }
 
-  @Delete('/:monitorId')
+  @Delete(':monitorId')
   @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
@@ -644,15 +600,16 @@ export class MonitorController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteMonitor(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
-    const monitor = await this.monitorService.findOne(userId, {
+    const monitor = await this.monitorService.findOne(user.id, {
       select: ['id'],
       loadEagerRelations: false,
       where: {
-        userId,
+        userId: user.id,
         id,
       },
     });
@@ -660,7 +617,7 @@ export class MonitorController {
       throw new NotFoundException(`Monitor '${id}' is not found`);
     }
 
-    const { affected } = await this.monitorService.delete(userId, id);
+    const { affected } = await this.monitorService.delete(user.id, id);
     if (!affected) {
       throw new NotFoundException('This monitor is not exists');
     }

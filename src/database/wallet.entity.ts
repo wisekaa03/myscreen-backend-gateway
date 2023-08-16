@@ -19,6 +19,7 @@ import {
 
 import { UserEntity } from './user.entity';
 import { InvoiceEntity } from './invoice.entity';
+import { ActEntity } from './act.entity';
 
 @Entity('wallet')
 export class WalletEntity {
@@ -54,6 +55,22 @@ export class WalletEntity {
   @IsOptional()
   @IsUUID()
   invoiceId!: string | null;
+
+  @ManyToOne(() => ActEntity, (invoice) => invoice.id, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
+    eager: false,
+    nullable: true,
+  })
+  @JoinColumn()
+  act!: ActEntity | null;
+
+  @Column({ nullable: true })
+  @Index()
+  @IsOptional()
+  @IsUUID()
+  actId!: string | null;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onUpdate: 'CASCADE',

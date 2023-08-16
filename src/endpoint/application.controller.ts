@@ -2,12 +2,10 @@ import type { Request as ExpressRequest } from 'express';
 import {
   BadRequestException,
   Body,
-  Controller,
   Delete,
   forwardRef,
   Get,
   HttpCode,
-  HttpStatus,
   Inject,
   Logger,
   NotFoundException,
@@ -16,79 +14,42 @@ import {
   Patch,
   Post,
   Req,
-  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Not } from 'typeorm';
 
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
 import {
-  BadRequestError,
-  ApplicationGetRequest,
+  ApplicationsGetRequest,
   ApplicationGetResponse,
   ApplicationsGetResponse,
   ApplicationUpdateRequest,
-  ForbiddenError,
-  InternalServerError,
-  NotFoundError,
   SuccessResponse,
-  UnauthorizedError,
 } from '@/dto';
-import { Status, UserRoleEnum } from '@/enums';
+import { Crud, Standard } from '@/decorators';
+import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { WSGateway } from '@/websocket/ws.gateway';
+import { UserService } from '@/database/user.service';
 import { ApplicationService } from '@/database/application.service';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
-@Roles(
+@Standard(
+  'application',
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
 )
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('application')
-@Controller('application')
 export class ApplicationController {
   logger = new Logger(ApplicationController.name);
 
   constructor(
+    private readonly userService: UserService,
     private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
 
-  @Post('/')
+  @Post()
   @HttpCode(200)
   @ApiOperation({
     operationId: 'applications-get',
@@ -99,18 +60,19 @@ export class ApplicationController {
     description: 'Успешный ответ',
     type: ApplicationsGetResponse,
   })
+  @Crud(CRUD.READ)
   async getApplications(
-    @Req() { user: { id: userId, role } }: ExpressRequest,
-    @Body() { where, select, scope }: ApplicationGetRequest,
+    @Req() { user }: ExpressRequest,
+    @Body() { where, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
     const sqlWhere = TypeOrmFind.Where(where);
-    if (role === UserRoleEnum.MonitorOwner) {
+    if (user.role === UserRoleEnum.MonitorOwner) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { ...sqlWhere, buyerId: Not(userId) },
-          { ...sqlWhere, sellerId: Not(userId) },
+          { ...sqlWhere, buyerId: Not(user.id) },
+          { ...sqlWhere, sellerId: Not(user.id) },
         ],
       });
 
@@ -121,13 +83,13 @@ export class ApplicationController {
       };
     }
 
-    if (role === UserRoleEnum.Advertiser) {
+    if (user.role === UserRoleEnum.Advertiser) {
       const [data, count] = await this.applicationService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { ...sqlWhere, buyerId: userId },
-          { ...sqlWhere, sellerId: userId },
+          { ...sqlWhere, buyerId: user.id },
+          { ...sqlWhere, sellerId: user.id },
         ],
       });
 
@@ -161,6 +123,7 @@ export class ApplicationController {
     description: 'Успешный ответ',
     type: ApplicationGetResponse,
   })
+  @Crud(CRUD.READ)
   async getApplication(
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationGetResponse> {
@@ -189,8 +152,9 @@ export class ApplicationController {
     description: 'Успешный ответ',
     type: ApplicationGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updateApplication(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
     @Body() update: ApplicationUpdateRequest,
   ): Promise<ApplicationGetResponse> {
@@ -198,11 +162,11 @@ export class ApplicationController {
       where: [
         {
           id: applicationId,
-          sellerId: userId,
+          sellerId: user.id,
         },
         {
           id: applicationId,
-          buyerId: userId,
+          buyerId: user.id,
         },
       ],
     });
@@ -235,14 +199,15 @@ export class ApplicationController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteApplication(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
     const application = await this.applicationService.findOne({
       where: [
-        { id, sellerId: userId },
-        { id, buyerId: userId },
+        { id, sellerId: user.id },
+        { id, buyerId: user.id },
       ],
       relations: ['monitor'],
     });
@@ -251,7 +216,7 @@ export class ApplicationController {
     }
 
     const { affected } = await this.applicationService.delete(
-      userId,
+      user.id,
       application,
     );
     if (!affected) {

@@ -2,11 +2,11 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 
+import { UserPlanEnum } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-import { UserPlanEnum } from '@/enums';
 
 const email = 'foo@bar.baz';
 const password = 'Secret~123456';
@@ -36,11 +36,12 @@ const user = {
 
 export const mockRepository = jest.fn(() => ({
   findByEmail: async () => Promise.resolve({ ...user, password }),
-  validateCredentials: () => true,
   signAsync: async () => Promise.resolve(token),
   create: async () => Promise.resolve({ id: '1' }),
   verify: () => true,
+  get: (key: string, defaultValue?: string) => defaultValue,
 }));
+UserService.validateCredentials = () => true;
 
 describe(AuthService.name, () => {
   let service: AuthService;
@@ -49,34 +50,22 @@ describe(AuthService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        ConfigService,
-        {
-          provide: UserService,
-          useClass: mockRepository,
-        },
-        {
-          provide: RefreshTokenService,
-          useClass: mockRepository,
-        },
-        {
-          provide: JwtService,
-          useClass: mockRepository,
-        },
-        {
-          provide: JwtStrategy,
-          useClass: mockRepository,
-        },
+        { provide: ConfigService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
+        { provide: RefreshTokenService, useClass: mockRepository },
+        { provide: JwtService, useClass: mockRepository },
+        { provide: JwtStrategy, useClass: mockRepository },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
   });
 
-  it('should be defined', () => {
+  test('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('login', async () => {
+  test('login', async () => {
     const login = await service.login(email, password);
     expect(login).toEqual([
       user,

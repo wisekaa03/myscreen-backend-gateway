@@ -2,12 +2,10 @@ import type { Request as ExpressRequest } from 'express';
 import { isUUID } from 'class-validator';
 import { In } from 'typeorm';
 import {
-  Controller,
   Logger,
   Body,
   Post,
   Req,
-  UseGuards,
   BadRequestException,
   Get,
   Param,
@@ -17,26 +15,15 @@ import {
   Patch,
   HttpCode,
   Put,
-  HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiExtraModels,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiExtraModels, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import {
   BadRequestError,
-  UnauthorizedError,
   FoldersGetResponse,
   FoldersGetRequest,
   FolderCreateRequest,
   FolderGetResponse,
-  ForbiddenError,
-  InternalServerError,
-  NotFoundError,
   FolderUpdateRequest,
   SuccessResponse,
   FolderResponse,
@@ -44,8 +31,8 @@ import {
   FoldersUpdateRequest,
   FoldersCopyRequest,
 } from '@/dto';
-import { Status, UserRoleEnum } from '@/enums';
-import { JwtAuthGuard, Roles, RolesGuard } from '@/guards';
+import { CRUD, Status, UserRoleEnum } from '@/enums';
+import { Crud, Standard } from '@/decorators';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FolderEntity } from '@/database/folder.entity';
@@ -56,41 +43,13 @@ import {
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 
-@ApiResponse({
-  status: HttpStatus.BAD_REQUEST,
-  description: 'Ответ будет таким если с данным что-то не так',
-  type: BadRequestError,
-})
-@ApiResponse({
-  status: HttpStatus.UNAUTHORIZED,
-  description: 'Ответ для незарегистрированного пользователя',
-  type: UnauthorizedError,
-})
-@ApiResponse({
-  status: HttpStatus.FORBIDDEN,
-  description: 'Ответ для неавторизованного пользователя',
-  type: ForbiddenError,
-})
-@ApiResponse({
-  status: HttpStatus.NOT_FOUND,
-  description: 'Не найдено',
-  type: NotFoundError,
-})
-@ApiResponse({
-  status: HttpStatus.INTERNAL_SERVER_ERROR,
-  description: 'Ошибка сервера',
-  type: InternalServerError,
-})
 @ApiExtraModels(FolderResponse)
-@Roles(
+@Standard(
+  'folder',
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
 )
-@UseGuards(JwtAuthGuard, RolesGuard)
-@ApiBearerAuth()
-@ApiTags('folder')
-@Controller('folder')
 export class FolderController {
   logger = new Logger(FolderController.name);
 
@@ -110,6 +69,7 @@ export class FolderController {
     description: 'Успешный ответ',
     type: FoldersGetResponse,
   })
+  @Crud(CRUD.READ)
   async getFolders(
     @Req() { user }: ExpressRequest,
     @Body() { scope, select, where }: FoldersGetRequest,
@@ -128,15 +88,13 @@ export class FolderController {
       if (fromRegex?.length === 3) {
         // получили имя папки
         const userExpressionId = fromRegex[2];
-        const userExpression = await this.userService.findById(
-          userExpressionId,
-        );
+        const userExpression =
+          await this.userService.findById(userExpressionId);
         if (!userExpression) {
-          throw new NotFoundException();
+          throw new NotFoundException('not found user expression');
         }
-        const parentFolder = await this.folderService.rootFolder(
-          userExpression,
-        );
+        const parentFolder =
+          await this.folderService.rootFolder(userExpression);
         [data, count] = await this.folderService.findAndCount({
           ...paginationQueryToConfig(scope),
           select,
@@ -154,7 +112,7 @@ export class FolderController {
         [userData, count] = await this.userService.findAndCount({});
         data = userData.map((item) => ({
           id: `${administratorFolderId}/${item.id}`,
-          name: this.userService.fullName(item),
+          name: UserService.fullName(item),
           parentFolderId,
           empty: false,
           createdAt: item.createdAt ?? new Date(),
@@ -202,6 +160,7 @@ export class FolderController {
     description: 'Успешный ответ',
     type: FolderGetResponse,
   })
+  @Crud(CRUD.CREATE)
   async createFolder(
     @Req() { user }: ExpressRequest,
     @Body() { name, parentFolderId }: FolderCreateRequest,
@@ -236,8 +195,9 @@ export class FolderController {
     description: 'Успешный ответ',
     type: FolderGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updateFolders(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { folders }: FoldersUpdateRequest,
   ): Promise<FoldersGetResponse> {
     const parentFoldersId = folders.map((folder) => folder.id);
@@ -245,7 +205,7 @@ export class FolderController {
     if (parentFoldersId) {
       parentFolders = await this.folderService.find({
         where: {
-          userId,
+          userId: user.id,
           id: In(parentFoldersId),
         },
       });
@@ -262,7 +222,7 @@ export class FolderController {
     }
 
     const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
-      this.folderService.update({ id, name, userId, parentFolderId }),
+      this.folderService.update({ id, name, userId: user.id, parentFolderId }),
     );
 
     const data = await Promise.all(foldersPromise);
@@ -274,7 +234,7 @@ export class FolderController {
     };
   }
 
-  @Patch('/copy')
+  @Patch('copy')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'folders-copy',
@@ -285,19 +245,20 @@ export class FolderController {
     description: 'Успешный ответ',
     type: FolderGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async copyFolders(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { toFolder, folders }: FoldersCopyRequest,
   ): Promise<FoldersGetResponse> {
     const foldersIds = folders.map((folder) => folder.id);
     const toFolderEntity = await this.folderService.findOne({
-      where: { userId, id: toFolder },
+      where: { userId: user.id, id: toFolder },
     });
     if (!toFolderEntity) {
       throw new BadRequestError(`Folder ${toFolder} is not exist`);
     }
     const foldersCopy = await this.folderService.find({
-      where: { userId, id: In(foldersIds) },
+      where: { userId: user.id, id: In(foldersIds) },
       relations: ['files'],
     });
     if (foldersCopy.length !== folders.length) {
@@ -318,7 +279,7 @@ export class FolderController {
     }
 
     const data = await this.folderService.copy(
-      userId,
+      user.id,
       toFolderEntity,
       foldersCopy,
     );
@@ -341,6 +302,7 @@ export class FolderController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteFolders(
     @Req() { user }: ExpressRequest,
     @Body() { foldersId }: FoldersDeleteRequest,
@@ -359,7 +321,7 @@ export class FolderController {
     };
   }
 
-  @Get('/:folderId')
+  @Get(':folderId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'folder-get',
@@ -370,12 +332,13 @@ export class FolderController {
     description: 'Успешный ответ',
     type: FolderGetResponse,
   })
+  @Crud(CRUD.READ)
   async getFolder(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
   ): Promise<FolderGetResponse> {
     const data = await this.folderService.findOne({
-      where: { userId, id },
+      where: { userId: user.id, id },
     });
     if (!data) {
       throw new NotFoundException(`Folder ${id} is not exists`);
@@ -387,7 +350,7 @@ export class FolderController {
     };
   }
 
-  @Patch('/:folderId')
+  @Patch(':folderId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'folder-update',
@@ -398,8 +361,9 @@ export class FolderController {
     description: 'Успешный ответ',
     type: FolderGetResponse,
   })
+  @Crud(CRUD.UPDATE)
   async updateFolder(
-    @Req() { user: { id: userId } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
     @Body() { name, parentFolderId }: FolderUpdateRequest,
   ): Promise<FolderGetResponse> {
@@ -407,7 +371,7 @@ export class FolderController {
     if (parentFolderId) {
       parentFolder = await this.folderService.findOne({
         where: {
-          userId,
+          userId: user.id,
           id: parentFolderId,
         },
       });
@@ -417,7 +381,7 @@ export class FolderController {
     }
 
     const data = await this.folderService.update({
-      userId,
+      userId: user.id,
       id,
       name,
       parentFolder,
@@ -429,7 +393,7 @@ export class FolderController {
     };
   }
 
-  @Delete('/:folderId')
+  @Delete(':folderId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'folder-delete',
@@ -440,6 +404,7 @@ export class FolderController {
     description: 'Успешный ответ',
     type: SuccessResponse,
   })
+  @Crud(CRUD.DELETE)
   async deleteFolder(
     @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) folderId: string,

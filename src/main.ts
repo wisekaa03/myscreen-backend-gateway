@@ -19,10 +19,6 @@ import { WsAdapter } from './websocket/ws-adapter';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const configService = new ConfigService();
-  const port = configService.get<number>('PORT', 3000);
-  const apiPath = configService.get<string>('API_PATH', '/api/v2');
-
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
     autoFlushLogs: true,
@@ -40,6 +36,10 @@ async function bootstrap() {
     },
   });
   const logger = app.get(Logger);
+  app.useLogger(logger);
+  const configService = app.get(ConfigService);
+  const port = configService.get<string>('PORT', '3000');
+  const apiPath = configService.get<string>('API_PATH', '/api/v2');
   app.disable('x-powered-by').disable('server');
   const staticAssets = pathJoin('static');
   app
@@ -48,7 +48,7 @@ async function bootstrap() {
     })
     .setGlobalPrefix(apiPath, { exclude: ['/'] })
     .useGlobalFilters(
-      new ExceptionsFilter(app.get(HttpAdapterHost).httpAdapter),
+      new ExceptionsFilter(app.get(HttpAdapterHost).httpAdapter, configService),
     )
     .useGlobalPipes(
       new ValidationPipe({
@@ -59,18 +59,29 @@ async function bootstrap() {
         stopAtFirstError: false,
         exceptionFactory: (errors: ValidationError[]) => {
           const message = errors
-            .map(
-              (error) => error.constraints && Object.values(error.constraints),
-            )
+            .map((error) => {
+              let ret: Array<string> =
+                (error.constraints && Object.values(error.constraints)) || [];
+              if (error.children && error.children.length > 0) {
+                ret = [
+                  ...ret,
+                  error.children
+                    .map(
+                      (child) =>
+                        child.constraints && Object.values(child.constraints),
+                    )
+                    .join(', '),
+                ];
+              }
+              return ret;
+            })
             .join(', ');
           return new BadRequestException(message);
         },
       }),
     )
     .useGlobalInterceptors(new LoggerErrorInterceptor())
-    .useWebSocketAdapter(new WsAdapter(app))
-    .useLogger(logger);
-  app.flushLogs();
+    .useWebSocketAdapter(new WsAdapter(app));
 
   const swaggerConfig = new DocumentBuilder()
     .addBearerAuth({
@@ -94,7 +105,7 @@ async function bootstrap() {
     .addTag('application', 'Взаимодействия покупателей и продавца')
     .addTag('statistics', 'Cтатистика')
     .addTag('invoice', 'Счета')
-    // .addTag('payment', 'Оплата')
+    .addTag('crontab', 'CronTab (только администратор)')
 
     .build();
 

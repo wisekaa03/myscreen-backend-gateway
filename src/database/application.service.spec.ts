@@ -14,7 +14,7 @@ export const mockRepository = jest.fn(() => ({
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
-  get: () => {},
+  get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
     relations: [],
@@ -28,22 +28,10 @@ describe(ApplicationService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ApplicationService,
-        {
-          provide: MailService,
-          useClass: mockRepository,
-        },
-        {
-          provide: UserService,
-          useClass: mockRepository,
-        },
-        {
-          provide: ConfigService,
-          useClass: mockRepository,
-        },
-        {
-          provide: WSGateway,
-          useClass: mockRepository,
-        },
+        { provide: MailService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
+        { provide: ConfigService, useClass: mockRepository },
+        { provide: WSGateway, useClass: mockRepository },
         {
           provide: getRepositoryToken(ApplicationEntity),
           useClass: mockRepository,

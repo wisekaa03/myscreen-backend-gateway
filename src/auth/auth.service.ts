@@ -55,25 +55,23 @@ export class AuthService {
     fingerprint?: string,
   ): Promise<[UserExtEntity, AuthenticationPayload]> {
     if (!email || !password) {
-      throw new ForbiddenException('Password mismatched', password);
+      throw new ForbiddenException('Password mismatched');
     }
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new ForbiddenException('Password mismatched', password);
+      throw new ForbiddenException('Password mismatched');
     }
     if (!user.verified) {
-      throw new ForbiddenException('You have to respond to our email', email);
+      throw new ForbiddenException('You have to respond to our email');
     }
 
     const valid = user.password
-      ? this.userService.validateCredentials(user, password)
+      ? UserService.validateCredentials(user, password)
       : false;
     if (!valid) {
-      throw new ForbiddenException('Password mismatched', password);
+      throw new ForbiddenException('Password mismatched');
     }
-
-    this.jwtStrategy.verify(user);
 
     const [token, refresh] = await Promise.all([
       this.generateAccessToken(user),
@@ -246,8 +244,6 @@ export class AuthService {
       ...JWT_BASE_OPTIONS,
     });
   }
-
-  verifyAfter = (user: UserExtEntity) => this.jwtStrategy.verify(user);
 
   /**
    * Проверяет почту на соответствие
