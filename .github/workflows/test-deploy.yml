@@ -188,7 +188,7 @@ jobs:
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
       - name: Install SSH key
-        if: ${{ job.runs_on != 'self-hosted' }}
+        if: ${{ runner.name != 'self-hosted' }}
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
