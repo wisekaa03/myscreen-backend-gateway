@@ -187,6 +187,10 @@ jobs:
 
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+      - run: |
+          echo "${{ runner }}"
+          echo "${{ runner.os }}"
+          echo "${{ runner.name }}"
       - name: Install SSH key
         if: ${{ runner.name != 'self-hosted' }}
         uses: shimataro/ssh-key-action@v2
