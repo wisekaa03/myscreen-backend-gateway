@@ -11,23 +11,6 @@ jobs:
     steps:
       - name: Initializing the repository
         uses: actions/checkout@v3
-      - name: Telegram notification
-        run: |
-          echo "REPO_NAME=${{github.repository}}" | sed -r "s/^(\w+=).+\/(.*)/\1\2/g" >> "${GITHUB_ENV}"
-          echo "JOB_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "${GITHUB_ENV}"
-          echo "SERVER_URL=$GITHUB_REF_NAME" >> "${GITHUB_ENV}"
-      - name: Notify if the deployment was successful (Starting)
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ vars.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
-          message: |
-            [Starting](${{env.JOB_URL}})
-            Deploy by *${{github.actor}}*
-            Repo: *${{env.REPO_NAME}}*
-            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
-            Server: *${{env.SERVER_URL}}*
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -100,32 +83,6 @@ jobs:
       - name: Test end to end
         if: ${{ !cancelled() }}
         run: yarn test:e2e
-      - name: Notify if the deployment was successful (Finished)
-        if: ${{ success() }}
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ vars.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
-          message: |
-            [Finished](${{env.JOB_URL}})
-            Deploy by *${{github.actor}}*
-            Repo: *${{env.REPO_NAME}}*
-            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
-            Server: *${{env.SERVER_URL}}*
-      - name: Notify if deployment fails (ERROR)
-        if: ${{ failure() }}
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ vars.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          format: markdown
-          message: |
-            [ERRORED](${{env.JOB_URL}})
-            Deploy by *${{github.actor}}*
-            Repo: *${{env.REPO_NAME}}*
-            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
-            Server: *${{env.SERVER_URL}}*
 
   deployment:
     needs: 'test'
@@ -144,7 +101,7 @@ jobs:
         run: |
           echo "REPO_NAME=${{github.repository}}" | sed -r "s/^(\w+=).+\/(.*)/\1\2/g" >> "${GITHUB_ENV}"
           echo "JOB_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "${GITHUB_ENV}"
-          echo "SERVER_URL=$GITHUB_REF_NAME" >> "${GITHUB_ENV}"
+          echo "SERVER_URL=develop" >> "${GITHUB_ENV}"
       - name: Notify if the deployment was successful (Starting)
         uses: appleboy/telegram-action@master
         with:
