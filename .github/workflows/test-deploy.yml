@@ -48,6 +48,7 @@ jobs:
           echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
           echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
           echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
+          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env
 
           # JWT Credentials
           echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
@@ -161,6 +162,7 @@ jobs:
           echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
           echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
           echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
+          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env
 
           # JWT Credentials
           echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
