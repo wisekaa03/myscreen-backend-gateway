@@ -11,6 +11,10 @@ jobs:
     steps:
       - name: Initializing the repository
         uses: actions/checkout@v3
+      - name: Repo name for Telegram
+        run: |
+          echo "REPO_NAME=${{github.repository}}" | sed -r "s/^(\w+=).+\/(.*)/\1\2/g" >> "${GITHUB_ENV}"
+          echo "JOB_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "${GITHUB_ENV}"
       - name: Notify if the deployment was successful (Starting)
         uses: appleboy/telegram-action@master
         with:
@@ -18,9 +22,9 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
           message: |
-            [Starting](${{ github.job.url }})
+            [Starting](${{env.JOB_URL}})
             Deploy by *${{github.actor}}*
-            Repo: *${{github.repository}}*
+            Repo: *${{env.REPO_NAME}}*
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
       - name: Use Node.js
         uses: actions/setup-node@v3
@@ -119,14 +123,13 @@ jobs:
             Repo: *${{github.repository}}*
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
 
-
   deployment:
     needs: 'test'
     if: github.ref_name == 'develop'
     runs-on: self-hosted
     environment: develop
     env:
-      SSH_PARAMS: "ssh -o StrictHostKeyChecking=no"
+      SSH_PARAMS: 'ssh -o StrictHostKeyChecking=no'
       REMOTE_USER: ${{ secrets.REMOTE_USER }}
       REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
       REMOTE_TARGET: ${{ vars.REMOTE_TARGET }}
