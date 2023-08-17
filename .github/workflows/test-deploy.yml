@@ -11,10 +11,11 @@ jobs:
     steps:
       - name: Initializing the repository
         uses: actions/checkout@v3
-      - name: Repo name for Telegram
+      - name: Telegram notification
         run: |
           echo "REPO_NAME=${{github.repository}}" | sed -r "s/^(\w+=).+\/(.*)/\1\2/g" >> "${GITHUB_ENV}"
           echo "JOB_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "${GITHUB_ENV}"
+          echo "SERVER_URL=$GITHUB_REF_NAME" >> "${GITHUB_ENV}"
       - name: Notify if the deployment was successful (Starting)
         uses: appleboy/telegram-action@master
         with:
@@ -26,6 +27,7 @@ jobs:
             Deploy by *${{github.actor}}*
             Repo: *${{env.REPO_NAME}}*
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -106,10 +108,11 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
           message: |
-            [Finished](${{ github.job.url }})
+            [Finished](${{env.JOB_URL}})
             Deploy by *${{github.actor}}*
-            Repo: *${{github.repository}}*
+            Repo: *${{env.REPO_NAME}}*
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
       - name: Notify if deployment fails (ERROR)
         if: ${{ failure() }}
         uses: appleboy/telegram-action@master
@@ -118,10 +121,11 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
           message: |
-            [ERRORED](${{ github.job.url }})
+            [ERRORED](${{env.JOB_URL}})
             Deploy by *${{github.actor}}*
-            Repo: *${{github.repository}}*
+            Repo: *${{env.REPO_NAME}}*
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
 
   deployment:
     needs: 'test'
@@ -136,16 +140,23 @@ jobs:
     steps:
       - name: Initializing the repository
         uses: actions/checkout@v3
+      - name: Telegram notification
+        run: |
+          echo "REPO_NAME=${{github.repository}}" | sed -r "s/^(\w+=).+\/(.*)/\1\2/g" >> "${GITHUB_ENV}"
+          echo "JOB_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "${GITHUB_ENV}"
+          echo "SERVER_URL=$GITHUB_REF_NAME" >> "${GITHUB_ENV}"
       - name: Notify if the deployment was successful (Starting)
         uses: appleboy/telegram-action@master
         with:
           to: ${{ vars.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
           message: |
-            Starting
+            [Starting](${{env.JOB_URL}})
             Deploy by *${{github.actor}}*
-            Repo: *${{github.repository}}*
+            Repo: *${{env.REPO_NAME}}*
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -271,10 +282,11 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
           message: |
-            Finished
+            [Finished](${{env.JOB_URL}})
             Deploy by *${{github.actor}}*
-            Repo: *${{github.repository}}*
+            Repo: *${{env.REPO_NAME}}*
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
       - name: Notify if deployment fails (ERROR)
         if: ${{ failure() }}
         uses: appleboy/telegram-action@master
@@ -283,7 +295,8 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           format: markdown
           message: |
-            ERROR
+            [ERRORED](${{env.JOB_URL}})
             Deploy by *${{github.actor}}*
-            Repo: *${{github.repository}}*
+            Repo: *${{env.REPO_NAME}}*
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
