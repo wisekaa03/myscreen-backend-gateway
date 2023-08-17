@@ -48,6 +48,7 @@ jobs:
           echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
           echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
           echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
+          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env
 
           # JWT Credentials
           echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
@@ -82,28 +83,6 @@ jobs:
       - name: Test end to end
         if: ${{ !cancelled() }}
         run: yarn test:e2e
-      - name: Notify if the tests was successful
-        if: ${{ success() }}
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ vars.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: |
-            ${{ github.actor }} created commit with successfull tests:
-            Commit message: ${{ github.event.commits[0].message }}
-            Repository: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
-      - name: Notify if the tests was completed with errors
-        if: ${{ failure() }}
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ vars.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: |
-            ${{ github.actor }} created commit with some error:
-            Commit message: ${{ github.event.commits[0].message }}
-            Repository: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
 
   deployment:
     needs: 'test'
@@ -118,6 +97,16 @@ jobs:
     steps:
       - name: Initializing the repository
         uses: actions/checkout@v3
+      - name: Notify if the deployment was successful (Starting)
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ vars.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            Starting
+            Deploy by *${{github.actor}}*
+            Repo: *${{github.repository}}*
+            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -161,6 +150,7 @@ jobs:
           echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
           echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
           echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
+          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env
 
           # JWT Credentials
           echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
@@ -234,25 +224,25 @@ jobs:
 
           # Run command
           $SSH_PARAMS -t "$REMOTE_USER"@"$REMOTE_HOST" $SSH_COMMAND
-      - name: Notify if the deployment was successful
+      - name: Notify if the deployment was successful (Finished)
         if: ${{ success() }}
         uses: appleboy/telegram-action@master
         with:
           to: ${{ vars.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            ${{ github.actor }} created commit with successfull deploy:
-            Commit message: ${{ github.event.commits[0].message }}
-            Repository: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
-      - name: Notify if the deployment was completed with errors
+            Finished
+            Deploy by *${{github.actor}}*
+            Repo: *${{github.repository}}*
+            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+      - name: Notify if deployment fails (ERROR)
         if: ${{ failure() }}
         uses: appleboy/telegram-action@master
         with:
           to: ${{ vars.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            ${{ github.actor }} created commit with some error:
-            Commit message: ${{ github.event.commits[0].message }}
-            Repository: ${{ github.repository }}
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
+            ERROR
+            Deploy by *${{github.actor}}*
+            Repo: *${{github.repository}}*
+            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
