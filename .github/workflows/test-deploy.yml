@@ -195,6 +195,7 @@ jobs:
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          if_key_exists: replace
           name: id_rsa
       - name: Deploying to Production
         run: |
