@@ -8,6 +8,7 @@ import {
   Between,
   IsNull,
   Not,
+  FindOperator,
 } from 'typeorm';
 import subDays from 'date-fns/subDays';
 
@@ -89,8 +90,8 @@ export class WalletService {
     userId: string;
     transact?: EntityManager;
     dates?: [Date, Date];
-    actId?: string;
-    invoiceId?: string;
+    actId?: FindOperator<string> | string;
+    invoiceId?: FindOperator<string> | string;
   }): Promise<number> {
     return transact
       ? transact
@@ -104,31 +105,108 @@ export class WalletService {
       : this.walletRepository
           .sum('sum', {
             userId,
+            invoiceId,
+            actId,
             createdAt: dates && Between(dates[0], dates[1]),
           })
           .then((sum) => sum ?? 0);
   }
 
-  async walletAcceptanceActFromDate(
-    user: UserEntity,
-    dates: [Date, Date],
-  ): Promise<boolean> {
-    const wallets = await this.walletRepository.find({
-      where: {
-        userId: user.id,
-        invoice: IsNull(),
-        act: Not(IsNull()),
-        createdAt: Between(dates[0], dates[1]),
-      },
+  async acceptanceActCreate({
+    user,
+    transact,
+  }: {
+    user: UserEntity;
+    transact: EntityManager;
+  }) {
+    // сначала проверяем, что пользователь является владельцем монитора
+    if (user.role !== UserRoleEnum.MonitorOwner) {
+      return;
+    }
+
+    // теперь получаем баланс пользователя
+    const { id: userId } = user;
+    let balance = await this.walletSum({ userId, transact });
+
+    // получаем количество актов за последний месяц
+    const toDate = new Date();
+    const fromDate = subDays(toDate, 28);
+    const actsInPastMonth = await this.walletSum({
+      userId,
+      dates: [fromDate, toDate],
+      invoiceId: IsNull(),
+      actId: Not(IsNull()),
+      transact,
     });
-    return wallets.length > 0;
+
+    const fullName = `${UserService.fullName(user)} ${user.role} / ${
+      user.plan
+    }`;
+    this.logger.warn(
+      `[✓] User "${fullName}" balance: ₽${balance}, acceptance act in past month: ₽${actsInPastMonth}`,
+    );
+
+    if (actsInPastMonth >= this.acceptanceActSum) {
+      this.logger.warn(
+        ` [ ] Skipping "${fullName}" because acceptance act was issued in the last month. Balance ₽${balance}`,
+      );
+    } else if (balance > 0) {
+      // теперь списание средств с баланса и создание акта
+      const sum = Math.min(balance, this.acceptanceActSum - actsInPastMonth);
+      this.logger.warn(
+        ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
+      );
+      const act = await this.actService.create({
+        user,
+        sum,
+        description: this.acceptanceActDescription,
+      });
+
+      // проверяем план пользователя
+      if (
+        user.plan === UserPlanEnum.Demo &&
+        balance >= this.acceptanceActSum - actsInPastMonth
+      ) {
+        // если у пользователя был демо-план и он оплатил акт, то переводим его на полный план
+        await transact.update(UserEntity, user.id, {
+          plan: UserPlanEnum.Full,
+        });
+      }
+
+      // опять получаем баланс
+      balance = await this.walletSum({
+        userId: user.id,
+        transact,
+      });
+      this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
+
+      // и вывод информации на email
+      await this.mailService.balanceChanged(user, act.sum, balance);
+    } else {
+      this.logger.warn(
+        ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.acceptanceActSum}`,
+      );
+
+      // проверяем план пользователя
+      if (user.plan !== UserPlanEnum.Demo) {
+        // если у пользователя был полный план и он не оплатил акт, то переводим его на демо-план
+        await transact.update(UserEntity, user.id, {
+          plan: UserPlanEnum.Demo,
+        });
+      }
+
+      // и вывод информации на email
+      await this.mailService.balanceNotChanged(
+        user,
+        this.acceptanceActSum,
+        balance,
+      );
+    }
   }
 
   async calculateBalance(): Promise<void> {
     this.logger.warn('Wallet service is calculating balance:');
 
-    const toDate = new Date();
-    const fromDate = subDays(toDate, 28);
     this.walletRepository.manager.transaction(async (transact) => {
       const users = await transact.find(UserEntity, {
         where: [
@@ -136,59 +214,9 @@ export class WalletService {
         ],
       });
 
-      const promiseUsers = users.map(async (user) => {
-        const fullName = `${UserService.fullName(user)} <${user.email}> ${
-          user.role
-        } / ${user.plan}`;
-        const isActInPastMonth = await this.walletAcceptanceActFromDate(user, [
-          fromDate,
-          toDate,
-        ]);
-        let balance = await this.walletSum({ userId: user.id, transact });
-        this.logger.warn(`[✓] User "${fullName}" balance: ${balance} rub.`);
-        if (isActInPastMonth) {
-          this.logger.warn(
-            ` [ ] Skipping "${fullName}" because acceptance act was issued in the last month. Balance ${balance} rub.`,
-          );
-        } else if (balance >= this.acceptanceActSum) {
-          this.logger.warn(
-            ` [+] Issue an acceptance act to the user "${fullName}"`,
-          );
-          await this.actService.create({
-            user,
-            sum: this.acceptanceActSum,
-            description: this.acceptanceActDescription,
-          });
-          if (user.plan === UserPlanEnum.Demo) {
-            await this.userService.update(user.id, {
-              plan: UserPlanEnum.Full,
-            });
-          }
-          balance = await this.walletSum({ userId: user.id, transact });
-          this.logger.warn(
-            ` [✓] Balance of user "${fullName}: ${balance} rub."`,
-          );
-          await this.mailService.balanceChanged(
-            user,
-            this.acceptanceActSum,
-            balance,
-          );
-        } else {
-          this.logger.warn(
-            ` [!] User "${fullName}" balance is less than ${this.acceptanceActSum} rub.`,
-          );
-          if (user.plan !== UserPlanEnum.Demo) {
-            await this.userService.update(user.id, {
-              plan: UserPlanEnum.Demo,
-            });
-          }
-          await this.mailService.balanceNotChanged(
-            user,
-            this.acceptanceActSum,
-            balance,
-          );
-        }
-      });
+      const promiseUsers = users.map(async (user) =>
+        this.acceptanceActCreate({ user, transact }),
+      );
 
       await Promise.allSettled(promiseUsers);
     });

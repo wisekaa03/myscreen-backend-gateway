@@ -134,7 +134,7 @@ export class InvoiceService {
             }),
           );
 
-          let balance = await this.walletService.walletSum({
+          const balance = await this.walletService.walletSum({
             userId: invoiceCreate.userId,
             transact,
           });
@@ -146,40 +146,10 @@ export class InvoiceService {
             balance,
           );
 
-          if (balance >= this.acceptanceActSum) {
-            // теперь списание средств с баланса и создание акта
-            await this.actService.create({
-              user: invoiceCreate.user,
-              sum: this.acceptanceActSum,
-              description: this.acceptanceActDescription,
-            });
-
-            // опять получаем баланс
-            balance = await this.walletService.walletSum({
-              userId: invoiceCreate.userId,
-              transact,
-            });
-
-            this.logger.warn(
-              `Balance of user ${UserService.fullName(
-                invoiceCreate.user,
-              )}: ${balance}`,
-            );
-
-            // и направляем письмо о списании средств
-            await this.mailService.balanceChanged(
-              invoiceCreate.user,
-              invoiceCreate.sum,
-              balance,
-            );
-          } else {
-            // и направляем письмо о не-списании средств
-            await this.mailService.balanceNotChanged(
-              invoiceCreate.user,
-              this.acceptanceActSum,
-              balance,
-            );
-          }
+          await this.walletService.acceptanceActCreate({
+            user: invoiceCreate.user,
+            transact,
+          });
 
           break;
         }
