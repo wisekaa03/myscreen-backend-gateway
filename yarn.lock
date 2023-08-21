@@ -1405,10 +1405,10 @@
     webpack "5.88.2"
     webpack-node-externals "3.0.0"
 
-"@nestjs/common@^10.1.3":
-  version "10.1.3"
-  resolved "https://registry.yarnpkg.com/@nestjs/common/-/common-10.1.3.tgz#7f80d7c011e94bfb2177100cc8862e4fc65a6630"
-  integrity sha512-xSyXBwgcmiFwQqek1Urw/AL3pRPq9bp/tpgfTxmnJg3gP6XNUbx1fDr0de50irXgZYzFKfVFo9ptC3b2du5YKA==
+"@nestjs/common@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/common/-/common-10.2.0.tgz#afeeedd81cc1986b2a22e4aebe0b0f2b81bdb3b2"
+  integrity sha512-QhoIaekEfXJ48IHdp9pBsZho464XoW8LRNid61Qncxx90qWCbe7oT1tswlT8kxn1HxsqEqZ8sXGY3ozLxZeVJQ==
   dependencies:
     uid "2.0.2"
     iterare "1.2.1"
@@ -1424,10 +1424,10 @@
     lodash "4.17.21"
     uuid "9.0.0"
 
-"@nestjs/core@^10.1.3":
-  version "10.1.3"
-  resolved "https://registry.yarnpkg.com/@nestjs/core/-/core-10.1.3.tgz#6f74ac04695847976dd84836d8063624a793c127"
-  integrity sha512-VzK54TuacC3Vmq3b5xTyMVTlDNJeKbjpKfV9fNqm4TbIBm8ZPo3FC0osJAbAK4XwbVvv2Flq1yA3CutasupVjw==
+"@nestjs/core@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/core/-/core-10.2.0.tgz#4e5c3d374b7a37b2d2d135680b667b7ffcd9a592"
+  integrity sha512-K9QwdSXO8O8HHAgs23U+icLuNhkD4JmesE6LH2VIFgpsBOc7pUuUD+Ur4A0juNVeB+Us3etKdYIkw4SWgkBfXA==
   dependencies:
     uid "2.0.2"
     "@nuxtjs/opencollective" "0.3.2"
@@ -1454,10 +1454,10 @@
   resolved "https://registry.yarnpkg.com/@nestjs/passport/-/passport-10.0.0.tgz#92d36d4b8796b373da3f4d1a055db03cb246b127"
   integrity sha512-IlKKc6M7JOe+4dBbW6gZsXBSD05ZYgwfGf3GJhgCmUGYVqffpDdALQSS6JftnExrE+12rACoEmHkzYwKAGVK0Q==
 
-"@nestjs/platform-express@^10.1.3":
-  version "10.1.3"
-  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-10.1.3.tgz#d1f644e86f2bc45c7529b9eed7669613f4392e99"
-  integrity sha512-RSf7ooCrxiWJlWl3CLfpaYmAf3U0tRsN7pJakujWdvzVJU2EzVZTLcy1MtnSg/HBm9/Rvg98VI5QI6oOhOpt+A==
+"@nestjs/platform-express@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-10.2.0.tgz#364afbf2be1ac04c14cc9c45616875629bd6a6b4"
+  integrity sha512-WmRNGqDZIfKpCPQcTKABuIKmdyULpZN6jB7i2s5z96BiqfI1BaNORPGw1gpWvUdN+ssJ/aFhLsHTDY0p48nKMg==
   dependencies:
     body-parser "1.20.2"
     cors "2.8.5"
@@ -1465,10 +1465,10 @@
     multer "1.4.4-lts.1"
     tslib "2.6.1"
 
-"@nestjs/platform-ws@^10.1.3":
-  version "10.1.3"
-  resolved "https://registry.yarnpkg.com/@nestjs/platform-ws/-/platform-ws-10.1.3.tgz#ca0c18241a192d87fbe2db1833addd0982182364"
-  integrity sha512-irGGpzkQ+9RofB1Ea0DEuq/abArAn+Myq9J1WtYDCdrFinAReh2vEN+NH+bdcu8m9u+SoD+z2XPvgEq6GDHK9g==
+"@nestjs/platform-ws@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-ws/-/platform-ws-10.2.0.tgz#9288e2156257bcabf47f5478ae887080991bc27a"
+  integrity sha512-ctfA2cxBWhF2Ku2AQUI000YOADz7MBaYXNuoM+pumNTcfJfLBERDbQug/5nJdUezgsrgQF4ekoyC9UJg2wMaqw==
   dependencies:
     tslib "2.6.1"
     ws "8.13.0"
@@ -1503,10 +1503,10 @@
     path-to-regexp "3.2.0"
     swagger-ui-dist "5.3.1"
 
-"@nestjs/testing@^10.1.3":
-  version "10.1.3"
-  resolved "https://registry.yarnpkg.com/@nestjs/testing/-/testing-10.1.3.tgz#596a1dc580373b3b0b070ac73bf70e45f80197dd"
-  integrity sha512-zMrO9xLPYnKtC6q1diWubuMshIp0v2aGHa58jcIfZaAlJlU/6RKsgCOiFQ42aFzxUEBRWF0LBF0aiwt04LKMyQ==
+"@nestjs/testing@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/testing/-/testing-10.2.0.tgz#34a9830d0f77e373aa58b9ccf2c0b161293019c6"
+  integrity sha512-jJjk76maTh2rFq7DR0E3KagI6dt9RIiym+ifjsswZml3lALoHSRAyQFhXdx1biLs0GhGTk+mw75intmsG50rjQ==
   dependencies:
     tslib "2.6.1"
 
@@ -1517,10 +1517,10 @@
   dependencies:
     uuid "9.0.0"
 
-"@nestjs/websockets@^10.1.3":
-  version "10.1.3"
-  resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-10.1.3.tgz#2af284422f32839f91f788b1aabb5301113dd280"
-  integrity sha512-6QVjtQgmSfC6klRiNMxbrQFTvm88MOBdA6kP91g3vrpX6fi74khnKf+kGMeQYXBlYCtCCQ2cvEipHc0Gzf46Ag==
+"@nestjs/websockets@^10.2.0":
+  version "10.2.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/websockets/-/websockets-10.2.0.tgz#c22d75846da53fd03ca4c7ead9d48839252d1e23"
+  integrity sha512-HPW/k6IB1fxGnZE5kABi8u9xTy96HvTEuZhkjvWYIQODnKJ8bkvO5tZzGnBYosIlGMnwmC8mzX2pDjg7oRMRMA==
   dependencies:
     iterare "1.2.1"
     object-hash "3.0.0"
@@ -5216,7 +5216,7 @@ fb-watchman@^2.0.0:
   dependencies:
     bser "2.1.1"
 
-ffmpeg-static@^5.1.0:
+ffmpeg-static@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/ffmpeg-static/-/ffmpeg-static-5.2.0.tgz#6ca64a5ed6e69ec4896d175c1f69dd575db7c5ef"
   integrity sha512-WrM7kLW+do9HLr+H6tk7LzQ7kPqbAgLjdzNE32+u3Ff11gXt9Kkkd2nusGFrlWMIe+XaA97t+I8JS7sZIrvRgA==
@@ -7296,10 +7296,10 @@ macos-release@^2.5.0:
   resolved "https://registry.yarnpkg.com/macos-release/-/macos-release-2.5.1.tgz#bccac4a8f7b93163a8d163b8ebf385b3c5f55bf9"
   integrity sha512-DXqXhEM7gW59OjZO8NIjBCz9AQ1BEMrfiOAl4AYByHCtVHRF4KoGNO8mqQeM8lRCtQe/UnJ4imO/d2HdkKsd+A==
 
-magic-string@0.25.1, magic-string@0.30.0, magic-string@0.30.1, magic-string@>=0.30.2, magic-string@^0.30.0:
-  version "0.30.2"
-  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.30.2.tgz#dcf04aad3d0d1314bc743d076c50feb29b3c7aca"
-  integrity sha512-lNZdu7pewtq/ZvWUp9Wpf/x7WzMTsR26TWV03BRZrXFsv+BI6dy8RAiKgm1uM/kyR0rCfUcqvOlXKG66KhIGug==
+magic-string@0.25.1, magic-string@0.30.0, magic-string@0.30.1, magic-string@>=0.30.3, magic-string@^0.30.0:
+  version "0.30.3"
+  resolved "https://registry.yarnpkg.com/magic-string/-/magic-string-0.30.3.tgz#403755dfd9d6b398dfa40635d52e96c5ac095b85"
+  integrity sha512-B7xGbll2fG/VjP+SWg4sX3JynwIU0mjoTc6MPpKNuIvftk6u6vqhDnk1R80b8C2GBR6ywqy+1DcKBrevBg+bmw==
   dependencies:
     "@jridgewell/sourcemap-codec" "^1.4.15"
 
@@ -7963,12 +7963,13 @@ ms@2.1.3, ms@^2.0.0, ms@^2.1.1, ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-multer-media@^3.1.10:
-  version "3.1.10"
-  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.1.10.tgz#0a8f8165cebb49da1f1ee7213d32ef80230d704d"
-  integrity sha512-ZE37lC3+NOr7E+xGcxgARLTjl1bNjLoaE2NYNiGLcr+g607kSm39fYxzAE3uqrNpGEG1rQdNHZPPNek8sl7/Jg==
+multer-media@^3.2.1:
+  version "3.2.1"
+  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.2.1.tgz#bccb90c4c7e1db4a7c12ce8c242907f0f693f61d"
+  integrity sha512-1lOE1nvQi4cuOO9tZB4Uq+h8CqVA8Tr5rDyrcJV2dA0NGfLg4xony4JPCs+OBTE54Z0svqU9L1n/sFd46ANUlg==
   dependencies:
-    ffmpeg-static "^5.1.0"
+    debug "^4.3.4"
+    ffmpeg-static "^5.2.0"
     media-probe "^1.0.1"
     multer "1.4.5-lts.1"
 
@@ -8060,10 +8061,10 @@ neo-async@^2.6.2:
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
-nestjs-pino@^3.3.0:
-  version "3.3.0"
-  resolved "https://registry.yarnpkg.com/nestjs-pino/-/nestjs-pino-3.3.0.tgz#28af741cd6626bc52fa365b99ab13a415f22820d"
-  integrity sha512-FVMbzz0wi7YKqtrifnAjcQejGmhIfxXY2q+jdW1bK7RxN9640UJ7pDeQa/FOQMSu1Ud0L0/eqI3Ha9NejJxIjQ==
+nestjs-pino@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/nestjs-pino/-/nestjs-pino-3.4.0.tgz#ef09d65eecda66890f78feb46215a9740edcef2d"
+  integrity sha512-L79tk+WqVJApGxD4K40srSHopwlBX8WVPoIJtVhWaxJUfk9ND6eZp7kmgdgwQw8PpYUeoeOhS1g2j0Ep3c0NJA==
 
 nestjs-s3@^2.1.0-next.1:
   version "2.1.0-next.1"
