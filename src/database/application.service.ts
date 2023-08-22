@@ -14,7 +14,6 @@ import {
   IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
-  Not,
   Repository,
 } from 'typeorm';
 
@@ -222,32 +221,43 @@ export class ApplicationService {
 
   async statistics(user: UserEntity): Promise<StatisticsMonitorsResponse> {
     const where: FindOptionsWhere<ApplicationEntity> = {};
-    if (user.role !== UserRoleEnum.Advertiser) {
-      where.sellerId = user.id;
-    } else {
+    if (user.role === UserRoleEnum.Advertiser) {
       where.buyerId = user.id;
+    } else {
+      where.sellerId = user.id;
     }
 
     const dateNow = new Date();
     const [online, offline, empty, emptyMonitor] = await Promise.all([
-      this.applicationRepository.count({
+      this.monitorRepository.count({
         where: {
-          ...where,
-          monitor: { status: MonitorStatus.Online },
-          approved: ApplicationApproved.Allowed,
-          dateWhen: MoreThanOrEqual<Date>(dateNow),
-          dateBefore: LessThanOrEqual<Date>(dateNow),
+          userId: user.id,
+          status: MonitorStatus.Online,
+          applications: {
+            approved: ApplicationApproved.Allowed,
+            dateWhen: MoreThanOrEqual<Date>(dateNow),
+            dateBefore: LessThanOrEqual<Date>(dateNow),
+          },
         },
+        select: { id: true },
+        relations: ['applications'],
       }),
-      this.applicationRepository.count({
+      this.monitorRepository.count({
         where: {
-          ...where,
-          monitor: { status: MonitorStatus.Offline },
-          dateWhen: MoreThanOrEqual<Date>(dateNow),
-          dateBefore: LessThanOrEqual<Date>(dateNow),
+          userId: user.id,
+          status: MonitorStatus.Offline,
+          applications: {
+            dateWhen: MoreThanOrEqual<Date>(dateNow),
+            dateBefore: LessThanOrEqual<Date>(dateNow),
+          },
         },
+        select: { id: true },
+        relations: ['applications'],
       }),
-      this.monitorRepository.count({ where: { userId: user.id } }),
+      this.monitorRepository.count({
+        where: { userId: user.id },
+        relations: [],
+      }),
       this.applicationRepository.count({
         where: {
           ...where,
@@ -255,7 +265,6 @@ export class ApplicationService {
           dateBefore: LessThanOrEqual<Date>(dateNow),
         },
         select: { monitorId: true },
-        relations: [],
       }),
     ]);
 
