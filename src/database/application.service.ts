@@ -229,42 +229,36 @@ export class ApplicationService {
     }
 
     const dateNow = new Date();
-    const [online, offline, empty, emptyMonitor, emptyBefore] =
-      await Promise.all([
-        this.applicationRepository.count({
-          where: {
-            ...where,
-            monitor: { status: MonitorStatus.Online },
-            approved: ApplicationApproved.Allowed,
-            dateWhen: MoreThanOrEqual<Date>(dateNow),
-            dateBefore: LessThanOrEqual<Date>(dateNow),
-          },
-        }),
-        this.applicationRepository.count({
-          where: {
-            ...where,
-            monitor: { status: MonitorStatus.Offline },
-            dateWhen: MoreThanOrEqual<Date>(dateNow),
-            dateBefore: LessThanOrEqual<Date>(dateNow),
-          },
-        }),
-        this.monitorRepository.count({ where: { userId: user.id } }),
-        this.applicationRepository.count({
-          where: { ...where, approved: Not(ApplicationApproved.Denied) },
-          select: { monitorId: true },
-          relations: [],
-        }),
-        this.applicationRepository.count({
-          where: { ...where, dateBefore: LessThanOrEqual<Date>(dateNow) },
-          select: { monitorId: true },
-          relations: [],
-        }),
-      ]);
+    const [online, offline, empty, emptyMonitor] = await Promise.all([
+      this.applicationRepository.count({
+        where: {
+          ...where,
+          monitor: { status: MonitorStatus.Online },
+          approved: ApplicationApproved.Allowed,
+          dateWhen: MoreThanOrEqual<Date>(dateNow),
+          dateBefore: LessThanOrEqual<Date>(dateNow),
+        },
+      }),
+      this.applicationRepository.count({
+        where: {
+          ...where,
+          monitor: { status: MonitorStatus.Offline },
+          dateWhen: MoreThanOrEqual<Date>(dateNow),
+          dateBefore: LessThanOrEqual<Date>(dateNow),
+        },
+      }),
+      this.monitorRepository.count({ where: { userId: user.id } }),
+      this.applicationRepository.count({
+        where: { ...where, dateBefore: LessThanOrEqual<Date>(dateNow) },
+        select: { monitorId: true },
+        relations: [],
+      }),
+    ]);
 
     return {
       online,
       offline,
-      empty: empty - Math.min(emptyMonitor, emptyBefore),
+      empty: empty - emptyMonitor,
     };
   }
 }
