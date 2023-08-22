@@ -213,7 +213,7 @@ export class MailService {
     const createdAtFormatFile = dateFormat(createdAt, 'dd_LLLL_yyyy', {
       locale: dateRu,
     });
-    const invoicePrint = await this.printService.invoice(
+    const invoicePrinted = await this.printService.invoice(
       SpecificFormat.XLSX,
       invoice,
     );
@@ -228,7 +228,7 @@ export class MailService {
       attachments: [
         {
           filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
-          content: Buffer.from(invoicePrint),
+          content: invoicePrinted,
         },
       ],
     };
@@ -283,7 +283,7 @@ export class MailService {
     const createdAtFormatFile = dateFormat(createdAt, 'dd_LLLL_yyyy', {
       locale: dateRu,
     });
-    const invoicePrint = await this.printService.invoice(
+    const invoicePrinted = await this.printService.invoice(
       SpecificFormat.XLSX,
       invoice,
     );
@@ -302,7 +302,7 @@ export class MailService {
       attachments: [
         {
           filename: `Счет_на_оплату_${seqNo}_от_${createdAtFormatFile}.xlsx`,
-          content: Buffer.from(invoicePrint),
+          content: invoicePrinted,
         },
       ],
     };

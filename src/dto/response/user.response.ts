@@ -1,5 +1,7 @@
 import { OmitType } from '@nestjs/swagger';
 import { FindOptionsSelect } from 'typeorm';
+import { formatDistanceStrict, subDays } from 'date-fns';
+import locale from 'date-fns/locale/ru';
 
 import { UserExtEntity } from '@/database/user-ext.entity';
 
@@ -48,6 +50,7 @@ export const userEntityToUser = ({
   emailConfirmKey,
   password,
   monitors,
+  monthlyPayment,
   walletSum,
   wallet,
   ...data
@@ -55,5 +58,16 @@ export const userEntityToUser = ({
   ...data,
   countUsedSpace: parseInt(`${data.countUsedSpace ?? 0}`, 10),
   countMonitors: parseInt(`${data.countMonitors ?? 0}`, 10),
-  wallet: { total: wallet ? wallet.total : parseFloat(walletSum ?? '0') },
+  storageSpace: parseFloat(`${data.storageSpace ?? 0}`),
+  wallet: {
+    total: wallet ? wallet.total : parseFloat(walletSum ?? '0'),
+    monthlyPaymentIn: monthlyPayment
+      ? formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
+          unit: 'day',
+          addSuffix: false,
+          roundingMethod: 'floor',
+          locale,
+        })
+      : 'now',
+  },
 });

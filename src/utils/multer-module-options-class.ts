@@ -1,10 +1,12 @@
+import type { Request as ExpressRequest } from 'express';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type {
   MulterModuleOptions,
   MulterOptionsFactory,
 } from '@nestjs/platform-express';
-import type { Request as ExpressRequest } from 'express';
+import 'multer';
+import 'debug';
 import multerMedia from 'multer-media';
 
 @Injectable()

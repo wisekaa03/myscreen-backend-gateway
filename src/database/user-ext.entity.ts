@@ -33,6 +33,12 @@ export class Wallet {
     required: false,
   })
   total?: number;
+
+  @ApiProperty({
+    description: 'Оставшийся срок оплаты',
+    required: false,
+  })
+  monthlyPaymentIn?: string;
 }
 
 @ViewEntity({
@@ -71,6 +77,23 @@ export class Wallet {
             .from(WalletEntity, 'wallet'),
         'wallet',
         '"walletUserId" = "user"."id"',
+      )
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<WalletEntity>) =>
+          qb
+            .select('"wallet"."userId"', 'monthlyPaymentUserId')
+            .addSelect('"wallet"."createdAt"', 'monthlyPayment')
+            .groupBy('"wallet"."userId", "monthlyPayment"')
+            .where(
+              "\"wallet\".\"createdAt\" BETWEEN 'now()'::timestamptz - interval '28 days' AND 'now()'::timestamptz",
+            )
+            .andWhere('"wallet"."actId" IS NOT NULL')
+            .andWhere('"wallet"."invoiceId" IS NULL')
+            .orderBy('"wallet"."createdAt"', 'DESC')
+            .from(WalletEntity, 'wallet')
+            .limit(1),
+        'monthlyPayment',
+        '"monthlyPaymentUserId" = "user"."id"',
       ),
 })
 export class UserExtEntity implements UserEntity {
@@ -379,6 +402,9 @@ export class UserExtEntity implements UserEntity {
 
   @ViewColumn()
   walletSum?: string;
+
+  @ViewColumn()
+  monthlyPayment?: Date;
 
   @ApiProperty({
     description: 'Баланс',

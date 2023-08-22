@@ -1,6 +1,7 @@
 import type { IncomingMessage } from 'http';
 import { isJWT } from 'class-validator';
 import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
+import '@nestjs/platform-ws';
 import {
   SubscribeMessage,
   WebSocketGateway,

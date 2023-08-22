@@ -2763,7 +2763,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.41.22
+  version: 2.41.24
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3022,6 +3022,9 @@ components:
           type: number
           description: Баланс
           example: 0
+        monthlyPaymentIn:
+          type: string
+          description: Оставшийся срок оплаты
     UserExtEntity:
       type: object
       properties:
@@ -5818,15 +5821,15 @@ components:
     StorageSpaceResponse:
       type: object
       properties:
-        used:
+        storage:
           type: number
-          description: Добавленные медиа
-        unused:
+          description: Занятое место
+        total:
           type: number
           description: Максимальное место
       required:
-        - used
-        - unused
+        - storage
+        - total
     StatisticsResponse:
       type: object
       properties:
@@ -5862,6 +5865,12 @@ components:
           description: Формат получаемого файла
           example: xlsx
           $ref: "#/components/schemas/SpecificFormat"
+        monitorsId:
+          description: Мониторы ID (если не указан, то все мониторы)
+          type: array
+          items:
+            type: array
+            format: uuid
         dateFrom:
           format: date-time
           type: string
@@ -5883,6 +5892,12 @@ components:
           description: Формат получаемого файла
           example: xlsx
           $ref: "#/components/schemas/SpecificFormat"
+        monitorsId:
+          description: Мониторы ID (если не указан, то все мониторы)
+          type: array
+          items:
+            type: array
+            format: uuid
         dateFrom:
           format: date-time
           type: string

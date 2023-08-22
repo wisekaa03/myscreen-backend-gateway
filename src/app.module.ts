@@ -1,9 +1,11 @@
 import { Module, Logger } from '@nestjs/common';
+import 'dotenv';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from 'nestjs-s3';
 import { TransportTargetOptions, LevelWithSilent } from 'pino';
 import type pino from 'pino';
 import type { PrettyOptions } from 'pino-pretty';
+import 'pino-elasticsearch';
 import type { ClientOptions as ElasticClientOptions } from '@elastic/elasticsearch';
 import { LoggerModule, Params as NestPinoParams } from 'nestjs-pino';
 
@@ -41,13 +43,14 @@ import { CrontabModule } from './crontab/crontab.module';
         };
         targets.push(prettyPrint);
 
-        // ElasticSearch
+        // TODO: add support for pino-elasticsearch
         const kibanaHost = configService.get<string>('KIBANA_HOST');
         if (kibanaHost) {
           const kibana: pino.TransportTargetOptions<ElasticClientOptions> = {
             target: 'pino-elasticsearch',
             options: {
-              // TODO
+              node: kibanaHost,
+              compression: 'gzip',
             },
             level: configService.get<LevelWithSilent>('LOG_LEVEL', 'debug'),
           };

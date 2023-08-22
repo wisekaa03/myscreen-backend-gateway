@@ -1,8 +1,8 @@
-/* eslint global-require:0, @typescript-eslint/no-var-requires:0 */
 import type { LogDescriptor, LoggerOptions } from 'pino';
+import pinoPretty from 'pino-pretty';
 
 export = (opts: LoggerOptions) =>
-  require('pino-pretty')({
+  pinoPretty({
     ...opts,
     messageFormat: (
       log: LogDescriptor,

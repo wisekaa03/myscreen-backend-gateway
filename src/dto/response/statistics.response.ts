@@ -18,16 +18,16 @@ export class StatisticsPlaylistResponse {
 
 export class StorageSpaceResponse {
   @ApiProperty({
-    description: 'Добавленные медиа',
+    description: 'Занятое место',
     type: 'number',
   })
-  used!: number;
+  storage!: number;
 
   @ApiProperty({
     description: 'Максимальное место',
     type: 'number',
   })
-  unused!: number;
+  total!: number;
 }
 
 export class StatisticsResponse {
