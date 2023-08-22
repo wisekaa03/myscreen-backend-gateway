@@ -220,15 +220,8 @@ export class ApplicationService {
   }
 
   async statistics(user: UserEntity): Promise<StatisticsMonitorsResponse> {
-    const where: FindOptionsWhere<ApplicationEntity> = {};
-    if (user.role === UserRoleEnum.Advertiser) {
-      where.buyerId = user.id;
-    } else {
-      where.sellerId = user.id;
-    }
-
     const dateNow = new Date();
-    const [online, offline, empty, emptyMonitor] = await Promise.all([
+    const [online, offline, empty] = await Promise.all([
       this.monitorRepository.count({
         where: {
           userId: user.id,
@@ -242,11 +235,13 @@ export class ApplicationService {
         select: { id: true },
         relations: ['applications'],
       }),
+
       this.monitorRepository.count({
         where: {
           userId: user.id,
           status: MonitorStatus.Offline,
           applications: {
+            approved: ApplicationApproved.Allowed,
             dateWhen: MoreThanOrEqual<Date>(dateNow),
             dateBefore: LessThanOrEqual<Date>(dateNow),
           },
@@ -254,24 +249,21 @@ export class ApplicationService {
         select: { id: true },
         relations: ['applications'],
       }),
+
       this.monitorRepository.count({
-        where: { userId: user.id },
-        relations: [],
-      }),
-      this.applicationRepository.count({
         where: {
-          ...where,
-          approved: ApplicationApproved.Allowed,
-          dateBefore: LessThanOrEqual<Date>(dateNow),
+          userId: user.id,
+          applications: { id: IsNull() },
         },
-        select: { monitorId: true },
+        select: { id: true },
+        relations: ['applications'],
       }),
     ]);
 
     return {
       online,
       offline,
-      empty: empty - emptyMonitor,
+      empty,
     };
   }
 }
