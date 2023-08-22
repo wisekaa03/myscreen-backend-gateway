@@ -249,7 +249,11 @@ export class ApplicationService {
       }),
       this.monitorRepository.count({ where: { userId: user.id } }),
       this.applicationRepository.count({
-        where: { ...where, dateBefore: LessThanOrEqual<Date>(dateNow) },
+        where: {
+          ...where,
+          approved: ApplicationApproved.Allowed,
+          dateBefore: LessThanOrEqual<Date>(dateNow),
+        },
         select: { monitorId: true },
         relations: [],
       }),
