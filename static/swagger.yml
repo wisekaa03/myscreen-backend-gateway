@@ -5856,9 +5856,6 @@ components:
           description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
-        countDevices:
-          type: number
-          description: Количество устройств
         playlists:
           description: Плейлисты
           allOf:
@@ -5873,7 +5870,6 @@ components:
             - $ref: "#/components/schemas/StorageSpaceResponse"
       required:
         - status
-        - countDevices
         - playlists
         - monitors
         - storageSpace

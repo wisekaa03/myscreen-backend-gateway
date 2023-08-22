@@ -3,11 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { StatisticsController } from './statistics.controller';
 import { PlaylistService } from '@/database/playlist.service';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
 import { PrintService } from '@/print/print.service';
-import { ApplicationService } from '@/database/application.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -29,12 +27,10 @@ describe(StatisticsController.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [StatisticsController],
       providers: [
-        { provide: PlaylistService, useClass: mockRepository },
-        { provide: MonitorService, useClass: mockRepository },
-        { provide: ApplicationService, useClass: mockRepository },
-        { provide: WSGateway, useClass: mockRepository },
-        { provide: PrintService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
+        { provide: MonitorService, useClass: mockRepository },
+        { provide: PlaylistService, useClass: mockRepository },
+        { provide: PrintService, useClass: mockRepository },
       ],
     }).compile();
 

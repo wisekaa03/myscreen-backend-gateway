@@ -4,10 +4,14 @@ import {
   DeepPartial,
   DeleteResult,
   FindManyOptions,
+  IsNull,
+  LessThanOrEqual,
+  MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 
-import { MonitorStatus } from '@/enums/monitor-status.enum';
+import { StatisticsMonitorsResponse } from '@/dto/response/statistics.response';
+import { MonitorStatus, ApplicationApproved } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
@@ -160,5 +164,60 @@ export class MonitorService {
       id,
       userId,
     });
+  }
+
+  async statistics(user: UserEntity): Promise<StatisticsMonitorsResponse> {
+    const dateNow = new Date();
+    const [online, offline, empty] = await Promise.all([
+      this.monitorRepository.count({
+        where: {
+          userId: user.id,
+          status: MonitorStatus.Online,
+          applications: {
+            approved: ApplicationApproved.Allowed,
+            dateWhen: MoreThanOrEqual<Date>(dateNow),
+          },
+        },
+        select: { id: true },
+        relations: ['applications'],
+        loadEagerRelations: false,
+      }),
+
+      this.monitorRepository.count({
+        where: {
+          userId: user.id,
+          status: MonitorStatus.Offline,
+          applications: {
+            approved: ApplicationApproved.Allowed,
+            dateWhen: MoreThanOrEqual<Date>(dateNow),
+          },
+        },
+        select: { id: true },
+        relations: ['applications'],
+        loadEagerRelations: false,
+      }),
+
+      this.monitorRepository.count({
+        where: {
+          userId: user.id,
+          applications: [
+            { id: IsNull() },
+            {
+              approved: ApplicationApproved.Allowed,
+              dateBefore: LessThanOrEqual<Date>(dateNow),
+            },
+          ],
+        },
+        select: { id: true },
+        relations: ['applications'],
+        loadEagerRelations: false,
+      }),
+    ]);
+
+    return {
+      online,
+      offline,
+      empty,
+    };
   }
 }

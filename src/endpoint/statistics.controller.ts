@@ -2,17 +2,7 @@ import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import {
-  Body,
-  forwardRef,
-  Get,
-  HttpCode,
-  Inject,
-  Logger,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, Get, HttpCode, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { In } from 'typeorm';
 
@@ -25,12 +15,9 @@ import { Status, UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
 import { Crud, Standard } from '@/decorators';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { PrintService } from '@/print/print.service';
-import { WSGateway } from '@/websocket/ws.gateway';
-import { UserService } from '@/database/user.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { ApplicationService } from '@/database/application.service';
 
 @Standard(
   'statistics',
@@ -43,13 +30,9 @@ export class StatisticsController {
   logger = new Logger(StatisticsController.name);
 
   constructor(
-    private readonly userService: UserService,
     private readonly monitorService: MonitorService,
-    private readonly applicationService: ApplicationService,
     private readonly playlistService: PlaylistService,
     private readonly printService: PrintService,
-    @Inject(forwardRef(() => WSGateway))
-    private readonly wsGateway: WSGateway,
   ) {}
 
   @Get()
@@ -80,8 +63,7 @@ export class StatisticsController {
     return {
       status: Status.Success,
       playlists: { added, played },
-      countDevices: this.wsGateway.statistics(),
-      monitors: await this.applicationService.statistics(user),
+      monitors: await this.monitorService.statistics(user),
       storageSpace: {
         used: user?.countUsedSpace ?? 0,
         total: user?.storageSpace ?? 0,

@@ -10,22 +10,18 @@ import { ConfigService } from '@nestjs/config';
 import {
   DeleteResult,
   FindManyOptions,
-  FindOptionsWhere,
   IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 
-import { StatisticsMonitorsResponse } from '@/dto/response/statistics.response';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { ApplicationApproved, MonitorStatus, UserRoleEnum } from '@/enums';
+import { ApplicationApproved } from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { UserService } from './user.service';
 import { ApplicationEntity } from './application.entity';
-import { UserEntity } from './user.entity';
-import { MonitorEntity } from './monitor.entity';
 
 @Injectable()
 export class ApplicationService {
@@ -34,15 +30,12 @@ export class ApplicationService {
   private frontendUrl: string;
 
   constructor(
-    private readonly userService: UserService,
     private readonly mailService: MailService,
-    private readonly configService: ConfigService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
-    @InjectRepository(MonitorEntity)
-    private readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(ApplicationEntity)
     private readonly applicationRepository: Repository<ApplicationEntity>,
+    configService: ConfigService,
   ) {
     this.frontendUrl = configService.get<string>(
       'FRONTEND_URL',
@@ -217,53 +210,5 @@ export class ApplicationService {
     });
 
     return deleteResult;
-  }
-
-  async statistics(user: UserEntity): Promise<StatisticsMonitorsResponse> {
-    const dateNow = new Date();
-    const [online, offline, empty] = await Promise.all([
-      this.monitorRepository.count({
-        where: {
-          userId: user.id,
-          status: MonitorStatus.Online,
-          applications: {
-            approved: ApplicationApproved.Allowed,
-            dateWhen: MoreThanOrEqual<Date>(dateNow),
-            dateBefore: LessThanOrEqual<Date>(dateNow),
-          },
-        },
-        select: { id: true },
-        relations: ['applications'],
-      }),
-
-      this.monitorRepository.count({
-        where: {
-          userId: user.id,
-          status: MonitorStatus.Offline,
-          applications: {
-            approved: ApplicationApproved.Allowed,
-            dateWhen: MoreThanOrEqual<Date>(dateNow),
-            dateBefore: LessThanOrEqual<Date>(dateNow),
-          },
-        },
-        select: { id: true },
-        relations: ['applications'],
-      }),
-
-      this.monitorRepository.count({
-        where: {
-          userId: user.id,
-          applications: { id: IsNull() },
-        },
-        select: { id: true },
-        relations: ['applications'],
-      }),
-    ]);
-
-    return {
-      online,
-      offline,
-      empty,
-    };
   }
 }

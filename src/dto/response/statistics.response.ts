@@ -61,12 +61,6 @@ export class StatisticsResponse {
   status!: Status.Success;
 
   @ApiProperty({
-    description: 'Количество устройств',
-    type: 'number',
-  })
-  countDevices!: number;
-
-  @ApiProperty({
     description: 'Плейлисты',
     type: () => StatisticsPlaylistResponse,
   })
