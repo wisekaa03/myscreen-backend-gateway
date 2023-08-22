@@ -17,6 +17,8 @@ export class MailService {
 
   private template = 'user-action';
 
+  private frontEndUrl: string;
+
   private domain: string;
 
   private from: string;
@@ -26,6 +28,10 @@ export class MailService {
     private readonly printService: PrintService,
     private readonly configService: ConfigService,
   ) {
+    this.frontEndUrl = configService.get(
+      'FRONTEND_URL',
+      'http://localhost:3000',
+    );
     this.domain = configService.get('MAIL_DOMAIN', 'myscreen.ru');
     this.from = configService.get('MAIL_FROM', `no-reply@${this.domain}`);
   }
@@ -67,7 +73,7 @@ export class MailService {
     (${user.company}) запросил(а) счет на оплату. \n\
     Пожалуйста, проверьте правильность сгенерированного файла, а после подтвердите \
     или отредактируйте его в панеле управления счетами: \n\
-    ${this.configService.get('FRONTEND_URL')}/accountant/invoices \n\
+    ${this.frontEndUrl}/accountant/invoices \n\
     \n\
     Счет во вложении.`;
 

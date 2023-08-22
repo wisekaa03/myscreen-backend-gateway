@@ -1,12 +1,7 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import {
-  DeepPartial,
-  EntityManager,
-  FindManyOptions,
-  Repository,
-} from 'typeorm';
+import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
