@@ -2,17 +2,18 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 
-import { UserPlanEnum } from '@/enums';
+import { UserPlanEnum, UserRoleEnum } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { UserExtEntity } from '@/database/user-ext.entity';
 
 const email = 'foo@bar.baz';
 const password = 'Secret~123456';
 const token = 'token';
 
-const user = {
+const user: UserExtEntity = {
   id: '1',
   email,
   surname: 'Steve',
@@ -22,14 +23,28 @@ const user = {
   city: 'Krasnodar',
   country: 'RU',
   company: 'ACME corporation',
-  role: 'advertiser',
+  role: UserRoleEnum.Advertiser,
   verified: true,
+  disabled: false,
   plan: UserPlanEnum.Full,
-  createdAt: '1000-01-01T01:00:50.804Z',
-  updatedAt: '1000-01-01T01:00:43.121Z',
-  storageSpace: 0,
-  countUsedSpace: 0,
-  countMonitors: 0,
+  createdAt: new Date('1000-01-01T01:00:50.804Z'),
+  updatedAt: new Date('1000-01-01T01:00:43.121Z'),
+  metrics: {
+    monitors: {
+      online: 0,
+      offline: 0,
+      empty: 0,
+      user: 0,
+    },
+    playlists: {
+      added: 0,
+      played: 0,
+    },
+    storageSpace: {
+      storage: 0,
+      total: 0,
+    },
+  },
   planValidityPeriod: 'now',
   wallet: {
     total: 0,

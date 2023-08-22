@@ -6,16 +6,16 @@ import { TokenExpiredError } from 'jsonwebtoken';
 import { UserRoleEnum } from '@/enums';
 import { JWT_BASE_OPTIONS, type MyscreenJwtPayload } from '@/utils/jwt.payload';
 import { decodeMailToken } from '@/utils/mail-token';
-import {
-  userEntityToUser,
-  AuthenticationPayload,
-  selectUserOptions,
-} from '@/dto';
+import { AuthenticationPayload } from '@/dto';
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
-import { UserExtEntity } from '@/database/user-ext.entity';
+import {
+  UserExtEntity,
+  selectUserOptions,
+  userEntityToUser,
+} from '@/database/user-ext.entity';
 import { JwtStrategy } from './jwt.strategy';
 
 @Injectable()

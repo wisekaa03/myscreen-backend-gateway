@@ -10,12 +10,12 @@ import {
   Repository,
 } from 'typeorm';
 
-import { StatisticsMonitorsResponse } from '@/dto/response/statistics.response';
 import { MonitorStatus, ApplicationApproved } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
+import { UserMetricsMonitors } from './user-ext.entity';
 
 @Injectable()
 export class MonitorService {
@@ -166,7 +166,7 @@ export class MonitorService {
     });
   }
 
-  async statistics(user: UserEntity): Promise<StatisticsMonitorsResponse> {
+  async statistics(user: UserEntity): Promise<UserMetricsMonitors> {
     const dateNow = new Date();
     const [online, offline, empty] = await Promise.all([
       this.monitorRepository.count({

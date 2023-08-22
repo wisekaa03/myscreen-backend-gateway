@@ -27,7 +27,6 @@ import {
   AuthResponse,
   AuthRefreshResponse,
   SuccessResponse,
-  userEntityToUser,
   UserGetResponse,
   AuthMonitorRequest,
 } from '@/dto';
@@ -36,6 +35,7 @@ import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { RolesGuard, JwtAuthGuard } from '@/guards';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
+import { userEntityToUser } from '@/database/user-ext.entity';
 import { MonitorService } from '@/database/monitor.service';
 
 @Standard('auth')

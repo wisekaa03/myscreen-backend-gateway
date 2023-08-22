@@ -25,6 +25,8 @@ export class RegisterRequest extends OmitType(UserExtEntity, [
   'emailConfirmKey',
   'forgotConfirmKey',
   'monitors',
+  'metrics',
+  'planValidityPeriod',
   'createdAt',
   'updatedAt',
 ]) {

@@ -2370,7 +2370,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StatisticsResponse"
+                $ref: "#/components/schemas/"
         "400": &ref_87
           description: Ответ будет таким если с данным что-то не так
           content:
@@ -3015,13 +3015,76 @@ components:
         - DEMO
         - FULL
         - VIP
-    Wallet:
+    UserWallet:
       type: object
       properties:
         total:
           type: number
           description: Баланс
           example: 0
+    UserMetricsMonitors:
+      type: object
+      properties:
+        online:
+          type: number
+          description: Кол-во устройств с заявками на трансляции
+        offline:
+          type: number
+          description: Кол-во устройств с заявками, но выключенные
+        empty:
+          type: number
+          description: Кол-во устройств без заявок
+        user:
+          type: number
+          description: Кол-во моих мониторов
+      required:
+        - online
+        - offline
+        - empty
+        - user
+    UserMetricsStorage:
+      type: object
+      properties:
+        storage:
+          type: number
+          description: Занятое место
+        total:
+          type: number
+          description: Максимальное место
+      required:
+        - storage
+        - total
+    UserMetricsPlaylists:
+      type: object
+      properties:
+        added:
+          type: number
+          description: Добавленные
+        played:
+          type: number
+          description: Запущенные
+      required:
+        - added
+        - played
+    UserMetrics:
+      type: object
+      properties:
+        monitors:
+          description: Статистика мониторов
+          allOf:
+            - $ref: "#/components/schemas/UserMetricsMonitors"
+        storageSpace:
+          description: Дисковое пространство
+          allOf:
+            - $ref: "#/components/schemas/UserMetricsStorage"
+        playlists:
+          description: Плейлисты
+          allOf:
+            - $ref: "#/components/schemas/UserMetricsPlaylists"
+      required:
+        - monitors
+        - storageSpace
+        - playlists
     UserExtEntity:
       type: object
       properties:
@@ -3147,21 +3210,17 @@ components:
           type: string
           description: Время изменения
           example: "2021-01-01T10:00:00.147Z"
-        countUsedSpace:
-          type: number
-          description: Использованное место
-          example: 0
-        countMonitors:
-          type: number
-          description: Использованные мониторы
-          example: 0
         planValidityPeriod:
           type: string
           description: Оставшийся срок оплаты
         wallet:
           description: Баланс
           allOf:
-            - $ref: "#/components/schemas/Wallet"
+            - $ref: "#/components/schemas/UserWallet"
+        metrics:
+          description: Метрика
+          allOf:
+            - $ref: "#/components/schemas/UserMetrics"
       required:
         - id
         - email
@@ -3451,9 +3510,6 @@ components:
           type: string
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
-        planValidityPeriod:
-          type: string
-          description: Оставшийся срок оплаты
         role:
           description: Роль пользователя
           example: advertiser
@@ -5809,70 +5865,6 @@ components:
           items:
             type: string
             format: uuid
-    StatisticsPlaylistResponse:
-      type: object
-      properties:
-        added:
-          type: number
-          description: Добавленные
-        played:
-          type: number
-          description: Запущенные
-      required:
-        - added
-        - played
-    StatisticsMonitorsResponse:
-      type: object
-      properties:
-        online:
-          type: number
-          description: Кол-во устройств с заявками на трансляции
-        offline:
-          type: number
-          description: Кол-во устройств с заявками, но выключенные
-        empty:
-          type: number
-          description: Кол-во устройств без заявок
-      required:
-        - online
-        - offline
-        - empty
-    StorageSpaceResponse:
-      type: object
-      properties:
-        used:
-          type: number
-          description: Занятое место
-        total:
-          type: number
-          description: Максимальное место
-      required:
-        - used
-        - total
-    StatisticsResponse:
-      type: object
-      properties:
-        status:
-          description: Статус операции
-          example: success
-          $ref: "#/components/schemas/Status"
-        playlists:
-          description: Плейлисты
-          allOf:
-            - $ref: "#/components/schemas/StatisticsPlaylistResponse"
-        monitors:
-          description: Статистика мониторов
-          allOf:
-            - $ref: "#/components/schemas/StatisticsMonitorsResponse"
-        storageSpace:
-          description: Дисковое пространство
-          allOf:
-            - $ref: "#/components/schemas/StorageSpaceResponse"
-      required:
-        - status
-        - playlists
-        - monitors
-        - storageSpace
     SpecificFormat:
       type: string
       enum:

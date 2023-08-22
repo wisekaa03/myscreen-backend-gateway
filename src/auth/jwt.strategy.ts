@@ -4,9 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 
 import type { MyscreenJwtPayload } from '@/utils/jwt.payload';
-import { userEntityToUser } from '@/dto/response/user.response';
 import { UserService } from '@/database/user.service';
-import { UserExtEntity } from '@/database/user-ext.entity';
+import { UserExtEntity, userEntityToUser } from '@/database/user-ext.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

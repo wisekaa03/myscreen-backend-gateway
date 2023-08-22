@@ -6,12 +6,8 @@ import { Body, Get, HttpCode, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { In } from 'typeorm';
 
-import {
-  ReportDeviceStatusRequest,
-  ReportViewsRequest,
-  StatisticsResponse,
-} from '@/dto';
-import { Status, UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
+import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
+import { UserRoleEnum, SpecificFormat, CRUD, Status } from '@/enums';
 import { Crud, Standard } from '@/decorators';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { PrintService } from '@/print/print.service';
@@ -44,12 +40,10 @@ export class StatisticsController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: StatisticsResponse,
+    type: 'string',
   })
   @Crud(CRUD.STATUS)
-  async getPlaylists(
-    @Req() { user }: ExpressRequest,
-  ): Promise<StatisticsResponse> {
+  async getPlaylists(@Req() { user }: ExpressRequest): Promise<any> {
     const [[, added], [, played]] = await Promise.all([
       this.playlistService.findAndCount({
         where: { userId: user.id },

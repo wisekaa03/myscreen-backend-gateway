@@ -18,14 +18,14 @@ import {
 } from 'typeorm';
 import addDays from 'date-fns/addDays';
 
-import { RegisterRequest, selectUserOptions } from '@/dto';
+import { RegisterRequest } from '@/dto/request/register.request';
 import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
-import { UserExtEntity } from './user-ext.entity';
+import { UserExtEntity, selectUserOptions } from './user-ext.entity';
 
 @Injectable()
 export class UserService {
@@ -76,8 +76,10 @@ export class UserService {
     const {
       role = UserRoleEnum.Administrator,
       plan = UserPlanEnum.Full,
-      countMonitors = 0,
-      countUsedSpace = 0,
+      metrics: {
+        monitors: { user: countMonitors = 0 },
+        storageSpace: { storage: countUsedSpace = 0 },
+      },
       createdAt = new Date(),
     } = user;
 
@@ -395,15 +397,15 @@ export class UserService {
   }
 
   async findAndCount(
-    options: FindManyOptions<UserEntity>,
+    options: FindManyOptions<UserExtEntity>,
     caseInsensitive = true,
-  ): Promise<[UserEntity[], number]> {
+  ): Promise<[UserExtEntity[], number]> {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(
-          this.userRepository,
+          this.userExtRepository,
           TypeOrmFind.Nullable(options),
         )
-      : this.userRepository.findAndCount(TypeOrmFind.Nullable(options));
+      : this.userExtRepository.findAndCount(TypeOrmFind.Nullable(options));
   }
 
   async findByEmail(
@@ -434,6 +436,26 @@ export class UserService {
         verified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        planValidityPeriod: 'now',
+        wallet: {
+          total: 0,
+        },
+        metrics: {
+          monitors: {
+            online: 0,
+            offline: 0,
+            empty: 0,
+            user: 0,
+          },
+          storageSpace: {
+            storage: 0,
+            total: 0,
+          },
+          playlists: {
+            added: 0,
+            played: 0,
+          },
+        },
       };
     }
 

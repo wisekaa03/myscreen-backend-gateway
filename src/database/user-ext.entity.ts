@@ -1,10 +1,11 @@
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { OmitType, ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   DataSource,
   OneToMany,
   SelectQueryBuilder,
   ViewColumn,
   ViewEntity,
+  FindOptionsSelect,
 } from 'typeorm';
 import {
   IsDateString,
@@ -19,14 +20,98 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
+import { formatDistanceStrict, subDays } from 'date-fns';
+import locale from 'date-fns/locale/ru';
 
-import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
+import {
+  ApplicationApproved,
+  MonitorStatus,
+  UserPlanEnum,
+  UserRole,
+  UserRoleEnum,
+} from '@/enums';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { WalletEntity } from './wallet.entity';
+import { PlaylistEntity } from './playlist.entity';
+import { ApplicationEntity } from './application.entity';
 
-export class Wallet {
+export class UserMetricsMonitors {
+  @ApiProperty({
+    description: 'Кол-во устройств с заявками на трансляции',
+    type: 'number',
+  })
+  online!: number;
+
+  @ApiProperty({
+    description: 'Кол-во устройств с заявками, но выключенные',
+    type: 'number',
+  })
+  offline!: number;
+
+  @ApiProperty({
+    description: 'Кол-во устройств без заявок',
+    type: 'number',
+  })
+  empty!: number;
+
+  @ApiProperty({
+    description: 'Кол-во моих мониторов',
+    type: 'number',
+  })
+  user?: number;
+}
+
+export class UserMetricsStorage {
+  @ApiProperty({
+    description: 'Занятое место',
+    type: 'number',
+  })
+  storage!: number;
+
+  @ApiProperty({
+    description: 'Максимальное место',
+    type: 'number',
+  })
+  total!: number;
+}
+
+export class UserMetricsPlaylists {
+  @ApiProperty({
+    description: 'Добавленные',
+    type: 'number',
+  })
+  added!: number;
+
+  @ApiProperty({
+    description: 'Запущенные',
+    type: 'number',
+  })
+  played!: number;
+}
+
+export class UserMetrics {
+  @ApiProperty({
+    description: 'Статистика мониторов',
+    type: () => UserMetricsMonitors,
+  })
+  monitors!: UserMetricsMonitors;
+
+  @ApiProperty({
+    description: 'Дисковое пространство',
+    type: () => UserMetricsStorage,
+  })
+  storageSpace!: UserMetricsStorage;
+
+  @ApiProperty({
+    description: 'Плейлисты',
+    type: () => UserMetricsPlaylists,
+  })
+  playlists!: UserMetricsPlaylists;
+}
+
+export class UserWallet {
   @ApiProperty({
     description: 'Баланс',
     example: 0,
@@ -88,6 +173,61 @@ export class Wallet {
             .limit(1),
         'monthlyPayment',
         '"monthlyPaymentUserId" = "user"."id"',
+      )
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<PlaylistEntity>) =>
+          qb
+            .select('"playlist"."userId"', 'playlistUserId')
+            .addSelect('COUNT(id)', 'playlistAdded')
+            .groupBy('"playlist"."userId"')
+            .from(PlaylistEntity, 'playlist'),
+        'playlistAdded',
+        '"playlistUserId" = "user"."id"',
+      )
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select('"monitorPlayed"."userId"', 'monitorPlayedUserId')
+            .addSelect('COUNT("monitorPlayed"."userId")', 'monitorPlayed')
+            .groupBy('"monitorPlayed"."userId"')
+            .where('"monitorPlayed"."playlistPlayed" = true')
+            .from(MonitorEntity, 'monitorPlayed'),
+        'monitorPlayed',
+        '"monitorPlayedUserId" = "user"."id"',
+      )
+      // TODO: Переделать на count
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select('"onlineMonitors"."userId"', 'onlineMonitorsUserId')
+            .addSelect('COUNT("onlineMonitors"."userId")', 'onlineMonitors')
+            .groupBy('"onlineMonitors"."userId"')
+            .where(`"onlineMonitors"."status" = '${MonitorStatus.Online}'`)
+            .from(MonitorEntity, 'onlineMonitors'),
+        'onlineMonitors',
+        '"onlineMonitorsUserId" = "user"."id"',
+      )
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select('"offlineMonitors"."userId"', 'offlineMonitorsUserId')
+            .addSelect('COUNT("offlineMonitors"."userId")', 'offlineMonitors')
+            .groupBy('"offlineMonitors"."userId"')
+            .where(`"offlineMonitors"."status" = '${MonitorStatus.Offline}'`)
+            .from(MonitorEntity, 'offlineMonitors'),
+        'offlineMonitors',
+        '"offlineMonitorsUserId" = "user"."id"',
+      )
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select('"emptyMonitors"."userId"', 'emptyMonitorsUserId')
+            .addSelect('COUNT("emptyMonitors"."userId")', 'emptyMonitors')
+            .groupBy('"emptyMonitors"."userId"')
+            .where(`"emptyMonitors"."status" = '${MonitorStatus.Online}'`)
+            .from(MonitorEntity, 'emptyMonitors'),
+        'emptyMonitors',
+        '"emptyMonitorsUserId" = "user"."id"',
       ),
 })
 export class UserExtEntity implements UserEntity {
@@ -379,19 +519,9 @@ export class UserExtEntity implements UserEntity {
   updatedAt?: Date;
 
   @ViewColumn()
-  @ApiProperty({
-    description: 'Использованное место',
-    example: 0,
-    required: false,
-  })
   countUsedSpace?: number;
 
   @ViewColumn()
-  @ApiProperty({
-    description: 'Использованные мониторы',
-    example: 0,
-    required: false,
-  })
   countMonitors?: number;
 
   @ViewColumn()
@@ -400,15 +530,125 @@ export class UserExtEntity implements UserEntity {
   @ViewColumn()
   monthlyPayment?: Date;
 
+  @ViewColumn()
+  playlistAdded?: number;
+
+  @ViewColumn()
+  monitorPlayed?: number;
+
+  @ViewColumn()
+  onlineMonitors?: number;
+
+  @ViewColumn()
+  offlineMonitors?: number;
+
+  @ViewColumn()
+  emptyMonitors?: number;
+
   @ApiProperty({
     description: 'Оставшийся срок оплаты',
     required: false,
   })
-  planValidityPeriod?: string;
+  planValidityPeriod!: string;
 
   @ApiProperty({
     description: 'Баланс',
     required: false,
   })
-  wallet?: Wallet;
+  wallet!: UserWallet;
+
+  @ApiProperty({
+    description: 'Метрика',
+    required: false,
+  })
+  metrics!: UserMetrics;
 }
+
+export const selectUserOptions: FindOptionsSelect<UserExtEntity> = {
+  id: true,
+  email: true,
+  disabled: true,
+  surname: true,
+  name: true,
+  middleName: true,
+  phoneNumber: true,
+  city: true,
+  country: true,
+  storageSpace: true,
+  plan: true,
+  company: true,
+  companyEmail: true,
+  companyLegalAddress: true,
+  companyPhone: true,
+  companyPSRN: true,
+  companyRRC: true,
+  companyTIN: true,
+  companyActualAddress: true,
+  companyBank: true,
+  companyBIC: true,
+  companyCorrespondentAccount: true,
+  companyPaymentAccount: true,
+  role: true,
+  verified: true,
+  createdAt: true,
+  updatedAt: true,
+  countUsedSpace: true,
+  countMonitors: true,
+  monthlyPayment: true,
+  walletSum: true,
+};
+
+export class UserResponse extends OmitType(UserExtEntity, [
+  'forgotConfirmKey',
+  'emailConfirmKey',
+  'password',
+  'monitors',
+]) {}
+
+export const userEntityToUser = ({
+  forgotConfirmKey,
+  emailConfirmKey,
+  password,
+  monitors,
+  monthlyPayment,
+  walletSum,
+  storageSpace,
+  countUsedSpace,
+  countMonitors,
+  playlistAdded,
+  monitorPlayed,
+  onlineMonitors,
+  offlineMonitors,
+  emptyMonitors,
+  wallet,
+  ...data
+}: UserExtEntity): UserExtEntity => ({
+  ...data,
+  metrics: {
+    monitors: {
+      online: parseInt(`${onlineMonitors ?? 0}`, 10),
+      offline: parseInt(`${offlineMonitors ?? 0}`, 10),
+      empty: parseInt(`${emptyMonitors ?? 0}`, 10),
+      user: parseInt(`${countMonitors ?? 0}`, 10),
+    },
+    playlists: {
+      added: parseInt(`${playlistAdded ?? 0}`, 10),
+      played: parseInt(`${monitorPlayed ?? 0}`, 10),
+    },
+    storageSpace: {
+      storage: parseInt(`${countUsedSpace ?? 0}`, 10),
+      total: parseFloat(`${storageSpace ?? 0}`),
+    },
+  },
+  planValidityPeriod: monthlyPayment
+    ? formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
+        unit: 'day',
+        addSuffix: false,
+        roundingMethod: 'floor',
+        locale,
+      })
+    : 'now',
+  wallet: {
+    total: wallet ? wallet.total : parseFloat(walletSum ?? '0'),
+  },
+});

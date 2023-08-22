@@ -37,8 +37,24 @@ const testUser: UserExtEntity = {
   companyPaymentAccount: '40802810064580000000',
   companyFax: '+78002000000',
   companyRepresentative: 'Тухбатуллина Евгеньевна Юлия',
-  countMonitors: 5,
-  countUsedSpace: 1000000000,
+  planValidityPeriod: 'now',
+  wallet: { total: 0 },
+  metrics: {
+    monitors: {
+      online: 0,
+      offline: 5,
+      empty: 0,
+      user: 5,
+    },
+    playlists: {
+      added: 0,
+      played: 0,
+    },
+    storageSpace: {
+      storage: 1000000000,
+      total: 1000000000,
+    },
+  },
 };
 
 export const mockRepository = jest.fn(() => ({
@@ -149,7 +165,11 @@ describe(UserService.name, () => {
       expect(
         service.verify('monitor', CRUD.CREATE, {
           ...monitorTestDemo,
-          countMonitors: 4,
+          metrics: {
+            monitors: { online: 0, offline: 0, empty: 0, user: 4 },
+            playlists: { added: 0, played: 0 },
+            storageSpace: { storage: 0, total: 1000000 },
+          },
           createdAt: subDays(Date.now(), 14),
         }),
       ).toBe(true);
