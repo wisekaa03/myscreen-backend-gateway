@@ -14,6 +14,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { In } from 'typeorm';
 
 import {
   ReportDeviceStatusRequest,
@@ -28,6 +29,7 @@ import { MonitorService } from '@/database/monitor.service';
 import { PrintService } from '@/print/print.service';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { Crud, Standard } from '@/decorators';
+import { MonitorEntity } from '@/database/monitor.entity';
 
 @Standard(
   'statistics',
@@ -114,10 +116,18 @@ export class StatisticsController {
   async reportDeviceStatus(
     @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
-    @Body() { format, dateFrom, dateTo }: ReportDeviceStatusRequest,
+    @Body() { format, monitorsId, dateFrom, dateTo }: ReportDeviceStatusRequest,
   ): Promise<void> {
+    let monitors: MonitorEntity[] | undefined;
+    if (Array.isArray(monitorsId) && monitorsId.length > 0) {
+      monitors = await this.monitorService.find(user.id, {
+        where: { userId: user.id, id: In(monitorsId) },
+      });
+    }
+
     const data = await this.printService.reportDeviceStatus({
-      userId: user.id,
+      user,
+      monitors,
       format,
       dateFrom,
       dateTo,
@@ -167,10 +177,18 @@ export class StatisticsController {
   async reportViews(
     @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
-    @Body() { format, dateFrom, dateTo }: ReportViewsRequest,
+    @Body() { format, monitorsId, dateFrom, dateTo }: ReportViewsRequest,
   ): Promise<void> {
+    let monitors: MonitorEntity[] | undefined;
+    if (Array.isArray(monitorsId) && monitorsId.length > 0) {
+      monitors = await this.monitorService.find(user.id, {
+        where: { userId: user.id, id: In(monitorsId) },
+      });
+    }
+
     const data = await this.printService.reportViews({
-      userId: user.id,
+      user,
+      monitors,
       format,
       dateFrom,
       dateTo,

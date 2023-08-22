@@ -1,9 +1,16 @@
 import { Injectable, Logger, Scope } from '@nestjs/common';
-import excelJS from 'exceljs';
 
 import { SpecificFormat } from '@/enums/specific-format.enum';
 import { InvoiceEntity } from '@/database/invoice.entity';
-import { printSpecific } from './print.specific';
+import { MonitorEntity } from '@/database/monitor.entity';
+import { UserEntity } from '@/database/user.entity';
+
+import { viewsXls } from './views/xls';
+import { viewsPdf } from './views/pdf';
+import { deviceStatusXls } from './deviceStatus/xls';
+import { deviceStatusPdf } from './deviceStatus/pdf';
+import { invoiceXls } from './invoice/xls';
+import { invoicePdf } from './invoice/pdf';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class PrintService {
@@ -18,14 +25,14 @@ export class PrintService {
   async invoice(
     format: SpecificFormat,
     invoice: InvoiceEntity,
-  ): Promise<excelJS.Buffer> {
+  ): Promise<Buffer> {
     switch (format) {
       case SpecificFormat.PDF:
-        return printSpecific.invoice.pdf({ invoice });
+        return invoicePdf({ invoice });
 
       case SpecificFormat.XLSX:
       default:
-        return printSpecific.invoice.xls({ invoice });
+        return invoiceXls({ invoice });
     }
   }
 
@@ -36,30 +43,35 @@ export class PrintService {
    * @returns Buffer XLSX file buffer
    */
   async reportDeviceStatus({
-    userId,
+    user,
     format,
     dateFrom,
     dateTo,
-    monitorId,
+    monitors,
   }: {
-    userId: string;
+    user: UserEntity;
     format: SpecificFormat;
     dateFrom: Date;
     dateTo: Date;
-    monitorId?: string;
-  }): Promise<excelJS.Buffer> {
-    // const monitors = await this.monitorService.find(userId, {
-    //   // TODO: fix this
-    //   relations: [],
-    // });
-
+    monitors?: MonitorEntity[];
+  }): Promise<Buffer> {
     switch (format) {
       case SpecificFormat.PDF:
-        return printSpecific.deviceStatus.pdf({ dateFrom, dateTo });
+        return deviceStatusPdf({
+          user,
+          monitors,
+          dateFrom,
+          dateTo,
+        });
 
       case SpecificFormat.XLSX:
       default:
-        return printSpecific.deviceStatus.xls({ dateFrom, dateTo });
+        return deviceStatusXls({
+          user,
+          monitors,
+          dateFrom,
+          dateTo,
+        });
     }
   }
 
@@ -70,23 +82,25 @@ export class PrintService {
    * @returns Buffer XLSX file buffer
    */
   async reportViews({
-    userId,
+    user,
+    monitors,
     format,
     dateFrom,
     dateTo,
   }: {
-    userId: string;
+    user: UserEntity;
+    monitors?: MonitorEntity[];
     format: SpecificFormat;
     dateFrom: Date;
     dateTo: Date;
-  }): Promise<excelJS.Buffer> {
+  }): Promise<Buffer> {
     switch (format) {
       case SpecificFormat.PDF:
-        return printSpecific.views.pdf({ dateFrom, dateTo });
+        return viewsPdf({ user, monitors, dateFrom, dateTo });
 
       case SpecificFormat.XLSX:
       default:
-        return printSpecific.views.xls({ dateFrom, dateTo });
+        return viewsXls({ user, monitors, dateFrom, dateTo });
     }
   }
 }

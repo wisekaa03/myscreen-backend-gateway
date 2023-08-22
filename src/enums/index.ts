@@ -1,7 +1,6 @@
 export * from './file-type.enum';
 export * from './monitor-orientation.enum';
 export * from './monitor-status.enum';
-export * from './payments.enum';
 export * from './rendering-status.enum';
 export * from './user-role.enum';
 export * from './user-plan.enum';

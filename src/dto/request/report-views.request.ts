@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsNotEmpty } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsUUID,
+} from 'class-validator';
 
 import { SpecificFormat } from '@/enums/specific-format.enum';
 
@@ -14,6 +20,16 @@ export class ReportViewsRequest {
   @IsNotEmpty()
   @IsEnum(SpecificFormat)
   format!: SpecificFormat;
+
+  @ApiProperty({
+    description: 'Мониторы ID (если не указан, то все мониторы)',
+    isArray: true,
+    format: 'uuid',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID(undefined, { each: true })
+  monitorsId?: Array<string>;
 
   @ApiProperty({
     description: 'Начальная дата',
