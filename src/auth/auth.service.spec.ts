@@ -27,9 +27,11 @@ const user = {
   plan: UserPlanEnum.Full,
   createdAt: '1000-01-01T01:00:50.804Z',
   updatedAt: '1000-01-01T01:00:43.121Z',
+  storageSpace: 0,
   countUsedSpace: 0,
   countMonitors: 0,
   wallet: {
+    monthlyPaymentIn: 'now',
     total: 0,
   },
 };

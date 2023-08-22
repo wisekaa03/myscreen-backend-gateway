@@ -80,8 +80,8 @@ export class StatisticsController {
       countDevices: this.wsGateway.statistics(),
       playlists: { added, played },
       storageSpace: {
-        used: user?.countUsedSpace ?? 0,
-        unused: user?.storageSpace ?? 0,
+        storage: user?.countUsedSpace ?? 0,
+        total: user?.storageSpace ?? 0,
       },
     };
   }

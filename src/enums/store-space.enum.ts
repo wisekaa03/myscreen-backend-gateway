@@ -1,5 +1,5 @@
 export enum UserStoreSpaceEnum {
-  DEMO = 1000000000,
-  FULL = 10000000000,
+  DEMO = 1073741824,
+  FULL = 10737418240,
   VIP = Infinity,
 }
