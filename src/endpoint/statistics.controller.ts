@@ -22,14 +22,15 @@ import {
   StatisticsResponse,
 } from '@/dto';
 import { Status, UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
-import { UserService } from '@/database/user.service';
+import { Crud, Standard } from '@/decorators';
+import { formatToContentType } from '@/utils/format-to-content-type';
+import { PrintService } from '@/print/print.service';
 import { WSGateway } from '@/websocket/ws.gateway';
+import { UserService } from '@/database/user.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { MonitorService } from '@/database/monitor.service';
-import { PrintService } from '@/print/print.service';
-import { formatToContentType } from '@/utils/format-to-content-type';
-import { Crud, Standard } from '@/decorators';
 import { MonitorEntity } from '@/database/monitor.entity';
+import { ApplicationService } from '@/database/application.service';
 
 @Standard(
   'statistics',
@@ -44,6 +45,7 @@ export class StatisticsController {
   constructor(
     private readonly userService: UserService,
     private readonly monitorService: MonitorService,
+    private readonly applicationService: ApplicationService,
     private readonly playlistService: PlaylistService,
     private readonly printService: PrintService,
     @Inject(forwardRef(() => WSGateway))
@@ -77,10 +79,11 @@ export class StatisticsController {
 
     return {
       status: Status.Success,
-      countDevices: this.wsGateway.statistics(),
       playlists: { added, played },
+      countDevices: this.wsGateway.statistics(),
+      monitors: await this.applicationService.statistics(user),
       storageSpace: {
-        storage: user?.countUsedSpace ?? 0,
+        used: user?.countUsedSpace ?? 0,
         total: user?.storageSpace ?? 0,
       },
     };

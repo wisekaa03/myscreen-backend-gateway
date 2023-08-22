@@ -1372,10 +1372,10 @@
     handlebars "^4.7.7"
     pug "^3.0.2"
 
-"@nestjs/cli@^10.1.12":
-  version "10.1.12"
-  resolved "https://registry.yarnpkg.com/@nestjs/cli/-/cli-10.1.12.tgz#50f1af37f3d34f9a55f1fa118d9a760541d2d0a3"
-  integrity sha512-L+KZOGBvSQUJACC4/o83FRLn5h3MOD5TrGi+Y2NjiDiZr0WYG5b0FaSaCSCy9WQTk46lMaiQYbvi0d4keHJnrw==
+"@nestjs/cli@^10.1.13":
+  version "10.1.13"
+  resolved "https://registry.yarnpkg.com/@nestjs/cli/-/cli-10.1.13.tgz#dec6e313127ebb751489145207baebf6f3115a6f"
+  integrity sha512-ZRJEIPWq7sLd//RIJc8a0mfAWgPrWtcn6OupavQ/PVkRqmEK3LCiitNPYiePeOlMjgarU62Zh9Q8BXWHZwMbMw==
   dependencies:
     "@angular-devkit/core" "16.2.0"
     "@angular-devkit/schematics" "16.2.0"
@@ -10705,7 +10705,6 @@ wordwrap@^1.0.0:
   integrity sha512-gvVzJFlPycKc5dZN4yPkP8w7Dc37BtP1yczEneOb4uq34pXZcvrtRTmWV8W+Ume+XCxKgbjM+nevkyFPMybd4Q==
 
 "wrap-ansi-cjs@npm:wrap-ansi@^7.0.0", wrap-ansi@^7.0.0:
-  name wrap-ansi-cjs
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
   integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==

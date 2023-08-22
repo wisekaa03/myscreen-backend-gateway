@@ -33,12 +33,6 @@ export class Wallet {
     required: false,
   })
   total?: number;
-
-  @ApiProperty({
-    description: 'Оставшийся срок оплаты',
-    required: false,
-  })
-  monthlyPaymentIn?: string;
 }
 
 @ViewEntity({
@@ -405,6 +399,12 @@ export class UserExtEntity implements UserEntity {
 
   @ViewColumn()
   monthlyPayment?: Date;
+
+  @ApiProperty({
+    description: 'Оставшийся срок оплаты',
+    required: false,
+  })
+  planValidityPeriod?: string;
 
   @ApiProperty({
     description: 'Баланс',

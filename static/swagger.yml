@@ -2763,7 +2763,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.41.24
+  version: 2.41.25
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3022,9 +3022,6 @@ components:
           type: number
           description: Баланс
           example: 0
-        monthlyPaymentIn:
-          type: string
-          description: Оставшийся срок оплаты
     UserExtEntity:
       type: object
       properties:
@@ -3158,6 +3155,9 @@ components:
           type: number
           description: Использованные мониторы
           example: 0
+        planValidityPeriod:
+          type: string
+          description: Оставшийся срок оплаты
         wallet:
           description: Баланс
           allOf:
@@ -3451,6 +3451,9 @@ components:
           type: string
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
+        planValidityPeriod:
+          type: string
+          description: Оставшийся срок оплаты
         role:
           description: Роль пользователя
           example: advertiser
@@ -5818,17 +5821,33 @@ components:
       required:
         - added
         - played
+    StatisticsMonitorsResponse:
+      type: object
+      properties:
+        online:
+          type: number
+          description: Кол-во устройств с заявками на трансляции
+        offline:
+          type: number
+          description: Кол-во устройств с заявками, но выключенные
+        empty:
+          type: number
+          description: Кол-во устройств без заявок
+      required:
+        - online
+        - offline
+        - empty
     StorageSpaceResponse:
       type: object
       properties:
-        storage:
+        used:
           type: number
           description: Занятое место
         total:
           type: number
           description: Максимальное место
       required:
-        - storage
+        - used
         - total
     StatisticsResponse:
       type: object
@@ -5844,6 +5863,10 @@ components:
           description: Плейлисты
           allOf:
             - $ref: "#/components/schemas/StatisticsPlaylistResponse"
+        monitors:
+          description: Статистика мониторов
+          allOf:
+            - $ref: "#/components/schemas/StatisticsMonitorsResponse"
         storageSpace:
           description: Дисковое пространство
           allOf:
@@ -5852,6 +5875,7 @@ components:
         - status
         - countDevices
         - playlists
+        - monitors
         - storageSpace
     SpecificFormat:
       type: string

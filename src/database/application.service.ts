@@ -10,18 +10,22 @@ import { ConfigService } from '@nestjs/config';
 import {
   DeleteResult,
   FindManyOptions,
+  FindOptionsWhere,
   IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 
+import { StatisticsMonitorsResponse } from '@/dto/response/statistics.response';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { ApplicationApproved } from '@/enums';
+import { ApplicationApproved, MonitorStatus, UserRoleEnum } from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { UserService } from './user.service';
 import { ApplicationEntity } from './application.entity';
+import { UserEntity } from './user.entity';
+import { MonitorEntity } from './monitor.entity';
 
 @Injectable()
 export class ApplicationService {
@@ -35,6 +39,8 @@ export class ApplicationService {
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
+    @InjectRepository(MonitorEntity)
+    private readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(ApplicationEntity)
     private readonly applicationRepository: Repository<ApplicationEntity>,
   ) {
@@ -211,5 +217,40 @@ export class ApplicationService {
     });
 
     return deleteResult;
+  }
+
+  async statistics(user: UserEntity): Promise<StatisticsMonitorsResponse> {
+    const where: FindOptionsWhere<ApplicationEntity> = {};
+    if (user.role !== UserRoleEnum.Advertiser) {
+      where.sellerId = user.id;
+    } else {
+      where.buyerId = user.id;
+    }
+
+    const [online, offline, empty] = await Promise.all([
+      this.applicationRepository.count({
+        where: {
+          ...where,
+          monitor: { status: MonitorStatus.Online },
+          approved: ApplicationApproved.Allowed,
+          dateWhen: MoreThanOrEqual<Date>(new Date()),
+          dateBefore: LessThanOrEqual<Date>(new Date()),
+        },
+      }),
+      this.applicationRepository.count({
+        where: {
+          ...where,
+          monitor: { status: MonitorStatus.Offline },
+          dateWhen: MoreThanOrEqual<Date>(new Date()),
+          dateBefore: LessThanOrEqual<Date>(new Date()),
+        },
+      }),
+      // TODO: Проверить, что это работает
+      this.monitorRepository.count({
+        where: { status: MonitorStatus.Offline },
+      }),
+    ]);
+
+    return { online, offline, empty };
   }
 }

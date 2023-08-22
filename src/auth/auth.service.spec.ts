@@ -30,8 +30,8 @@ const user = {
   storageSpace: 0,
   countUsedSpace: 0,
   countMonitors: 0,
+  planValidityPeriod: 'now',
   wallet: {
-    monthlyPaymentIn: 'now',
     total: 0,
   },
 };

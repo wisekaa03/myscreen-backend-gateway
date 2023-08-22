@@ -59,15 +59,15 @@ export const userEntityToUser = ({
   countUsedSpace: parseInt(`${data.countUsedSpace ?? 0}`, 10),
   countMonitors: parseInt(`${data.countMonitors ?? 0}`, 10),
   storageSpace: parseFloat(`${data.storageSpace ?? 0}`),
+  planValidityPeriod: monthlyPayment
+    ? formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
+        unit: 'day',
+        addSuffix: false,
+        roundingMethod: 'floor',
+        locale,
+      })
+    : 'now',
   wallet: {
     total: wallet ? wallet.total : parseFloat(walletSum ?? '0'),
-    monthlyPaymentIn: monthlyPayment
-      ? formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
-          unit: 'day',
-          addSuffix: false,
-          roundingMethod: 'floor',
-          locale,
-        })
-      : 'now',
   },
 });

@@ -16,12 +16,32 @@ export class StatisticsPlaylistResponse {
   played!: number;
 }
 
+export class StatisticsMonitorsResponse {
+  @ApiProperty({
+    description: 'Кол-во устройств с заявками на трансляции',
+    type: 'number',
+  })
+  online!: number;
+
+  @ApiProperty({
+    description: 'Кол-во устройств с заявками, но выключенные',
+    type: 'number',
+  })
+  offline!: number;
+
+  @ApiProperty({
+    description: 'Кол-во устройств без заявок',
+    type: 'number',
+  })
+  empty!: number;
+}
+
 export class StorageSpaceResponse {
   @ApiProperty({
     description: 'Занятое место',
     type: 'number',
   })
-  storage!: number;
+  used!: number;
 
   @ApiProperty({
     description: 'Максимальное место',
@@ -51,6 +71,12 @@ export class StatisticsResponse {
     type: () => StatisticsPlaylistResponse,
   })
   playlists!: StatisticsPlaylistResponse;
+
+  @ApiProperty({
+    description: 'Статистика мониторов',
+    type: () => StatisticsMonitorsResponse,
+  })
+  monitors!: StatisticsMonitorsResponse;
 
   @ApiProperty({
     description: 'Дисковое пространство',
