@@ -45,7 +45,7 @@ const user: UserExtEntity = {
       total: 0,
     },
   },
-  planValidityPeriod: Infinity,
+  planValidityPeriod: Number.POSITIVE_INFINITY,
   wallet: {
     total: 0,
   },

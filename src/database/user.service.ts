@@ -19,7 +19,7 @@ import {
 } from 'typeorm';
 import addDays from 'date-fns/addDays';
 import subDays from 'date-fns/subDays';
-import formatDistanceStrict from 'date-fns/formatDistanceStrict';
+import intervalToDuration from 'date-fns/intervalToDuration';
 
 import { RegisterRequest } from '@/dto/request/register.request';
 import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
@@ -436,7 +436,7 @@ export class UserService {
         verified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        planValidityPeriod: Infinity,
+        planValidityPeriod: Number.NEGATIVE_INFINITY,
         wallet: {
           total: 0,
         },
@@ -512,15 +512,11 @@ export class UserService {
         },
       },
       planValidityPeriod: monthlyPayment
-        ? parseInt(
-            formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
-              unit: 'day',
-              addSuffix: false,
-              roundingMethod: 'floor',
-            }),
-            10,
-          )
-        : Infinity,
+        ? intervalToDuration({
+            start: monthlyPayment,
+            end: subDays(Date.now(), 28),
+          }).days ?? Number.NEGATIVE_INFINITY
+        : Number.POSITIVE_INFINITY,
       wallet: {
         total: wallet ? wallet.total : parseFloat(walletSum ?? '0'),
       },
