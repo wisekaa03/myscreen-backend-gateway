@@ -37,7 +37,7 @@ const testUser: UserExtEntity = {
   companyPaymentAccount: '40802810064580000000',
   companyFax: '+78002000000',
   companyRepresentative: 'Тухбатуллина Евгеньевна Юлия',
-  planValidityPeriod: Infinity,
+  planValidityPeriod: Number.POSITIVE_INFINITY,
   wallet: { total: 0 },
   metrics: {
     monitors: {

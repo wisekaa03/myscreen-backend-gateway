@@ -2740,7 +2740,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.41.27
+  version: 2.41.28
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3188,7 +3188,7 @@ components:
           description: Время изменения
           example: "2021-01-01T10:00:00.147Z"
         planValidityPeriod:
-          type: string
+          type: number
           description: Оставшийся срок оплаты
         wallet:
           description: Баланс
