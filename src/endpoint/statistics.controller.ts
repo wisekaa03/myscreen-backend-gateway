@@ -2,33 +2,17 @@ import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import {
-  Body,
-  forwardRef,
-  Get,
-  HttpCode,
-  Inject,
-  Logger,
-  Post,
-  Req,
-  Res,
-} from '@nestjs/common';
+import { Body, HttpCode, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { In } from 'typeorm';
 
-import {
-  ReportDeviceStatusRequest,
-  ReportViewsRequest,
-  StatisticsResponse,
-} from '@/dto';
-import { Status, UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
-import { UserService } from '@/database/user.service';
-import { WSGateway } from '@/websocket/ws.gateway';
+import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
+import { UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
+import { Crud, Standard } from '@/decorators';
+import { formatToContentType } from '@/utils/format-to-content-type';
+import { PrintService } from '@/print/print.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { MonitorService } from '@/database/monitor.service';
-import { PrintService } from '@/print/print.service';
-import { formatToContentType } from '@/utils/format-to-content-type';
-import { Crud, Standard } from '@/decorators';
 import { MonitorEntity } from '@/database/monitor.entity';
 
 @Standard(
@@ -42,49 +26,10 @@ export class StatisticsController {
   logger = new Logger(StatisticsController.name);
 
   constructor(
-    private readonly userService: UserService,
     private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
     private readonly printService: PrintService,
-    @Inject(forwardRef(() => WSGateway))
-    private readonly wsGateway: WSGateway,
   ) {}
-
-  @Get()
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'statistics',
-    summary: 'Получение общей статистики по пользователю',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: StatisticsResponse,
-  })
-  @Crud(CRUD.STATUS)
-  async getPlaylists(
-    @Req() { user }: ExpressRequest,
-  ): Promise<StatisticsResponse> {
-    const [[, added], [, played]] = await Promise.all([
-      this.playlistService.findAndCount({
-        where: { userId: user.id },
-        relations: [],
-      }),
-      this.monitorService.findAndCount(user.id, {
-        where: { userId: user.id, playlistPlayed: true },
-      }),
-    ]);
-
-    return {
-      status: Status.Success,
-      countDevices: this.wsGateway.statistics(),
-      playlists: { added, played },
-      storageSpace: {
-        storage: user?.countUsedSpace ?? 0,
-        total: user?.storageSpace ?? 0,
-      },
-    };
-  }
 
   @Post('deviceStatus')
   @HttpCode(200)

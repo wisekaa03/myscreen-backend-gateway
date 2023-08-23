@@ -4,14 +4,18 @@ import {
   DeepPartial,
   DeleteResult,
   FindManyOptions,
+  IsNull,
+  LessThanOrEqual,
+  MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 
-import { MonitorStatus } from '@/enums/monitor-status.enum';
+import { MonitorStatus, ApplicationApproved } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
+import { UserMetricsMonitors } from './user-ext.entity';
 
 @Injectable()
 export class MonitorService {

@@ -7,6 +7,7 @@ import { MailService } from '@/mail/mail.service';
 import { ApplicationEntity } from './application.entity';
 import { ApplicationService } from './application.service';
 import { UserService } from './user.service';
+import { MonitorEntity } from './monitor.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -28,10 +29,14 @@ describe(ApplicationService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ApplicationService,
-        { provide: MailService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
+        { provide: MailService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
         { provide: WSGateway, useClass: mockRepository },
+        {
+          provide: getRepositoryToken(MonitorEntity),
+          useClass: mockRepository,
+        },
         {
           provide: getRepositoryToken(ApplicationEntity),
           useClass: mockRepository,

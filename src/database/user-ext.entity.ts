@@ -5,6 +5,7 @@ import {
   SelectQueryBuilder,
   ViewColumn,
   ViewEntity,
+  FindOptionsSelect,
 } from 'typeorm';
 import {
   IsDateString,
@@ -20,25 +21,101 @@ import {
   IsUUID,
 } from 'class-validator';
 
-import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
+import {
+  ApplicationApproved,
+  MonitorStatus,
+  UserPlanEnum,
+  UserRole,
+  UserRoleEnum,
+} from '@/enums';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { WalletEntity } from './wallet.entity';
+import { PlaylistEntity } from './playlist.entity';
+import { ApplicationEntity } from './application.entity';
 
-export class Wallet {
+export class UserMetricsMonitors {
+  @ApiProperty({
+    description: 'Кол-во устройств с заявками на трансляции',
+    type: 'number',
+  })
+  online!: number;
+
+  @ApiProperty({
+    description: 'Кол-во устройств с заявками, но выключенные',
+    type: 'number',
+  })
+  offline!: number;
+
+  @ApiProperty({
+    description: 'Кол-во устройств без заявок',
+    type: 'number',
+  })
+  empty!: number;
+
+  @ApiProperty({
+    description: 'Кол-во моих мониторов',
+    type: 'number',
+  })
+  user?: number;
+}
+
+export class UserMetricsStorage {
+  @ApiProperty({
+    description: 'Занятое место',
+    type: 'number',
+  })
+  storage!: number;
+
+  @ApiProperty({
+    description: 'Максимальное место',
+    type: 'number',
+  })
+  total!: number;
+}
+
+export class UserMetricsPlaylists {
+  @ApiProperty({
+    description: 'Добавленные',
+    type: 'number',
+  })
+  added!: number;
+
+  @ApiProperty({
+    description: 'Запущенные',
+    type: 'number',
+  })
+  played!: number;
+}
+
+export class UserMetrics {
+  @ApiProperty({
+    description: 'Статистика мониторов',
+    type: () => UserMetricsMonitors,
+  })
+  monitors!: UserMetricsMonitors;
+
+  @ApiProperty({
+    description: 'Дисковое пространство',
+    type: () => UserMetricsStorage,
+  })
+  storageSpace!: UserMetricsStorage;
+
+  @ApiProperty({
+    description: 'Плейлисты',
+    type: () => UserMetricsPlaylists,
+  })
+  playlists!: UserMetricsPlaylists;
+}
+
+export class UserWallet {
   @ApiProperty({
     description: 'Баланс',
     example: 0,
     required: false,
   })
   total?: number;
-
-  @ApiProperty({
-    description: 'Оставшийся срок оплаты',
-    required: false,
-  })
-  monthlyPaymentIn?: string;
 }
 
 @ViewEntity({
@@ -48,6 +125,7 @@ export class Wallet {
       .createQueryBuilder()
       .select('"user".*')
       .from(UserEntity, 'user')
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
@@ -58,6 +136,7 @@ export class Wallet {
         'monitor',
         '"monitorUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<FileEntity>) =>
           qb
@@ -68,6 +147,7 @@ export class Wallet {
         'file',
         '"fileUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<WalletEntity>) =>
           qb
@@ -78,6 +158,7 @@ export class Wallet {
         'wallet',
         '"walletUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<WalletEntity>) =>
           qb
@@ -94,6 +175,170 @@ export class Wallet {
             .limit(1),
         'monthlyPayment',
         '"monthlyPaymentUserId" = "user"."id"',
+      )
+
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<PlaylistEntity>) =>
+          qb
+            .select('"playlist"."userId"', 'playlistUserId')
+            .addSelect('COUNT(id)', 'playlistAdded')
+            .groupBy('"playlist"."userId"')
+            .from(PlaylistEntity, 'playlist'),
+        'playlistAdded',
+        '"playlistUserId" = "user"."id"',
+      )
+
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select(
+              '"playlistMonitorPlayed"."userId"',
+              'playlistMonitorPlayedUserId',
+            )
+            .addSelect(
+              'COUNT("playlistMonitorPlayed"."userId")',
+              'playlistMonitorPlayed',
+            )
+            .groupBy('"playlistMonitorPlayed"."userId"')
+            .where('"playlistMonitorPlayed"."playlistPlayed" = true')
+            .from(MonitorEntity, 'playlistMonitorPlayed'),
+        'playlistMonitorPlayed',
+        '"playlistMonitorPlayedUserId" = "user"."id"',
+      )
+
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select('"onlineMonitors"."userId"', 'onlineMonitorsUserId')
+            .addSelect('COUNT("onlineMonitors"."id")', 'onlineMonitors')
+            .groupBy(
+              '"onlineMonitors"."userId", "applicationMonitors"."applicationOnlineMonitorId"',
+            )
+            .where(`"onlineMonitors"."status" = '${MonitorStatus.Online}'`)
+            .from(MonitorEntity, 'onlineMonitors')
+
+            .innerJoinAndSelect(
+              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+                qbb
+                  .select(
+                    '"applicationMonitors"."monitorId"',
+                    'applicationOnlineMonitorId',
+                  )
+                  .groupBy('"applicationMonitors"."monitorId"')
+                  .where(
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateBefore" > \'now()\'::timestamptz',
+                  )
+                  .orWhere(
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                  )
+                  .andWhere('"applicationMonitors"."dateBefore" IS NULL')
+                  .from(ApplicationEntity, 'applicationMonitors'),
+              'applicationMonitors',
+              '"applicationOnlineMonitorId" = "onlineMonitors"."id"',
+            ),
+
+        'onlineMonitors',
+        '"onlineMonitorsUserId" = "user"."id"',
+      )
+
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select('"offlineMonitors"."userId"', 'offlineMonitorsUserId')
+            .addSelect('COUNT("offlineMonitors"."userId")', 'offlineMonitors')
+            .groupBy(
+              '"offlineMonitors"."userId", "applicationMonitors"."applicationOfflineMonitorId"',
+            )
+            .where(`"offlineMonitors"."status" = '${MonitorStatus.Offline}'`)
+            .from(MonitorEntity, 'offlineMonitors')
+
+            .innerJoinAndSelect(
+              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+                qbb
+                  .select(
+                    '"applicationMonitors"."monitorId"',
+                    'applicationOfflineMonitorId',
+                  )
+                  .groupBy('"applicationMonitors"."monitorId"')
+                  .where(
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateBefore" > \'now()\'::timestamptz',
+                  )
+                  .orWhere(
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                  )
+                  .andWhere('"applicationMonitors"."dateBefore" IS NULL')
+                  .from(ApplicationEntity, 'applicationMonitors'),
+              'applicationMonitors',
+              '"applicationOfflineMonitorId" = "offlineMonitors"."id"',
+            ),
+
+        'offlineMonitors',
+        '"offlineMonitorsUserId" = "user"."id"',
+      )
+
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<MonitorEntity>) =>
+          qb
+            .select('COUNT(DISTINCT("emptyMonitors"."id"))', 'emptyMonitors')
+            .addSelect('"emptyMonitors"."userId"', 'emptyMonitorsUserId')
+            .groupBy(
+              `
+              "emptyMonitors"."userId",
+              "applicationMonitors"."applicationEmptyMonitorId",
+              "applicationMonitors"."applicationEmptyApproved",
+              "applicationMonitors"."applicationEmptyDateBefore"
+              `,
+            )
+            .from(MonitorEntity, 'emptyMonitors')
+
+            .leftJoinAndSelect(
+              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+                qbb
+                  .select(
+                    '"applicationMonitors"."monitorId"',
+                    'applicationEmptyMonitorId',
+                  )
+                  .addSelect(
+                    '"applicationMonitors"."approved"',
+                    'applicationEmptyApproved',
+                  )
+                  .addSelect(
+                    '"applicationMonitors"."dateBefore"',
+                    'applicationEmptyDateBefore',
+                  )
+                  .from(ApplicationEntity, 'applicationMonitors'),
+              'applicationMonitors',
+              '"applicationEmptyMonitorId" = "emptyMonitors"."id"',
+            )
+
+            .where('"applicationMonitors"."applicationEmptyMonitorId" IS NULL')
+            .orWhere(
+              `"applicationMonitors"."applicationEmptyApproved" = '${ApplicationApproved.Allowed}'`,
+            )
+            .andWhere(
+              '"applicationMonitors"."applicationEmptyDateBefore" < \'now()\'::timestamptz',
+            ),
+
+        'emptyMonitors',
+        '"emptyMonitorsUserId" = "user"."id"',
       ),
 })
 export class UserExtEntity implements UserEntity {
@@ -385,19 +630,9 @@ export class UserExtEntity implements UserEntity {
   updatedAt?: Date;
 
   @ViewColumn()
-  @ApiProperty({
-    description: 'Использованное место',
-    example: 0,
-    required: false,
-  })
   countUsedSpace?: number;
 
   @ViewColumn()
-  @ApiProperty({
-    description: 'Использованные мониторы',
-    example: 0,
-    required: false,
-  })
   countMonitors?: number;
 
   @ViewColumn()
@@ -406,9 +641,70 @@ export class UserExtEntity implements UserEntity {
   @ViewColumn()
   monthlyPayment?: Date;
 
+  @ViewColumn()
+  playlistAdded?: number;
+
+  @ViewColumn()
+  playlistMonitorPlayed?: number;
+
+  @ViewColumn()
+  onlineMonitors?: number;
+
+  @ViewColumn()
+  offlineMonitors?: number;
+
+  @ViewColumn()
+  emptyMonitors?: number;
+
+  @ApiProperty({
+    description: 'Оставшийся срок оплаты',
+    required: false,
+  })
+  planValidityPeriod!: number;
+
   @ApiProperty({
     description: 'Баланс',
     required: false,
   })
-  wallet?: Wallet;
+  wallet!: UserWallet;
+
+  @ApiProperty({
+    description: 'Метрика',
+    required: false,
+  })
+  metrics!: UserMetrics;
 }
+
+export const selectUserOptions: FindOptionsSelect<UserExtEntity> = {
+  id: true,
+  email: true,
+  disabled: true,
+  surname: true,
+  name: true,
+  middleName: true,
+  phoneNumber: true,
+  city: true,
+  country: true,
+  storageSpace: true,
+  plan: true,
+  company: true,
+  companyEmail: true,
+  companyLegalAddress: true,
+  companyPhone: true,
+  companyPSRN: true,
+  companyRRC: true,
+  companyTIN: true,
+  companyActualAddress: true,
+  companyBank: true,
+  companyBIC: true,
+  companyCorrespondentAccount: true,
+  companyPaymentAccount: true,
+  role: true,
+  verified: true,
+  createdAt: true,
+  updatedAt: true,
+  countUsedSpace: true,
+  countMonitors: true,
+  monthlyPayment: true,
+  walletSum: true,
+};

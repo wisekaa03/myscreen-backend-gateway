@@ -2359,18 +2359,29 @@ paths:
         "501": *ref_84
       tags: *ref_85
       security: *ref_86
-  /api/v2/statistics:
-    get:
-      operationId: statistics
-      summary: Получение общей статистики по пользователю
+  /api/v2/statistics/deviceStatus:
+    post:
+      operationId: deviceStatus
+      summary: Отчёт по статусу устройства
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportDeviceStatusRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StatisticsResponse"
+            application/vnd.ms-excel:
+              encoding:
+                ms_excel:
+                  contentType: application/vnd.ms-excel
+            application/pdf:
+              encoding:
+                pdf:
+                  contentType: application/pdf
         "400": &ref_87
           description: Ответ будет таким если с данным что-то не так
           content:
@@ -2429,40 +2440,6 @@ paths:
         - statistics
       security: &ref_97
         - bearer: []
-  /api/v2/statistics/deviceStatus:
-    post:
-      operationId: deviceStatus
-      summary: Отчёт по статусу устройства
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ReportDeviceStatusRequest"
-      responses:
-        "200":
-          description: Успешный ответ
-          content:
-            application/vnd.ms-excel:
-              encoding:
-                ms_excel:
-                  contentType: application/vnd.ms-excel
-            application/pdf:
-              encoding:
-                pdf:
-                  contentType: application/pdf
-        "400": *ref_87
-        "401": *ref_88
-        "403": *ref_89
-        "404": *ref_90
-        "406": *ref_91
-        "409": *ref_92
-        "412": *ref_93
-        "500": *ref_94
-        "501": *ref_95
-      tags: *ref_96
-      security: *ref_97
   /api/v2/statistics/reportViews:
     post:
       operationId: reportViews
@@ -2763,7 +2740,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.41.24
+  version: 2.41.27
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3015,16 +2992,76 @@ components:
         - DEMO
         - FULL
         - VIP
-    Wallet:
+    UserWallet:
       type: object
       properties:
         total:
           type: number
           description: Баланс
           example: 0
-        monthlyPaymentIn:
-          type: string
-          description: Оставшийся срок оплаты
+    UserMetricsMonitors:
+      type: object
+      properties:
+        online:
+          type: number
+          description: Кол-во устройств с заявками на трансляции
+        offline:
+          type: number
+          description: Кол-во устройств с заявками, но выключенные
+        empty:
+          type: number
+          description: Кол-во устройств без заявок
+        user:
+          type: number
+          description: Кол-во моих мониторов
+      required:
+        - online
+        - offline
+        - empty
+        - user
+    UserMetricsStorage:
+      type: object
+      properties:
+        storage:
+          type: number
+          description: Занятое место
+        total:
+          type: number
+          description: Максимальное место
+      required:
+        - storage
+        - total
+    UserMetricsPlaylists:
+      type: object
+      properties:
+        added:
+          type: number
+          description: Добавленные
+        played:
+          type: number
+          description: Запущенные
+      required:
+        - added
+        - played
+    UserMetrics:
+      type: object
+      properties:
+        monitors:
+          description: Статистика мониторов
+          allOf:
+            - $ref: "#/components/schemas/UserMetricsMonitors"
+        storageSpace:
+          description: Дисковое пространство
+          allOf:
+            - $ref: "#/components/schemas/UserMetricsStorage"
+        playlists:
+          description: Плейлисты
+          allOf:
+            - $ref: "#/components/schemas/UserMetricsPlaylists"
+      required:
+        - monitors
+        - storageSpace
+        - playlists
     UserExtEntity:
       type: object
       properties:
@@ -3150,18 +3187,17 @@ components:
           type: string
           description: Время изменения
           example: "2021-01-01T10:00:00.147Z"
-        countUsedSpace:
-          type: number
-          description: Использованное место
-          example: 0
-        countMonitors:
-          type: number
-          description: Использованные мониторы
-          example: 0
+        planValidityPeriod:
+          type: string
+          description: Оставшийся срок оплаты
         wallet:
           description: Баланс
           allOf:
-            - $ref: "#/components/schemas/Wallet"
+            - $ref: "#/components/schemas/UserWallet"
+        metrics:
+          description: Метрика
+          allOf:
+            - $ref: "#/components/schemas/UserMetrics"
       required:
         - id
         - email
@@ -5806,53 +5842,6 @@ components:
           items:
             type: string
             format: uuid
-    StatisticsPlaylistResponse:
-      type: object
-      properties:
-        added:
-          type: number
-          description: Добавленные
-        played:
-          type: number
-          description: Запущенные
-      required:
-        - added
-        - played
-    StorageSpaceResponse:
-      type: object
-      properties:
-        storage:
-          type: number
-          description: Занятое место
-        total:
-          type: number
-          description: Максимальное место
-      required:
-        - storage
-        - total
-    StatisticsResponse:
-      type: object
-      properties:
-        status:
-          description: Статус операции
-          example: success
-          $ref: "#/components/schemas/Status"
-        countDevices:
-          type: number
-          description: Количество устройств
-        playlists:
-          description: Плейлисты
-          allOf:
-            - $ref: "#/components/schemas/StatisticsPlaylistResponse"
-        storageSpace:
-          description: Дисковое пространство
-          allOf:
-            - $ref: "#/components/schemas/StorageSpaceResponse"
-      required:
-        - status
-        - countDevices
-        - playlists
-        - storageSpace
     SpecificFormat:
       type: string
       enum:

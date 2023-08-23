@@ -30,13 +30,12 @@ export class ApplicationService {
   private frontendUrl: string;
 
   constructor(
-    private readonly userService: UserService,
     private readonly mailService: MailService,
-    private readonly configService: ConfigService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
     @InjectRepository(ApplicationEntity)
     private readonly applicationRepository: Repository<ApplicationEntity>,
+    configService: ConfigService,
   ) {
     this.frontendUrl = configService.get<string>(
       'FRONTEND_URL',

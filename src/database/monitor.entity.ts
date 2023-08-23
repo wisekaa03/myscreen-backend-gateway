@@ -43,6 +43,8 @@ import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
 // eslint-disable-next-line import/no-cycle
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
+// eslint-disable-next-line import/no-cycle
+import { ApplicationEntity } from './application.entity';
 
 export class PointClass implements Point {
   @ApiProperty({
@@ -375,6 +377,9 @@ export class MonitorEntity {
   })
   @JoinTable()
   files?: FileEntity[];
+
+  @OneToMany(() => ApplicationEntity, (app) => app.monitor, { eager: false })
+  applications?: ApplicationEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

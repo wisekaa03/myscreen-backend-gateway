@@ -20,6 +20,7 @@ import {
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { ApplicationApproved } from '@/enums/application-approved.enum';
 import { UserEntity } from './user.entity';
+// eslint-disable-next-line import/no-cycle
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 

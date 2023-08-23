@@ -51,9 +51,7 @@ export class UserController {
       select,
       where,
     });
-    const data = users.map(
-      ({ password, forgotConfirmKey, emailConfirmKey, ...entity }) => entity,
-    );
+    const data = users.map((user) => UserService.userEntityToUser(user));
     return {
       status: Status.Success,
       count,
