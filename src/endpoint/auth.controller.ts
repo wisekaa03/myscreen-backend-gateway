@@ -8,7 +8,6 @@ import {
   NotFoundException,
   Patch,
   Post,
-  PreconditionFailedException,
   Req,
   UnauthorizedException,
   UseGuards,
@@ -35,7 +34,6 @@ import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { RolesGuard, JwtAuthGuard } from '@/guards';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
-import { userEntityToUser } from '@/database/user-ext.entity';
 import { MonitorService } from '@/database/monitor.service';
 
 @Standard('auth')
@@ -129,7 +127,7 @@ export class AuthController {
 
     return {
       status: Status.Success,
-      data: userEntityToUser(data),
+      data: UserService.userEntityToUser(data),
     };
   }
 
@@ -176,14 +174,11 @@ export class AuthController {
   })
   @Crud(CRUD.CREATE)
   async register(@Body() body: RegisterRequest): Promise<UserGetResponse> {
-    const user = await this.userService.register(body);
-    if (!user) {
-      throw new PreconditionFailedException();
-    }
+    const data = await this.userService.register(body);
 
     return {
       status: Status.Success,
-      data: userEntityToUser(user),
+      data,
     };
   }
 

@@ -11,11 +11,7 @@ import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
-import {
-  UserExtEntity,
-  selectUserOptions,
-  userEntityToUser,
-} from '@/database/user-ext.entity';
+import { UserExtEntity, selectUserOptions } from '@/database/user-ext.entity';
 import { JwtStrategy } from './jwt.strategy';
 
 @Injectable()
@@ -79,7 +75,7 @@ export class AuthService {
     ]);
     const payload = this.buildResponsePayload(token, refresh);
 
-    return [userEntityToUser(user), payload];
+    return [UserService.userEntityToUser(user), payload];
   }
 
   private buildResponsePayload(

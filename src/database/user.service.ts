@@ -7,6 +7,7 @@ import {
   BadRequestException,
   Inject,
   forwardRef,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,6 +18,9 @@ import {
   FindManyOptions,
 } from 'typeorm';
 import addDays from 'date-fns/addDays';
+import subDays from 'date-fns/subDays';
+import formatDistanceStrict from 'date-fns/formatDistanceStrict';
+import locale from 'date-fns/locale/ru';
 
 import { RegisterRequest } from '@/dto/request/register.request';
 import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
@@ -71,7 +75,7 @@ export class UserService {
   verify(controllers: string, crud: CRUD, user: UserExtEntity): boolean {
     const fullName = UserService.fullName(user);
     this.logger.debug(
-      `User: "${fullName}" Controllers: "${controllers}" ASCRUD: "${crud}"`,
+      `User: "${fullName}" Controllers: "${controllers}" CRUD: "${crud}"`,
     );
     const {
       role = UserRoleEnum.Administrator,
@@ -223,7 +227,7 @@ export class UserService {
    * @param {Partial<UserEntity>} create
    * @returns {UserEntity} Пользователь
    */
-  async register(create: RegisterRequest): Promise<UserExtEntity | null> {
+  async register(create: RegisterRequest): Promise<UserExtEntity> {
     const { email, password, role, ...createUser } = create;
     if (!email) {
       throw new BadRequestException('email must be defined');
@@ -272,20 +276,25 @@ export class UserService {
     const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
-    if (process.env.NODE_ENV !== 'production') {
-      const { id } = await this.userRepository.save(
+    let id: string;
+    if (process.env.NODE_ENV === 'production') {
+      [{ id }] = await Promise.all([
+        this.userRepository.save(this.userRepository.create(user)),
+        this.mailService.sendWelcomeMessage(email),
+        this.mailService.sendVerificationCode(email, confirmUrl),
+      ]);
+    } else {
+      ({ id } = await this.userRepository.save(
         this.userRepository.create(user),
-      );
-      return this.userExtRepository.findOneBy({ id });
+      ));
     }
 
-    const [{ id }] = await Promise.all([
-      this.userRepository.save(this.userRepository.create(user)),
-      this.mailService.sendWelcomeMessage(email),
-      this.mailService.sendVerificationCode(email, confirmUrl),
-    ]);
+    const userExt = await this.userExtRepository.findOneBy({ id });
+    if (!userExt) {
+      throw new UnauthorizedException('User not exits ?');
+    }
 
-    return this.userExtRepository.findOneBy({ id });
+    return UserService.userEntityToUser(userExt);
   }
 
   /**
@@ -370,14 +379,6 @@ export class UserService {
       if (!userUpdated) {
         throw new ForbiddenException('User not exists', email);
       }
-      // this.logger.debug(
-      //   JSON.stringify({
-      //     userId: userUpdated.id,
-      //     userPassword: userUpdated.password,
-      //     passwordSha256,
-      //     password,
-      //   }),
-      // );
       return userUpdated;
     }
 
@@ -472,15 +473,56 @@ export class UserService {
     const passwordSha256 = createHmac('sha256', password.normalize()).digest(
       'hex',
     );
-    // this.logger.debug(
-    //   JSON.stringify({
-    //     id: user.id,
-    //     email: user.email,
-    //     userPassword: user.password,
-    //     passwordSha256,
-    //     password,
-    //   }),
-    // );
     return passwordSha256 === user.password;
   };
+
+  static userEntityToUser({
+    forgotConfirmKey,
+    emailConfirmKey,
+    password,
+    monitors,
+    monthlyPayment,
+    walletSum,
+    storageSpace,
+    countUsedSpace,
+    countMonitors,
+    playlistAdded,
+    playlistMonitorPlayed,
+    onlineMonitors,
+    offlineMonitors,
+    emptyMonitors,
+    wallet,
+    ...data
+  }: UserExtEntity): UserExtEntity {
+    return {
+      ...data,
+      metrics: {
+        monitors: {
+          online: parseInt(`${onlineMonitors ?? 0}`, 10),
+          offline: parseInt(`${offlineMonitors ?? 0}`, 10),
+          empty: parseInt(`${emptyMonitors ?? 0}`, 10),
+          user: parseInt(`${countMonitors ?? 0}`, 10),
+        },
+        playlists: {
+          added: parseInt(`${playlistAdded ?? 0}`, 10),
+          played: parseInt(`${playlistMonitorPlayed ?? 0}`, 10),
+        },
+        storageSpace: {
+          storage: parseFloat(`${countUsedSpace ?? 0}`),
+          total: parseFloat(`${storageSpace ?? 0}`),
+        },
+      },
+      planValidityPeriod: monthlyPayment
+        ? formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
+            unit: 'day',
+            addSuffix: false,
+            roundingMethod: 'floor',
+            locale,
+          })
+        : 'now',
+      wallet: {
+        total: wallet ? wallet.total : parseFloat(walletSum ?? '0'),
+      },
+    };
+  }
 }

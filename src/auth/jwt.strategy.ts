@@ -5,7 +5,7 @@ import { PassportStrategy } from '@nestjs/passport';
 
 import type { MyscreenJwtPayload } from '@/utils/jwt.payload';
 import { UserService } from '@/database/user.service';
-import { UserExtEntity, userEntityToUser } from '@/database/user-ext.entity';
+import { UserExtEntity } from '@/database/user-ext.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -33,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       return null;
     }
-    user = userEntityToUser(user);
+    user = UserService.userEntityToUser(user);
 
     return user;
   }

@@ -42,17 +42,17 @@ const testUser: UserExtEntity = {
   metrics: {
     monitors: {
       online: 0,
-      offline: 5,
+      offline: 0,
       empty: 0,
-      user: 5,
+      user: 0,
     },
     playlists: {
       added: 0,
       played: 0,
     },
     storageSpace: {
-      storage: 1000000000,
-      total: 1000000000,
+      storage: 0,
+      total: 0,
     },
   },
 };
@@ -209,7 +209,7 @@ describe(UserService.name, () => {
     process.env.NODE_ENV = 'production';
     const testUserRegister = { ...testUser, password: 'aA1!aaaa' };
     const user = await service.register(testUserRegister);
-    expect(user).toBe(testUser);
+    expect(user).toStrictEqual(testUser);
   });
 
   test('Update user', async () => {

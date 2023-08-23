@@ -1,4 +1,4 @@
-import { OmitType, ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   DataSource,
   OneToMany,
@@ -20,8 +20,6 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
-import { formatDistanceStrict, subDays } from 'date-fns';
-import locale from 'date-fns/locale/ru';
 
 import {
   ApplicationApproved,
@@ -127,6 +125,7 @@ export class UserWallet {
       .createQueryBuilder()
       .select('"user".*')
       .from(UserEntity, 'user')
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
@@ -137,6 +136,7 @@ export class UserWallet {
         'monitor',
         '"monitorUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<FileEntity>) =>
           qb
@@ -147,6 +147,7 @@ export class UserWallet {
         'file',
         '"fileUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<WalletEntity>) =>
           qb
@@ -157,6 +158,7 @@ export class UserWallet {
         'wallet',
         '"walletUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<WalletEntity>) =>
           qb
@@ -174,6 +176,7 @@ export class UserWallet {
         'monthlyPayment',
         '"monthlyPaymentUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<PlaylistEntity>) =>
           qb
@@ -184,48 +187,179 @@ export class UserWallet {
         'playlistAdded',
         '"playlistUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
-            .select('"monitorPlayed"."userId"', 'monitorPlayedUserId')
-            .addSelect('COUNT("monitorPlayed"."userId")', 'monitorPlayed')
-            .groupBy('"monitorPlayed"."userId"')
-            .where('"monitorPlayed"."playlistPlayed" = true')
-            .from(MonitorEntity, 'monitorPlayed'),
-        'monitorPlayed',
-        '"monitorPlayedUserId" = "user"."id"',
+            .select(
+              '"playlistMonitorPlayed"."userId"',
+              'playlistMonitorPlayedUserId',
+            )
+            .addSelect(
+              'COUNT("playlistMonitorPlayed"."userId")',
+              'playlistMonitorPlayed',
+            )
+            .groupBy('"playlistMonitorPlayed"."userId"')
+            .where('"playlistMonitorPlayed"."playlistPlayed" = true')
+            .from(MonitorEntity, 'playlistMonitorPlayed'),
+        'playlistMonitorPlayed',
+        '"playlistMonitorPlayedUserId" = "user"."id"',
       )
-      // TODO: Переделать на count
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
             .select('"onlineMonitors"."userId"', 'onlineMonitorsUserId')
-            .addSelect('COUNT("onlineMonitors"."userId")', 'onlineMonitors')
-            .groupBy('"onlineMonitors"."userId"')
+            .addSelect('COUNT("onlineMonitors"."id")', 'onlineMonitors')
+            .groupBy(
+              '"onlineMonitors"."userId", "applicationMonitors"."applicationOnlineMonitorId"',
+            )
             .where(`"onlineMonitors"."status" = '${MonitorStatus.Online}'`)
-            .from(MonitorEntity, 'onlineMonitors'),
+            .from(MonitorEntity, 'onlineMonitors')
+
+            .innerJoinAndSelect(
+              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+                qbb
+                  .select(
+                    '"applicationMonitors"."monitorId"',
+                    'applicationOnlineMonitorId',
+                  )
+                  .groupBy('"applicationMonitors"."monitorId"')
+                  .where(
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateBefore" > \'now()\'::timestamptz',
+                  )
+                  .orWhere(
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                  )
+                  .andWhere('"applicationMonitors"."dateBefore" IS NULL')
+                  .from(ApplicationEntity, 'applicationMonitors'),
+              'applicationMonitors',
+              '"applicationOnlineMonitorId" = "onlineMonitors"."id"',
+            ),
+
         'onlineMonitors',
         '"onlineMonitorsUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
             .select('"offlineMonitors"."userId"', 'offlineMonitorsUserId')
             .addSelect('COUNT("offlineMonitors"."userId")', 'offlineMonitors')
-            .groupBy('"offlineMonitors"."userId"')
+            .groupBy(
+              '"offlineMonitors"."userId", "applicationMonitors"."applicationOfflineMonitorId"',
+            )
             .where(`"offlineMonitors"."status" = '${MonitorStatus.Offline}'`)
-            .from(MonitorEntity, 'offlineMonitors'),
+            .from(MonitorEntity, 'offlineMonitors')
+
+            .innerJoinAndSelect(
+              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+                qbb
+                  .select(
+                    '"applicationMonitors"."monitorId"',
+                    'applicationOfflineMonitorId',
+                  )
+                  .groupBy('"applicationMonitors"."monitorId"')
+                  .where(
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateBefore" > \'now()\'::timestamptz',
+                  )
+                  .orWhere(
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                  )
+                  .andWhere(
+                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                  )
+                  .andWhere('"applicationMonitors"."dateBefore" IS NULL')
+                  .from(ApplicationEntity, 'applicationMonitors'),
+              'applicationMonitors',
+              '"applicationOfflineMonitorId" = "offlineMonitors"."id"',
+            ),
+
         'offlineMonitors',
         '"offlineMonitorsUserId" = "user"."id"',
       )
+
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
-            .select('"emptyMonitors"."userId"', 'emptyMonitorsUserId')
-            .addSelect('COUNT("emptyMonitors"."userId")', 'emptyMonitors')
-            .groupBy('"emptyMonitors"."userId"')
-            .where(`"emptyMonitors"."status" = '${MonitorStatus.Online}'`)
-            .from(MonitorEntity, 'emptyMonitors'),
+            .select('COUNT(DISTINCT("emptyMonitors"."id"))', 'emptyMonitors')
+            .addSelect('"emptyMonitors"."userId"', 'emptyMonitorsUserId')
+            .groupBy(
+              `
+              "emptyMonitors"."userId",
+              "applicationMonitors"."applicationEmptyMonitorId",
+              "applicationMonitors"."applicationEmptyApproved",
+              "applicationMonitors"."applicationEmptyDateBefore"
+              `,
+            )
+            .from(MonitorEntity, 'emptyMonitors')
+
+            .leftJoinAndSelect(
+              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+                qbb
+                  .select(
+                    '"applicationMonitors"."monitorId"',
+                    'applicationEmptyMonitorId',
+                  )
+                  .addSelect(
+                    '"applicationMonitors"."approved"',
+                    'applicationEmptyApproved',
+                  )
+                  .addSelect(
+                    '"applicationMonitors"."dateBefore"',
+                    'applicationEmptyDateBefore',
+                  )
+                  .from(ApplicationEntity, 'applicationMonitors'),
+              'applicationMonitors',
+              '"applicationEmptyMonitorId" = "emptyMonitors"."id"',
+            )
+
+            .where('"applicationMonitors"."applicationEmptyMonitorId" IS NULL')
+            .orWhere(
+              `"applicationMonitors"."applicationEmptyApproved" = '${ApplicationApproved.Allowed}'`,
+            )
+            .andWhere(
+              '"applicationMonitors"."applicationEmptyDateBefore" < \'now()\'::timestamptz',
+            ),
+
+        // .innerJoinAndSelect(
+        //   (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+        //     qbb
+        //       .select(
+        //         '"applicationMonitors"."monitorId"',
+        //         'applicationEmptyMonitorId',
+        //       )
+        //       .groupBy('"applicationMonitors"."monitorId"')
+        //       .where(
+        //         `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+        //       )
+        //       .andWhere(
+        //         '"applicationMonitors"."dateBefore" < \'now()\'::timestamptz',
+        //       )
+        //       .orWhere(
+        //         `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+        //       )
+        //       .andWhere('"applicationMonitors"."dateBefore" IS NULL')
+        //       .from(ApplicationEntity, 'applicationMonitors'),
+        //   'applicationMonitors',
+        //   '"applicationEmptyMonitorId" = "emptyMonitors"."id"',
+        // ),
+
         'emptyMonitors',
         '"emptyMonitorsUserId" = "user"."id"',
       ),
@@ -534,7 +668,7 @@ export class UserExtEntity implements UserEntity {
   playlistAdded?: number;
 
   @ViewColumn()
-  monitorPlayed?: number;
+  playlistMonitorPlayed?: number;
 
   @ViewColumn()
   onlineMonitors?: number;
@@ -597,58 +731,3 @@ export const selectUserOptions: FindOptionsSelect<UserExtEntity> = {
   monthlyPayment: true,
   walletSum: true,
 };
-
-export class UserResponse extends OmitType(UserExtEntity, [
-  'forgotConfirmKey',
-  'emailConfirmKey',
-  'password',
-  'monitors',
-]) {}
-
-export const userEntityToUser = ({
-  forgotConfirmKey,
-  emailConfirmKey,
-  password,
-  monitors,
-  monthlyPayment,
-  walletSum,
-  storageSpace,
-  countUsedSpace,
-  countMonitors,
-  playlistAdded,
-  monitorPlayed,
-  onlineMonitors,
-  offlineMonitors,
-  emptyMonitors,
-  wallet,
-  ...data
-}: UserExtEntity): UserExtEntity => ({
-  ...data,
-  metrics: {
-    monitors: {
-      online: parseInt(`${onlineMonitors ?? 0}`, 10),
-      offline: parseInt(`${offlineMonitors ?? 0}`, 10),
-      empty: parseInt(`${emptyMonitors ?? 0}`, 10),
-      user: parseInt(`${countMonitors ?? 0}`, 10),
-    },
-    playlists: {
-      added: parseInt(`${playlistAdded ?? 0}`, 10),
-      played: parseInt(`${monitorPlayed ?? 0}`, 10),
-    },
-    storageSpace: {
-      storage: parseInt(`${countUsedSpace ?? 0}`, 10),
-      total: parseFloat(`${storageSpace ?? 0}`),
-    },
-  },
-  planValidityPeriod: monthlyPayment
-    ? formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
-        unit: 'day',
-        addSuffix: false,
-        roundingMethod: 'floor',
-        locale,
-      })
-    : 'now',
-  wallet: {
-    total: wallet ? wallet.total : parseFloat(walletSum ?? '0'),
-  },
-});

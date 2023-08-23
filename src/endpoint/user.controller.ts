@@ -25,7 +25,6 @@ import { CRUD, UserRoleEnum, Status } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { UserService } from '@/database/user.service';
 import { Crud, Standard } from '@/decorators';
-import { userEntityToUser } from '@/database/user-ext.entity';
 
 @Standard('user', UserRoleEnum.Administrator)
 export class UserController {
@@ -52,7 +51,7 @@ export class UserController {
       select,
       where,
     });
-    const data = users.map((user) => userEntityToUser(user));
+    const data = users.map((user) => UserService.userEntityToUser(user));
     return {
       status: Status.Success,
       count,
