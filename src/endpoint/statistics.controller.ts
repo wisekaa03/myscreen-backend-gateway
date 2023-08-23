@@ -2,12 +2,12 @@ import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { Body, Get, HttpCode, Logger, Post, Req, Res } from '@nestjs/common';
+import { Body, HttpCode, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { In } from 'typeorm';
 
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
-import { UserRoleEnum, SpecificFormat, CRUD, Status } from '@/enums';
+import { UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
 import { Crud, Standard } from '@/decorators';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { PrintService } from '@/print/print.service';
@@ -30,40 +30,6 @@ export class StatisticsController {
     private readonly playlistService: PlaylistService,
     private readonly printService: PrintService,
   ) {}
-
-  @Get()
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'statistics',
-    summary: 'Получение общей статистики по пользователю',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    type: 'string',
-  })
-  @Crud(CRUD.STATUS)
-  async getPlaylists(@Req() { user }: ExpressRequest): Promise<any> {
-    const [[, added], [, played]] = await Promise.all([
-      this.playlistService.findAndCount({
-        where: { userId: user.id },
-        relations: [],
-      }),
-      this.monitorService.findAndCount(user.id, {
-        where: { userId: user.id, playlistPlayed: true },
-      }),
-    ]);
-
-    return {
-      status: Status.Success,
-      playlists: { added, played },
-      monitors: await this.monitorService.statistics(user),
-      storageSpace: {
-        used: user?.countUsedSpace ?? 0,
-        total: user?.storageSpace ?? 0,
-      },
-    };
-  }
 
   @Post('deviceStatus')
   @HttpCode(200)
