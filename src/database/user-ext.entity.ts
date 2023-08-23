@@ -337,29 +337,6 @@ export class UserWallet {
               '"applicationMonitors"."applicationEmptyDateBefore" < \'now()\'::timestamptz',
             ),
 
-        // .innerJoinAndSelect(
-        //   (qbb: SelectQueryBuilder<ApplicationEntity>) =>
-        //     qbb
-        //       .select(
-        //         '"applicationMonitors"."monitorId"',
-        //         'applicationEmptyMonitorId',
-        //       )
-        //       .groupBy('"applicationMonitors"."monitorId"')
-        //       .where(
-        //         `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
-        //       )
-        //       .andWhere(
-        //         '"applicationMonitors"."dateBefore" < \'now()\'::timestamptz',
-        //       )
-        //       .orWhere(
-        //         `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
-        //       )
-        //       .andWhere('"applicationMonitors"."dateBefore" IS NULL')
-        //       .from(ApplicationEntity, 'applicationMonitors'),
-        //   'applicationMonitors',
-        //   '"applicationEmptyMonitorId" = "emptyMonitors"."id"',
-        // ),
-
         'emptyMonitors',
         '"emptyMonitorsUserId" = "user"."id"',
       ),
