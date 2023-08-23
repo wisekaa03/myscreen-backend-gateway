@@ -20,7 +20,6 @@ import {
 import addDays from 'date-fns/addDays';
 import subDays from 'date-fns/subDays';
 import formatDistanceStrict from 'date-fns/formatDistanceStrict';
-import locale from 'date-fns/locale/ru';
 
 import { RegisterRequest } from '@/dto/request/register.request';
 import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
@@ -437,7 +436,7 @@ export class UserService {
         verified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        planValidityPeriod: 'now',
+        planValidityPeriod: Infinity,
         wallet: {
           total: 0,
         },
@@ -513,13 +512,15 @@ export class UserService {
         },
       },
       planValidityPeriod: monthlyPayment
-        ? formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
-            unit: 'day',
-            addSuffix: false,
-            roundingMethod: 'floor',
-            locale,
-          })
-        : 'now',
+        ? parseInt(
+            formatDistanceStrict(monthlyPayment, subDays(Date.now(), 28), {
+              unit: 'day',
+              addSuffix: false,
+              roundingMethod: 'floor',
+            }),
+            10,
+          )
+        : Infinity,
       wallet: {
         total: wallet ? wallet.total : parseFloat(walletSum ?? '0'),
       },

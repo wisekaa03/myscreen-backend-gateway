@@ -660,7 +660,7 @@ export class UserExtEntity implements UserEntity {
     description: 'Оставшийся срок оплаты',
     required: false,
   })
-  planValidityPeriod!: string;
+  planValidityPeriod!: number;
 
   @ApiProperty({
     description: 'Баланс',
