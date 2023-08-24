@@ -20,7 +20,6 @@ import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { ApplicationApproved } from '@/enums';
 import { MailService } from '@/mail/mail.service';
-import { UserService } from './user.service';
 import { ApplicationEntity } from './application.entity';
 
 @Injectable()
@@ -80,7 +79,7 @@ export class ApplicationService {
         });
   }
 
-  async playlistChanged(playlistId: string) {
+  async changed(playlistId?: string) {
     const applications = await this.monitorApplications({ playlistId });
     applications.forEach((application) =>
       this.wsGateway.application(application),

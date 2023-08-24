@@ -36,7 +36,6 @@ import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { UserService } from '@/database/user.service';
-import { ApplicationService } from '@/database/application.service';
 
 @ApiComplexDecorators('playlist', [
   UserRoleEnum.Administrator,
@@ -47,7 +46,6 @@ export class PlaylistController {
   logger = new Logger(PlaylistController.name);
 
   constructor(
-    private readonly applicationService: ApplicationService,
     private readonly playlistService: PlaylistService,
     private readonly fileService: FileService,
     private readonly userService: UserService,
@@ -199,8 +197,6 @@ export class PlaylistController {
         throw new BadRequestException(`Playlist create error: ${error}`);
       });
 
-    await this.applicationService.playlistChanged(id);
-
     return {
       status: Status.Success,
       data,
@@ -236,8 +232,6 @@ export class PlaylistController {
     if (!affected) {
       throw new NotFoundException('This playlist is not exists');
     }
-
-    // TODO: ws fix
 
     return {
       status: Status.Success,

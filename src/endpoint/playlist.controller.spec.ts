@@ -31,7 +31,6 @@ describe(PlaylistController.name, () => {
         { provide: UserService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
-        { provide: ApplicationService, useClass: mockRepository },
       ],
     }).compile();
 

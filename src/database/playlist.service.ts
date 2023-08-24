@@ -8,13 +8,15 @@ import {
 } from 'typeorm';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
+import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
-import { UserRoleEnum } from '@/enums';
+import { ApplicationService } from './application.service';
 
 @Injectable()
 export class PlaylistService {
   constructor(
+    private readonly applicationService: ApplicationService,
     @InjectRepository(PlaylistEntity)
     private readonly playlistEntity: Repository<PlaylistEntity>,
   ) {}
@@ -67,13 +69,21 @@ export class PlaylistService {
       ...update,
     };
 
-    return this.playlistEntity.save(this.playlistEntity.create(playlist));
+    const data = await this.playlistEntity.save(
+      this.playlistEntity.create(playlist),
+    );
+
+    await this.applicationService.changed(data.id);
+
+    return data;
   }
 
   async delete(
     playlist: PlaylistEntity,
     user: UserEntity,
   ): Promise<DeleteResult> {
+    await this.applicationService.changed();
+
     if (user.role !== UserRoleEnum.Administrator) {
       return this.playlistEntity.delete({ id: playlist.id, userId: user.id });
     }
