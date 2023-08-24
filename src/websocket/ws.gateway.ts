@@ -205,44 +205,43 @@ export class WSGateway
     if (!value || !value.auth) {
       throw new WsException('Not authorized');
     }
-
-    if (value.monitorId) {
-      let monitor = await this.monitorService.findOne(
-        value.monitorId || 'monitorFavoritiesDisabled',
-        {
-          where: { id: value.monitorId },
-        },
-      );
-      if (!monitor) {
-        throw new WsException('Not exist monitorId');
-      }
-      let dataObject: MonitorEvent;
-      if (typeof body === 'string') {
-        try {
-          dataObject = JSON.parse(body);
-        } catch (e) {
-          throw new WsException('Error in parsing data');
-        }
-      } else {
-        dataObject = body;
-      }
-      // { "event": "monitor", "data": "true" }
-      // записываем в базу данных
-      monitor = await this.monitorService.update(monitor.userId, {
-        id: monitor.id,
-        playlistPlayed: dataObject?.playlistPlayed,
-      });
-      // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
-      this.clients.forEach((v, c) => {
-        if (v.role === UserRoleEnum.Advertiser || v.monitorId === monitor?.id) {
-          c.send(JSON.stringify([{ event: 'monitor', data: monitor }]));
-        }
-      });
-      // и возвращаем Ok
-      return of([{ event: 'monitor', data: 'Ok' }]);
+    if (value.role !== UserRoleEnum.Monitor) {
+      throw new WsException('This is not Role.Monitor');
     }
 
-    throw new WsException('This is not Role.Monitor');
+    let monitor = await this.monitorService.findOne(undefined, {
+      where: { id: value.monitorId },
+    });
+    if (!monitor) {
+      throw new WsException('Not exist monitorId');
+    }
+
+    let bodyObject: MonitorEvent;
+    if (typeof body === 'string') {
+      try {
+        bodyObject = JSON.parse(body);
+      } catch (e) {
+        throw new WsException('WebSocket: Error in parsing data');
+      }
+    } else {
+      bodyObject = body;
+    }
+
+    // записываем в базу данных
+    monitor = await this.monitorService.update(monitor.userId, {
+      id: monitor.id,
+      playlistPlayed: bodyObject.playlistPlayed,
+    });
+
+    // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
+    this.clients.forEach((v, c) => {
+      if (v.role === UserRoleEnum.Advertiser || v.monitorId === monitor?.id) {
+        c.send(JSON.stringify([{ event: 'monitor', data: monitor }]));
+      }
+    });
+
+    // и возвращаем Ok
+    return of([{ event: 'monitor', data: 'Ok' }]);
   }
 
   private async monitorStatus(
