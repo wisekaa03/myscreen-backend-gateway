@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { PlaylistService } from '@/database/playlist.service';
@@ -40,7 +41,7 @@ describe(PlaylistController.name, () => {
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
-    const guards = Reflect.getMetadata('__guards__', PlaylistController);
+    const guards = Reflect.getMetadata(GUARDS_METADATA, PlaylistController);
     const guardJwt = new guards[0]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);

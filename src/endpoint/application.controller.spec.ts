@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 
+import { Roles } from '@/decorators/roles.decorator';
 import { UserRoleEnum } from '@/enums';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { WSGateway } from '@/websocket/ws.gateway';
@@ -22,6 +25,7 @@ export const mockRepository = jest.fn(() => ({
 
 describe(ApplicationController.name, () => {
   let controller: ApplicationController;
+  const reflector = new Reflector();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,15 +44,15 @@ describe(ApplicationController.name, () => {
     expect(controller).toBeDefined();
   });
 
-  it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
-    const guards = Reflect.getMetadata('__guards__', ApplicationController);
+  it('JwtAuthGuard, RolesGuard and Roles', async () => {
+    const guards = Reflect.getMetadata(GUARDS_METADATA, ApplicationController);
     const guardJwt = new guards[0]();
     const guardRoles = new guards[1]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);
     expect(guardRoles).toBeInstanceOf(RolesGuard);
 
-    const roles = Reflect.getMetadata('roles', ApplicationController);
+    const roles = reflector.get(Roles, ApplicationController);
     expect(roles).toEqual([
       UserRoleEnum.Administrator,
       UserRoleEnum.Advertiser,

@@ -47,12 +47,11 @@ import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { UserService } from '@/database/user.service';
 import { EditorEntity } from '@/database/editor.entity';
 
-@Standard(
-  'editor',
+@Standard('editor', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class EditorController {
   logger = new Logger(EditorController.name);
 

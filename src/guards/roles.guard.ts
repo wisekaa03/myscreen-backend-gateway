@@ -7,8 +7,8 @@ import {
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 
-import { CRUD, UserRoleEnum } from '@/enums';
-import { CRUD_METADATA } from '@/decorators';
+import { CRUD } from '@/enums/crud.enum';
+import { Crud, Roles } from '@/decorators';
 import { UserService } from '@/database/user.service';
 
 @Injectable()
@@ -22,10 +22,10 @@ export class RolesGuard implements CanActivate {
     const executionClass = context.getClass();
     const executionHanlder = context.getHandler();
 
-    const requiredRoles = this.reflector.getAllAndOverride<
-      UserRoleEnum[],
-      string
-    >('roles', [executionHanlder, executionClass]);
+    const requiredRoles = this.reflector.getAllAndOverride(Roles, [
+      executionHanlder,
+      executionClass,
+    ]);
     if (!requiredRoles) {
       return true;
     }
@@ -33,14 +33,14 @@ export class RolesGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest<ExpressRequest>();
     const { role: userRole } = user;
 
-    const executionName = this.reflector.getAllAndOverride<string, string>(
+    const executionName = this.reflector.get<string, string>(
       PATH_METADATA,
-      [executionClass],
+      executionClass,
     );
-    const requiredCRUD = this.reflector.getAllAndOverride<CRUD, string>(
-      CRUD_METADATA,
-      [executionHanlder, executionClass],
-    );
+    const requiredCRUD = this.reflector.getAllAndOverride(Crud, [
+      executionHanlder,
+      executionClass,
+    ]);
     this.userService.verify(executionName, requiredCRUD ?? CRUD.READ, user);
 
     return !userRole ? false : requiredRoles.some((role) => userRole === role);

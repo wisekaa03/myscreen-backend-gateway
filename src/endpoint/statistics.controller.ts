@@ -15,13 +15,12 @@ import { PlaylistService } from '@/database/playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
 
-@Standard(
-  'statistics',
+@Standard('statistics', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Accountant,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class StatisticsController {
   logger = new Logger(StatisticsController.name);
 

@@ -6,7 +6,7 @@ import { Crud, Standard } from '@/decorators';
 import { Status, CRUD, UserRoleEnum } from '@/enums';
 import { CrontabService } from '@/crontab/crontab.service';
 
-@Standard('crontab', UserRoleEnum.Administrator)
+@Standard('crontab', [UserRoleEnum.Administrator])
 export class CrontabController {
   logger = new Logger(CrontabController.name);
 

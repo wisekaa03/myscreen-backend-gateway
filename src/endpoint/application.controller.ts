@@ -33,12 +33,11 @@ import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
 import { ApplicationService } from '@/database/application.service';
 
-@Standard(
-  'application',
+@Standard('application', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class ApplicationController {
   logger = new Logger(ApplicationController.name);
 

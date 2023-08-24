@@ -26,7 +26,7 @@ import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { UserService } from '@/database/user.service';
 import { Crud, Standard } from '@/decorators';
 
-@Standard('user', UserRoleEnum.Administrator)
+@Standard('user', [UserRoleEnum.Administrator])
 export class UserController {
   logger = new Logger(UserController.name);
 

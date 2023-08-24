@@ -71,12 +71,12 @@ export class AuthController {
   }
 
   @Patch()
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Advertiser,
     UserRoleEnum.Accountant,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
@@ -275,11 +275,11 @@ export class AuthController {
 
   @Patch('disable')
   @HttpCode(200)
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Advertiser,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({

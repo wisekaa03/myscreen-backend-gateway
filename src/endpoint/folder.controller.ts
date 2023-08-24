@@ -44,12 +44,11 @@ import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 
 @ApiExtraModels(FolderResponse)
-@Standard(
-  'folder',
+@Standard('folder', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class FolderController {
   logger = new Logger(FolderController.name);
 

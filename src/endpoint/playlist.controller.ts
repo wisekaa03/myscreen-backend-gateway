@@ -37,12 +37,11 @@ import { PlaylistEntity } from '@/database/playlist.entity';
 import { UserService } from '@/database/user.service';
 import { Crud, Roles, Standard } from '@/decorators';
 
-@Standard(
-  'playlist',
+@Standard('playlist', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class PlaylistController {
   logger = new Logger(PlaylistController.name);
 
@@ -126,12 +125,12 @@ export class PlaylistController {
   }
 
   @Get(':playlistId')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({

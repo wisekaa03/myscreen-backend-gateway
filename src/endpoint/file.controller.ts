@@ -63,12 +63,11 @@ import {
 import { UserService } from '@/database/user.service';
 
 @ApiExtraModels(FileUploadRequest)
-@Standard(
-  'file',
+@Standard('file', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class FileController {
   logger = new Logger(FileController.name);
 
@@ -288,13 +287,13 @@ export class FileController {
   }
 
   @Get(':fileId')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Accountant,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -373,13 +372,13 @@ export class FileController {
   }
 
   @Post(':fileId')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Accountant,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
