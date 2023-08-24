@@ -76,7 +76,7 @@ export class MonitorService {
   }
 
   async findOne(
-    userId: string,
+    userId: string | undefined,
     find: FindManyOptions<MonitorEntity>,
   ): Promise<MonitorEntity | null> {
     const monitor = await this.monitorRepository.findOne({
@@ -85,7 +85,9 @@ export class MonitorService {
     });
     if (monitor) {
       monitor.favorite =
-        monitor.favorities?.some((value) => value.userId === userId) ?? false;
+        userId !== undefined
+          ? monitor.favorities?.some((fav) => fav.userId === userId) ?? false
+          : false;
       delete monitor.favorities;
     }
 

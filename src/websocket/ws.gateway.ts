@@ -155,21 +155,14 @@ export class WSGateway
       throw new WsException('Not authorized');
     }
     if (isJWT(body.token)) {
-      const value = this.clients.get(client);
+      let value = this.clients.get(client);
       if (value) {
-        const valueUpdated = await this.authorization(
-          client,
-          value,
-          body.token,
-        );
-        if (valueUpdated.monitorId) {
-          const monitor = await this.monitorService.findOne(
-            valueUpdated.monitorId || 'monitorFavoritiesDisabled',
-            {
-              where: { id: valueUpdated.monitorId },
-              relations: ['playlist', 'user'],
-            },
-          );
+        value = await this.authorization(client, value, body.token);
+        if (value.role === UserRoleEnum.Monitor && value.monitorId) {
+          const monitor = await this.monitorService.findOne(undefined, {
+            where: { id: value.monitorId },
+            relations: ['playlist', 'user'],
+          });
           let application: ApplicationEntity[] | null = null;
           if (monitor) {
             [application] = await Promise.all([
