@@ -244,6 +244,9 @@ export class WSGateway
     return of([{ event: 'monitor', data: 'Ok' }]);
   }
 
+  /**
+   * Отсылает всем подключенным клиентам (не мониторам) изменения статуса монитора
+   */
   private async monitorStatus(
     monitorId: string,
     status: MonitorStatus,
