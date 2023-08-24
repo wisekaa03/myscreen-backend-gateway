@@ -131,9 +131,9 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-      - name: Update Ubuntu
+      - name: Update Linux
         run: sudo apt-get update -y
-      - name: Install Ubuntu dependencies
+      - name: Install Linux dependencies
         run: sudo apt-get install -y ffmpeg
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
@@ -212,6 +212,7 @@ jobs:
             --exclude="node_modules/**/LICENCE" \
             --exclude="node_modules/**/license" \
             --exclude="node_modules/**/.babelrc" \
+            --exclude="node_modules/**/.editorconfig" \
             --exclude="node_modules/**/.travis.yml" \
             --exclude="node_modules/**/.prettierrc" \
             --exclude="node_modules/**/prettier.config.js" \
