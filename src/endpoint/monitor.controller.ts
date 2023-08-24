@@ -546,7 +546,7 @@ export class MonitorController {
     };
   }
 
-  @Patch('/:monitorId')
+  @Patch(':monitorId')
   @Roles([UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
@@ -617,7 +617,7 @@ export class MonitorController {
       throw new NotFoundException(`Monitor '${id}' is not found`);
     }
 
-    const { affected } = await this.monitorService.delete(user.id, id);
+    const { affected } = await this.monitorService.delete(user.id, monitor);
     if (!affected) {
       throw new NotFoundException('This monitor is not exists');
     }

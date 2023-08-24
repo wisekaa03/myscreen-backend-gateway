@@ -64,25 +64,26 @@ export class PlaylistService {
     userId: string,
     update: Partial<PlaylistEntity>,
   ): Promise<PlaylistEntity> {
-    const playlist: DeepPartial<PlaylistEntity> = {
-      userId,
-      ...update,
-    };
-
-    const data = await this.playlistEntity.save(
-      this.playlistEntity.create(playlist),
+    const playlist = await this.playlistEntity.save(
+      this.playlistEntity.create({
+        userId,
+        ...update,
+      }),
     );
 
-    await this.applicationService.changed(data.id);
+    await this.applicationService.websocketChange({ playlist });
 
-    return data;
+    return playlist;
   }
 
   async delete(
     playlist: PlaylistEntity,
     user: UserEntity,
   ): Promise<DeleteResult> {
-    await this.applicationService.changed();
+    await this.applicationService.websocketChange({
+      playlist,
+      playlistDelete: true,
+    });
 
     if (user.role !== UserRoleEnum.Administrator) {
       return this.playlistEntity.delete({ id: playlist.id, userId: user.id });
