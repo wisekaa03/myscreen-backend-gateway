@@ -37,7 +37,7 @@ import {
   EditorGetRenderingStatusResponse,
   EditorExportRequest,
 } from '@/dto';
-import { Standard, Crud } from '@/decorators';
+import { Crud, ApiComplexDecorators } from '@/decorators';
 import { VideoType, Status, UserRoleEnum, CRUD } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
@@ -47,7 +47,7 @@ import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { UserService } from '@/database/user.service';
 import { EditorEntity } from '@/database/editor.entity';
 
-@Standard('editor', [
+@ApiComplexDecorators('editor', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,

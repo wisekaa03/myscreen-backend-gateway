@@ -21,7 +21,7 @@ import { UserRoleEnum } from '@/enums/user-role.enum';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { Roles } from './roles.decorator';
 
-export const Standard = (path: string, roles?: UserRoleEnum[]) =>
+export const ApiComplexDecorators = (path: string, roles?: UserRoleEnum[]) =>
   Array.isArray(roles)
     ? applyDecorators(
         ApiResponse({

@@ -8,14 +8,14 @@ import { In } from 'typeorm';
 
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
 import { UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
-import { Crud, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud } from '@/decorators';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { PrintService } from '@/print/print.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
 
-@Standard('statistics', [
+@ApiComplexDecorators('statistics', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Accountant,
   UserRoleEnum.Advertiser,

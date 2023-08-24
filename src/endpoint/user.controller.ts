@@ -24,9 +24,9 @@ import {
 import { CRUD, UserRoleEnum, Status } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { UserService } from '@/database/user.service';
-import { Crud, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud } from '@/decorators';
 
-@Standard('user', [UserRoleEnum.Administrator])
+@ApiComplexDecorators('user', [UserRoleEnum.Administrator])
 export class UserController {
   logger = new Logger(UserController.name);
 

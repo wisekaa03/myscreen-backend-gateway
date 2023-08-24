@@ -50,7 +50,7 @@ import {
   FilesCopyRequest,
 } from '@/dto';
 import { UserRoleEnum, VideoType, Status, CRUD } from '@/enums';
-import { Crud, Roles, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -63,7 +63,7 @@ import {
 import { UserService } from '@/database/user.service';
 
 @ApiExtraModels(FileUploadRequest)
-@Standard('file', [
+@ApiComplexDecorators('file', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,

@@ -26,6 +26,7 @@ import {
   SuccessResponse,
   PlaylistUpdateRequest,
 } from '@/dto';
+import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { Status, UserRoleEnum, CRUD } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
@@ -35,9 +36,8 @@ import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { UserService } from '@/database/user.service';
-import { Crud, Roles, Standard } from '@/decorators';
 
-@Standard('playlist', [
+@ApiComplexDecorators('playlist', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,

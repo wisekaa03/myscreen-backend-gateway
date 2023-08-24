@@ -42,7 +42,7 @@ import {
   UserPlanEnum,
   UserRoleEnum,
 } from '@/enums';
-import { Crud, Roles, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -52,7 +52,7 @@ import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { ApplicationService } from '@/database/application.service';
 
-@Standard('monitor', [
+@ApiComplexDecorators('monitor', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,

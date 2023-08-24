@@ -131,13 +131,13 @@ export class WalletService {
     // получаем количество актов за последний месяц
     const toDate = new Date();
     const fromDate = subDays(toDate, 28);
-    const actsInPastMonth = await this.walletSum({
+    const actsInPastMonth = -(await this.walletSum({
       userId,
       dates: [fromDate, toDate],
       invoiceId: IsNull(),
       actId: Not(IsNull()),
       transact,
-    });
+    }));
 
     const fullName = `${UserService.fullName(user)} ${user.role} / ${
       user.plan
@@ -152,7 +152,11 @@ export class WalletService {
       );
     } else if (balance > 0) {
       // теперь списание средств с баланса и создание акта
-      const sum = Math.min(balance, this.acceptanceActSum - actsInPastMonth);
+      const sum = Math.min(
+        balance,
+        this.acceptanceActSum - actsInPastMonth,
+        this.acceptanceActSum,
+      );
       this.logger.warn(
         ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
       );
