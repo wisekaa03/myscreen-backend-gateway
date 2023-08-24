@@ -127,7 +127,7 @@ export class UserController {
   async user(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<UserGetResponse> {
-    const user = await this.userService.findById(userId, [], true);
+    const user = await this.userService.findById(userId, undefined, true);
     if (!user) {
       throw new ForbiddenException();
     }

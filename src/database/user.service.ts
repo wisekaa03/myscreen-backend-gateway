@@ -420,10 +420,10 @@ export class UserService {
 
   async findById(
     id: string,
-    role?: UserRoleEnum[],
+    role?: UserRoleEnum,
     disabled = false,
   ): Promise<UserExtEntity | null> {
-    if (role?.includes(UserRoleEnum.Monitor)) {
+    if (role === UserRoleEnum.Monitor) {
       return {
         id,
         role: UserRoleEnum.Monitor,

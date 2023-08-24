@@ -49,7 +49,7 @@ export class ApplicationEntity {
   })
   buyer!: UserEntity | null;
 
-  @Column({ select: false, nullable: true })
+  @Column({ nullable: true })
   @Index()
   @ApiProperty({
     description: 'Покупатель ID',
@@ -74,7 +74,7 @@ export class ApplicationEntity {
   })
   seller!: UserEntity;
 
-  @Column({ select: false })
+  @Column()
   @Index()
   @ApiProperty({
     description: 'Продавец ID',
@@ -98,7 +98,7 @@ export class ApplicationEntity {
   })
   monitor!: MonitorEntity;
 
-  @Column({ select: false })
+  @Column()
   @IsUUID()
   @ApiProperty({
     description: 'Монитор ID',

@@ -152,13 +152,13 @@ export class PlaylistEntity {
       const monitorPlayed = this.monitors.filter(
         (monitor) => monitor.playlistPlayed,
       );
-
-      this.status =
-        monitorPlayed.length > 0
-          ? PlaylistStatusEnum.Broadcast
-          : monitorStatus.length > 0
-          ? PlaylistStatusEnum.NoBroadcast
-          : PlaylistStatusEnum.Offline;
+      if (monitorPlayed.length > 0) {
+        this.status = PlaylistStatusEnum.Broadcast;
+      } else if (monitorStatus.length > 0) {
+        this.status = PlaylistStatusEnum.NoBroadcast;
+      } else {
+        this.status = PlaylistStatusEnum.Offline;
+      }
     }
   }
 }

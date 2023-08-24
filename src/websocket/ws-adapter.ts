@@ -205,5 +205,7 @@ export class WsAdapter extends AbstractWsAdapter<
     // eslint-disable-next-line no-param-reassign
     wsServer.path = path;
     this.wsServersRegistry.set(port, entries);
+
+    this.logger.debug(`WS server registered: ${entries.map((ws) => ws.path)}`);
   }
 }

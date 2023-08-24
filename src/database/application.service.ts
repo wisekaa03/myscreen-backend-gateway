@@ -80,29 +80,40 @@ export class ApplicationService {
         });
   }
 
+  /**
+   * Get the applications for the monitor
+   *
+   * @param {string} monitorId Монитор ID
+   * @param {(string | Date)} [date=new Date()] Локальная для пользователя дата
+   * @return {*}
+   * @memberof ApplicationService
+   */
   async monitorApplications(
     monitorId: string,
     date: string | Date = new Date(),
   ) {
+    const dateLocal = new Date(date);
+
     const monitorApplicatons = await this.find({
       where: [
         {
           monitorId,
           approved: ApplicationApproved.Allowed,
-          dateWhen: LessThanOrEqual<Date>(new Date(date)),
-          dateBefore: MoreThanOrEqual<Date>(new Date(date)),
+          dateWhen: LessThanOrEqual<Date>(dateLocal),
+          dateBefore: MoreThanOrEqual<Date>(dateLocal),
         },
         {
           monitorId,
           approved: ApplicationApproved.Allowed,
-          dateWhen: LessThanOrEqual<Date>(new Date(date)),
+          dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: IsNull(),
         },
       ],
+      relations: ['playlist', 'playlist.files'],
+      loadEagerRelations: false,
       order: { updatedAt: 'DESC' },
     });
 
-    const today = new Date(date);
     let forceReplace = false;
 
     const expected = monitorApplicatons.filter(
@@ -116,14 +127,14 @@ export class ApplicationService {
           const date1 = new Date(dateBefore);
           date1.setSeconds(0, 0);
 
-          isExpect = date1 >= today;
+          isExpect = date1 >= dateLocal;
         }
 
         if (playlistChange) {
           const date2 = new Date(dateWhen);
           date2.setSeconds(0, 0);
 
-          if (today >= date2) {
+          if (dateLocal >= date2) {
             forceReplace = true;
           }
         }
