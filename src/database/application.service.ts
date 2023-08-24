@@ -80,6 +80,13 @@ export class ApplicationService {
         });
   }
 
+  async playlistChanged(playlistId: string) {
+    const applications = await this.monitorApplications({ playlistId });
+    applications.forEach((application) =>
+      this.wsGateway.application(application),
+    );
+  }
+
   /**
    * Get the applications for the monitor
    *
@@ -88,24 +95,31 @@ export class ApplicationService {
    * @return {*}
    * @memberof ApplicationService
    */
-  async monitorApplications(
-    monitorId: string,
-    date: string | Date = new Date(),
-  ) {
-    const dateLocal = new Date(date);
+  async monitorApplications({
+    monitorId,
+    playlistId,
+    dateLocal = new Date(),
+  }: {
+    monitorId?: string;
+    playlistId?: string;
+    dateLocal?: string | Date;
+  }) {
+    const dateLoc = new Date(dateLocal);
 
     const monitorApplicatons = await this.find({
       where: [
         {
           monitorId,
+          playlistId,
           approved: ApplicationApproved.Allowed,
-          dateWhen: LessThanOrEqual<Date>(dateLocal),
-          dateBefore: MoreThanOrEqual<Date>(dateLocal),
+          dateWhen: LessThanOrEqual<Date>(dateLoc),
+          dateBefore: MoreThanOrEqual<Date>(dateLoc),
         },
         {
           monitorId,
+          playlistId,
           approved: ApplicationApproved.Allowed,
-          dateWhen: LessThanOrEqual<Date>(dateLocal),
+          dateWhen: LessThanOrEqual<Date>(dateLoc),
           dateBefore: IsNull(),
         },
       ],
@@ -127,14 +141,14 @@ export class ApplicationService {
           const date1 = new Date(dateBefore);
           date1.setSeconds(0, 0);
 
-          isExpect = date1 >= dateLocal;
+          isExpect = date1 >= dateLoc;
         }
 
         if (playlistChange) {
           const date2 = new Date(dateWhen);
           date2.setSeconds(0, 0);
 
-          if (dateLocal >= date2) {
+          if (dateLoc >= date2) {
             forceReplace = true;
           }
         }

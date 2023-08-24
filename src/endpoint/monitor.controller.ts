@@ -535,7 +535,9 @@ export class MonitorController {
       throw new NotFoundException(`Have no playlist in monitor '${id}'`);
     }
 
-    const data = await this.applicationService.monitorApplications(monitor.id);
+    const data = await this.applicationService.monitorApplications({
+      monitorId: monitor.id,
+    });
 
     return {
       status: Status.Success,

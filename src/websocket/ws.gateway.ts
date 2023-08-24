@@ -71,12 +71,12 @@ export class WSGateway
     if (role === UserRoleEnum.Monitor) {
       monitorId = sub;
       this.logger.debug(
-        `Client key='${value.key}', auth=true, monitorId='${monitorId}', role='${role}'`,
+        `Client key='${value.key}', auth=true, role='${role}', monitorId='${monitorId}'`,
       );
     } else {
       userId = sub;
       this.logger.debug(
-        `Client key='${value.key}', auth=true, userId='${userId}', role='${role}'`,
+        `Client key='${value.key}', auth=true, role='${role}', userId='${userId}'`,
       );
     }
 
@@ -173,10 +173,10 @@ export class WSGateway
           let application: ApplicationEntity[] | null = null;
           if (monitor) {
             [application] = await Promise.all([
-              this.applicationService.monitorApplications(
-                monitor.id,
-                auth.date,
-              ),
+              this.applicationService.monitorApplications({
+                monitorId: monitor.id,
+                dateLocal: auth.date,
+              }),
               this.monitorService
                 .update(monitor.userId, {
                   id: monitor.id,
@@ -274,7 +274,8 @@ export class WSGateway
    * Вызывается из:
    *  - Создание связки плэйлиста и монитора
    *  - Удаление связки плэйлиста и монитора
-   *  - TODO
+   *  - Изменение плэйлиста файлами
+   *  TODO: что-то еще
    * @param application ApplicationEntity or null
    * @param monitor MonitorEntity or null
    */
@@ -287,14 +288,14 @@ export class WSGateway
       return;
     }
 
-    if (application?.playlist && application?.monitor) {
+    if (application?.playlist && application.monitorId) {
       await this.playlistService.update(application.playlist.userId, {
         id: application.playlist.id,
         status: PlaylistStatusEnum.Broadcast,
       });
 
       this.clients.forEach((value, client) => {
-        if (value.monitorId === application.monitor.id) {
+        if (value.monitorId === application.monitorId) {
           client.send(
             JSON.stringify([{ event: 'application', data: application }]),
           );
@@ -302,7 +303,7 @@ export class WSGateway
       });
     } else {
       this.logger.error(
-        'application.playlist or application.monitor is required',
+        'application.playlist or application.monitorId is required',
       );
     }
 
