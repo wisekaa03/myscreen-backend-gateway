@@ -150,24 +150,22 @@ export class ApplicationService {
   }: {
     monitorId?: string;
     playlistId?: string;
-    dateLocal?: string | Date;
+    dateLocal?: Date;
   }) {
-    const dateLoc = new Date(dateLocal);
-
     const monitorApplicatons = await this.find({
       where: [
         {
           monitorId,
           playlistId,
           approved: ApplicationApproved.Allowed,
-          dateWhen: LessThanOrEqual<Date>(dateLoc),
-          dateBefore: MoreThanOrEqual<Date>(dateLoc),
+          dateWhen: LessThanOrEqual<Date>(dateLocal),
+          dateBefore: MoreThanOrEqual<Date>(dateLocal),
         },
         {
           monitorId,
           playlistId,
           approved: ApplicationApproved.Allowed,
-          dateWhen: LessThanOrEqual<Date>(dateLoc),
+          dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: IsNull(),
         },
       ],
@@ -189,14 +187,14 @@ export class ApplicationService {
           const date1 = new Date(dateBefore);
           date1.setSeconds(0, 0);
 
-          isExpect = date1 >= dateLoc;
+          isExpect = date1 >= dateLocal;
         }
 
         if (playlistChange) {
           const date2 = new Date(dateWhen);
           date2.setSeconds(0, 0);
 
-          if (dateLoc >= date2) {
+          if (dateLocal >= date2) {
             forceReplace = true;
           }
         }

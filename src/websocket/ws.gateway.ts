@@ -149,18 +149,18 @@ export class WSGateway
   @SubscribeMessage('auth/token')
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() auth: AuthTokenEvent,
+    @MessageBody() body: AuthTokenEvent,
   ): Promise<Observable<WsResponse<string | ApplicationEntity[] | null>[]>> {
-    if (!(auth.token && auth.date)) {
+    if (!(body.token && body.date)) {
       throw new WsException('Not authorized');
     }
-    if (isJWT(auth.token)) {
+    if (isJWT(body.token)) {
       const value = this.clients.get(client);
       if (value) {
         const valueUpdated = await this.authorization(
           client,
           value,
-          auth.token,
+          body.token,
         );
         if (valueUpdated.monitorId) {
           const monitor = await this.monitorService.findOne(
@@ -175,7 +175,7 @@ export class WSGateway
             [application] = await Promise.all([
               this.applicationService.monitorApplications({
                 monitorId: monitor.id,
-                dateLocal: auth.date,
+                dateLocal: new Date(body.date),
               }),
               this.monitorService
                 .update(monitor.userId, {
@@ -206,7 +206,7 @@ export class WSGateway
   @SubscribeMessage('monitor')
   async monitorPlay(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() data: string | MonitorEvent,
+    @MessageBody() body: string | MonitorEvent,
   ): Promise<Observable<WsResponse<string>[]>> {
     const value = this.clients.get(client);
     if (!value || !value.auth) {
@@ -224,14 +224,14 @@ export class WSGateway
         throw new WsException('Not exist monitorId');
       }
       let dataObject: MonitorEvent;
-      if (typeof data === 'string') {
+      if (typeof body === 'string') {
         try {
-          dataObject = JSON.parse(data);
+          dataObject = JSON.parse(body);
         } catch (e) {
           throw new WsException('Error in parsing data');
         }
       } else {
-        dataObject = data;
+        dataObject = body;
       }
       // { "event": "monitor", "data": "true" }
       // записываем в базу данных
