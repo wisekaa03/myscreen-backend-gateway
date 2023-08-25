@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 
 import { JwtAuthGuard } from '@/guards';
 import { InvoiceService } from '@/database/invoice.service';
@@ -38,7 +39,7 @@ describe(InvoiceController.name, () => {
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
-    const guards = Reflect.getMetadata('__guards__', InvoiceController);
+    const guards = Reflect.getMetadata(GUARDS_METADATA, InvoiceController);
     const guardJwt = new guards[0]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);

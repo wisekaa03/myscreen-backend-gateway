@@ -46,6 +46,7 @@ import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
 import { PlaylistService } from './playlist.service';
 import { UserEntity } from './user.entity';
+import { ApplicationService } from './application.service';
 
 @Injectable()
 export class FileService {
@@ -59,6 +60,7 @@ export class FileService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => FolderService))
     private readonly folderService: FolderService,
     private readonly monitorService: MonitorService,
@@ -165,10 +167,14 @@ export class FileService {
             }),
           );
 
-        return transact.save(
+        const data = await transact.save(
           FileEntity,
           transact.create(FileEntity, { ...file, ...update, id: file.id }),
         );
+
+        await this.applicationService.websocketChange({ files: [data] });
+
+        return data;
       }
 
       return transact.save(
@@ -528,7 +534,10 @@ export class FileService {
       relations: ['folder'],
     });
 
-    /* await */ Promise.allSettled(
+    await this.applicationService.websocketChange({ files, filesDelete: true });
+
+    // TODO: хм
+    await Promise.allSettled(
       files.map(async (file) => {
         this.headS3Object(file).then(() => {
           this.deleteS3Object(file).catch((error) => {

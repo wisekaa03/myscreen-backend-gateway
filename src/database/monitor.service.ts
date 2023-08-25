@@ -4,22 +4,20 @@ import {
   DeepPartial,
   DeleteResult,
   FindManyOptions,
-  IsNull,
-  LessThanOrEqual,
-  MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 
-import { MonitorStatus, ApplicationApproved } from '@/enums';
+import { MonitorStatus } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
-import { UserMetricsMonitors } from './user-ext.entity';
+import { ApplicationService } from './application.service';
 
 @Injectable()
 export class MonitorService {
   constructor(
+    private readonly applicationService: ApplicationService,
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(MonitorFavoriteEntity)
@@ -78,7 +76,7 @@ export class MonitorService {
   }
 
   async findOne(
-    userId: string,
+    userId: string | undefined,
     find: FindManyOptions<MonitorEntity>,
   ): Promise<MonitorEntity | null> {
     const monitor = await this.monitorRepository.findOne({
@@ -87,7 +85,9 @@ export class MonitorService {
     });
     if (monitor) {
       monitor.favorite =
-        monitor.favorities?.some((value) => value.userId === userId) ?? false;
+        userId !== undefined
+          ? monitor.favorities?.some((fav) => fav.userId === userId) ?? false
+          : false;
       delete monitor.favorities;
     }
 
@@ -159,9 +159,14 @@ export class MonitorService {
     return this.findOne(user.id, { where: { id: monitorId } });
   }
 
-  async delete(userId: string, id: string): Promise<DeleteResult> {
+  async delete(userId: string, monitor: MonitorEntity): Promise<DeleteResult> {
+    await this.applicationService.websocketChange({
+      monitor,
+      monitorDelete: true,
+    });
+
     return this.monitorRepository.delete({
-      id,
+      id: monitor.id,
       userId,
     });
   }

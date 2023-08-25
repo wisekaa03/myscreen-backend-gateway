@@ -11,9 +11,9 @@ import { ConfigService } from '@nestjs/config';
 import superAgentRequest from 'supertest';
 import { LoggerModule } from 'nestjs-pino';
 import Jabber from 'jabber';
-
 import { ValidationError } from 'class-validator';
 import { createMock } from '@golevelup/ts-jest';
+
 import {
   AuthResponse,
   RegisterRequest,

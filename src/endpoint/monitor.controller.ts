@@ -42,23 +42,21 @@ import {
   UserPlanEnum,
   UserRoleEnum,
 } from '@/enums';
-import { Crud, Roles, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { ApplicationService } from '@/database/application.service';
 
-@Standard(
-  'monitor',
+@ApiComplexDecorators('monitor', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class MonitorController {
   logger = new Logger(MonitorController.name);
 
@@ -72,12 +70,12 @@ export class MonitorController {
   ) {}
 
   @Post()
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -158,7 +156,7 @@ export class MonitorController {
   }
 
   @Put()
-  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @Roles([UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -209,11 +207,11 @@ export class MonitorController {
   }
 
   @Patch('playlist')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -324,11 +322,11 @@ export class MonitorController {
 
   @Delete('playlist')
   @HttpCode(200)
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOperation({
     operationId: 'monitor-playlist-delete',
@@ -394,12 +392,12 @@ export class MonitorController {
   }
 
   @Get(':monitorId')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -434,11 +432,11 @@ export class MonitorController {
   }
 
   @Get(':monitorId/favoritePlus')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -467,11 +465,11 @@ export class MonitorController {
   }
 
   @Get(':monitorId/favoriteMinus')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -500,11 +498,11 @@ export class MonitorController {
   }
 
   @Get(':monitorId/applications')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -537,7 +535,9 @@ export class MonitorController {
       throw new NotFoundException(`Have no playlist in monitor '${id}'`);
     }
 
-    const data = await this.applicationService.monitorApplications(monitor.id);
+    const data = await this.applicationService.monitorApplications({
+      monitorId: monitor.id,
+    });
 
     return {
       status: Status.Success,
@@ -546,8 +546,8 @@ export class MonitorController {
     };
   }
 
-  @Patch('/:monitorId')
-  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @Patch(':monitorId')
+  @Roles([UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -588,7 +588,7 @@ export class MonitorController {
   }
 
   @Delete(':monitorId')
-  @Roles(UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner)
+  @Roles([UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -617,7 +617,7 @@ export class MonitorController {
       throw new NotFoundException(`Monitor '${id}' is not found`);
     }
 
-    const { affected } = await this.monitorService.delete(user.id, id);
+    const { affected } = await this.monitorService.delete(user.id, monitor);
     if (!affected) {
       throw new NotFoundException('This monitor is not exists');
     }

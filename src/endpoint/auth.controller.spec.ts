@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 
-import { JwtAuthGuard } from '@/guards';
+import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
@@ -41,7 +42,7 @@ describe(AuthController.name, () => {
 
   it('should ensure the JwtAuthGuard is applied to the AuthController.authorization', async () => {
     const guards = Reflect.getMetadata(
-      '__guards__',
+      GUARDS_METADATA,
       AuthController.prototype.authorization,
     );
     const guard = new guards[0]();
@@ -51,7 +52,7 @@ describe(AuthController.name, () => {
 
   it('should ensure the JwtAuthGuard is applied to the AuthController.update', async () => {
     const guards = Reflect.getMetadata(
-      '__guards__',
+      GUARDS_METADATA,
       AuthController.prototype.update,
     );
     const guard = new guards[0]();
@@ -61,7 +62,7 @@ describe(AuthController.name, () => {
 
   it('should ensure the JwtAuthGuard is applied to the AuthController.disable', async () => {
     const guards = Reflect.getMetadata(
-      '__guards__',
+      GUARDS_METADATA,
       AuthController.prototype.disable,
     );
     const guard = new guards[0]();

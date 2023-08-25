@@ -26,6 +26,7 @@ import {
   SuccessResponse,
   PlaylistUpdateRequest,
 } from '@/dto';
+import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { Status, UserRoleEnum, CRUD } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
@@ -35,14 +36,12 @@ import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { UserService } from '@/database/user.service';
-import { Crud, Roles, Standard } from '@/decorators';
 
-@Standard(
-  'playlist',
+@ApiComplexDecorators('playlist', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class PlaylistController {
   logger = new Logger(PlaylistController.name);
 
@@ -126,12 +125,12 @@ export class PlaylistController {
   }
 
   @Get(':playlistId')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -198,8 +197,6 @@ export class PlaylistController {
         throw new BadRequestException(`Playlist create error: ${error}`);
       });
 
-    // TODO: ws fix
-
     return {
       status: Status.Success,
       data,
@@ -235,8 +232,6 @@ export class PlaylistController {
     if (!affected) {
       throw new NotFoundException('This playlist is not exists');
     }
-
-    // TODO: ws fix
 
     return {
       status: Status.Success,

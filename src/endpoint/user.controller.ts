@@ -24,9 +24,9 @@ import {
 import { CRUD, UserRoleEnum, Status } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { UserService } from '@/database/user.service';
-import { Crud, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud } from '@/decorators';
 
-@Standard('user', UserRoleEnum.Administrator)
+@ApiComplexDecorators('user', [UserRoleEnum.Administrator])
 export class UserController {
   logger = new Logger(UserController.name);
 
@@ -127,7 +127,7 @@ export class UserController {
   async user(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<UserGetResponse> {
-    const user = await this.userService.findById(userId, [], true);
+    const user = await this.userService.findById(userId, undefined, true);
     if (!user) {
       throw new ForbiddenException();
     }

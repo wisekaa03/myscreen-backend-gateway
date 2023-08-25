@@ -131,13 +131,13 @@ export class WalletService {
     // получаем количество актов за последний месяц
     const toDate = new Date();
     const fromDate = subDays(toDate, 28);
-    const actsInPastMonth = await this.walletSum({
+    const actsInPastMonth = -(await this.walletSum({
       userId,
       dates: [fromDate, toDate],
       invoiceId: IsNull(),
       actId: Not(IsNull()),
       transact,
-    });
+    }));
 
     const fullName = `${UserService.fullName(user)} ${user.role} / ${
       user.plan
@@ -150,9 +150,9 @@ export class WalletService {
       this.logger.warn(
         ` [ ] Skipping "${fullName}" because acceptance act was issued in the last month. Balance ₽${balance}`,
       );
-    } else if (balance > 0) {
+    } else if (balance > this.acceptanceActSum) {
       // теперь списание средств с баланса и создание акта
-      const sum = Math.min(balance, this.acceptanceActSum - actsInPastMonth);
+      const sum = this.acceptanceActSum;
       this.logger.warn(
         ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
       );
@@ -163,10 +163,7 @@ export class WalletService {
       });
 
       // проверяем план пользователя
-      if (
-        user.plan === UserPlanEnum.Demo &&
-        balance >= this.acceptanceActSum - actsInPastMonth
-      ) {
+      if (user.plan === UserPlanEnum.Demo) {
         // если у пользователя был демо-план и он оплатил акт, то переводим его на полный план
         await transact.update(UserEntity, user.id, {
           plan: UserPlanEnum.Full,
@@ -181,7 +178,7 @@ export class WalletService {
       this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
 
       // и вывод информации на email
-      await this.mailService.balanceChanged(user, act.sum, balance);
+      await this.mailService.balanceChanged(user, sum, balance);
     } else {
       this.logger.warn(
         ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.acceptanceActSum}`,

@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Reflector } from '@nestjs/core';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 
+import { Roles } from '@/decorators/roles.decorator';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { UserService } from '@/database/user.service';
@@ -20,6 +23,7 @@ export const mockRepository = jest.fn(() => ({
 
 describe(UserController.name, () => {
   let controller: UserController;
+  const reflector = new Reflector();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -35,14 +39,14 @@ describe(UserController.name, () => {
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
-    const guards = Reflect.getMetadata('__guards__', UserController);
+    const guards = Reflect.getMetadata(GUARDS_METADATA, UserController);
     const guardJwt = new guards[0]();
     const guardRoles = new guards[1]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);
     expect(guardRoles).toBeInstanceOf(RolesGuard);
 
-    const roles = Reflect.getMetadata('roles', UserController);
+    const roles = reflector.get(Roles, UserController);
     expect(roles).toStrictEqual([UserRoleEnum.Administrator]);
   });
 

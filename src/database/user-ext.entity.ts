@@ -24,6 +24,7 @@ import {
 import {
   ApplicationApproved,
   MonitorStatus,
+  PlaylistStatusEnum,
   UserPlanEnum,
   UserRole,
   UserRoleEnum,
@@ -199,8 +200,22 @@ export class UserWallet {
               'COUNT("playlistMonitorPlayed"."userId")',
               'playlistMonitorPlayed',
             )
-            .groupBy('"playlistMonitorPlayed"."userId"')
+            .groupBy(
+              '"playlistMonitorPlayed"."userId", "playlist"."playlistPlayedUserId", "playlist"."playlistStatus"',
+            )
+
+            .leftJoinAndSelect(
+              (qbb: SelectQueryBuilder<PlaylistEntity>) =>
+                qbb
+                  .select('"playlist"."status"', 'playlistStatus')
+                  .addSelect('"playlist"."userId"', 'playlistPlayedUserId')
+                  .from(PlaylistEntity, 'playlist'),
+              'playlist',
+              '"playlistPlayedUserId" = "playlistMonitorPlayed"."userId"',
+            )
+
             .where('"playlistMonitorPlayed"."playlistPlayed" = true')
+            .andWhere(`"playlistStatus" = '${PlaylistStatusEnum.Broadcast}'`)
             .from(MonitorEntity, 'playlistMonitorPlayed'),
         'playlistMonitorPlayed',
         '"playlistMonitorPlayedUserId" = "user"."id"',

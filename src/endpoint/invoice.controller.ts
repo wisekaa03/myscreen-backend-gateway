@@ -36,7 +36,7 @@ import {
   InvoiceStatus,
   CRUD,
 } from '@/enums';
-import { Crud, Roles, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -44,13 +44,12 @@ import { formatToContentType } from '@/utils/format-to-content-type';
 import { InvoiceService } from '@/database/invoice.service';
 import { InvoiceEntity } from '@/database/invoice.entity';
 
-@Standard(
-  'invoice',
+@ApiComplexDecorators('invoice', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
   UserRoleEnum.Accountant,
-)
+])
 export class InvoiceController {
   logger = new Logger(InvoiceController.name);
 
@@ -137,7 +136,7 @@ export class InvoiceController {
     description: 'Успешный ответ',
     type: InvoiceGetResponse,
   })
-  @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
+  @Roles([UserRoleEnum.Administrator, UserRoleEnum.Accountant])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Crud(CRUD.UPDATE)
   async confirmed(
@@ -175,7 +174,7 @@ export class InvoiceController {
     status: 200,
     description: 'Успешный ответ',
   })
-  @Roles(UserRoleEnum.Administrator, UserRoleEnum.Accountant)
+  @Roles([UserRoleEnum.Administrator, UserRoleEnum.Accountant])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Crud(CRUD.UPDATE)
   async payed(

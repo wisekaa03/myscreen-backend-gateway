@@ -32,7 +32,7 @@ import {
   FoldersCopyRequest,
 } from '@/dto';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
-import { Crud, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud } from '@/decorators';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FolderEntity } from '@/database/folder.entity';
@@ -44,12 +44,11 @@ import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 
 @ApiExtraModels(FolderResponse)
-@Standard(
-  'folder',
+@ApiComplexDecorators('folder', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class FolderController {
   logger = new Logger(FolderController.name);
 

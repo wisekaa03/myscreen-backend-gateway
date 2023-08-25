@@ -50,7 +50,7 @@ import {
   FilesCopyRequest,
 } from '@/dto';
 import { UserRoleEnum, VideoType, Status, CRUD } from '@/enums';
-import { Crud, Roles, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -63,12 +63,11 @@ import {
 import { UserService } from '@/database/user.service';
 
 @ApiExtraModels(FileUploadRequest)
-@Standard(
-  'file',
+@ApiComplexDecorators('file', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class FileController {
   logger = new Logger(FileController.name);
 
@@ -288,13 +287,13 @@ export class FileController {
   }
 
   @Get(':fileId')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Accountant,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
@@ -373,13 +372,13 @@ export class FileController {
   }
 
   @Post(':fileId')
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Accountant,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Monitor,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({

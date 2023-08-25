@@ -29,14 +29,14 @@ import {
   UserGetResponse,
   AuthMonitorRequest,
 } from '@/dto';
-import { Crud, Roles, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { RolesGuard, JwtAuthGuard } from '@/guards';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
 
-@Standard('auth')
+@ApiComplexDecorators('auth')
 export class AuthController {
   logger = new Logger(AuthController.name);
 
@@ -71,12 +71,12 @@ export class AuthController {
   }
 
   @Patch()
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Advertiser,
     UserRoleEnum.Accountant,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({
@@ -275,11 +275,11 @@ export class AuthController {
 
   @Patch('disable')
   @HttpCode(200)
-  @Roles(
+  @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,
     UserRoleEnum.Advertiser,
-  )
+  ])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiBearerAuth()
   @ApiOperation({

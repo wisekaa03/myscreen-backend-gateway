@@ -2,11 +2,11 @@ import { Body, HttpCode, Logger, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { SuccessResponse, CrontabCreateRequest } from '@/dto';
-import { Crud, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud } from '@/decorators';
 import { Status, CRUD, UserRoleEnum } from '@/enums';
 import { CrontabService } from '@/crontab/crontab.service';
 
-@Standard('crontab', UserRoleEnum.Administrator)
+@ApiComplexDecorators('crontab', [UserRoleEnum.Administrator])
 export class CrontabController {
   logger = new Logger(CrontabController.name);
 

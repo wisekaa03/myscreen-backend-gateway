@@ -96,7 +96,7 @@ export class AuthService {
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
       subject: String(user.id),
-      audience: [user.role],
+      audience: user.role,
       expiresIn: this.accessTokenExpires,
     };
 
@@ -213,7 +213,7 @@ export class AuthService {
     }
 
     if (iss === 'false') {
-      return this.userService.findById(sub, [UserRoleEnum.Monitor]);
+      return this.userService.findById(sub, UserRoleEnum.Monitor);
     }
     return this.userService.findById(sub);
   }

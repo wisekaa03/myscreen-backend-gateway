@@ -17,12 +17,12 @@ import {
   PreconditionFailedError,
   UnauthorizedError,
 } from '@/dto';
-import { UserRoleEnum } from '@/enums';
+import { UserRoleEnum } from '@/enums/user-role.enum';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { Roles } from './roles.decorator';
 
-export const Standard = (path: string, ...roles: UserRoleEnum[]) =>
-  roles.length > 0
+export const ApiComplexDecorators = (path: string, roles?: UserRoleEnum[]) =>
+  Array.isArray(roles)
     ? applyDecorators(
         ApiResponse({
           status: HttpStatus.BAD_REQUEST,
@@ -69,7 +69,7 @@ export const Standard = (path: string, ...roles: UserRoleEnum[]) =>
           description: 'Ответ для незарегистрированного пользователя',
           type: UnauthorizedError,
         }),
-        Roles(...roles),
+        Roles(roles),
         UseGuards(JwtAuthGuard, RolesGuard),
         ApiBearerAuth(),
         ApiTags(path),

@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { GUARDS_METADATA } from '@nestjs/common/constants';
 
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { WSGateway } from '@/websocket/ws.gateway';
@@ -46,7 +47,7 @@ describe(MonitorController.name, () => {
   });
 
   it('JwtAuthGuard, RolesGuard and Roles: Administrator', async () => {
-    const guards = Reflect.getMetadata('__guards__', MonitorController);
+    const guards = Reflect.getMetadata(GUARDS_METADATA, MonitorController);
     const guardJwt = new guards[0]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);

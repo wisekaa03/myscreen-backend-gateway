@@ -25,7 +25,7 @@ import {
   ApplicationUpdateRequest,
   SuccessResponse,
 } from '@/dto';
-import { Crud, Standard } from '@/decorators';
+import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
@@ -33,12 +33,11 @@ import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
 import { ApplicationService } from '@/database/application.service';
 
-@Standard(
-  'application',
+@ApiComplexDecorators('application', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
-)
+])
 export class ApplicationController {
   logger = new Logger(ApplicationController.name);
 

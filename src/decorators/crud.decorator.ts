@@ -1,6 +1,4 @@
-import { SetMetadata } from '@nestjs/common';
-import { CRUD } from '@/enums';
+import { Reflector } from '@nestjs/core';
+import { CRUD } from '@/enums/crud.enum';
 
-export const CRUD_METADATA = '__crud__';
-
-export const Crud = (crud: CRUD) => SetMetadata(CRUD_METADATA, crud);
+export const Crud = Reflector.createDecorator<CRUD>();

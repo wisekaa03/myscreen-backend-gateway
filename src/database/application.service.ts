@@ -20,8 +20,10 @@ import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { ApplicationApproved } from '@/enums';
 import { MailService } from '@/mail/mail.service';
-import { UserService } from './user.service';
 import { ApplicationEntity } from './application.entity';
+import { FileEntity } from './file.entity';
+import { MonitorEntity } from './monitor.entity';
+import { PlaylistEntity } from './playlist.entity';
 
 @Injectable()
 export class ApplicationService {
@@ -80,29 +82,98 @@ export class ApplicationService {
         });
   }
 
-  async monitorApplications(
-    monitorId: string,
-    date: string | Date = new Date(),
-  ) {
+  /**
+   * WebSocket change
+   *
+   * TODO: Переделать на более умный алгоритм
+   */
+  async websocketChange({
+    playlist,
+    playlistDelete = false,
+    files,
+    filesDelete = false,
+    monitor,
+    monitorDelete = false,
+    application,
+    applicationDelete = false,
+  }: {
+    playlist?: PlaylistEntity;
+    playlistDelete?: boolean;
+    files?: FileEntity[];
+    filesDelete?: boolean;
+    monitor?: MonitorEntity;
+    monitorDelete?: boolean;
+    application?: ApplicationEntity;
+    applicationDelete?: boolean;
+  }) {
+    if (playlist) {
+      const applications = await this.monitorApplications({
+        playlistId: playlist?.id,
+      });
+
+      const wsPromise = applications.map(async (applicationLocal) =>
+        this.wsGateway.application(applicationLocal),
+      );
+
+      await Promise.allSettled(wsPromise);
+      // } else if (files) {
+      // } else if (monitor) {
+    } else if (application) {
+      if (applicationDelete) {
+        await this.wsGateway
+          .application(null, application.monitor)
+          .catch((error: any) => {
+            this.logger.error(error);
+          });
+      } else {
+        await this.wsGateway
+          .application(application)
+          .catch((error: unknown) => {
+            this.logger.error(error);
+          });
+      }
+    }
+  }
+
+  /**
+   * Get the applications for the monitor
+   *
+   * @param {string} monitorId Монитор ID
+   * @param {(string | Date)} [date=new Date()] Локальная для пользователя дата
+   * @return {*}
+   * @memberof ApplicationService
+   */
+  async monitorApplications({
+    monitorId,
+    playlistId,
+    dateLocal = new Date(),
+  }: {
+    monitorId?: string;
+    playlistId?: string;
+    dateLocal?: Date;
+  }) {
     const monitorApplicatons = await this.find({
       where: [
         {
           monitorId,
+          playlistId,
           approved: ApplicationApproved.Allowed,
-          dateWhen: LessThanOrEqual<Date>(new Date(date)),
-          dateBefore: MoreThanOrEqual<Date>(new Date(date)),
+          dateWhen: LessThanOrEqual<Date>(dateLocal),
+          dateBefore: MoreThanOrEqual<Date>(dateLocal),
         },
         {
           monitorId,
+          playlistId,
           approved: ApplicationApproved.Allowed,
-          dateWhen: LessThanOrEqual<Date>(new Date(date)),
+          dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: IsNull(),
         },
       ],
+      relations: ['playlist', 'playlist.files'],
+      loadEagerRelations: false,
       order: { updatedAt: 'DESC' },
     });
 
-    const today = new Date(date);
     let forceReplace = false;
 
     const expected = monitorApplicatons.filter(
@@ -116,14 +187,14 @@ export class ApplicationService {
           const date1 = new Date(dateBefore);
           date1.setSeconds(0, 0);
 
-          isExpect = date1 >= today;
+          isExpect = date1 >= dateLocal;
         }
 
         if (playlistChange) {
           const date2 = new Date(dateWhen);
           date2.setSeconds(0, 0);
 
-          if (today >= date2) {
+          if (dateLocal >= date2) {
             forceReplace = true;
           }
         }
@@ -177,15 +248,9 @@ export class ApplicationService {
           this.logger.error('ApplicationService seller email=undefined');
         }
       } else if (update.approved === ApplicationApproved.Allowed) {
-        await this.wsGateway.application(application).catch((error: any) => {
-          this.logger.error(error);
-        });
+        await this.websocketChange({ application });
       } else if (update.approved === ApplicationApproved.Denied) {
-        await this.wsGateway
-          .application(null, application.monitor)
-          .catch((error: any) => {
-            this.logger.error(error);
-          });
+        await this.websocketChange({ application, applicationDelete: true });
       }
     });
 
@@ -198,11 +263,10 @@ export class ApplicationService {
     userId: string,
     application: ApplicationEntity,
   ): Promise<DeleteResult> {
-    await this.wsGateway
-      .application(null, application.monitor)
-      .catch((error: any) => {
-        this.logger.error(error);
-      });
+    await this.websocketChange({
+      application,
+      applicationDelete: true,
+    });
 
     const deleteResult = await this.applicationRepository.delete({
       id: application.id,
