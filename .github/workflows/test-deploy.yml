@@ -36,53 +36,53 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Environment variables
         run: |
-          rm -rf .env
-          touch .env
+          rm -rf .env.test
+          touch .env.test
 
           # Server config
-          echo "PORT=${{ vars.PORT }}" >>.env
-          echo "API_PATH=${{ vars.API_PATH }}" >>.env
-          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >>.env
-          echo "FILES_UPLOAD=${{ vars.FILES_UPLOAD }}" >>.env
-          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >>.env
+          echo "PORT=${{ vars.PORT }}" >>.env.test
+          echo "API_PATH=${{ vars.API_PATH }}" >>.env.test
+          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >>.env.test
+          echo "FILES_UPLOAD=${{ vars.FILES_UPLOAD }}" >>.env.test
+          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >>.env.test
 
           # PostgreSQL Credentials
-          echo "DB_DATABASE=${{ vars.DB_DATABASE }}" >>.env
-          echo "DB_USERNAME=${{ vars.DB_USERNAME }}" >>.env
-          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >>.env
-          echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
-          echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
-          echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
-          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env
+          echo "DB_DATABASE=${{ vars.DB_DATABASE }}" >>.env.test
+          echo "DB_USERNAME=${{ vars.DB_USERNAME }}" >>.env.test
+          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >>.env.test
+          echo "DB_PORT=${{ vars.DB_PORT }}" >>.env.test
+          echo "DB_HOST=${{ vars.DB_HOST }}" >>.env.test
+          echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env.test
+          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env.test
 
           # JWT Credentials
-          echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
-          echo "JWT_ACCESS_EXPIRES=${{ vars.JWT_ACCESS_EXPIRES }}" >>.env
-          echo "JWT_REFRESH_TOKEN=${{ vars.JWT_REFRESH_TOKEN }}" >>.env
-          echo "JWT_REFRESH_EXPIRES=${{ vars.JWT_REFRESH_EXPIRES }}" >>.env
+          echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env.test
+          echo "JWT_ACCESS_EXPIRES=${{ vars.JWT_ACCESS_EXPIRES }}" >>.env.test
+          echo "JWT_REFRESH_TOKEN=${{ vars.JWT_REFRESH_TOKEN }}" >>.env.test
+          echo "JWT_REFRESH_EXPIRES=${{ vars.JWT_REFRESH_EXPIRES }}" >>.env.test
 
           # Logstash config
-          # echo "KIBANA_HOST=${{ vars.KIBANA_HOST }}" >>.env
-          # echo "KIBANA_PORT=${{ vars.KIBANA_PORT }}" >>.env
+          # echo "KIBANA_HOST=${{ vars.KIBANA_HOST }}" >>.env.test
+          # echo "KIBANA_PORT=${{ vars.KIBANA_PORT }}" >>.env.test
 
           # Secrets
-          echo "AWS_HOST=${{ vars.AWS_HOST }}" >>.env
-          echo "AWS_ACCESS_KEY=${{ vars.AWS_ACCESS_KEY }}" >>.env
-          echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env
-          echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env
-          echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env
+          echo "AWS_HOST=${{ vars.AWS_HOST }}" >>.env.test
+          echo "AWS_ACCESS_KEY=${{ vars.AWS_ACCESS_KEY }}" >>.env.test
+          echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env.test
+          echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env.test
+          echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env.test
 
-          echo "MAIL_DOMAIN=${{ vars.MAIL_DOMAIN }}" >>.env
-          echo "MAIL_KEY_SELECTOR=${{ vars.MAIL_KEY_SELECTOR }}" >>.env
-          echo "MAIL_PRIVATE_KEY=${{ vars.MAIL_PRIVATE_KEY }}" >>.env
-          echo "MAIL_HOST=${{ vars.MAIL_HOST }}" >>.env
-          echo "MAIL_PORT=${{ vars.MAIL_PORT }}" >>.env
-          echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >>.env
-          echo "MAIL_USER=${{ vars.MAIL_USER }}" >>.env
-          echo "MAIL_PASS=${{ vars.MAIL_PASS }}" >>.env
+          echo "MAIL_DOMAIN=${{ vars.MAIL_DOMAIN }}" >>.env.test
+          echo "MAIL_KEY_SELECTOR=${{ vars.MAIL_KEY_SELECTOR }}" >>.env.test
+          echo "MAIL_PRIVATE_KEY=${{ vars.MAIL_PRIVATE_KEY }}" >>.env.test
+          echo "MAIL_HOST=${{ vars.MAIL_HOST }}" >>.env.test
+          echo "MAIL_PORT=${{ vars.MAIL_PORT }}" >>.env.test
+          echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >>.env.test
+          echo "MAIL_USER=${{ vars.MAIL_USER }}" >>.env.test
+          echo "MAIL_PASS=${{ vars.MAIL_PASS }}" >>.env.test
 
-          echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
-          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+          echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env.test
+          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env.test
       - name: Test
         run: yarn test
       - name: Test end to end
