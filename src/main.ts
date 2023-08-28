@@ -3,7 +3,6 @@ import { join as pathJoin } from 'node:path';
 import { dump as yamlDump } from 'js-yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import {
   SwaggerModule,
   DocumentBuilder,
@@ -11,10 +10,10 @@ import {
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
-import { ValidationError } from 'class-validator';
 
 import { version, author, homepage, description } from '../package.json';
 import { ExceptionsFilter } from './exception/exceptions.filter';
+import { validationPipeOptions } from './utils/validation-pipe-options';
 import { WsAdapter } from './websocket/ws-adapter';
 import { AppModule } from './app.module';
 
@@ -50,36 +49,7 @@ async function bootstrap() {
     .useGlobalFilters(
       new ExceptionsFilter(app.get(HttpAdapterHost).httpAdapter, configService),
     )
-    .useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        skipUndefinedProperties: true,
-        forbidNonWhitelisted: true,
-        forbidUnknownValues: true,
-        stopAtFirstError: false,
-        exceptionFactory: (errors: ValidationError[]) => {
-          const message = errors
-            .map((error) => {
-              let ret: Array<string> =
-                (error.constraints && Object.values(error.constraints)) || [];
-              if (error.children && error.children.length > 0) {
-                ret = [
-                  ...ret,
-                  error.children
-                    .map(
-                      (child) =>
-                        child.constraints && Object.values(child.constraints),
-                    )
-                    .join(', '),
-                ];
-              }
-              return ret;
-            })
-            .join(', ');
-          return new BadRequestException(message);
-        },
-      }),
-    )
+    .useGlobalPipes(validationPipeOptions())
     .useGlobalInterceptors(new LoggerErrorInterceptor())
     .useWebSocketAdapter(new WsAdapter(app));
 

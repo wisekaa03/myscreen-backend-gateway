@@ -15,8 +15,9 @@ export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
 
   async createTypeOrmOptions(): Promise<TypeOrmModuleOptions> {
     const cacheHost = this.configService.get<string>('REDIS_HOST');
+    const logLevel = this.configService.get<string>('LOG_LEVEL');
     return {
-      type: this.configService.get<any>('DB_TYPE') ?? 'postgres',
+      type: this.configService.get<any>('DB_TYPE', 'postgres'),
       host: this.configService.get<string>('DB_HOST'),
       port: parseInt(this.configService.get<string>('DB_PORT', '5432'), 10),
       username: this.configService.get<string>('DB_USERNAME'),
@@ -24,10 +25,8 @@ export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
       database: this.configService.get<string>('DB_DATABASE'),
       ssl: this.configService.get<string>('DB_SSL', 'true') === 'true',
       nativeDriver: true,
-      logging: this.configService
-        .get<string>('LOG_LEVEL', 'debug')
-        .split(',') as LogLevel[],
-      logger: new TypeOrmLogger(),
+      logging: logLevel ? (logLevel.split(',') as LogLevel[]) : false,
+      logger: logLevel ? new TypeOrmLogger() : undefined,
       synchronize: true,
       entities: [`${pathResolve(__dirname, '..')}/database/*.entity.{ts,js}`],
       migrations: [`${pathResolve(__dirname, '..')}/migrations/*.{ts,js}`],

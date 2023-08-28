@@ -73,7 +73,7 @@ export class UserService {
    */
   verify(controllers: string, crud: CRUD, user: UserExtEntity): boolean {
     const fullName = UserService.fullName(user);
-    this.logger.debug(
+    this.logger.log(
       `User: "${fullName}" Controllers: "${controllers}" CRUD: "${crud}"`,
     );
     const {
