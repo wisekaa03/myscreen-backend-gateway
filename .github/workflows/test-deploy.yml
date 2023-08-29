@@ -196,7 +196,7 @@ jobs:
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
       - name: Install SSH key
-        if: ${{ runner.name != 'myscreen-dev' }}
+        if: ${{ contains(runner.name, 'myscreen') == false }}
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
