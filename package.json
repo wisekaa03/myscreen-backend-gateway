@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.41.40",
+  "version": "2.41.41",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -102,7 +102,7 @@
     "@nestjs/platform-express": "^10.2.2",
     "@nestjs/platform-ws": "^10.2.2",
     "@nestjs/schedule": "^3.0.3",
-    "@nestjs/swagger": "^7.1.8",
+    "@nestjs/swagger": "^7.1.9",
     "@nestjs/typeorm": "^10.0.0",
     "@nestjs/websockets": "^10.2.2",
     "@vicimpa/rubles": "^0.1.10",
