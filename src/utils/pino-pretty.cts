@@ -1,7 +1,7 @@
 import type { LogDescriptor, LoggerOptions } from 'pino';
 import pinoPretty from 'pino-pretty';
 
-export = (opts: LoggerOptions) =>
+export default (opts: LoggerOptions) =>
   pinoPretty({
     ...opts,
     messageFormat: (
@@ -9,13 +9,7 @@ export = (opts: LoggerOptions) =>
       messageKey: string,
       // levelLabel: string,
     ) => {
-      let message: string;
-      const context = log.context || 'HTTP';
-      if (!log[messageKey]) {
-        message = `[${context}]`;
-      } else {
-        message = `[${context}] ${log[messageKey]}`;
-      }
+      const message = `[${log.context || 'HTTP'}] ${log[messageKey]}`;
       // eslint-disable-next-line no-param-reassign
       delete log.context;
       return message;
