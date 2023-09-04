@@ -12,10 +12,12 @@
       "**/dist/*/**": true,
       "**/upload/*/**": true
     },
+    "versionlens.suggestions.showOnStartup": false,
+    "versionlens.suggestions.showPrereleasesOnStartup": false,
+    "versionlens.caching.duration": 5,
     "path-intellisense.extensionOnImport": true,
     "typescript.suggest.paths": false,
     "javascript.suggest.paths": false,
-    "versionlens.suggestions.showPrereleasesOnStartup": false,
     "editor.bracketPairColorization.enabled": true,
     "editor.guides.bracketPairs": "active",
     // "editor.fontFamily": "Fira Code",
