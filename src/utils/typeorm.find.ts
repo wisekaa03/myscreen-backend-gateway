@@ -47,7 +47,7 @@ export class TypeOrmFind {
       });
     }
     {
-      const logger = new Logger('ORDER');
+      const logger = new Logger(TypeOrmFind.name);
       logger.debug(qb.getSql());
     }
     return qb;

@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import type { Logger as ITypeOrmLogger } from 'typeorm';
+import type { Logger as ITypeOrmLogger, QueryRunner } from 'typeorm';
 
 export class TypeOrmLogger implements ITypeOrmLogger {
   private readonly logger = new Logger('TypeOrm');
@@ -10,7 +10,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
   logQuery = (
     message: string,
     param?: unknown[],
-    // queryRunner?: QueryRunner,
+    queryRunner?: QueryRunner,
   ): void => {
     let parameters: string;
     if (Array.isArray(param) && param.length > 0) {
@@ -24,7 +24,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     } else {
       parameters = param ? ` ${JSON.stringify(param)}` : '';
     }
-    this.logger.debug(`${message}${parameters}`);
+    this.logger.debug(message, parameters, queryRunner);
   };
 
   /**
@@ -34,7 +34,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     error: string,
     message: string,
     param?: unknown[],
-    // queryRunner?: QueryRunner,
+    queryRunner?: QueryRunner,
   ): void => {
     let parameters: string;
     if (Array.isArray(param) && param.length > 0) {
@@ -46,7 +46,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     } else {
       parameters = param ? ` ${JSON.stringify(param)}` : '';
     }
-    this.logger.error(`${message}${parameters}`, error);
+    this.logger.error(`${message}${parameters}`, error, queryRunner);
   };
 
   /**
@@ -56,20 +56,21 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     time: number,
     query: string,
     parameters?: unknown[],
-    // queryRunner?: QueryRunner,
-  ): void => this.logger.debug(`Time is slow: ${time}`, parameters);
+    queryRunner?: QueryRunner,
+  ): void =>
+    this.logger.debug(`Time is slow: ${time}`, parameters, query, queryRunner);
 
   /**
    * Logs events from the schema build process.
    */
-  logSchemaBuild = (message: string /* queryRunner?: QueryRunner */): void =>
-    this.logger.debug(message);
+  logSchemaBuild = (message: string, queryRunner?: QueryRunner): void =>
+    this.logger.verbose(message, queryRunner);
 
   /**
    * Logs events from the migrations run process.
    */
-  logMigration = (message: string /* queryRunner?: QueryRunner */): void =>
-    this.logger.debug(message);
+  logMigration = (message: string, queryRunner?: QueryRunner): void =>
+    this.logger.warn(message, queryRunner);
 
   /**
    * Perform logging using given logger, or by default to the console.
@@ -78,6 +79,11 @@ export class TypeOrmLogger implements ITypeOrmLogger {
   log = (
     level: 'log' | 'info' | 'warn',
     message: unknown,
-    // queryRunner?: QueryRunner,
-  ): void => this.logger.debug(message);
+    queryRunner?: QueryRunner,
+  ): void =>
+    level === 'log'
+      ? this.logger.log(message, queryRunner)
+      : level === 'info'
+      ? this.logger.verbose(message, queryRunner)
+      : this.logger.warn(message, queryRunner);
 }

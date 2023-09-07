@@ -20,7 +20,12 @@ import { CrontabModule } from './crontab/crontab.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, expandVariables: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      expandVariables: true,
+      cache: true,
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+    }),
     LoggerModule.forRootAsync({
       useFactory: async (
         configService: ConfigService,

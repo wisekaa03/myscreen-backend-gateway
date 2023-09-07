@@ -36,58 +36,61 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Environment variables
         run: |
-          rm -rf .env
-          touch .env
+          rm -rf .env.test
+          touch .env.test
 
           # Server config
-          echo "PORT=${{ vars.PORT }}" >>.env
-          echo "API_PATH=${{ vars.API_PATH }}" >>.env
-          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >>.env
-          echo "FILES_UPLOAD=${{ vars.FILES_UPLOAD }}" >>.env
-          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >>.env
+          echo "PORT=${{ vars.PORT }}" >>.env.test
+          echo "API_PATH=${{ vars.API_PATH }}" >>.env.test
+          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >>.env.test
+          echo "FILES_UPLOAD=${{ vars.FILES_UPLOAD }}" >>.env.test
+          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >>.env.test
 
           # PostgreSQL Credentials
-          echo "DB_DATABASE=${{ vars.DB_DATABASE }}" >>.env
-          echo "DB_USERNAME=${{ vars.DB_USERNAME }}" >>.env
-          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >>.env
-          echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
-          echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
-          echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
-          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env
+          echo "DB_DATABASE=${{ vars.DB_DATABASE }}" >>.env.test
+          echo "DB_USERNAME=${{ vars.DB_USERNAME }}" >>.env.test
+          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >>.env.test
+          echo "DB_PORT=${{ vars.DB_PORT }}" >>.env.test
+          echo "DB_HOST=${{ vars.DB_HOST }}" >>.env.test
+          echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env.test
+          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env.test
 
           # JWT Credentials
-          echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
-          echo "JWT_ACCESS_EXPIRES=${{ vars.JWT_ACCESS_EXPIRES }}" >>.env
-          echo "JWT_REFRESH_TOKEN=${{ vars.JWT_REFRESH_TOKEN }}" >>.env
-          echo "JWT_REFRESH_EXPIRES=${{ vars.JWT_REFRESH_EXPIRES }}" >>.env
+          echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env.test
+          echo "JWT_ACCESS_EXPIRES=${{ vars.JWT_ACCESS_EXPIRES }}" >>.env.test
+          echo "JWT_REFRESH_TOKEN=${{ vars.JWT_REFRESH_TOKEN }}" >>.env.test
+          echo "JWT_REFRESH_EXPIRES=${{ vars.JWT_REFRESH_EXPIRES }}" >>.env.test
 
           # Logstash config
-          # echo "KIBANA_HOST=${{ vars.KIBANA_HOST }}" >>.env
-          # echo "KIBANA_PORT=${{ vars.KIBANA_PORT }}" >>.env
+          # echo "KIBANA_HOST=${{ vars.KIBANA_HOST }}" >>.env.test
+          # echo "KIBANA_PORT=${{ vars.KIBANA_PORT }}" >>.env.test
 
           # Secrets
-          echo "AWS_HOST=${{ vars.AWS_HOST }}" >>.env
-          echo "AWS_ACCESS_KEY=${{ vars.AWS_ACCESS_KEY }}" >>.env
-          echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env
-          echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env
-          echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env
+          echo "AWS_HOST=${{ vars.AWS_HOST }}" >>.env.test
+          echo "AWS_ACCESS_KEY=${{ vars.AWS_ACCESS_KEY }}" >>.env.test
+          echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env.test
+          echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env.test
+          echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env.test
 
-          echo "MAIL_DOMAIN=${{ vars.MAIL_DOMAIN }}" >>.env
-          echo "MAIL_KEY_SELECTOR=${{ vars.MAIL_KEY_SELECTOR }}" >>.env
-          echo "MAIL_PRIVATE_KEY=${{ vars.MAIL_PRIVATE_KEY }}" >>.env
-          echo "MAIL_HOST=${{ vars.MAIL_HOST }}" >>.env
-          echo "MAIL_PORT=${{ vars.MAIL_PORT }}" >>.env
-          echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >>.env
-          echo "MAIL_USER=${{ vars.MAIL_USER }}" >>.env
-          echo "MAIL_PASS=${{ vars.MAIL_PASS }}" >>.env
+          echo "MAIL_DOMAIN=${{ vars.MAIL_DOMAIN }}" >>.env.test
+          echo "MAIL_KEY_SELECTOR=${{ vars.MAIL_KEY_SELECTOR }}" >>.env.test
+          echo "MAIL_PRIVATE_KEY=${{ vars.MAIL_PRIVATE_KEY }}" >>.env.test
+          echo "MAIL_HOST=${{ vars.MAIL_HOST }}" >>.env.test
+          echo "MAIL_PORT=${{ vars.MAIL_PORT }}" >>.env.test
+          echo "MAIL_FROM=${{ vars.MAIL_FROM }}" >>.env.test
+          echo "MAIL_USER=${{ vars.MAIL_USER }}" >>.env.test
+          echo "MAIL_PASS=${{ vars.MAIL_PASS }}" >>.env.test
 
-          echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
-          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+          echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env.test
+          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env.test
       - name: Test
         run: yarn test
       - name: Test end to end
         if: ${{ !cancelled() }}
         run: yarn test:e2e
+      - name: Build test
+        if: ${{ !cancelled() }}
+        run: yarn build
 
   deployment:
     needs: 'test'
@@ -193,7 +196,7 @@ jobs:
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
       - name: Install SSH key
-        if: ${{ runner.name != 'myscreen-dev' }}
+        if: ${{ contains(runner.name, 'myscreen') == false }}
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -204,6 +207,7 @@ jobs:
         run: |
           rsync -rlDzc -i --del -e "$SSH_PARAMS" "./" \
             "$REMOTE_USER"@"$REMOTE_HOST":"$REMOTE_TARGET" \
+            --include="node_modules/exceljs/**/doc/" \
             --exclude="node_modules/**/AUTHORS" \
             --exclude="node_modules/**/ChangeLog" \
             --exclude="node_modules/**/CHANGES" \
@@ -219,44 +223,43 @@ jobs:
             --exclude="node_modules/**/.babelrc" \
             --exclude="node_modules/**/.editorconfig" \
             --exclude="node_modules/**/.gitattributes" \
-            --exclude="node_modules/**/.travis.yml" \
-            --exclude="node_modules/**/.prettierrc" \
-            --exclude="node_modules/**/Gruntfile.js" \
-            --exclude="node_modules/**/*.config.js" \
+            --exclude="node_modules/**/.travis*" \
+            --exclude="node_modules/**/.prettierrc*" \
+            --exclude="node_modules/**/.airtap.*" \
+            --exclude="node_modules/**/Gruntfile.*" \
             --exclude="node_modules/**/.npmignore" \
             --exclude="node_modules/**/.nvmrc" \
-            --exclude="node_modules/**/.eslintrc" \
-            --exclude="node_modules/**/.eslintcache" \
-            --exclude="node_modules/**/.eslintrc.js" \
-            --exclude="node_modules/**/.eslintignore" \
-            --exclude="node_modules/**/.nycrc" \
+            --exclude="node_modules/**/.eslint*" \
+            --exclude="node_modules/**/.nycrc*" \
             --exclude="node_modules/**/.jshintrc" \
             --exclude="node_modules/**/renovate.json" \
-            --exclude="node_modules/**/jest.json" \
+            --exclude="node_modules/**/jest.*" \
             --exclude="node_modules/**/bower.json" \
-            --exclude="node_modules/**/.taprc" \
-            --exclude="node_modules/**/.commitlintrc.json" \
+            --exclude="node_modules/**/.taprc*" \
+            --exclude="node_modules/**/.commitlintrc.*" \
             --exclude="node_modules/**/.release-it.json" \
             --exclude="node_modules/**/nest-cli.json" \
             --exclude="node_modules/**/.tsbuildinfo" \
             --exclude="node_modules/**/Makefile" \
-            --exclude="node_modules/**/tsconfig.json" \
-            --exclude="node_modules/**/tsconfig.*.json" \
-            --exclude="node_modules/**/tslint.json" \
+            --exclude="node_modules/**/tsconfig*" \
+            --exclude="node_modules/**/tslint.*" \
             --exclude="node_modules/**/mocha.opts" \
-            --exclude="node_modules/**/*.test.js" \
-            --exclude="node_modules/**/*.js.flow" \
             --exclude="node_modules/**/.dockerignore" \
-            --exclude="node_modules/**/codecov.yml" \
+            --exclude="node_modules/**/codecov.*" \
             --exclude="node_modules/**/test/" \
             --exclude="node_modules/**/tests/" \
             --exclude="node_modules/**/.github/" \
             --exclude="node_modules/**/.circleci/" \
             --exclude="node_modules/**/.vscode/" \
             --exclude="node_modules/**/.husky/" \
+            --exclude="node_modules/**/docs/" \
+            --exclude="node_modules/**/doc/" \
             --exclude="node_modules/**/example/" \
             --exclude="node_modules/**/examples/" \
             --exclude="node_modules/.yarn-integrity" \
+            --exclude="node_modules/**.test.js" \
+            --exclude="node_modules/**.js.flow" \
+            --exclude="node_modules/**.config.js" \
             --exclude="node_modules/**.txt" \
             --exclude="node_modules/**.wiki" \
             --exclude="node_modules/**.lock" \

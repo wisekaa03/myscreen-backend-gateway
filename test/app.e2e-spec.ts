@@ -2,18 +2,12 @@
 import crypto from 'node:crypto';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
-import {
-  BadRequestException,
-  INestApplication,
-  ValidationPipe,
-} from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import superAgentRequest from 'supertest';
-import { LoggerModule } from 'nestjs-pino';
 import Jabber from 'jabber';
-import { ValidationError } from 'class-validator';
-import { createMock } from '@golevelup/ts-jest';
 
+import { Logger } from 'nestjs-pino';
 import {
   AuthResponse,
   RegisterRequest,
@@ -33,6 +27,7 @@ import {
 } from '@/dto';
 import { Status, UserRoleEnum } from '@/enums';
 import { generateMailToken } from '@/utils/mail-token';
+import { validationPipeOptions } from '@/utils/validation-pipe-options';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
 import { UserEntity } from '@/database/user.entity';
 import { UserExtEntity } from '@/database/user-ext.entity';
@@ -116,53 +111,22 @@ describe('Backend API (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-      providers: [
-        {
-          provide: LoggerModule,
-          useClass: mockRepository,
-        },
-      ],
     }).compile();
-
     app = moduleFixture.createNestApplication();
+
     const httpAdaper = app.get(HttpAdapterHost);
+    const configService = app.get(ConfigService);
 
-    app.useLogger(['debug']);
+    const logLevel = configService.get('LOG_LEVEL');
+    if (logLevel) {
+      const logger = app.get(Logger);
+      app.useLogger(logger);
+    }
 
-    const configService = createMock<ConfigService>();
     app.useGlobalFilters(
       new ExceptionsFilter(httpAdaper.httpAdapter, configService),
     );
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        forbidNonWhitelisted: true,
-        forbidUnknownValues: true,
-        skipUndefinedProperties: true,
-        stopAtFirstError: true,
-        exceptionFactory: (errors: ValidationError[]) => {
-          const message = errors
-            .map((error) => {
-              let ret: Array<string> =
-                (error.constraints && Object.values(error.constraints)) || [];
-              if (error.children && error.children.length > 0) {
-                ret = [
-                  ...ret,
-                  error.children
-                    .map(
-                      (child) =>
-                        child.constraints && Object.values(child.constraints),
-                    )
-                    .join(', '),
-                ];
-              }
-              return ret;
-            })
-            .join(', ');
-          return new BadRequestException(message);
-        },
-      }),
-    );
+    app.useGlobalPipes(validationPipeOptions());
     app.useWebSocketAdapter(new WsAdapter(app));
     userService = app.get<UserService>(UserService);
 
