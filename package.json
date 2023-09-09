@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.41.49",
+  "version": "2.41.50",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -89,10 +89,10 @@
     "**/**/webpack": ">=5.88.2",
     "**/**/which": ">=4.0.0",
     "**/**/write-file-atomic": ">=5.0.1",
-    "**/**/ws": ">=8.14.0"
+    "**/**/ws": ">=8.14.1"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.405.0",
+    "@aws-sdk/client-s3": "^3.409.0",
     "@elastic/elasticsearch": "^7.17.12",
     "@nestjs-modules/mailer": "^1.9.1",
     "@nestjs/common": "^10.2.4",
@@ -133,7 +133,7 @@
     "passport-jwt": "^4.0.1",
     "pdfmake": "^0.2.7",
     "pg": "^8.11.3",
-    "pino": "^8.15.0",
+    "pino": "^8.15.1",
     "pino-elasticsearch": "^6.7.0",
     "pino-http": "^8.5.0",
     "pino-pretty": "^10.2.0",
@@ -141,7 +141,7 @@
     "rimraf": "^5.0.1",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.17",
-    "ws": "^8.14.0"
+    "ws": "^8.14.1"
   },
   "devDependencies": {
     "@golevelup/ts-jest": "^0.4.0",
@@ -157,7 +157,7 @@
     "@types/jsonwebtoken": "^9.0.2",
     "@types/ms": "^0.7.31",
     "@types/multer": "^1.4.7",
-    "@types/node": "^20.5.9",
+    "@types/node": "^20.6.0",
     "@types/nodemailer": "^6.4.9",
     "@types/passport": "^1.0.12",
     "@types/passport-jwt": "^3.0.9",
@@ -167,7 +167,7 @@
     "@types/ws": "^8.5.5",
     "@typescript-eslint/eslint-plugin": "^6.6.0",
     "@typescript-eslint/parser": "^6.6.0",
-    "eslint": "^8.48.0",
+    "eslint": "^8.49.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.1.0",
     "eslint-config-prettier": "^9.0.0",
