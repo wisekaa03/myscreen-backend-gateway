@@ -10,11 +10,14 @@ import { ConfigService } from '@nestjs/config';
 import {
   DeleteResult,
   FindManyOptions,
+  In,
   IsNull,
   LessThanOrEqual,
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
+import parseISO from 'date-fns/parseISO';
+import differenceInDays from 'date-fns/differenceInDays';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -24,6 +27,9 @@ import { ApplicationEntity } from './application.entity';
 import { FileEntity } from './file.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { UserExtEntity } from './user-ext.entity';
+// eslint-disable-next-line import/no-cycle
+import { MonitorService } from './monitor.service';
 
 @Injectable()
 export class ApplicationService {
@@ -35,6 +41,8 @@ export class ApplicationService {
     private readonly mailService: MailService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
+    @Inject(forwardRef(() => MonitorService))
+    private readonly monitorService: MonitorService,
     @InjectRepository(ApplicationEntity)
     private readonly applicationRepository: Repository<ApplicationEntity>,
     configService: ConfigService,
@@ -274,5 +282,41 @@ export class ApplicationService {
     });
 
     return deleteResult;
+  }
+
+  async precalculate({
+    user,
+    playlistDuration,
+    dateFrom,
+    dateTo,
+    monitorsId,
+  }: {
+    user: UserExtEntity;
+    playlistDuration: number;
+    dateFrom: string;
+    dateTo: string;
+    monitorsId: string[];
+  }): Promise<number> {
+    const monitors = await this.monitorService.find(user.id, {
+      where: { id: In(monitorsId) },
+      relations: [],
+      select: ['id', 'price1s', 'minWarranty'],
+    });
+    if (!monitors.length) {
+      throw new NotFoundException('Monitors not found');
+    }
+    if (monitorsId && monitors.length !== monitorsId.length) {
+      throw new NotFoundException('Monitors not found');
+    }
+    const diffDays = differenceInDays(parseISO(dateTo), parseISO(dateFrom));
+
+    const sum = monitors.reduce(
+      (acc, monitor) =>
+        acc +
+        playlistDuration * monitor.price1s * monitor.minWarranty * diffDays,
+      0,
+    );
+
+    return sum;
   }
 }

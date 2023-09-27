@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
@@ -12,11 +17,13 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
+// eslint-disable-next-line import/no-cycle
 import { ApplicationService } from './application.service';
 
 @Injectable()
 export class MonitorService {
   constructor(
+    @Inject(forwardRef(() => ApplicationService))
     private readonly applicationService: ApplicationService,
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,

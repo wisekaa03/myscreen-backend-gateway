@@ -441,7 +441,7 @@ export class MonitorController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-favorite-plus',
-    summary: 'Избранное +',
+    summary: "Избранное '+'",
   })
   @ApiResponse({
     status: 200,
@@ -474,7 +474,7 @@ export class MonitorController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'monitor-favorite-minus',
-    summary: 'Избранное -',
+    summary: "Избранное '-'",
   })
   @ApiResponse({
     status: 200,

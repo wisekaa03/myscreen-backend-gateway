@@ -24,6 +24,8 @@ import {
   ApplicationsGetResponse,
   ApplicationUpdateRequest,
   SuccessResponse,
+  ApplicationPrecalculateRequest,
+  ApplicationPrecalculateResponse,
 } from '@/dto';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
@@ -224,6 +226,42 @@ export class ApplicationController {
 
     return {
       status: Status.Success,
+    };
+  }
+
+  @Post('precalculate')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'application-precalculate',
+    summary: 'Возвращает предрасчет мониторов',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: ApplicationPrecalculateResponse,
+  })
+  @Crud(CRUD.READ)
+  async precalculateApplication(
+    @Req() { user }: ExpressRequest,
+    @Body()
+    {
+      monitorsId,
+      playlistDuration,
+      dateFrom,
+      dateTo,
+    }: ApplicationPrecalculateRequest,
+  ): Promise<ApplicationPrecalculateResponse> {
+    const data = await this.applicationService.precalculate({
+      user,
+      monitorsId,
+      playlistDuration,
+      dateFrom,
+      dateTo,
+    });
+
+    return {
+      status: Status.Success,
+      data,
     };
   }
 }

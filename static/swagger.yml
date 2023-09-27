@@ -573,7 +573,7 @@ paths:
   /api/v2/monitor/{monitorId}/favoritePlus:
     get:
       operationId: monitor-favorite-plus
-      summary: Избранное +
+      summary: Избранное '+'
       parameters:
         - name: monitorId
           required: true
@@ -601,7 +601,7 @@ paths:
   /api/v2/monitor/{monitorId}/favoriteMinus:
     get:
       operationId: monitor-favorite-minus
-      summary: Избранное -
+      summary: Избранное '-'
       parameters:
         - name: monitorId
           required: true
@@ -2638,6 +2638,35 @@ paths:
         "501": *ref_106
       tags: *ref_107
       security: *ref_108
+  /api/v2/application/precalculate:
+    post:
+      operationId: application-precalculate
+      summary: Возвращает предрасчет мониторов
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationPrecalculateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationPrecalculateResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
   /api/v2/crontab/create/users:
     post:
       operationId: crontab-create-users
@@ -2740,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.41.60
+  version: 2.41.61
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -6020,6 +6049,42 @@ components:
           $ref: "#/components/schemas/ApplicationApproved"
       required:
         - approved
+    ApplicationPrecalculateRequest:
+      type: object
+      properties:
+        monitorsId:
+          description: Мониторы для расчета
+          type: array
+          items:
+            type: string
+            format: uuid
+        playlistDuration:
+          type: number
+          description: Длительность плейлиста (в секундах)
+        dateFrom:
+          type: string
+          description: Дата и время начала
+        dateTo:
+          type: string
+          description: Дата и время окончания
+      required:
+        - monitorsId
+        - playlistDuration
+        - dateFrom
+        - dateTo
+    ApplicationPrecalculateResponse:
+      type: object
+      properties:
+        status:
+          description: Статус операции
+          example: success
+          $ref: "#/components/schemas/Status"
+        data:
+          type: string
+          description: Возврат после предрасчета
+      required:
+        - status
+        - data
     CrontabCreateRequest:
       type: object
       properties:
