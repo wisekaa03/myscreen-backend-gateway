@@ -245,7 +245,7 @@ export class ApplicationController {
     @Req() { user }: ExpressRequest,
     @Body()
     {
-      monitorsId,
+      monitorIds,
       playlistDuration,
       dateFrom,
       dateTo,
@@ -253,7 +253,7 @@ export class ApplicationController {
   ): Promise<ApplicationPrecalculateResponse> {
     const sum = await this.applicationService.precalculate({
       user,
-      monitorsId,
+      monitorIds,
       playlistDuration,
       dateFrom,
       dateTo,

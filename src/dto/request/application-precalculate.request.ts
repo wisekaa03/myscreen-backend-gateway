@@ -11,7 +11,7 @@ export class ApplicationPrecalculateRequest {
     required: true,
   })
   @IsUUID('all', { each: true })
-  monitorsId!: string[];
+  monitorIds!: string[];
 
   @ApiProperty({
     description: 'Длительность плейлиста (в секундах)',
