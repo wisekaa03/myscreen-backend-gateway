@@ -62,3 +62,4 @@ export * from './application-create.request';
 export * from './application-update.request';
 export * from './report-device-status.request';
 export * from './report-views.request';
+export * from './application-precalculate.request';
