@@ -245,15 +245,15 @@ export class ApplicationController {
     @Req() { user }: ExpressRequest,
     @Body()
     {
-      monitorsId,
+      monitorIds,
       playlistDuration,
       dateFrom,
       dateTo,
     }: ApplicationPrecalculateRequest,
   ): Promise<ApplicationPrecalculateResponse> {
-    const data = await this.applicationService.precalculate({
+    const sum = await this.applicationService.precalculate({
       user,
-      monitorsId,
+      monitorIds,
       playlistDuration,
       dateFrom,
       dateTo,
@@ -261,7 +261,7 @@ export class ApplicationController {
 
     return {
       status: Status.Success,
-      data,
+      data: { sum },
     };
   }
 }

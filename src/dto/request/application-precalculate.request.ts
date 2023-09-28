@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
+import subDays from 'date-fns/subDays';
 
 export class ApplicationPrecalculateRequest {
   @ApiProperty({
@@ -10,11 +11,12 @@ export class ApplicationPrecalculateRequest {
     required: true,
   })
   @IsUUID('all', { each: true })
-  monitorsId!: string[];
+  monitorIds!: string[];
 
   @ApiProperty({
     description: 'Длительность плейлиста (в секундах)',
     type: Number,
+    example: 60,
     required: true,
   })
   @IsNotEmpty()
@@ -23,7 +25,8 @@ export class ApplicationPrecalculateRequest {
 
   @ApiProperty({
     description: 'Дата и время начала',
-    type: String,
+    type: Date,
+    example: subDays(new Date(), 1).toISOString(),
     required: true,
   })
   @IsNotEmpty()
@@ -32,7 +35,8 @@ export class ApplicationPrecalculateRequest {
 
   @ApiProperty({
     description: 'Дата и время окончания',
-    type: String,
+    type: Date,
+    example: new Date().toISOString(),
     required: true,
   })
   @IsNotEmpty()

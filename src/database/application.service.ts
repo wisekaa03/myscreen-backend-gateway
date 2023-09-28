@@ -289,23 +289,23 @@ export class ApplicationService {
     playlistDuration,
     dateFrom,
     dateTo,
-    monitorsId,
+    monitorIds,
   }: {
     user: UserExtEntity;
     playlistDuration: number;
     dateFrom: string;
     dateTo: string;
-    monitorsId: string[];
-  }): Promise<number> {
+    monitorIds: string[];
+  }): Promise<string> {
     const monitors = await this.monitorService.find(user.id, {
-      where: { id: In(monitorsId) },
+      where: { id: In(monitorIds) },
       relations: [],
       select: ['id', 'price1s', 'minWarranty'],
     });
     if (!monitors.length) {
       throw new NotFoundException('Monitors not found');
     }
-    if (monitorsId && monitors.length !== monitorsId.length) {
+    if (monitorIds && monitors.length !== monitorIds.length) {
       throw new NotFoundException('Monitors not found');
     }
     const diffDays = differenceInDays(parseISO(dateTo), parseISO(dateFrom));
@@ -317,6 +317,6 @@ export class ApplicationService {
       0,
     );
 
-    return sum;
+    return String(sum);
   }
 }
