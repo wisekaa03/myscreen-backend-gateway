@@ -296,7 +296,7 @@ export class ApplicationService {
     dateFrom: string;
     dateTo: string;
     monitorsId: string[];
-  }): Promise<number> {
+  }): Promise<string> {
     const monitors = await this.monitorService.find(user.id, {
       where: { id: In(monitorsId) },
       relations: [],
@@ -317,6 +317,6 @@ export class ApplicationService {
       0,
     );
 
-    return sum;
+    return String(sum);
   }
 }
