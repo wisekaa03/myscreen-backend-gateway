@@ -146,8 +146,8 @@ export class UserService {
         }
       }
     } else if (role === UserRoleEnum.Advertiser) {
-      if (controllers === 'monitor') {
-        throw new ForbiddenException();
+      if (controllers === 'monitor' && crud !== CRUD.READ) {
+        throw new ForbiddenException('You have a Advertiser account, denied.');
       }
 
       if (
