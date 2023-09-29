@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.41.64",
+  "version": "2.41.65",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -57,7 +57,7 @@
     "**/**/hpagent": ">=1.2.0",
     "**/**/inquirer": "^8.2.6",
     "**/**/jsonwebtoken": ">=9.0.2",
-    "**/**/magic-string": ">=0.30.3",
+    "**/**/magic-string": ">=0.30.4",
     "**/**/memfs": ">=4.5.0",
     "**/**/multer": ">=1.4.5-lts.1",
     "**/**/node-gyp": ">=9.4.0",
@@ -76,7 +76,7 @@
     "**/**/source-map-support": ">=0.5.21",
     "**/**/split2": ">=4.2.0",
     "**/**/string_decoder": ">=1.3.0",
-    "**/**/swagger-ui-dist": ">=5.7.2",
+    "**/**/swagger-ui-dist": ">=5.9.0",
     "**/**/tar-fs": ">=3.0.4",
     "**/**/through2": ">=4.0.2",
     "**/**/tr46": ">=4.1.1",

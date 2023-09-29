@@ -27,6 +27,7 @@ async function bootstrap() {
         'https://cp.dev.myscreen.ru',
         'https://api.myscreen.ru',
         'https://api.dev.myscreen.ru',
+        'https://promo.myscreen.ru',
         'http://localhost:3000',
         'http://localhost:3001',
       ],
