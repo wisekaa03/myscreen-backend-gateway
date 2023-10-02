@@ -118,89 +118,138 @@ describe(UserService.name, () => {
 
     test('Administrator and Accountant users', async () => {
       expect(
-        service.verify('auth', CRUD.READ, {
-          ...monitorTestDemo,
-          role: UserRoleEnum.Administrator,
-        }),
+        service.verify(
+          {
+            ...monitorTestDemo,
+            role: UserRoleEnum.Administrator,
+          },
+          'auth',
+          'login',
+          CRUD.READ,
+        ),
       ).toBe(true);
       expect(
-        service.verify('invoice', CRUD.READ, {
-          ...monitorTestDemo,
-          role: UserRoleEnum.Accountant,
-        }),
+        service.verify(
+          {
+            ...monitorTestDemo,
+            role: UserRoleEnum.Accountant,
+          },
+          'invoice',
+          'get',
+          CRUD.READ,
+        ),
       ).toBe(true);
     });
 
     test('Access to Auth and invoice', () => {
-      expect(service.verify('auth', CRUD.READ, monitorTestDemo)).toBe(true);
-      expect(service.verify('invoice', CRUD.READ, monitorTestDemo)).toBe(true);
+      expect(service.verify(monitorTestDemo, 'auth', 'get', CRUD.READ)).toBe(
+        true,
+      );
+      expect(service.verify(monitorTestDemo, 'invoice', 'get', CRUD.READ)).toBe(
+        true,
+      );
     });
 
     test('Count of monitors: 5', async () => {
       // Количество мониторов: 5
       expect(() =>
-        service.verify('monitor', CRUD.CREATE, {
-          ...monitorTestDemo,
-          countMonitors: 5,
-        } as UserExtEntity),
+        service.verify(
+          {
+            ...monitorTestDemo,
+            countMonitors: 5,
+          } as UserExtEntity,
+          'monitor',
+          'create',
+          CRUD.CREATE,
+        ),
       ).toThrow();
 
       expect(
-        service.verify('monitor', CRUD.READ, {
-          ...monitorTestDemo,
-          countMonitors: 5,
-        }),
+        service.verify(
+          {
+            ...monitorTestDemo,
+            countMonitors: 5,
+          },
+          'monitor',
+          'get',
+          CRUD.READ,
+        ),
       ).toBe(true);
 
       expect(
-        service.verify('files', CRUD.READ, {
-          ...monitorTestDemo,
-          countMonitors: 5,
-        }),
+        service.verify(
+          {
+            ...monitorTestDemo,
+            countMonitors: 5,
+          },
+          'files',
+          'get',
+          CRUD.READ,
+        ),
       ).toBe(true);
     });
 
     test('Access to create monitors: 14 days', async () => {
       // Доступ к управлению мониторами: 14 дней
       expect(
-        service.verify('monitor', CRUD.CREATE, {
-          ...monitorTestDemo,
-          metrics: {
-            monitors: { online: 0, offline: 0, empty: 0, user: 4 },
-            playlists: { added: 0, played: 0 },
-            storageSpace: { storage: 0, total: 1000000 },
+        service.verify(
+          {
+            ...monitorTestDemo,
+            metrics: {
+              monitors: { online: 0, offline: 0, empty: 0, user: 4 },
+              playlists: { added: 0, played: 0 },
+              storageSpace: { storage: 0, total: 1000000 },
+            },
+            createdAt: subDays(Date.now(), 14),
           },
-          createdAt: subDays(Date.now(), 14),
-        }),
+          'monitor',
+          'create',
+          CRUD.CREATE,
+        ),
       ).toBe(true);
     });
 
     test('Access to create monitors: 15 days', async () => {
       expect(() =>
-        service.verify('monitor', CRUD.CREATE, {
-          ...monitorTestDemo,
-          countMonitors: 4,
-          createdAt: subDays(Date.now(), 15),
-        } as UserExtEntity),
+        service.verify(
+          {
+            ...monitorTestDemo,
+            countMonitors: 4,
+            createdAt: subDays(Date.now(), 15),
+          } as UserExtEntity,
+          'monitor',
+          'create',
+          CRUD.CREATE,
+        ),
       ).not.toBe(true);
     });
 
     test('Access to create files: 28 days', async () => {
       // Доступ к файлам: 28 дней
       expect(
-        service.verify('file', CRUD.CREATE, {
-          ...monitorTestDemo,
-          createdAt: subDays(Date.now(), 28),
-        }),
+        service.verify(
+          {
+            ...monitorTestDemo,
+            createdAt: subDays(Date.now(), 28),
+          },
+          'file',
+          'create',
+          CRUD.CREATE,
+        ),
       ).toBe(true);
     });
 
     test('Access to create files: 29 days', async () => {
       expect(() =>
-        service.verify('file', CRUD.CREATE, {
-          ...monitorTestDemo,
-          createdAt: subDays(Date.now(), 29),
-        }),
+        service.verify(
+          {
+            ...monitorTestDemo,
+            createdAt: subDays(Date.now(), 29),
+          },
+          'file',
+          'create',
+          CRUD.CREATE,
+        ),
       ).not.toBe(true);
     });
   });
