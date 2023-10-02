@@ -19,7 +19,7 @@ export class ApplicationsRequest extends PartialType(
     description: 'Не обработан / Разрешен / Запрещен',
     enum: ApplicationApproved,
     enumName: 'ApplicationApproved',
-    example: [ApplicationApproved.NotProcessed, ApplicationApproved.Allowed],
+    example: [ApplicationApproved.NOTPROCESSED, ApplicationApproved.ALLOWED],
     isArray: true,
     required: false,
   })

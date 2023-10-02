@@ -34,6 +34,7 @@ import { Type } from 'class-transformer';
 
 import {
   MonitorCategoryEnum,
+  MonitorMultiple,
   MonitorOrientation,
   MonitorStatus,
 } from '@/enums';
@@ -267,7 +268,7 @@ export class MonitorEntity {
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({
-    description: 'Есть звуковая дорожка',
+    description: 'Есть звук: true/false',
     example: true,
   })
   @IsBoolean()
@@ -283,6 +284,23 @@ export class MonitorEntity {
   })
   @IsEnum(MonitorStatus)
   status!: MonitorStatus;
+
+  @Column({
+    type: 'enum',
+    enum: MonitorMultiple,
+    default: MonitorMultiple.SINGLE,
+  })
+  @ApiProperty({
+    enum: MonitorMultiple,
+    enumName: 'MonitorMultiple',
+    description:
+      'Обычный монитор, много мониторов с режимом масштабирования или зеркалирования',
+    example: MonitorMultiple.SINGLE,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(MonitorMultiple)
+  multiple!: MonitorMultiple;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({

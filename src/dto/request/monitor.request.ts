@@ -1,25 +1,46 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
-import { Length } from 'class-validator';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { IsDateString, IsOptional } from 'class-validator';
 
 import { MonitorEntity } from '@/database/monitor.entity';
 
-export class MonitorRequest extends PickType(MonitorEntity, [
-  'address',
-  'category',
-  'location',
-  'monitorInfo',
-  'name',
-  'orientation',
-  'price1s',
-  'status',
-  'sound',
-]) {
+export class MonitorRequest extends PartialType(
+  OmitType(MonitorEntity, [
+    'lastSeen',
+    'user',
+    'userId',
+    'playlist',
+    'files',
+    'createdAt',
+    'updatedAt',
+  ]),
+) {
   @ApiProperty({
-    type: 'string',
-    description: 'Идентификатор устройства',
-    example: '111-111-111',
+    description: 'Время начала проигрывания',
+    example: ['2021-01-01', '2022-12-31'],
+    isArray: true,
     required: false,
   })
-  @Length(11, 11)
-  code?: string;
+  @IsOptional()
+  @IsDateString({ strict: false }, { each: true })
+  dateWhenApp?: Array<Date>;
+
+  @ApiProperty({
+    description: 'Время создания',
+    example: ['2021-01-01', '2022-12-31'],
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString({ strict: false }, { each: true })
+  createdAt?: Array<Date>;
+
+  @ApiProperty({
+    description: 'Время изменения',
+    example: ['2021-01-01', '2022-12-31'],
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString({ strict: false }, { each: true })
+  updatedAt?: Array<Date>;
 }

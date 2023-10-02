@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.41.66
+  version: 2.42.0
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3676,6 +3676,12 @@ components:
       enum:
         - offline
         - online
+    MonitorMultiple:
+      type: string
+      enum:
+        - SINGLE
+        - SCALING
+        - MIRROR
     PointClass:
       type: object
       properties:
@@ -3694,7 +3700,7 @@ components:
       required:
         - type
         - coordinates
-    MonitorPartialRequest:
+    MonitorRequest:
       type: object
       properties:
         id:
@@ -3751,12 +3757,18 @@ components:
           example: false
         sound:
           type: boolean
-          description: Есть звуковая дорожка
+          description: "Есть звук: true/false"
           example: true
         status:
           description: Подключен
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
+        multiple:
+          description: >-
+            Обычный монитор, много мониторов с режимом масштабирования или
+            зеркалирования
+          example: SINGLE
+          $ref: "#/components/schemas/MonitorMultiple"
         playlistPlayed:
           type: boolean
           description: Проигрывается плэйлист
@@ -3943,7 +3955,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/MonitorPartialRequest"
+            - $ref: "#/components/schemas/MonitorRequest"
         select:
           type: array
           description: Выбрать поля
@@ -3963,6 +3975,7 @@ components:
               - attached
               - sound
               - status
+              - multiple
               - playlistPlayed
               - code
               - lastSeen
@@ -4204,12 +4217,18 @@ components:
           example: false
         sound:
           type: boolean
-          description: Есть звуковая дорожка
+          description: "Есть звук: true/false"
           example: true
         status:
           description: Подключен
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
+        multiple:
+          description: >-
+            Обычный монитор, много мониторов с режимом масштабирования или
+            зеркалирования
+          example: SINGLE
+          $ref: "#/components/schemas/MonitorMultiple"
         playlistPlayed:
           type: boolean
           description: Проигрывается плэйлист
@@ -4324,8 +4343,14 @@ components:
             - $ref: "#/components/schemas/MonitorInfo"
         sound:
           type: boolean
-          description: Есть звуковая дорожка
+          description: "Есть звук: true/false"
           example: true
+        multiple:
+          description: >-
+            Обычный монитор, много мониторов с режимом масштабирования или
+            зеркалирования
+          example: SINGLE
+          $ref: "#/components/schemas/MonitorMultiple"
         location:
           example: *ref_122
           allOf:
@@ -4532,12 +4557,18 @@ components:
           example: false
         sound:
           type: boolean
-          description: Есть звуковая дорожка
+          description: "Есть звук: true/false"
           example: true
         status:
           description: Подключен
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
+        multiple:
+          description: >-
+            Обычный монитор, много мониторов с режимом масштабирования или
+            зеркалирования
+          example: SINGLE
+          $ref: "#/components/schemas/MonitorMultiple"
         playlistPlayed:
           type: boolean
           description: Проигрывается плэйлист
@@ -6066,12 +6097,12 @@ components:
           format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-09-29T18:48:56.306Z"
+          example: "2023-10-01T13:58:51.505Z"
         dateTo:
           format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-09-30T18:48:56.306Z"
+          example: "2023-10-02T13:58:51.505Z"
       required:
         - monitorIds
         - playlistDuration

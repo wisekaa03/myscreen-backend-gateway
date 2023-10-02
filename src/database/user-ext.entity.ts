@@ -241,7 +241,7 @@ export class UserWallet {
                   )
                   .groupBy('"applicationMonitors"."monitorId"')
                   .where(
-                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.ALLOWED}'`,
                   )
                   .andWhere(
                     '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
@@ -250,7 +250,7 @@ export class UserWallet {
                     '"applicationMonitors"."dateBefore" > \'now()\'::timestamptz',
                   )
                   .orWhere(
-                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.ALLOWED}'`,
                   )
                   .andWhere(
                     '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
@@ -285,7 +285,7 @@ export class UserWallet {
                   )
                   .groupBy('"applicationMonitors"."monitorId"')
                   .where(
-                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.ALLOWED}'`,
                   )
                   .andWhere(
                     '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
@@ -294,7 +294,7 @@ export class UserWallet {
                     '"applicationMonitors"."dateBefore" > \'now()\'::timestamptz',
                   )
                   .orWhere(
-                    `"applicationMonitors"."approved" = '${ApplicationApproved.Allowed}'`,
+                    `"applicationMonitors"."approved" = '${ApplicationApproved.ALLOWED}'`,
                   )
                   .andWhere(
                     '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
@@ -346,7 +346,7 @@ export class UserWallet {
 
             .where('"applicationMonitors"."applicationEmptyMonitorId" IS NULL')
             .orWhere(
-              `"applicationMonitors"."applicationEmptyApproved" = '${ApplicationApproved.Allowed}'`,
+              `"applicationMonitors"."applicationEmptyApproved" = '${ApplicationApproved.ALLOWED}'`,
             )
             .andWhere(
               '"applicationMonitors"."applicationEmptyDateBefore" < \'now()\'::timestamptz',

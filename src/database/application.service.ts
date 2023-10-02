@@ -165,14 +165,14 @@ export class ApplicationService {
         {
           monitorId,
           playlistId,
-          approved: ApplicationApproved.Allowed,
+          approved: ApplicationApproved.ALLOWED,
           dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: MoreThanOrEqual<Date>(dateLocal),
         },
         {
           monitorId,
           playlistId,
-          approved: ApplicationApproved.Allowed,
+          approved: ApplicationApproved.ALLOWED,
           dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: IsNull(),
         },
@@ -239,7 +239,7 @@ export class ApplicationService {
         throw new NotFoundException('Application not found');
       }
 
-      if (update.approved === ApplicationApproved.NotProcessed) {
+      if (update.approved === ApplicationApproved.NOTPROCESSED) {
         if (application.seller) {
           await this.mailService
             .sendApplicationWarningMessage(
@@ -255,9 +255,9 @@ export class ApplicationService {
         } else {
           this.logger.error('ApplicationService seller email=undefined');
         }
-      } else if (update.approved === ApplicationApproved.Allowed) {
+      } else if (update.approved === ApplicationApproved.ALLOWED) {
         await this.websocketChange({ application });
-      } else if (update.approved === ApplicationApproved.Denied) {
+      } else if (update.approved === ApplicationApproved.DENIED) {
         await this.websocketChange({ application, applicationDelete: true });
       }
     });

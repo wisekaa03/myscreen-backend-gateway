@@ -131,14 +131,14 @@ export class ApplicationEntity {
   @Column({
     type: 'enum',
     enum: ApplicationApproved,
-    default: ApplicationApproved.NotProcessed,
+    default: ApplicationApproved.NOTPROCESSED,
   })
   @Index()
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
     enum: ApplicationApproved,
     enumName: 'ApplicationApproved',
-    example: ApplicationApproved.NotProcessed,
+    example: ApplicationApproved.NOTPROCESSED,
     required: true,
   })
   @IsEnum(ApplicationApproved, { each: true })
