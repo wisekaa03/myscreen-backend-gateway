@@ -12,7 +12,7 @@ export * from './users-get.request';
 export * from './user.request';
 export * from './folder-update.request';
 export * from './folder-copy.request';
-export * from './folder-partial.request';
+export * from './folder.request';
 export * from './folders-get.request';
 export * from './folders-copy.request';
 export * from './folders-delete.request';

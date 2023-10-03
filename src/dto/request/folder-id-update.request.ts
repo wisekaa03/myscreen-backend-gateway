@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsUUID, MinLength } from 'class-validator';
+import { IsString, MinLength } from 'class-validator';
 
 export class FolderIdUpdateRequest {
   @ApiProperty({
@@ -18,6 +18,6 @@ export class FolderIdUpdateRequest {
     format: 'uuid',
     required: false,
   })
-  @IsUUID()
+  @IsString()
   parentFolderId?: string;
 }

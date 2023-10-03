@@ -1707,7 +1707,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/FolderUpdateRequest"
+              $ref: "#/components/schemas/FolderIdUpdateRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -5231,7 +5231,7 @@ components:
             format: uuid
       required:
         - filesId
-    FolderPartialRequest:
+    FolderRequest:
       type: object
       properties:
         name:
@@ -5269,7 +5269,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/FolderPartialRequest"
+            - $ref: "#/components/schemas/FolderRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5334,7 +5334,7 @@ components:
       required:
         - status
         - data
-    FolderRequest:
+    FolderUpdateRequest:
       type: object
       properties:
         id:
@@ -5358,7 +5358,7 @@ components:
           description: Папки
           type: array
           items:
-            $ref: "#/components/schemas/FolderRequest"
+            $ref: "#/components/schemas/FolderUpdateRequest"
       required:
         - folders
     FolderCopyRequest:
@@ -5396,7 +5396,7 @@ components:
             format: uuid
       required:
         - foldersId
-    FolderUpdateRequest:
+    FolderIdUpdateRequest:
       type: object
       properties:
         name:

@@ -3,7 +3,7 @@ import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 import { FolderEntity } from '@/database/folder.entity';
 
-export class FolderPartialRequest extends PartialType(
+export class FolderRequest extends PartialType(
   PickType(FolderEntity, ['name']),
 ) {
   @ApiProperty({
