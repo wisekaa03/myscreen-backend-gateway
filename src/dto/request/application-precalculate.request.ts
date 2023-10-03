@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
+import format from 'date-fns/format';
 import subDays from 'date-fns/subDays';
+import { dateLocalNow } from '../interface';
 
 export class ApplicationPrecalculateRequest {
   @ApiProperty({
@@ -26,7 +28,7 @@ export class ApplicationPrecalculateRequest {
   @ApiProperty({
     description: 'Дата и время начала',
     type: Date,
-    example: subDays(new Date(), 1).toISOString(),
+    example: format(subDays(dateLocalNow, 1), "yyyy-LL-dd'T'00:00:00.000'Z'"),
     required: true,
   })
   @IsNotEmpty()
@@ -36,7 +38,7 @@ export class ApplicationPrecalculateRequest {
   @ApiProperty({
     description: 'Дата и время окончания',
     type: Date,
-    example: new Date().toISOString(),
+    example: format(dateLocalNow, "yyyy-LL-dd'T'23:59:59.999'Z'"),
     required: true,
   })
   @IsNotEmpty()
