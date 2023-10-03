@@ -293,7 +293,12 @@ export class MonitorController {
           approved = ApplicationApproved.NotProcessed;
         }
         // To verify user permissions for application
-        this.userService.verify('application', CRUD.CREATE, user);
+        this.userService.verify(
+          user,
+          'application',
+          'updateApplication',
+          CRUD.CREATE,
+        );
         // To create application
         await this.applicationService.update(undefined, {
           sellerId: monitor.userId,

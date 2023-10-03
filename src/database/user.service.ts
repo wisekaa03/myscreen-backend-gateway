@@ -71,10 +71,15 @@ export class UserService {
    * @throws {ForbiddenException} ForbiddenException
    * @memberof UserService
    */
-  verify(controllers: string, crud: CRUD, user: UserExtEntity): boolean {
+  verify(
+    user: UserExtEntity,
+    controllerName: string,
+    functionName: string,
+    crud: CRUD,
+  ): boolean {
     const fullName = UserService.fullName(user);
     this.logger.log(
-      `User: "${fullName}" Controllers: "${controllers}" CRUD: "${crud}"`,
+      `User: "${fullName}" Controllers: "${controllerName}" CRUD: "${crud}"`,
     );
     const {
       role = UserRoleEnum.Administrator,
@@ -88,13 +93,13 @@ export class UserService {
 
     if (role === UserRoleEnum.MonitorOwner) {
       if (plan === UserPlanEnum.Demo) {
-        if (controllers === 'auth' || controllers === 'invoice') {
+        if (controllerName === 'auth' || controllerName === 'invoice') {
           return true;
         }
 
         if (
           (countMonitors ?? 0) > 5 ||
-          (controllers === 'monitor' &&
+          (controllerName === 'monitor' &&
             crud === CRUD.CREATE &&
             1 + countMonitors > 5)
         ) {
@@ -104,7 +109,7 @@ export class UserService {
         }
 
         if (
-          controllers === 'monitor' &&
+          controllerName === 'monitor' &&
           crud !== CRUD.READ &&
           addDays(createdAt, 14 + 1) < new Date()
         ) {
@@ -114,7 +119,7 @@ export class UserService {
         }
 
         if (
-          controllers === 'file' &&
+          controllerName === 'file' &&
           crud !== CRUD.READ &&
           addDays(createdAt, 28 + 1) < new Date()
         ) {
@@ -129,14 +134,14 @@ export class UserService {
           );
         }
 
-        if (controllers === 'application') {
+        if (controllerName === 'application') {
           throw new ForbiddenException(
             'You have a Demo User account. Time to pay.',
           );
         }
       } else if (plan === UserPlanEnum.Full) {
         if (
-          controllers === 'file' &&
+          controllerName === 'file' &&
           countUsedSpace >= UserStoreSpaceEnum.FULL &&
           crud === CRUD.CREATE
         ) {
@@ -146,12 +151,16 @@ export class UserService {
         }
       }
     } else if (role === UserRoleEnum.Advertiser) {
-      if (controllers === 'monitor' && crud !== CRUD.READ) {
-        throw new ForbiddenException('You have a Advertiser account, denied.');
+      if (controllerName === 'monitor' && crud !== CRUD.READ) {
+        if (functionName.search(/^monitorFavorite/) === -1) {
+          throw new ForbiddenException(
+            'You have a Advertiser account, denied.',
+          );
+        }
       }
 
       if (
-        controllers === 'file' &&
+        controllerName === 'file' &&
         countUsedSpace >= UserStoreSpaceEnum.FULL &&
         crud === CRUD.CREATE
       ) {
