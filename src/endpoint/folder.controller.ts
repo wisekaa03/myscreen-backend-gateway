@@ -224,7 +224,12 @@ export class FolderController {
       this.folderService.update({ id, name, userId: user.id, parentFolderId }),
     );
 
-    const data = await Promise.all(foldersPromise);
+    const dataFromPromise = await Promise.allSettled(foldersPromise);
+    const data = dataFromPromise.reduce(
+      (result, folder) =>
+        folder.status === 'fulfilled' ? result.concat(folder.value) : result,
+      [] as FolderEntity[],
+    );
 
     return {
       status: Status.Success,
