@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.4
+  version: 2.42.5
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -5038,7 +5038,7 @@ components:
           type: string
           format: uuid
           description: Монитор
-    FilePartialRequest:
+    FileRequest:
       type: object
       properties:
         id:
@@ -5081,7 +5081,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/FilePartialRequest"
+            - $ref: "#/components/schemas/FileRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5768,7 +5768,7 @@ components:
       required:
         - status
         - data
-    PlaylistPartialRequest:
+    PlaylistRequest:
       type: object
       properties:
         id:
@@ -5810,7 +5810,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/PlaylistPartialRequest"
+            - $ref: "#/components/schemas/PlaylistRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5924,12 +5924,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-10-02"
+          example: "2023-10-03"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-10-03"
+          example: "2023-10-04"
       required:
         - format
         - dateFrom
@@ -5951,12 +5951,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-10-02"
+          example: "2023-10-03"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-10-03"
+          example: "2023-10-04"
       required:
         - format
         - dateFrom
@@ -6097,12 +6097,12 @@ components:
           format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-10-02T00:00:00.000Z"
+          example: "2023-10-03T00:00:00.000Z"
         dateTo:
           format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-10-03T23:59:59.999Z"
+          example: "2023-10-04T23:59:59.999Z"
       required:
         - monitorIds
         - playlistDuration

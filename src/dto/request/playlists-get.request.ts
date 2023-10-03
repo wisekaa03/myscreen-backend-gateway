@@ -6,18 +6,18 @@ import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
 import { PlaylistEntity } from '@/database/playlist.entity';
 import { LimitRequest } from './limit.request';
-import { PlaylistPartialRequest } from './playlist-partial.request';
+import { PlaylistRequest } from './playlist.request';
 
 export class PlaylistsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: PlaylistPartialRequest,
+    type: PlaylistRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => PlaylistPartialRequest)
-  where?: FindOptionsWhere<PlaylistPartialRequest>;
+  @Type(() => PlaylistRequest)
+  where?: FindOptionsWhere<PlaylistRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
@@ -27,15 +27,15 @@ export class PlaylistsGetRequest {
     required: false,
   })
   @IsOptional()
-  select?: FindOptionsSelect<PlaylistPartialRequest>;
+  select?: FindOptionsSelect<PlaylistRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest<PlaylistPartialRequest>,
+    type: LimitRequest<PlaylistRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest<PlaylistPartialRequest>)
-  scope?: LimitRequest<PlaylistPartialRequest>;
+  @Type(() => LimitRequest<PlaylistRequest>)
+  scope?: LimitRequest<PlaylistRequest>;
 }

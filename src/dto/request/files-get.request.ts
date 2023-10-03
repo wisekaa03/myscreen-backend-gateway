@@ -6,18 +6,18 @@ import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
 import { FileEntity } from '@/database/file.entity';
 import { LimitRequest } from './limit.request';
-import { FilePartialRequest } from './file-partial.request';
+import { FileRequest } from './file.request';
 
 export class FilesGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: FilePartialRequest,
+    type: FileRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => FilePartialRequest)
-  where?: FindOptionsWhere<FilePartialRequest>;
+  @Type(() => FileRequest)
+  where?: FindOptionsWhere<FileRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
@@ -27,15 +27,15 @@ export class FilesGetRequest {
     required: false,
   })
   @IsOptional()
-  select?: FindOptionsSelect<FilePartialRequest>;
+  select?: FindOptionsSelect<FileRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest<FilePartialRequest>,
+    type: LimitRequest<FileRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest<FilePartialRequest>)
-  scope?: LimitRequest<FilePartialRequest>;
+  @Type(() => LimitRequest<FileRequest>)
+  scope?: LimitRequest<FileRequest>;
 }
