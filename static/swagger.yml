@@ -4589,7 +4589,7 @@ components:
         - ready
         - pending
         - error
-    EditorPartialRequest:
+    EditorRequest:
       type: object
       properties:
         id:
@@ -4626,7 +4626,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/EditorPartialRequest"
+            - $ref: "#/components/schemas/EditorRequest"
         select:
           type: array
           description: Выбрать поля
