@@ -6,18 +6,18 @@ import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { LimitRequest } from './limit.request';
-import { MonitorPartialRequest } from './monitor-partial.request';
+import { MonitorRequest } from './monitor.request';
 
 export class MonitorsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: MonitorPartialRequest,
+    type: MonitorRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => MonitorPartialRequest)
-  where?: FindOptionsWhere<MonitorPartialRequest>;
+  @Type(() => MonitorRequest)
+  where?: FindOptionsWhere<MonitorRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
@@ -27,15 +27,15 @@ export class MonitorsGetRequest {
     required: false,
   })
   @IsOptional()
-  select?: FindOptionsSelect<MonitorPartialRequest>;
+  select?: FindOptionsSelect<MonitorRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest<MonitorPartialRequest>,
+    type: LimitRequest<MonitorRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest<MonitorPartialRequest>)
-  scope?: LimitRequest<MonitorPartialRequest>;
+  @Type(() => LimitRequest<MonitorRequest>)
+  scope?: LimitRequest<MonitorRequest>;
 }

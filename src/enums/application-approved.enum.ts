@@ -1,5 +1,5 @@
 export enum ApplicationApproved {
-  NotProcessed = 'NotProcessed',
-  Allowed = 'Allowed',
-  Denied = 'Denied',
+  NOTPROCESSED = 'NotProcessed',
+  ALLOWED = 'Allowed',
+  DENIED = 'Denied',
 }

@@ -14,3 +14,4 @@ export * from './invoice-status.enum';
 export * from './specific-format.enum';
 export * from './act-status.enum';
 export * from './crud.enum';
+export * from './monitor-mupliple.enum';

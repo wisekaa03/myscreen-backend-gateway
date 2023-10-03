@@ -120,7 +120,7 @@ export class MonitorController {
         {
           where: {
             dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
-            approved: Not(ApplicationApproved.Denied),
+            approved: Not(ApplicationApproved.DENIED),
           },
           select: {
             monitorId: true,
@@ -257,7 +257,7 @@ export class MonitorController {
                   attach.application.dateBefore,
                 )
               : attach.application.dateWhen,
-            approved: Not(ApplicationApproved.Denied),
+            approved: Not(ApplicationApproved.DENIED),
           },
         });
         if (approved.length > 0) {
@@ -288,9 +288,9 @@ export class MonitorController {
       ) {
         let approved: ApplicationApproved;
         if (monitor.userId === user.id) {
-          approved = ApplicationApproved.Allowed;
+          approved = ApplicationApproved.ALLOWED;
         } else {
-          approved = ApplicationApproved.NotProcessed;
+          approved = ApplicationApproved.NOTPROCESSED;
         }
         // To verify user permissions for application
         this.userService.verify(
