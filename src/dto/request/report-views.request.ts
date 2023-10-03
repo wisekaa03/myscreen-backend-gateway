@@ -6,6 +6,8 @@ import {
   IsOptional,
   IsUUID,
 } from 'class-validator';
+import subDays from 'date-fns/subDays';
+import formatISO from 'date-fns/formatISO';
 
 import { SpecificFormat } from '@/enums/specific-format.enum';
 
@@ -33,19 +35,21 @@ export class ReportViewsRequest {
 
   @ApiProperty({
     description: 'Начальная дата',
-    example: '2022-05-01',
+    type: Date,
+    example: formatISO(subDays(new Date(), 1), { representation: 'date' }),
     required: true,
   })
   @IsNotEmpty()
   @IsDateString({ strict: false })
-  dateFrom!: Date;
+  dateFrom!: string;
 
   @ApiProperty({
     description: 'Конечная дата',
-    example: '2023-05-01',
+    type: Date,
+    example: formatISO(new Date(), { representation: 'date' }),
     required: true,
   })
   @IsNotEmpty()
   @IsDateString({ strict: false })
-  dateTo!: Date;
+  dateTo!: string;
 }

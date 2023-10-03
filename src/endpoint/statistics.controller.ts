@@ -73,8 +73,8 @@ export class StatisticsController {
       user,
       monitors,
       format,
-      dateFrom,
-      dateTo,
+      dateFrom: new Date(dateFrom),
+      dateTo: new Date(dateTo),
     });
 
     const specificFormat = formatToContentType[format]
@@ -134,8 +134,8 @@ export class StatisticsController {
       user,
       monitors,
       format,
-      dateFrom,
-      dateTo,
+      dateFrom: new Date(dateFrom),
+      dateTo: new Date(dateTo),
     });
 
     const specificFormat = formatToContentType[format]

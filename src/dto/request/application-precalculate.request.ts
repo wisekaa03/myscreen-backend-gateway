@@ -30,7 +30,7 @@ export class ApplicationPrecalculateRequest {
     required: true,
   })
   @IsNotEmpty()
-  @IsDateString()
+  @IsDateString({ strict: false })
   dateFrom!: string;
 
   @ApiProperty({
@@ -40,6 +40,6 @@ export class ApplicationPrecalculateRequest {
     required: true,
   })
   @IsNotEmpty()
-  @IsDateString()
+  @IsDateString({ strict: false })
   dateTo!: string;
 }

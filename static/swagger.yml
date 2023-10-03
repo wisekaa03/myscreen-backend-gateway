@@ -5924,12 +5924,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2022-05-01"
+          example: "2023-10-02"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-05-01"
+          example: "2023-10-03"
       required:
         - format
         - dateFrom
@@ -5951,12 +5951,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2022-05-01"
+          example: "2023-10-02"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-05-01"
+          example: "2023-10-03"
       required:
         - format
         - dateFrom
@@ -6097,12 +6097,12 @@ components:
           format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-10-02T09:45:11.029Z"
+          example: "2023-10-02T12:06:08.477Z"
         dateTo:
           format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-10-03T09:45:11.029Z"
+          example: "2023-10-03T12:06:08.477Z"
       required:
         - monitorIds
         - playlistDuration
