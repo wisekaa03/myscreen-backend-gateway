@@ -24,12 +24,12 @@ import {
   FoldersGetRequest,
   FolderCreateRequest,
   FolderGetResponse,
-  FolderUpdateRequest,
   SuccessResponse,
   FolderResponse,
   FoldersDeleteRequest,
   FoldersUpdateRequest,
   FoldersCopyRequest,
+  FolderIdUpdateRequest,
 } from '@/dto';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
@@ -369,7 +369,7 @@ export class FolderController {
   async updateFolder(
     @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
-    @Body() { name, parentFolderId }: FolderUpdateRequest,
+    @Body() { name, parentFolderId }: FolderIdUpdateRequest,
   ): Promise<FolderGetResponse> {
     let parentFolder: FolderEntity | null | undefined;
     if (parentFolderId) {

@@ -1,23 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsString, IsUUID, MinLength } from 'class-validator';
 
-export class FolderRequest {
-  @ApiProperty({
-    description: 'Идентификатор файла',
-    format: 'uuid',
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsString()
-  id!: string;
-
+export class FolderIdUpdateRequest {
   @ApiProperty({
     description: 'Наименование папки',
     type: 'string',
     example: 'bar',
     required: false,
   })
-  @IsOptional()
   @IsString()
   @MinLength(1)
   name?: string;
@@ -28,7 +18,6 @@ export class FolderRequest {
     format: 'uuid',
     required: false,
   })
-  @IsOptional()
-  @IsString()
+  @IsUUID()
   parentFolderId?: string;
 }
