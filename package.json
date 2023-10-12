@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.42.12",
+  "version": "2.42.13",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -57,7 +57,7 @@
     "**/**/hpagent": ">=1.2.0",
     "**/**/inquirer": "^8.2.6",
     "**/**/jsonwebtoken": ">=9.0.2",
-    "**/**/magic-string": ">=0.30.4",
+    "**/**/magic-string": ">=0.30.5",
     "**/**/memfs": ">=4.6.0",
     "**/**/multer": ">=1.4.5-lts.1",
     "**/**/node-gyp": ">=9.4.0",
@@ -92,7 +92,7 @@
     "**/**/ws": ">=8.14.2"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.427.0",
+    "@aws-sdk/client-s3": "^3.428.0",
     "@elastic/elasticsearch": "^7.17.13",
     "@nestjs-modules/mailer": "^1.9.1",
     "@nestjs/common": "^10.2.7",
@@ -164,7 +164,7 @@
     "@types/pdfmake": "^0.2.5",
     "@types/pug": "^2.0.7",
     "@types/supertest": "^2.0.14",
-    "@types/ws": "^8.5.6",
+    "@types/ws": "^8.5.7",
     "@typescript-eslint/eslint-plugin": "^6.7.5",
     "@typescript-eslint/parser": "^6.7.5",
     "eslint": "^8.51.0",
