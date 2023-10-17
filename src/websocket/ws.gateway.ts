@@ -132,7 +132,7 @@ export class WSGateway
       if (monitor) {
         await Promise.all([
           this.monitorService
-            .update(monitor.userId, {
+            .update(monitor.user, {
               id: monitor.id,
               status: MonitorStatus.Offline,
             })
@@ -171,7 +171,7 @@ export class WSGateway
                 dateLocal: new Date(body.date),
               }),
               this.monitorService
-                .update(monitor.userId, {
+                .update(monitor.user, {
                   id: monitor.id,
                   status: MonitorStatus.Online,
                 })
@@ -228,7 +228,7 @@ export class WSGateway
     }
 
     // записываем в базу данных
-    monitor = await this.monitorService.update(monitor.userId, {
+    monitor = await this.monitorService.update(monitor.user, {
       id: monitor.id,
       playlistPlayed: bodyObject.playlistPlayed,
     });

@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.42.16",
+  "version": "2.42.17",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -37,7 +37,7 @@
     "yarn": "^1.*"
   },
   "resolutions": {
-    "**/**/@elastic/elasticsearch": "^7.17.13",
+    "**/**/@elastic/elasticsearch": ">=8.10.0",
     "**/**/arg": ">=5.0.2",
     "**/**/archiver": ">=6.0.0",
     "**/**/body-parser": ">=1.20.2",
@@ -54,7 +54,6 @@
     "**/**/fabric": ">=5.3.0",
     "**/**/jsdom": ">=22.1.0",
     "**/**/gl": ">=6.0.2",
-    "**/**/hpagent": ">=1.2.0",
     "**/**/inquirer": "^8.2.6",
     "**/**/jsonwebtoken": ">=9.0.2",
     "**/**/magic-string": ">=0.30.5",
@@ -92,8 +91,8 @@
     "**/**/ws": ">=8.14.2"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.429.0",
-    "@elastic/elasticsearch": "^7.17.13",
+    "@aws-sdk/client-s3": "^3.430.0",
+    "@elastic/elasticsearch": "^8.10.0",
     "@nestjs-modules/mailer": "^1.9.1",
     "@nestjs/common": "^10.2.7",
     "@nestjs/config": "^3.1.1",
@@ -134,7 +133,7 @@
     "pdfmake": "^0.2.7",
     "pg": "^8.11.3",
     "pino": "^8.16.0",
-    "pino-elasticsearch": "^6.7.0",
+    "pino-elasticsearch": "^7.0.0",
     "pino-http": "^8.5.0",
     "pino-pretty": "^10.2.3",
     "reflect-metadata": "^0.1.13",

@@ -1,7 +1,6 @@
 import { Module, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DataSource, DataSourceOptions } from 'typeorm';
 
 import { MonitorStatus } from '@/enums/monitor-status.enum';
 import { TypeOrmOptionsClass } from '@/utils/typeorm.options';
@@ -36,6 +35,7 @@ import { WalletEntity } from './wallet.entity';
 import { WalletService } from './wallet.service';
 import { ActService } from './act.service';
 import { ActEntity } from './act.entity';
+import { MonitorMultipleEntity } from './monitor.multiple.entity';
 
 @Module({
   imports: [
@@ -57,6 +57,7 @@ import { ActEntity } from './act.entity';
       FilePreviewEntity,
       MonitorEntity,
       MonitorFavoriteEntity,
+      MonitorMultipleEntity,
       InvoiceEntity,
       PlaylistEntity,
       UptimeMonitoringEntity,

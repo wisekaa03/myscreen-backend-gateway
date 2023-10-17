@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   NotFoundException,
@@ -9,16 +10,19 @@ import {
   DeepPartial,
   DeleteResult,
   FindManyOptions,
+  In,
   Repository,
 } from 'typeorm';
 
-import { MonitorStatus } from '@/enums';
+import { MonitorMultiple, MonitorStatus } from '@/enums';
+import { MonitorMultipleRequest } from '@/dto';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
 // eslint-disable-next-line import/no-cycle
 import { ApplicationService } from './application.service';
+import { MonitorMultipleEntity } from './monitor.multiple.entity';
 
 @Injectable()
 export class MonitorService {
@@ -27,6 +31,8 @@ export class MonitorService {
     private readonly applicationService: ApplicationService,
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
+    @InjectRepository(MonitorMultipleEntity)
+    private readonly monitorMultipleRepository: Repository<MonitorMultipleEntity>,
     @InjectRepository(MonitorFavoriteEntity)
     private readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
   ) {}
@@ -102,15 +108,56 @@ export class MonitorService {
   }
 
   async update(
-    userId: string,
-    monitor: Partial<MonitorEntity>,
+    user: UserEntity,
+    update: Partial<MonitorEntity>,
+    multipleIds?: MonitorMultipleRequest[],
   ): Promise<MonitorEntity> {
-    const order: DeepPartial<MonitorEntity> = {
-      userId,
-      ...monitor,
+    const prepareMonitor: DeepPartial<MonitorEntity> = {
+      userId: user.id,
+      ...update,
     };
 
-    return this.monitorRepository.save(this.monitorRepository.create(order));
+    if (update.multiple !== MonitorMultiple.SINGLE) {
+      if (!multipleIds || multipleIds.length === 0) {
+        throw new BadRequestException('Group monitors ID is empty');
+      }
+      const multipleMonitorIds = multipleIds.map((item) => item.monitorId);
+      const groupMonitors = await this.monitorRepository.find({
+        where: { id: In(multipleMonitorIds), multiple: MonitorMultiple.SINGLE },
+      });
+      if (!groupMonitors || groupMonitors.length === multipleIds.length) {
+        throw new BadRequestException('Not found ID of some monitors');
+      }
+
+      const monitor = await this.monitorRepository.save(
+        this.monitorRepository.create(prepareMonitor),
+      );
+
+      const monitorMultiple = groupMonitors.map(async (groupMonitor) =>
+        this.monitorMultipleRepository.save(
+          this.monitorMultipleRepository.create({
+            userId: user.id,
+            parentMonitorId: monitor.id,
+            monitorId: groupMonitor.id,
+            multipleNo: multipleIds.find(
+              (item) => item.monitorId === groupMonitor.id,
+            )?.multipleNo,
+          }),
+        ),
+      );
+
+      await Promise.all(monitorMultiple);
+
+      return monitor;
+    }
+
+    if (multipleIds && multipleIds.length > 0) {
+      throw new BadRequestException('Group monitors ID is not empty');
+    }
+
+    return this.monitorRepository.save(
+      this.monitorRepository.create(prepareMonitor),
+    );
   }
 
   async attached(attached = true): Promise<void> {

@@ -171,7 +171,7 @@ export class MonitorController {
   @Crud(CRUD.CREATE)
   async createMonitors(
     @Req() { user }: ExpressRequest,
-    @Body() monitor: MonitorCreateRequest,
+    @Body() { multipleIds, ...monitor }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
     const findMonitor = await this.monitorService.findOne(user.id, {
       select: ['id', 'name', 'code'],
@@ -192,13 +192,7 @@ export class MonitorController {
       );
     }
 
-    const data = await this.monitorService
-      .update(user.id, monitor)
-      .catch((/* error: TypeORMError */) => {
-        throw new BadRequestException(
-          `Монитор '${monitor.name}' уже существует`,
-        );
-      });
+    const data = await this.monitorService.update(user, monitor, multipleIds);
 
     return {
       status: Status.Success,
@@ -277,7 +271,7 @@ export class MonitorController {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
 
-      monitor = await this.monitorService.update(user.id, {
+      monitor = await this.monitorService.update(user, {
         ...monitor,
         playlist,
       });
@@ -382,10 +376,7 @@ export class MonitorController {
           this.logger.error(error);
         });
 
-      return this.monitorService.update(user.id, {
-        ...monitor,
-        playlist: null,
-      });
+      return this.monitorService.update(user, { ...monitor, playlist: null });
     });
     const data = await Promise.all(dataPromise);
 
@@ -568,7 +559,7 @@ export class MonitorController {
   async updateMonitor(
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
-    @Body() update: MonitorUpdateRequest,
+    @Body() { multipleIds, ...update }: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
     const monitor = await this.monitorService.findOne(user.id, {
       select: ['id'],
@@ -581,10 +572,11 @@ export class MonitorController {
     if (!monitor) {
       throw new NotFoundException(`Monitor ${id} is not found`);
     }
-    const data = await this.monitorService.update(user.id, {
-      ...update,
-      id,
-    });
+    const data = await this.monitorService.update(
+      user,
+      { ...update, id },
+      multipleIds,
+    );
 
     return {
       status: Status.Success,

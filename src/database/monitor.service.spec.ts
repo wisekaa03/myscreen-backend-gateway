@@ -5,6 +5,7 @@ import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { MonitorService } from './monitor.service';
 import { ApplicationService } from './application.service';
+import { MonitorMultipleEntity } from './monitor.multiple.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -29,6 +30,10 @@ describe(MonitorService.name, () => {
         { provide: ApplicationService, useClass: mockRepository },
         {
           provide: getRepositoryToken(MonitorEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(MonitorMultipleEntity),
           useClass: mockRepository,
         },
         {
