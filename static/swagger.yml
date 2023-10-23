@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.19
+  version: 2.42.20
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -5947,12 +5947,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-10-20"
+          example: "2023-10-22"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-10-21"
+          example: "2023-10-23"
       required:
         - format
         - dateFrom
@@ -5974,12 +5974,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-10-20"
+          example: "2023-10-22"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-10-21"
+          example: "2023-10-23"
       required:
         - format
         - dateFrom
@@ -6120,12 +6120,12 @@ components:
           format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-10-20T00:00:00.000Z"
+          example: "2023-10-22T00:00:00.000Z"
         dateTo:
           format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-10-21T23:59:59.999Z"
+          example: "2023-10-23T23:59:59.999Z"
       required:
         - monitorIds
         - playlistDuration
