@@ -20,14 +20,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: Cache Yarn
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+      # - name: Cache Yarn
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       ~/.cache/yarn
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-yarn-
       - name: Linux update
         run: sudo apt-get update -y
       - name: Linux upgrade
@@ -130,14 +130,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: Cache Yarn
-        uses: actions/cache/restore@v3
-        with:
-          path: |
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+      # - name: Cache Yarn
+      #   uses: actions/cache/restore@v3
+      #   with:
+      #     path: |
+      #       ~/.cache/yarn
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-yarn-
       - name: Linux update
         run: sudo apt-get update -y
       - name: Linux upgrade
