@@ -136,8 +136,12 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: Update Linux
         run: sudo apt-get update -y
+      - name: Install Linux Upgrade
+        run: sudo apt-get upgrade -y
       - name: Install Linux dependencies
-        run: sudo apt-get install -y ffmpeg
+        run: sudo apt-get install -y ffmpeg build-essential libxi-dev \
+                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev \
+                  libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Build
