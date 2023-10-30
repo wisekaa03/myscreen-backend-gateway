@@ -156,7 +156,7 @@ export class WalletService {
       this.logger.warn(
         ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
       );
-      const act = await this.actService.create({
+      await this.actService.create({
         user,
         sum,
         description: this.acceptanceActDescription,

@@ -5,7 +5,6 @@ import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { PlaylistService } from '@/database/playlist.service';
 import { FileService } from '@/database/file.service';
 import { UserService } from '@/database/user.service';
-import { ApplicationService } from '@/database/application.service';
 import { PlaylistController } from './playlist.controller';
 
 export const mockRepository = jest.fn(() => ({
