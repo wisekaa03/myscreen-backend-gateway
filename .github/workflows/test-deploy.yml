@@ -33,8 +33,8 @@ jobs:
       - name: Linux upgrade
         run: sudo apt-get upgrade -y
       - name: Install Linux dependencies
-        run: sudo apt-get install -y ffmpeg build-essential libxi-dev \
-                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev \
+        run: sudo apt-get install -y ffmpeg build-essential libxi-dev
+                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
                   libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
@@ -143,8 +143,8 @@ jobs:
       - name: Linux upgrade
         run: sudo apt-get upgrade -y
       - name: Install Linux dependencies
-        run: sudo apt-get install -y ffmpeg build-essential libxi-dev \
-                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev \
+        run: sudo apt-get install -y ffmpeg build-essential libxi-dev
+                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
                   libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
