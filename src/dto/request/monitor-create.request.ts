@@ -25,12 +25,21 @@ export class MonitorMultipleRequest {
 
   @ApiProperty({
     type: 'number',
-    description: 'Подчиненный номер монитора в группе мониторов',
+    description: 'Подчиненный номер монитора в группе мониторов (строка)',
     required: true,
   })
   @IsNotEmpty()
   @IsNumber()
-  multipleNo!: number;
+  multipleRowNo!: number;
+
+  @ApiProperty({
+    type: 'number',
+    description: 'Подчиненный номер монитора в группе мониторов (колонка)',
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  multipleColNo!: number;
 }
 
 export class MonitorCreateRequest extends PickType(MonitorEntity, [

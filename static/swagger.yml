@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.23
+  version: 2.42.24
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4311,12 +4311,16 @@ components:
           type: string
           format: uuid
           description: Подчиненный монитор в группе мониторов
-        multipleNo:
+        multipleRowNo:
           type: number
-          description: Подчиненный номер монитора в группе мониторов
+          description: Подчиненный номер монитора в группе мониторов (строка)
+        multipleColNo:
+          type: number
+          description: Подчиненный номер монитора в группе мониторов (колонка)
       required:
         - monitorId
-        - multipleNo
+        - multipleRowNo
+        - multipleColNo
     MonitorCreateRequest:
       type: object
       properties:

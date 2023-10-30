@@ -26,12 +26,21 @@ export class MonitorMultipleEntity {
 
   @Column({ type: 'smallint', nullable: false, default: 0 })
   @ApiProperty({
-    description: 'Номер монитора в группе',
+    description: 'Номер монитора в группе (строка)',
     example: 0,
     required: true,
   })
   @IsNumber()
-  multipleNo!: number;
+  multipleRowNo!: number;
+
+  @Column({ type: 'smallint', nullable: false, default: 0 })
+  @ApiProperty({
+    description: 'Номер монитора в группе (колонка)',
+    example: 0,
+    required: true,
+  })
+  @IsNumber()
+  multipleColNo!: number;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
     eager: true,

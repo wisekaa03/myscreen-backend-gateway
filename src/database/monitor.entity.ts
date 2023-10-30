@@ -307,9 +307,15 @@ export class MonitorEntity {
   @OneToMany(
     () => MonitorMultipleEntity,
     (monitorMultiple) => monitorMultiple.parentMonitor,
-    { onDelete: 'CASCADE', onUpdate: 'CASCADE', cascade: true, eager: false },
+    {
+      nullable: true,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+      cascade: true,
+      eager: false,
+    },
   )
-  multipleMonitors?: MonitorMultipleEntity[];
+  multipleMonitors?: MonitorMultipleEntity[] | null;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({

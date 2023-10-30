@@ -11,6 +11,7 @@ import {
   DeleteResult,
   FindManyOptions,
   In,
+  IsNull,
   Repository,
 } from 'typeorm';
 
@@ -121,34 +122,48 @@ export class MonitorService {
       if (!multipleIds || multipleIds.length === 0) {
         throw new BadRequestException('Group monitors ID is empty');
       }
+
       const multipleMonitorIds = multipleIds.map((item) => item.monitorId);
       const groupMonitors = await this.monitorRepository.find({
-        where: { id: In(multipleMonitorIds), multiple: MonitorMultiple.SINGLE },
+        where: {
+          id: In(multipleMonitorIds),
+          multiple: MonitorMultiple.SINGLE,
+          multipleMonitors: IsNull(),
+        },
+        select: ['id'],
       });
       if (!groupMonitors || groupMonitors.length === multipleIds.length) {
         throw new BadRequestException('Not found ID of some monitors');
       }
 
-      const monitor = await this.monitorRepository.save(
-        this.monitorRepository.create(prepareMonitor),
-      );
+      return this.monitorRepository.manager.transaction(async (transact) => {
+        const monitor = await transact.save(
+          MonitorEntity,
+          transact.create(MonitorEntity, prepareMonitor),
+        );
 
-      const monitorMultiple = groupMonitors.map(async (groupMonitor) =>
-        this.monitorMultipleRepository.save(
-          this.monitorMultipleRepository.create({
-            userId: user.id,
-            parentMonitorId: monitor.id,
-            monitorId: groupMonitor.id,
-            multipleNo: multipleIds.find(
-              (item) => item.monitorId === groupMonitor.id,
-            )?.multipleNo,
-          }),
-        ),
-      );
+        const monitorMultiple = groupMonitors.map(async (groupMonitor) => {
+          const monitorId = groupMonitor.id;
+          const item = multipleIds.find((i) => i.monitorId === monitorId);
+          if (!item) {
+            throw new BadRequestException('Not found ID of some monitors');
+          }
+          await transact.save(
+            MonitorMultipleEntity,
+            transact.create(MonitorMultipleEntity, {
+              userId: user.id,
+              parentMonitorId: monitor.id,
+              monitorId,
+              multipleRowNo: item.multipleRowNo,
+              multipleColNo: item.multipleColNo,
+            }),
+          );
+        });
 
-      await Promise.all(monitorMultiple);
+        await Promise.all(monitorMultiple);
 
-      return monitor;
+        return monitor;
+      });
     }
 
     if (multipleIds && multipleIds.length > 0) {
