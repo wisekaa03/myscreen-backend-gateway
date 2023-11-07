@@ -3,7 +3,6 @@ import type {
   Response as ExpressResponse,
 } from 'express';
 import {
-  BadRequestException,
   Body,
   Get,
   HttpCode,

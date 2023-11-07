@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class FolderCopyRequest {
   @ApiProperty({
@@ -8,6 +8,6 @@ export class FolderCopyRequest {
     required: true,
   })
   @IsNotEmpty()
-  @IsUUID()
+  @IsString()
   id!: string;
 }

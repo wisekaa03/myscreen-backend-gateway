@@ -1707,7 +1707,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/FolderUpdateRequest"
+              $ref: "#/components/schemas/FolderIdUpdateRequest"
       responses:
         "200":
           description: Успешный ответ
@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.2
+  version: 2.42.30
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4304,6 +4304,23 @@ components:
         - status
         - count
         - data
+    MonitorMultipleRequest:
+      type: object
+      properties:
+        monitorId:
+          type: string
+          format: uuid
+          description: Подчиненный монитор в группе мониторов
+        multipleRowNo:
+          type: number
+          description: Подчиненный номер монитора в группе мониторов (строка)
+        multipleColNo:
+          type: number
+          description: Подчиненный номер монитора в группе мониторов (колонка)
+      required:
+        - monitorId
+        - multipleRowNo
+        - multipleColNo
     MonitorCreateRequest:
       type: object
       properties:
@@ -4359,6 +4376,11 @@ components:
           type: string
           description: Идентификатор устройства
           example: 111-111-111
+        multipleIds:
+          description: Подчиненные мониторы в группе мониторов
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorMultipleRequest"
       required:
         - name
         - category
@@ -4582,6 +4604,11 @@ components:
           example: *ref_122
           allOf:
             - $ref: "#/components/schemas/PointClass"
+        multipleIds:
+          description: Подчиненные мониторы в группе мониторов
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorMultipleRequest"
     RenderingStatus:
       type: string
       enum:
@@ -4589,7 +4616,7 @@ components:
         - ready
         - pending
         - error
-    EditorPartialRequest:
+    EditorRequest:
       type: object
       properties:
         id:
@@ -4626,7 +4653,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/EditorPartialRequest"
+            - $ref: "#/components/schemas/EditorRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5038,7 +5065,7 @@ components:
           type: string
           format: uuid
           description: Монитор
-    FilePartialRequest:
+    FileRequest:
       type: object
       properties:
         id:
@@ -5081,7 +5108,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/FilePartialRequest"
+            - $ref: "#/components/schemas/FileRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5231,7 +5258,7 @@ components:
             format: uuid
       required:
         - filesId
-    FolderPartialRequest:
+    FolderRequest:
       type: object
       properties:
         name:
@@ -5269,7 +5296,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/FolderPartialRequest"
+            - $ref: "#/components/schemas/FolderRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5334,7 +5361,7 @@ components:
       required:
         - status
         - data
-    FolderRequest:
+    FolderUpdateRequest:
       type: object
       properties:
         id:
@@ -5358,7 +5385,7 @@ components:
           description: Папки
           type: array
           items:
-            $ref: "#/components/schemas/FolderRequest"
+            $ref: "#/components/schemas/FolderUpdateRequest"
       required:
         - folders
     FolderCopyRequest:
@@ -5396,7 +5423,7 @@ components:
             format: uuid
       required:
         - foldersId
-    FolderUpdateRequest:
+    FolderIdUpdateRequest:
       type: object
       properties:
         name:
@@ -5768,7 +5795,7 @@ components:
       required:
         - status
         - data
-    PlaylistPartialRequest:
+    PlaylistRequest:
       type: object
       properties:
         id:
@@ -5810,7 +5837,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/PlaylistPartialRequest"
+            - $ref: "#/components/schemas/PlaylistRequest"
         select:
           type: array
           description: Выбрать поля
@@ -5924,12 +5951,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-10-02"
+          example: "2023-11-06"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-10-03"
+          example: "2023-11-07"
       required:
         - format
         - dateFrom
@@ -5951,12 +5978,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-10-02"
+          example: "2023-11-06"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-10-03"
+          example: "2023-11-07"
       required:
         - format
         - dateFrom
@@ -6097,12 +6124,12 @@ components:
           format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-10-02T12:06:08.477Z"
+          example: "2023-11-06T00:00:00.000Z"
         dateTo:
           format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-10-03T12:06:08.477Z"
+          example: "2023-11-07T23:59:59.999Z"
       required:
         - monitorIds
         - playlistDuration

@@ -3,7 +3,7 @@ module.exports = {
   parserOptions: {
     project: 'tsconfig.json',
     sourceType: 'module',
-    ecmaVersion: 2021,
+    ecmaVersion: 2022,
   },
   plugins: ['@typescript-eslint/eslint-plugin'],
   extends: [
@@ -16,7 +16,7 @@ module.exports = {
   env: {
     node: true,
     jest: true,
-    es2021: true,
+    es2022: true,
   },
   ignorePatterns: ['upload/', '.eslintrc.js'],
   rules: {

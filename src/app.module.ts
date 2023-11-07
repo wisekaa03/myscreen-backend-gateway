@@ -55,7 +55,7 @@ import { CrontabModule } from './crontab/crontab.module';
             target: 'pino-elasticsearch',
             options: {
               node: kibanaHost,
-              compression: 'gzip',
+              compression: true,
             },
             level: configService.get<LevelWithSilent>('LOG_LEVEL', 'debug'),
           };

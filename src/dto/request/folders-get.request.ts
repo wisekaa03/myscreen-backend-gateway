@@ -6,18 +6,18 @@ import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
 import { FolderEntity } from '@/database/folder.entity';
 import { LimitRequest } from './limit.request';
-import { FolderPartialRequest } from './folder-partial.request';
+import { FolderRequest } from './folder.request';
 
 export class FoldersGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: FolderPartialRequest,
+    type: FolderRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => FolderPartialRequest)
-  where?: FindOptionsWhere<FolderPartialRequest>;
+  @Type(() => FolderRequest)
+  where?: FindOptionsWhere<FolderRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
@@ -27,15 +27,15 @@ export class FoldersGetRequest {
     required: false,
   })
   @IsOptional()
-  select?: FindOptionsSelect<FolderPartialRequest>;
+  select?: FindOptionsSelect<FolderRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest<FolderPartialRequest>,
+    type: LimitRequest<FolderRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest<FolderPartialRequest>)
-  scope?: LimitRequest<FolderPartialRequest>;
+  @Type(() => LimitRequest<FolderRequest>)
+  scope?: LimitRequest<FolderRequest>;
 }

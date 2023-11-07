@@ -2,18 +2,18 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { FolderRequest } from './folder.request';
+import { FolderUpdateRequest } from './folder-update.request';
 
 export class FoldersUpdateRequest {
   @ApiProperty({
     description: 'Папки',
-    type: FolderRequest,
+    type: FolderUpdateRequest,
     isArray: true,
     required: true,
   })
   @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => FolderRequest)
-  folders!: FolderRequest[];
+  @Type(() => FolderUpdateRequest)
+  folders!: FolderUpdateRequest[];
 }

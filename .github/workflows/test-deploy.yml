@@ -20,18 +20,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: Cache Yarn
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - name: Update Ubuntu
+      # - name: Cache Yarn
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: |
+      #       ~/.cache/yarn
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-yarn-
+      - name: Linux update
         run: sudo apt-get update -y
-      - name: Install Ubuntu dependencies
-        run: sudo apt-get install -y ffmpeg
+      - name: Linux upgrade
+        run: sudo apt-get upgrade -y
+      - name: Install Linux dependencies
+        run: sudo apt-get install -y ffmpeg build-essential libxi-dev
+                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
+                  libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Environment variables
@@ -126,18 +130,22 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      - name: Cache Yarn
-        uses: actions/cache/restore@v3
-        with:
-          path: |
-            ~/.cache/yarn
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - name: Update Linux
+      # - name: Cache Yarn
+      #   uses: actions/cache/restore@v3
+      #   with:
+      #     path: |
+      #       ~/.cache/yarn
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-yarn-
+      - name: Linux update
         run: sudo apt-get update -y
+      - name: Linux upgrade
+        run: sudo apt-get upgrade -y
       - name: Install Linux dependencies
-        run: sudo apt-get install -y ffmpeg
+        run: sudo apt-get install -y ffmpeg build-essential libxi-dev
+                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
+                  libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Build

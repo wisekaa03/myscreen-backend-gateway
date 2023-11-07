@@ -1,6 +1,6 @@
 import { Reflector } from '@nestjs/core';
 import { createMock } from '@golevelup/ts-jest';
-import { ExecutionContext, Injectable, UseGuards } from '@nestjs/common';
+import { ExecutionContext, UseGuards } from '@nestjs/common';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 
 import { UserRoleEnum, CRUD } from '@/enums';

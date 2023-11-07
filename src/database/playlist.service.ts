@@ -1,11 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeepPartial,
-  DeleteResult,
-  FindManyOptions,
-  Repository,
-} from 'typeorm';
+import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserRoleEnum } from '@/enums/user-role.enum';

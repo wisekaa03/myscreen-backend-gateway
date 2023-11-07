@@ -46,6 +46,8 @@ import { FileEntity } from './file.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 // eslint-disable-next-line import/no-cycle
 import { ApplicationEntity } from './application.entity';
+// eslint-disable-next-line import/no-cycle
+import { MonitorMultipleEntity } from './monitor.multiple.entity';
 
 export class PointClass implements Point {
   @ApiProperty({
@@ -301,6 +303,19 @@ export class MonitorEntity {
   @IsOptional()
   @IsEnum(MonitorMultiple)
   multiple!: MonitorMultiple;
+
+  @OneToMany(
+    () => MonitorMultipleEntity,
+    (monitorMultiple) => monitorMultiple.parentMonitor,
+    {
+      nullable: true,
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+      cascade: true,
+      eager: false,
+    },
+  )
+  multipleMonitors?: MonitorMultipleEntity[] | null;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
