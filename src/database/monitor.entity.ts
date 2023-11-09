@@ -233,13 +233,17 @@ export class MonitorEntity {
   @IsInt()
   maxDuration!: number;
 
-  @Column({ type: 'enum', enum: MonitorOrientation })
+  @Column({
+    type: 'enum',
+    enum: MonitorOrientation,
+    default: MonitorOrientation.Horizontal,
+  })
   @ApiProperty({
     description: 'Ориентация экрана',
     enum: MonitorOrientation,
     enumName: 'MonitorOrientation',
     example: MonitorOrientation.Horizontal,
-    required: true,
+    required: false,
   })
   @IsEnum(MonitorOrientation)
   orientation!: MonitorOrientation;
@@ -255,6 +259,7 @@ export class MonitorEntity {
       matrix: 'IPS',
       brightness: 0,
     },
+    required: false,
   })
   @ValidateNested()
   @Type(() => MonitorInfo)
