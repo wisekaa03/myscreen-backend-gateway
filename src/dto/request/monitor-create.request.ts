@@ -59,9 +59,9 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
     type: 'string',
     description: 'Идентификатор устройства',
     example: '111-111-111',
-    required: true,
+    required: false,
   })
-  @IsDefined()
+  @IsOptional()
   @IsNotEmpty()
   @Length(11, 11)
   code!: string;
