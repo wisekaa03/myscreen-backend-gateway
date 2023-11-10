@@ -175,9 +175,9 @@ export class MonitorController {
     @Body() { multipleIds, ...monitor }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
     const where: FindManyOptions<MonitorEntity>['where'] =
-      monitor.multiple === MonitorMultiple.SINGLE
-        ? { code: monitor.code }
-        : undefined;
+      monitor.multiple !== MonitorMultiple.SINGLE
+        ? undefined
+        : { code: monitor.code };
     const findMonitor = await this.monitorService.findOne(user.id, {
       select: ['id', 'name', 'code'],
       where,
