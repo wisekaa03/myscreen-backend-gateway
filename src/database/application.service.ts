@@ -21,7 +21,7 @@ import differenceInDays from 'date-fns/differenceInDays';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { ApplicationApproved } from '@/enums';
+import { ApplicationApproved, MonitorMultiple } from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { ApplicationEntity } from './application.entity';
 import { FileEntity } from './file.entity';
@@ -134,6 +134,9 @@ export class ApplicationService {
             this.logger.error(error);
           });
       } else {
+        if (application.monitor.multiple === MonitorMultiple.SCALING) {
+          // TODO: сделать разбиение на несколько плэйлистов (монитор MonitorMultiple.SCALING)
+        }
         await this.wsGateway
           .application(application)
           .catch((error: unknown) => {
