@@ -174,18 +174,21 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { multipleIds, ...monitor }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    const where: FindManyOptions<MonitorEntity>['where'] =
-      monitor.multiple !== MonitorMultiple.SINGLE
-        ? undefined
-        : { code: monitor.code };
-    const findMonitor = await this.monitorService.findOne(user.id, {
-      select: ['id', 'name', 'code'],
-      where,
-    });
-    if (findMonitor) {
+    if (monitor.multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestException(
-        `Монитор '${findMonitor.name}'/'${findMonitor.code}' уже существует`,
+        'Монитор не должен создаваться с типом монитора SUBORDINATE',
       );
+    }
+    if (!(monitor.multiple !== MonitorMultiple.SINGLE)) {
+      const findMonitor = await this.monitorService.findOne(user.id, {
+        where: { code: monitor.code },
+        select: ['id', 'name', 'code'],
+      });
+      if (findMonitor) {
+        throw new BadRequestException(
+          `Монитор '${findMonitor.name}'/'${findMonitor.code}' уже существует`,
+        );
+      }
     }
     const [, countMonitors] = await this.monitorService.findAndCount(user.id, {
       select: ['id'],
@@ -608,8 +611,8 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
     const monitor = await this.monitorService.findOne(user.id, {
-      select: ['id'],
-      loadEagerRelations: false,
+      select: ['id', 'name', 'multiple', 'multipleMonitors'],
+      relations: ['multipleMonitors'],
       where: {
         userId: user.id,
         id,

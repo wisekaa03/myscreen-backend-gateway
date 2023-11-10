@@ -11,7 +11,6 @@ import {
   DeleteResult,
   FindManyOptions,
   In,
-  IsNull,
   Repository,
 } from 'typeorm';
 
@@ -128,11 +127,13 @@ export class MonitorService {
         where: {
           id: In(multipleMonitorIds),
           multiple: MonitorMultiple.SINGLE,
-          multipleMonitors: IsNull(),
         },
         select: ['id'],
       });
-      if (!groupMonitors || groupMonitors.length === multipleIds.length) {
+      if (
+        Array.isArray(groupMonitors) &&
+        groupMonitors.length !== multipleIds.length
+      ) {
         throw new BadRequestException('Not found ID of some monitors');
       }
 
@@ -143,8 +144,8 @@ export class MonitorService {
         );
 
         const monitorMultiple = groupMonitors.map(async (groupMonitor) => {
-          const monitorId = groupMonitor.id;
-          const item = multipleIds.find((i) => i.monitorId === monitorId);
+          const groupMonitorId = groupMonitor.id;
+          const item = multipleIds.find((i) => i.monitorId === groupMonitorId);
           if (!item) {
             throw new BadRequestException('Not found ID of some monitors');
           }
@@ -153,10 +154,17 @@ export class MonitorService {
             transact.create(MonitorMultipleEntity, {
               userId: user.id,
               parentMonitorId: monitor.id,
-              monitorId,
+              monitorId: groupMonitorId,
               multipleRowNo: item.multipleRowNo,
               multipleColNo: item.multipleColNo,
             }),
+          );
+          await transact.update(
+            MonitorEntity,
+            { id: groupMonitorId },
+            {
+              multiple: MonitorMultiple.SUBORDINATE,
+            },
           );
         });
 
@@ -233,6 +241,36 @@ export class MonitorService {
       monitor,
       monitorDelete: true,
     });
+
+    if (monitor.multiple !== MonitorMultiple.SINGLE) {
+      return this.monitorRepository.manager.transaction(async (transact) => {
+        const monitorMultiple = await transact.find(MonitorMultipleEntity, {
+          where: {
+            parentMonitorId: monitor.id,
+          },
+        });
+        if (monitorMultiple.length > 0) {
+          const monitorIdsPromise = monitorMultiple.map(async (item) => {
+            await this.applicationService.websocketChange({
+              monitor: item.monitor,
+              monitorDelete: true,
+            });
+            return item.monitorId;
+          });
+          const monitorIds = await Promise.all(monitorIdsPromise);
+          await transact.update(
+            MonitorEntity,
+            { id: In(monitorIds) },
+            { multiple: MonitorMultiple.SINGLE },
+          );
+          await transact.delete(MonitorMultipleEntity, {
+            parentMonitorId: monitor.id,
+          });
+        }
+
+        return transact.delete(MonitorEntity, { id: monitor.id });
+      });
+    }
 
     return this.monitorRepository.delete({
       id: monitor.id,
