@@ -283,6 +283,9 @@ export class MonitorController {
         ...monitor,
         playlist,
       });
+      if (monitor.multiple !== MonitorMultiple.SINGLE) {
+        // TODO
+      }
 
       if (
         user.role !== UserRoleEnum.Monitor &&
@@ -294,6 +297,7 @@ export class MonitorController {
         } else {
           approved = ApplicationApproved.NOTPROCESSED;
         }
+
         // To verify user permissions for application
         this.userService.verify(
           user,
@@ -301,6 +305,7 @@ export class MonitorController {
           'updateApplication',
           CRUD.CREATE,
         );
+
         // To create application
         await this.applicationService.update(undefined, {
           sellerId: monitor.userId,
@@ -379,7 +384,7 @@ export class MonitorController {
       }
 
       /* await */ this.wsGateway
-        .application(null, monitor)
+        .application({ monitor })
         .catch((error: any) => {
           this.logger.error(error);
         });

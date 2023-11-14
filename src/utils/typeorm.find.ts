@@ -46,10 +46,10 @@ export class TypeOrmFind {
         }
       });
     }
-    {
-      const logger = new Logger(TypeOrmFind.name);
-      logger.debug(qb.getSql());
-    }
+    // {
+    //   const logger = new Logger(TypeOrmFind.name);
+    //   logger.debug(qb.getSql());
+    // }
     return qb;
   };
 

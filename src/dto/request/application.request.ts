@@ -10,7 +10,6 @@ export class ApplicationRequest extends OmitType(ApplicationEntity, [
   'hide',
   'parentApplication',
   'parentApplicationId',
-  'subApplication',
   'user',
   'createdAt',
   'updatedAt',

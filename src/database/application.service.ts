@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,7 +23,11 @@ import differenceInDays from 'date-fns/differenceInDays';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { ApplicationApproved, MonitorMultiple } from '@/enums';
+import {
+  ApplicationApproved,
+  MonitorMultiple,
+  MonitorOrientation,
+} from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { ApplicationEntity } from './application.entity';
 import { FileEntity } from './file.entity';
@@ -60,13 +65,7 @@ export class ApplicationService {
   ): Promise<Array<ApplicationEntity>> {
     const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
-      conditional.relations = [
-        'buyer',
-        'seller',
-        'monitor',
-        'playlist',
-        'subApplications',
-      ];
+      conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
     }
     return caseInsensitive
       ? TypeOrmFind.findCI(this.applicationRepository, conditional)
@@ -78,18 +77,19 @@ export class ApplicationService {
     caseInsensitive = true,
   ): Promise<[Array<ApplicationEntity>, number]> {
     const conditional = TypeOrmFind.Nullable(find);
+    let result: [Array<ApplicationEntity>, number];
     if (!find.relations) {
-      conditional.relations = [
-        'buyer',
-        'seller',
-        'monitor',
-        'playlist',
-        'subApplications',
-      ];
+      conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
     }
-    return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(this.applicationRepository, conditional)
-      : this.applicationRepository.findAndCount(conditional);
+    if (caseInsensitive) {
+      result = await TypeOrmFind.findAndCountCI(
+        this.applicationRepository,
+        conditional,
+      );
+    } else {
+      result = await this.applicationRepository.findAndCount(conditional);
+    }
+    return result;
   }
 
   async findOne(
@@ -98,13 +98,7 @@ export class ApplicationService {
     return find.relations
       ? this.applicationRepository.findOne(TypeOrmFind.Nullable(find))
       : this.applicationRepository.findOne({
-          relations: [
-            'buyer',
-            'seller',
-            'monitor',
-            'playlist',
-            'subApplications',
-          ],
+          relations: ['buyer', 'seller', 'monitor', 'playlist'],
           ...TypeOrmFind.Nullable(find),
         });
   }
@@ -139,7 +133,7 @@ export class ApplicationService {
       });
 
       const wsPromise = applications.map(async (applicationLocal) =>
-        this.wsGateway.application(applicationLocal),
+        this.wsGateway.application({ application: applicationLocal }),
       );
 
       await Promise.allSettled(wsPromise);
@@ -148,13 +142,13 @@ export class ApplicationService {
     } else if (application) {
       if (applicationDelete) {
         await this.wsGateway
-          .application(null, application.monitor)
+          .application({ monitor: application.monitor })
           .catch((error: any) => {
             this.logger.error(error);
           });
       } else {
         await this.wsGateway
-          .application(application)
+          .application({ application })
           .catch((error: unknown) => {
             this.logger.error(error);
           });
@@ -248,12 +242,47 @@ export class ApplicationService {
       }
 
       await this.applicationRepository.manager.transaction(async (transact) => {
-        const groupMonitorPromise = multipleMonitors.map(async (monitor) => {
-          const { playlist } = application;
-          if (multiple === MonitorMultiple.SCALING) {
-            // TODO: разбить плэйлист на несколько видео в порядке следования на мониторах
-          }
+        const { playlist, monitor } = application;
 
+        const [widthString, heightString] =
+          monitor.monitorInfo.resolution?.split('x', 2) ?? [];
+        let width = Number.parseInt(widthString, 10);
+        let height = Number.parseInt(heightString, 10);
+        let widthSum = width;
+        let heightSum = height;
+        if (multiple === MonitorMultiple.SCALING) {
+          // вычисляем общую площадь
+          [widthSum, heightSum] = multipleMonitors.reduce(
+            (acc, multipleMonitor) => {
+              const { monitorInfo } = multipleMonitor.monitor;
+              const [subWidthString, subHeightString] =
+                monitorInfo.resolution?.split('x', 2) ?? [];
+              if (!subWidthString || !subHeightString) {
+                throw new NotAcceptableException(
+                  `Monitor ${multipleMonitor.monitor.name}: ${subWidthString}x${subHeightString} is not scaling`,
+                );
+              }
+              if (
+                multipleMonitor.monitor.orientation ===
+                MonitorOrientation.Horizontal
+              ) {
+                acc[0] += Number.parseInt(subWidthString, 10);
+                acc[1] += Number.parseInt(subHeightString, 10);
+              } else {
+                acc[0] += Number.parseInt(subWidthString, 10);
+                acc[1] += Number.parseInt(subHeightString, 10);
+              }
+              return acc;
+            },
+            [0, 0],
+          );
+
+          // делим ее на количество мониторов
+          width = widthSum / multipleMonitors.length;
+          height = heightSum / multipleMonitors.length;
+        }
+
+        const groupMonitorPromise = multipleMonitors.map(async (subMonitor) => {
           const app = await transact.save(
             ApplicationEntity,
             transact.create(ApplicationEntity, {
@@ -261,9 +290,8 @@ export class ApplicationService {
               id: undefined,
               hide: true,
               parentApplicationId: application.id,
-              parentApplication: application,
-              monitor,
-              playlist,
+              monitorId: subMonitor.id,
+              playlistId: playlist.id,
             }),
           );
 
@@ -289,7 +317,13 @@ export class ApplicationService {
       await this.websocketChange({ application, applicationDelete: true });
     } else {
       await this.applicationRepository.manager.transaction(async (transact) => {
-        const subAppPromise = application.subApplication.map(async (app) => {
+        const subApplication = await transact.find(ApplicationEntity, {
+          where: {
+            parentApplicationId: application.id,
+          },
+          relations: ['monitor', 'playlist'],
+        });
+        const subAppPromise = subApplication.map(async (app) => {
           await this.websocketChange({
             application: app,
             applicationDelete: true,
@@ -329,8 +363,6 @@ export class ApplicationService {
           'monitor.multipleMonitors',
           'playlist',
           'playlist.files',
-          'parentApplication',
-          'subApplications',
           'user',
         ];
       } else {

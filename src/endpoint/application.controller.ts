@@ -72,8 +72,8 @@ export class ApplicationController {
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { ...sqlWhere, buyerId: Not(user.id) },
-          { ...sqlWhere, sellerId: Not(user.id) },
+          { hide: false, ...sqlWhere, buyerId: Not(user.id) },
+          { hide: false, ...sqlWhere, sellerId: Not(user.id) },
         ],
       });
 
@@ -89,8 +89,8 @@ export class ApplicationController {
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { ...sqlWhere, buyerId: user.id },
-          { ...sqlWhere, sellerId: user.id },
+          { hide: false, ...sqlWhere, buyerId: user.id },
+          { hide: false, ...sqlWhere, sellerId: user.id },
         ],
       });
 

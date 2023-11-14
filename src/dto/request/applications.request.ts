@@ -13,7 +13,6 @@ export class ApplicationsRequest extends PartialType(
     'hide',
     'parentApplication',
     'parentApplicationId',
-    'subApplication',
     'user',
     'createdAt',
     'updatedAt',

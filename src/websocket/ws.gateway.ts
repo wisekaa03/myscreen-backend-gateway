@@ -274,10 +274,13 @@ export class WSGateway
    * @param application ApplicationEntity or null
    * @param monitor MonitorEntity or null
    */
-  async application(
-    application: ApplicationEntity | null,
-    monitor?: MonitorEntity | null,
-  ): Promise<void> {
+  async application({
+    application,
+    monitor,
+  }: {
+    application?: ApplicationEntity | null;
+    monitor?: MonitorEntity | null;
+  }): Promise<void> {
     if (application === null && monitor === null) {
       this.logger.error('ApplicationEntity or MonitorEntity is required');
       return;

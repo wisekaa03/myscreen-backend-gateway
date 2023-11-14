@@ -115,31 +115,36 @@ export class ApplicationEntity {
 
   @ManyToOne(() => ApplicationEntity, (application) => application.id, {
     nullable: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
   })
   @JoinColumn()
+  @Index()
   parentApplication?: ApplicationEntity;
 
   @Column({ nullable: true })
   @IsUUID()
   parentApplicationId?: string;
 
-  @OneToMany(
-    () => ApplicationEntity,
-    (application) => application.parentApplication,
-    {
-      onDelete: 'CASCADE',
-      onUpdate: 'CASCADE',
-      cascade: true,
-      eager: true,
-    },
-  )
-  @ApiProperty({
-    description: 'Подчиненные мониторы',
-    type: 'string',
-    allOf: [{ $ref: '#/components/schemas/ApplicationResponse' }],
-    required: false,
-  })
-  subApplication!: ApplicationEntity[];
+  // @OneToMany(
+  //   () => ApplicationEntity,
+  //   (application) => application.parentApplication,
+  //   {
+  //     onDelete: 'CASCADE',
+  //     onUpdate: 'CASCADE',
+  //     cascade: true,
+  //     eager: false,
+  //   },
+  // )
+  // @ApiProperty({
+  //   description: 'Подчиненные мониторы',
+  //   type: 'string',
+  //   allOf: [{ $ref: '#/components/schemas/ApplicationResponse' }],
+  //   required: false,
+  // })
+  // subApplication!: ApplicationEntity[];
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     onDelete: 'CASCADE',

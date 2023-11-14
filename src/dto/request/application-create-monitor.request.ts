@@ -15,7 +15,6 @@ export class ApplicationCreateMonitorRequest extends OmitType(
     'hide',
     'parentApplication',
     'parentApplicationId',
-    'subApplication',
     'playlist',
     'playlistId',
     'approved',

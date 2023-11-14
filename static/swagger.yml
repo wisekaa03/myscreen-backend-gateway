@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.35
+  version: 2.42.36
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4020,7 +4020,7 @@ components:
           example: bar
         parentFolderId:
           type: string
-          description: Родительская папка
+          description: Родительская папка ID
           format: uuid
           nullable: true
         createdAt:
@@ -4468,10 +4468,6 @@ components:
         hide:
           type: boolean
           description: Скрытый
-        subApplication:
-          description: Подчиненные мониторы
-          allOf:
-            - $ref: "#/components/schemas/ApplicationResponse"
         playlist:
           description: Плэйлист
           allOf:
@@ -5346,7 +5342,7 @@ components:
           example: bar
         parentFolderId:
           type: string
-          description: Родительская папка
+          description: Родительская папка ID
           format: uuid
           nullable: true
       required:
@@ -6077,7 +6073,6 @@ components:
               - monitor
               - monitorId
               - hide
-              - subApplication
               - playlist
               - playlistId
               - approved
