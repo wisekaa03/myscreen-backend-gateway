@@ -10,6 +10,7 @@ import {
   DeepPartial,
   DeleteResult,
   FindManyOptions,
+  FindOneOptions,
   In,
   Repository,
 } from 'typeorm';
@@ -42,13 +43,19 @@ export class MonitorService {
     find: FindManyOptions<MonitorEntity>,
     caseInsensitive = true,
   ): Promise<Array<MonitorEntity>> {
+    const relations: FindOneOptions<MonitorEntity>['relations'] = [
+      'files',
+      'playlist',
+      'favorities',
+    ];
+
     const monitor = caseInsensitive
       ? await TypeOrmFind.findCI(this.monitorRepository, {
-          relations: ['files', 'playlist', 'favorities'],
+          relations,
           ...TypeOrmFind.Nullable(find),
         })
       : await this.monitorRepository.find({
-          relations: ['files', 'playlist', 'favorities'],
+          relations,
           ...TypeOrmFind.Nullable(find),
         });
 
@@ -66,13 +73,19 @@ export class MonitorService {
     find: FindManyOptions<MonitorEntity>,
     caseInsensitive = true,
   ): Promise<[Array<MonitorEntity>, number]> {
+    const relations: FindOneOptions<MonitorEntity>['relations'] = [
+      'files',
+      'playlist',
+      'favorities',
+    ];
+
     const monitor = caseInsensitive
       ? await TypeOrmFind.findAndCountCI(this.monitorRepository, {
-          relations: ['files', 'playlist', 'favorities'],
+          relations,
           ...TypeOrmFind.Nullable(find),
         })
       : await this.monitorRepository.findAndCount({
-          relations: ['files', 'playlist', 'favorities'],
+          relations,
           ...TypeOrmFind.Nullable(find),
         });
 
@@ -92,8 +105,14 @@ export class MonitorService {
     userId: string | undefined,
     find: FindManyOptions<MonitorEntity>,
   ): Promise<MonitorEntity | null> {
+    const relations: FindOneOptions<MonitorEntity>['relations'] = [
+      'files',
+      'playlist',
+      'favorities',
+    ];
+
     const monitor = await this.monitorRepository.findOne({
-      relations: ['files', 'playlist', 'favorities'],
+      relations,
       ...TypeOrmFind.Nullable(find),
     });
     if (monitor) {

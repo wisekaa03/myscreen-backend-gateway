@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.34
+  version: 2.42.35
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4465,6 +4465,13 @@ components:
           description: Монитор
           allOf:
             - $ref: "#/components/schemas/MonitorResponse"
+        hide:
+          type: boolean
+          description: Скрытый
+        subApplication:
+          description: Подчиненные мониторы
+          allOf:
+            - $ref: "#/components/schemas/ApplicationResponse"
         playlist:
           description: Плэйлист
           allOf:
@@ -4503,6 +4510,7 @@ components:
         - buyer
         - seller
         - monitor
+        - hide
         - playlist
         - approved
         - dateWhen
@@ -5947,12 +5955,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-11-09"
+          example: "2023-11-13"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-11-10"
+          example: "2023-11-14"
       required:
         - format
         - dateFrom
@@ -5974,12 +5982,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-11-09"
+          example: "2023-11-13"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-11-10"
+          example: "2023-11-14"
       required:
         - format
         - dateFrom
@@ -6068,6 +6076,8 @@ components:
               - sellerId
               - monitor
               - monitorId
+              - hide
+              - subApplication
               - playlist
               - playlistId
               - approved
@@ -6120,12 +6130,12 @@ components:
           format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-11-09T00:00:00.000Z"
+          example: "2023-11-13T00:00:00.000Z"
         dateTo:
           format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-11-10T23:59:59.999Z"
+          example: "2023-11-14T23:59:59.999Z"
       required:
         - monitorIds
         - playlistDuration

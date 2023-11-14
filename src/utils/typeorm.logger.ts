@@ -84,6 +84,6 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     level === 'log'
       ? this.logger.log(message, queryRunner)
       : level === 'info'
-      ? this.logger.verbose(message, queryRunner)
-      : this.logger.warn(message, queryRunner);
+        ? this.logger.verbose(message, queryRunner)
+        : this.logger.warn(message, queryRunner);
 }

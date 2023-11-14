@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   DeleteResult,
   FindManyOptions,
+  FindOneOptions,
   In,
   IsNull,
   LessThanOrEqual,
@@ -59,7 +60,13 @@ export class ApplicationService {
   ): Promise<Array<ApplicationEntity>> {
     const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
-      conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
+      conditional.relations = [
+        'buyer',
+        'seller',
+        'monitor',
+        'playlist',
+        'subApplications',
+      ];
     }
     return caseInsensitive
       ? TypeOrmFind.findCI(this.applicationRepository, conditional)
@@ -72,7 +79,13 @@ export class ApplicationService {
   ): Promise<[Array<ApplicationEntity>, number]> {
     const conditional = TypeOrmFind.Nullable(find);
     if (!find.relations) {
-      conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
+      conditional.relations = [
+        'buyer',
+        'seller',
+        'monitor',
+        'playlist',
+        'subApplications',
+      ];
     }
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.applicationRepository, conditional)
@@ -85,7 +98,13 @@ export class ApplicationService {
     return find.relations
       ? this.applicationRepository.findOne(TypeOrmFind.Nullable(find))
       : this.applicationRepository.findOne({
-          relations: ['buyer', 'seller', 'monitor', 'playlist'],
+          relations: [
+            'buyer',
+            'seller',
+            'monitor',
+            'playlist',
+            'subApplications',
+          ],
           ...TypeOrmFind.Nullable(find),
         });
   }
@@ -116,7 +135,7 @@ export class ApplicationService {
   }) {
     if (playlist) {
       const applications = await this.monitorApplications({
-        playlistId: playlist?.id,
+        playlistId: playlist.id,
       });
 
       const wsPromise = applications.map(async (applicationLocal) =>
@@ -134,9 +153,6 @@ export class ApplicationService {
             this.logger.error(error);
           });
       } else {
-        if (application.monitor.multiple === MonitorMultiple.SCALING) {
-          // TODO: сделать разбиение на несколько плэйлистов (монитор MonitorMultiple.SCALING)
-        }
         await this.wsGateway
           .application(application)
           .catch((error: unknown) => {
@@ -150,7 +166,8 @@ export class ApplicationService {
    * Get the applications for the monitor
    *
    * @param {string} monitorId Монитор ID
-   * @param {(string | Date)} [date=new Date()] Локальная для пользователя дата
+   * @param {string} playlistId Плэйлист ID
+   * @param {(string | Date)} [dateLocal=new Date()] Локальная для пользователя дата
    * @return {*}
    * @memberof ApplicationService
    */
@@ -217,6 +234,76 @@ export class ApplicationService {
     return expected;
   }
 
+  async applicationCreatePost({
+    application,
+  }: {
+    application: ApplicationEntity;
+  }): Promise<void> {
+    const { multiple, multipleMonitors } = application.monitor;
+    if (multiple === MonitorMultiple.SINGLE) {
+      await this.websocketChange({ application });
+    } else {
+      if (!multipleMonitors) {
+        return;
+      }
+
+      await this.applicationRepository.manager.transaction(async (transact) => {
+        const groupMonitorPromise = multipleMonitors.map(async (monitor) => {
+          const { playlist } = application;
+          if (multiple === MonitorMultiple.SCALING) {
+            // TODO: разбить плэйлист на несколько видео в порядке следования на мониторах
+          }
+
+          const app = await transact.save(
+            ApplicationEntity,
+            transact.create(ApplicationEntity, {
+              ...application,
+              id: undefined,
+              hide: true,
+              parentApplicationId: application.id,
+              parentApplication: application,
+              monitor,
+              playlist,
+            }),
+          );
+
+          await this.websocketChange({ application: app });
+
+          return app;
+        });
+
+        await Promise.all(groupMonitorPromise);
+      });
+    }
+  }
+
+  async applicationDeletePre({
+    application,
+    delete: deleteLocal = false,
+  }: {
+    application: ApplicationEntity;
+    delete?: boolean;
+  }): Promise<void> {
+    const { multiple } = application.monitor;
+    if (multiple === MonitorMultiple.SINGLE) {
+      await this.websocketChange({ application, applicationDelete: true });
+    } else {
+      await this.applicationRepository.manager.transaction(async (transact) => {
+        const subAppPromise = application.subApplication.map(async (app) => {
+          await this.websocketChange({
+            application: app,
+            applicationDelete: true,
+          });
+          if (deleteLocal) {
+            await transact.delete(ApplicationEntity, { id: app.id });
+          }
+        });
+
+        await Promise.all(subAppPromise);
+      });
+    }
+  }
+
   /**
    * Update the application
    *
@@ -233,35 +320,53 @@ export class ApplicationService {
         ApplicationEntity,
         transact.create(ApplicationEntity, update),
       );
+      let relations: FindOneOptions<ApplicationEntity>['relations'];
+      if (update.approved !== ApplicationApproved.NOTPROCESSED) {
+        relations = [
+          'buyer',
+          'seller',
+          'monitor',
+          'monitor.multipleMonitors',
+          'playlist',
+          'playlist.files',
+          'parentApplication',
+          'subApplications',
+          'user',
+        ];
+      } else {
+        relations = ['seller'];
+      }
       application = await transact.findOne(ApplicationEntity, {
         where: {
           id: application.id,
         },
+        relations,
       });
       if (!application) {
         throw new NotFoundException('Application not found');
       }
 
       if (update.approved === ApplicationApproved.NOTPROCESSED) {
-        if (application.seller) {
+        const sellerEmail = application.seller?.email;
+        if (sellerEmail) {
           await this.mailService
-            .sendApplicationWarningMessage(
-              application.seller.email,
-              `${this.frontendUrl}/applications`,
-            )
-            .catch((error: any) => {
+            .sendApplicationWarningMessage({
+              email: sellerEmail,
+              applicationUrl: `${this.frontendUrl}/applications`,
+            })
+            .catch((error: unknown) => {
               this.logger.error(
-                `ApplicationService seller email=${application?.seller.email}: ${error}`,
+                `ApplicationService seller email=${sellerEmail}: ${error}`,
                 error,
               );
             });
         } else {
-          this.logger.error('ApplicationService seller email=undefined');
+          this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }
       } else if (update.approved === ApplicationApproved.ALLOWED) {
-        await this.websocketChange({ application });
+        await this.applicationCreatePost({ application });
       } else if (update.approved === ApplicationApproved.DENIED) {
-        await this.websocketChange({ application, applicationDelete: true });
+        await this.applicationDeletePre({ application });
       }
     });
 
@@ -274,9 +379,9 @@ export class ApplicationService {
     userId: string,
     application: ApplicationEntity,
   ): Promise<DeleteResult> {
-    await this.websocketChange({
+    await this.applicationDeletePre({
       application,
-      applicationDelete: true,
+      delete: true,
     });
 
     const deleteResult = await this.applicationRepository.delete({
