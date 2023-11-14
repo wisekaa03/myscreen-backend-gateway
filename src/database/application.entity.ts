@@ -110,7 +110,11 @@ export class ApplicationEntity {
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
     description: 'Скрытый',
+    default: false,
+    example: false,
+    required: false,
   })
+  @IsBoolean()
   hide!: boolean;
 
   @ManyToOne(() => ApplicationEntity, (application) => application.id, {
@@ -127,24 +131,6 @@ export class ApplicationEntity {
   @Column({ nullable: true })
   @IsUUID()
   parentApplicationId?: string;
-
-  // @OneToMany(
-  //   () => ApplicationEntity,
-  //   (application) => application.parentApplication,
-  //   {
-  //     onDelete: 'CASCADE',
-  //     onUpdate: 'CASCADE',
-  //     cascade: true,
-  //     eager: false,
-  //   },
-  // )
-  // @ApiProperty({
-  //   description: 'Подчиненные мониторы',
-  //   type: 'string',
-  //   allOf: [{ $ref: '#/components/schemas/ApplicationResponse' }],
-  //   required: false,
-  // })
-  // subApplication!: ApplicationEntity[];
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     onDelete: 'CASCADE',

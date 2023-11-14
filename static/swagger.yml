@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.36
+  version: 2.42.37
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4143,6 +4143,11 @@ components:
           description: Статус
           example: Offline
           $ref: "#/components/schemas/PlaylistStatus"
+        hide:
+          type: boolean
+          description: Скрытый
+          default: false
+          example: false
         createdAt:
           format: date-time
           type: string
@@ -4468,6 +4473,8 @@ components:
         hide:
           type: boolean
           description: Скрытый
+          default: false
+          example: false
         playlist:
           description: Плэйлист
           allOf:
@@ -4506,7 +4513,6 @@ components:
         - buyer
         - seller
         - monitor
-        - hide
         - playlist
         - approved
         - dateWhen
@@ -5849,6 +5855,7 @@ components:
               - name
               - description
               - status
+              - hide
               - files
               - monitors
               - createdAt
