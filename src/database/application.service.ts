@@ -226,7 +226,7 @@ export class ApplicationService {
   }: {
     application: ApplicationEntity;
   }): Promise<void> {
-    const { multiple } = application.monitor;
+    const { playlist, multiple } = application.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
       await this.websocketChange({ application });
     } else {
@@ -240,12 +240,13 @@ export class ApplicationService {
         }
 
         const groupMonitorPromise = multipleMonitors.map(async (subMonitor) => {
-          const subPlaylist = playlists.find(
-            ({ monitors }) => monitors?.find(({ id }) => id === subMonitor.id),
-          );
-          if (!subPlaylist) {
-            throw new NotAcceptableException('Playlist not found');
-          }
+          const subPlaylist =
+            multiple === MonitorMultiple.SCALING
+              ? playlists.find(
+                  ({ monitors }) =>
+                    monitors?.find(({ id }) => id === subMonitor.id),
+                )
+              : undefined;
           const app = await transact.save(
             ApplicationEntity,
             transact.create(ApplicationEntity, {
@@ -254,7 +255,10 @@ export class ApplicationService {
               hide: true,
               parentApplicationId: application.id,
               monitorId: subMonitor.id,
-              playlistId: subPlaylist.id,
+              playlistId:
+                multiple === MonitorMultiple.SCALING
+                  ? subPlaylist?.id ?? playlist?.id
+                  : playlist?.id,
             }),
           );
 

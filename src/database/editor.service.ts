@@ -478,7 +478,6 @@ export class EditorService {
       return [null, null];
     }
     if (multiple !== MonitorMultiple.SCALING) {
-      // TODO: сделать разбиение на мониторы
       return [multipleMonitors, [playlist]];
     }
 
