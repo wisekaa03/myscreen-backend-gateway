@@ -226,7 +226,8 @@ export class ApplicationService {
   }: {
     application: ApplicationEntity;
   }): Promise<void> {
-    const { playlist, multiple } = application.monitor;
+    const { playlist } = application;
+    const { multiple } = application.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
       await this.websocketChange({ application });
     } else {
