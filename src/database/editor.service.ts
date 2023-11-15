@@ -17,6 +17,7 @@ import {
   NotFoundException,
   Inject,
   forwardRef,
+  NotImplementedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,13 +30,23 @@ import {
 import { ffprobe } from 'media-probe';
 import Editly from 'editly';
 
-import { FileCategory, RenderingStatus, VideoType } from '@/enums';
+import {
+  FileCategory,
+  MonitorMultiple,
+  MonitorOrientation,
+  RenderingStatus,
+  VideoType,
+} from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
+// eslint-disable-next-line import/no-cycle
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
+import { ApplicationEntity } from './application.entity';
+import { MonitorMultipleEntity } from './monitor.multiple.entity';
+import { PlaylistEntity } from './playlist.entity';
 
 const exec = util.promisify(child.exec);
 
@@ -454,6 +465,60 @@ export class EditorService {
     return createReadStream(outPath).on('end', () => {
       fs.unlink(outPath);
     });
+  }
+
+  async partitionMonitors({
+    application,
+  }: {
+    application: ApplicationEntity;
+  }): Promise<[MonitorMultipleEntity[] | null, PlaylistEntity[] | null]> {
+    const { playlist, monitor } = application;
+    const { multiple, multipleMonitors } = application.monitor;
+    if (!multipleMonitors) {
+      return [null, null];
+    }
+    if (multiple !== MonitorMultiple.SCALING) {
+      // TODO: сделать разбиение на мониторы
+      return [multipleMonitors, [playlist]];
+    }
+
+    const [widthString, heightString] =
+      monitor.monitorInfo.resolution?.split('x', 2) ?? [];
+    let width = Number.parseInt(widthString, 10);
+    let height = Number.parseInt(heightString, 10);
+    let widthSum = width;
+    let heightSum = height;
+
+    // вычисляем общую площадь
+    [widthSum, heightSum] = multipleMonitors.reduce(
+      (acc, multipleMonitor) => {
+        const { monitorInfo } = multipleMonitor.monitor;
+        const [subWidthString, subHeightString] =
+          monitorInfo.resolution?.split('x', 2) ?? [];
+        if (!subWidthString || !subHeightString) {
+          throw new NotAcceptableException(
+            `Monitor ${multipleMonitor.monitor.name}: ${subWidthString}x${subHeightString} is not scaling`,
+          );
+        }
+        if (
+          multipleMonitor.monitor.orientation === MonitorOrientation.Horizontal
+        ) {
+          acc[0] += Number.parseInt(subWidthString, 10);
+          acc[1] += Number.parseInt(subHeightString, 10);
+        } else {
+          acc[0] += Number.parseInt(subHeightString, 10);
+          acc[1] += Number.parseInt(subWidthString, 10);
+        }
+        return acc;
+      },
+      [0, 0],
+    );
+
+    // делим ее на количество мониторов
+    width = widthSum / multipleMonitors.length;
+    height = heightSum / multipleMonitors.length;
+
+    throw new NotImplementedException();
   }
 
   /**

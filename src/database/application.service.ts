@@ -9,6 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import {
+  DeepPartial,
   DeleteResult,
   FindManyOptions,
   FindOneOptions,
@@ -23,11 +24,7 @@ import differenceInDays from 'date-fns/differenceInDays';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import {
-  ApplicationApproved,
-  MonitorMultiple,
-  MonitorOrientation,
-} from '@/enums';
+import { ApplicationApproved, MonitorMultiple } from '@/enums';
 import { MailService } from '@/mail/mail.service';
 import { ApplicationEntity } from './application.entity';
 import { FileEntity } from './file.entity';
@@ -36,6 +33,8 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserExtEntity } from './user-ext.entity';
 // eslint-disable-next-line import/no-cycle
 import { MonitorService } from './monitor.service';
+// eslint-disable-next-line import/no-cycle
+import { EditorService } from './editor.service';
 
 @Injectable()
 export class ApplicationService {
@@ -45,6 +44,8 @@ export class ApplicationService {
 
   constructor(
     private readonly mailService: MailService,
+    @Inject(forwardRef(() => EditorService))
+    private readonly editorService: EditorService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
     @Inject(forwardRef(() => MonitorService))
@@ -141,17 +142,9 @@ export class ApplicationService {
       // } else if (monitor) {
     } else if (application) {
       if (applicationDelete) {
-        await this.wsGateway
-          .application({ monitor: application.monitor })
-          .catch((error: any) => {
-            this.logger.error(error);
-          });
+        await this.wsGateway.application({ monitor: application.monitor });
       } else {
-        await this.wsGateway
-          .application({ application })
-          .catch((error: unknown) => {
-            this.logger.error(error);
-          });
+        await this.wsGateway.application({ application });
       }
     }
   }
@@ -228,61 +221,31 @@ export class ApplicationService {
     return expected;
   }
 
-  async applicationCreatePost({
+  private async applicationCreatePost({
     application,
   }: {
     application: ApplicationEntity;
   }): Promise<void> {
-    const { multiple, multipleMonitors } = application.monitor;
+    const { multiple } = application.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
       await this.websocketChange({ application });
     } else {
-      if (!multipleMonitors) {
-        return;
-      }
-
       await this.applicationRepository.manager.transaction(async (transact) => {
-        const { playlist, monitor } = application;
-
-        const [widthString, heightString] =
-          monitor.monitorInfo.resolution?.split('x', 2) ?? [];
-        let width = Number.parseInt(widthString, 10);
-        let height = Number.parseInt(heightString, 10);
-        let widthSum = width;
-        let heightSum = height;
-        if (multiple === MonitorMultiple.SCALING) {
-          // вычисляем общую площадь
-          [widthSum, heightSum] = multipleMonitors.reduce(
-            (acc, multipleMonitor) => {
-              const { monitorInfo } = multipleMonitor.monitor;
-              const [subWidthString, subHeightString] =
-                monitorInfo.resolution?.split('x', 2) ?? [];
-              if (!subWidthString || !subHeightString) {
-                throw new NotAcceptableException(
-                  `Monitor ${multipleMonitor.monitor.name}: ${subWidthString}x${subHeightString} is not scaling`,
-                );
-              }
-              if (
-                multipleMonitor.monitor.orientation ===
-                MonitorOrientation.Horizontal
-              ) {
-                acc[0] += Number.parseInt(subWidthString, 10);
-                acc[1] += Number.parseInt(subHeightString, 10);
-              } else {
-                acc[0] += Number.parseInt(subWidthString, 10);
-                acc[1] += Number.parseInt(subHeightString, 10);
-              }
-              return acc;
-            },
-            [0, 0],
-          );
-
-          // делим ее на количество мониторов
-          width = widthSum / multipleMonitors.length;
-          height = heightSum / multipleMonitors.length;
+        const [multipleMonitors, playlists] =
+          await this.editorService.partitionMonitors({
+            application,
+          });
+        if (!(Array.isArray(multipleMonitors) && Array.isArray(playlists))) {
+          throw new NotAcceptableException('Monitors or Playlists not found');
         }
 
         const groupMonitorPromise = multipleMonitors.map(async (subMonitor) => {
+          const subPlaylist = playlists.find(
+            ({ monitors }) => monitors?.find(({ id }) => id === subMonitor.id),
+          );
+          if (!subPlaylist) {
+            throw new NotAcceptableException('Playlist not found');
+          }
           const app = await transact.save(
             ApplicationEntity,
             transact.create(ApplicationEntity, {
@@ -291,7 +254,7 @@ export class ApplicationService {
               hide: true,
               parentApplicationId: application.id,
               monitorId: subMonitor.id,
-              playlistId: playlist.id,
+              playlistId: subPlaylist.id,
             }),
           );
 
@@ -305,7 +268,7 @@ export class ApplicationService {
     }
   }
 
-  async applicationDeletePre({
+  private async applicationDeletePre({
     application,
     delete: deleteLocal = false,
   }: {
@@ -329,6 +292,9 @@ export class ApplicationService {
             applicationDelete: true,
           });
           if (deleteLocal) {
+            if (multiple === MonitorMultiple.SCALING) {
+              await transact.delete(PlaylistEntity, { id: app.playlistId });
+            }
             await transact.delete(ApplicationEntity, { id: app.id });
           }
         });
@@ -339,21 +305,21 @@ export class ApplicationService {
   }
 
   /**
-   * Update the application
+   * Create or update the application
    *
-   * @param id Application.id
    * @param update Partial<ApplicationEntity>
    * @returns
    */
-  async update(
-    id: string | undefined,
-    update: Partial<ApplicationEntity>,
-  ): Promise<ApplicationEntity | null> {
+  async update({
+    id,
+    ...update
+  }: DeepPartial<ApplicationEntity>): Promise<ApplicationEntity | null> {
     await this.applicationRepository.manager.transaction(async (transact) => {
       let application: ApplicationEntity | null = await transact.save(
         ApplicationEntity,
-        transact.create(ApplicationEntity, update),
+        transact.create(ApplicationEntity, { id, ...update }),
       );
+
       let relations: FindOneOptions<ApplicationEntity>['relations'];
       if (update.approved !== ApplicationApproved.NOTPROCESSED) {
         relations = [
@@ -407,10 +373,7 @@ export class ApplicationService {
       : this.applicationRepository.findOne({ where: { id } });
   }
 
-  async delete(
-    userId: string,
-    application: ApplicationEntity,
-  ): Promise<DeleteResult> {
+  async delete(application: ApplicationEntity): Promise<DeleteResult> {
     await this.applicationDeletePre({
       application,
       delete: true,
@@ -418,7 +381,6 @@ export class ApplicationService {
 
     const deleteResult = await this.applicationRepository.delete({
       id: application.id,
-      userId,
     });
 
     return deleteResult;
@@ -437,10 +399,14 @@ export class ApplicationService {
     dateTo: string;
     monitorIds: string[];
   }): Promise<string> {
-    const monitors = await this.monitorService.find(user.id, {
-      where: { id: In(monitorIds) },
-      relations: [],
-      select: ['id', 'price1s', 'minWarranty'],
+    const monitors = await this.monitorService.find({
+      userId: user.id,
+      find: {
+        where: { id: In(monitorIds) },
+        relations: [],
+        loadEagerRelations: false,
+        select: ['id', 'price1s', 'minWarranty'],
+      },
     });
     if (!monitors.length) {
       throw new NotFoundException('Monitors not found');

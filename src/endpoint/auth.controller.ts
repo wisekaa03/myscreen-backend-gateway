@@ -329,7 +329,12 @@ export class AuthController {
 
     const payload = await this.authService.createMonitorToken(monitor.id);
 
-    await this.monitorService.update(monitor.user, { ...monitor, code: null });
+    if (monitor.code !== null) {
+      await this.monitorService.update({
+        user: monitor.user,
+        update: { ...monitor, code: null },
+      });
+    }
 
     return {
       status: Status.Success,
