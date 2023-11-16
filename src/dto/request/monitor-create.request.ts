@@ -31,7 +31,7 @@ export class MonitorMultipleRequest {
   })
   @IsNotEmpty()
   @IsNumber()
-  multipleRowNo!: number;
+  row!: number;
 
   @ApiProperty({
     type: 'number',
@@ -40,7 +40,7 @@ export class MonitorMultipleRequest {
   })
   @IsNotEmpty()
   @IsNumber()
-  multipleColNo!: number;
+  col!: number;
 }
 
 export class MonitorCreateRequest extends PickType(MonitorEntity, [

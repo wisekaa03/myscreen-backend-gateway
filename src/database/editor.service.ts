@@ -37,6 +37,7 @@ import {
   RenderingStatus,
   VideoType,
 } from '@/enums';
+import { MonitorMultipleWithPlaylist } from '@/dto/interface';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
@@ -45,8 +46,6 @@ import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
 import { ApplicationEntity } from './application.entity';
-import { MonitorMultipleEntity } from './monitor.multiple.entity';
-import { PlaylistEntity } from './playlist.entity';
 
 const exec = util.promisify(child.exec);
 
@@ -471,40 +470,51 @@ export class EditorService {
     application,
   }: {
     application: ApplicationEntity;
-  }): Promise<[MonitorMultipleEntity[] | null, PlaylistEntity[] | null]> {
-    const { playlist, monitor } = application;
+  }): Promise<MonitorMultipleWithPlaylist[] | null> {
+    const { playlist } = application;
     const { multiple, multipleMonitors } = application.monitor;
     if (!multipleMonitors) {
-      return [null, null];
+      return null;
     }
     if (multiple !== MonitorMultiple.SCALING) {
-      return [multipleMonitors, [playlist]];
+      const monitorMultipleWithPlaylist = multipleMonitors.reduce(
+        (acc, item) => {
+          acc.push({
+            ...item,
+            playlist,
+          });
+          return acc;
+        },
+        [] as MonitorMultipleWithPlaylist[],
+      );
+
+      return monitorMultipleWithPlaylist;
     }
 
-    let width = monitor.width ?? 1920;
-    let height = monitor.height ?? 1080;
-    let [widthSum, heightSum] = [width, height];
-
-    // вычисляем общую площадь
-    [widthSum, heightSum] = multipleMonitors.reduce(
-      (acc, multipleMonitor) => {
-        if (
-          multipleMonitor.monitor.orientation === MonitorOrientation.Horizontal
-        ) {
-          acc[0] += monitor.width;
-          acc[1] += monitor.height;
-        } else {
-          acc[0] += monitor.height;
-          acc[1] += monitor.width;
-        }
-        return acc;
-      },
-      [0, 0],
-    );
+    const minRow = Math.min(...multipleMonitors.map((m) => m.row));
+    const minCol = Math.min(...multipleMonitors.map((m) => m.col));
+    const widthSum = multipleMonitors
+      .filter((m) => m.row === minRow)
+      .reduce(
+        (acc, { monitor: itemMonitor }) =>
+          itemMonitor.orientation === MonitorOrientation.Horizontal
+            ? acc + itemMonitor.width
+            : acc + itemMonitor.height,
+        0,
+      );
+    const heightSum = multipleMonitors
+      .filter((m) => m.col === minCol)
+      .reduce(
+        (acc, { monitor: itemMonitor }) =>
+          itemMonitor.orientation === MonitorOrientation.Horizontal
+            ? acc + itemMonitor.height
+            : acc + itemMonitor.width,
+        0,
+      );
 
     // делим ее на количество мониторов
-    width = widthSum / multipleMonitors.length;
-    height = heightSum / multipleMonitors.length;
+    const widthMonitor = widthSum / multipleMonitors.length;
+    const heightMonitor = heightSum / multipleMonitors.length;
 
     throw new NotImplementedException();
   }

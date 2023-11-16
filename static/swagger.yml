@@ -4367,16 +4367,16 @@ components:
           type: string
           format: uuid
           description: Подчиненный монитор в группе мониторов
-        multipleRowNo:
+        row:
           type: number
           description: Подчиненный номер монитора в группе мониторов (строка)
-        multipleColNo:
+        col:
           type: number
           description: Подчиненный номер монитора в группе мониторов (колонка)
       required:
         - monitorId
-        - multipleRowNo
-        - multipleColNo
+        - row
+        - col
     MonitorCreateRequest:
       type: object
       properties:

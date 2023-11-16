@@ -232,8 +232,8 @@ export class MonitorService {
                   userId: user?.id ?? monitor.userId,
                   parentMonitorId: monitor.id,
                   monitorId: groupMonitorId,
-                  multipleRowNo: itemMonitor.multipleRowNo,
-                  multipleColNo: itemMonitor.multipleColNo,
+                  row: itemMonitor.row,
+                  col: itemMonitor.col,
                 }),
               );
               await transact.update(
@@ -331,8 +331,8 @@ export class MonitorService {
               userId: user.id,
               parentMonitorId: monitor.id,
               monitorId: groupMonitorId,
-              multipleRowNo: item.multipleRowNo,
-              multipleColNo: item.multipleColNo,
+              row: item.row,
+              col: item.col,
             }),
           );
           await transact.update(
