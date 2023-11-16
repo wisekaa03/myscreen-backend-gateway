@@ -9,6 +9,7 @@ export class MonitorRequest extends PartialType(
     'user',
     'userId',
     'playlist',
+    'monitorInfo',
     'files',
     'createdAt',
     'updatedAt',

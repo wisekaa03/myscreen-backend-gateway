@@ -236,8 +236,6 @@ export class WSGateway
 
     // записываем в базу данных
     monitor = await this.monitorService.update({
-      user: monitor.user,
-
       update: {
         id: monitor.id,
         playlistPlayed: bodyObject.playlistPlayed,

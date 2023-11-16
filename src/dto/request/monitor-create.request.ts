@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsUUID,
   Length,
+  Min,
   ValidateNested,
 } from 'class-validator';
 
@@ -46,7 +47,12 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
   'address',
   'category',
   'location',
-  'monitorInfo',
+  'angle',
+  'brightness',
+  'model',
+  'matrix',
+  'width',
+  'height',
   'name',
   'orientation',
   'price1s',
@@ -65,6 +71,28 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
   @IsNotEmpty()
   @Length(11, 11)
   code!: string;
+
+  @ApiProperty({
+    type: 'integer',
+    description: 'Ширина',
+    example: 1920,
+    default: 1920,
+    required: false,
+  })
+  @IsNumber()
+  @Min(1)
+  width!: number;
+
+  @ApiProperty({
+    type: 'integer',
+    description: 'Высота',
+    example: 1080,
+    default: 1080,
+    required: false,
+  })
+  @IsNumber()
+  @Min(1)
+  height!: number;
 
   @ApiProperty({
     type: MonitorMultipleRequest,

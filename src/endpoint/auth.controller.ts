@@ -331,8 +331,7 @@ export class AuthController {
 
     if (monitor.code !== null) {
       await this.monitorService.update({
-        user: monitor.user,
-        update: { ...monitor, code: null },
+        update: { id: monitor.id, code: null },
       });
     }
 

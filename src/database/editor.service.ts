@@ -481,32 +481,21 @@ export class EditorService {
       return [multipleMonitors, [playlist]];
     }
 
-    const [widthString, heightString] =
-      monitor.monitorInfo.resolution?.split('x', 2) ?? [];
-    let width = Number.parseInt(widthString, 10);
-    let height = Number.parseInt(heightString, 10);
-    let widthSum = width;
-    let heightSum = height;
+    let width = monitor.width ?? 1920;
+    let height = monitor.height ?? 1080;
+    let [widthSum, heightSum] = [width, height];
 
     // вычисляем общую площадь
     [widthSum, heightSum] = multipleMonitors.reduce(
       (acc, multipleMonitor) => {
-        const { monitorInfo } = multipleMonitor.monitor;
-        const [subWidthString, subHeightString] =
-          monitorInfo.resolution?.split('x', 2) ?? [];
-        if (!subWidthString || !subHeightString) {
-          throw new NotAcceptableException(
-            `Monitor ${multipleMonitor.monitor.name}: ${subWidthString}x${subHeightString} is not scaling`,
-          );
-        }
         if (
           multipleMonitor.monitor.orientation === MonitorOrientation.Horizontal
         ) {
-          acc[0] += Number.parseInt(subWidthString, 10);
-          acc[1] += Number.parseInt(subHeightString, 10);
+          acc[0] += monitor.width;
+          acc[1] += monitor.height;
         } else {
-          acc[0] += Number.parseInt(subHeightString, 10);
-          acc[1] += Number.parseInt(subWidthString, 10);
+          acc[0] += monitor.height;
+          acc[1] += monitor.width;
         }
         return acc;
       },

@@ -10,7 +10,6 @@ import {
   DeepPartial,
   DeleteResult,
   FindManyOptions,
-  FindOneOptions,
   In,
   Repository,
 } from 'typeorm';
@@ -158,24 +157,30 @@ export class MonitorService {
     update,
     multipleIds,
   }: {
-    user: UserEntity;
-    update: Partial<MonitorEntity>;
+    user?: UserEntity;
+    update: DeepPartial<MonitorEntity>;
     multipleIds?: MonitorMultipleRequest[];
   }): Promise<MonitorEntity> {
-    const prepareMonitor: DeepPartial<MonitorEntity> = {
-      userId: user.id,
-      ...update,
-    };
-    if (prepareMonitor.id === undefined) {
+    if (update.monitorInfo) {
+      throw new BadRequestException('Monitor info deprecated');
+    }
+    const monitorUpdate: DeepPartial<MonitorEntity> = user
+      ? {
+          userId: user.id,
+          ...update,
+        }
+      : update;
+    if (monitorUpdate.id === undefined) {
       throw new BadRequestException('Monitor ID is empty');
     }
 
-    let groupMonitors: MonitorEntity[] = [];
     const multipleBool = Array.isArray(multipleIds);
 
     if (update.multiple !== MonitorMultiple.SINGLE) {
+      let groupMonitors: MonitorEntity[] = [];
+
       const monitorFind = await this.monitorRepository.findOne({
-        where: { id: prepareMonitor.id },
+        where: { id: monitorUpdate.id },
         relations: multipleBool ? { multipleMonitors: true } : {},
       });
       if (!monitorFind) {
@@ -201,7 +206,7 @@ export class MonitorService {
       return this.monitorRepository.manager.transaction(async (transact) => {
         const monitor = await transact.save(
           MonitorEntity,
-          transact.create(MonitorEntity, prepareMonitor),
+          transact.create(MonitorEntity, monitorUpdate),
         );
 
         if (multipleBool) {
@@ -224,7 +229,7 @@ export class MonitorService {
               await transact.save(
                 MonitorMultipleEntity,
                 transact.create(MonitorMultipleEntity, {
-                  userId: user.id,
+                  userId: user?.id ?? monitor.userId,
                   parentMonitorId: monitor.id,
                   monitorId: groupMonitorId,
                   multipleRowNo: itemMonitor.multipleRowNo,
@@ -270,7 +275,7 @@ export class MonitorService {
     }
 
     return this.monitorRepository.save(
-      this.monitorRepository.create(prepareMonitor),
+      this.monitorRepository.create(monitorUpdate),
     );
   }
 

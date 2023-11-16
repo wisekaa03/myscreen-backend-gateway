@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.41
+  version: 2.42.42
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3648,29 +3648,6 @@ components:
       enum:
         - Horizontal
         - Vertical
-    MonitorInfo:
-      type: object
-      properties:
-        model:
-          type: string
-          description: Модель
-          example: Samsung
-        resolution:
-          type: string
-          description: Разрешение
-          example: 3840x2190
-        angle:
-          type: number
-          description: Угол обзора
-          example: 0
-        matrix:
-          type: string
-          description: Тип матрицы
-          example: IPS
-        brightness:
-          type: number
-          description: Яркость
-          example: 0
     MonitorStatus:
       type: string
       enum:
@@ -3742,16 +3719,30 @@ components:
           description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
-        monitorInfo:
-          description: Модель и прочие характеристики монитора
-          example: &ref_121
-            model: Samsung
-            resolution: 1920 x 1080 px
-            angle: 0
-            matrix: IPS
-            brightness: 0
-          allOf:
-            - $ref: "#/components/schemas/MonitorInfo"
+        model:
+          type: string
+          description: Модель
+          example: Samsung
+        angle:
+          type: number
+          description: Угол обзора
+          example: 0
+        matrix:
+          type: string
+          description: Тип матрицы
+          example: IPS
+        brightness:
+          type: number
+          description: Яркость
+          example: 100
+        width:
+          type: integer
+          description: Ширина
+          example: 1920
+        height:
+          type: integer
+          description: Высота
+          example: 1080
         attached:
           type: boolean
           description: Присоединен
@@ -3780,7 +3771,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: &ref_122
+          example: &ref_121
             type: Point
             coordinates:
               - 38.97603
@@ -3973,6 +3964,12 @@ components:
               - maxDuration
               - orientation
               - monitorInfo
+              - model
+              - angle
+              - matrix
+              - brightness
+              - width
+              - height
               - attached
               - sound
               - status
@@ -3988,6 +3985,29 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+    MonitorInfo:
+      type: object
+      properties:
+        model:
+          type: string
+          description: Модель
+          example: Samsung
+        resolution:
+          type: string
+          description: Разрешение
+          example: 3840x2190
+        angle:
+          type: number
+          description: Угол обзора
+          example: 0
+        matrix:
+          type: string
+          description: Тип матрицы
+          example: IPS
+        brightness:
+          type: number
+          description: Яркость
+          example: 0
     PlaylistStatus:
       type: string
       enum:
@@ -4213,10 +4233,40 @@ components:
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         monitorInfo:
-          description: Модель и прочие характеристики монитора
-          example: *ref_121
+          description: Модель и прочие характеристики монитора (deprecated)
+          example:
+            model: Samsung
+            resolution: 1920 x 1080 px
+            angle: 0
+            matrix: IPS
+            brightness: 0
+          deprecated: true
           allOf:
             - $ref: "#/components/schemas/MonitorInfo"
+        model:
+          type: string
+          description: Модель
+          example: Samsung
+        angle:
+          type: number
+          description: Угол обзора
+          example: 0
+        matrix:
+          type: string
+          description: Тип матрицы
+          example: IPS
+        brightness:
+          type: number
+          description: Яркость
+          example: 100
+        width:
+          type: integer
+          description: Ширина
+          example: 1920
+        height:
+          type: integer
+          description: Высота
+          example: 1080
         attached:
           type: boolean
           description: Присоединен
@@ -4246,7 +4296,7 @@ components:
           example: "2021-10-01T10:00:00.147Z"
           nullable: true
         location:
-          example: *ref_122
+          example: *ref_121
           allOf:
             - $ref: "#/components/schemas/PointClass"
         favorite:
@@ -4280,6 +4330,8 @@ components:
         - id
         - name
         - category
+        - width
+        - height
         - attached
         - sound
         - status
@@ -4357,11 +4409,32 @@ components:
           description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
-        monitorInfo:
-          description: Модель и прочие характеристики монитора
-          example: *ref_121
-          allOf:
-            - $ref: "#/components/schemas/MonitorInfo"
+        model:
+          type: string
+          description: Модель
+          example: Samsung
+        angle:
+          type: number
+          description: Угол обзора
+          example: 0
+        matrix:
+          type: string
+          description: Тип матрицы
+          example: IPS
+        brightness:
+          type: number
+          description: Яркость
+          example: 100
+        width:
+          type: integer
+          description: Ширина
+          example: 1920
+          default: 1920
+        height:
+          type: integer
+          description: Высота
+          example: 1080
+          default: 1080
         sound:
           type: boolean
           description: "Есть звук: true/false"
@@ -4373,7 +4446,7 @@ components:
           example: SINGLE
           $ref: "#/components/schemas/MonitorMultiple"
         location:
-          example: *ref_122
+          example: *ref_121
           allOf:
             - $ref: "#/components/schemas/PointClass"
         code:
@@ -4574,11 +4647,30 @@ components:
           description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
-        monitorInfo:
-          description: Модель и прочие характеристики монитора
-          example: *ref_121
-          allOf:
-            - $ref: "#/components/schemas/MonitorInfo"
+        model:
+          type: string
+          description: Модель
+          example: Samsung
+        angle:
+          type: number
+          description: Угол обзора
+          example: 0
+        matrix:
+          type: string
+          description: Тип матрицы
+          example: IPS
+        brightness:
+          type: number
+          description: Яркость
+          example: 100
+        width:
+          type: integer
+          description: Ширина
+          example: 1920
+        height:
+          type: integer
+          description: Высота
+          example: 1080
         attached:
           type: boolean
           description: Присоединен
@@ -4607,7 +4699,7 @@ components:
           example: 111-111-111
           nullable: true
         location:
-          example: *ref_122
+          example: *ref_121
           allOf:
             - $ref: "#/components/schemas/PointClass"
         multipleIds:
@@ -4787,7 +4879,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: &ref_123
+          allOf: &ref_122
             - $ref: "#/components/schemas/FileResponse"
         keepSourceAudio:
           type: boolean
@@ -5027,7 +5119,7 @@ components:
         renderedFile:
           description: Обработанный файл
           nullable: true
-          allOf: *ref_123
+          allOf: *ref_122
       required:
         - id
         - renderingStatus
@@ -5958,12 +6050,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-11-14"
+          example: "2023-11-15"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-11-15"
+          example: "2023-11-16"
       required:
         - format
         - dateFrom
@@ -5985,12 +6077,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-11-14"
+          example: "2023-11-15"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-11-15"
+          example: "2023-11-16"
       required:
         - format
         - dateFrom
@@ -6132,12 +6224,12 @@ components:
           format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-11-14T00:00:00.000Z"
+          example: "2023-11-15T00:00:00.000Z"
         dateTo:
           format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-11-15T23:59:59.999Z"
+          example: "2023-11-16T23:59:59.999Z"
       required:
         - monitorIds
         - playlistDuration

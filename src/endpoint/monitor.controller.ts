@@ -409,8 +409,7 @@ export class MonitorController {
 
       // TODO: удаление связки плэйлиста и монитора
       return this.monitorService.update({
-        user,
-        update: { ...monitor, playlist: null },
+        update: { id: monitor.id, multiple: monitor.multiple, playlist: null },
       });
     });
     const data = await Promise.all(dataPromise);
@@ -608,8 +607,7 @@ export class MonitorController {
       throw new NotFoundException(`Monitor ${id} is not found`);
     }
     const data = await this.monitorService.update({
-      user,
-      update: { ...update, id },
+      update: { ...update, id, userId: user.id },
       multipleIds,
     });
 
