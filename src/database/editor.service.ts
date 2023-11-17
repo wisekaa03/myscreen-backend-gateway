@@ -17,6 +17,7 @@ import {
   NotFoundException,
   Inject,
   forwardRef,
+  NotImplementedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -29,13 +30,22 @@ import {
 import { ffprobe } from 'media-probe';
 import Editly from 'editly';
 
-import { FileCategory, RenderingStatus, VideoType } from '@/enums';
+import {
+  FileCategory,
+  MonitorMultiple,
+  MonitorOrientation,
+  RenderingStatus,
+  VideoType,
+} from '@/enums';
+import { MonitorMultipleWithPlaylist } from '@/dto/interface';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
+// eslint-disable-next-line import/no-cycle
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
+import { ApplicationEntity } from './application.entity';
 
 const exec = util.promisify(child.exec);
 
@@ -454,6 +464,59 @@ export class EditorService {
     return createReadStream(outPath).on('end', () => {
       fs.unlink(outPath);
     });
+  }
+
+  async partitionMonitors({
+    application,
+  }: {
+    application: ApplicationEntity;
+  }): Promise<MonitorMultipleWithPlaylist[] | null> {
+    const { playlist } = application;
+    const { multiple, multipleMonitors } = application.monitor;
+    if (!multipleMonitors) {
+      return null;
+    }
+    if (multiple !== MonitorMultiple.SCALING) {
+      const monitorMultipleWithPlaylist = multipleMonitors.reduce(
+        (acc, item) => {
+          acc.push({
+            ...item,
+            playlist,
+          });
+          return acc;
+        },
+        [] as MonitorMultipleWithPlaylist[],
+      );
+
+      return monitorMultipleWithPlaylist;
+    }
+
+    const minRow = Math.min(...multipleMonitors.map((m) => m.row));
+    const minCol = Math.min(...multipleMonitors.map((m) => m.col));
+    const widthSum = multipleMonitors
+      .filter((m) => m.row === minRow)
+      .reduce(
+        (acc, { monitor: itemMonitor }) =>
+          itemMonitor.orientation === MonitorOrientation.Horizontal
+            ? acc + itemMonitor.width
+            : acc + itemMonitor.height,
+        0,
+      );
+    const heightSum = multipleMonitors
+      .filter((m) => m.col === minCol)
+      .reduce(
+        (acc, { monitor: itemMonitor }) =>
+          itemMonitor.orientation === MonitorOrientation.Horizontal
+            ? acc + itemMonitor.height
+            : acc + itemMonitor.width,
+        0,
+      );
+
+    // делим ее на количество мониторов
+    const widthMonitor = widthSum / multipleMonitors.length;
+    const heightMonitor = heightSum / multipleMonitors.length;
+
+    throw new NotImplementedException();
   }
 
   /**

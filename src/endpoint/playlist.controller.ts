@@ -71,7 +71,7 @@ export class PlaylistController {
       ...paginationQueryToConfig(scope),
       select,
       where: TypeOrmFind.Where(
-        where,
+        { hide: false, ...where },
         user.role === UserRoleEnum.Administrator ? undefined : user,
       ),
     });

@@ -1,7 +1,8 @@
 import { Module, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
 
+import { Repository } from 'typeorm';
 import { MonitorStatus } from '@/enums/monitor-status.enum';
 import { TypeOrmOptionsClass } from '@/utils/typeorm.options';
 import { PrintModule } from '@/print/print.module';
@@ -101,9 +102,53 @@ import { MonitorMultipleEntity } from './monitor.multiple.entity';
   ],
 })
 export class DatabaseModule implements OnModuleInit {
-  constructor(private readonly monitorService: MonitorService) {}
+  constructor(
+    @InjectRepository(MonitorEntity)
+    private readonly monitorRepository: Repository<MonitorEntity>,
+  ) {}
 
   async onModuleInit(): Promise<void> {
-    await this.monitorService.status(MonitorStatus.Offline);
+    this.monitorRepository.manager.transaction(async (manager) => {
+      const allMonitors = await manager.find(MonitorEntity, {
+        select: [
+          'id',
+          'status',
+          'monitorInfo',
+          'angle',
+          'model',
+          'matrix',
+          'brightness',
+          'width',
+          'height',
+        ],
+        relations: {},
+        loadEagerRelations: false,
+      });
+      const allMonitorsPromise = allMonitors.map(async (monitor) => {
+        const {
+          angle,
+          model,
+          matrix,
+          brightness,
+          resolution: resolutionLocal = '1920x1080',
+        } = monitor.monitorInfo || {};
+        const [widthString, heightString] = resolutionLocal.split('x');
+        const width = parseInt(widthString, 10);
+        const height = parseInt(heightString, 10);
+        const monitorUpdate: Partial<MonitorEntity> = {
+          status: MonitorStatus.Offline,
+        };
+        if (monitor.angle === null) monitorUpdate.angle = angle ?? 0;
+        if (monitor.model === null) monitorUpdate.model = model || 'unknown';
+        if (monitor.matrix === null) monitorUpdate.matrix = matrix || 'IPS';
+        if (monitor.brightness === null) {
+          monitorUpdate.brightness = brightness ?? 100;
+        }
+        if (!monitor.width) monitorUpdate.width = width;
+        if (!monitor.height) monitorUpdate.height = height;
+        await manager.update(MonitorEntity, monitor.id, monitorUpdate);
+      });
+      await Promise.all(allMonitorsPromise);
+    });
   }
 }

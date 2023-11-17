@@ -93,17 +93,17 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: MonitorsGetRequest,
   ): Promise<MonitorsGetResponse> {
-    const conditional: FindManyOptions<MonitorEntity> = {
+    const find: FindManyOptions<MonitorEntity> = {
       ...paginationQueryToConfig(scope),
       select,
     };
     if (user.role === UserRoleEnum.Monitor) {
       // добавляем то, что содержится у нас в userId: monitorId.
-      conditional.where = { id: user.id, ...TypeOrmFind.Where(where) };
+      find.where = { id: user.id, ...TypeOrmFind.Where(where) };
     } else if (user.role === UserRoleEnum.MonitorOwner) {
-      conditional.where = { userId: user.id, ...TypeOrmFind.Where(where) };
+      find.where = { userId: user.id, ...TypeOrmFind.Where(where) };
     } else {
-      conditional.where = {
+      find.where = {
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
@@ -130,14 +130,14 @@ export class MonitorController {
         },
         false,
       );
-      conditional.where = {
+      find.where = {
         id: In(applicationsWhen.map((application) => application.monitorId)),
       };
     }
-    const [data, count] = await this.monitorService.findAndCount(
-      user.id,
-      conditional,
-    );
+    const [data, count] = await this.monitorService.findAndCount({
+      userId: user.id,
+      find,
+    });
     if (scope?.order?.favorite) {
       return {
         status: Status.Success,
@@ -172,35 +172,44 @@ export class MonitorController {
   @Crud(CRUD.CREATE)
   async createMonitors(
     @Req() { user }: ExpressRequest,
-    @Body() { multipleIds, ...monitor }: MonitorCreateRequest,
+    @Body() { multipleIds, ...update }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    if (monitor.multiple === MonitorMultiple.SUBORDINATE) {
+    if (update.multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestException(
         'Монитор не должен создаваться с типом монитора SUBORDINATE',
       );
     }
-    if (!(monitor.multiple !== MonitorMultiple.SINGLE)) {
+    if (!(update.multiple !== MonitorMultiple.SINGLE)) {
       const findMonitor = await this.monitorService.findOne(user.id, {
-        where: { code: monitor.code },
+        where: { code: update.code },
         select: ['id', 'name', 'code'],
       });
       if (findMonitor) {
         throw new BadRequestException(
-          `Монитор '${findMonitor.name}'/'${findMonitor.code}' уже существует`,
+          `Монитор "${findMonitor.name}"/"${findMonitor.code}" уже существует`,
         );
       }
     }
-    const [, countMonitors] = await this.monitorService.findAndCount(user.id, {
-      select: ['id'],
-      where: { userId: user.id },
-    });
-    if (countMonitors > 5) {
-      throw new ForbiddenException(
-        'You have a Demo User account. There are 5 monitors limit.',
-      );
+
+    if (user.plan === UserPlanEnum.Demo) {
+      const countMonitors = await this.monitorService.count({
+        find: {
+          select: ['id'],
+          where: { userId: user.id },
+        },
+      });
+      if (countMonitors > 5) {
+        throw new ForbiddenException(
+          'You have a Demo User account. There are 5 monitors limit.',
+        );
+      }
     }
 
-    const data = await this.monitorService.update(user, monitor, multipleIds);
+    const data = await this.monitorService.create({
+      user,
+      update,
+      multipleIds,
+    });
 
     return {
       status: Status.Success,
@@ -229,7 +238,7 @@ export class MonitorController {
   async createMonitorPlaylist(
     @Req() { user }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
-  ): Promise<MonitorsGetResponse> {
+  ): Promise<ApplicationsGetResponse> {
     if (!Array.isArray(attach.monitors) || attach.monitors.length < 1) {
       throw new BadRequestException('Monitors should not be null or undefined');
     }
@@ -274,19 +283,23 @@ export class MonitorController {
         where: {
           id: monitorId,
         },
+        relations: [],
+        loadEagerRelations: false,
       });
       if (!monitor) {
         throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
 
-      monitor = await this.monitorService.update(user, {
-        ...monitor,
-        playlist,
+      monitor = await this.monitorService.update({
+        user,
+        update: {
+          ...monitor,
+          playlist,
+        },
       });
 
       if (
-        user.role !== UserRoleEnum.Monitor &&
-        user.plan !== UserPlanEnum.Demo
+        !(user.role === UserRoleEnum.Monitor || user.plan === UserPlanEnum.Demo)
       ) {
         let approved: ApplicationApproved;
         if (monitor.userId === user.id) {
@@ -294,6 +307,7 @@ export class MonitorController {
         } else {
           approved = ApplicationApproved.NOTPROCESSED;
         }
+
         // To verify user permissions for application
         this.userService.verify(
           user,
@@ -301,8 +315,13 @@ export class MonitorController {
           'updateApplication',
           CRUD.CREATE,
         );
+
+        if (monitor.multiple !== MonitorMultiple.SINGLE) {
+          // TODO:
+        }
+
         // To create application
-        await this.applicationService.update(undefined, {
+        const application = await this.applicationService.update({
           sellerId: monitor.userId,
           buyerId: user.id,
           monitor,
@@ -313,9 +332,13 @@ export class MonitorController {
           dateWhen: attach.application.dateWhen,
           playlistChange: attach.application.playlistChange,
         });
+        if (!application) {
+          throw new BadRequestException('Application create error');
+        }
+        return application;
       }
 
-      return monitor;
+      throw new NotAcceptableException();
     });
 
     const data = await Promise.all(dataPromise);
@@ -379,12 +402,15 @@ export class MonitorController {
       }
 
       /* await */ this.wsGateway
-        .application(null, monitor)
+        .application({ monitor })
         .catch((error: any) => {
           this.logger.error(error);
         });
 
-      return this.monitorService.update(user, { ...monitor, playlist: null });
+      // TODO: удаление связки плэйлиста и монитора
+      return this.monitorService.update({
+        update: { id: monitor.id, multiple: monitor.multiple, playlist: null },
+      });
     });
     const data = await Promise.all(dataPromise);
 
@@ -418,13 +444,13 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
-    const conditional: FindManyOptions<MonitorEntity> = {};
+    const find: FindManyOptions<MonitorEntity> = {};
     if (user.role === UserRoleEnum.Monitor) {
-      conditional.where = { id: user.id };
+      find.where = { id: user.id };
     } else {
-      conditional.where = { userId: user.id, id };
+      find.where = { userId: user.id, id };
     }
-    const data = await this.monitorService.findOne(user.id, conditional);
+    const data = await this.monitorService.findOne(user.id, find);
     if (!data) {
       throw new NotFoundException(`Monitor '${id}' not found`);
     }
@@ -523,15 +549,15 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationsGetResponse> {
-    const conditional: FindManyOptions<MonitorEntity> = {
+    const find: FindManyOptions<MonitorEntity> = {
       relations: ['playlist'],
     };
     if (user.role === UserRoleEnum.Monitor) {
-      conditional.where = { id: user.id };
+      find.where = { id: user.id };
     } else {
-      conditional.where = { userId: user.id, id };
+      find.where = { userId: user.id, id };
     }
-    const monitor = await this.monitorService.findOne(user.id, conditional);
+    const monitor = await this.monitorService.findOne(user.id, find);
     if (!monitor) {
       throw new NotFoundException(`Monitor '${id}' not found`);
     }
@@ -580,11 +606,10 @@ export class MonitorController {
     if (!monitor) {
       throw new NotFoundException(`Monitor ${id} is not found`);
     }
-    const data = await this.monitorService.update(
-      user,
-      { ...update, id },
+    const data = await this.monitorService.update({
+      update: { ...update, id, userId: user.id },
       multipleIds,
-    );
+    });
 
     return {
       status: Status.Success,

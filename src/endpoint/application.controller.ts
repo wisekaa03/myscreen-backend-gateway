@@ -62,7 +62,7 @@ export class ApplicationController {
     type: ApplicationsGetResponse,
   })
   @Crud(CRUD.READ)
-  async getApplications(
+  async findMany(
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
@@ -72,8 +72,8 @@ export class ApplicationController {
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { ...sqlWhere, buyerId: Not(user.id) },
-          { ...sqlWhere, sellerId: Not(user.id) },
+          { hide: false, ...sqlWhere, buyerId: Not(user.id) },
+          { hide: false, ...sqlWhere, sellerId: Not(user.id) },
         ],
       });
 
@@ -89,8 +89,8 @@ export class ApplicationController {
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { ...sqlWhere, buyerId: user.id },
-          { ...sqlWhere, sellerId: user.id },
+          { hide: false, ...sqlWhere, buyerId: user.id },
+          { hide: false, ...sqlWhere, sellerId: user.id },
         ],
       });
 
@@ -113,7 +113,7 @@ export class ApplicationController {
     };
   }
 
-  @Get('/:applicationId')
+  @Get(':applicationId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'application-get',
@@ -125,7 +125,7 @@ export class ApplicationController {
     type: ApplicationGetResponse,
   })
   @Crud(CRUD.READ)
-  async getApplication(
+  async findOne(
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationGetResponse> {
     const data = await this.applicationService.findOne({
@@ -136,13 +136,14 @@ export class ApplicationController {
     if (!data) {
       throw new NotFoundException('Application not found');
     }
+
     return {
       status: Status.Success,
       data,
     };
   }
 
-  @Patch('/:applicationId')
+  @Patch(':applicationId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'application-update',
@@ -154,7 +155,7 @@ export class ApplicationController {
     type: ApplicationGetResponse,
   })
   @Crud(CRUD.UPDATE)
-  async updateApplication(
+  async update(
     @Req() { user }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
     @Body() update: ApplicationUpdateRequest,
@@ -170,14 +171,17 @@ export class ApplicationController {
           buyerId: user.id,
         },
       ],
+      select: ['id'],
+      relations: [],
+      loadEagerRelations: false,
     });
     if (!application) {
       throw new NotFoundException('Application not found');
     }
 
-    const data = await this.applicationService.update(applicationId, {
-      ...application,
+    const data = await this.applicationService.update({
       ...update,
+      id: applicationId,
     });
     if (!data) {
       throw new BadRequestException('Application exists and not exists ?');
@@ -189,7 +193,7 @@ export class ApplicationController {
     };
   }
 
-  @Delete('/:applicationId')
+  @Delete(':applicationId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'application-delete',
@@ -201,7 +205,7 @@ export class ApplicationController {
     type: SuccessResponse,
   })
   @Crud(CRUD.DELETE)
-  async deleteApplication(
+  async delete(
     @Req() { user }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
@@ -210,16 +214,13 @@ export class ApplicationController {
         { id, sellerId: user.id },
         { id, buyerId: user.id },
       ],
-      relations: ['monitor'],
+      relations: { monitor: true },
     });
     if (!application) {
-      throw new NotFoundException(`Application '${id}' is not found`);
+      throw new NotFoundException(`Application "${id}" is not found`);
     }
 
-    const { affected } = await this.applicationService.delete(
-      user.id,
-      application,
-    );
+    const { affected } = await this.applicationService.delete(application);
     if (!affected) {
       throw new NotFoundException('This application is not exists');
     }
@@ -241,7 +242,7 @@ export class ApplicationController {
     type: ApplicationPrecalculateResponse,
   })
   @Crud(CRUD.READ)
-  async precalculateApplication(
+  async precalculate(
     @Req() { user }: ExpressRequest,
     @Body()
     {

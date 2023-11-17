@@ -5,6 +5,7 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -105,6 +106,31 @@ export class ApplicationEntity {
     format: 'uuid',
   })
   monitorId!: string;
+
+  @Column({ type: 'boolean', default: false })
+  @ApiProperty({
+    description: 'Скрытый',
+    default: false,
+    example: false,
+    required: false,
+  })
+  @IsBoolean()
+  hide!: boolean;
+
+  @ManyToOne(() => ApplicationEntity, (application) => application.id, {
+    nullable: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
+  @JoinColumn()
+  @Index()
+  parentApplication?: ApplicationEntity;
+
+  @Column({ nullable: true })
+  @IsUUID()
+  parentApplicationId?: string;
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     onDelete: 'CASCADE',

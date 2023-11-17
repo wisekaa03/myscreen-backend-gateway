@@ -118,10 +118,13 @@ export class MailService {
    * @param {string} email Почта пользователя
    * @returns {SentMessageInfo}
    */
-  async sendApplicationWarningMessage(
-    email: string,
-    applicationUrl: string,
-  ): Promise<SentMessageInfo> {
+  async sendApplicationWarningMessage({
+    email,
+    applicationUrl,
+  }: {
+    email: string;
+    applicationUrl: string;
+  }): Promise<SentMessageInfo> {
     const message: ISendMailOptions = {
       to: email,
       from: this.from,

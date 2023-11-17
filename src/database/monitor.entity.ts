@@ -11,6 +11,7 @@ import {
   IsString,
   IsUUID,
   Length,
+  Min,
   Validate,
   ValidateNested,
 } from 'class-validator';
@@ -251,7 +252,7 @@ export class MonitorEntity {
   @Column({ type: 'jsonb', default: {} })
   @ApiProperty({
     type: MonitorInfo,
-    description: 'Модель и прочие характеристики монитора',
+    description: 'Модель и прочие характеристики монитора (deprecated)',
     example: {
       model: 'Samsung',
       resolution: '1920 x 1080 px',
@@ -259,11 +260,71 @@ export class MonitorEntity {
       matrix: 'IPS',
       brightness: 0,
     },
+    deprecated: true,
     required: false,
   })
   @ValidateNested()
   @Type(() => MonitorInfo)
-  monitorInfo!: MonitorInfo;
+  monitorInfo?: MonitorInfo;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Модель',
+    example: 'Samsung',
+    required: false,
+  })
+  @IsString()
+  @Length(1, 255)
+  model?: string;
+
+  @Column({ type: 'integer', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Угол обзора',
+    example: 0,
+    required: false,
+  })
+  @IsNumber()
+  angle?: number;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Тип матрицы',
+    example: 'IPS',
+    required: false,
+  })
+  @IsString()
+  matrix?: string;
+
+  @Column({ type: 'integer', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Яркость',
+    example: 100,
+    required: false,
+  })
+  @IsNumber()
+  brightness?: number;
+
+  @Column({ type: 'integer', default: 0 })
+  @ApiProperty({
+    type: 'integer',
+    description: 'Ширина',
+    example: 1920,
+    required: true,
+  })
+  @IsNumber()
+  @Min(1)
+  width!: number;
+
+  @Column({ type: 'integer', default: 0 })
+  @ApiProperty({
+    type: 'integer',
+    description: 'Высота',
+    example: 1080,
+    required: true,
+  })
+  @IsNumber()
+  @Min(1)
+  height!: number;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({

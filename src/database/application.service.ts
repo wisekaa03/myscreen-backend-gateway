@@ -3,13 +3,16 @@ import {
   Inject,
   Injectable,
   Logger,
+  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import {
+  DeepPartial,
   DeleteResult,
   FindManyOptions,
+  FindOneOptions,
   In,
   IsNull,
   LessThanOrEqual,
@@ -30,6 +33,8 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserExtEntity } from './user-ext.entity';
 // eslint-disable-next-line import/no-cycle
 import { MonitorService } from './monitor.service';
+// eslint-disable-next-line import/no-cycle
+import { EditorService } from './editor.service';
 
 @Injectable()
 export class ApplicationService {
@@ -39,6 +44,8 @@ export class ApplicationService {
 
   constructor(
     private readonly mailService: MailService,
+    @Inject(forwardRef(() => EditorService))
+    private readonly editorService: EditorService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
     @Inject(forwardRef(() => MonitorService))
@@ -71,12 +78,19 @@ export class ApplicationService {
     caseInsensitive = true,
   ): Promise<[Array<ApplicationEntity>, number]> {
     const conditional = TypeOrmFind.Nullable(find);
+    let result: [Array<ApplicationEntity>, number];
     if (!find.relations) {
       conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
     }
-    return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(this.applicationRepository, conditional)
-      : this.applicationRepository.findAndCount(conditional);
+    if (caseInsensitive) {
+      result = await TypeOrmFind.findAndCountCI(
+        this.applicationRepository,
+        conditional,
+      );
+    } else {
+      result = await this.applicationRepository.findAndCount(conditional);
+    }
+    return result;
   }
 
   async findOne(
@@ -116,11 +130,11 @@ export class ApplicationService {
   }) {
     if (playlist) {
       const applications = await this.monitorApplications({
-        playlistId: playlist?.id,
+        playlistId: playlist.id,
       });
 
       const wsPromise = applications.map(async (applicationLocal) =>
-        this.wsGateway.application(applicationLocal),
+        this.wsGateway.application({ application: applicationLocal }),
       );
 
       await Promise.allSettled(wsPromise);
@@ -128,20 +142,9 @@ export class ApplicationService {
       // } else if (monitor) {
     } else if (application) {
       if (applicationDelete) {
-        await this.wsGateway
-          .application(null, application.monitor)
-          .catch((error: any) => {
-            this.logger.error(error);
-          });
+        await this.wsGateway.application({ monitor: application.monitor });
       } else {
-        if (application.monitor.multiple === MonitorMultiple.SCALING) {
-          // TODO: сделать разбиение на несколько плэйлистов (монитор MonitorMultiple.SCALING)
-        }
-        await this.wsGateway
-          .application(application)
-          .catch((error: unknown) => {
-            this.logger.error(error);
-          });
+        await this.wsGateway.application({ application });
       }
     }
   }
@@ -150,7 +153,8 @@ export class ApplicationService {
    * Get the applications for the monitor
    *
    * @param {string} monitorId Монитор ID
-   * @param {(string | Date)} [date=new Date()] Локальная для пользователя дата
+   * @param {string} playlistId Плэйлист ID
+   * @param {(string | Date)} [dateLocal=new Date()] Локальная для пользователя дата
    * @return {*}
    * @memberof ApplicationService
    */
@@ -217,51 +221,143 @@ export class ApplicationService {
     return expected;
   }
 
+  private async applicationCreatePost({
+    application,
+  }: {
+    application: ApplicationEntity;
+  }): Promise<void> {
+    const { multiple } = application.monitor;
+    if (multiple === MonitorMultiple.SINGLE) {
+      await this.websocketChange({ application });
+    } else {
+      await this.applicationRepository.manager.transaction(async (transact) => {
+        const multipleMonitors = await this.editorService.partitionMonitors({
+          application,
+        });
+        if (!Array.isArray(multipleMonitors)) {
+          throw new NotAcceptableException('Monitors or Playlists not found');
+        }
+
+        const groupMonitorPromise = multipleMonitors.map(async (subMonitor) => {
+          const app = await transact.save(
+            ApplicationEntity,
+            transact.create(ApplicationEntity, {
+              ...application,
+              id: undefined,
+              hide: true,
+              parentApplicationId: application.id,
+              monitorId: subMonitor.id,
+              playlistId: subMonitor.playlist.id,
+            }),
+          );
+
+          await this.websocketChange({ application: app });
+
+          return app;
+        });
+
+        await Promise.all(groupMonitorPromise);
+      });
+    }
+  }
+
+  private async applicationDeletePre({
+    application,
+    delete: deleteLocal = false,
+  }: {
+    application: ApplicationEntity;
+    delete?: boolean;
+  }): Promise<void> {
+    const { multiple } = application.monitor;
+    if (multiple === MonitorMultiple.SINGLE) {
+      await this.websocketChange({ application, applicationDelete: true });
+    } else {
+      await this.applicationRepository.manager.transaction(async (transact) => {
+        const subApplication = await transact.find(ApplicationEntity, {
+          where: {
+            parentApplicationId: application.id,
+          },
+          relations: ['monitor', 'playlist'],
+        });
+        const subAppPromise = subApplication.map(async (app) => {
+          await this.websocketChange({
+            application: app,
+            applicationDelete: true,
+          });
+          if (deleteLocal) {
+            if (multiple === MonitorMultiple.SCALING) {
+              await transact.delete(PlaylistEntity, { id: app.playlistId });
+            }
+            await transact.delete(ApplicationEntity, { id: app.id });
+          }
+        });
+
+        await Promise.all(subAppPromise);
+      });
+    }
+  }
+
   /**
-   * Update the application
+   * Create or update the application
    *
-   * @param id Application.id
    * @param update Partial<ApplicationEntity>
    * @returns
    */
-  async update(
-    id: string | undefined,
-    update: Partial<ApplicationEntity>,
-  ): Promise<ApplicationEntity | null> {
+  async update({
+    id,
+    ...update
+  }: DeepPartial<ApplicationEntity>): Promise<ApplicationEntity | null> {
     await this.applicationRepository.manager.transaction(async (transact) => {
       let application: ApplicationEntity | null = await transact.save(
         ApplicationEntity,
-        transact.create(ApplicationEntity, update),
+        transact.create(ApplicationEntity, { id, ...update }),
       );
+
+      let relations: FindOneOptions<ApplicationEntity>['relations'];
+      if (update.approved !== ApplicationApproved.NOTPROCESSED) {
+        relations = [
+          'buyer',
+          'seller',
+          'monitor',
+          'monitor.multipleMonitors',
+          'playlist',
+          'playlist.files',
+          'user',
+        ];
+      } else {
+        relations = ['seller'];
+      }
       application = await transact.findOne(ApplicationEntity, {
         where: {
           id: application.id,
         },
+        relations,
       });
       if (!application) {
         throw new NotFoundException('Application not found');
       }
 
       if (update.approved === ApplicationApproved.NOTPROCESSED) {
-        if (application.seller) {
+        const sellerEmail = application.seller?.email;
+        if (sellerEmail) {
           await this.mailService
-            .sendApplicationWarningMessage(
-              application.seller.email,
-              `${this.frontendUrl}/applications`,
-            )
-            .catch((error: any) => {
+            .sendApplicationWarningMessage({
+              email: sellerEmail,
+              applicationUrl: `${this.frontendUrl}/applications`,
+            })
+            .catch((error: unknown) => {
               this.logger.error(
-                `ApplicationService seller email=${application?.seller.email}: ${error}`,
+                `ApplicationService seller email=${sellerEmail}: ${error}`,
                 error,
               );
             });
         } else {
-          this.logger.error('ApplicationService seller email=undefined');
+          this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }
       } else if (update.approved === ApplicationApproved.ALLOWED) {
-        await this.websocketChange({ application });
+        await this.applicationCreatePost({ application });
       } else if (update.approved === ApplicationApproved.DENIED) {
-        await this.websocketChange({ application, applicationDelete: true });
+        await this.applicationDeletePre({ application });
       }
     });
 
@@ -270,18 +366,14 @@ export class ApplicationService {
       : this.applicationRepository.findOne({ where: { id } });
   }
 
-  async delete(
-    userId: string,
-    application: ApplicationEntity,
-  ): Promise<DeleteResult> {
-    await this.websocketChange({
+  async delete(application: ApplicationEntity): Promise<DeleteResult> {
+    await this.applicationDeletePre({
       application,
-      applicationDelete: true,
+      delete: true,
     });
 
     const deleteResult = await this.applicationRepository.delete({
       id: application.id,
-      userId,
     });
 
     return deleteResult;
@@ -300,10 +392,14 @@ export class ApplicationService {
     dateTo: string;
     monitorIds: string[];
   }): Promise<string> {
-    const monitors = await this.monitorService.find(user.id, {
-      where: { id: In(monitorIds) },
-      relations: [],
-      select: ['id', 'price1s', 'minWarranty'],
+    const monitors = await this.monitorService.find({
+      userId: user.id,
+      find: {
+        where: { id: In(monitorIds) },
+        relations: [],
+        loadEagerRelations: false,
+        select: ['id', 'price1s', 'minWarranty'],
+      },
     });
     if (!monitors.length) {
       throw new NotFoundException('Monitors not found');

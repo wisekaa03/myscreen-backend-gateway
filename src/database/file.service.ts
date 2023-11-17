@@ -41,6 +41,7 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileEntity, MediaMeta } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
 import { FolderService } from './folder.service';
+// eslint-disable-next-line import/no-cycle
 import { MonitorService } from './monitor.service';
 import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
@@ -60,9 +61,11 @@ export class FileService {
 
   constructor(
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => ApplicationService))
     private readonly applicationService: ApplicationService,
     @Inject(forwardRef(() => FolderService))
     private readonly folderService: FolderService,
+    @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
     @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
 
@@ -6,11 +6,13 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
+// eslint-disable-next-line import/no-cycle
 import { ApplicationService } from './application.service';
 
 @Injectable()
 export class PlaylistService {
   constructor(
+    @Inject(forwardRef(() => ApplicationService))
     private readonly applicationService: ApplicationService,
     @InjectRepository(PlaylistEntity)
     private readonly playlistEntity: Repository<PlaylistEntity>,

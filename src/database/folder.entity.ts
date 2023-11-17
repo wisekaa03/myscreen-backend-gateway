@@ -73,7 +73,7 @@ export class FolderEntity {
 
   @Column({ nullable: true })
   @ApiProperty({
-    description: 'Родительская папка',
+    description: 'Родительская папка ID',
     type: 'string',
     format: 'uuid',
     nullable: true,

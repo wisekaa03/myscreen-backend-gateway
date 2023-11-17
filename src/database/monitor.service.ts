@@ -37,20 +37,29 @@ export class MonitorService {
     private readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
   ) {}
 
-  async find(
-    userId: string,
-    find: FindManyOptions<MonitorEntity>,
+  async find({
+    userId,
+    find,
     caseInsensitive = true,
-  ): Promise<Array<MonitorEntity>> {
+  }: {
+    userId: string;
+    find: FindManyOptions<MonitorEntity>;
+    caseInsensitive?: boolean;
+  }): Promise<Array<MonitorEntity>> {
+    let monitorWhere: FindManyOptions<MonitorEntity>;
+
+    if (find.relations) {
+      monitorWhere = TypeOrmFind.Nullable(find);
+    } else {
+      monitorWhere = {
+        relations: { files: true, playlist: true, favorities: true },
+        ...TypeOrmFind.Nullable(find),
+      };
+    }
+
     const monitor = caseInsensitive
-      ? await TypeOrmFind.findCI(this.monitorRepository, {
-          relations: ['files', 'playlist', 'favorities'],
-          ...TypeOrmFind.Nullable(find),
-        })
-      : await this.monitorRepository.find({
-          relations: ['files', 'playlist', 'favorities'],
-          ...TypeOrmFind.Nullable(find),
-        });
+      ? await TypeOrmFind.findCI(this.monitorRepository, monitorWhere)
+      : await this.monitorRepository.find(monitorWhere);
 
     return monitor.map((item: MonitorEntity) => {
       const value = item;
@@ -61,20 +70,44 @@ export class MonitorService {
     });
   }
 
-  async findAndCount(
-    userId: string,
-    find: FindManyOptions<MonitorEntity>,
+  async count({
+    find,
     caseInsensitive = true,
-  ): Promise<[Array<MonitorEntity>, number]> {
+  }: {
+    find: FindManyOptions<MonitorEntity>;
+    caseInsensitive?: boolean;
+  }): Promise<number> {
+    const monitorWhere = TypeOrmFind.Nullable(find);
     const monitor = caseInsensitive
-      ? await TypeOrmFind.findAndCountCI(this.monitorRepository, {
-          relations: ['files', 'playlist', 'favorities'],
-          ...TypeOrmFind.Nullable(find),
-        })
-      : await this.monitorRepository.findAndCount({
-          relations: ['files', 'playlist', 'favorities'],
-          ...TypeOrmFind.Nullable(find),
-        });
+      ? await TypeOrmFind.countCI(this.monitorRepository, monitorWhere)
+      : await this.monitorRepository.count(monitorWhere);
+
+    return monitor;
+  }
+
+  async findAndCount({
+    userId,
+    find,
+    caseInsensitive = true,
+  }: {
+    userId: string;
+    find: FindManyOptions<MonitorEntity>;
+    caseInsensitive?: boolean;
+  }): Promise<[Array<MonitorEntity>, number]> {
+    let monitorWhere: FindManyOptions<MonitorEntity>;
+
+    if (find.relations) {
+      monitorWhere = TypeOrmFind.Nullable(find);
+    } else {
+      monitorWhere = {
+        relations: { files: true, playlist: true, favorities: true },
+        ...TypeOrmFind.Nullable(find),
+      };
+    }
+
+    const monitor = caseInsensitive
+      ? await TypeOrmFind.findAndCountCI(this.monitorRepository, monitorWhere)
+      : await this.monitorRepository.findAndCount(monitorWhere);
 
     return [
       monitor[0].map((item: MonitorEntity) => {
@@ -91,11 +124,23 @@ export class MonitorService {
   async findOne(
     userId: string | undefined,
     find: FindManyOptions<MonitorEntity>,
+    caseInsensitive = true,
   ): Promise<MonitorEntity | null> {
-    const monitor = await this.monitorRepository.findOne({
-      relations: ['files', 'playlist', 'favorities'],
-      ...TypeOrmFind.Nullable(find),
-    });
+    let monitorWhere: FindManyOptions<MonitorEntity>;
+
+    if (find.relations) {
+      monitorWhere = TypeOrmFind.Nullable(find);
+    } else {
+      monitorWhere = {
+        relations: { files: true, playlist: true, favorities: true },
+        ...TypeOrmFind.Nullable(find),
+      };
+    }
+
+    const monitor = caseInsensitive
+      ? await TypeOrmFind.findOneCI(this.monitorRepository, monitorWhere)
+      : await this.monitorRepository.findOne(monitorWhere);
+
     if (monitor) {
       monitor.favorite =
         userId !== undefined
@@ -107,11 +152,142 @@ export class MonitorService {
     return monitor;
   }
 
-  async update(
-    user: UserEntity,
-    update: Partial<MonitorEntity>,
-    multipleIds?: MonitorMultipleRequest[],
-  ): Promise<MonitorEntity> {
+  async update({
+    user,
+    update,
+    multipleIds,
+  }: {
+    user?: UserEntity;
+    update: DeepPartial<MonitorEntity>;
+    multipleIds?: MonitorMultipleRequest[];
+  }): Promise<MonitorEntity> {
+    if (update.monitorInfo) {
+      throw new BadRequestException('Monitor info deprecated');
+    }
+    const monitorUpdate: DeepPartial<MonitorEntity> = user
+      ? {
+          userId: user.id,
+          ...update,
+        }
+      : update;
+    if (monitorUpdate.id === undefined) {
+      throw new BadRequestException('Monitor ID is empty');
+    }
+
+    const multipleBool = Array.isArray(multipleIds);
+
+    if (update.multiple !== MonitorMultiple.SINGLE) {
+      let groupMonitors: MonitorEntity[] = [];
+
+      const monitorFind = await this.monitorRepository.findOne({
+        where: { id: monitorUpdate.id },
+        relations: multipleBool ? { multipleMonitors: true } : {},
+      });
+      if (!monitorFind) {
+        throw new NotFoundException('Monitor not found');
+      }
+      if (multipleBool) {
+        const multipleMonitorIds = multipleIds.map((item) => item.monitorId);
+        groupMonitors = await this.monitorRepository.find({
+          where: {
+            id: In(multipleMonitorIds),
+            multiple: MonitorMultiple.SINGLE,
+          },
+          select: ['id'],
+        });
+        if (
+          Array.isArray(groupMonitors) &&
+          groupMonitors.length !== multipleIds.length
+        ) {
+          throw new BadRequestException('Not found ID of some monitors');
+        }
+      }
+
+      return this.monitorRepository.manager.transaction(async (transact) => {
+        const monitor = await transact.save(
+          MonitorEntity,
+          transact.create(MonitorEntity, monitorUpdate),
+        );
+
+        if (multipleBool) {
+          const monitorMultiplePromise = groupMonitors.map(
+            async (groupMonitor) => {
+              const groupMonitorId = groupMonitor.id;
+              const itemMonitor = multipleIds.find((item) => {
+                const monitorFindIndex =
+                  monitorFind.multipleMonitors?.findIndex(
+                    (i) => i.monitorId === groupMonitorId,
+                  );
+                if (monitorFindIndex !== undefined) {
+                  delete monitorFind.multipleMonitors?.[monitorFindIndex];
+                }
+                return item.monitorId === groupMonitorId;
+              });
+              if (!itemMonitor) {
+                throw new BadRequestException('Not found ID of some monitors');
+              }
+              await transact.save(
+                MonitorMultipleEntity,
+                transact.create(MonitorMultipleEntity, {
+                  userId: user?.id ?? monitor.userId,
+                  parentMonitorId: monitor.id,
+                  monitorId: groupMonitorId,
+                  row: itemMonitor.row,
+                  col: itemMonitor.col,
+                }),
+              );
+              await transact.update(
+                MonitorEntity,
+                { id: groupMonitorId },
+                {
+                  multiple: MonitorMultiple.SUBORDINATE,
+                },
+              );
+            },
+          );
+          await Promise.all(monitorMultiplePromise);
+
+          const monitorMultipleDeletePromise =
+            monitorFind.multipleMonitors?.map(async (item) => {
+              await transact.delete(MonitorMultipleEntity, {
+                parentMonitorId: monitor.id,
+                monitorId: item.monitorId,
+              });
+              await transact.update(
+                MonitorEntity,
+                { id: item.monitorId },
+                {
+                  multiple: MonitorMultiple.SINGLE,
+                },
+              );
+            });
+          if (Array.isArray(monitorMultipleDeletePromise)) {
+            await Promise.all(monitorMultipleDeletePromise);
+          }
+        }
+
+        return monitor;
+      });
+    }
+
+    if (multipleIds && multipleIds.length > 0) {
+      throw new BadRequestException('Group monitors ID is not empty');
+    }
+
+    return this.monitorRepository.save(
+      this.monitorRepository.create(monitorUpdate),
+    );
+  }
+
+  async create({
+    user,
+    update,
+    multipleIds,
+  }: {
+    user: UserEntity;
+    update: Partial<MonitorEntity>;
+    multipleIds?: MonitorMultipleRequest[];
+  }) {
     const prepareMonitor: DeepPartial<MonitorEntity> = {
       userId: user.id,
       ...update,
@@ -155,8 +331,8 @@ export class MonitorService {
               userId: user.id,
               parentMonitorId: monitor.id,
               monitorId: groupMonitorId,
-              multipleRowNo: item.multipleRowNo,
-              multipleColNo: item.multipleColNo,
+              row: item.row,
+              col: item.col,
             }),
           );
           await transact.update(

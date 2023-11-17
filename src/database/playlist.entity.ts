@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsDefined,
   IsEnum,
@@ -93,6 +94,16 @@ export class PlaylistEntity {
   @Index()
   @IsUUID()
   userId!: string;
+
+  @Column({ type: 'boolean', default: false })
+  @ApiProperty({
+    description: 'Скрытый',
+    default: false,
+    example: false,
+    required: false,
+  })
+  @IsBoolean()
+  hide!: boolean;
 
   @ManyToMany(() => FileEntity, (file) => file.playlists, {
     cascade: true,

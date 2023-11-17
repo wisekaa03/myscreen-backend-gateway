@@ -64,8 +64,11 @@ export class StatisticsController {
   ): Promise<void> {
     let monitors: MonitorEntity[] | undefined;
     if (Array.isArray(monitorsId) && monitorsId.length > 0) {
-      monitors = await this.monitorService.find(user.id, {
-        where: { userId: user.id, id: In(monitorsId) },
+      monitors = await this.monitorService.find({
+        userId: user.id,
+        find: {
+          where: { userId: user.id, id: In(monitorsId) },
+        },
       });
     }
 
@@ -125,8 +128,12 @@ export class StatisticsController {
   ): Promise<void> {
     let monitors: MonitorEntity[] | undefined;
     if (Array.isArray(monitorsId) && monitorsId.length > 0) {
-      monitors = await this.monitorService.find(user.id, {
-        where: { userId: user.id, id: In(monitorsId) },
+      monitors = await this.monitorService.find({
+        userId: user.id,
+
+        find: {
+          where: { userId: user.id, id: In(monitorsId) },
+        },
       });
     }
 

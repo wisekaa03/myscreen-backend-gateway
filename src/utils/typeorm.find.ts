@@ -46,11 +46,15 @@ export class TypeOrmFind {
         }
       });
     }
-    {
-      const logger = new Logger(TypeOrmFind.name);
-      logger.debug(qb.getSql());
-    }
     return qb;
+  };
+
+  static countCI = <Entity extends ObjectLiteral>(
+    repository: Repository<Entity>,
+    find: FindManyOptions<Entity>,
+  ): Promise<number> => {
+    const qb = this.findOrder(repository, find);
+    return qb.getCount();
   };
 
   static findCI = <Entity extends ObjectLiteral>(
@@ -59,6 +63,14 @@ export class TypeOrmFind {
   ): Promise<Entity[]> => {
     const qb = this.findOrder(repository, find);
     return qb.getMany();
+  };
+
+  static findOneCI = <Entity extends ObjectLiteral>(
+    repository: Repository<Entity>,
+    find: FindManyOptions<Entity>,
+  ): Promise<Entity | null> => {
+    const qb = this.findOrder(repository, find);
+    return qb.getOne();
   };
 
   static findAndCountCI = <Entity extends ObjectLiteral>(

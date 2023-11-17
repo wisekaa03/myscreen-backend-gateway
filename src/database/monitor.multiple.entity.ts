@@ -31,7 +31,7 @@ export class MonitorMultipleEntity {
     required: true,
   })
   @IsNumber()
-  multipleRowNo!: number;
+  row!: number;
 
   @Column({ type: 'smallint', nullable: false, default: 0 })
   @ApiProperty({
@@ -40,7 +40,7 @@ export class MonitorMultipleEntity {
     required: true,
   })
   @IsNumber()
-  multipleColNo!: number;
+  col!: number;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
     eager: true,

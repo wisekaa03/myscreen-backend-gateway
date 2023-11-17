@@ -132,9 +132,12 @@ export class WSGateway
       if (monitor) {
         await Promise.all([
           this.monitorService
-            .update(monitor.user, {
-              id: monitor.id,
-              status: MonitorStatus.Offline,
+            .update({
+              user: monitor.user,
+              update: {
+                id: monitor.id,
+                status: MonitorStatus.Offline,
+              },
             })
             .catch((error: unknown) => {
               this.logger.error(error);
@@ -171,9 +174,13 @@ export class WSGateway
                 dateLocal: new Date(body.date),
               }),
               this.monitorService
-                .update(monitor.user, {
-                  id: monitor.id,
-                  status: MonitorStatus.Online,
+                .update({
+                  user: monitor.user,
+
+                  update: {
+                    id: monitor.id,
+                    status: MonitorStatus.Online,
+                  },
                 })
                 .catch((error: unknown) => {
                   this.logger.error(error);
@@ -228,9 +235,11 @@ export class WSGateway
     }
 
     // записываем в базу данных
-    monitor = await this.monitorService.update(monitor.user, {
-      id: monitor.id,
-      playlistPlayed: bodyObject.playlistPlayed,
+    monitor = await this.monitorService.update({
+      update: {
+        id: monitor.id,
+        playlistPlayed: bodyObject.playlistPlayed,
+      },
     });
 
     // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
@@ -274,11 +283,14 @@ export class WSGateway
    * @param application ApplicationEntity or null
    * @param monitor MonitorEntity or null
    */
-  async application(
-    application: ApplicationEntity | null,
-    monitor?: MonitorEntity | null,
-  ): Promise<void> {
-    if (application === null && monitor === null) {
+  async application({
+    application,
+    monitor,
+  }: {
+    application?: ApplicationEntity;
+    monitor?: MonitorEntity;
+  }): Promise<void> {
+    if (!application && !monitor) {
       this.logger.error('ApplicationEntity or MonitorEntity is required');
       return;
     }
