@@ -43,8 +43,7 @@ import { MonitorMultipleWithPlaylist } from '@/dto/interface';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
-// eslint-disable-next-line import/no-cycle
-import { FileService } from './file.service';
+import { FileService } from '@/database/file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
 import { ApplicationEntity } from './application.entity';

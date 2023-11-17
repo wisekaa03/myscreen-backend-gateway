@@ -1,8 +1,8 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsOptional } from 'class-validator';
+import { IsDateString, IsEnum } from 'class-validator';
 
 import { ApplicationEntity } from '@/database/application.entity';
-import { ApplicationApproved } from '@/enums';
+import { ApplicationApproved, ApplicationStatus } from '@/enums';
 
 export class ApplicationsRequest extends PartialType(
   OmitType(ApplicationEntity, [
@@ -30,22 +30,36 @@ export class ApplicationsRequest extends PartialType(
   approved?: Array<ApplicationApproved>;
 
   @ApiProperty({
-    description: 'Время создания',
-    example: ['2021-01-01', '2021-12-31'],
+    description: 'Ок / Подождите',
+    enum: ApplicationStatus,
+    enumName: 'ApplicationStatus',
+    example: [ApplicationStatus.OK, ApplicationStatus.WAITING],
+    type: 'enum',
     isArray: true,
     required: false,
   })
-  @IsOptional()
+  @IsEnum(ApplicationStatus, { each: true })
+  status?: Array<ApplicationStatus>;
+
+  @ApiProperty({
+    description: 'Время создания',
+    examples: { one: '2021-01-01', two: ['2021-12-31', '2021-12-31'] },
+    type: 'string',
+    format: 'date-time',
+    isArray: true,
+    required: false,
+  })
   @IsDateString({ strict: false }, { each: true })
   createdAt?: Array<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
-    example: ['2021-01-01', '2021-12-31'],
+    examples: { one: '2021-01-01', two: ['2021-12-31', '2021-12-31'] },
+    type: 'string',
+    format: 'date-time',
     isArray: true,
     required: false,
   })
-  @IsOptional()
   @IsDateString({ strict: false }, { each: true })
   updatedAt?: Array<Date>;
 }

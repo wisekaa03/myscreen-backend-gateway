@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.43
+  version: 2.42.44
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3784,28 +3784,38 @@ components:
           example: false
         dateWhenApp:
           description: Время начала проигрывания
-          example:
-            - "2021-01-01"
-            - "2022-12-31"
+          examples:
+            one:
+              - "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         createdAt:
           description: Время создания
-          example:
-            - "2021-01-01"
-            - "2022-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         updatedAt:
           description: Время изменения
-          example:
-            - "2021-01-01"
-            - "2022-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
     Order:
       type: string
       enum:
@@ -4518,6 +4528,11 @@ components:
         - playlistId
         - monitors
         - application
+    ApplicationStatus:
+      type: string
+      enum:
+        - OK
+        - WAITING
     ApplicationApproved:
       type: string
       enum:
@@ -4543,6 +4558,11 @@ components:
           description: Монитор
           allOf:
             - $ref: "#/components/schemas/MonitorResponse"
+        status:
+          description: OK / Подождите
+          example: OK
+          default: OK
+          $ref: "#/components/schemas/ApplicationStatus"
         hide:
           type: boolean
           description: Скрытый
@@ -4731,20 +4751,26 @@ components:
           $ref: "#/components/schemas/RenderingStatus"
         createdAt:
           description: Время создания
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         updatedAt:
           description: Время изменения
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
     EditorsGetRequest:
       type: object
       properties:
@@ -5220,20 +5246,26 @@ components:
           $ref: "#/components/schemas/FileCategory"
         createdAt:
           description: Время создания
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         updatedAt:
           description: Время изменения
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
       required:
         - folderId
     FilesGetRequest:
@@ -5410,20 +5442,26 @@ components:
           nullable: true
         createdAt:
           description: Время создания
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         updatedAt:
           description: Время изменения
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
     FoldersGetRequest:
       type: object
       properties:
@@ -5694,20 +5732,26 @@ components:
           example: Тухбатуллина Юлия Евгеньевна
         createdAt:
           description: Время создания
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         updatedAt:
           description: Время изменения
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
     UsersGetRequest:
       type: object
       properties:
@@ -5804,20 +5848,26 @@ components:
           example: 1000
         createdAt:
           description: Время создания
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         updatedAt:
           description: Время изменения
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
     InvoicesGetRequest:
       type: object
       properties:
@@ -5951,20 +6001,26 @@ components:
           $ref: "#/components/schemas/PlaylistStatus"
         createdAt:
           description: Время создания
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         updatedAt:
           description: Время изменения
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
     PlaylistsGetRequest:
       type: object
       properties:
@@ -6143,6 +6199,15 @@ components:
           type: string
           description: Монитор ID
           format: uuid
+        status:
+          type: array
+          description: Ок / Подождите
+          example:
+            - OK
+            - WAITING
+          default: OK
+          items:
+            $ref: "#/components/schemas/ApplicationStatus"
         playlistId:
           type: string
           description: Плэйлист ID
@@ -6172,20 +6237,26 @@ components:
           example: false
         createdAt:
           description: Время создания
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
         updatedAt:
           description: Время изменения
-          example:
-            - "2021-01-01"
-            - "2021-12-31"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-31"
+              - "2021-12-31"
           type: array
           items:
-            type: array
+            type: string
+            format: date-time
     ApplicationsGetRequest:
       type: object
       properties:
@@ -6207,6 +6278,7 @@ components:
               - sellerId
               - monitor
               - monitorId
+              - status
               - hide
               - playlist
               - playlistId

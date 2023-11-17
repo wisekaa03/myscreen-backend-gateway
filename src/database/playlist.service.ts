@@ -1,13 +1,24 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, FindManyOptions, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  DeleteResult,
+  FindManyOptions,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
-// eslint-disable-next-line import/no-cycle
-import { ApplicationService } from './application.service';
+import { ApplicationService } from '@/database/application.service';
 
 @Injectable()
 export class PlaylistService {
@@ -24,11 +35,11 @@ export class PlaylistService {
   ): Promise<PlaylistEntity[]> {
     return caseInsensitive
       ? TypeOrmFind.findCI(this.playlistEntity, {
-          relations: ['files', 'monitors'],
+          relations: { files: true, monitors: true },
           ...TypeOrmFind.Nullable(find),
         })
       : this.playlistEntity.find({
-          relations: ['files', 'monitors'],
+          relations: { files: true, monitors: true },
           ...TypeOrmFind.Nullable(find),
         });
   }
@@ -39,11 +50,11 @@ export class PlaylistService {
   ): Promise<[Array<PlaylistEntity>, number]> {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.playlistEntity, {
-          relations: ['files', 'monitors'],
+          relations: { files: true, monitors: true },
           ...TypeOrmFind.Nullable(find),
         })
       : this.playlistEntity.findAndCount({
-          relations: ['files', 'monitors'],
+          relations: { files: true, monitors: true },
           ...TypeOrmFind.Nullable(find),
         });
   }
@@ -52,39 +63,53 @@ export class PlaylistService {
     find: FindManyOptions<PlaylistEntity>,
   ): Promise<PlaylistEntity | null> {
     return this.playlistEntity.findOne({
-      relations: ['files', 'monitors'],
+      relations: { files: true, monitors: true },
       ...TypeOrmFind.Nullable(find),
     });
   }
 
-  async update(
-    userId: string,
-    update: Partial<PlaylistEntity>,
-  ): Promise<PlaylistEntity> {
-    const playlist = await this.playlistEntity.save(
-      this.playlistEntity.create({
-        userId,
-        ...update,
-      }),
+  async create(playlist: DeepPartial<PlaylistEntity>): Promise<PlaylistEntity> {
+    const playlistCreate = await this.playlistEntity.save(
+      this.playlistEntity.create(playlist),
     );
 
+    await this.applicationService.websocketChange({ playlist: playlistCreate });
+
+    return playlistCreate;
+  }
+
+  async update(
+    id: string,
+    update: Partial<PlaylistEntity>,
+  ): Promise<PlaylistEntity> {
+    const playlistUpdate = await this.playlistEntity.update(id, update);
+    if (!playlistUpdate.affected) {
+      throw new NotAcceptableException(`Playlist with this ${id} not found`);
+    }
+
+    const playlist = await this.findOne({ where: { id } });
+    if (!playlist) {
+      throw new NotFoundException(`Playlist with this ${id} not found`);
+    }
     await this.applicationService.websocketChange({ playlist });
 
     return playlist;
   }
 
   async delete(
-    playlist: PlaylistEntity,
     user: UserEntity,
+    playlist: PlaylistEntity,
   ): Promise<DeleteResult> {
     await this.applicationService.websocketChange({
       playlist,
       playlistDelete: true,
     });
 
+    const deleteQuery: FindOptionsWhere<PlaylistEntity> = { id: playlist.id };
     if (user.role !== UserRoleEnum.Administrator) {
-      return this.playlistEntity.delete({ id: playlist.id, userId: user.id });
+      deleteQuery.userId = user.id;
     }
-    return this.playlistEntity.delete({ id: playlist.id });
+
+    return this.playlistEntity.delete(deleteQuery);
   }
 }

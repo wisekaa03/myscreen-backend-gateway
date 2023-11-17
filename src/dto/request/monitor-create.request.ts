@@ -1,7 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsDefined,
   IsNotEmpty,
   IsNumber,
   IsOptional,

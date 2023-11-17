@@ -1,4 +1,5 @@
 import { Logger } from '@nestjs/common';
+import dayjs from 'dayjs';
 import { isDateString } from 'class-validator';
 import {
   FindManyOptions,
@@ -118,7 +119,25 @@ export class TypeOrmFind {
               ) {
                 return { ...accWhere, [field]: Between(value[0], value[1]) };
               }
+              if (value.length === 1 && isDateString(value[0])) {
+                return {
+                  ...accWhere,
+                  [field]: Between(
+                    dayjs(value[0]).startOf('day').toDate(),
+                    dayjs(value[0]).endOf('day').toDate(),
+                  ),
+                };
+              }
               return { ...accWhere, [field]: In(value) };
+            }
+            if (isDateString(value)) {
+              return {
+                ...accWhere,
+                [field]: Between(
+                  dayjs(value).startOf('day').toDate(),
+                  dayjs(value).endOf('day').toDate(),
+                ),
+              };
             }
             if (typeof value === 'string' && /^>=/.test(value)) {
               return { ...accWhere, [field]: MoreThanOrEqual(value.slice(2)) };
@@ -160,7 +179,25 @@ export class TypeOrmFind {
               ) {
                 return { ...accWhere, [field]: Between(value[0], value[1]) };
               }
+              if (value.length === 1 && isDateString(value[0])) {
+                return {
+                  ...accWhere,
+                  [field]: Between(
+                    dayjs(value[0]).startOf('day').toDate(),
+                    dayjs(value[0]).endOf('day').toDate(),
+                  ),
+                };
+              }
               return { ...accWhere, [field]: In(value) };
+            }
+            if (isDateString(value)) {
+              return {
+                ...accWhere,
+                [field]: Between(
+                  dayjs(value).startOf('day').toDate(),
+                  dayjs(value).endOf('day').toDate(),
+                ),
+              };
             }
             if (typeof value === 'string' && /^>=/.test(value)) {
               return { ...accWhere, [field]: MoreThanOrEqual(value.slice(2)) };

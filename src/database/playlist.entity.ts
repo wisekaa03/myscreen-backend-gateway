@@ -31,6 +31,7 @@ import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
+import { EditorEntity } from '@/database/editor.entity';
 
 @Entity('playlist')
 @Unique('IDX_userId_name', ['userId', 'name'])
@@ -114,11 +115,25 @@ export class PlaylistEntity {
   @JoinTable()
   @ApiProperty({
     description: 'Файлы',
-    type: 'array',
-    items: { $ref: '#/components/schemas/FileResponse' },
+    type: FileEntity,
   })
   @IsUUID('all', { each: true })
-  files?: FileEntity[];
+  files!: FileEntity[];
+
+  @ManyToOne(() => EditorEntity, (editor) => editor.id, {
+    nullable: true,
+    cascade: true,
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+    eager: false,
+  })
+  @JoinColumn({ name: 'editorId' })
+  editor!: EditorEntity | null;
+
+  @Column({ nullable: true })
+  @Index()
+  @IsUUID()
+  editorId!: string | null;
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.playlist, {
     nullable: true,

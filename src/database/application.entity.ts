@@ -5,7 +5,6 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -24,6 +23,7 @@ import { UserEntity } from './user.entity';
 // eslint-disable-next-line import/no-cycle
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { ApplicationStatus } from '@/enums';
 
 @Entity('application')
 export class ApplicationEntity {
@@ -106,6 +106,23 @@ export class ApplicationEntity {
     format: 'uuid',
   })
   monitorId!: string;
+
+  @Column({
+    type: 'enum',
+    enum: ApplicationStatus,
+    default: ApplicationStatus.OK,
+  })
+  @Index()
+  @ApiProperty({
+    description: 'OK / Подождите',
+    enum: ApplicationStatus,
+    enumName: 'ApplicationStatus',
+    example: ApplicationStatus.OK,
+    default: ApplicationStatus.OK,
+    required: false,
+  })
+  @IsEnum(ApplicationStatus, { each: true })
+  status!: ApplicationStatus | Array<ApplicationStatus>;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({

@@ -296,8 +296,7 @@ export class WSGateway
     }
 
     if (application?.playlist && application.monitorId) {
-      await this.playlistService.update(application.playlist.userId, {
-        id: application.playlist.id,
+      await this.playlistService.update(application.playlist.id, {
         status: PlaylistStatusEnum.Broadcast,
       });
 

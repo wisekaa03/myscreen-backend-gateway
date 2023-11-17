@@ -12,6 +12,7 @@ export class ApplicationCreateMonitorRequest extends OmitType(
     'sellerId',
     'monitor',
     'monitorId',
+    'status',
     'hide',
     'parentApplication',
     'parentApplicationId',

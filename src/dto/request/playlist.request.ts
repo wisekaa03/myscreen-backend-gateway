@@ -12,21 +12,23 @@ export class PlaylistRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время создания',
-    example: ['2021-01-01', '2021-12-31'],
+    examples: { one: '2021-01-01', two: ['2021-12-31', '2021-12-31'] },
+    type: 'string',
+    format: 'date-time',
     isArray: true,
     required: false,
   })
-  @IsOptional()
   @IsDateString({ strict: false }, { each: true })
   createdAt?: Array<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
-    example: ['2021-01-01', '2021-12-31'],
+    examples: { one: '2021-01-01', two: ['2021-12-31', '2021-12-31'] },
+    type: 'string',
+    format: 'date-time',
     isArray: true,
     required: false,
   })
-  @IsOptional()
   @IsDateString({ strict: false }, { each: true })
   updatedAt?: Array<Date>;
 }
