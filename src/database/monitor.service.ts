@@ -184,7 +184,7 @@ export class MonitorService {
         relations: multipleBool ? { multipleMonitors: true } : {},
       });
       if (!monitorFind) {
-        throw new NotFoundException('Monitor not found');
+        throw new NotFoundException(`Monitor not found: ${monitorUpdate.id}`);
       }
       if (multipleBool) {
         const multipleMonitorIds = multipleIds.map((item) => item.monitorId);
@@ -200,6 +200,19 @@ export class MonitorService {
           groupMonitors.length !== multipleIds.length
         ) {
           throw new BadRequestException('Not found ID of some monitors');
+        }
+        if (update.multiple === MonitorMultiple.SCALING) {
+          const multipleRows = new Set<number>();
+          const multipleCols = new Set<number>();
+          multipleIds.forEach((item) => {
+            if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
+              throw new BadRequestException(
+                `Monitor multiple "${item.monitorId}": row "${item.row}" with col "${item.col}" is already occupied`,
+              );
+            }
+            multipleRows.add(item.row);
+            multipleCols.add(item.col);
+          });
         }
       }
 
@@ -311,6 +324,19 @@ export class MonitorService {
         groupMonitors.length !== multipleIds.length
       ) {
         throw new BadRequestException('Not found ID of some monitors');
+      }
+      if (update.multiple === MonitorMultiple.SCALING) {
+        const multipleRows = new Set<number>();
+        const multipleCols = new Set<number>();
+        multipleIds.forEach((item) => {
+          if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
+            throw new BadRequestException(
+              `Monitor multiple "${item.monitorId}": row "${item.row}" with col "${item.col}" is already occupied`,
+            );
+          }
+          multipleRows.add(item.row);
+          multipleCols.add(item.col);
+        });
       }
 
       return this.monitorRepository.manager.transaction(async (transact) => {

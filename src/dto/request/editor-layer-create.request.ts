@@ -11,6 +11,10 @@ export class EditorLayerCreateRequest extends PartialType(
     'cutFrom',
     'start',
     'mixVolume',
+    'cropX',
+    'cropY',
+    'cropW',
+    'cropH',
   ]),
 ) {
   @ApiProperty({

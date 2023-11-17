@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.42
+  version: 2.42.43
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4810,6 +4810,18 @@ components:
           description: С какой секунды начинать воспроизводить клип
           default: 0
           example: 0
+        cropX:
+          type: number
+          description: Обрезать слева
+        cropY:
+          type: number
+          description: Обрезать сверху
+        cropW:
+          type: number
+          description: Ширина обрезки
+        cropH:
+          type: number
+          description: Высота обрезки
         mixVolume:
           type: integer
           description: Аудио дорожка из видео, 0-выключен, 1-включен
@@ -5038,6 +5050,18 @@ components:
           description: С какой секунды начинать воспроизводить клип
           default: 0
           example: 0
+        cropX:
+          type: number
+          description: Обрезать слева
+        cropY:
+          type: number
+          description: Обрезать сверху
+        cropW:
+          type: number
+          description: Ширина обрезки
+        cropH:
+          type: number
+          description: Высота обрезки
         mixVolume:
           type: integer
           description: Аудио дорожка из видео, 0-выключен, 1-включен
@@ -5091,6 +5115,18 @@ components:
           description: С какой секунды начинать воспроизводить клип
           default: 0
           example: 0
+        cropX:
+          type: number
+          description: Обрезать слева
+        cropY:
+          type: number
+          description: Обрезать сверху
+        cropW:
+          type: number
+          description: Ширина обрезки
+        cropH:
+          type: number
+          description: Высота обрезки
         mixVolume:
           type: integer
           description: Аудио дорожка из видео, 0-выключен, 1-включен
@@ -6050,12 +6086,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-11-15"
+          example: "2023-11-16"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-11-16"
+          example: "2023-11-17"
       required:
         - format
         - dateFrom
@@ -6077,12 +6113,12 @@ components:
           format: date-time
           type: string
           description: Начальная дата
-          example: "2023-11-15"
+          example: "2023-11-16"
         dateTo:
           format: date-time
           type: string
           description: Конечная дата
-          example: "2023-11-16"
+          example: "2023-11-17"
       required:
         - format
         - dateFrom
@@ -6224,12 +6260,12 @@ components:
           format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-11-15T00:00:00.000Z"
+          example: "2023-11-16T00:00:00.000Z"
         dateTo:
           format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-11-16T23:59:59.999Z"
+          example: "2023-11-17T23:59:59.999Z"
       required:
         - monitorIds
         - playlistDuration

@@ -111,6 +111,42 @@ export class EditorLayerEntity {
   @Min(0)
   start!: number;
 
+  @Column({ type: 'numeric', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Обрезать слева',
+    type: 'number',
+    required: false,
+  })
+  @IsNumber()
+  cropX!: number;
+
+  @Column({ type: 'numeric', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Обрезать сверху',
+    type: 'number',
+    required: false,
+  })
+  @IsNumber()
+  cropY!: number;
+
+  @Column({ type: 'numeric', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Ширина обрезки',
+    type: 'number',
+    required: false,
+  })
+  @IsNumber()
+  cropW!: number;
+
+  @Column({ type: 'numeric', nullable: true, default: null })
+  @ApiProperty({
+    type: 'number',
+    description: 'Высота обрезки',
+    required: false,
+  })
+  @IsNumber()
+  cropH!: number;
+
   @Column({ type: 'integer', default: 1 })
   @ApiProperty({
     description: 'Аудио дорожка из видео, 0-выключен, 1-включен',

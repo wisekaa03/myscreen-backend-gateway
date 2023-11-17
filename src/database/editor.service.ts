@@ -9,6 +9,8 @@ import StreamPromises from 'node:stream/promises';
 import path from 'node:path';
 import child from 'node:child_process';
 import util from 'node:util';
+import dayjsDuration from 'dayjs/plugin/duration';
+import dayjs from 'dayjs';
 import {
   Injectable,
   Logger,
@@ -47,6 +49,7 @@ import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
 import { ApplicationEntity } from './application.entity';
 
+dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
 
 @Injectable()
@@ -273,7 +276,7 @@ export class EditorService {
       return layer.cutTo - layer.cutFrom;
     }
     return (
-      layer.duration || layer.file?.duration || layer.file?.meta.duration || 0
+      layer.duration ?? layer.file?.duration ?? layer.file?.meta.duration ?? 0
     );
   };
 
@@ -386,22 +389,8 @@ export class EditorService {
   }
 
   // TODO: what a fuck?
-  convertSecToTime = (second: number): string => {
-    let hours: number | string = Math.floor(second / 3600);
-    let minutes: number | string = Math.floor((second - hours * 3600) / 60);
-    let seconds: number | string = second - hours * 3600 - minutes * 60;
-
-    if (hours < 10) {
-      hours = `0${hours}`;
-    }
-    if (minutes < 10) {
-      minutes = `0${minutes}`;
-    }
-    if (seconds < 10) {
-      seconds = `0${seconds}`;
-    }
-    return `${hours}:${minutes}:${seconds}`;
-  };
+  convertSecToTime = (seconds: number): string =>
+    dayjs.duration({ seconds }).format('HH:mm:ss');
 
   /**
    * Capture one frame from Clips

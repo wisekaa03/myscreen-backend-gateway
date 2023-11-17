@@ -10,5 +10,9 @@ export class EditorLayerUpdateRequest extends PartialType(
     'start',
     'mixVolume',
     'index',
+    'cropX',
+    'cropY',
+    'cropW',
+    'cropH',
   ]),
 ) {}
