@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsDefined, IsNotEmpty, IsUUID } from 'class-validator';
 
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 
@@ -23,6 +23,7 @@ export class EditorLayerCreateRequest extends PartialType(
     format: 'uuid',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsUUID()
   file!: string;

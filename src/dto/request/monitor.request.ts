@@ -28,7 +28,11 @@ export class MonitorRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время создания',
-    examples: { one: '2021-01-01', two: ['2021-12-31', '2021-12-31'] },
+    example: ['2021-01-01', '2021-12-31'],
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
     type: 'string',
     format: 'date-time',
     isArray: true,
@@ -39,7 +43,11 @@ export class MonitorRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время изменения',
-    examples: { one: '2021-01-01', two: ['2021-12-31', '2021-12-31'] },
+    example: ['2021-01-01', '2021-12-31'],
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
     type: 'string',
     format: 'date-time',
     isArray: true,

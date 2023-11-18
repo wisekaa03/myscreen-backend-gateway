@@ -11,7 +11,7 @@ export const invoiceXls = async ({ invoice }: { invoice: InvoiceEntity }) => {
   const worksheet = workbook.addWorksheet('Счёт');
 
   const { sum, seqNo, createdAt } = invoice;
-  const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+  const createdAtFormat = dateFormat(createdAt ?? 0, 'dd LLLL yyyy г.', {
     locale: dateRu,
   });
   const withoutVat = numberFormat(sum - vat(sum));

@@ -8,6 +8,7 @@ export class PlaylistUpdateRequest extends PartialType(
 ) {
   @ApiProperty({
     description: 'Файлы',
+    example: ['1234-5678-9123-4567', '7654-3219-8765-4321'],
     type: 'string',
     format: 'uuid',
     isArray: true,

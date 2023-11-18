@@ -19,6 +19,7 @@ import {
   IsPhoneNumber,
   IsString,
   IsUUID,
+  MaxLength,
 } from 'class-validator';
 
 import {
@@ -370,6 +371,8 @@ export class UserExtEntity implements UserEntity {
     description: 'EMail пользователя',
     type: 'string',
     format: 'email',
+    minLength: 6,
+    maxLength: 254,
     example: 'foo@bar.baz',
   })
   @IsDefined()
@@ -386,10 +389,12 @@ export class UserExtEntity implements UserEntity {
     type: 'string',
     description: 'Фамилия',
     example: 'Steve',
+    maxLength: 50,
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(50)
   surname!: string | null;
 
   @ViewColumn()
@@ -397,21 +402,25 @@ export class UserExtEntity implements UserEntity {
     type: 'string',
     description: 'Имя',
     example: 'John',
+    maxLength: 50,
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(50)
   name!: string | null;
 
   @ViewColumn()
   @ApiProperty({
     type: 'string',
     description: 'Отчество',
+    maxLength: 50,
     example: 'Doe',
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(50)
   middleName!: string | null;
 
   @ViewColumn()
@@ -422,6 +431,7 @@ export class UserExtEntity implements UserEntity {
   @ApiProperty({
     description: 'Телефон пользователя',
     example: '+78002000000',
+    maxLength: 14,
     nullable: true,
     required: false,
   })
@@ -432,16 +442,19 @@ export class UserExtEntity implements UserEntity {
   @ApiProperty({
     description: 'Город',
     example: 'Krasnodar',
+    maxLength: 100,
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(100)
   city?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Страна',
     example: 'RU',
+    maxLength: 2,
     nullable: true,
     required: false,
   })
@@ -503,61 +516,74 @@ export class UserExtEntity implements UserEntity {
   @ApiProperty({
     description: 'Компания',
     example: 'ACME corporation',
+    maxLength: 100,
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(100)
   company?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Юридический адрес',
     example: 'г. Краснодар, ул. Красная, д. 1',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyLegalAddress?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Фактический адрес',
     example: 'г. Краснодар, ул. Красная, д. 1',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyActualAddress?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Идентификационный номер налогоплательщика (ИНН)',
     example: '012345678901',
+    maxLength: 12,
     required: false,
   })
   @IsString()
+  @MaxLength(12)
   companyTIN?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Код Причины Постановки на учет (КПП)',
     example: '012345678901',
+    maxLength: 9,
     required: false,
   })
   @IsString()
+  @MaxLength(9)
   companyRRC?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Основной Государственный Регистрационный Номер (ОГРН)',
     example: '012345678901',
+    maxLength: 15,
     required: false,
   })
   @IsString()
+  @MaxLength(15)
   companyPSRN?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Телефон организации',
     example: '+78002000000',
+    maxLength: 14,
     required: false,
   })
   @IsPhoneNumber()
@@ -567,70 +593,90 @@ export class UserExtEntity implements UserEntity {
   @ApiProperty({
     description: 'Email организации',
     example: 'we@are.the.best',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyEmail?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Наименование банка',
     example: 'Банк',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyBank?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Банковский идентификационный код (БИК)',
     example: '012345678',
+    maxLength: 9,
     required: false,
   })
   @IsString()
+  @MaxLength(9)
   companyBIC?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Корреспондентский счет',
     example: '30101810400000000000',
+    maxLength: 20,
     required: false,
   })
   @IsString()
+  @MaxLength(20)
   companyCorrespondentAccount?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Расчетный счет',
     example: '40802810064580000000',
+    maxLength: 20,
     required: false,
   })
   @IsString()
+  @MaxLength(20)
   companyPaymentAccount?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Факс организации',
     example: '+78002000000',
+    maxLength: 14,
     required: false,
   })
   @IsString()
+  @MaxLength(14)
   companyFax?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Представитель организации',
     example: 'Тухбатуллина Юлия Евгеньевна',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyRepresentative?: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
   createdAt?: Date;
@@ -638,8 +684,14 @@ export class UserExtEntity implements UserEntity {
   @ViewColumn()
   @ApiProperty({
     description: 'Время изменения',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
   updatedAt?: Date;

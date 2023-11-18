@@ -212,7 +212,7 @@ export class InvoiceService {
       : SpecificFormat.XLSX;
 
     const createdAt = dateFormat(
-      invoice.createdAt,
+      invoice.createdAt || new Date(),
       "dd_LLLL_yyyy_'г._в'_hh_mm",
       {
         locale: dateRu,

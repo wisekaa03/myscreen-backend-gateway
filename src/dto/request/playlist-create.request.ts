@@ -11,6 +11,7 @@ export class PlaylistCreateRequest extends PickType(PlaylistEntity, [
     description: 'Файлы',
     type: 'string',
     format: 'uuid',
+    example: ['1234-5678-9123-4567', '7654-3219-8765-4321'],
     isArray: true,
     required: true,
   })

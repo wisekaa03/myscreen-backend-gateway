@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.44
+  version: 2.42.45
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3102,36 +3102,44 @@ components:
           type: string
           description: EMail пользователя
           format: email
+          minLength: 6
+          maxLength: 254
           example: foo@bar.baz
         surname:
           type: string
           description: Фамилия
           example: Steve
+          maxLength: 50
           nullable: true
         name:
           type: string
           description: Имя
           example: John
+          maxLength: 50
           nullable: true
         middleName:
           type: string
           description: Отчество
+          maxLength: 50
           example: Doe
           nullable: true
         phoneNumber:
           type: string
           description: Телефон пользователя
           example: "+78002000000"
+          maxLength: 14
           nullable: true
         city:
           type: string
           description: Город
           example: Krasnodar
+          maxLength: 100
           nullable: true
         country:
           type: string
           description: Страна
           example: RU
+          maxLength: 2
           nullable: true
         storageSpace:
           type: number
@@ -3153,69 +3161,93 @@ components:
           type: string
           description: Компания
           example: ACME corporation
+          maxLength: 100
           nullable: true
         companyLegalAddress:
           type: string
           description: Юридический адрес
           example: г. Краснодар, ул. Красная, д. 1
+          maxLength: 254
         companyActualAddress:
           type: string
           description: Фактический адрес
           example: г. Краснодар, ул. Красная, д. 1
+          maxLength: 254
         companyTIN:
           type: string
           description: Идентификационный номер налогоплательщика (ИНН)
           example: "012345678901"
+          maxLength: 12
         companyRRC:
           type: string
           description: Код Причины Постановки на учет (КПП)
           example: "012345678901"
+          maxLength: 9
         companyPSRN:
           type: string
           description: Основной Государственный Регистрационный Номер (ОГРН)
           example: "012345678901"
+          maxLength: 15
         companyPhone:
           type: string
           description: Телефон организации
           example: "+78002000000"
+          maxLength: 14
         companyEmail:
           type: string
           description: Email организации
           example: we@are.the.best
+          maxLength: 254
         companyBank:
           type: string
           description: Наименование банка
           example: Банк
+          maxLength: 254
         companyBIC:
           type: string
           description: Банковский идентификационный код (БИК)
           example: "012345678"
+          maxLength: 9
         companyCorrespondentAccount:
           type: string
           description: Корреспондентский счет
           example: "30101810400000000000"
+          maxLength: 20
         companyPaymentAccount:
           type: string
           description: Расчетный счет
           example: "40802810064580000000"
+          maxLength: 20
         companyFax:
           type: string
           description: Факс организации
           example: "+78002000000"
+          maxLength: 14
         companyRepresentative:
           type: string
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
+          maxLength: 254
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           format: date-time
+        updatedAt:
           type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         planValidityPeriod:
           type: number
           description: Оставшийся срок оплаты
@@ -3231,8 +3263,6 @@ components:
         - id
         - email
         - role
-        - createdAt
-        - updatedAt
     UserGetResponse:
       type: object
       properties:
@@ -3259,36 +3289,44 @@ components:
           type: string
           description: EMail пользователя
           format: email
+          minLength: 6
+          maxLength: 254
           example: foo@bar.baz
         surname:
           type: string
           description: Фамилия
           example: Steve
+          maxLength: 50
           nullable: true
         name:
           type: string
           description: Имя
           example: John
+          maxLength: 50
           nullable: true
         middleName:
           type: string
           description: Отчество
+          maxLength: 50
           example: Doe
           nullable: true
         phoneNumber:
           type: string
           description: Телефон пользователя
           example: "+78002000000"
+          maxLength: 14
           nullable: true
         city:
           type: string
           description: Город
           example: Krasnodar
+          maxLength: 100
           nullable: true
         country:
           type: string
           description: Страна
           example: RU
+          maxLength: 2
           nullable: true
         verified:
           type: boolean
@@ -3298,59 +3336,73 @@ components:
           type: string
           description: Компания
           example: ACME corporation
+          maxLength: 100
           nullable: true
         companyLegalAddress:
           type: string
           description: Юридический адрес
           example: г. Краснодар, ул. Красная, д. 1
+          maxLength: 254
         companyActualAddress:
           type: string
           description: Фактический адрес
           example: г. Краснодар, ул. Красная, д. 1
+          maxLength: 254
         companyTIN:
           type: string
           description: Идентификационный номер налогоплательщика (ИНН)
           example: "012345678901"
+          maxLength: 12
         companyRRC:
           type: string
           description: Код Причины Постановки на учет (КПП)
           example: "012345678901"
+          maxLength: 9
         companyPSRN:
           type: string
           description: Основной Государственный Регистрационный Номер (ОГРН)
           example: "012345678901"
+          maxLength: 15
         companyPhone:
           type: string
           description: Телефон организации
           example: "+78002000000"
+          maxLength: 14
         companyEmail:
           type: string
           description: Email организации
           example: we@are.the.best
+          maxLength: 254
         companyBank:
           type: string
           description: Наименование банка
           example: Банк
+          maxLength: 254
         companyBIC:
           type: string
           description: Банковский идентификационный код (БИК)
           example: "012345678"
+          maxLength: 9
         companyCorrespondentAccount:
           type: string
           description: Корреспондентский счет
           example: "30101810400000000000"
+          maxLength: 20
         companyPaymentAccount:
           type: string
           description: Расчетный счет
           example: "40802810064580000000"
+          maxLength: 20
         companyFax:
           type: string
           description: Факс организации
           example: "+78002000000"
+          maxLength: 14
         companyRepresentative:
           type: string
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
+          maxLength: 254
         role:
           description: Роль пользователя
           example: advertiser
@@ -3366,6 +3418,8 @@ components:
           type: string
           description: EMail пользователя
           format: email
+          minLength: 6
+          maxLength: 254
           example: foo@bar.baz
         password:
           type: string
@@ -3373,8 +3427,9 @@ components:
           description: Пароля пользователя (должен удовлетворять минимальным требованиям)
           minLength: 8
           maxLength: 30
+          format: password
           pattern: |-
-            /((?=.*d)|(?=.*W+))(?![.
+            /((?=.*\d)|(?=.*\W+))(?![.
             ])(?=.*[A-Z])(?=.*[a-z]).*$/
       required:
         - email
@@ -3424,36 +3479,44 @@ components:
           type: string
           description: EMail пользователя
           format: email
+          minLength: 6
+          maxLength: 254
           example: foo@bar.baz
         surname:
           type: string
           description: Фамилия
           example: Steve
+          maxLength: 50
           nullable: true
         name:
           type: string
           description: Имя
           example: John
+          maxLength: 50
           nullable: true
         middleName:
           type: string
           description: Отчество
+          maxLength: 50
           example: Doe
           nullable: true
         phoneNumber:
           type: string
           description: Телефон пользователя
           example: "+78002000000"
+          maxLength: 14
           nullable: true
         city:
           type: string
           description: Город
           example: Krasnodar
+          maxLength: 100
           nullable: true
         country:
           type: string
           description: Страна
           example: RU
+          maxLength: 2
           nullable: true
         storageSpace:
           type: number
@@ -3463,59 +3526,73 @@ components:
           type: string
           description: Компания
           example: ACME corporation
+          maxLength: 100
           nullable: true
         companyLegalAddress:
           type: string
           description: Юридический адрес
           example: г. Краснодар, ул. Красная, д. 1
+          maxLength: 254
         companyActualAddress:
           type: string
           description: Фактический адрес
           example: г. Краснодар, ул. Красная, д. 1
+          maxLength: 254
         companyTIN:
           type: string
           description: Идентификационный номер налогоплательщика (ИНН)
           example: "012345678901"
+          maxLength: 12
         companyRRC:
           type: string
           description: Код Причины Постановки на учет (КПП)
           example: "012345678901"
+          maxLength: 9
         companyPSRN:
           type: string
           description: Основной Государственный Регистрационный Номер (ОГРН)
           example: "012345678901"
+          maxLength: 15
         companyPhone:
           type: string
           description: Телефон организации
           example: "+78002000000"
+          maxLength: 14
         companyEmail:
           type: string
           description: Email организации
           example: we@are.the.best
+          maxLength: 254
         companyBank:
           type: string
           description: Наименование банка
           example: Банк
+          maxLength: 254
         companyBIC:
           type: string
           description: Банковский идентификационный код (БИК)
           example: "012345678"
+          maxLength: 9
         companyCorrespondentAccount:
           type: string
           description: Корреспондентский счет
           example: "30101810400000000000"
+          maxLength: 20
         companyPaymentAccount:
           type: string
           description: Расчетный счет
           example: "40802810064580000000"
+          maxLength: 20
         companyFax:
           type: string
           description: Факс организации
           example: "+78002000000"
+          maxLength: 14
         companyRepresentative:
           type: string
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
+          maxLength: 254
         role:
           description: Роль пользователя
           example: advertiser
@@ -3580,6 +3657,8 @@ components:
           type: string
           description: EMail пользователя
           format: email
+          minLength: 6
+          maxLength: 254
           example: foo@bar.baz
       required:
         - email
@@ -3601,6 +3680,7 @@ components:
         code:
           type: string
           description: Используется для обозначения монитора
+          pattern: ^[0-9]{3}-[0-9]{3}-[0-9]{3}$
           example: 123-456-789
       required:
         - code
@@ -3796,22 +3876,28 @@ components:
             format: date-time
         createdAt:
           description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
             format: date-time
         updatedAt:
           description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
@@ -4054,15 +4140,25 @@ components:
           format: uuid
           nullable: true
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           format: date-time
+        updatedAt:
           type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         empty:
           type: boolean
           description: Подчиненные в этой папке
@@ -4070,8 +4166,6 @@ components:
       required:
         - id
         - name
-        - createdAt
-        - updatedAt
     FileResponse:
       type: object
       properties:
@@ -4116,15 +4210,25 @@ components:
           description: Размер по вертикали
           example: 1024
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           format: date-time
+        updatedAt:
           type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         folder:
           description: Папка
           allOf:
@@ -4150,8 +4254,6 @@ components:
         - duration
         - width
         - height
-        - createdAt
-        - updatedAt
         - folder
     PlaylistResponse:
       type: object
@@ -4179,15 +4281,25 @@ components:
           default: false
           example: false
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           format: date-time
+        updatedAt:
           type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         monitors:
           type: array
           description: Мониторы
@@ -4202,8 +4314,6 @@ components:
         - id
         - name
         - status
-        - createdAt
-        - updatedAt
         - monitors
         - files
     MonitorResponse:
@@ -4314,15 +4424,25 @@ components:
           description: Избранный монитор
           example: false
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           format: date-time
+        updatedAt:
           type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         playlist:
           description: Плэйлист привязанный к монитору
           allOf:
@@ -4346,10 +4466,7 @@ components:
         - sound
         - status
         - playlistPlayed
-        - lastSeen
         - favorite
-        - createdAt
-        - updatedAt
         - code
     MonitorsGetResponse:
       type: object
@@ -4491,14 +4608,14 @@ components:
       properties:
         dateWhen:
           type: string
-          format: date-time
+          format: date
           description: Время когда
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01"
         dateBefore:
           type: string
-          format: date-time
+          format: date
           description: Время до
-          example: "2021-10-01T10:00:00.147Z"
+          example: "2021-10-01"
           nullable: true
         playlistChange:
           type: boolean
@@ -4578,29 +4695,39 @@ components:
           $ref: "#/components/schemas/ApplicationApproved"
         dateWhen:
           type: string
-          format: date-time
+          format: date
           description: Время когда
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01"
         dateBefore:
           type: string
-          format: date-time
+          format: date
           description: Время до
-          example: "2021-10-01T10:00:00.147Z"
+          example: "2021-10-01"
           nullable: true
         playlistChange:
           type: boolean
           description: "Смена текущего плэйлиста: сразу/когда закончится"
           example: false
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           format: date-time
+        updatedAt:
           type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
       required:
         - id
         - buyer
@@ -4610,8 +4737,6 @@ components:
         - approved
         - dateWhen
         - playlistChange
-        - createdAt
-        - updatedAt
     ApplicationsGetResponse:
       type: object
       properties:
@@ -4751,22 +4876,28 @@ components:
           $ref: "#/components/schemas/RenderingStatus"
         createdAt:
           description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
             format: date-time
         updatedAt:
           description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
@@ -4854,15 +4985,25 @@ components:
           example: 1
           default: 1
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         updatedAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         file:
           description: Файл
           allOf:
@@ -4875,8 +5016,6 @@ components:
         - cutTo
         - start
         - mixVolume
-        - createdAt
-        - updatedAt
         - file
     EditorResponse:
       type: object
@@ -4928,15 +5067,25 @@ components:
           description: Общее время
           example: 0
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         updatedAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
         videoLayers:
           description: Видео слой
           type: array
@@ -4959,8 +5108,6 @@ components:
         - renderedFile
         - keepSourceAudio
         - totalDuration
-        - createdAt
-        - updatedAt
         - videoLayers
         - audioLayers
     EditorsGetResponse:
@@ -5246,22 +5393,28 @@ components:
           $ref: "#/components/schemas/FileCategory"
         createdAt:
           description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
             format: date-time
         updatedAt:
           description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
@@ -5442,22 +5595,28 @@ components:
           nullable: true
         createdAt:
           description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
             format: date-time
         updatedAt:
           description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
@@ -5617,20 +5776,25 @@ components:
           type: string
           description: EMail пользователя
           format: email
+          minLength: 6
+          maxLength: 254
           example: foo@bar.baz
         surname:
           type: string
           description: Фамилия
           example: Steve
+          maxLength: 50
           nullable: true
         name:
           type: string
           description: Имя
+          maxLength: 50
           example: John
           nullable: true
         middleName:
           type: string
           description: Отчество
+          maxLength: 50
           example: Doe
           nullable: true
         password:
@@ -5639,23 +5803,27 @@ components:
           description: Пароля пользователя (должен удовлетворять минимальным требованиям)
           minLength: 8
           maxLength: 30
+          format: password
           pattern: |-
-            /((?=.*d)|(?=.*W+))(?![.
+            /((?=.*\d)|(?=.*\W+))(?![.
             ])(?=.*[A-Z])(?=.*[a-z]).*$/
         phoneNumber:
           type: string
           description: Телефон пользователя
           example: "+78002000000"
+          maxLength: 14
           nullable: true
         city:
           type: string
           description: Город
           example: Krasnodar
+          maxLength: 100
           nullable: true
         country:
           type: string
           description: Страна
           example: RU
+          maxLength: 2
           nullable: true
         storageSpace:
           type: number
@@ -5677,77 +5845,97 @@ components:
           type: string
           description: Компания
           example: ACME corporation
+          maxLength: 100
           nullable: true
         companyLegalAddress:
           type: string
           description: Юридический адрес
           example: г. Краснодар, ул. Красная, д. 1
+          maxLength: 254
         companyActualAddress:
           type: string
           description: Фактический адрес
           example: г. Краснодар, ул. Красная, д. 1
+          maxLength: 254
         companyTIN:
           type: string
           description: Идентификационный номер налогоплательщика (ИНН)
           example: "012345678901"
+          maxLength: 12
         companyRRC:
           type: string
           description: Код Причины Постановки на учет (КПП)
           example: "012345678901"
+          maxLength: 9
         companyPSRN:
           type: string
           description: Основной Государственный Регистрационный Номер (ОГРН)
           example: "012345678901"
+          maxLength: 15
         companyPhone:
           type: string
           description: Телефон организации
           example: "+78002000000"
+          maxLength: 14
         companyEmail:
           type: string
           description: Email организации
           example: we@are.the.best
+          maxLength: 254
         companyBank:
           type: string
           description: Наименование банка
           example: Банк
+          maxLength: 254
         companyBIC:
           type: string
           description: Банковский идентификационный код (БИК)
           example: "012345678"
+          maxLength: 9
         companyCorrespondentAccount:
           type: string
           description: Корреспондентский счет
           example: "30101810400000000000"
+          maxLength: 20
         companyPaymentAccount:
           type: string
           description: Расчетный счет
           example: "40802810064580000000"
+          maxLength: 20
         companyFax:
           type: string
           description: Факс организации
           example: "+78002000000"
+          maxLength: 14
         companyRepresentative:
           type: string
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
+          maxLength: 254
         createdAt:
           description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
             format: date-time
         updatedAt:
           description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
@@ -5848,22 +6036,28 @@ components:
           example: 1000
         createdAt:
           description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
             format: date-time
         updatedAt:
           description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
@@ -5916,23 +6110,31 @@ components:
           description: Сумма счета
           example: 1000
         createdAt:
-          format: date-time
           type: string
           description: Время создания
-          example: "2021-01-01T10:00:00.147Z"
-        updatedAt:
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           format: date-time
+        updatedAt:
           type: string
           description: Время изменения
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
       required:
         - id
         - seqNo
         - description
         - status
         - sum
-        - createdAt
-        - updatedAt
     InvoicesGetResponse:
       type: object
       properties:
@@ -6001,22 +6203,28 @@ components:
           $ref: "#/components/schemas/PlaylistStatus"
         createdAt:
           description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
             format: date-time
         updatedAt:
           description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
@@ -6081,6 +6289,9 @@ components:
           nullable: true
         files:
           description: Файлы
+          example:
+            - 1234-5678-9123-4567
+            - 7654-3219-8765-4321
           type: array
           items:
             type: string
@@ -6116,6 +6327,9 @@ components:
           nullable: true
         files:
           description: Файлы
+          example:
+            - 1234-5678-9123-4567
+            - 7654-3219-8765-4321
           type: array
           items:
             type: string
@@ -6134,20 +6348,23 @@ components:
           $ref: "#/components/schemas/SpecificFormat"
         monitorsId:
           description: Мониторы ID (если не указан, то все мониторы)
+          example:
+            - 1234-5678-9123-4567
+            - 7654-3219-8765-4321
           type: array
           items:
-            type: array
+            type: string
             format: uuid
         dateFrom:
-          format: date-time
           type: string
           description: Начальная дата
-          example: "2023-11-16"
+          example: "2021-01-01"
+          format: date
         dateTo:
-          format: date-time
           type: string
           description: Конечная дата
-          example: "2023-11-17"
+          example: "2021-01-01"
+          format: date
       required:
         - format
         - dateFrom
@@ -6161,20 +6378,23 @@ components:
           $ref: "#/components/schemas/SpecificFormat"
         monitorsId:
           description: Мониторы ID (если не указан, то все мониторы)
+          example:
+            - 1234-5678-9123-4567
+            - 7654-3219-8765-4321
           type: array
           items:
-            type: array
+            type: string
             format: uuid
         dateFrom:
-          format: date-time
           type: string
           description: Начальная дата
-          example: "2023-11-16"
+          example: "2021-01-01"
+          format: date
         dateTo:
-          format: date-time
           type: string
           description: Конечная дата
-          example: "2023-11-17"
+          example: "2021-01-01"
+          format: date
       required:
         - format
         - dateFrom
@@ -6222,14 +6442,14 @@ components:
             $ref: "#/components/schemas/ApplicationApproved"
         dateWhen:
           type: string
-          format: date-time
+          format: date
           description: Время когда
-          example: "2021-01-01T10:00:00.147Z"
+          example: "2021-01-01"
         dateBefore:
           type: string
-          format: date-time
+          format: date
           description: Время до
-          example: "2021-10-01T10:00:00.147Z"
+          example: "2021-10-01"
           nullable: true
         playlistChange:
           type: boolean
@@ -6237,22 +6457,28 @@ components:
           example: false
         createdAt:
           description: Время создания
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
             format: date-time
         updatedAt:
           description: Время изменения
+          example:
+            - "2021-01-01"
+            - "2021-12-31"
           examples:
             one: "2021-01-01"
             two:
-              - "2021-12-31"
-              - "2021-12-31"
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
           type: array
           items:
             type: string
@@ -6329,15 +6555,15 @@ components:
           description: Длительность плейлиста (в секундах)
           example: 60
         dateFrom:
-          format: date-time
           type: string
           description: Дата и время начала
-          example: "2023-11-16T00:00:00.000Z"
+          example: "2021-01-01"
+          format: date
         dateTo:
-          format: date-time
           type: string
           description: Дата и время окончания
-          example: "2023-11-17T23:59:59.999Z"
+          example: "2021-12-31"
+          format: date
       required:
         - monitorIds
         - playlistDuration

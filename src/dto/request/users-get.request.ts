@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
@@ -26,9 +26,10 @@ export class UsersGetRequest {
       (user) => user !== 'password',
     ),
     isArray: true,
+    type: 'string',
     required: false,
   })
-  @IsOptional()
+  @IsArray()
   select?: FindOptionsSelect<UserRequest>;
 
   @ApiProperty({

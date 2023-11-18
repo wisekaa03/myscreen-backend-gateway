@@ -1,13 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
+  IsDefined,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsUUID,
 } from 'class-validator';
-import subDays from 'date-fns/subDays';
-import formatISO from 'date-fns/formatISO';
 
 import { SpecificFormat } from '@/enums/specific-format.enum';
 
@@ -19,13 +18,16 @@ export class ReportViewsRequest {
     example: SpecificFormat.XLSX,
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsEnum(SpecificFormat)
   format!: SpecificFormat;
 
   @ApiProperty({
     description: 'Мониторы ID (если не указан, то все мониторы)',
+    example: ['1234-5678-9123-4567', '7654-3219-8765-4321'],
     isArray: true,
+    type: 'string',
     format: 'uuid',
     required: false,
   })
@@ -35,20 +37,24 @@ export class ReportViewsRequest {
 
   @ApiProperty({
     description: 'Начальная дата',
-    type: Date,
-    example: formatISO(subDays(new Date(), 1), { representation: 'date' }),
+    example: '2021-01-01',
+    type: 'string',
+    format: 'date',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsDateString({ strict: false })
   dateFrom!: string;
 
   @ApiProperty({
     description: 'Конечная дата',
-    type: Date,
-    example: formatISO(new Date(), { representation: 'date' }),
+    example: '2021-01-01',
+    type: 'string',
+    format: 'date',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsDateString({ strict: false })
   dateTo!: string;

@@ -210,10 +210,10 @@ export class MailService {
     invoice: InvoiceEntity,
   ): Promise<SentMessageInfo> {
     const { seqNo, createdAt } = invoice;
-    const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+    const createdAtFormat = dateFormat(createdAt ?? 0, 'dd LLLL yyyy г.', {
       locale: dateRu,
     });
-    const createdAtFormatFile = dateFormat(createdAt, 'dd_LLLL_yyyy', {
+    const createdAtFormatFile = dateFormat(createdAt ?? 0, 'dd_LLLL_yyyy', {
       locale: dateRu,
     });
     const invoicePrinted = await this.printService.invoice(
@@ -252,7 +252,7 @@ export class MailService {
     balance: number,
   ): Promise<SentMessageInfo> {
     const { seqNo, createdAt } = invoice;
-    const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+    const createdAtFormat = dateFormat(createdAt ?? 0, 'dd LLLL yyyy г.', {
       locale: dateRu,
     });
     const message: ISendMailOptions = {
@@ -280,10 +280,10 @@ export class MailService {
     invoice: InvoiceEntity,
   ): Promise<SentMessageInfo> {
     const { seqNo, createdAt } = invoice;
-    const createdAtFormat = dateFormat(createdAt, 'dd LLLL yyyy г.', {
+    const createdAtFormat = dateFormat(createdAt ?? 0, 'dd LLLL yyyy г.', {
       locale: dateRu,
     });
-    const createdAtFormatFile = dateFormat(createdAt, 'dd_LLLL_yyyy', {
+    const createdAtFormatFile = dateFormat(createdAt ?? 0, 'dd_LLLL_yyyy', {
       locale: dateRu,
     });
     const invoicePrinted = await this.printService.invoice(

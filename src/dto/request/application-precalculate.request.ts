@@ -1,8 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDateString, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
-import format from 'date-fns/format';
-import subDays from 'date-fns/subDays';
-import { dateLocalNow } from '../interface';
+import {
+  IsDateString,
+  IsDefined,
+  IsNotEmpty,
+  IsNumber,
+  IsUUID,
+} from 'class-validator';
 
 export class ApplicationPrecalculateRequest {
   @ApiProperty({
@@ -21,26 +24,31 @@ export class ApplicationPrecalculateRequest {
     example: 60,
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsNumber()
   playlistDuration!: number;
 
   @ApiProperty({
     description: 'Дата и время начала',
-    type: Date,
-    example: format(subDays(dateLocalNow, 1), "yyyy-LL-dd'T'00:00:00.000'Z'"),
+    example: '2021-01-01',
+    type: 'string',
+    format: 'date',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsDateString({ strict: false })
   dateFrom!: string;
 
   @ApiProperty({
     description: 'Дата и время окончания',
-    type: Date,
-    example: format(dateLocalNow, "yyyy-LL-dd'T'23:59:59.999'Z'"),
+    example: '2021-12-31',
+    type: 'string',
+    format: 'date',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsDateString({ strict: false })
   dateTo!: string;
