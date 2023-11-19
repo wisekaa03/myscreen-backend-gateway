@@ -468,7 +468,12 @@ export class MonitorEntity {
     onUpdate: 'CASCADE',
     nullable: true,
   })
+  @JoinColumn()
   playlist?: PlaylistEntity | null;
+
+  @Column({ nullable: true })
+  @IsUUID()
+  playlistId?: string | null;
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {
     cascade: true,

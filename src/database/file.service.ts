@@ -89,13 +89,16 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {Array<FileEntity>} {Array<FileEntity>} Результат
    */
-  async find(
-    find: FindManyOptions<FileEntity>,
+  async find({
+    find,
     caseInsensitive = true,
-  ): Promise<Array<FileEntity>> {
+  }: {
+    find: FindManyOptions<FileEntity>;
+    caseInsensitive?: boolean;
+  }): Promise<Array<FileEntity>> {
     const conditional = TypeOrmFind.Nullable(find);
-    if (!find.relations) {
-      conditional.relations = ['monitors', 'playlists'];
+    if (find.relations === undefined) {
+      conditional.relations = { monitors: true, playlists: true };
     }
     return caseInsensitive
       ? TypeOrmFind.findCI(this.fileRepository, conditional)
@@ -109,13 +112,16 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {[Array<FileEntity>, number]} {[Array<FileEntity>, number]} Результат
    */
-  async findAndCount(
-    find: FindManyOptions<FileEntity>,
+  async findAndCount({
+    find,
     caseInsensitive = true,
-  ): Promise<[Array<FileEntity>, number]> {
+  }: {
+    find: FindManyOptions<FileEntity>;
+    caseInsensitive?: boolean;
+  }): Promise<[Array<FileEntity>, number]> {
     const conditional = TypeOrmFind.Nullable(find);
     if (find.relations === undefined) {
-      conditional.relations = ['monitors', 'playlists'];
+      conditional.relations = { monitors: true, playlists: true };
     }
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.fileRepository, conditional)
@@ -129,13 +135,20 @@ export class FileService {
    * @param {FindManyOptions<FileEntity>} find
    * @returns {FileEntity} {FileEntity | undefined} Результат
    */
-  async findOne(find: FindManyOptions<FileEntity>): Promise<FileEntity | null> {
-    return find.relations
-      ? this.fileRepository.findOne(TypeOrmFind.Nullable(find))
-      : this.fileRepository.findOne({
-          relations: ['monitors', 'playlists'],
-          ...TypeOrmFind.Nullable(find),
-        });
+  async findOne({
+    find,
+    caseInsensitive = true,
+  }: {
+    find: FindManyOptions<FileEntity>;
+    caseInsensitive?: boolean;
+  }): Promise<FileEntity | null> {
+    const conditional = TypeOrmFind.Nullable(find);
+    if (find.relations === undefined) {
+      conditional.relations = { monitors: true, playlists: true };
+    }
+    return caseInsensitive
+      ? TypeOrmFind.findOneCI(this.fileRepository, conditional)
+      : this.fileRepository.findOne(conditional);
   }
 
   /**

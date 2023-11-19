@@ -120,21 +120,6 @@ export class PlaylistEntity {
   @IsUUID('all', { each: true })
   files!: FileEntity[];
 
-  @ManyToOne(() => EditorEntity, (editor) => editor.id, {
-    nullable: true,
-    cascade: true,
-    onDelete: 'SET NULL',
-    onUpdate: 'CASCADE',
-    eager: false,
-  })
-  @JoinColumn({ name: 'editorId' })
-  editor!: EditorEntity | null;
-
-  @Column({ nullable: true })
-  @Index()
-  @IsUUID()
-  editorId!: string | null;
-
   @OneToMany(() => MonitorEntity, (monitor) => monitor.playlist, {
     nullable: true,
     onDelete: 'SET NULL',

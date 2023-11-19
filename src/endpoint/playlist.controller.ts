@@ -101,7 +101,11 @@ export class PlaylistController {
       throw new BadRequestException('Files must exist');
     }
     const files = await this.fileService.find({
-      where: { id: In(body.files), userId: user.id },
+      find: {
+        where: { id: In(body.files), userId: user.id },
+        loadEagerRelations: false,
+        relations: {},
+      },
     });
     if (!(Array.isArray(files) && body.files.length === files.length)) {
       throw new NotFoundException('Specified file(s) does not exist');
@@ -182,7 +186,11 @@ export class PlaylistController {
     let files: FileEntity[] | undefined;
     if (Array.isArray(body.files) && body.files.length > 0) {
       files = await this.fileService.find({
-        where: { id: In(body.files), userId: user.id },
+        find: {
+          where: { id: In(body.files), userId: user.id },
+          loadEagerRelations: false,
+          relations: {},
+        },
       });
       if (!(Array.isArray(files) && body.files.length === files.length)) {
         throw new NotFoundException('Specified file(s) does not exist');

@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.42.45",
+  "version": "2.42.46",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -176,7 +176,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/ms": "^0.7.34",
     "@types/multer": "^1.4.10",
-    "@types/node": "^20.9.1",
+    "@types/node": "^20.9.2",
     "@types/nodemailer": "^6.4.14",
     "@types/passport": "^1.0.15",
     "@types/passport-jwt": "^3.0.13",

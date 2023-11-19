@@ -115,7 +115,7 @@ export class EditorController {
     if (Array.isArray(editor) && editor.length > 0) {
       throw new BadRequestException('This name is already taken');
     }
-    const data = await this.editorService.update(user.id, body);
+    const data = await this.editorService.create({ ...body, userId: user.id });
     if (!data) {
       throw new NotFoundException('Editor not found');
     }
@@ -126,7 +126,7 @@ export class EditorController {
     };
   }
 
-  @Get('/:editorId')
+  @Get(':editorId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-get',
@@ -148,7 +148,7 @@ export class EditorController {
     }
     const data = await this.editorService.findOne({
       where,
-      relations: ['videoLayers', 'audioLayers', 'renderedFile'],
+      relations: { videoLayers: true, audioLayers: true, renderedFile: true },
     });
     if (!data) {
       throw new NotFoundException('Editor not found');
@@ -159,7 +159,7 @@ export class EditorController {
     };
   }
 
-  @Patch('/:editorId')
+  @Patch(':editorId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-update',
@@ -184,25 +184,22 @@ export class EditorController {
       where,
     });
     if (!editor) {
-      throw new NotFoundException('Editor not found');
-    }
-    const editorFound = await this.editorService.find({
-      where: {
-        userId: user.id,
-        name: update.name,
-      },
-    });
-    if (Array.isArray(editorFound) && editorFound.length > 0) {
-      throw new NotFoundException('This name already taken');
+      throw new NotFoundException(`Editor ${id} not found`);
     }
 
-    const data = await this.editorService.update(user.id, {
-      ...editor,
-      ...update,
-    });
-    if (!data) {
-      throw new BadRequestException('Editor exists and not exists ?');
+    if (update.name !== undefined) {
+      const editorFound = await this.editorService.find({
+        where: {
+          userId: user.id,
+          name: update.name,
+        },
+      });
+      if (Array.isArray(editorFound) && editorFound.length > 0) {
+        throw new NotFoundException('This name already taken');
+      }
     }
+
+    const data = await this.editorService.update(id, update);
 
     return {
       status: Status.Success,
@@ -210,7 +207,7 @@ export class EditorController {
     };
   }
 
-  @Delete('/:editorId')
+  @Delete(':editorId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'editor-delete',
@@ -274,9 +271,12 @@ export class EditorController {
       throw new NotFoundException(`The editor ${editorId} is not found`);
     }
     const file = await this.fileService.findOne({
-      where: { id: body.file, userId: user.id },
-      select: ['id', 'userId', 'videoType', 'meta', 'duration'],
-      relations: [],
+      find: {
+        where: { id: body.file, userId: user.id },
+        select: ['id', 'userId', 'videoType', 'meta', 'duration'],
+        loadEagerRelations: false,
+        relations: [],
+      },
     });
     if (!file) {
       throw new NotFoundException(`The file ${body.file} is not found`);
@@ -297,9 +297,6 @@ export class EditorController {
       editorId,
       create,
     );
-    if (!data) {
-      throw new NotFoundException('This editor layer is not exists');
-    }
 
     return {
       status: Status.Success,

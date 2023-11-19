@@ -13,6 +13,7 @@ import {
   FindOptionsWhere,
   Repository,
 } from 'typeorm';
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserRoleEnum } from '@/enums/user-role.enum';
@@ -68,22 +69,22 @@ export class PlaylistService {
     });
   }
 
-  async create(playlist: DeepPartial<PlaylistEntity>): Promise<PlaylistEntity> {
-    const playlistCreate = await this.playlistEntity.save(
-      this.playlistEntity.create(playlist),
+  async create(insert: DeepPartial<PlaylistEntity>): Promise<PlaylistEntity> {
+    const playlist = await this.playlistEntity.save(
+      this.playlistEntity.create(insert),
     );
 
-    await this.applicationService.websocketChange({ playlist: playlistCreate });
+    await this.applicationService.websocketChange({ playlist });
 
-    return playlistCreate;
+    return playlist;
   }
 
   async update(
     id: string,
-    update: Partial<PlaylistEntity>,
+    insert: QueryDeepPartialEntity<PlaylistEntity>,
   ): Promise<PlaylistEntity> {
-    const playlistUpdate = await this.playlistEntity.update(id, update);
-    if (!playlistUpdate.affected) {
+    const updated = await this.playlistEntity.update(id, insert);
+    if (!updated.affected) {
       throw new NotAcceptableException(`Playlist with this ${id} not found`);
     }
 
