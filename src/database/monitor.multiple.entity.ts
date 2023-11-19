@@ -47,7 +47,7 @@ export class MonitorMultipleEntity {
   })
   @JoinColumn()
   @ApiProperty({
-    description: 'Монитор',
+    description: 'Монитор владелец (SCALING / MIRROR)',
     type: 'string',
     format: 'uuid',
   })
@@ -65,7 +65,7 @@ export class MonitorMultipleEntity {
   })
   @JoinColumn()
   @ApiProperty({
-    description: 'Монитор',
+    description: 'Подчиненный монитор ID',
     type: 'string',
     format: 'uuid',
   })

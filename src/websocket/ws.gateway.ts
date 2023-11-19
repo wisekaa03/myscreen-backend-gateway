@@ -123,27 +123,19 @@ export class WSGateway
     }
     this.logger.debug(`Disconnect: key='${value.key}'`);
     if (value.role === UserRoleEnum.Monitor) {
-      const monitor = await this.monitorService.findOne(
-        value.monitorId || 'monitorFavoritiesDisabled',
-        {
-          where: { id: value.monitorId },
-        },
-      );
-      if (monitor) {
+      if (value.monitorId) {
         await Promise.all([
           this.monitorService
-            .update({
-              user: monitor.user,
-              update: {
-                id: monitor.id,
-                status: MonitorStatus.Offline,
-              },
+            .update(value.monitorId, {
+              status: MonitorStatus.Offline,
             })
             .catch((error: unknown) => {
               this.logger.error(error);
             }),
-          this.monitorStatus(monitor.id, MonitorStatus.Offline),
+          this.monitorStatus(value.monitorId, MonitorStatus.Offline),
         ]);
+      } else {
+        this.logger.error('monitorId is undefined ?');
       }
     }
     this.clients.delete(client);
@@ -162,9 +154,12 @@ export class WSGateway
       if (value) {
         value = await this.authorization(client, value, body.token);
         if (value.role === UserRoleEnum.Monitor && value.monitorId) {
-          const monitor = await this.monitorService.findOne(undefined, {
-            where: { id: value.monitorId },
-            relations: ['playlist', 'user'],
+          const monitor = await this.monitorService.findOne({
+            find: {
+              where: { id: value.monitorId },
+              loadEagerRelations: false,
+              relations: {},
+            },
           });
           let application: ApplicationEntity[] | null = null;
           if (monitor) {
@@ -174,13 +169,8 @@ export class WSGateway
                 dateLocal: new Date(body.date),
               }),
               this.monitorService
-                .update({
-                  user: monitor.user,
-
-                  update: {
-                    id: monitor.id,
-                    status: MonitorStatus.Online,
-                  },
+                .update(monitor.id, {
+                  status: MonitorStatus.Online,
                 })
                 .catch((error: unknown) => {
                   this.logger.error(error);
@@ -216,8 +206,10 @@ export class WSGateway
       throw new WsException('This is not Role.Monitor');
     }
 
-    let monitor = await this.monitorService.findOne(undefined, {
-      where: { id: value.monitorId },
+    let monitor = await this.monitorService.findOne({
+      find: {
+        where: { id: value.monitorId },
+      },
     });
     if (!monitor) {
       throw new WsException('Not exist monitorId');
@@ -235,11 +227,8 @@ export class WSGateway
     }
 
     // записываем в базу данных
-    monitor = await this.monitorService.update({
-      update: {
-        id: monitor.id,
-        playlistPlayed: bodyObject.playlistPlayed,
-      },
+    monitor = await this.monitorService.update(monitor.id, {
+      playlistPlayed: bodyObject.playlistPlayed,
     });
 
     // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor

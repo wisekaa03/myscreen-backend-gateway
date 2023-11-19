@@ -4,6 +4,8 @@ import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 
 import { WalletService } from '@/database/wallet.service';
 
+const calculateBalanceName = 'calculateBalance';
+
 @Injectable()
 export class CrontabService {
   logger = new Logger(CrontabService.name);
@@ -16,28 +18,35 @@ export class CrontabService {
   /**
    * @description: Запускается каждый день в 00:00:00
    */
-  @Cron('0 0 0 * * *', { name: CrontabService.name })
-  handleAct() {
+  @Cron('0 0 0 * * *', { name: calculateBalanceName })
+  calculateBalance() {
     this.walletService.calculateBalance();
   }
 
   /**
    * @description: Добавляет задачу в планировщик
+   * @description: секунда, минута, час, день месяца, месяц, день недели
+   * @param {string} crontab Cтрока в формате cron, по умолчанию запускается каждый день в 00:00:00
    */
-  addCronJob(crontab = '0 0 0 * * *') {
-    const job = new CronJob(crontab, () => this.handleAct());
+  add(
+    crontab = '0 0 0 * * *',
+    cronName = calculateBalanceName,
+    cronCommand = this.calculateBalance,
+  ) {
+    const job = new CronJob(crontab, () => cronCommand());
 
-    this.schedulerRegistry.addCronJob(CrontabService.name, job);
-    job.start();
+    this.schedulerRegistry.addCronJob(cronName, job);
 
-    this.logger.warn(`Job "${CrontabService.name}" added: "${crontab}" !`);
+    this.logger.warn(`Job "${cronName}" added: "${crontab}" !`);
+
+    return job;
   }
 
   /**
    * @description: Удаляет задачу из планировщика
    */
-  deleteCron() {
-    this.schedulerRegistry.deleteCronJob(CrontabService.name);
-    this.logger.warn(`Job "${CrontabService.name}" deleted!`);
+  delete(cronName = calculateBalanceName) {
+    this.schedulerRegistry.deleteCronJob(cronName);
+    this.logger.warn(`Job "${cronName}" deleted!`);
   }
 }

@@ -177,7 +177,20 @@ export class ApplicationService {
 
       await Promise.allSettled(wsPromise);
       // } else if (files) {
-      // } else if (monitor) {
+    } else if (monitor) {
+      if (monitorDelete) {
+        const applications = await this.monitorApplications({
+          monitorId: monitor.id,
+        });
+
+        const wsPromise = applications.map(async (applicationLocal) =>
+          this.wsGateway.application({ application: applicationLocal }),
+        );
+
+        await Promise.allSettled(wsPromise);
+      } else {
+        await this.wsGateway.application({ monitor });
+      }
     } else if (application) {
       if (applicationDelete) {
         await this.wsGateway.application({ monitor: application.monitor });

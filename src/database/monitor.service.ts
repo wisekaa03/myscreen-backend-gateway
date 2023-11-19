@@ -2,26 +2,21 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeepPartial,
-  DeleteResult,
-  FindManyOptions,
-  In,
-  Repository,
-} from 'typeorm';
+import { DeleteResult, FindManyOptions, In, Repository } from 'typeorm';
 
+import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorMultipleRequest } from '@/dto';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
-// eslint-disable-next-line import/no-cycle
-import { ApplicationService } from './application.service';
+import { ApplicationService } from '@/database/application.service';
 import { MonitorMultipleEntity } from './monitor.multiple.entity';
 
 @Injectable()
@@ -48,7 +43,7 @@ export class MonitorService {
   }): Promise<Array<MonitorEntity>> {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
-    if (find.relations) {
+    if (find.relations !== undefined) {
       monitorWhere = TypeOrmFind.Nullable(find);
     } else {
       monitorWhere = {
@@ -96,7 +91,7 @@ export class MonitorService {
   }): Promise<[Array<MonitorEntity>, number]> {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
-    if (find.relations) {
+    if (find.relations !== undefined) {
       monitorWhere = TypeOrmFind.Nullable(find);
     } else {
       monitorWhere = {
@@ -121,14 +116,18 @@ export class MonitorService {
     ];
   }
 
-  async findOne(
-    userId: string | undefined,
-    find: FindManyOptions<MonitorEntity>,
+  async findOne({
+    find,
+    userId,
     caseInsensitive = true,
-  ): Promise<MonitorEntity | null> {
+  }: {
+    find: FindManyOptions<MonitorEntity>;
+    userId?: string;
+    caseInsensitive?: boolean;
+  }): Promise<MonitorEntity | null> {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
-    if (find.relations) {
+    if (find.relations !== undefined) {
       monitorWhere = TypeOrmFind.Nullable(find);
     } else {
       monitorWhere = {
@@ -152,41 +151,164 @@ export class MonitorService {
     return monitor;
   }
 
-  async update({
-    user,
-    update,
-    multipleIds,
-  }: {
-    user?: UserEntity;
-    update: DeepPartial<MonitorEntity>;
-    multipleIds?: MonitorMultipleRequest[];
-  }): Promise<MonitorEntity> {
-    if (update.monitorInfo) {
-      throw new BadRequestException('Monitor info deprecated');
-    }
-    const monitorUpdate: DeepPartial<MonitorEntity> = user
-      ? {
-          userId: user.id,
-          ...update,
-        }
-      : update;
-    if (monitorUpdate.id === undefined) {
-      throw new BadRequestException('Monitor ID is empty');
-    }
-
+  async update(
+    id: string,
+    update: QueryDeepPartialEntity<MonitorEntity>,
+    multipleIds?: MonitorMultipleRequest[],
+  ): Promise<MonitorEntity> {
     const multipleBool = Array.isArray(multipleIds);
 
-    if (update.multiple !== MonitorMultiple.SINGLE) {
-      let groupMonitors: MonitorEntity[] = [];
+    const originalMonitor = await this.findOne({
+      find: {
+        where: { id },
+        relations: multipleBool ? { multipleMonitors: { monitor: true } } : {},
+        loadEagerRelations: false,
+      },
+    });
+    if (!originalMonitor) {
+      throw new NotFoundException(`Monitor "${id}" not found`);
+    }
+    if (originalMonitor.playlistId) {
+      throw new BadRequestException(
+        `Monitor "${originalMonitor.name}"#"${id}" is attached to the playlist`,
+      );
+    }
+    if (originalMonitor.multiple === update.multiple) {
+      throw new BadRequestException(
+        `Monitor "${originalMonitor.name}"#"${id}" multiple not changed`,
+      );
+    }
+    if (originalMonitor.multiple !== MonitorMultiple.SINGLE && multipleBool) {
+      throw new BadRequestException(
+        `Monitor "${originalMonitor.name}"#"${id}" group monitors ID is not empty`,
+      );
+    }
 
-      const monitorFind = await this.monitorRepository.findOne({
-        where: { id: monitorUpdate.id },
-        relations: multipleBool ? { multipleMonitors: true } : {},
-      });
-      if (!monitorFind) {
-        throw new NotFoundException(`Monitor not found: ${monitorUpdate.id}`);
+    return this.monitorRepository.manager.transaction(async (transact) => {
+      const updated = await transact.update(MonitorEntity, id, update);
+      if (!updated.affected) {
+        throw new NotAcceptableException(`Monitor with this ${id} not found`);
       }
-      if (multipleBool) {
+      const monitor = await this.findOne({
+        find: { where: { id } },
+        userId: originalMonitor.userId,
+      });
+      if (!monitor) {
+        throw new NotFoundException(`Monitor with this ${id} not found`);
+      }
+      await this.applicationService.websocketChange({ monitor });
+
+      // а тут начинается полный трэш
+      if (originalMonitor.multiple !== MonitorMultiple.SINGLE && multipleBool) {
+        // получаем подчиненные мониторы
+        const { multipleMonitors } = originalMonitor;
+        if (multipleMonitors) {
+          const monitorsDeleteId = multipleMonitors.reduce(
+            (acc, item) =>
+              multipleIds.find(({ monitorId }) => monitorId === item.monitorId)
+                ? acc
+                : [...acc, item],
+            [] as MonitorMultipleEntity[],
+          );
+          // удаляем из таблицы связей мониторов мониторы
+          if (monitorsDeleteId.length > 0) {
+            const monitorsWSchangePromise = monitorsDeleteId.map(
+              async (item) => {
+                this.applicationService.websocketChange({
+                  monitor: item.monitor,
+                  monitorDelete: true,
+                });
+              },
+            );
+            await Promise.all(monitorsWSchangePromise);
+
+            await transact.delete(MonitorMultipleEntity, {
+              parentMonitorId: originalMonitor.id,
+              monitorId: In(monitorsDeleteId.map((item) => item.monitorId)),
+            });
+            // и помечаем монитор как одиночный
+            await transact.update(
+              MonitorEntity,
+              { id: In(monitorsDeleteId.map((item) => item.monitorId)) },
+              { multiple: MonitorMultiple.SINGLE },
+            );
+          }
+          // обновляем мониторы в таблице связей мониторов
+          const multipleInsertPromise = multipleIds.map(async (item) => {
+            const monitorMultiple = multipleMonitors.find(
+              (i) => i.monitorId === item.monitorId,
+            );
+            if (monitorMultiple) {
+              await transact.update(
+                MonitorMultipleEntity,
+                {
+                  parentMonitorId: originalMonitor.id,
+                  monitorId: item.monitorId,
+                },
+                {
+                  row: item.row,
+                  col: item.col,
+                },
+              );
+            } else {
+              await transact.insert(MonitorMultipleEntity, {
+                userId: originalMonitor.userId,
+                parentMonitorId: originalMonitor.id,
+                monitorId: item.monitorId,
+                row: item.row,
+                col: item.col,
+              });
+            }
+            await transact.update(MonitorEntity, item.monitorId, {
+              multiple: MonitorMultiple.SUBORDINATE,
+            });
+          });
+          await Promise.all(multipleInsertPromise);
+        }
+      }
+
+      return monitor;
+    });
+  }
+
+  async create({
+    user,
+    insert,
+    multipleIds,
+  }: {
+    user: UserEntity;
+    insert: QueryDeepPartialEntity<MonitorEntity>;
+    multipleIds?: MonitorMultipleRequest[];
+  }) {
+    if (insert.monitorInfo) {
+      throw new BadRequestException('Monitor info deprecated');
+    }
+    const prepareMonitor: QueryDeepPartialEntity<MonitorEntity> = {
+      ...insert,
+      userId: user.id,
+    };
+
+    return this.monitorRepository.manager.transaction(async (transact) => {
+      const monitorInserted =
+        await this.monitorRepository.insert(prepareMonitor);
+      if (!monitorInserted.raw.insertId) {
+        throw new NotAcceptableException('Monitor not created');
+      }
+      const monitor = await this.findOne({
+        find: { where: { id: monitorInserted.raw.insertId } },
+        userId: user.id,
+      });
+      if (!monitor) {
+        throw new NotAcceptableException('Monitor not created');
+      }
+
+      let groupMonitors: MonitorEntity[] = [];
+      const multipleBool = Array.isArray(multipleIds) && multipleIds.length > 0;
+      if (insert.multiple !== MonitorMultiple.SINGLE) {
+        if (!multipleIds || multipleIds.length === 0) {
+          throw new BadRequestException('Group monitors ID is empty');
+        }
+
         const multipleMonitorIds = multipleIds.map((item) => item.monitorId);
         groupMonitors = await this.monitorRepository.find({
           where: {
@@ -201,7 +323,7 @@ export class MonitorService {
         ) {
           throw new BadRequestException('Not found ID of some monitors');
         }
-        if (update.multiple === MonitorMultiple.SCALING) {
+        if (insert.multiple === MonitorMultiple.SCALING) {
           const multipleRows = new Set<number>();
           const multipleCols = new Set<number>();
           multipleIds.forEach((item) => {
@@ -214,153 +336,28 @@ export class MonitorService {
             multipleCols.add(item.col);
           });
         }
+      } else if (multipleBool) {
+        throw new BadRequestException('Group monitors ID is not empty');
       }
 
-      return this.monitorRepository.manager.transaction(async (transact) => {
-        const monitor = await transact.save(
-          MonitorEntity,
-          transact.create(MonitorEntity, monitorUpdate),
-        );
-
-        if (multipleBool) {
-          const monitorMultiplePromise = groupMonitors.map(
-            async (groupMonitor) => {
-              const groupMonitorId = groupMonitor.id;
-              const itemMonitor = multipleIds.find((item) => {
-                const monitorFindIndex =
-                  monitorFind.multipleMonitors?.findIndex(
-                    (i) => i.monitorId === groupMonitorId,
-                  );
-                if (monitorFindIndex !== undefined) {
-                  delete monitorFind.multipleMonitors?.[monitorFindIndex];
-                }
-                return item.monitorId === groupMonitorId;
-              });
-              if (!itemMonitor) {
-                throw new BadRequestException('Not found ID of some monitors');
-              }
-              await transact.save(
-                MonitorMultipleEntity,
-                transact.create(MonitorMultipleEntity, {
-                  userId: user?.id ?? monitor.userId,
-                  parentMonitorId: monitor.id,
-                  monitorId: groupMonitorId,
-                  row: itemMonitor.row,
-                  col: itemMonitor.col,
-                }),
-              );
-              await transact.update(
-                MonitorEntity,
-                { id: groupMonitorId },
-                {
-                  multiple: MonitorMultiple.SUBORDINATE,
-                },
-              );
-            },
-          );
-          await Promise.all(monitorMultiplePromise);
-
-          const monitorMultipleDeletePromise =
-            monitorFind.multipleMonitors?.map(async (item) => {
-              await transact.delete(MonitorMultipleEntity, {
-                parentMonitorId: monitor.id,
-                monitorId: item.monitorId,
-              });
-              await transact.update(
-                MonitorEntity,
-                { id: item.monitorId },
-                {
-                  multiple: MonitorMultiple.SINGLE,
-                },
-              );
-            });
-          if (Array.isArray(monitorMultipleDeletePromise)) {
-            await Promise.all(monitorMultipleDeletePromise);
-          }
-        }
-
-        return monitor;
-      });
-    }
-
-    if (multipleIds && multipleIds.length > 0) {
-      throw new BadRequestException('Group monitors ID is not empty');
-    }
-
-    return this.monitorRepository.save(
-      this.monitorRepository.create(monitorUpdate),
-    );
-  }
-
-  async create({
-    user,
-    update,
-    multipleIds,
-  }: {
-    user: UserEntity;
-    update: Partial<MonitorEntity>;
-    multipleIds?: MonitorMultipleRequest[];
-  }) {
-    const prepareMonitor: DeepPartial<MonitorEntity> = {
-      userId: user.id,
-      ...update,
-    };
-
-    if (update.multiple !== MonitorMultiple.SINGLE) {
-      if (!multipleIds || multipleIds.length === 0) {
-        throw new BadRequestException('Group monitors ID is empty');
-      }
-
-      const multipleMonitorIds = multipleIds.map((item) => item.monitorId);
-      const groupMonitors = await this.monitorRepository.find({
-        where: {
-          id: In(multipleMonitorIds),
-          multiple: MonitorMultiple.SINGLE,
-        },
-        select: ['id'],
-      });
-      if (
-        Array.isArray(groupMonitors) &&
-        groupMonitors.length !== multipleIds.length
-      ) {
-        throw new BadRequestException('Not found ID of some monitors');
-      }
-      if (update.multiple === MonitorMultiple.SCALING) {
-        const multipleRows = new Set<number>();
-        const multipleCols = new Set<number>();
-        multipleIds.forEach((item) => {
-          if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
-            throw new BadRequestException(
-              `Monitor multiple "${item.monitorId}": row "${item.row}" with col "${item.col}" is already occupied`,
-            );
-          }
-          multipleRows.add(item.row);
-          multipleCols.add(item.col);
-        });
-      }
-
-      return this.monitorRepository.manager.transaction(async (transact) => {
-        const monitor = await transact.save(
-          MonitorEntity,
-          transact.create(MonitorEntity, prepareMonitor),
-        );
-
+      if (multipleBool) {
         const monitorMultiple = groupMonitors.map(async (groupMonitor) => {
           const groupMonitorId = groupMonitor.id;
           const item = multipleIds.find((i) => i.monitorId === groupMonitorId);
           if (!item) {
             throw new BadRequestException('Not found ID of some monitors');
           }
-          await transact.save(
-            MonitorMultipleEntity,
-            transact.create(MonitorMultipleEntity, {
-              userId: user.id,
-              parentMonitorId: monitor.id,
-              monitorId: groupMonitorId,
-              row: item.row,
-              col: item.col,
-            }),
-          );
+
+          // добавляем в таблицу связей мониторов монитор
+          await transact.insert(MonitorMultipleEntity, {
+            userId: user.id,
+            parentMonitorId: monitor.id,
+            monitorId: groupMonitorId,
+            row: item.row,
+            col: item.col,
+          });
+
+          // и помечаем монитор как подчиненный
           await transact.update(
             MonitorEntity,
             { id: groupMonitorId },
@@ -371,18 +368,10 @@ export class MonitorService {
         });
 
         await Promise.all(monitorMultiple);
+      }
 
-        return monitor;
-      });
-    }
-
-    if (multipleIds && multipleIds.length > 0) {
-      throw new BadRequestException('Group monitors ID is not empty');
-    }
-
-    return this.monitorRepository.save(
-      this.monitorRepository.create(prepareMonitor),
-    );
+      return monitor;
+    });
   }
 
   async attached(attached = true): Promise<void> {
@@ -411,8 +400,11 @@ export class MonitorService {
     monitorId: string,
     favorite = true,
   ): Promise<MonitorEntity | null> {
-    const monitor = await this.findOne(user.id, {
-      where: { id: monitorId },
+    const monitor = await this.findOne({
+      userId: user.id,
+      find: {
+        where: { id: monitorId },
+      },
     });
     if (!monitor) {
       throw new NotFoundException('Monitor not found');
@@ -428,17 +420,23 @@ export class MonitorService {
     } else if (!favorite && monitor.favorite) {
       const { affected } = await this.monitorFavoriteRepository.delete({
         monitorId: monitor.id,
-        userId: user.id,
       });
       if (!affected) {
         throw new NotFoundException('Monitor not found');
       }
     }
 
-    return this.findOne(user.id, { where: { id: monitorId } });
+    return this.findOne({
+      userId: user.id,
+      find: {
+        where: { id: monitorId },
+        loadEagerRelations: false,
+        relations: { favorities: true },
+      },
+    });
   }
 
-  async delete(userId: string, monitor: MonitorEntity): Promise<DeleteResult> {
+  async delete(monitor: MonitorEntity): Promise<DeleteResult> {
     await this.applicationService.websocketChange({
       monitor,
       monitorDelete: true,
@@ -460,6 +458,7 @@ export class MonitorService {
             return item.monitorId;
           });
           const monitorIds = await Promise.all(monitorIdsPromise);
+          // TODO: заменить на Promise
           await transact.update(
             MonitorEntity,
             { id: In(monitorIds) },
@@ -476,7 +475,6 @@ export class MonitorService {
 
     return this.monitorRepository.delete({
       id: monitor.id,
-      userId,
     });
   }
 }

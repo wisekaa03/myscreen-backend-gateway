@@ -317,21 +317,22 @@ export class AuthController {
   async monitor(
     @Body() { code }: AuthMonitorRequest,
   ): Promise<AuthRefreshResponse> {
-    const monitor = await this.monitorService.findOne(
-      'monitorFavoritiesDisabled',
-      {
+    const monitor = await this.monitorService.findOne({
+      find: {
         where: { attached: false, code },
+        loadEagerRelations: false,
+        relations: {},
       },
-    );
+    });
     if (!monitor) {
-      throw new NotFoundException('This monitor does not exist');
+      throw new NotFoundException(`Monitor with code "${code}" does not exist`);
     }
 
     const payload = await this.authService.createMonitorToken(monitor.id);
 
     if (monitor.code !== null) {
-      await this.monitorService.update({
-        update: { id: monitor.id, code: null },
+      await this.monitorService.update(monitor.id, {
+        code: null,
       });
     }
 

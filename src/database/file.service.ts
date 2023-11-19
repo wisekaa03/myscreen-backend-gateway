@@ -239,19 +239,22 @@ export class FileService {
         throw new NotFoundException("Found category: 'media' and monitorId");
       }
       if (monitorId) {
-        monitor =
-          (await this.monitorService.findOne(user.id, {
-            where: { userId: user.id, id: monitorId },
-          })) ?? null;
+        monitor = await this.monitorService.findOne({
+          find: {
+            where: { id: monitorId },
+            loadEagerRelations: false,
+            relations: {},
+          },
+        });
         if (!monitor) {
-          throw new NotFoundException(`Monitor '${monitorId}' not found`);
+          throw new NotFoundException(`Monitor "${monitorId}" not found`);
         }
       }
       if (!monitor && category !== FileCategory.Media) {
-        throw new NotFoundException('monitorId is expected');
+        throw new BadRequestException('monitorId is expected');
       }
       if (monitor && category === FileCategory.Media) {
-        throw new NotFoundException("Found category: 'media' and monitorId");
+        throw new BadRequestException("Found category: 'media' and monitorId");
       }
       if (category === FileCategory.Media) {
         files.forEach((file) => {

@@ -27,7 +27,7 @@ export class PlaylistService {
     @Inject(forwardRef(() => ApplicationService))
     private readonly applicationService: ApplicationService,
     @InjectRepository(PlaylistEntity)
-    private readonly playlistEntity: Repository<PlaylistEntity>,
+    private readonly playlistRepository: Repository<PlaylistEntity>,
   ) {}
 
   async find(
@@ -35,11 +35,11 @@ export class PlaylistService {
     caseInsensitive = true,
   ): Promise<PlaylistEntity[]> {
     return caseInsensitive
-      ? TypeOrmFind.findCI(this.playlistEntity, {
+      ? TypeOrmFind.findCI(this.playlistRepository, {
           relations: { files: true, monitors: true },
           ...TypeOrmFind.Nullable(find),
         })
-      : this.playlistEntity.find({
+      : this.playlistRepository.find({
           relations: { files: true, monitors: true },
           ...TypeOrmFind.Nullable(find),
         });
@@ -50,11 +50,11 @@ export class PlaylistService {
     caseInsensitive = true,
   ): Promise<[Array<PlaylistEntity>, number]> {
     return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(this.playlistEntity, {
+      ? TypeOrmFind.findAndCountCI(this.playlistRepository, {
           relations: { files: true, monitors: true },
           ...TypeOrmFind.Nullable(find),
         })
-      : this.playlistEntity.findAndCount({
+      : this.playlistRepository.findAndCount({
           relations: { files: true, monitors: true },
           ...TypeOrmFind.Nullable(find),
         });
@@ -63,15 +63,15 @@ export class PlaylistService {
   async findOne(
     find: FindManyOptions<PlaylistEntity>,
   ): Promise<PlaylistEntity | null> {
-    return this.playlistEntity.findOne({
+    return this.playlistRepository.findOne({
       relations: { files: true, monitors: true },
       ...TypeOrmFind.Nullable(find),
     });
   }
 
   async create(insert: DeepPartial<PlaylistEntity>): Promise<PlaylistEntity> {
-    const playlist = await this.playlistEntity.save(
-      this.playlistEntity.create(insert),
+    const playlist = await this.playlistRepository.save(
+      this.playlistRepository.create(insert),
     );
 
     await this.applicationService.websocketChange({ playlist });
@@ -83,7 +83,7 @@ export class PlaylistService {
     id: string,
     insert: QueryDeepPartialEntity<PlaylistEntity>,
   ): Promise<PlaylistEntity> {
-    const updated = await this.playlistEntity.update(id, insert);
+    const updated = await this.playlistRepository.update(id, insert);
     if (!updated.affected) {
       throw new NotAcceptableException(`Playlist with this ${id} not found`);
     }
@@ -111,6 +111,6 @@ export class PlaylistService {
       deleteQuery.userId = user.id;
     }
 
-    return this.playlistEntity.delete(deleteQuery);
+    return this.playlistRepository.delete(deleteQuery);
   }
 }

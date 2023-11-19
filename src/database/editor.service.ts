@@ -48,6 +48,7 @@ import { UserEntity } from './user.entity';
 import { ApplicationEntity } from './application.entity';
 import { PlaylistService } from './playlist.service';
 import { MonitorService } from '@/database/monitor.service';
+import { CrontabService } from '@/crontab/crontab.service';
 
 dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
@@ -60,6 +61,7 @@ export class EditorService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly crontabService: CrontabService,
     private readonly folderService: FolderService,
     private readonly playlistService: PlaylistService,
     @Inject(forwardRef(() => MonitorService))
@@ -511,21 +513,19 @@ export class EditorService {
 
     const monitorPlaylistsPromise = multipleMonitors.map(
       async (multipleMonitor) => {
-        // создаем плэйлисты
+        const { name: monitorName, id: monitorId } = multipleMonitor.monitor;
+        // создаем плэйлист
         const playlistLocal = await this.playlistService.create({
-          name: `Automatic "${multipleMonitor.monitor.name}": monitor #${multipleMonitor.monitor.id}`,
-          description: `Automatic "${multipleMonitor.monitor.name}": monitor #${multipleMonitor.monitor.id}`,
+          name: `Scaling monitor "${monitorName}": #${monitorId}`,
+          description: `Scaling monitor "${monitorName}": #${monitorId}`,
           userId: application.user.id,
           monitors: [],
           hide: true,
         });
-        await this.monitorService.update({
-          update: {
-            id: multipleMonitor.monitor.id,
-            playlist: playlistLocal,
-          },
+        // добавляем в плэйлист монитор
+        await this.monitorService.update(monitorId, {
+          playlist: playlistLocal,
         });
-
         // создаем редакторы
         const editorsPromise = files.map(async (file) => {
           const editor = await this.create({
@@ -542,6 +542,7 @@ export class EditorService {
             renderedFile: null,
             playlistId: playlistLocal.id,
           });
+          // и добавляем в редактор видео-слой с файлом
           await this.createLayer(application.user.id, editor.id, {
             index: 0,
             cutFrom: 0,
@@ -569,6 +570,12 @@ export class EditorService {
       },
     );
     const monitorPlaylists = await Promise.all(monitorPlaylistsPromise);
+
+    setTimeout(async () => {
+      // TODO: Запустить рендеринг
+      // eslint-disable-next-line no-debugger
+      debugger;
+    }, 0);
 
     return monitorPlaylists;
   }
