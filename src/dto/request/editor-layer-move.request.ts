@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, Min, IsNotEmpty } from 'class-validator';
+import { IsInt, Min, IsNotEmpty, IsDefined } from 'class-validator';
 
 export class EditorLayerMoveRequest {
   @ApiProperty({
@@ -9,6 +9,7 @@ export class EditorLayerMoveRequest {
     default: 1,
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsInt()
   @Min(1)

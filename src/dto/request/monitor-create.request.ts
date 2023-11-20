@@ -20,6 +20,7 @@ export class MonitorMultipleRequest {
     description: 'Подчиненный монитор в группе мониторов',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsUUID()
   monitorId!: string;
@@ -29,6 +30,7 @@ export class MonitorMultipleRequest {
     description: 'Подчиненный номер монитора в группе мониторов (строка)',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsNumber()
   row!: number;
@@ -38,6 +40,7 @@ export class MonitorMultipleRequest {
     description: 'Подчиненный номер монитора в группе мониторов (колонка)',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsNumber()
   col!: number;

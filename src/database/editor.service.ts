@@ -9,6 +9,8 @@ import StreamPromises from 'node:stream/promises';
 import path from 'node:path';
 import child from 'node:child_process';
 import util from 'node:util';
+import dayjsDuration from 'dayjs/plugin/duration';
+import dayjs from 'dayjs';
 import {
   Injectable,
   Logger,
@@ -17,7 +19,6 @@ import {
   NotFoundException,
   Inject,
   forwardRef,
-  NotImplementedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -41,12 +42,15 @@ import { MonitorMultipleWithPlaylist } from '@/dto/interface';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
-// eslint-disable-next-line import/no-cycle
-import { FileService } from './file.service';
+import { FileService } from '@/database/file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
 import { ApplicationEntity } from './application.entity';
+import { PlaylistService } from './playlist.service';
+import { MonitorService } from '@/database/monitor.service';
+import { CrontabService } from '@/crontab/crontab.service';
 
+dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
 
 @Injectable()
@@ -57,7 +61,11 @@ export class EditorService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly crontabService: CrontabService,
     private readonly folderService: FolderService,
+    private readonly playlistService: PlaylistService,
+    @Inject(forwardRef(() => MonitorService))
+    private readonly monitorService: MonitorService,
     @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @InjectRepository(EditorEntity)
@@ -103,27 +111,34 @@ export class EditorService {
     return find.relations
       ? this.editorRepository.findOne(TypeOrmFind.Nullable(find))
       : this.editorRepository.findOne({
-          relations: ['videoLayers', 'audioLayers', 'renderedFile'],
+          relations: {
+            videoLayers: true,
+            audioLayers: true,
+            renderedFile: true,
+          },
           ...TypeOrmFind.Nullable(find),
         });
   }
 
-  async update(
-    userId: string,
-    update: Partial<EditorEntity>,
-  ): Promise<EditorEntity | null> {
-    const updated: DeepPartial<EditorEntity> = {
-      videoLayers: [],
-      audioLayers: [],
-      renderedFile: null,
-      ...update,
-      userId,
-    };
+  async create(insert: Partial<EditorEntity>): Promise<EditorEntity> {
+    return this.editorRepository.save(this.editorRepository.create(insert));
+  }
 
-    const editor = await this.editorRepository.save(
-      this.editorRepository.create(updated),
-    );
-    return this.editorRepository.findOne({ where: { id: editor.id } });
+  async update(
+    id: string,
+    insert: Partial<EditorEntity>,
+  ): Promise<EditorEntity> {
+    const updated = await this.editorRepository.update(id, insert);
+    if (!updated.affected) {
+      throw new NotAcceptableException(`Editor with this ${id} not found`);
+    }
+
+    const editor = await this.findOne({ where: { id } });
+    if (!editor) {
+      throw new NotFoundException(`Editor with this ${id} not found`);
+    }
+
+    return editor;
   }
 
   async delete(userId: string, editor: EditorEntity): Promise<DeleteResult> {
@@ -171,35 +186,33 @@ export class EditorService {
     userId: string,
     editorId: string,
     update: Partial<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity | null> {
-    if (update.file === undefined) {
+  ): Promise<EditorLayerEntity> {
+    const updatedQuery: DeepPartial<EditorLayerEntity> = { ...update };
+
+    if (updatedQuery.file === undefined) {
       throw new BadRequestException('file must exists');
     }
-    if (update.duration === undefined && update.file) {
-      // eslint-disable-next-line no-param-reassign
-      update.duration = parseFloat(
-        `${update.file.duration || update.file.meta.duration}`,
-      );
+    if (updatedQuery.duration === undefined && updatedQuery.file) {
+      updatedQuery.duration = updatedQuery.file.duration;
     }
-    if (update.index === undefined) {
+    if (updatedQuery.index === undefined) {
       const editor = await this.editorRepository.findOneOrFail({
         where: { id: editorId },
+        loadEagerRelations: false,
+        relations: { videoLayers: true },
       });
-      // eslint-disable-next-line no-param-reassign
-      update.index = editor.videoLayers.length;
+      updatedQuery.index = editor.videoLayers.length;
     }
-    if (update.cutFrom === undefined) {
-      // eslint-disable-next-line no-param-reassign
-      update.cutFrom = 0;
+    if (updatedQuery.cutFrom === undefined) {
+      updatedQuery.cutFrom = 0;
     }
-    if (update.cutTo === undefined) {
-      // eslint-disable-next-line no-param-reassign
-      update.cutTo = update.duration || 0;
+    if (updatedQuery.cutTo === undefined) {
+      updatedQuery.cutTo = updatedQuery.duration ?? 0;
     }
-    if (update.cutFrom > update.cutTo) {
+    if (updatedQuery.cutFrom > updatedQuery.cutTo) {
       throw new BadRequestException('cutFrom must be less than cutTo');
     }
-    if (update.duration !== update.cutTo - update.cutFrom) {
+    if (updatedQuery.duration !== updatedQuery.cutTo - updatedQuery.cutFrom) {
       throw new BadRequestException('Duration must be cutTo - cutFrom');
     }
 
@@ -207,14 +220,9 @@ export class EditorService {
       this.editorLayerRepository.create(update),
     );
 
-    await this.moveIndex(userId, editorId, layer.id, update.index);
+    await this.moveIndex(userId, editorId, layer.id, updatedQuery.index);
 
-    return this.editorLayerRepository.findOne({
-      relations: ['file'],
-      where: {
-        id: layer.id,
-      },
-    });
+    return layer;
   }
 
   /**
@@ -273,7 +281,7 @@ export class EditorService {
       return layer.cutTo - layer.cutFrom;
     }
     return (
-      layer.duration || layer.file?.duration || layer.file?.meta.duration || 0
+      layer.duration ?? layer.file?.duration ?? layer.file?.meta.duration ?? 0
     );
   };
 
@@ -385,23 +393,8 @@ export class EditorService {
     ];
   }
 
-  // TODO: what a fuck?
-  convertSecToTime = (second: number): string => {
-    let hours: number | string = Math.floor(second / 3600);
-    let minutes: number | string = Math.floor((second - hours * 3600) / 60);
-    let seconds: number | string = second - hours * 3600 - minutes * 60;
-
-    if (hours < 10) {
-      hours = `0${hours}`;
-    }
-    if (minutes < 10) {
-      minutes = `0${minutes}`;
-    }
-    if (seconds < 10) {
-      seconds = `0${seconds}`;
-    }
-    return `${hours}:${minutes}:${seconds}`;
-  };
+  convertSecToTime = (seconds: number): string =>
+    dayjs.duration({ seconds }).format('HH:mm:ss');
 
   /**
    * Capture one frame from Clips
@@ -516,7 +509,75 @@ export class EditorService {
     const widthMonitor = widthSum / multipleMonitors.length;
     const heightMonitor = heightSum / multipleMonitors.length;
 
-    throw new NotImplementedException();
+    const { files } = application.playlist;
+
+    const monitorPlaylistsPromise = multipleMonitors.map(
+      async (multipleMonitor) => {
+        const { name: monitorName, id: monitorId } = multipleMonitor.monitor;
+        // создаем плэйлист
+        const playlistLocal = await this.playlistService.create({
+          name: `Scaling monitor "${monitorName}": #${monitorId}`,
+          description: `Scaling monitor "${monitorName}": #${monitorId}`,
+          userId: application.user.id,
+          monitors: [],
+          hide: true,
+        });
+        // добавляем в плэйлист монитор
+        await this.monitorService.update(monitorId, {
+          playlist: playlistLocal,
+        });
+        // создаем редакторы
+        const editorsPromise = files.map(async (file) => {
+          const editor = await this.create({
+            name: `Automatic "${playlist.name}": file #${file.id}`,
+            userId: application.user.id,
+            width: widthMonitor,
+            height: heightMonitor,
+            fps: 30,
+            keepSourceAudio: true,
+            totalDuration: 0,
+            renderingStatus: RenderingStatus.Initial,
+            renderingPercent: null,
+            renderingError: null,
+            renderedFile: null,
+            playlistId: playlistLocal.id,
+          });
+          // и добавляем в редактор видео-слой с файлом
+          await this.createLayer(application.user.id, editor.id, {
+            index: 0,
+            cutFrom: 0,
+            cutTo: file.duration,
+
+            // TODO: Сделать разбиение по мониторам
+            cropX: 0,
+            cropY: 0,
+            cropW: 10,
+            cropH: 10,
+
+            duration: file.duration,
+            mixVolume: 1,
+            fileId: file.id,
+          });
+
+          return editor;
+        });
+        await Promise.all(editorsPromise);
+
+        return {
+          ...multipleMonitor,
+          playlist: playlistLocal,
+        };
+      },
+    );
+    const monitorPlaylists = await Promise.all(monitorPlaylistsPromise);
+
+    setTimeout(async () => {
+      // TODO: Запустить рендеринг
+      // eslint-disable-next-line no-debugger
+      debugger;
+    }, 0);
+
+    return monitorPlaylists;
   }
 
   /**

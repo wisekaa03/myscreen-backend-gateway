@@ -27,7 +27,7 @@ export class CrontabController {
   async crontabCreate(
     @Body() { crontab }: CrontabCreateRequest,
   ): Promise<SuccessResponse> {
-    this.crontabService.addCronJob(crontab);
+    this.crontabService.add(crontab);
 
     return {
       status: Status.Success,
@@ -47,7 +47,7 @@ export class CrontabController {
   })
   @Crud(CRUD.DELETE)
   async crontabDelete(): Promise<SuccessResponse> {
-    this.crontabService.deleteCron();
+    this.crontabService.delete();
 
     return {
       status: Status.Success,

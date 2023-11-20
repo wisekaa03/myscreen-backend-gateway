@@ -174,6 +174,7 @@ export class MonitorEntity {
   })
   @IsDefined()
   @IsNotEmpty()
+  @IsString()
   name!: string;
 
   @Column({ type: 'jsonb', default: {} })
@@ -402,13 +403,14 @@ export class MonitorEntity {
   @Length(11, 11)
   code!: string | null;
 
-  @Column({ type: 'timestamp', default: null, nullable: true })
+  @Column({ type: 'timestamptz', default: null, nullable: true })
   @ApiProperty({
     type: 'string',
     format: 'date-time',
     description: 'Последний раз виден',
     example: '2021-10-01T10:00:00.147Z',
     nullable: true,
+    required: false,
   })
   @Validate(IsDateStringOrNull)
   lastSeen?: Date | null;
@@ -466,7 +468,12 @@ export class MonitorEntity {
     onUpdate: 'CASCADE',
     nullable: true,
   })
+  @JoinColumn()
   playlist?: PlaylistEntity | null;
+
+  @Column({ nullable: true })
+  @IsUUID()
+  playlistId?: string | null;
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {
     cascade: true,
@@ -482,18 +489,30 @@ export class MonitorEntity {
   @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  createdAt!: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
     description: 'Время изменения',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  updatedAt!: Date;
+  updatedAt?: Date;
 }

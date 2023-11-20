@@ -154,10 +154,12 @@ export class FolderService {
       const fullFolders = [...foldersId, ...folderSubId];
       const filesId = await this.fileService
         .find({
-          where: { userId: user.id, folderId: In(fullFolders) },
-          relations: [],
-          loadEagerRelations: false,
-          select: ['id'],
+          find: {
+            where: { userId: user.id, folderId: In(fullFolders) },
+            relations: [],
+            loadEagerRelations: false,
+            select: ['id'],
+          },
         })
         .then((files) => files.map((file) => file.id));
       await this.fileService.deletePrep(filesId);

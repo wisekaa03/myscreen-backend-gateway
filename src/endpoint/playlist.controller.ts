@@ -35,7 +35,6 @@ import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
-import { UserService } from '@/database/user.service';
 
 @ApiComplexDecorators('playlist', [
   UserRoleEnum.Administrator,
@@ -48,7 +47,6 @@ export class PlaylistController {
   constructor(
     private readonly playlistService: PlaylistService,
     private readonly fileService: FileService,
-    private readonly userService: UserService,
   ) {}
 
   @Post()
@@ -63,7 +61,7 @@ export class PlaylistController {
     type: PlaylistsGetResponse,
   })
   @Crud(CRUD.READ)
-  async getPlaylists(
+  async findManyPlaylist(
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
@@ -95,7 +93,7 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   @Crud(CRUD.CREATE)
-  async createPlaylists(
+  async createPlaylist(
     @Req() { user }: ExpressRequest,
     @Body() body: PlaylistCreateRequest,
   ): Promise<PlaylistGetResponse> {
@@ -103,20 +101,21 @@ export class PlaylistController {
       throw new BadRequestException('Files must exist');
     }
     const files = await this.fileService.find({
-      where: { id: In(body.files), userId: user.id },
+      find: {
+        where: { id: In(body.files), userId: user.id },
+        loadEagerRelations: false,
+        relations: {},
+      },
     });
-    if (!Array.isArray(files) || body.files.length !== files.length) {
-      throw new NotFoundException('Files specified does not exist');
+    if (!(Array.isArray(files) && body.files.length === files.length)) {
+      throw new NotFoundException('Specified file(s) does not exist');
     }
 
-    const data = await this.playlistService
-      .update(user.id, {
-        ...body,
-        files,
-      })
-      .catch((error) => {
-        throw new BadRequestException(`Playlist create error: ${error}`);
-      });
+    const data = await this.playlistService.create({
+      ...body,
+      files,
+      userId: user.id,
+    });
 
     return {
       status: Status.Success,
@@ -143,7 +142,7 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   @Crud(CRUD.READ)
-  async getPlaylist(
+  async findOnePlaylist(
     @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
   ): Promise<PlaylistGetResponse> {
@@ -151,7 +150,7 @@ export class PlaylistController {
       where: { userId: user.id, id },
     });
     if (!data) {
-      throw new NotFoundException(`Playlist '${id}' not found`);
+      throw new NotFoundException(`Playlist "${id}" not found`);
     }
 
     return {
@@ -172,30 +171,33 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   @Crud(CRUD.UPDATE)
-  async updatePlaylists(
+  async updatePlaylist(
     @Req() { user }: ExpressRequest,
     @Param('playlistId', ParseUUIDPipe) id: string,
     @Body() body: PlaylistUpdateRequest,
   ): Promise<PlaylistGetResponse> {
+    const playlist = await this.playlistService.findOne({
+      where: { id },
+    });
+    if (!playlist) {
+      throw new NotFoundException(`Playlist "${id}" not found`);
+    }
+
     let files: FileEntity[] | undefined;
     if (Array.isArray(body.files) && body.files.length > 0) {
       files = await this.fileService.find({
-        where: { id: In(body.files), userId: user.id },
+        find: {
+          where: { id: In(body.files), userId: user.id },
+          loadEagerRelations: false,
+          relations: {},
+        },
       });
-      if (!Array.isArray(files) || body.files.length !== files.length) {
-        throw new NotFoundException('Files specified does not exist');
+      if (!(Array.isArray(files) && body.files.length === files.length)) {
+        throw new NotFoundException('Specified file(s) does not exist');
       }
     }
 
-    const data = await this.playlistService
-      .update(user.id, {
-        id,
-        ...body,
-        files,
-      })
-      .catch((error) => {
-        throw new BadRequestException(`Playlist create error: ${error}`);
-      });
+    const data = await this.playlistService.update(id, { ...body, files });
 
     return {
       status: Status.Success,
@@ -225,10 +227,10 @@ export class PlaylistController {
     }
     const data = await this.playlistService.findOne({ where });
     if (!data) {
-      throw new NotFoundException(`Playlist '${id}' not found`);
+      throw new NotFoundException(`Playlist "${id}" not found`);
     }
 
-    const { affected } = await this.playlistService.delete(data, user);
+    const { affected } = await this.playlistService.delete(user, data);
     if (!affected) {
       throw new NotFoundException('This playlist is not exists');
     }

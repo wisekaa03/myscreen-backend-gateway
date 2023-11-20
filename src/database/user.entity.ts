@@ -42,6 +42,8 @@ export class UserEntity {
     description: 'EMail пользователя',
     type: 'string',
     format: 'email',
+    minLength: 6,
+    maxLength: 254,
     example: 'foo@bar.baz',
   })
   @IsDefined()
@@ -59,32 +61,38 @@ export class UserEntity {
     type: 'string',
     description: 'Фамилия',
     example: 'Steve',
+    maxLength: 50,
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(50)
   surname!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   @ApiProperty({
     type: 'string',
     description: 'Имя',
+    maxLength: 50,
     example: 'John',
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(50)
   name!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   @ApiProperty({
     type: 'string',
     description: 'Отчество',
+    maxLength: 50,
     example: 'Doe',
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(50)
   middleName!: string | null;
 
   @Column({ select: false })
@@ -94,7 +102,9 @@ export class UserEntity {
       'Пароля пользователя (должен удовлетворять минимальным требованиям)',
     minLength: 8,
     maxLength: 30,
-    pattern: '/((?=.*d)|(?=.*W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
+    type: 'string',
+    format: 'password',
+    pattern: '/((?=.*\\d)|(?=.*\\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
   })
   @MinLength(8, { message: 'password is too short' })
   @MaxLength(30, { message: 'password is too long' })
@@ -107,6 +117,7 @@ export class UserEntity {
   @ApiProperty({
     description: 'Телефон пользователя',
     example: '+78002000000',
+    maxLength: 14,
     nullable: true,
     required: false,
   })
@@ -117,10 +128,12 @@ export class UserEntity {
   @ApiProperty({
     description: 'Город',
     example: 'Krasnodar',
+    maxLength: 100,
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(100)
   city?: string;
 
   @Column({
@@ -131,6 +144,7 @@ export class UserEntity {
   @ApiProperty({
     description: 'Страна',
     example: 'RU',
+    maxLength: 2,
     nullable: true,
     required: false,
   })
@@ -207,61 +221,74 @@ export class UserEntity {
   @ApiProperty({
     description: 'Компания',
     example: 'ACME corporation',
+    maxLength: 100,
     nullable: true,
     required: false,
   })
   @IsString()
+  @MaxLength(100)
   company?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Юридический адрес',
     example: 'г. Краснодар, ул. Красная, д. 1',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyLegalAddress?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Фактический адрес',
     example: 'г. Краснодар, ул. Красная, д. 1',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyActualAddress?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Идентификационный номер налогоплательщика (ИНН)',
     example: '012345678901',
+    maxLength: 12,
     required: false,
   })
   @IsString()
+  @MaxLength(12)
   companyTIN?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Код Причины Постановки на учет (КПП)',
     example: '012345678901',
+    maxLength: 9,
     required: false,
   })
   @IsString()
+  @MaxLength(9)
   companyRRC?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Основной Государственный Регистрационный Номер (ОГРН)',
     example: '012345678901',
+    maxLength: 15,
     required: false,
   })
   @IsString()
+  @MaxLength(15)
   companyPSRN?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Телефон организации',
     example: '+78002000000',
+    maxLength: 14,
     required: false,
   })
   @IsPhoneNumber()
@@ -271,70 +298,90 @@ export class UserEntity {
   @ApiProperty({
     description: 'Email организации',
     example: 'we@are.the.best',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyEmail?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Наименование банка',
     example: 'Банк',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyBank?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Банковский идентификационный код (БИК)',
     example: '012345678',
+    maxLength: 9,
     required: false,
   })
   @IsString()
+  @MaxLength(9)
   companyBIC?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Корреспондентский счет',
     example: '30101810400000000000',
+    maxLength: 20,
     required: false,
   })
   @IsString()
+  @MaxLength(20)
   companyCorrespondentAccount?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Расчетный счет',
     example: '40802810064580000000',
+    maxLength: 20,
     required: false,
   })
   @IsString()
+  @MaxLength(20)
   companyPaymentAccount?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Факс организации',
     example: '+78002000000',
+    maxLength: 14,
     required: false,
   })
   @IsString()
+  @MaxLength(14)
   companyFax?: string;
 
   @Column({ default: '' })
   @ApiProperty({
     description: 'Представитель организации',
     example: 'Тухбатуллина Юлия Евгеньевна',
+    maxLength: 254,
     required: false,
   })
   @IsString()
+  @MaxLength(254)
   companyRepresentative?: string;
 
   @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
   createdAt?: Date;
@@ -342,8 +389,14 @@ export class UserEntity {
   @UpdateDateColumn()
   @ApiProperty({
     description: 'Время изменения',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
   updatedAt?: Date;

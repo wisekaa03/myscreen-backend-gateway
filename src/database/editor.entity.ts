@@ -1,6 +1,7 @@
 import {
   IsBoolean,
   IsDateString,
+  IsDefined,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -28,6 +29,7 @@ import { RenderingStatus } from '@/enums/rendering-status.enum';
 import { UserEntity } from './user.entity';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { FileEntity } from './file.entity';
+import { PlaylistEntity } from './playlist.entity';
 
 @Entity('editor')
 @Unique('IDX_editor_userId_name', ['userId', 'name'])
@@ -47,6 +49,7 @@ export class EditorEntity {
     example: 'имя редактора',
     required: true,
   })
+  @IsDefined()
   @IsNotEmpty()
   name!: string;
 
@@ -134,6 +137,20 @@ export class EditorEntity {
   })
   renderedFile!: FileEntity | null;
 
+  @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
+    nullable: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    eager: false,
+  })
+  @JoinColumn({ name: 'playlistId' })
+  playlist?: PlaylistEntity | null;
+
+  @Column({ nullable: true })
+  @IsUUID()
+  playlistId?: string | null;
+
   @Column({ type: 'boolean', default: true })
   @ApiProperty({
     description: 'Воспроизводить музыку с видео',
@@ -195,20 +212,32 @@ export class EditorEntity {
   @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  createdAt!: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
     description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  updatedAt!: Date;
+  updatedAt?: Date;
 
   @AfterLoad()
   @AfterUpdate()

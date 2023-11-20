@@ -31,6 +31,7 @@ import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
+import { EditorEntity } from '@/database/editor.entity';
 
 @Entity('playlist')
 @Unique('IDX_userId_name', ['userId', 'name'])
@@ -114,11 +115,10 @@ export class PlaylistEntity {
   @JoinTable()
   @ApiProperty({
     description: 'Файлы',
-    type: 'array',
-    items: { $ref: '#/components/schemas/FileResponse' },
+    type: FileEntity,
   })
   @IsUUID('all', { each: true })
-  files?: FileEntity[];
+  files!: FileEntity[];
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.playlist, {
     nullable: true,
@@ -137,20 +137,32 @@ export class PlaylistEntity {
   @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  createdAt!: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
     description: 'Время изменения',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  updatedAt!: Date;
+  updatedAt?: Date;
 
   @AfterLoad()
   @BeforeInsert()

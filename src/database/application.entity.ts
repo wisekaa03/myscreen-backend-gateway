@@ -5,7 +5,6 @@ import {
   Index,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -24,6 +23,7 @@ import { UserEntity } from './user.entity';
 // eslint-disable-next-line import/no-cycle
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { ApplicationStatus } from '@/enums';
 
 @Entity('application')
 export class ApplicationEntity {
@@ -107,6 +107,23 @@ export class ApplicationEntity {
   })
   monitorId!: string;
 
+  @Column({
+    type: 'enum',
+    enum: ApplicationStatus,
+    default: ApplicationStatus.OK,
+  })
+  @Index()
+  @ApiProperty({
+    description: 'OK / Подождите',
+    enum: ApplicationStatus,
+    enumName: 'ApplicationStatus',
+    example: ApplicationStatus.OK,
+    default: ApplicationStatus.OK,
+    required: false,
+  })
+  @IsEnum(ApplicationStatus, { each: true })
+  status!: ApplicationStatus | Array<ApplicationStatus>;
+
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
     description: 'Скрытый',
@@ -174,9 +191,9 @@ export class ApplicationEntity {
   @Index()
   @ApiProperty({
     type: 'string',
-    format: 'date-time',
+    format: 'date',
     description: 'Время когда',
-    example: '2021-01-01T10:00:00.147Z',
+    example: '2021-01-01',
     required: true,
   })
   @IsDateString({ strict: false })
@@ -186,9 +203,9 @@ export class ApplicationEntity {
   @Index()
   @ApiProperty({
     type: 'string',
-    format: 'date-time',
+    format: 'date',
     description: 'Время до',
-    example: '2021-10-01T10:00:00.147Z',
+    example: '2021-10-01',
     nullable: true,
     required: false,
   })
@@ -221,18 +238,30 @@ export class ApplicationEntity {
   @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  createdAt!: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
     description: 'Время изменения',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  updatedAt!: Date;
+  updatedAt?: Date;
 }

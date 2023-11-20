@@ -7,6 +7,9 @@ import { EditorEntity } from './editor.entity';
 import { EditorService } from './editor.service';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
+import { PlaylistService } from './playlist.service';
+import { MonitorService } from './monitor.service';
+import { CrontabService } from '@/crontab/crontab.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -29,8 +32,11 @@ describe(EditorService.name, () => {
       providers: [
         EditorService,
         { provide: ConfigService, useClass: mockRepository },
+        { provide: CrontabService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
         { provide: FolderService, useClass: mockRepository },
+        { provide: PlaylistService, useClass: mockRepository },
+        { provide: MonitorService, useClass: mockRepository },
         {
           provide: getRepositoryToken(EditorEntity),
           useClass: mockRepository,

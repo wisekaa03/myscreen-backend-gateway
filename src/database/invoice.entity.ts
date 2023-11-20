@@ -11,6 +11,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
+  IsDefined,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -69,6 +70,7 @@ export class InvoiceEntity {
     description: 'Сумма счета',
     example: 1000,
   })
+  @IsDefined()
   @IsNotEmpty()
   @IsNumber()
   @Min(100)
@@ -90,18 +92,30 @@ export class InvoiceEntity {
   @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  createdAt!: Date;
+  createdAt?: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
     description: 'Время изменения',
-    example: '2021-01-01T10:00:00.147Z',
-    required: true,
+    example: '2021-01-01T00:00:00.000Z',
+    examples: {
+      one: '2021-01-01',
+      two: ['2021-12-30', '2021-12-31T10:10:10'],
+    },
+    type: 'string',
+    format: 'date-time',
+    required: false,
   })
   @IsDateString({ strict: false })
-  updatedAt!: Date;
+  updatedAt?: Date;
 }

@@ -116,13 +116,16 @@ export class FileController {
           throw new BadRequestException('folderId: must be UUID');
         }
         [data, count] = await this.fileService.findAndCount({
-          ...paginationQueryToConfig(scope),
-          relations: [],
-          select,
-          where: TypeOrmFind.Where(
-            { ...where, folderId: undefined },
-            userExpression,
-          ),
+          find: {
+            ...paginationQueryToConfig(scope),
+            loadEagerRelations: false,
+            relations: {},
+            select,
+            where: TypeOrmFind.Where(
+              { ...where, folderId: undefined },
+              userExpression,
+            ),
+          },
         });
       }
     } else {
@@ -130,13 +133,16 @@ export class FileController {
         throw new BadRequestException('folderId: must be UUID');
       }
       [data, count] = await this.fileService.findAndCount({
-        ...paginationQueryToConfig(scope),
-        relations: [],
-        select,
-        where: TypeOrmFind.Where(
-          where,
-          user.role === UserRoleEnum.Administrator ? undefined : user,
-        ),
+        find: {
+          ...paginationQueryToConfig(scope),
+          loadEagerRelations: false,
+          relations: {},
+          select,
+          where: TypeOrmFind.Where(
+            where,
+            user.role === UserRoleEnum.Administrator ? undefined : user,
+          ),
+        },
       });
     }
 
@@ -221,9 +227,11 @@ export class FileController {
   ): Promise<FilesGetResponse> {
     const filesPromise = files.map(async (file) => {
       const fileDB = await this.fileService.findOne({
-        where: {
-          userId: user.id,
-          id: file.id,
+        find: {
+          where: {
+            userId: user.id,
+            id: file.id,
+          },
         },
       });
 
@@ -265,7 +273,9 @@ export class FileController {
   ): Promise<FilesGetResponse> {
     const filesIds = files.map((file) => file.id);
     const filesCopy = await this.fileService.find({
-      where: { userId: user.id, id: In(filesIds) },
+      find: {
+        where: { userId: user.id, id: In(filesIds) },
+      },
     });
     if (filesCopy.length !== files.length) {
       throw new BadRequestError();
@@ -333,11 +343,11 @@ export class FileController {
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
     const file = await this.fileService.findOne({
-      // TODO: where: {id, userId} - посмотреть если в заявках (application) участвует
-      // TODO: то выдавать его, нужно продумать
-      where: { id },
-      relations: {
-        folder: true,
+      find: {
+        where: { id },
+        relations: {
+          folder: true,
+        },
       },
     });
     if (!file) {
@@ -396,7 +406,9 @@ export class FileController {
   ): Promise<FileGetResponse> {
     const where: FindOptionsWhere<FileEntity> = { id };
     const data = await this.fileService.findOne({
-      where,
+      find: {
+        where,
+      },
     });
     if (!data) {
       throw new NotFoundException('File not found');
@@ -441,20 +453,22 @@ export class FileController {
   ): Promise<void> {
     const where: FindOptionsWhere<FileEntity> = { id: fileId };
     const file = await this.fileService.findOne({
-      where,
-      select: [
-        'id',
-        'userId',
-        'hash',
-        'meta',
-        'videoType',
-        'name',
-        'duration',
-        'width',
-        'height',
-        'folderId',
-      ],
-      relations: ['preview', 'folder'],
+      find: {
+        where,
+        select: [
+          'id',
+          'userId',
+          'hash',
+          'meta',
+          'videoType',
+          'name',
+          'duration',
+          'width',
+          'height',
+          'folderId',
+        ],
+        relations: { preview: true, folder: true },
+      },
     });
     if (!file) {
       throw new NotFoundException('File not found');
@@ -521,9 +535,11 @@ export class FileController {
     @Body() update: FileUpdateRequest,
   ): Promise<FileGetResponse> {
     const file = await this.fileService.findOne({
-      where: {
-        userId: user.id,
-        id,
+      find: {
+        where: {
+          userId: user.id,
+          id,
+        },
       },
     });
     if (!file) {
@@ -584,7 +600,7 @@ export class FileController {
     };
   }
 
-  @Delete('/:fileId')
+  @Delete(':fileId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-delete',

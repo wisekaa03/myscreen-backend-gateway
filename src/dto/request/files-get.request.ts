@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, ValidateNested } from 'class-validator';
+import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
@@ -24,9 +24,10 @@ export class FilesGetRequest {
     example: [],
     enum: swaggerGetModelProperties(FileEntity),
     isArray: true,
+    type: 'string',
     required: false,
   })
-  @IsOptional()
+  @IsArray()
   select?: FindOptionsSelect<FileRequest>;
 
   @ApiProperty({

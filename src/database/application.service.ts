@@ -64,44 +64,82 @@ export class ApplicationService {
     find: FindManyOptions<ApplicationEntity>,
     caseInsensitive = true,
   ): Promise<Array<ApplicationEntity>> {
-    const conditional = TypeOrmFind.Nullable(find);
+    let result: Array<ApplicationEntity>;
+    const findLocal = TypeOrmFind.Nullable(find);
+
     if (!find.relations) {
-      conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
+      findLocal.relations = {
+        buyer: true,
+        seller: true,
+        monitor: true,
+        playlist: true,
+      };
     }
-    return caseInsensitive
-      ? TypeOrmFind.findCI(this.applicationRepository, conditional)
-      : this.applicationRepository.find(conditional);
+
+    if (caseInsensitive) {
+      result = await TypeOrmFind.findCI(this.applicationRepository, findLocal);
+    } else {
+      result = await this.applicationRepository.find(findLocal);
+    }
+
+    return result;
   }
 
   async findAndCount(
     find: FindManyOptions<ApplicationEntity>,
     caseInsensitive = true,
   ): Promise<[Array<ApplicationEntity>, number]> {
-    const conditional = TypeOrmFind.Nullable(find);
     let result: [Array<ApplicationEntity>, number];
+    const findLocal = TypeOrmFind.Nullable(find);
+
     if (!find.relations) {
-      conditional.relations = ['buyer', 'seller', 'monitor', 'playlist'];
+      findLocal.relations = {
+        buyer: true,
+        seller: true,
+        monitor: true,
+        playlist: true,
+      };
     }
     if (caseInsensitive) {
       result = await TypeOrmFind.findAndCountCI(
         this.applicationRepository,
-        conditional,
+        findLocal,
       );
     } else {
-      result = await this.applicationRepository.findAndCount(conditional);
+      result = await this.applicationRepository.findAndCount(findLocal);
     }
+
     return result;
   }
 
   async findOne(
     find: FindManyOptions<ApplicationEntity>,
+    caseInsensitive = true,
   ): Promise<ApplicationEntity | null> {
-    return find.relations
-      ? this.applicationRepository.findOne(TypeOrmFind.Nullable(find))
-      : this.applicationRepository.findOne({
-          relations: ['buyer', 'seller', 'monitor', 'playlist'],
-          ...TypeOrmFind.Nullable(find),
-        });
+    let result: ApplicationEntity | null;
+    const findLocal = TypeOrmFind.Nullable(find);
+
+    if (!find.relations) {
+      findLocal.relations = {
+        buyer: true,
+        seller: true,
+        monitor: true,
+        playlist: true,
+      };
+    }
+
+    if (caseInsensitive) {
+      result = await TypeOrmFind.findOneCI(
+        this.applicationRepository,
+        TypeOrmFind.Nullable(find),
+      );
+    } else {
+      result = await this.applicationRepository.findOne(
+        TypeOrmFind.Nullable(find),
+      );
+    }
+
+    return result;
   }
 
   /**
@@ -139,7 +177,20 @@ export class ApplicationService {
 
       await Promise.allSettled(wsPromise);
       // } else if (files) {
-      // } else if (monitor) {
+    } else if (monitor) {
+      if (monitorDelete) {
+        const applications = await this.monitorApplications({
+          monitorId: monitor.id,
+        });
+
+        const wsPromise = applications.map(async (applicationLocal) =>
+          this.wsGateway.application({ application: applicationLocal }),
+        );
+
+        await Promise.allSettled(wsPromise);
+      } else {
+        await this.wsGateway.application({ monitor });
+      }
     } else if (application) {
       if (applicationDelete) {
         await this.wsGateway.application({ monitor: application.monitor });
@@ -184,7 +235,7 @@ export class ApplicationService {
           dateBefore: IsNull(),
         },
       ],
-      relations: ['playlist', 'playlist.files'],
+      relations: { playlist: { files: true } },
       loadEagerRelations: false,
       order: { updatedAt: 'DESC' },
     });

@@ -91,7 +91,7 @@ const updateUser: UserUpdateRequest = {
   companyLegalAddress: 'г. Краснодар, ул. Красная, д. 1',
   companyActualAddress: 'г. Краснодар, ул. Красная, д. 1',
   companyTIN: '112345678901',
-  companyRRC: '112345678901',
+  companyRRC: '123456789',
   companyPSRN: '112345678901',
   companyPhone: '+78003000000',
   companyEmail: 'we@are.the.best',
@@ -165,9 +165,7 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.data.id).toBeDefined();
           expect(body.data.password).toBeUndefined();
-          if (body.data.id) {
-            userId = body.data.id;
-          }
+          userId = body.data.id;
         });
     });
 
@@ -283,8 +281,8 @@ describe('Backend API (e2e)', () => {
       expect(body.payload?.refreshToken).toBeDefined();
       expect((body.data as any).password).toBeUndefined();
 
-      token = body.payload?.token ?? '';
-      refreshToken = body.payload?.refreshToken ?? '';
+      token = body.payload.token;
+      refreshToken = body.payload.refreshToken;
     });
   });
 
@@ -572,6 +570,7 @@ describe('Backend API (e2e)', () => {
       await content.then(({ body }: { body: FoldersGetResponse }) => {
         expect(body.status).toBe(Status.Success);
         expect(body.data).toBeDefined();
+        expect((body.data as any)?.[0]?.userId).toBeDefined();
         expect((body.data as any)?.[0]?.user?.password).toBeUndefined();
       });
     });
