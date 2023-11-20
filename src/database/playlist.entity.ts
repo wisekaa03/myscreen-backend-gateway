@@ -31,7 +31,6 @@ import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { EditorEntity } from '@/database/editor.entity';
 
 @Entity('playlist')
 @Unique('IDX_userId_name', ['userId', 'name'])
