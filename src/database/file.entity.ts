@@ -208,6 +208,7 @@ export class FileEntity {
 
   @Column()
   @Index()
+  @IsUUID()
   userId!: string;
 
   @OneToOne(() => FilePreviewEntity, (filePreview) => filePreview.file, {

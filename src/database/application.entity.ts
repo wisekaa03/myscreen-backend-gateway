@@ -100,11 +100,11 @@ export class ApplicationEntity {
   monitor!: MonitorEntity;
 
   @Column()
-  @IsUUID()
   @ApiProperty({
     description: 'Монитор ID',
     format: 'uuid',
   })
+  @IsUUID()
   monitorId!: string;
 
   @Column({
@@ -164,11 +164,11 @@ export class ApplicationEntity {
   playlist!: PlaylistEntity;
 
   @Column({ select: false })
-  @IsUUID()
   @ApiProperty({
     description: 'Плэйлист ID',
     format: 'uuid',
   })
+  @IsUUID()
   playlistId!: string;
 
   @Column({

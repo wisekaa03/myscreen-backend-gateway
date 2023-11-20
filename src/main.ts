@@ -100,8 +100,9 @@ async function bootstrap() {
       persistAuthorization: true,
     },
     customSiteTitle: description,
+    customfavIcon: '/favicon.ico',
     customCss:
-      ".swagger-ui .topbar img { content: url('/favicon.ico') } .swagger-ui .topbar a::after { margin-left: 10px; content: 'MyScreen' }",
+      ".swagger-ui .topbar { padding: 0; } .swagger-ui .topbar a { content: url('/favicon.ico'); max-width: 40px; max-height: 44px; } .swagger-ui .topbar .topbar-wrapper::after { margin-left: 5px; content: 'MyScreen'; color: white; }",
   };
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 

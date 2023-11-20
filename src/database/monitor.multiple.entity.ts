@@ -55,6 +55,7 @@ export class MonitorMultipleEntity {
   parentMonitor!: MonitorEntity;
 
   @Column()
+  @IsUUID()
   parentMonitorId!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
@@ -73,6 +74,7 @@ export class MonitorMultipleEntity {
   monitor!: MonitorEntity;
 
   @Column()
+  @IsUUID()
   monitorId!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {

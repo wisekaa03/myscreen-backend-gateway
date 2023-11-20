@@ -17,15 +17,21 @@ export const validationPipeOptions = () =>
           let ret: Array<string> =
             (error.constraints && Object.values(error.constraints)) || [];
           if (error.children && error.children.length > 0) {
-            ret = [
-              ...ret,
-              error.children
-                .map(
-                  (child) =>
-                    child.constraints && Object.values(child.constraints),
-                )
-                .join(', '),
-            ];
+            const recurse = error.children
+              .map((child) => {
+                if (child.children && child.children.length > 0) {
+                  return child.children
+                    .map(
+                      (childChild) =>
+                        childChild.constraints &&
+                        Object.values(childChild.constraints),
+                    )
+                    .join(', ');
+                }
+                return child.constraints && Object.values(child.constraints);
+              })
+              .join(', ');
+            ret = [...ret, recurse];
           }
           return ret;
         })
