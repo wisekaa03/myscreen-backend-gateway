@@ -441,10 +441,12 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {};
-    if (user.role === UserRoleEnum.Monitor) {
+    if (role === UserRoleEnum.Monitor) {
       find.where = { id: userId };
+    } else if (role === UserRoleEnum.Administrator) {
+      find.where = { id };
     } else {
       find.where = { userId, id };
     }

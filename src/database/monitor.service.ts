@@ -56,13 +56,15 @@ export class MonitorService {
       ? await TypeOrmFind.findCI(this.monitorRepository, monitorWhere)
       : await this.monitorRepository.find(monitorWhere);
 
-    return monitor.map((item: MonitorEntity) => {
-      const value = item;
-      value.favorite =
-        value.favorities?.some((i) => i.userId === userId) ?? false;
-      delete value.favorities;
-      return value;
-    });
+    return monitor && userId !== undefined
+      ? monitor.map((item: MonitorEntity) => {
+          const value = item;
+          value.favorite =
+            value.favorities?.some((i) => i.userId === userId) ?? false;
+          delete value.favorities;
+          return value;
+        })
+      : monitor;
   }
 
   async count({
@@ -105,13 +107,15 @@ export class MonitorService {
       : await this.monitorRepository.findAndCount(monitorWhere);
 
     return [
-      monitor[0].map((item: MonitorEntity) => {
-        const value = item;
-        value.favorite =
-          value.favorities?.some((i) => i.userId === userId) ?? false;
-        delete value.favorities;
-        return value;
-      }),
+      monitor && userId !== undefined
+        ? monitor[0].map((item: MonitorEntity) => {
+            const value = item;
+            value.favorite =
+              value.favorities?.some((i) => i.userId === userId) ?? false;
+            delete value.favorities;
+            return value;
+          })
+        : monitor[0],
       monitor[1],
     ];
   }
@@ -140,7 +144,7 @@ export class MonitorService {
       ? await TypeOrmFind.findOneCI(this.monitorRepository, monitorWhere)
       : await this.monitorRepository.findOne(monitorWhere);
 
-    if (monitor) {
+    if (monitor && userId !== undefined) {
       monitor.favorite =
         userId !== undefined
           ? monitor.favorities?.some((fav) => fav.userId === userId) ?? false
