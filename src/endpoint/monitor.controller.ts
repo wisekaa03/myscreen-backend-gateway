@@ -174,12 +174,13 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { multipleIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    if (insert.multiple === MonitorMultiple.SUBORDINATE) {
+    const { multiple = MonitorMultiple.SINGLE } = insert;
+    if (multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestException(
         'Монитор не должен создаваться с типом монитора SUBORDINATE',
       );
     }
-    if (!(insert.multiple !== MonitorMultiple.SINGLE)) {
+    if (multiple === MonitorMultiple.SINGLE) {
       const findMonitor = await this.monitorService.findOne({
         userId: user.id,
         find: {

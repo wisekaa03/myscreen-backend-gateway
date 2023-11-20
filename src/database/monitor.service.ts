@@ -168,18 +168,18 @@ export class MonitorService {
     if (!originalMonitor) {
       throw new NotFoundException(`Monitor "${id}" not found`);
     }
-    const { id: userId } = originalMonitor.user;
+    const { userId, multiple = MonitorMultiple.SINGLE } = originalMonitor;
     if (originalMonitor.playlistId) {
       throw new BadRequestException(
         `Monitor "${originalMonitor.name}"#"${id}" is attached to the playlist`,
       );
     }
-    if (originalMonitor.multiple === update.multiple) {
+    if (multiple === update.multiple) {
       throw new BadRequestException(
         `Monitor "${originalMonitor.name}"#"${id}" multiple not changed`,
       );
     }
-    if (originalMonitor.multiple !== MonitorMultiple.SINGLE && multipleBool) {
+    if (multiple !== MonitorMultiple.SINGLE && multipleBool) {
       throw new BadRequestException(
         `Monitor "${originalMonitor.name}"#"${id}" group monitors ID is not empty`,
       );
@@ -197,7 +197,7 @@ export class MonitorService {
       await this.applicationService.websocketChange({ monitor });
 
       // а тут начинается полный трэш
-      if (originalMonitor.multiple !== MonitorMultiple.SINGLE && multipleBool) {
+      if (multiple !== MonitorMultiple.SINGLE && multipleBool) {
         // получаем подчиненные мониторы
         const { multipleMonitors } = originalMonitor;
         if (multipleMonitors) {
@@ -279,6 +279,7 @@ export class MonitorService {
     multipleIds?: MonitorMultipleRequest[];
   }) {
     const { id: userId } = user;
+    const { multiple = MonitorMultiple.SINGLE } = insert;
     if (insert.monitorInfo) {
       throw new BadRequestException('Monitor info deprecated');
     }
@@ -305,7 +306,7 @@ export class MonitorService {
 
       let groupMonitors: MonitorEntity[] = [];
       const multipleBool = Array.isArray(multipleIds) && multipleIds.length > 0;
-      if (insert.multiple !== MonitorMultiple.SINGLE) {
+      if (multiple !== MonitorMultiple.SINGLE) {
         if (!multipleIds || multipleIds.length === 0) {
           throw new BadRequestException('Group monitors ID is empty');
         }
@@ -324,7 +325,7 @@ export class MonitorService {
         ) {
           throw new BadRequestException('Not found ID of some monitors');
         }
-        if (insert.multiple === MonitorMultiple.SCALING) {
+        if (multiple === MonitorMultiple.SCALING) {
           const multipleRows = new Set<number>();
           const multipleCols = new Set<number>();
           multipleIds.forEach((item) => {
