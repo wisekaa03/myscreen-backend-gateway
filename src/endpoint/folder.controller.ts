@@ -73,11 +73,12 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { scope, select, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
+    const { role } = user;
     let count: number = 0;
     let data: FolderResponse[] = [];
     const parentFolderId = where?.parentFolderId?.toString();
     if (
-      user.role === UserRoleEnum.Administrator &&
+      role === UserRoleEnum.Administrator &&
       parentFolderId?.startsWith(administratorFolderId)
     ) {
       // мы в режиме администратора
@@ -121,7 +122,7 @@ export class FolderController {
     } else {
       // в любом другом режиме выводим все папки
       if (
-        user.role !== UserRoleEnum.Administrator &&
+        role !== UserRoleEnum.Administrator &&
         parentFolderId &&
         !isUUID(parentFolderId)
       ) {
@@ -132,9 +133,11 @@ export class FolderController {
         select,
         where: TypeOrmFind.Where(where, user),
       });
+      const { id: parentFolderIdUserId } =
+        await this.folderService.rootFolder(user);
       if (
-        user.role === UserRoleEnum.Administrator &&
-        parentFolderId === (await this.folderService.rootFolder(user)).id
+        role === UserRoleEnum.Administrator &&
+        parentFolderId === parentFolderIdUserId
       ) {
         count += 1;
         data = [...data, await this.folderService.administratorFolder(user)];
@@ -164,19 +167,20 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { name, parentFolderId }: FolderCreateRequest,
   ): Promise<FolderGetResponse> {
+    const { id: userId } = user;
     const parentFolder = parentFolderId
       ? await this.folderService.findOne({
-          where: { userId: user.id, id: parentFolderId },
+          where: { userId, id: parentFolderId },
         })
       : await this.folderService.rootFolder(user);
     if (!parentFolder) {
-      throw new BadRequestException(`Folder '${parentFolderId}' is not exists`);
+      throw new BadRequestException(`Folder "${parentFolderId}" is not exists`);
     }
 
     return {
       status: Status.Success,
-      data: await this.folderService.update({
-        userId: user.id,
+      data: await this.folderService.create({
+        userId,
         name,
         parentFolderId: parentFolder.id,
       }),
@@ -199,12 +203,13 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { folders }: FoldersUpdateRequest,
   ): Promise<FoldersGetResponse> {
+    const { id: userId } = user;
     const parentFoldersId = folders.map((folder) => folder.id);
     let parentFolders: FolderEntity[] | undefined;
     if (parentFoldersId) {
       parentFolders = await this.folderService.find({
         where: {
-          userId: user.id,
+          userId,
           id: In(parentFoldersId),
         },
       });
@@ -221,7 +226,7 @@ export class FolderController {
     }
 
     const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
-      this.folderService.update({ id, name, userId: user.id, parentFolderId }),
+      this.folderService.update(id, { name, userId, parentFolderId }),
     );
 
     const dataFromPromise = await Promise.allSettled(foldersPromise);
@@ -371,11 +376,12 @@ export class FolderController {
     @Param('folderId', ParseUUIDPipe) id: string,
     @Body() { name, parentFolderId }: FolderIdUpdateRequest,
   ): Promise<FolderGetResponse> {
+    const { id: userId } = user;
     let parentFolder: FolderEntity | null | undefined;
     if (parentFolderId) {
       parentFolder = await this.folderService.findOne({
         where: {
-          userId: user.id,
+          userId,
           id: parentFolderId,
         },
       });
@@ -384,9 +390,7 @@ export class FolderController {
       }
     }
 
-    const data = await this.folderService.update({
-      userId: user.id,
-      id,
+    const data = await this.folderService.update(id, {
       name,
       parentFolder,
     });

@@ -1,5 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import {
+  FindOneOptions,
+  FindOptionsWhere,
+  InsertResult,
+  ObjectLiteral,
+  UpdateResult,
+} from 'typeorm';
 
 import { FileService } from './file.service';
 import { FolderEntity } from './folder.entity';
@@ -7,10 +14,29 @@ import { FolderService } from './folder.service';
 import { FolderFileNumberEntity } from './folder.view.entity';
 
 export const mockRepository = jest.fn(() => ({
-  findOne: async () => Promise.resolve([]),
-  findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
+  find: async (find: FindOneOptions<ObjectLiteral>) =>
+    Promise.resolve({
+      id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id,
+    }),
+  findOne: async (find: FindOneOptions<ObjectLiteral>) =>
+    Promise.resolve({
+      id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id,
+    }),
+  findAndCount: async (find: FindOneOptions<ObjectLiteral>) =>
+    Promise.resolve([
+      { id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id },
+      1,
+    ]),
+  save: async (id: unknown) => Promise.resolve(id),
+  insert: async () =>
+    Promise.resolve<InsertResult>({
+      generatedMaps: [],
+      identifiers: [{ id: '0000-0000-0000-0000' }],
+      raw: [],
+    }),
+  update: async () =>
+    Promise.resolve<UpdateResult>({ affected: 1, raw: [], generatedMaps: [] }),
+  create: (id: unknown) => id,
   remove: async () => Promise.resolve([]),
   delete: async () => Promise.resolve([]),
   get: (key: string, defaultValue?: string) => defaultValue,
@@ -47,19 +73,20 @@ describe(FolderService.name, () => {
   });
 
   it('returns folder.findOne', async () => {
-    expect(await service.findOne({})).toStrictEqual([]);
+    const find = await service.findOne({
+      where: { id: '0000-0000-0000-0001' },
+    });
+    expect(find).toStrictEqual({ id: '0000-0000-0000-0001' });
   });
 
-  // it('returns folder.find', async () => {
-  //   expect(await folderService.find({})).toStrictEqual([]);
-  // });
-
-  // it('returns folder.findAndCount', async () => {
-  //   expect(await folderService.findAndCount({})).toStrictEqual([]);
-  // });
+  it('returns folder.create', async () => {
+    const folder = await service.create({ name: 'aaa' });
+    expect(folder).toStrictEqual({ id: '0000-0000-0000-0000' });
+  });
 
   it('returns folder.update', async () => {
-    expect(await service.update({})).toStrictEqual([]);
+    const folder = await service.update('0000-0000-0000-0004', {});
+    expect(folder).toStrictEqual({ id: '0000-0000-0000-0004' });
   });
 
   // TODO: Implement

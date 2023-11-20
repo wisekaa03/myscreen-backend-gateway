@@ -1,4 +1,10 @@
-import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
@@ -60,18 +66,20 @@ export class FolderService {
   }
 
   async rootFolder(user: UserEntity): Promise<FolderEntity> {
-    const folder = await this.folderRepository.findOne({
-      where: { name: '<Корень>', userId: user.id },
+    const { id: userId } = user;
+    let folder = await this.folderRepository.findOne({
+      where: { name: '<Корень>', userId },
     });
 
-    return (
-      folder ??
-      this.update({
+    if (!folder) {
+      folder = await this.create({
         name: '<Корень>',
         parentFolderId: null,
-        userId: user.id,
-      })
-    );
+        userId,
+      });
+    }
+
+    return folder;
   }
 
   async exportFolder(user: UserEntity): Promise<FolderEntity> {
@@ -85,14 +93,15 @@ export class FolderService {
       },
     });
 
-    return (
-      folder ??
-      this.update({
+    if (!folder) {
+      return this.create({
         name: '<Исполненные>',
         parentFolderId: rootFolder.id,
         userId: user.id,
-      })
-    );
+      });
+    }
+
+    return folder;
   }
 
   async administratorFolder(user: UserEntity): Promise<FolderEntity> {
@@ -102,13 +111,44 @@ export class FolderService {
       id: administratorFolderId,
       name: administratorFolderName,
       parentFolderId: parentFolder.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     } as FolderEntity;
   }
 
-  async update(folder: Partial<FolderEntity>): Promise<FolderEntity> {
-    return this.folderRepository.save(this.folderRepository.create(folder));
+  async create(folder: Partial<FolderEntity>): Promise<FolderEntity> {
+    const inserted = await this.folderRepository.insert(
+      this.folderRepository.create(folder),
+    );
+    if (!inserted.identifiers[0]) {
+      throw new NotFoundException('Error when creating folder');
+    }
+    const { id } = inserted.identifiers[0];
+
+    const find = await this.folderRepository.findOne({ where: { id } });
+    if (!find) {
+      throw new NotFoundException('Error when creating folder');
+    }
+
+    return find;
+  }
+
+  async update(
+    id: string,
+    folder: Partial<FolderEntity>,
+  ): Promise<FolderEntity> {
+    const updated = await this.folderRepository.update(
+      id,
+      this.folderRepository.create(folder),
+    );
+    if (!updated.affected) {
+      throw new NotFoundException('Error when updating folder');
+    }
+
+    const find = await this.folderRepository.findOne({ where: { id } });
+    if (!find) {
+      throw new NotFoundException('Error when updating folder');
+    }
+
+    return find;
   }
 
   async copy(

@@ -16,6 +16,8 @@ export const mockRepository = jest.fn(() => ({
   findAndCount: async () => Promise.resolve([]),
   save: async () => Promise.resolve([]),
   create: () => [],
+  insert: async () => Promise.resolve([]),
+  update: async () => Promise.resolve([]),
   remove: async () => Promise.resolve([]),
   get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
