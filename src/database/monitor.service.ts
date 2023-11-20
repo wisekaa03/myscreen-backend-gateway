@@ -168,6 +168,7 @@ export class MonitorService {
     if (!originalMonitor) {
       throw new NotFoundException(`Monitor "${id}" not found`);
     }
+    const { id: userId } = originalMonitor.user;
     if (originalMonitor.playlistId) {
       throw new BadRequestException(
         `Monitor "${originalMonitor.name}"#"${id}" is attached to the playlist`,
@@ -189,10 +190,7 @@ export class MonitorService {
       if (!updated.affected) {
         throw new NotAcceptableException(`Monitor with this ${id} not found`);
       }
-      const monitor = await this.findOne({
-        find: { where: { id } },
-        userId: originalMonitor.userId,
-      });
+      const monitor = await transact.findOne(MonitorEntity, { where: { id } });
       if (!monitor) {
         throw new NotFoundException(`Monitor with this ${id} not found`);
       }
@@ -252,7 +250,7 @@ export class MonitorService {
               );
             } else {
               await transact.insert(MonitorMultipleEntity, {
-                userId: originalMonitor.userId,
+                userId,
                 parentMonitorId: originalMonitor.id,
                 monitorId: item.monitorId,
                 row: item.row,
@@ -280,23 +278,26 @@ export class MonitorService {
     insert: QueryDeepPartialEntity<MonitorEntity>;
     multipleIds?: MonitorMultipleRequest[];
   }) {
+    const { id: userId } = user;
     if (insert.monitorInfo) {
       throw new BadRequestException('Monitor info deprecated');
     }
     const prepareMonitor: QueryDeepPartialEntity<MonitorEntity> = {
       ...insert,
-      userId: user.id,
+      userId,
     };
 
     return this.monitorRepository.manager.transaction(async (transact) => {
-      const monitorInserted =
-        await this.monitorRepository.insert(prepareMonitor);
-      if (!monitorInserted.raw.insertId) {
+      const monitorInserted = await transact.insert(
+        MonitorEntity,
+        prepareMonitor,
+      );
+      const monitorInsertedId = monitorInserted.identifiers[0]?.id;
+      if (!monitorInsertedId) {
         throw new NotAcceptableException('Monitor not created');
       }
-      const monitor = await this.findOne({
-        find: { where: { id: monitorInserted.raw.insertId } },
-        userId: user.id,
+      const monitor = await transact.findOne(MonitorEntity, {
+        where: { id: monitorInsertedId },
       });
       if (!monitor) {
         throw new NotAcceptableException('Monitor not created');
@@ -350,7 +351,7 @@ export class MonitorService {
 
           // добавляем в таблицу связей мониторов монитор
           await transact.insert(MonitorMultipleEntity, {
-            userId: user.id,
+            userId,
             parentMonitorId: monitor.id,
             monitorId: groupMonitorId,
             row: item.row,
