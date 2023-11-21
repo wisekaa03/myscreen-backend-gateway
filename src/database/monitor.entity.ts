@@ -362,6 +362,7 @@ export class MonitorEntity {
   @ApiProperty({
     enum: MonitorMultiple,
     enumName: 'MonitorMultiple',
+    default: MonitorMultiple.SINGLE,
     description:
       'Обычный монитор, много мониторов с режимом масштабирования или зеркалирования',
     example: MonitorMultiple.SINGLE,

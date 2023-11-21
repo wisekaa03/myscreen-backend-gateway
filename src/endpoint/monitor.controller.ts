@@ -174,12 +174,13 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { multipleIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    if (insert.multiple === MonitorMultiple.SUBORDINATE) {
+    const { multiple = MonitorMultiple.SINGLE } = insert;
+    if (multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestException(
         'Монитор не должен создаваться с типом монитора SUBORDINATE',
       );
     }
-    if (!(insert.multiple !== MonitorMultiple.SINGLE)) {
+    if (multiple === MonitorMultiple.SINGLE) {
       const findMonitor = await this.monitorService.findOne({
         userId: user.id,
         find: {
@@ -440,10 +441,12 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<MonitorGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {};
-    if (user.role === UserRoleEnum.Monitor) {
+    if (role === UserRoleEnum.Monitor) {
       find.where = { id: userId };
+    } else if (role === UserRoleEnum.Administrator) {
+      find.where = { id };
     } else {
       find.where = { userId, id };
     }

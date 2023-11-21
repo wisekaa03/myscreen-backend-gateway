@@ -25,6 +25,7 @@ import { FileEntity } from './file.entity';
 
 @Entity('folder')
 @Unique('UNIQ_user_name_parentFolder', ['name', 'userId', 'parentFolderId'])
+@Index('IDX_user_name_parentFolder', ['name', 'userId'])
 @Index('IDX_user_parentFolder', ['userId', 'parentFolderId'])
 export class FolderEntity {
   @PrimaryGeneratedColumn('uuid')

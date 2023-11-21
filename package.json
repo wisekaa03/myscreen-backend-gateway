@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.42.49",
+  "version": "2.42.53",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -105,7 +105,7 @@
     "**/**/tr46": ">=5.0.0",
     "**/**/tsconfig-paths": ">=4.2.0",
     "**/**/tslib": ">=2.6.2",
-    "**/**/typescript": ">=5.2.2",
+    "**/**/typescript": ">=5.3.2",
     "**/**/qs": ">=6.11.2",
     "**/**/universalify": ">=2.0.1",
     "**/**/uuid": ">=9.0.1",
@@ -189,8 +189,8 @@
     "@types/pug": "^2.0.9",
     "@types/supertest": "^2.0.16",
     "@types/ws": "^8.5.9",
-    "@typescript-eslint/eslint-plugin": "^6.11.0",
-    "@typescript-eslint/parser": "^6.11.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
     "eslint": "^8.54.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.1.0",
@@ -203,7 +203,7 @@
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
-    "typescript": "^5.2.2",
+    "typescript": "^5.3.2",
     "webpack": "^5.89.0"
   }
 }

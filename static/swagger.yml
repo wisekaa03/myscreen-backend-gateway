@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.49
+  version: 2.42.53
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3836,6 +3836,7 @@ components:
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
         multiple:
+          default: SINGLE
           description: >-
             Обычный монитор, много мониторов с режимом масштабирования или
             зеркалирования
@@ -4400,6 +4401,7 @@ components:
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
         multiple:
+          default: SINGLE
           description: >-
             Обычный монитор, много мониторов с режимом масштабирования или
             зеркалирования
@@ -4567,6 +4569,7 @@ components:
           description: "Есть звук: true/false"
           example: true
         multiple:
+          default: SINGLE
           description: >-
             Обычный монитор, много мониторов с режимом масштабирования или
             зеркалирования
@@ -4829,6 +4832,7 @@ components:
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
         multiple:
+          default: SINGLE
           description: >-
             Обычный монитор, много мониторов с режимом масштабирования или
             зеркалирования

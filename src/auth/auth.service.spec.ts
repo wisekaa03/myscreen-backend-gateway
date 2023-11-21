@@ -55,6 +55,8 @@ export const mockRepository = jest.fn(() => ({
   findByEmail: async () => Promise.resolve({ ...user, password }),
   signAsync: async () => Promise.resolve(token),
   create: async () => Promise.resolve({ id: '1' }),
+  insert: async () => Promise.resolve([]),
+  update: async () => Promise.resolve([]),
   verify: () => true,
   get: (key: string, defaultValue?: string) => defaultValue,
 }));
