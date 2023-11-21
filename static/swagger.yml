@@ -4558,6 +4558,12 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/MonitorMultipleRequest"
+        multipleIds:
+          description: Подчиненные мониторы в группе мониторов
+          deprecated: true
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorMultipleRequest"
       required:
         - name
         - category

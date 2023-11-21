@@ -175,7 +175,7 @@ export class MonitorController {
   @Crud(CRUD.CREATE)
   async createMonitors(
     @Req() { user }: ExpressRequest,
-    @Body() { groupIds, ...insert }: MonitorCreateRequest,
+    @Body() { groupIds, multipleIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
     const { id: userId } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
@@ -226,7 +226,7 @@ export class MonitorController {
     const data = await this.monitorService.create({
       user,
       insert,
-      groupIds,
+      groupIds: groupIds ?? multipleIds,
     });
 
     return {
