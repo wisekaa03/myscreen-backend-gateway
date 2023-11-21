@@ -87,6 +87,11 @@ jobs:
 
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env.test
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env.test
+
+          echo "RABBITMQ_HOST=${{ vars.RABBITMQ_HOST }}" >>.env.test
+          echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env.test
+          echo "RABBITMQ_USERNAME=${{ vars.RABBITMQ_USERNAME }}" >>.env.test
+          echo "RABBITMQ_PASSWORD=${{ vars.RABBITMQ_PASSWORD }}" >>.env.test
       - name: Test
         run: yarn test
       - name: Test end to end
@@ -203,6 +208,11 @@ jobs:
 
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+
+          echo "RABBITMQ_HOST=${{ vars.RABBITMQ_HOST }}" >>.env.test
+          echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env.test
+          echo "RABBITMQ_USERNAME=${{ vars.RABBITMQ_USERNAME }}" >>.env.test
+          echo "RABBITMQ_PASSWORD=${{ vars.RABBITMQ_PASSWORD }}" >>.env.test
       - name: Install SSH key
         if: ${{ contains(runner.name, 'myscreen') == false }}
         uses: shimataro/ssh-key-action@v2

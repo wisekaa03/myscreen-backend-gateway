@@ -9,6 +9,7 @@ import {
   type SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { RmqOptions, Transport } from '@nestjs/microservices';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 
 import { version, author, homepage, description } from '../package.json';
@@ -112,5 +113,21 @@ async function bootstrap() {
     `Server version ${version} started in ${process.env.NODE_ENV} mode on ${url}${apiPath}`,
     NestApplication.name,
   );
+
+  // Microservice
+  app.connectMicroservice<RmqOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [
+        {
+          hostname: configService.get<string>('RABBITMQ_HOST', 'localhost'),
+          port: configService.get<number>('RABBITMQ_PORT', 5672),
+          username: configService.get<string>('RABBITMQ_USERNAME', 'guest'),
+          password: configService.get<string>('RABBITMQ_PASSWORD', 'guest'),
+        },
+      ],
+    },
+  });
+  await app.startAllMicroservices();
 }
 bootstrap();

@@ -25,3 +25,18 @@ services:
       - postgres:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  rabbitmq:
+    image: bitnami/rabbitmq:latest
+    restart: always
+    environment:
+      - RABBITMQ_PASSWORD=12345678
+      - RABBITMQ_USERNAME=admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - "postgres:postgres"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
