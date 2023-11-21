@@ -306,11 +306,10 @@ export class MonitorController {
         },
       });
       if (!monitor) {
-        throw new NotFoundException(`Monitor '${monitorId}' not found`);
+        throw new NotFoundException(`Monitor "${monitorId}" not found`);
       }
 
       monitor = await this.monitorService.update(monitorId, {
-        multiple: monitor.multiple,
         playlist,
       });
 
@@ -327,10 +326,6 @@ export class MonitorController {
           'updateApplication',
           CRUD.CREATE,
         );
-
-        if (monitor.multiple !== MonitorMultiple.SINGLE) {
-          // TODO:
-        }
 
         // To create request
         const request = await this.requestService.create({

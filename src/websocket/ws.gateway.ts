@@ -284,20 +284,30 @@ export class WSGateway
       return;
     }
 
-    if (request?.playlist && request.monitorId) {
-      await this.playlistService.update(request.playlist.id, {
+    if (request?.playlistId && request.monitorId) {
+      await this.playlistService.update(request.playlistId, {
         status: PlaylistStatusEnum.Broadcast,
       });
+      let requestFind: RequestEntity | null = request;
+      if (!request.playlist) {
+        requestFind = await this.requestService.findOne({
+          where: { id: request.id },
+          loadEagerRelations: false,
+          relations: { playlist: { files: true } },
+        });
+        if (!requestFind) {
+          this.logger.error('request.playlist is undefined');
+          return;
+        }
+      }
 
       this.clients.forEach((value, client) => {
         if (value.monitorId === request.monitorId) {
           client.send(
-            JSON.stringify([{ event: 'application', data: request }]),
+            JSON.stringify([{ event: 'application', data: requestFind }]),
           );
         }
       });
-    } else {
-      this.logger.error('request.playlist or request.monitorId is required');
     }
 
     if (monitor) {

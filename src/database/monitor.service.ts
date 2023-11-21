@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, FindManyOptions, In, Repository } from 'typeorm';
 
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorMultipleRequest } from '@/dto';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -157,7 +156,7 @@ export class MonitorService {
 
   async update(
     id: string,
-    update: QueryDeepPartialEntity<MonitorEntity>,
+    update: Partial<MonitorEntity>,
     groupIds?: MonitorMultipleRequest[],
   ): Promise<MonitorEntity> {
     const multipleBool = Array.isArray(groupIds);
@@ -178,7 +177,8 @@ export class MonitorService {
         `Monitor "${originalMonitor.name}"#"${id}" is attached to the playlist`,
       );
     }
-    if (multiple !== update.multiple) {
+    const { multiple: updateMultiple = multiple } = update;
+    if (multiple !== updateMultiple) {
       throw new BadRequestException(
         `Monitor "${originalMonitor.name}"#"${id}" multiple not changed`,
       );
@@ -192,11 +192,11 @@ export class MonitorService {
     return this.monitorRepository.manager.transaction(async (transact) => {
       const updated = await transact.update(MonitorEntity, id, update);
       if (!updated.affected) {
-        throw new NotAcceptableException(`Monitor with this ${id} not found`);
+        throw new NotAcceptableException(`Monitor with this "${id}" not found`);
       }
       const monitor = await transact.findOne(MonitorEntity, { where: { id } });
       if (!monitor) {
-        throw new NotFoundException(`Monitor with this ${id} not found`);
+        throw new NotFoundException(`Monitor with this "${id}" not found`);
       }
       await this.requestService.websocketChange({ monitor });
 
@@ -279,7 +279,7 @@ export class MonitorService {
     groupIds,
   }: {
     user: UserEntity;
-    insert: QueryDeepPartialEntity<MonitorEntity>;
+    insert: Partial<MonitorEntity>;
     groupIds?: MonitorMultipleRequest[];
   }) {
     const { id: userId } = user;
@@ -287,7 +287,7 @@ export class MonitorService {
     if (insert.monitorInfo) {
       throw new BadRequestException('Monitor info deprecated');
     }
-    const prepareMonitor: QueryDeepPartialEntity<MonitorEntity> = {
+    const prepareMonitor: Partial<MonitorEntity> = {
       ...insert,
       userId,
     };
@@ -295,7 +295,7 @@ export class MonitorService {
     return this.monitorRepository.manager.transaction(async (transact) => {
       const monitorInserted = await transact.insert(
         MonitorEntity,
-        prepareMonitor,
+        transact.create(MonitorEntity, prepareMonitor),
       );
       const monitorInsertedId = monitorInserted.identifiers[0]?.id;
       if (!monitorInsertedId) {
