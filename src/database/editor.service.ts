@@ -36,6 +36,7 @@ import {
   MonitorMultiple,
   MonitorOrientation,
   RenderingStatus,
+  RequestStatus,
   VideoType,
 } from '@/enums';
 import { MonitorGroupWithPlaylist } from '@/dto/interface';
@@ -49,6 +50,7 @@ import { RequestEntity } from './request.entity';
 import { PlaylistService } from './playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { CrontabService } from '@/crontab/crontab.service';
+import { RequestService } from '@/database/request.service';
 
 dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
@@ -63,6 +65,8 @@ export class EditorService {
     private readonly configService: ConfigService,
     private readonly crontabService: CrontabService,
     private readonly folderService: FolderService,
+    @Inject(forwardRef(() => RequestService))
+    private readonly requestService: RequestService,
     private readonly playlistService: PlaylistService,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
@@ -567,9 +571,22 @@ export class EditorService {
     const monitorPlaylists = await Promise.all(monitorPlaylistsPromise);
 
     setTimeout(async () => {
-      // TODO: Запустить рендеринг
-      // eslint-disable-next-line no-debugger
-      debugger;
+      // Запустить рендеринг
+      const playlistsPromise = monitorPlaylists.map(async (item) => {
+        const editors = await this.editorRepository.find({
+          where: { playlistId: item.playlist.id },
+        });
+        const editorsPromise = editors.map(async (editor) => {
+          await this.export({
+            user: request.user,
+            id: editor.id,
+            rerender: true,
+            // TODO: customOutputArgs
+          });
+        });
+        await Promise.all(editorsPromise);
+      });
+      await Promise.all(playlistsPromise);
     }, 0);
 
     return monitorPlaylists;
@@ -583,11 +600,32 @@ export class EditorService {
    * @param {boolean} rerender Re-render
    * @returns {EditorEntity} Result
    */
-  async export(
-    user: UserEntity,
-    id: string,
+  async export({
+    user,
+    id,
     rerender = false,
-  ): Promise<EditorEntity | undefined> {
+    customOutputArgs = [
+      '-c:v',
+      'libx264', // Video Codec: libx264, an H.264 encoder
+      '-preset',
+      'slow', // Slow x264 encoding preset. Default preset is medium. Use the slowest preset that you have patience for.
+      '-crf',
+      '20', // CRF value of 20 which will result in a high quality output. Default value is 23. A lower value is a higher quality. Use the highest value that gives an acceptable quality.
+      '-c:a',
+      'aac', // Audio Codec: AAC
+      '-b:a',
+      '160k', // Encodes the audio with a bitrate of 160k.
+      '-vf',
+      'format=yuv420p', // Chooses YUV 4:2:0 chroma-subsampling which is recommended for H.264 compatibility
+      '-movflags',
+      '+faststart', // Is an option for MP4 output that move some data to the beginning of the file after encoding is finished. This allows the video to begin playing faster if it is watched via progressive download playback.
+    ],
+  }: {
+    user: UserEntity;
+    id: string;
+    rerender?: boolean;
+    customOutputArgs?: string[];
+  }): Promise<EditorEntity | undefined> {
     const editor = await this.editorRepository.findOne({
       relations: {
         videoLayers: {
@@ -630,15 +668,15 @@ export class EditorService {
       });
 
       if (editor.renderedFile) {
-        await this.editorRepository.update(editor.id, {
-          renderedFile: null,
-        });
         await this.fileService
           .delete(user, [editor.renderedFile.id])
           .catch((reason) => {
             this.logger.error(`Delete from editor failed: ${reason}`);
             throw reason;
           });
+        await this.editorRepository.update(editor.id, {
+          renderedFile: null,
+        });
       }
 
       const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
@@ -654,22 +692,7 @@ export class EditorService {
         mkdirPath,
         `${path.parse(editor.name).name}-out.mp4`,
       );
-      editlyConfig.customOutputArgs = [
-        '-c:v',
-        'libx264', // Video Codec: libx264, an H.264 encoder
-        '-preset',
-        'slow', // Slow x264 encoding preset. Default preset is medium. Use the slowest preset that you have patience for.
-        '-crf',
-        '20', // CRF value of 20 which will result in a high quality output. Default value is 23. A lower value is a higher quality. Use the highest value that gives an acceptable quality.
-        '-c:a',
-        'aac', // Audio Codec: AAC
-        '-b:a',
-        '160k', // Encodes the audio with a bitrate of 160k.
-        '-vf',
-        'format=yuv420p', // Chooses YUV 4:2:0 chroma-subsampling which is recommended for H.264 compatibility
-        '-movflags',
-        '+faststart', // Is an option for MP4 output that move some data to the beginning of the file after encoding is finished. This allows the video to begin playing faster if it is watched via progressive download playback.
-      ];
+      editlyConfig.customOutputArgs = customOutputArgs;
 
       (async (renderEditor: EditorEntity) => {
         const editlyJSON = JSON.stringify(editlyConfig);
@@ -750,25 +773,27 @@ export class EditorService {
           stream: null as unknown as ReadStream,
           buffer: null as unknown as Buffer,
         };
-        await this.fileService
+        const renderedFiles = await this.fileService
           .upload(
             user,
             { folderId: exportFolder.id, category: FileCategory.Media },
             [files],
           )
-          .then((value) => {
-            if (value[0]) {
+          .then((renderedFile) => {
+            if (renderedFile[0]) {
               this.editorRepository.update(renderEditor.id, {
                 renderingStatus: RenderingStatus.Ready,
-                renderedFile: value[0],
+                renderedFile: renderedFile[0],
                 renderingPercent: 100,
                 renderingError: null,
               });
-            } else {
-              throw new NotFoundException(
-                `Upload file not found: ${JSON.stringify(files)}`,
-              );
+
+              return renderedFile;
             }
+
+            throw new NotFoundException(
+              `Upload file not found: ${JSON.stringify(files)}`,
+            );
           })
           .catch((reason) => {
             this.logger.error(`Can't write to out file: ${reason}`);
@@ -777,27 +802,43 @@ export class EditorService {
 
         this.logger.log(`Writed out file: ${JSON.stringify(files)}`);
 
-        // // Удаляем все
-        // const deleteLayer = editlyConfig.clips.map(async (clip) =>
-        //   (clip.layers as any)?.[0]?.path
-        //     ? fs.unlink((clip.layers as any)[0].path).catch(() => {
-        //         this.logger.error(
-        //           `Not deleted: ${(clip.layers as any)?.[0]?.path}`,
-        //         );
-        //       })
-        //     : undefined,
-        // );
-        // if (editlyConfig.audioTracks) {
-        //   deleteLayer.concat(
-        //     editlyConfig.audioTracks.map(async (track) =>
-        //       fs.unlink(track.path).catch(() => {
-        //         this.logger.error(`Not deleted: ${track.path}`);
-        //       }),
-        //     ),
-        //   );
-        // }
-        // deleteLayer.concat(fs.unlink(outPath));
-        // await Promise.allSettled(deleteLayer);
+        // Для SCALING, но может быть еще для чего-то
+        if (editor.playlistId) {
+          const playlist = await this.playlistService.findOne({
+            where: { id: editor.playlistId },
+            relations: { editors: true },
+          });
+          if (playlist) {
+            // обновляем плэйлист
+            await this.playlistService.update(playlist.id, {
+              files: renderedFiles,
+            });
+            if (playlist.editors) {
+              const editors = playlist.editors.filter(
+                (e) => e.renderingStatus === RenderingStatus.Ready,
+              );
+              if (editors.length === playlist.editors.length) {
+                const request = await this.requestService.find({
+                  where: { playlistId: playlist.id },
+                });
+                const requestIds = new Set<string>(...request.map((r) => r.id));
+                requestIds.forEach((requestId) => {
+                  this.requestService.update(requestId, {
+                    status: RequestStatus.OK,
+                  });
+                });
+              }
+            } else {
+              this.logger.error(
+                `Editors not found: editorId="${editor.id}" / playlistId="${playlist.id}"`,
+              );
+            }
+          } else {
+            this.logger.error(
+              `Playlist not found: playlistId="${editor.playlistId}"`,
+            );
+          }
+        }
       })(editor).catch((error: any) => {
         this.logger.error(error?.message, error?.stack, 'Editly');
         this.editorRepository.update(editor.id, {

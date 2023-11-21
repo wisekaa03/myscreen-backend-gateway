@@ -81,16 +81,16 @@ export class PlaylistService {
 
   async update(
     id: string,
-    insert: QueryDeepPartialEntity<PlaylistEntity>,
+    insert: Partial<PlaylistEntity>,
   ): Promise<PlaylistEntity> {
     const updated = await this.playlistRepository.update(id, insert);
     if (!updated.affected) {
-      throw new NotAcceptableException(`Playlist with this ${id} not found`);
+      throw new NotAcceptableException(`Playlist with this "${id}" not found`);
     }
 
     const playlist = await this.findOne({ where: { id } });
     if (!playlist) {
-      throw new NotFoundException(`Playlist with this ${id} not found`);
+      throw new NotFoundException(`Playlist with this "${id}" not found`);
     }
     await this.requestService.websocketChange({ playlist });
 

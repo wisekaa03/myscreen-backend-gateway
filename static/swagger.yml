@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.55
+  version: 2.42.56
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4257,6 +4257,11 @@ components:
           description: Скрытый
           default: false
           example: false
+        editors:
+          type: array
+          description: Подчиненные редакторы
+          items:
+            $ref: "#/components/schemas/EditorResponse"
         createdAt:
           type: string
           description: Время создания
@@ -6219,6 +6224,7 @@ components:
               - hide
               - files
               - monitors
+              - editors
               - createdAt
               - updatedAt
         scope:

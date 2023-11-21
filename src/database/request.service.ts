@@ -422,7 +422,7 @@ export class RequestService {
       const { id } = insertResult.identifiers[0];
 
       let relations: FindOneOptions<RequestEntity>['relations'];
-      if (!(insert.approved === RequestApprove.NOTPROCESSED || insert.hide)) {
+      if (!(insert.approved === RequestApprove.NOTPROCESSED || !insert.hide)) {
         relations = { seller: true };
       } else {
         relations = {
