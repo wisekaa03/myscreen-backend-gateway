@@ -178,7 +178,7 @@ export class MonitorService {
         `Monitor "${originalMonitor.name}"#"${id}" is attached to the playlist`,
       );
     }
-    if (multiple === update.multiple) {
+    if (multiple !== update.multiple) {
       throw new BadRequestException(
         `Monitor "${originalMonitor.name}"#"${id}" multiple not changed`,
       );
