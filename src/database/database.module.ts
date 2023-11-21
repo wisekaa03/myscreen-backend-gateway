@@ -30,13 +30,13 @@ import { UserExtEntity } from './user-ext.entity';
 import { UserService } from './user.service';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
-import { ApplicationService } from './application.service';
-import { ApplicationEntity } from './application.entity';
+import { RequestService } from './request.service';
+import { ApplicationEntity } from './request.entity';
 import { WalletEntity } from './wallet.entity';
 import { WalletService } from './wallet.service';
 import { ActService } from './act.service';
 import { ActEntity } from './act.entity';
-import { MonitorMultipleEntity } from './monitor.multiple.entity';
+import { MonitorGroupEntity } from './monitor.group.entity';
 
 @Module({
   imports: [
@@ -58,7 +58,7 @@ import { MonitorMultipleEntity } from './monitor.multiple.entity';
       FilePreviewEntity,
       MonitorEntity,
       MonitorFavoriteEntity,
-      MonitorMultipleEntity,
+      MonitorGroupEntity,
       InvoiceEntity,
       PlaylistEntity,
       UptimeMonitoringEntity,
@@ -82,7 +82,7 @@ import { MonitorMultipleEntity } from './monitor.multiple.entity';
     PlaylistService,
     UserService,
     RefreshTokenService,
-    ApplicationService,
+    RequestService,
     WalletService,
     ActService,
   ],
@@ -97,7 +97,7 @@ import { MonitorMultipleEntity } from './monitor.multiple.entity';
     PlaylistService,
     UserService,
     RefreshTokenService,
-    ApplicationService,
+    RequestService,
     WalletService,
   ],
 })

@@ -38,14 +38,14 @@ import {
   RenderingStatus,
   VideoType,
 } from '@/enums';
-import { MonitorMultipleWithPlaylist } from '@/dto/interface';
+import { MonitorGroupWithPlaylist } from '@/dto/interface';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from '@/database/file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
-import { ApplicationEntity } from './application.entity';
+import { ApplicationEntity } from './request.entity';
 import { PlaylistService } from './playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { CrontabService } from '@/crontab/crontab.service';
@@ -460,33 +460,30 @@ export class EditorService {
   }
 
   async partitionMonitors({
-    application,
+    request,
   }: {
-    application: ApplicationEntity;
-  }): Promise<MonitorMultipleWithPlaylist[] | null> {
-    const { playlist } = application;
-    const { multiple, multipleMonitors } = application.monitor;
-    if (!multipleMonitors) {
+    request: ApplicationEntity;
+  }): Promise<MonitorGroupWithPlaylist[] | null> {
+    const { playlist, userId } = request;
+    const { multiple, groupMonitors } = request.monitor;
+    if (!groupMonitors) {
       return null;
     }
     if (multiple !== MonitorMultiple.SCALING) {
-      const monitorMultipleWithPlaylist = multipleMonitors.reduce(
-        (acc, item) => {
-          acc.push({
-            ...item,
-            playlist,
-          });
-          return acc;
-        },
-        [] as MonitorMultipleWithPlaylist[],
-      );
+      const monitorMultipleWithPlaylist = groupMonitors.reduce((acc, item) => {
+        acc.push({
+          ...item,
+          playlist,
+        });
+        return acc;
+      }, [] as MonitorGroupWithPlaylist[]);
 
       return monitorMultipleWithPlaylist;
     }
 
-    const minRow = Math.min(...multipleMonitors.map((m) => m.row));
-    const minCol = Math.min(...multipleMonitors.map((m) => m.col));
-    const widthSum = multipleMonitors
+    const minRow = Math.min(...groupMonitors.map((m) => m.row));
+    const minCol = Math.min(...groupMonitors.map((m) => m.col));
+    const widthSum = groupMonitors
       .filter((m) => m.row === minRow)
       .reduce(
         (acc, { monitor: itemMonitor }) =>
@@ -495,7 +492,7 @@ export class EditorService {
             : acc + itemMonitor.height,
         0,
       );
-    const heightSum = multipleMonitors
+    const heightSum = groupMonitors
       .filter((m) => m.col === minCol)
       .reduce(
         (acc, { monitor: itemMonitor }) =>
@@ -506,69 +503,67 @@ export class EditorService {
       );
 
     // делим ее на количество мониторов
-    const widthMonitor = widthSum / multipleMonitors.length;
-    const heightMonitor = heightSum / multipleMonitors.length;
+    const widthMonitor = widthSum / groupMonitors.length;
+    const heightMonitor = heightSum / groupMonitors.length;
 
-    const { files } = application.playlist;
+    const { files } = request.playlist;
 
-    const monitorPlaylistsPromise = multipleMonitors.map(
-      async (multipleMonitor) => {
-        const { name: monitorName, id: monitorId } = multipleMonitor.monitor;
-        // создаем плэйлист
-        const playlistLocal = await this.playlistService.create({
-          name: `Scaling monitor "${monitorName}": #${monitorId}`,
-          description: `Scaling monitor "${monitorName}": #${monitorId}`,
-          userId: application.user.id,
-          monitors: [],
-          hide: true,
+    const monitorPlaylistsPromise = groupMonitors.map(async (groupMonitor) => {
+      const { name: monitorName, id: monitorId } = groupMonitor.monitor;
+      // создаем плэйлист
+      const playlistLocal = await this.playlistService.create({
+        name: `Scaling monitor "${monitorName}": #${monitorId}`,
+        description: `Scaling monitor "${monitorName}": #${monitorId}`,
+        userId,
+        monitors: [],
+        hide: true,
+      });
+      // добавляем в плэйлист монитор
+      await this.monitorService.update(monitorId, {
+        playlist: playlistLocal,
+      });
+      // создаем редакторы
+      const editorsPromise = files.map(async (file) => {
+        const editor = await this.create({
+          name: `Automatic "${playlist.name}": file #${file.id}`,
+          userId,
+          width: widthMonitor,
+          height: heightMonitor,
+          fps: 30,
+          keepSourceAudio: true,
+          totalDuration: 0,
+          renderingStatus: RenderingStatus.Initial,
+          renderingPercent: null,
+          renderingError: null,
+          renderedFile: null,
+          playlistId: playlistLocal.id,
         });
-        // добавляем в плэйлист монитор
-        await this.monitorService.update(monitorId, {
-          playlist: playlistLocal,
+        // и добавляем в редактор видео-слой с файлом
+        await this.createLayer(request.user.id, editor.id, {
+          index: 0,
+          cutFrom: 0,
+          cutTo: file.duration,
+
+          // TODO: Сделать разбиение по мониторам
+          cropX: 0,
+          cropY: 0,
+          cropW: 10,
+          cropH: 10,
+
+          duration: file.duration,
+          mixVolume: 1,
+          fileId: file.id,
         });
-        // создаем редакторы
-        const editorsPromise = files.map(async (file) => {
-          const editor = await this.create({
-            name: `Automatic "${playlist.name}": file #${file.id}`,
-            userId: application.user.id,
-            width: widthMonitor,
-            height: heightMonitor,
-            fps: 30,
-            keepSourceAudio: true,
-            totalDuration: 0,
-            renderingStatus: RenderingStatus.Initial,
-            renderingPercent: null,
-            renderingError: null,
-            renderedFile: null,
-            playlistId: playlistLocal.id,
-          });
-          // и добавляем в редактор видео-слой с файлом
-          await this.createLayer(application.user.id, editor.id, {
-            index: 0,
-            cutFrom: 0,
-            cutTo: file.duration,
 
-            // TODO: Сделать разбиение по мониторам
-            cropX: 0,
-            cropY: 0,
-            cropW: 10,
-            cropH: 10,
+        return editor;
+      });
+      await Promise.all(editorsPromise);
 
-            duration: file.duration,
-            mixVolume: 1,
-            fileId: file.id,
-          });
-
-          return editor;
-        });
-        await Promise.all(editorsPromise);
-
-        return {
-          ...multipleMonitor,
-          playlist: playlistLocal,
-        };
-      },
-    );
+      return {
+        ...groupMonitor,
+        playlist: playlistLocal,
+      };
+    });
     const monitorPlaylists = await Promise.all(monitorPlaylistsPromise);
 
     setTimeout(async () => {

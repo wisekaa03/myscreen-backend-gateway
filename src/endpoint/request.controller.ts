@@ -33,19 +33,19 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
-import { ApplicationService } from '@/database/application.service';
+import { RequestService } from '@/database/request.service';
 
 @ApiComplexDecorators('application', [
   UserRoleEnum.Administrator,
   UserRoleEnum.Advertiser,
   UserRoleEnum.MonitorOwner,
 ])
-export class ApplicationController {
-  logger = new Logger(ApplicationController.name);
+export class RequestController {
+  logger = new Logger(RequestController.name);
 
   constructor(
     private readonly userService: UserService,
-    private readonly applicationService: ApplicationService,
+    private readonly requestService: RequestService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -68,7 +68,7 @@ export class ApplicationController {
   ): Promise<ApplicationsGetResponse> {
     const sqlWhere = TypeOrmFind.Where(where);
     if (user.role === UserRoleEnum.MonitorOwner) {
-      const [data, count] = await this.applicationService.findAndCount({
+      const [data, count] = await this.requestService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
@@ -85,7 +85,7 @@ export class ApplicationController {
     }
 
     if (user.role === UserRoleEnum.Advertiser) {
-      const [data, count] = await this.applicationService.findAndCount({
+      const [data, count] = await this.requestService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
@@ -101,7 +101,7 @@ export class ApplicationController {
       };
     }
 
-    const [data, count] = await this.applicationService.findAndCount({
+    const [data, count] = await this.requestService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
       where: TypeOrmFind.Where(where),
@@ -128,7 +128,7 @@ export class ApplicationController {
   async findOne(
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationGetResponse> {
-    const data = await this.applicationService.findOne({
+    const data = await this.requestService.findOne({
       where: {
         id,
       },
@@ -160,7 +160,7 @@ export class ApplicationController {
     @Param('applicationId', ParseUUIDPipe) applicationId: string,
     @Body() update: ApplicationUpdateRequest,
   ): Promise<ApplicationGetResponse> {
-    const application = await this.applicationService.findOne({
+    const application = await this.requestService.findOne({
       where: [
         {
           id: applicationId,
@@ -179,10 +179,7 @@ export class ApplicationController {
       throw new NotFoundException('Application not found');
     }
 
-    const data = await this.applicationService.update({
-      ...update,
-      id: applicationId,
-    });
+    const data = await this.requestService.update(applicationId, update);
     if (!data) {
       throw new BadRequestException('Application exists and not exists ?');
     }
@@ -209,7 +206,7 @@ export class ApplicationController {
     @Req() { user }: ExpressRequest,
     @Param('applicationId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
-    const application = await this.applicationService.findOne({
+    const application = await this.requestService.findOne({
       where: [
         { id, sellerId: user.id },
         { id, buyerId: user.id },
@@ -220,7 +217,7 @@ export class ApplicationController {
       throw new NotFoundException(`Application "${id}" is not found`);
     }
 
-    const { affected } = await this.applicationService.delete(application);
+    const { affected } = await this.requestService.delete(application);
     if (!affected) {
       throw new NotFoundException('This application is not exists');
     }
@@ -252,7 +249,7 @@ export class ApplicationController {
       dateTo,
     }: ApplicationPrecalculateRequest,
   ): Promise<ApplicationPrecalculateResponse> {
-    const sum = await this.applicationService.precalculate({
+    const sum = await this.requestService.precalculate({
       user,
       monitorIds,
       playlistDuration,

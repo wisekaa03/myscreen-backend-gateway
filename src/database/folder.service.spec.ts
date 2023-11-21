@@ -27,6 +27,10 @@ export const mockRepository = jest.fn(() => ({
       { id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id },
       1,
     ]),
+  createQueryBuilder: () => ({
+    setFindOptions: (find: unknown) => find,
+    getOne: () => Promise.resolve({ id: '0000-0000-0000-0000' }),
+  }),
   save: async (id: unknown) => Promise.resolve(id),
   insert: async () =>
     Promise.resolve<InsertResult>({

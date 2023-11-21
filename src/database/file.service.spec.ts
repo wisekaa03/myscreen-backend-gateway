@@ -12,7 +12,7 @@ import { FileService } from './file.service';
 import { MonitorService } from './monitor.service';
 import { EditorService } from './editor.service';
 import { PlaylistService } from './playlist.service';
-import { ApplicationService } from './application.service';
+import { RequestService } from './request.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -37,7 +37,7 @@ describe(FileService.name, () => {
       providers: [
         FileService,
         { provide: ConfigService, useClass: mockRepository },
-        { provide: ApplicationService, useClass: mockRepository },
+        { provide: RequestService, useClass: mockRepository },
         { provide: MailService, useClass: mockRepository },
         { provide: FolderService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },

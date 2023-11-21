@@ -9,7 +9,6 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import {
-  DeepPartial,
   DeleteResult,
   FindManyOptions,
   FindOneOptions,
@@ -26,19 +25,17 @@ import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { ApplicationApproved, MonitorMultiple } from '@/enums';
 import { MailService } from '@/mail/mail.service';
-import { ApplicationEntity } from './application.entity';
+import { ApplicationEntity } from './request.entity';
 import { FileEntity } from './file.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { UserExtEntity } from './user-ext.entity';
-// eslint-disable-next-line import/no-cycle
-import { MonitorService } from './monitor.service';
-// eslint-disable-next-line import/no-cycle
-import { EditorService } from './editor.service';
+import { MonitorService } from '@/database/monitor.service';
+import { EditorService } from '@/database/editor.service';
 
 @Injectable()
-export class ApplicationService {
-  private logger = new Logger(ApplicationService.name);
+export class RequestService {
+  private logger = new Logger(RequestService.name);
 
   private frontendUrl: string;
 
@@ -51,7 +48,7 @@ export class ApplicationService {
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
     @InjectRepository(ApplicationEntity)
-    private readonly applicationRepository: Repository<ApplicationEntity>,
+    private readonly requestRepository: Repository<ApplicationEntity>,
     configService: ConfigService,
   ) {
     this.frontendUrl = configService.get<string>(
@@ -77,9 +74,9 @@ export class ApplicationService {
     }
 
     if (caseInsensitive) {
-      result = await TypeOrmFind.findCI(this.applicationRepository, findLocal);
+      result = await TypeOrmFind.findCI(this.requestRepository, findLocal);
     } else {
-      result = await this.applicationRepository.find(findLocal);
+      result = await this.requestRepository.find(findLocal);
     }
 
     return result;
@@ -102,11 +99,11 @@ export class ApplicationService {
     }
     if (caseInsensitive) {
       result = await TypeOrmFind.findAndCountCI(
-        this.applicationRepository,
+        this.requestRepository,
         findLocal,
       );
     } else {
-      result = await this.applicationRepository.findAndCount(findLocal);
+      result = await this.requestRepository.findAndCount(findLocal);
     }
 
     return result;
@@ -130,13 +127,11 @@ export class ApplicationService {
 
     if (caseInsensitive) {
       result = await TypeOrmFind.findOneCI(
-        this.applicationRepository,
+        this.requestRepository,
         TypeOrmFind.Nullable(find),
       );
     } else {
-      result = await this.applicationRepository.findOne(
-        TypeOrmFind.Nullable(find),
-      );
+      result = await this.requestRepository.findOne(TypeOrmFind.Nullable(find));
     }
 
     return result;
@@ -154,8 +149,8 @@ export class ApplicationService {
     filesDelete = false,
     monitor,
     monitorDelete = false,
-    application,
-    applicationDelete = false,
+    request,
+    requestDelete = false,
   }: {
     playlist?: PlaylistEntity;
     playlistDelete?: boolean;
@@ -163,16 +158,16 @@ export class ApplicationService {
     filesDelete?: boolean;
     monitor?: MonitorEntity;
     monitorDelete?: boolean;
-    application?: ApplicationEntity;
-    applicationDelete?: boolean;
+    request?: ApplicationEntity;
+    requestDelete?: boolean;
   }) {
     if (playlist) {
-      const applications = await this.monitorApplications({
+      const requests = await this.monitorApplications({
         playlistId: playlist.id,
       });
 
-      const wsPromise = applications.map(async (applicationLocal) =>
-        this.wsGateway.application({ application: applicationLocal }),
+      const wsPromise = requests.map(async (requestLocal) =>
+        this.wsGateway.onChange({ request: requestLocal }),
       );
 
       await Promise.allSettled(wsPromise);
@@ -183,19 +178,19 @@ export class ApplicationService {
           monitorId: monitor.id,
         });
 
-        const wsPromise = applications.map(async (applicationLocal) =>
-          this.wsGateway.application({ application: applicationLocal }),
+        const wsPromise = applications.map(async (requestLocal) =>
+          this.wsGateway.onChange({ request: requestLocal }),
         );
 
         await Promise.allSettled(wsPromise);
       } else {
-        await this.wsGateway.application({ monitor });
+        await this.wsGateway.onChange({ monitor });
       }
-    } else if (application) {
-      if (applicationDelete) {
-        await this.wsGateway.application({ monitor: application.monitor });
+    } else if (request) {
+      if (requestDelete) {
+        await this.wsGateway.onChange({ monitor: request.monitor });
       } else {
-        await this.wsGateway.application({ application });
+        await this.wsGateway.onChange({ request });
       }
     }
   }
@@ -272,37 +267,37 @@ export class ApplicationService {
     return expected;
   }
 
-  private async applicationCreatePost({
-    application,
+  private async requestPostCreate({
+    request,
   }: {
-    application: ApplicationEntity;
+    request: ApplicationEntity;
   }): Promise<void> {
-    const { multiple } = application.monitor;
+    const { multiple } = request.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.websocketChange({ application });
+      await this.websocketChange({ request });
     } else {
-      await this.applicationRepository.manager.transaction(async (transact) => {
-        const multipleMonitors = await this.editorService.partitionMonitors({
-          application,
+      await this.requestRepository.manager.transaction(async (transact) => {
+        const groupMonitors = await this.editorService.partitionMonitors({
+          request,
         });
-        if (!Array.isArray(multipleMonitors)) {
+        if (!Array.isArray(groupMonitors)) {
           throw new NotAcceptableException('Monitors or Playlists not found');
         }
 
-        const groupMonitorPromise = multipleMonitors.map(async (subMonitor) => {
+        const groupMonitorPromise = groupMonitors.map(async (monitor) => {
+          const { id, ...insert } = request;
           const app = await transact.save(
             ApplicationEntity,
             transact.create(ApplicationEntity, {
-              ...application,
-              id: undefined,
+              ...insert,
               hide: true,
-              parentApplicationId: application.id,
-              monitorId: subMonitor.id,
-              playlistId: subMonitor.playlist.id,
+              parentRequestId: id,
+              monitorId: monitor.id,
+              playlistId: monitor.playlist.id,
             }),
           );
 
-          await this.websocketChange({ application: app });
+          await this.websocketChange({ request: app });
 
           return app;
         });
@@ -312,28 +307,28 @@ export class ApplicationService {
     }
   }
 
-  private async applicationDeletePre({
-    application,
+  private async requestPreDelete({
+    request,
     delete: deleteLocal = false,
   }: {
-    application: ApplicationEntity;
+    request: ApplicationEntity;
     delete?: boolean;
   }): Promise<void> {
-    const { multiple } = application.monitor;
+    const { multiple } = request.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.websocketChange({ application, applicationDelete: true });
+      await this.websocketChange({ request, requestDelete: true });
     } else {
-      await this.applicationRepository.manager.transaction(async (transact) => {
-        const subApplication = await transact.find(ApplicationEntity, {
+      await this.requestRepository.manager.transaction(async (transact) => {
+        const groupApplication = await transact.find(ApplicationEntity, {
           where: {
-            parentApplicationId: application.id,
+            parentRequestId: request.id,
           },
-          relations: ['monitor', 'playlist'],
+          relations: { monitor: true, playlist: true },
         });
-        const subAppPromise = subApplication.map(async (app) => {
+        const groupAppPromise = groupApplication.map(async (app) => {
           await this.websocketChange({
-            application: app,
-            applicationDelete: true,
+            request: app,
+            requestDelete: true,
           });
           if (deleteLocal) {
             if (multiple === MonitorMultiple.SCALING) {
@@ -343,53 +338,53 @@ export class ApplicationService {
           }
         });
 
-        await Promise.all(subAppPromise);
+        await Promise.all(groupAppPromise);
       });
     }
   }
 
   /**
-   * Create or update the application
+   * Update the application
    *
    * @param update Partial<ApplicationEntity>
    * @returns
    */
-  async update({
-    id,
-    ...update
-  }: DeepPartial<ApplicationEntity>): Promise<ApplicationEntity | null> {
-    await this.applicationRepository.manager.transaction(async (transact) => {
-      let application: ApplicationEntity | null = await transact.save(
+  async update(
+    id: string,
+    update: Partial<ApplicationEntity>,
+  ): Promise<ApplicationEntity> {
+    return this.requestRepository.manager.transaction(async (transact) => {
+      const updateResult = await transact.update(
         ApplicationEntity,
-        transact.create(ApplicationEntity, { id, ...update }),
+        id,
+        transact.create(ApplicationEntity, update),
       );
+      if (!updateResult.affected) {
+        throw new NotFoundException('Application not found');
+      }
 
       let relations: FindOneOptions<ApplicationEntity>['relations'];
       if (update.approved !== ApplicationApproved.NOTPROCESSED) {
-        relations = [
-          'buyer',
-          'seller',
-          'monitor',
-          'monitor.multipleMonitors',
-          'playlist',
-          'playlist.files',
-          'user',
-        ];
+        relations = {
+          buyer: true,
+          seller: true,
+          monitor: { groupMonitors: true },
+          playlist: { files: true },
+          user: true,
+        };
       } else {
-        relations = ['seller'];
+        relations = { seller: true };
       }
-      application = await transact.findOne(ApplicationEntity, {
-        where: {
-          id: application.id,
-        },
+      const request = await transact.findOne(ApplicationEntity, {
+        where: { id },
         relations,
       });
-      if (!application) {
+      if (!request) {
         throw new NotFoundException('Application not found');
       }
 
       if (update.approved === ApplicationApproved.NOTPROCESSED) {
-        const sellerEmail = application.seller?.email;
+        const sellerEmail = request.seller?.email;
         if (sellerEmail) {
           await this.mailService
             .sendApplicationWarningMessage({
@@ -406,25 +401,83 @@ export class ApplicationService {
           this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }
       } else if (update.approved === ApplicationApproved.ALLOWED) {
-        await this.applicationCreatePost({ application });
+        await this.requestPostCreate({ request });
       } else if (update.approved === ApplicationApproved.DENIED) {
-        await this.applicationDeletePre({ application });
+        await this.requestPreDelete({ request });
       }
-    });
 
-    return id === undefined
-      ? null
-      : this.applicationRepository.findOne({ where: { id } });
+      return request;
+    });
   }
 
-  async delete(application: ApplicationEntity): Promise<DeleteResult> {
-    await this.applicationDeletePre({
-      application,
+  async create(insert: Partial<ApplicationEntity>) {
+    return this.requestRepository.manager.transaction(async (transact) => {
+      const insertResult = await transact.insert(
+        ApplicationEntity,
+        transact.create(ApplicationEntity, insert),
+      );
+      if (!insertResult.identifiers[0]) {
+        throw new NotFoundException('Error when creating Application');
+      }
+      const { id } = insertResult.identifiers[0];
+
+      let relations: FindOneOptions<ApplicationEntity>['relations'];
+      if (
+        !(insert.approved === ApplicationApproved.NOTPROCESSED || insert.hide)
+      ) {
+        relations = { seller: true };
+      } else {
+        relations = {
+          buyer: true,
+          seller: true,
+          monitor: { groupMonitors: true },
+          playlist: { files: true },
+          user: true,
+        };
+      }
+      const request = await transact.findOne(ApplicationEntity, {
+        where: { id },
+        relations,
+      });
+      if (!request) {
+        throw new NotFoundException('Application not found');
+      }
+
+      if (insert.approved === ApplicationApproved.NOTPROCESSED) {
+        const sellerEmail = request.seller?.email;
+        if (sellerEmail) {
+          await this.mailService
+            .sendApplicationWarningMessage({
+              email: sellerEmail,
+              applicationUrl: `${this.frontendUrl}/applications`,
+            })
+            .catch((error: unknown) => {
+              this.logger.error(
+                `ApplicationService seller email=${sellerEmail}: ${error}`,
+                error,
+              );
+            });
+        } else {
+          this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
+        }
+      } else if (insert.approved === ApplicationApproved.ALLOWED) {
+        await this.requestPostCreate({ request });
+      } else if (insert.approved === ApplicationApproved.DENIED) {
+        await this.requestPreDelete({ request });
+      }
+
+      return request;
+    });
+  }
+
+  async delete(request: ApplicationEntity): Promise<DeleteResult> {
+    await this.requestPreDelete({
+      request,
       delete: true,
     });
 
-    const deleteResult = await this.applicationRepository.delete({
-      id: application.id,
+    const deleteResult = await this.requestRepository.delete({
+      id: request.id,
     });
 
     return deleteResult;

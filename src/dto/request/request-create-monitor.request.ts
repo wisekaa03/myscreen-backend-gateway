@@ -1,6 +1,6 @@
 import { OmitType } from '@nestjs/swagger';
 
-import { ApplicationEntity } from '@/database/application.entity';
+import { ApplicationEntity } from '@/database/request.entity';
 
 export class ApplicationCreateMonitorRequest extends OmitType(
   ApplicationEntity,
@@ -14,8 +14,8 @@ export class ApplicationCreateMonitorRequest extends OmitType(
     'monitorId',
     'status',
     'hide',
-    'parentApplication',
-    'parentApplicationId',
+    'parentRequest',
+    'parentRequestId',
     'playlist',
     'playlistId',
     'approved',

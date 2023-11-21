@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { ApplicationResponse } from './application.response';
+import { ApplicationResponse } from './request.response';
 
 export class ApplicationGetResponse {
   @ApiProperty({

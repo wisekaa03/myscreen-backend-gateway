@@ -35,7 +35,7 @@ import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { WalletEntity } from './wallet.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { ApplicationEntity } from './application.entity';
+import { ApplicationEntity } from './request.entity';
 
 export class UserMetricsMonitors {
   @ApiProperty({

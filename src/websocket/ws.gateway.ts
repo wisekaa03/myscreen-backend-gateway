@@ -25,8 +25,8 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { PlaylistService } from '@/database/playlist.service';
-import { ApplicationEntity } from '@/database/application.entity';
-import { ApplicationService } from '@/database/application.service';
+import { ApplicationEntity } from '@/database/request.entity';
+import { RequestService } from '@/database/request.service';
 
 @WebSocketGateway({
   cors: {
@@ -40,8 +40,8 @@ export class WSGateway
 {
   constructor(
     private readonly authService: AuthService,
-    @Inject(forwardRef(() => ApplicationService))
-    private readonly applicationService: ApplicationService,
+    @Inject(forwardRef(() => RequestService))
+    private readonly requestService: RequestService,
     private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,
   ) {}
@@ -164,7 +164,7 @@ export class WSGateway
           let application: ApplicationEntity[] | null = null;
           if (monitor) {
             [application] = await Promise.all([
-              this.applicationService.monitorApplications({
+              this.requestService.monitorApplications({
                 monitorId: monitor.id,
                 dateLocal: new Date(body.date),
               }),
@@ -269,30 +269,30 @@ export class WSGateway
    *  - Удаление связки плэйлиста и монитора
    *  - Изменение плэйлиста файлами
    *  TODO: что-то еще
-   * @param application ApplicationEntity or null
+   * @param request ApplicationEntity or null
    * @param monitor MonitorEntity or null
    */
-  async application({
-    application,
+  async onChange({
+    request,
     monitor,
   }: {
-    application?: ApplicationEntity;
+    request?: ApplicationEntity;
     monitor?: MonitorEntity;
   }): Promise<void> {
-    if (!application && !monitor) {
+    if (!request && !monitor) {
       this.logger.error('ApplicationEntity or MonitorEntity is required');
       return;
     }
 
-    if (application?.playlist && application.monitorId) {
-      await this.playlistService.update(application.playlist.id, {
+    if (request?.playlist && request.monitorId) {
+      await this.playlistService.update(request.playlist.id, {
         status: PlaylistStatusEnum.Broadcast,
       });
 
       this.clients.forEach((value, client) => {
-        if (value.monitorId === application.monitorId) {
+        if (value.monitorId === request.monitorId) {
           client.send(
-            JSON.stringify([{ event: 'application', data: application }]),
+            JSON.stringify([{ event: 'application', data: request }]),
           );
         }
       });

@@ -16,18 +16,18 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
-import { ApplicationService } from '@/database/application.service';
-import { MonitorMultipleEntity } from './monitor.multiple.entity';
+import { RequestService } from '@/database/request.service';
+import { MonitorGroupEntity } from './monitor.group.entity';
 
 @Injectable()
 export class MonitorService {
   constructor(
-    @Inject(forwardRef(() => ApplicationService))
-    private readonly applicationService: ApplicationService,
+    @Inject(forwardRef(() => RequestService))
+    private readonly requestService: RequestService,
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
-    @InjectRepository(MonitorMultipleEntity)
-    private readonly monitorMultipleRepository: Repository<MonitorMultipleEntity>,
+    @InjectRepository(MonitorGroupEntity)
+    private readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
     @InjectRepository(MonitorFavoriteEntity)
     private readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
   ) {}
@@ -158,14 +158,14 @@ export class MonitorService {
   async update(
     id: string,
     update: QueryDeepPartialEntity<MonitorEntity>,
-    multipleIds?: MonitorMultipleRequest[],
+    groupIds?: MonitorMultipleRequest[],
   ): Promise<MonitorEntity> {
-    const multipleBool = Array.isArray(multipleIds);
+    const multipleBool = Array.isArray(groupIds);
 
     const originalMonitor = await this.findOne({
       find: {
         where: { id },
-        relations: multipleBool ? { multipleMonitors: { monitor: true } } : {},
+        relations: multipleBool ? { groupMonitors: { monitor: true } } : {},
         loadEagerRelations: false,
       },
     });
@@ -198,25 +198,25 @@ export class MonitorService {
       if (!monitor) {
         throw new NotFoundException(`Monitor with this ${id} not found`);
       }
-      await this.applicationService.websocketChange({ monitor });
+      await this.requestService.websocketChange({ monitor });
 
       // а тут начинается полный трэш
       if (multiple !== MonitorMultiple.SINGLE && multipleBool) {
         // получаем подчиненные мониторы
-        const { multipleMonitors } = originalMonitor;
-        if (multipleMonitors) {
-          const monitorsDeleteId = multipleMonitors.reduce(
+        const { groupMonitors } = originalMonitor;
+        if (groupMonitors) {
+          const monitorsDeleteId = groupMonitors.reduce(
             (acc, item) =>
-              multipleIds.find(({ monitorId }) => monitorId === item.monitorId)
+              groupIds.find(({ monitorId }) => monitorId === item.monitorId)
                 ? acc
                 : [...acc, item],
-            [] as MonitorMultipleEntity[],
+            [] as MonitorGroupEntity[],
           );
           // удаляем из таблицы связей мониторов мониторы
           if (monitorsDeleteId.length > 0) {
             const monitorsWSchangePromise = monitorsDeleteId.map(
               async (item) => {
-                this.applicationService.websocketChange({
+                this.requestService.websocketChange({
                   monitor: item.monitor,
                   monitorDelete: true,
                 });
@@ -224,7 +224,7 @@ export class MonitorService {
             );
             await Promise.all(monitorsWSchangePromise);
 
-            await transact.delete(MonitorMultipleEntity, {
+            await transact.delete(MonitorGroupEntity, {
               parentMonitorId: originalMonitor.id,
               monitorId: In(monitorsDeleteId.map((item) => item.monitorId)),
             });
@@ -236,13 +236,13 @@ export class MonitorService {
             );
           }
           // обновляем мониторы в таблице связей мониторов
-          const multipleInsertPromise = multipleIds.map(async (item) => {
-            const monitorMultiple = multipleMonitors.find(
+          const multipleInsertPromise = groupIds.map(async (item) => {
+            const monitorMultiple = groupMonitors.find(
               (i) => i.monitorId === item.monitorId,
             );
             if (monitorMultiple) {
               await transact.update(
-                MonitorMultipleEntity,
+                MonitorGroupEntity,
                 {
                   parentMonitorId: originalMonitor.id,
                   monitorId: item.monitorId,
@@ -253,7 +253,7 @@ export class MonitorService {
                 },
               );
             } else {
-              await transact.insert(MonitorMultipleEntity, {
+              await transact.insert(MonitorGroupEntity, {
                 userId,
                 parentMonitorId: originalMonitor.id,
                 monitorId: item.monitorId,
@@ -276,11 +276,11 @@ export class MonitorService {
   async create({
     user,
     insert,
-    multipleIds,
+    groupIds,
   }: {
     user: UserEntity;
     insert: QueryDeepPartialEntity<MonitorEntity>;
-    multipleIds?: MonitorMultipleRequest[];
+    groupIds?: MonitorMultipleRequest[];
   }) {
     const { id: userId } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
@@ -309,13 +309,13 @@ export class MonitorService {
       }
 
       let groupMonitors: MonitorEntity[] = [];
-      const multipleBool = Array.isArray(multipleIds) && multipleIds.length > 0;
+      const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
       if (multiple !== MonitorMultiple.SINGLE) {
-        if (!multipleIds || multipleIds.length === 0) {
+        if (!groupIds || groupIds.length === 0) {
           throw new BadRequestException('Group monitors ID is empty');
         }
 
-        const multipleMonitorIds = multipleIds.map((item) => item.monitorId);
+        const multipleMonitorIds = groupIds.map((item) => item.monitorId);
         groupMonitors = await this.monitorRepository.find({
           where: {
             id: In(multipleMonitorIds),
@@ -325,14 +325,14 @@ export class MonitorService {
         });
         if (
           Array.isArray(groupMonitors) &&
-          groupMonitors.length !== multipleIds.length
+          groupMonitors.length !== groupIds.length
         ) {
           throw new BadRequestException('Not found ID of some monitors');
         }
         if (multiple === MonitorMultiple.SCALING) {
           const multipleRows = new Set<number>();
           const multipleCols = new Set<number>();
-          multipleIds.forEach((item) => {
+          groupIds.forEach((item) => {
             if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
               throw new BadRequestException(
                 `Monitor multiple "${item.monitorId}": row "${item.row}" with col "${item.col}" is already occupied`,
@@ -349,13 +349,13 @@ export class MonitorService {
       if (multipleBool) {
         const monitorMultiple = groupMonitors.map(async (groupMonitor) => {
           const groupMonitorId = groupMonitor.id;
-          const item = multipleIds.find((i) => i.monitorId === groupMonitorId);
+          const item = groupIds.find((i) => i.monitorId === groupMonitorId);
           if (!item) {
             throw new BadRequestException('Not found ID of some monitors');
           }
 
           // добавляем в таблицу связей мониторов монитор
-          await transact.insert(MonitorMultipleEntity, {
+          await transact.insert(MonitorGroupEntity, {
             userId,
             parentMonitorId: monitor.id,
             monitorId: groupMonitorId,
@@ -443,21 +443,21 @@ export class MonitorService {
   }
 
   async delete(monitor: MonitorEntity): Promise<DeleteResult> {
-    await this.applicationService.websocketChange({
+    await this.requestService.websocketChange({
       monitor,
       monitorDelete: true,
     });
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
       return this.monitorRepository.manager.transaction(async (transact) => {
-        const monitorMultiple = await transact.find(MonitorMultipleEntity, {
+        const monitorMultiple = await transact.find(MonitorGroupEntity, {
           where: {
             parentMonitorId: monitor.id,
           },
         });
         if (monitorMultiple.length > 0) {
           const monitorIdsPromise = monitorMultiple.map(async (item) => {
-            await this.applicationService.websocketChange({
+            await this.requestService.websocketChange({
               monitor: item.monitor,
               monitorDelete: true,
             });
@@ -470,7 +470,7 @@ export class MonitorService {
             { id: In(monitorIds) },
             { multiple: MonitorMultiple.SINGLE },
           );
-          await transact.delete(MonitorMultipleEntity, {
+          await transact.delete(MonitorGroupEntity, {
             parentMonitorId: monitor.id,
           });
         }

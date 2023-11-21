@@ -1,6 +1,6 @@
 import { OmitType } from '@nestjs/swagger';
 
-import { ApplicationEntity } from '@/database/application.entity';
+import { ApplicationEntity } from '@/database/request.entity';
 
 export class ApplicationRequest extends OmitType(ApplicationEntity, [
   'buyer',
@@ -8,8 +8,8 @@ export class ApplicationRequest extends OmitType(ApplicationEntity, [
   'monitor',
   'playlist',
   'hide',
-  'parentApplication',
-  'parentApplicationId',
+  'parentRequest',
+  'parentRequestId',
   'user',
   'createdAt',
   'updatedAt',

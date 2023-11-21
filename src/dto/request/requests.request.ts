@@ -1,8 +1,8 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString, IsEnum } from 'class-validator';
 
-import { ApplicationEntity } from '@/database/application.entity';
 import { ApplicationApproved, ApplicationStatus } from '@/enums';
+import { ApplicationEntity } from '@/database/request.entity';
 
 export class ApplicationsRequest extends PartialType(
   OmitType(ApplicationEntity, [
@@ -11,8 +11,8 @@ export class ApplicationsRequest extends PartialType(
     'monitor',
     'playlist',
     'hide',
-    'parentApplication',
-    'parentApplicationId',
+    'parentRequest',
+    'parentRequestId',
     'user',
     'createdAt',
     'updatedAt',

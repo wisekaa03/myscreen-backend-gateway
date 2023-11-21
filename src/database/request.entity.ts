@@ -17,13 +17,12 @@ import {
   Validate,
 } from 'class-validator';
 
+import { ApplicationStatus } from '@/enums';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { ApplicationApproved } from '@/enums/application-approved.enum';
 import { UserEntity } from './user.entity';
-// eslint-disable-next-line import/no-cycle
-import { MonitorEntity } from './monitor.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { ApplicationStatus } from '@/enums';
 
 @Entity('application')
 export class ApplicationEntity {
@@ -143,11 +142,11 @@ export class ApplicationEntity {
   })
   @JoinColumn()
   @Index()
-  parentApplication?: ApplicationEntity;
+  parentRequest?: ApplicationEntity;
 
   @Column({ nullable: true })
   @IsUUID()
-  parentApplicationId?: string;
+  parentRequestId?: string;
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     onDelete: 'CASCADE',

@@ -8,13 +8,12 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-// eslint-disable-next-line import/no-cycle
-import { MonitorEntity } from './monitor.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('monitor_multiple')
 @Unique(['monitor'])
-export class MonitorMultipleEntity {
+export class MonitorGroupEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Групповой идентификатор монитора',

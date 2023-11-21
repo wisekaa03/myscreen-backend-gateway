@@ -1,10 +1,10 @@
-import { MonitorMultipleEntity } from '@/database/monitor.multiple.entity';
+import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
 
 export type Token = string;
 
 export const dateLocalNow = new Date();
 
-export interface MonitorMultipleWithPlaylist extends MonitorMultipleEntity {
+export interface MonitorGroupWithPlaylist extends MonitorGroupEntity {
   playlist: PlaylistEntity;
 }

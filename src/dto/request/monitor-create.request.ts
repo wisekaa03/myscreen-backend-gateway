@@ -106,5 +106,5 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
   @IsOptional()
   @ValidateNested()
   @Type(() => MonitorMultipleRequest)
-  multipleIds?: MonitorMultipleRequest[];
+  groupIds?: MonitorMultipleRequest[];
 }
