@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.56
+  version: 2.42.58
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4827,8 +4827,14 @@ components:
           example: *ref_121
           allOf:
             - $ref: "#/components/schemas/PointClass"
+        groupIds:
+          description: Подчиненные мониторы в группе мониторов
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorMultipleRequest"
         multipleIds:
           description: Подчиненные мониторы в группе мониторов
+          deprecated: true
           type: array
           items:
             $ref: "#/components/schemas/MonitorMultipleRequest"

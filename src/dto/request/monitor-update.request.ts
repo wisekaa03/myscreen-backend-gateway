@@ -28,5 +28,17 @@ export class MonitorUpdateRequest extends PartialType(
   @IsOptional()
   @ValidateNested()
   @Type(() => MonitorMultipleRequest)
+  groupIds!: MonitorMultipleRequest[];
+
+  @ApiProperty({
+    type: MonitorMultipleRequest,
+    description: 'Подчиненные мониторы в группе мониторов',
+    isArray: true,
+    deprecated: true,
+    required: false,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MonitorMultipleRequest)
   multipleIds!: MonitorMultipleRequest[];
 }
