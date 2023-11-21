@@ -332,7 +332,10 @@ export class MonitorService {
         if (multiple === MonitorMultiple.SCALING) {
           const multipleRows = new Set<number>();
           const multipleCols = new Set<number>();
-          groupIds.forEach((item) => {
+          groupIds.forEach((item, i, arr) => {
+            if (i && item.row > arr[i - 1]?.row) {
+              multipleCols.clear();
+            }
             if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
               throw new BadRequestException(
                 `Monitor multiple "${item.monitorId}": row "${item.row}" with col "${item.col}" is already occupied`,

@@ -611,7 +611,7 @@ export class MonitorController {
   async updateMonitor(
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
-    @Body() { multipleIds, ...update }: MonitorUpdateRequest,
+    @Body() { groupIds, multipleIds, ...update }: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
     const { id: userId } = user;
     const monitor = await this.monitorService.findOne({
@@ -629,7 +629,11 @@ export class MonitorController {
     if (!monitor) {
       throw new NotFoundException(`Monitor ${id} is not found`);
     }
-    const data = await this.monitorService.update(id, update, multipleIds);
+    const data = await this.monitorService.update(
+      id,
+      update,
+      groupIds ?? multipleIds,
+    );
 
     return {
       status: Status.Success,
