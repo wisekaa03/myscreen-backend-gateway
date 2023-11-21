@@ -37,7 +37,7 @@ import {
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import {
   CRUD,
-  ApplicationApproved,
+  RequestApprove,
   Status,
   UserPlanEnum,
   UserRoleEnum,
@@ -124,7 +124,7 @@ export class MonitorController {
         {
           where: {
             dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
-            approved: Not(ApplicationApproved.DENIED),
+            approved: Not(RequestApprove.DENIED),
           },
           select: {
             monitorId: true,
@@ -287,7 +287,7 @@ export class MonitorController {
                   attach.application.dateBefore,
                 )
               : attach.application.dateWhen,
-            approved: Not(ApplicationApproved.DENIED),
+            approved: Not(RequestApprove.DENIED),
           },
         });
         if (approved.length > 0) {
@@ -315,10 +315,10 @@ export class MonitorController {
       });
 
       if (!(role === UserRoleEnum.Monitor || plan === UserPlanEnum.Demo)) {
-        const approved: ApplicationApproved =
+        const approved =
           monitor.userId === userId
-            ? ApplicationApproved.ALLOWED
-            : ApplicationApproved.NOTPROCESSED;
+            ? RequestApprove.ALLOWED
+            : RequestApprove.NOTPROCESSED;
 
         // To verify user permissions for request
         this.userService.verify(
@@ -583,7 +583,7 @@ export class MonitorController {
       throw new NotFoundException(`Have no playlist in monitor '${id}'`);
     }
 
-    const data = await this.requestService.monitorApplications({
+    const data = await this.requestService.monitorRequests({
       monitorId: monitor.id,
     });
 

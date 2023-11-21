@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { MailService } from '@/mail/mail.service';
-import { ApplicationEntity } from './request.entity';
+import { RequestEntity } from './request.entity';
 import { RequestService } from './request.service';
 import { UserService } from './user.service';
 import { MonitorEntity } from './monitor.entity';
@@ -44,7 +44,7 @@ describe(RequestService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(ApplicationEntity),
+          provide: getRepositoryToken(RequestEntity),
           useClass: mockRepository,
         },
       ],

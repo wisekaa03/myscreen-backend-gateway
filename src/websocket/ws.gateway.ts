@@ -25,7 +25,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { PlaylistService } from '@/database/playlist.service';
-import { ApplicationEntity } from '@/database/request.entity';
+import { RequestEntity } from '@/database/request.entity';
 import { RequestService } from '@/database/request.service';
 
 @WebSocketGateway({
@@ -145,7 +145,7 @@ export class WSGateway
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() body: AuthTokenEvent,
-  ): Promise<Observable<WsResponse<string | ApplicationEntity[] | null>[]>> {
+  ): Promise<Observable<WsResponse<string | RequestEntity[] | null>[]>> {
     if (!(body.token && body.date)) {
       throw new WsException('Not authorized');
     }
@@ -161,10 +161,10 @@ export class WSGateway
               relations: {},
             },
           });
-          let application: ApplicationEntity[] | null = null;
+          let request: RequestEntity[] | null = null;
           if (monitor) {
-            [application] = await Promise.all([
-              this.requestService.monitorApplications({
+            [request] = await Promise.all([
+              this.requestService.monitorRequests({
                 monitorId: monitor.id,
                 dateLocal: new Date(body.date),
               }),
@@ -180,7 +180,7 @@ export class WSGateway
           }
           return of([
             { event: 'auth/token', data: 'authorized' },
-            { event: 'applications', data: application },
+            { event: 'applications', data: request },
           ]);
         }
         return of([{ event: 'auth/token', data: 'authorized' }]);
@@ -276,11 +276,11 @@ export class WSGateway
     request,
     monitor,
   }: {
-    request?: ApplicationEntity;
+    request?: RequestEntity;
     monitor?: MonitorEntity;
   }): Promise<void> {
     if (!request && !monitor) {
-      this.logger.error('ApplicationEntity or MonitorEntity is required');
+      this.logger.error('request or monitor is required');
       return;
     }
 
@@ -297,9 +297,7 @@ export class WSGateway
         }
       });
     } else {
-      this.logger.error(
-        'application.playlist or application.monitorId is required',
-      );
+      this.logger.error('request.playlist or request.monitorId is required');
     }
 
     if (monitor) {

@@ -45,7 +45,7 @@ import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from '@/database/file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
-import { ApplicationEntity } from './request.entity';
+import { RequestEntity } from './request.entity';
 import { PlaylistService } from './playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { CrontabService } from '@/crontab/crontab.service';
@@ -462,7 +462,7 @@ export class EditorService {
   async partitionMonitors({
     request,
   }: {
-    request: ApplicationEntity;
+    request: RequestEntity;
   }): Promise<MonitorGroupWithPlaylist[] | null> {
     const { playlist, userId } = request;
     const { multiple, groupMonitors } = request.monitor;

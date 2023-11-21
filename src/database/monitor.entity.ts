@@ -44,7 +44,7 @@ import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
 import { MonitorFavoriteEntity } from '@/database/monitor.favorite.entity';
-import { ApplicationEntity } from '@/database/request.entity';
+import { RequestEntity } from '@/database/request.entity';
 import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 
 export class PointClass implements Point {
@@ -466,8 +466,10 @@ export class MonitorEntity {
   @JoinTable()
   files?: FileEntity[];
 
-  @OneToMany(() => ApplicationEntity, (app) => app.monitor, { eager: false })
-  requests?: ApplicationEntity[];
+  @OneToMany(() => RequestEntity, (request) => request.monitor, {
+    eager: false,
+  })
+  requests?: RequestEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

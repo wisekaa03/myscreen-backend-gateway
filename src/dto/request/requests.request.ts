@@ -1,11 +1,11 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString, IsEnum } from 'class-validator';
 
-import { ApplicationApproved, ApplicationStatus } from '@/enums';
-import { ApplicationEntity } from '@/database/request.entity';
+import { RequestApprove, RequestStatus } from '@/enums';
+import { RequestEntity } from '@/database/request.entity';
 
 export class ApplicationsRequest extends PartialType(
-  OmitType(ApplicationEntity, [
+  OmitType(RequestEntity, [
     'buyer',
     'seller',
     'monitor',
@@ -20,26 +20,26 @@ export class ApplicationsRequest extends PartialType(
 ) {
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
-    enum: ApplicationApproved,
-    enumName: 'ApplicationApproved',
-    example: [ApplicationApproved.NOTPROCESSED, ApplicationApproved.ALLOWED],
+    enum: RequestApprove,
+    enumName: 'RequestApprove',
+    example: [RequestApprove.NOTPROCESSED, RequestApprove.ALLOWED],
     isArray: true,
     required: false,
   })
-  @IsEnum(ApplicationApproved, { each: true })
-  approved?: Array<ApplicationApproved>;
+  @IsEnum(RequestApprove, { each: true })
+  approved?: Array<RequestApprove>;
 
   @ApiProperty({
     description: 'Ок / Подождите',
-    enum: ApplicationStatus,
-    enumName: 'ApplicationStatus',
-    example: [ApplicationStatus.OK, ApplicationStatus.WAITING],
+    enum: RequestStatus,
+    enumName: 'RequestStatus',
+    example: [RequestStatus.OK, RequestStatus.WAITING],
     type: 'enum',
     isArray: true,
     required: false,
   })
-  @IsEnum(ApplicationStatus, { each: true })
-  status?: Array<ApplicationStatus>;
+  @IsEnum(RequestStatus, { each: true })
+  status?: Array<RequestStatus>;
 
   @ApiProperty({
     description: 'Время создания',

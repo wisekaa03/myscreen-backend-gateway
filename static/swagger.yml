@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.54
+  version: 2.42.55
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4613,12 +4613,12 @@ components:
         - playlistId
         - monitors
         - application
-    ApplicationStatus:
+    RequestStatus:
       type: string
       enum:
         - OK
         - WAITING
-    ApplicationApproved:
+    RequestApprove:
       type: string
       enum:
         - NotProcessed
@@ -4647,7 +4647,7 @@ components:
           description: OK / Подождите
           example: OK
           default: OK
-          $ref: "#/components/schemas/ApplicationStatus"
+          $ref: "#/components/schemas/RequestStatus"
         hide:
           type: boolean
           description: Скрытый
@@ -4660,7 +4660,7 @@ components:
         approved:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
-          $ref: "#/components/schemas/ApplicationApproved"
+          $ref: "#/components/schemas/RequestApprove"
         dateWhen:
           type: string
           format: date
@@ -6396,7 +6396,7 @@ components:
             - WAITING
           default: OK
           items:
-            $ref: "#/components/schemas/ApplicationStatus"
+            $ref: "#/components/schemas/RequestStatus"
         playlistId:
           type: string
           description: Плэйлист ID
@@ -6408,7 +6408,7 @@ components:
             - NotProcessed
             - Allowed
           items:
-            $ref: "#/components/schemas/ApplicationApproved"
+            $ref: "#/components/schemas/RequestApprove"
         dateWhen:
           type: string
           format: date
@@ -6507,7 +6507,7 @@ components:
         approved:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
-          $ref: "#/components/schemas/ApplicationApproved"
+          $ref: "#/components/schemas/RequestApprove"
       required:
         - approved
     ApplicationPrecalculateRequest:

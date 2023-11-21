@@ -23,9 +23,9 @@ import differenceInDays from 'date-fns/differenceInDays';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { ApplicationApproved, MonitorMultiple } from '@/enums';
+import { RequestApprove, MonitorMultiple } from '@/enums';
 import { MailService } from '@/mail/mail.service';
-import { ApplicationEntity } from './request.entity';
+import { RequestEntity } from './request.entity';
 import { FileEntity } from './file.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
@@ -47,8 +47,8 @@ export class RequestService {
     private readonly wsGateway: WSGateway,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
-    @InjectRepository(ApplicationEntity)
-    private readonly requestRepository: Repository<ApplicationEntity>,
+    @InjectRepository(RequestEntity)
+    private readonly requestRepository: Repository<RequestEntity>,
     configService: ConfigService,
   ) {
     this.frontendUrl = configService.get<string>(
@@ -58,10 +58,10 @@ export class RequestService {
   }
 
   async find(
-    find: FindManyOptions<ApplicationEntity>,
+    find: FindManyOptions<RequestEntity>,
     caseInsensitive = true,
-  ): Promise<Array<ApplicationEntity>> {
-    let result: Array<ApplicationEntity>;
+  ): Promise<Array<RequestEntity>> {
+    let result: Array<RequestEntity>;
     const findLocal = TypeOrmFind.Nullable(find);
 
     if (!find.relations) {
@@ -83,10 +83,10 @@ export class RequestService {
   }
 
   async findAndCount(
-    find: FindManyOptions<ApplicationEntity>,
+    find: FindManyOptions<RequestEntity>,
     caseInsensitive = true,
-  ): Promise<[Array<ApplicationEntity>, number]> {
-    let result: [Array<ApplicationEntity>, number];
+  ): Promise<[Array<RequestEntity>, number]> {
+    let result: [Array<RequestEntity>, number];
     const findLocal = TypeOrmFind.Nullable(find);
 
     if (!find.relations) {
@@ -110,10 +110,10 @@ export class RequestService {
   }
 
   async findOne(
-    find: FindManyOptions<ApplicationEntity>,
+    find: FindManyOptions<RequestEntity>,
     caseInsensitive = true,
-  ): Promise<ApplicationEntity | null> {
-    let result: ApplicationEntity | null;
+  ): Promise<RequestEntity | null> {
+    let result: RequestEntity | null;
     const findLocal = TypeOrmFind.Nullable(find);
 
     if (!find.relations) {
@@ -158,11 +158,11 @@ export class RequestService {
     filesDelete?: boolean;
     monitor?: MonitorEntity;
     monitorDelete?: boolean;
-    request?: ApplicationEntity;
+    request?: RequestEntity;
     requestDelete?: boolean;
   }) {
     if (playlist) {
-      const requests = await this.monitorApplications({
+      const requests = await this.monitorRequests({
         playlistId: playlist.id,
       });
 
@@ -174,7 +174,7 @@ export class RequestService {
       // } else if (files) {
     } else if (monitor) {
       if (monitorDelete) {
-        const applications = await this.monitorApplications({
+        const applications = await this.monitorRequests({
           monitorId: monitor.id,
         });
 
@@ -196,15 +196,15 @@ export class RequestService {
   }
 
   /**
-   * Get the applications for the monitor
+   * Get the requests for the monitor
    *
    * @param {string} monitorId Монитор ID
    * @param {string} playlistId Плэйлист ID
    * @param {(string | Date)} [dateLocal=new Date()] Локальная для пользователя дата
    * @return {*}
-   * @memberof ApplicationService
+   * @memberof RequestService
    */
-  async monitorApplications({
+  async monitorRequests({
     monitorId,
     playlistId,
     dateLocal = new Date(),
@@ -213,19 +213,19 @@ export class RequestService {
     playlistId?: string;
     dateLocal?: Date;
   }) {
-    const monitorApplicatons = await this.find({
+    const monitorRequests = await this.find({
       where: [
         {
           monitorId,
           playlistId,
-          approved: ApplicationApproved.ALLOWED,
+          approved: RequestApprove.ALLOWED,
           dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: MoreThanOrEqual<Date>(dateLocal),
         },
         {
           monitorId,
           playlistId,
-          approved: ApplicationApproved.ALLOWED,
+          approved: RequestApprove.ALLOWED,
           dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: IsNull(),
         },
@@ -237,7 +237,7 @@ export class RequestService {
 
     let forceReplace = false;
 
-    const expected = monitorApplicatons.filter(
+    const expected = monitorRequests.filter(
       ({ dateWhen, dateBefore, playlistChange }) => {
         if (forceReplace) {
           return false;
@@ -270,7 +270,7 @@ export class RequestService {
   private async requestPostCreate({
     request,
   }: {
-    request: ApplicationEntity;
+    request: RequestEntity;
   }): Promise<void> {
     const { multiple } = request.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
@@ -286,9 +286,9 @@ export class RequestService {
 
         const groupMonitorPromise = groupMonitors.map(async (monitor) => {
           const { id, ...insert } = request;
-          const app = await transact.save(
-            ApplicationEntity,
-            transact.create(ApplicationEntity, {
+          const req = await transact.save(
+            RequestEntity,
+            transact.create(RequestEntity, {
               ...insert,
               hide: true,
               parentRequestId: id,
@@ -297,9 +297,9 @@ export class RequestService {
             }),
           );
 
-          await this.websocketChange({ request: app });
+          await this.websocketChange({ request: req });
 
-          return app;
+          return req;
         });
 
         await Promise.all(groupMonitorPromise);
@@ -311,7 +311,7 @@ export class RequestService {
     request,
     delete: deleteLocal = false,
   }: {
-    request: ApplicationEntity;
+    request: RequestEntity;
     delete?: boolean;
   }): Promise<void> {
     const { multiple } = request.monitor;
@@ -319,7 +319,7 @@ export class RequestService {
       await this.websocketChange({ request, requestDelete: true });
     } else {
       await this.requestRepository.manager.transaction(async (transact) => {
-        const groupApplication = await transact.find(ApplicationEntity, {
+        const groupApplication = await transact.find(RequestEntity, {
           where: {
             parentRequestId: request.id,
           },
@@ -334,7 +334,7 @@ export class RequestService {
             if (multiple === MonitorMultiple.SCALING) {
               await transact.delete(PlaylistEntity, { id: app.playlistId });
             }
-            await transact.delete(ApplicationEntity, { id: app.id });
+            await transact.delete(RequestEntity, { id: app.id });
           }
         });
 
@@ -346,25 +346,25 @@ export class RequestService {
   /**
    * Update the application
    *
-   * @param update Partial<ApplicationEntity>
+   * @param update Partial<RequestEntity>
    * @returns
    */
   async update(
     id: string,
-    update: Partial<ApplicationEntity>,
-  ): Promise<ApplicationEntity> {
+    update: Partial<RequestEntity>,
+  ): Promise<RequestEntity> {
     return this.requestRepository.manager.transaction(async (transact) => {
       const updateResult = await transact.update(
-        ApplicationEntity,
+        RequestEntity,
         id,
-        transact.create(ApplicationEntity, update),
+        transact.create(RequestEntity, update),
       );
       if (!updateResult.affected) {
         throw new NotFoundException('Application not found');
       }
 
-      let relations: FindOneOptions<ApplicationEntity>['relations'];
-      if (update.approved !== ApplicationApproved.NOTPROCESSED) {
+      let relations: FindOneOptions<RequestEntity>['relations'];
+      if (update.approved !== RequestApprove.NOTPROCESSED) {
         relations = {
           buyer: true,
           seller: true,
@@ -375,7 +375,7 @@ export class RequestService {
       } else {
         relations = { seller: true };
       }
-      const request = await transact.findOne(ApplicationEntity, {
+      const request = await transact.findOne(RequestEntity, {
         where: { id },
         relations,
       });
@@ -383,7 +383,7 @@ export class RequestService {
         throw new NotFoundException('Application not found');
       }
 
-      if (update.approved === ApplicationApproved.NOTPROCESSED) {
+      if (update.approved === RequestApprove.NOTPROCESSED) {
         const sellerEmail = request.seller?.email;
         if (sellerEmail) {
           await this.mailService
@@ -400,9 +400,9 @@ export class RequestService {
         } else {
           this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }
-      } else if (update.approved === ApplicationApproved.ALLOWED) {
+      } else if (update.approved === RequestApprove.ALLOWED) {
         await this.requestPostCreate({ request });
-      } else if (update.approved === ApplicationApproved.DENIED) {
+      } else if (update.approved === RequestApprove.DENIED) {
         await this.requestPreDelete({ request });
       }
 
@@ -410,21 +410,19 @@ export class RequestService {
     });
   }
 
-  async create(insert: Partial<ApplicationEntity>) {
+  async create(insert: Partial<RequestEntity>) {
     return this.requestRepository.manager.transaction(async (transact) => {
       const insertResult = await transact.insert(
-        ApplicationEntity,
-        transact.create(ApplicationEntity, insert),
+        RequestEntity,
+        transact.create(RequestEntity, insert),
       );
       if (!insertResult.identifiers[0]) {
         throw new NotFoundException('Error when creating Application');
       }
       const { id } = insertResult.identifiers[0];
 
-      let relations: FindOneOptions<ApplicationEntity>['relations'];
-      if (
-        !(insert.approved === ApplicationApproved.NOTPROCESSED || insert.hide)
-      ) {
+      let relations: FindOneOptions<RequestEntity>['relations'];
+      if (!(insert.approved === RequestApprove.NOTPROCESSED || insert.hide)) {
         relations = { seller: true };
       } else {
         relations = {
@@ -435,7 +433,7 @@ export class RequestService {
           user: true,
         };
       }
-      const request = await transact.findOne(ApplicationEntity, {
+      const request = await transact.findOne(RequestEntity, {
         where: { id },
         relations,
       });
@@ -443,7 +441,7 @@ export class RequestService {
         throw new NotFoundException('Application not found');
       }
 
-      if (insert.approved === ApplicationApproved.NOTPROCESSED) {
+      if (insert.approved === RequestApprove.NOTPROCESSED) {
         const sellerEmail = request.seller?.email;
         if (sellerEmail) {
           await this.mailService
@@ -460,9 +458,9 @@ export class RequestService {
         } else {
           this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }
-      } else if (insert.approved === ApplicationApproved.ALLOWED) {
+      } else if (insert.approved === RequestApprove.ALLOWED) {
         await this.requestPostCreate({ request });
-      } else if (insert.approved === ApplicationApproved.DENIED) {
+      } else if (insert.approved === RequestApprove.DENIED) {
         await this.requestPreDelete({ request });
       }
 
@@ -470,7 +468,7 @@ export class RequestService {
     });
   }
 
-  async delete(request: ApplicationEntity): Promise<DeleteResult> {
+  async delete(request: RequestEntity): Promise<DeleteResult> {
     await this.requestPreDelete({
       request,
       delete: true,
