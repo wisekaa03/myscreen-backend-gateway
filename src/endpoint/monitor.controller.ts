@@ -37,7 +37,7 @@ import {
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import {
   CRUD,
-  ApplicationApproved,
+  RequestApprove,
   Status,
   UserPlanEnum,
   UserRoleEnum,
@@ -51,7 +51,7 @@ import { UserService } from '@/database/user.service';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
-import { ApplicationService } from '@/database/application.service';
+import { RequestService } from '@/database/request.service';
 
 @ApiComplexDecorators('monitor', [
   UserRoleEnum.Administrator,
@@ -65,7 +65,7 @@ export class MonitorController {
     private readonly monitorService: MonitorService,
     private readonly userService: UserService,
     private readonly playlistService: PlaylistService,
-    private readonly applicationService: ApplicationService,
+    private readonly requestService: RequestService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -93,15 +93,18 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: MonitorsGetRequest,
   ): Promise<MonitorsGetResponse> {
+    const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {
       ...paginationQueryToConfig(scope),
       select,
     };
-    if (user.role === UserRoleEnum.Monitor) {
+    if (role === UserRoleEnum.Monitor) {
       // добавляем то, что содержится у нас в userId: monitorId.
-      find.where = { id: user.id, ...TypeOrmFind.Where(where) };
-    } else if (user.role === UserRoleEnum.MonitorOwner) {
-      find.where = { userId: user.id, ...TypeOrmFind.Where(where) };
+      find.where = { id: userId, ...TypeOrmFind.Where(where) };
+    } else if (role === UserRoleEnum.MonitorOwner) {
+      find.where = { userId, ...TypeOrmFind.Where(where) };
+    } else if (role === UserRoleEnum.Administrator) {
+      find.where = TypeOrmFind.Where(where);
     } else {
       find.where = {
         price1s: MoreThan(0),
@@ -117,11 +120,11 @@ export class MonitorController {
       isDateString(where.dateWhenApp[0]) &&
       isDateString(where.dateWhenApp[1])
     ) {
-      const applicationsWhen = await this.applicationService.find(
+      const requestsWhen = await this.requestService.find(
         {
           where: {
             dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
-            approved: Not(ApplicationApproved.DENIED),
+            approved: Not(RequestApprove.DENIED),
           },
           select: {
             monitorId: true,
@@ -131,7 +134,7 @@ export class MonitorController {
         false,
       );
       find.where = {
-        id: In(applicationsWhen.map((application) => application.monitorId)),
+        id: In(requestsWhen.map((request) => request.monitorId)),
       };
     }
     const [data, count] = await this.monitorService.findAndCount({
@@ -172,17 +175,17 @@ export class MonitorController {
   @Crud(CRUD.CREATE)
   async createMonitors(
     @Req() { user }: ExpressRequest,
-    @Body() { multipleIds, ...insert }: MonitorCreateRequest,
+    @Body() { groupIds, multipleIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
+    const { id: userId } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
     if (multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestException(
-        'Монитор не должен создаваться с типом монитора SUBORDINATE',
+        'Monitor with "multiple"="SUBORDINATE" can not be created',
       );
     }
     if (multiple === MonitorMultiple.SINGLE) {
       const findMonitor = await this.monitorService.findOne({
-        userId: user.id,
         find: {
           where: { code: insert.code },
           select: ['id', 'name', 'code'],
@@ -190,9 +193,20 @@ export class MonitorController {
       });
       if (findMonitor) {
         throw new BadRequestException(
-          `Монитор "${findMonitor.name}"#"${findMonitor.code}" уже существует`,
+          `Monitor with code "${findMonitor.code}" already exists`,
         );
       }
+    }
+    const findMonitor = await this.monitorService.findOne({
+      find: {
+        where: { name: insert.name, userId },
+        select: ['id', 'name'],
+      },
+    });
+    if (findMonitor) {
+      throw new BadRequestException(
+        `Monitor already exists: "${findMonitor.name}"#"${findMonitor.id}"`,
+      );
     }
 
     if (user.plan === UserPlanEnum.Demo) {
@@ -212,7 +226,7 @@ export class MonitorController {
     const data = await this.monitorService.create({
       user,
       insert,
-      multipleIds,
+      groupIds: groupIds ?? multipleIds,
     });
 
     return {
@@ -243,17 +257,18 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<ApplicationsGetResponse> {
+    const { id: userId, role, plan } = user;
     if (!Array.isArray(attach.monitors) || attach.monitors.length < 1) {
       throw new BadRequestException('Monitors should not be null or undefined');
     }
     const playlist = await this.playlistService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id: attach.playlistId,
       },
     });
     if (!playlist) {
-      throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
+      throw new NotFoundException(`Playlist "${attach.playlistId}" not found`);
     }
 
     // TODO: 1. Забронированное и доступное время для создания заявки
@@ -261,9 +276,9 @@ export class MonitorController {
     // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
     // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
     // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
-    if (user.role === UserRoleEnum.Advertiser) {
+    if (role === UserRoleEnum.Advertiser) {
       const tryPromise = attach.monitors.map(async (monitorId) => {
-        const approved = await this.applicationService.find({
+        const approved = await this.requestService.find({
           where: {
             monitorId,
             dateWhen: attach.application.dateBefore
@@ -272,7 +287,7 @@ export class MonitorController {
                   attach.application.dateBefore,
                 )
               : attach.application.dateWhen,
-            approved: Not(ApplicationApproved.DENIED),
+            approved: Not(RequestApprove.DENIED),
           },
         });
         if (approved.length > 0) {
@@ -299,20 +314,16 @@ export class MonitorController {
         playlist,
       });
 
-      if (
-        !(user.role === UserRoleEnum.Monitor || user.plan === UserPlanEnum.Demo)
-      ) {
-        let approved: ApplicationApproved;
-        if (monitor.userId === user.id) {
-          approved = ApplicationApproved.ALLOWED;
-        } else {
-          approved = ApplicationApproved.NOTPROCESSED;
-        }
+      if (!(role === UserRoleEnum.Monitor || plan === UserPlanEnum.Demo)) {
+        const approved =
+          monitor.userId === userId
+            ? RequestApprove.ALLOWED
+            : RequestApprove.NOTPROCESSED;
 
-        // To verify user permissions for application
+        // To verify user permissions for request
         this.userService.verify(
           user,
-          'application',
+          'request',
           'updateApplication',
           CRUD.CREATE,
         );
@@ -321,22 +332,22 @@ export class MonitorController {
           // TODO:
         }
 
-        // To create application
-        const application = await this.applicationService.update({
+        // To create request
+        const request = await this.requestService.create({
           sellerId: monitor.userId,
-          buyerId: user.id,
+          buyerId: userId,
           monitor,
           playlist,
           approved,
-          user,
+          userId,
           dateBefore: attach.application.dateBefore,
           dateWhen: attach.application.dateWhen,
           playlistChange: attach.application.playlistChange,
         });
-        if (!application) {
-          throw new BadRequestException('Application create error');
+        if (!request) {
+          throw new BadRequestException('Request create error');
         }
-        return application;
+        return request;
       }
 
       throw new NotAcceptableException();
@@ -572,7 +583,7 @@ export class MonitorController {
       throw new NotFoundException(`Have no playlist in monitor '${id}'`);
     }
 
-    const data = await this.applicationService.monitorApplications({
+    const data = await this.requestService.monitorRequests({
       monitorId: monitor.id,
     });
 
@@ -650,9 +661,9 @@ export class MonitorController {
           userId: user.id,
           id,
         },
-        select: ['id', 'name', 'multiple', 'multipleMonitors'],
+        select: ['id', 'name', 'multiple', 'groupMonitors'],
         loadEagerRelations: false,
-        relations: { multipleMonitors: true },
+        relations: { groupMonitors: true },
       },
     });
     if (!monitor) {

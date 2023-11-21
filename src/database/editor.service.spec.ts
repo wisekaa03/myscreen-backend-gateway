@@ -10,6 +10,7 @@ import { FolderService } from './folder.service';
 import { PlaylistService } from './playlist.service';
 import { MonitorService } from './monitor.service';
 import { CrontabService } from '@/crontab/crontab.service';
+import { RequestService } from './request.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -36,6 +37,7 @@ describe(EditorService.name, () => {
         { provide: ConfigService, useClass: mockRepository },
         { provide: CrontabService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
+        { provide: RequestService, useClass: mockRepository },
         { provide: FolderService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },

@@ -1,18 +1,49 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import {
+  FindOneOptions,
+  FindOptionsWhere,
+  InsertResult,
+  ObjectLiteral,
+  UpdateResult,
+} from 'typeorm';
 
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { MonitorService } from './monitor.service';
-import { ApplicationService } from './application.service';
-import { MonitorMultipleEntity } from './monitor.multiple.entity';
+import { RequestService } from './request.service';
+import { MonitorGroupEntity } from './monitor.group.entity';
 
 export const mockRepository = jest.fn(() => ({
-  findOne: async () => Promise.resolve([]),
-  findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
+  find: async (find: FindOneOptions<ObjectLiteral>) =>
+    Promise.resolve({
+      id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id,
+    }),
+  findOne: async (find: FindOneOptions<ObjectLiteral>) =>
+    Promise.resolve({
+      id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id,
+    }),
+  findAndCount: async (find: FindOneOptions<ObjectLiteral>) =>
+    Promise.resolve([
+      { id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id },
+      1,
+    ]),
+  createQueryBuilder: () => ({
+    setFindOptions: (find: unknown) => find,
+    getOne: () => Promise.resolve({ id: '0000-0000-0000-0000' }),
+  }),
+  save: async (id: unknown) => Promise.resolve(id),
+  insert: async () =>
+    Promise.resolve<InsertResult>({
+      generatedMaps: [],
+      identifiers: [{ id: '0000-0000-0000-0000' }],
+      raw: [],
+    }),
+  update: async () =>
+    Promise.resolve<UpdateResult>({ affected: 1, raw: [], generatedMaps: [] }),
+  create: (id: unknown) => id,
   remove: async () => Promise.resolve([]),
+  delete: async () => Promise.resolve([]),
   get: (key: string, defaultValue?: string) => defaultValue,
   metadata: {
     columns: [],
@@ -27,13 +58,13 @@ describe(MonitorService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MonitorService,
-        { provide: ApplicationService, useClass: mockRepository },
+        { provide: RequestService, useClass: mockRepository },
         {
           provide: getRepositoryToken(MonitorEntity),
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(MonitorMultipleEntity),
+          provide: getRepositoryToken(MonitorGroupEntity),
           useClass: mockRepository,
         },
         {
@@ -48,5 +79,14 @@ describe(MonitorService.name, () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('returns monitor.findOne', async () => {
+    const find = await service.findOne({
+      find: {
+        where: { id: '0000-0000-0000-0000' },
+      },
+    });
+    expect(find).toStrictEqual({ id: '0000-0000-0000-0000' });
   });
 });

@@ -571,7 +571,11 @@ export class EditorController {
     @Param('editorId', ParseUUIDPipe) id: string,
     @Body() body?: EditorExportRequest,
   ): Promise<EditorGetRenderingStatusResponse> {
-    const data = await this.editorService.export(user, id, body?.rerender);
+    const data = await this.editorService.export({
+      user,
+      id,
+      rerender: body?.rerender,
+    });
     if (!data) {
       throw new InternalServerErrorException();
     }

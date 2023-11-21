@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDefined, IsUUID, ValidateNested } from 'class-validator';
 
-import { ApplicationCreateMonitorRequest } from './application-create-monitor.request';
+import { ApplicationCreateMonitorRequest } from './request-create-monitor.request';
 
 export class MonitorsPlaylistAttachRequest {
   @ApiProperty({

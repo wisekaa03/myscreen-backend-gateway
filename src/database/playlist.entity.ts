@@ -4,10 +4,13 @@ import {
   IsDefined,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUUID,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
@@ -27,10 +30,12 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { EditorRequest, EditorResponse } from '@/dto';
 import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
+import { EditorEntity } from '@/database/editor.entity';
 
 @Entity('playlist')
 @Unique('IDX_userId_name', ['userId', 'name'])
@@ -128,10 +133,24 @@ export class PlaylistEntity {
   @ApiProperty({
     description: 'Мониторы',
     type: 'array',
-    nullable: true,
     items: { $ref: '#/components/schemas/MonitorResponse' },
   })
-  monitors?: MonitorEntity[] | null;
+  monitors?: MonitorEntity[];
+
+  @OneToMany(() => EditorEntity, (editor) => editor.id, {
+    nullable: true,
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+    eager: false,
+  })
+  @ApiProperty({
+    description: 'Подчиненные редакторы',
+    type: 'array',
+    required: false,
+    items: { $ref: '#/components/schemas/EditorResponse' },
+  })
+  @IsOptional()
+  editors?: EditorEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

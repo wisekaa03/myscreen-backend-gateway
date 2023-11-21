@@ -134,7 +134,7 @@ export class UserService {
           );
         }
 
-        if (controllerName === 'application') {
+        if (controllerName === 'application' || controllerName === 'request') {
           throw new ForbiddenException(
             'You have a Demo User account. Time to pay.',
           );

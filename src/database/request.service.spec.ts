@@ -4,8 +4,8 @@ import { ConfigService } from '@nestjs/config';
 
 import { WSGateway } from '@/websocket/ws.gateway';
 import { MailService } from '@/mail/mail.service';
-import { ApplicationEntity } from './application.entity';
-import { ApplicationService } from './application.service';
+import { RequestEntity } from './request.entity';
+import { RequestService } from './request.service';
 import { UserService } from './user.service';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorService } from './monitor.service';
@@ -26,13 +26,13 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(ApplicationService.name, () => {
-  let service: ApplicationService;
+describe(RequestService.name, () => {
+  let service: RequestService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ApplicationService,
+        RequestService,
         { provide: UserService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },
         { provide: EditorService, useClass: mockRepository },
@@ -44,13 +44,13 @@ describe(ApplicationService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(ApplicationEntity),
+          provide: getRepositoryToken(RequestEntity),
           useClass: mockRepository,
         },
       ],
     }).compile();
 
-    service = module.get(ApplicationService);
+    service = module.get(RequestService);
   });
 
   it('should be defined', () => {

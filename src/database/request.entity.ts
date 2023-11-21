@@ -17,16 +17,14 @@ import {
   Validate,
 } from 'class-validator';
 
+import { RequestApprove, RequestStatus } from '@/enums';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
-import { ApplicationApproved } from '@/enums/application-approved.enum';
 import { UserEntity } from './user.entity';
-// eslint-disable-next-line import/no-cycle
-import { MonitorEntity } from './monitor.entity';
+import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { ApplicationStatus } from '@/enums';
 
 @Entity('application')
-export class ApplicationEntity {
+export class RequestEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор взаимодействия',
@@ -109,20 +107,20 @@ export class ApplicationEntity {
 
   @Column({
     type: 'enum',
-    enum: ApplicationStatus,
-    default: ApplicationStatus.OK,
+    enum: RequestStatus,
+    default: RequestStatus.OK,
   })
   @Index()
   @ApiProperty({
     description: 'OK / Подождите',
-    enum: ApplicationStatus,
-    enumName: 'ApplicationStatus',
-    example: ApplicationStatus.OK,
-    default: ApplicationStatus.OK,
+    enum: RequestStatus,
+    enumName: 'RequestStatus',
+    example: RequestStatus.OK,
+    default: RequestStatus.OK,
     required: false,
   })
-  @IsEnum(ApplicationStatus, { each: true })
-  status!: ApplicationStatus | Array<ApplicationStatus>;
+  @IsEnum(RequestStatus, { each: true })
+  status!: RequestStatus | Array<RequestStatus>;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
@@ -134,7 +132,7 @@ export class ApplicationEntity {
   @IsBoolean()
   hide!: boolean;
 
-  @ManyToOne(() => ApplicationEntity, (application) => application.id, {
+  @ManyToOne(() => RequestEntity, (request) => request.id, {
     nullable: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
@@ -143,11 +141,11 @@ export class ApplicationEntity {
   })
   @JoinColumn()
   @Index()
-  parentApplication?: ApplicationEntity;
+  parentRequest?: RequestEntity;
 
   @Column({ nullable: true })
   @IsUUID()
-  parentApplicationId?: string;
+  parentRequestId?: string;
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     onDelete: 'CASCADE',
@@ -173,19 +171,19 @@ export class ApplicationEntity {
 
   @Column({
     type: 'enum',
-    enum: ApplicationApproved,
-    default: ApplicationApproved.NOTPROCESSED,
+    enum: RequestApprove,
+    default: RequestApprove.NOTPROCESSED,
   })
   @Index()
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
-    enum: ApplicationApproved,
-    enumName: 'ApplicationApproved',
-    example: ApplicationApproved.NOTPROCESSED,
+    enum: RequestApprove,
+    enumName: 'RequestApprove',
+    example: RequestApprove.NOTPROCESSED,
     required: true,
   })
-  @IsEnum(ApplicationApproved, { each: true })
-  approved!: ApplicationApproved | Array<ApplicationApproved>;
+  @IsEnum(RequestApprove, { each: true })
+  approved!: RequestApprove | Array<RequestApprove>;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   @Index()

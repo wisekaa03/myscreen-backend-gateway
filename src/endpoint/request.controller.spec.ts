@@ -6,9 +6,9 @@ import { Roles } from '@/decorators/roles.decorator';
 import { UserRoleEnum } from '@/enums';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { WSGateway } from '@/websocket/ws.gateway';
-import { ApplicationService } from '@/database/application.service';
+import { RequestService } from '@/database/request.service';
 import { UserService } from '@/database/user.service';
-import { ApplicationController } from './application.controller';
+import { RequestController } from './request.controller';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -23,21 +23,21 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(ApplicationController.name, () => {
-  let controller: ApplicationController;
+describe(RequestController.name, () => {
+  let controller: RequestController;
   const reflector = new Reflector();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [ApplicationController],
+      controllers: [RequestController],
       providers: [
-        { provide: ApplicationService, useClass: mockRepository },
+        { provide: RequestService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
         { provide: WSGateway, useClass: mockRepository },
       ],
     }).compile();
 
-    controller = module.get(ApplicationController);
+    controller = module.get(RequestController);
   });
 
   it('should be defined', () => {
@@ -45,14 +45,14 @@ describe(ApplicationController.name, () => {
   });
 
   it('JwtAuthGuard, RolesGuard and Roles', async () => {
-    const guards = Reflect.getMetadata(GUARDS_METADATA, ApplicationController);
+    const guards = Reflect.getMetadata(GUARDS_METADATA, RequestController);
     const guardJwt = new guards[0]();
     const guardRoles = new guards[1]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);
     expect(guardRoles).toBeInstanceOf(RolesGuard);
 
-    const roles = reflector.get(Roles, ApplicationController);
+    const roles = reflector.get(Roles, RequestController);
     expect(roles).toEqual([
       UserRoleEnum.Administrator,
       UserRoleEnum.Advertiser,

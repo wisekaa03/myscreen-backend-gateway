@@ -43,12 +43,9 @@ import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
-// eslint-disable-next-line import/no-cycle
-import { MonitorFavoriteEntity } from './monitor.favorite.entity';
-// eslint-disable-next-line import/no-cycle
-import { ApplicationEntity } from './application.entity';
-// eslint-disable-next-line import/no-cycle
-import { MonitorMultipleEntity } from './monitor.multiple.entity';
+import { MonitorFavoriteEntity } from '@/database/monitor.favorite.entity';
+import { RequestEntity } from '@/database/request.entity';
+import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 
 export class PointClass implements Point {
   @ApiProperty({
@@ -251,21 +248,6 @@ export class MonitorEntity {
   orientation!: MonitorOrientation;
 
   @Column({ type: 'jsonb', default: {} })
-  @ApiProperty({
-    type: MonitorInfo,
-    description: 'Модель и прочие характеристики монитора (deprecated)',
-    example: {
-      model: 'Samsung',
-      resolution: '1920 x 1080 px',
-      angle: 0,
-      matrix: 'IPS',
-      brightness: 0,
-    },
-    deprecated: true,
-    required: false,
-  })
-  @ValidateNested()
-  @Type(() => MonitorInfo)
   monitorInfo?: MonitorInfo;
 
   @Column({ type: 'varchar', nullable: true, default: null })
@@ -373,8 +355,8 @@ export class MonitorEntity {
   multiple!: MonitorMultiple;
 
   @OneToMany(
-    () => MonitorMultipleEntity,
-    (monitorMultiple) => monitorMultiple.parentMonitor,
+    () => MonitorGroupEntity,
+    (groupMonitor) => groupMonitor.parentMonitor,
     {
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
@@ -382,7 +364,7 @@ export class MonitorEntity {
       eager: false,
     },
   )
-  multipleMonitors?: MonitorMultipleEntity[];
+  groupMonitors?: MonitorGroupEntity[];
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
@@ -484,8 +466,10 @@ export class MonitorEntity {
   @JoinTable()
   files?: FileEntity[];
 
-  @OneToMany(() => ApplicationEntity, (app) => app.monitor, { eager: false })
-  applications?: ApplicationEntity[];
+  @OneToMany(() => RequestEntity, (request) => request.monitor, {
+    eager: false,
+  })
+  requests?: RequestEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

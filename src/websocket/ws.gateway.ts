@@ -25,8 +25,8 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { PlaylistService } from '@/database/playlist.service';
-import { ApplicationEntity } from '@/database/application.entity';
-import { ApplicationService } from '@/database/application.service';
+import { RequestEntity } from '@/database/request.entity';
+import { RequestService } from '@/database/request.service';
 
 @WebSocketGateway({
   cors: {
@@ -40,8 +40,8 @@ export class WSGateway
 {
   constructor(
     private readonly authService: AuthService,
-    @Inject(forwardRef(() => ApplicationService))
-    private readonly applicationService: ApplicationService,
+    @Inject(forwardRef(() => RequestService))
+    private readonly requestService: RequestService,
     private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,
   ) {}
@@ -145,7 +145,7 @@ export class WSGateway
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() body: AuthTokenEvent,
-  ): Promise<Observable<WsResponse<string | ApplicationEntity[] | null>[]>> {
+  ): Promise<Observable<WsResponse<string | RequestEntity[] | null>[]>> {
     if (!(body.token && body.date)) {
       throw new WsException('Not authorized');
     }
@@ -161,10 +161,10 @@ export class WSGateway
               relations: {},
             },
           });
-          let application: ApplicationEntity[] | null = null;
+          let request: RequestEntity[] | null = null;
           if (monitor) {
-            [application] = await Promise.all([
-              this.applicationService.monitorApplications({
+            [request] = await Promise.all([
+              this.requestService.monitorRequests({
                 monitorId: monitor.id,
                 dateLocal: new Date(body.date),
               }),
@@ -180,7 +180,7 @@ export class WSGateway
           }
           return of([
             { event: 'auth/token', data: 'authorized' },
-            { event: 'applications', data: application },
+            { event: 'applications', data: request },
           ]);
         }
         return of([{ event: 'auth/token', data: 'authorized' }]);
@@ -269,37 +269,35 @@ export class WSGateway
    *  - Удаление связки плэйлиста и монитора
    *  - Изменение плэйлиста файлами
    *  TODO: что-то еще
-   * @param application ApplicationEntity or null
+   * @param request ApplicationEntity or null
    * @param monitor MonitorEntity or null
    */
-  async application({
-    application,
+  async onChange({
+    request,
     monitor,
   }: {
-    application?: ApplicationEntity;
+    request?: RequestEntity;
     monitor?: MonitorEntity;
   }): Promise<void> {
-    if (!application && !monitor) {
-      this.logger.error('ApplicationEntity or MonitorEntity is required');
+    if (!request && !monitor) {
+      this.logger.error('request or monitor is required');
       return;
     }
 
-    if (application?.playlist && application.monitorId) {
-      await this.playlistService.update(application.playlist.id, {
+    if (request?.playlist && request.monitorId) {
+      await this.playlistService.update(request.playlist.id, {
         status: PlaylistStatusEnum.Broadcast,
       });
 
       this.clients.forEach((value, client) => {
-        if (value.monitorId === application.monitorId) {
+        if (value.monitorId === request.monitorId) {
           client.send(
-            JSON.stringify([{ event: 'application', data: application }]),
+            JSON.stringify([{ event: 'application', data: request }]),
           );
         }
       });
     } else {
-      this.logger.error(
-        'application.playlist or application.monitorId is required',
-      );
+      this.logger.error('request.playlist or request.monitorId is required');
     }
 
     if (monitor) {

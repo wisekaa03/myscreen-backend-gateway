@@ -4,9 +4,9 @@ import { Type } from 'class-transformer';
 import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
-import { ApplicationEntity } from '@/database/application.entity';
+import { RequestEntity } from '@/database/request.entity';
 import { LimitRequest } from './limit.request';
-import { ApplicationsRequest } from './applications.request';
+import { ApplicationsRequest } from './requests.request';
 
 export class ApplicationsGetRequest {
   @ApiProperty({
@@ -22,7 +22,7 @@ export class ApplicationsGetRequest {
   @ApiProperty({
     description: 'Выбрать поля',
     example: [],
-    enum: swaggerGetModelProperties(ApplicationEntity),
+    enum: swaggerGetModelProperties(RequestEntity),
     isArray: true,
     type: 'string',
     required: false,

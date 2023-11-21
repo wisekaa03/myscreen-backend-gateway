@@ -3,13 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 
+import { ActStatus } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
-// eslint-disable-next-line import/no-cycle
-import { WalletService } from './wallet.service';
 import { ActEntity } from './act.entity';
-import { ActStatus } from '@/enums';
+import { WalletService } from '@/database/wallet.service';
 
 @Injectable()
 export class ActService {

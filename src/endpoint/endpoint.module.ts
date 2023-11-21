@@ -16,7 +16,7 @@ import { InvoiceController } from './invoice.controller';
 import { PlaylistController } from './playlist.controller';
 import { RootController } from './root.controller';
 import { StatisticsController } from './statistics.controller';
-import { ApplicationController } from './application.controller';
+import { RequestController } from './request.controller';
 import { CrontabController } from './crontab.controller';
 
 @Module({
@@ -41,7 +41,7 @@ import { CrontabController } from './crontab.controller';
     InvoiceController,
     PlaylistController,
     StatisticsController,
-    ApplicationController,
+    RequestController,
     CrontabController,
   ],
 

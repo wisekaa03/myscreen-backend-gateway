@@ -23,7 +23,7 @@ import {
 } from 'class-validator';
 
 import {
-  ApplicationApproved,
+  RequestApprove,
   MonitorStatus,
   PlaylistStatusEnum,
   UserPlanEnum,
@@ -35,7 +35,7 @@ import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { WalletEntity } from './wallet.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { ApplicationEntity } from './application.entity';
+import { RequestEntity } from './request.entity';
 
 export class UserMetricsMonitors {
   @ApiProperty({
@@ -228,38 +228,38 @@ export class UserWallet {
             .select('"onlineMonitors"."userId"', 'onlineMonitorsUserId')
             .addSelect('COUNT("onlineMonitors"."id")', 'onlineMonitors')
             .groupBy(
-              '"onlineMonitors"."userId", "applicationMonitors"."applicationOnlineMonitorId"',
+              '"onlineMonitors"."userId", "requestMonitors"."requestOnlineMonitorId"',
             )
             .where(`"onlineMonitors"."status" = '${MonitorStatus.Online}'`)
             .from(MonitorEntity, 'onlineMonitors')
 
             .innerJoinAndSelect(
-              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+              (qbb: SelectQueryBuilder<RequestEntity>) =>
                 qbb
                   .select(
-                    '"applicationMonitors"."monitorId"',
-                    'applicationOnlineMonitorId',
+                    '"requestMonitors"."monitorId"',
+                    'requestOnlineMonitorId',
                   )
-                  .groupBy('"applicationMonitors"."monitorId"')
+                  .groupBy('"requestMonitors"."monitorId"')
                   .where(
-                    `"applicationMonitors"."approved" = '${ApplicationApproved.ALLOWED}'`,
+                    `"requestMonitors"."approved" = '${RequestApprove.ALLOWED}'`,
                   )
                   .andWhere(
-                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                    '"requestMonitors"."dateWhen" <= \'now()\'::timestamptz',
                   )
                   .andWhere(
-                    '"applicationMonitors"."dateBefore" > \'now()\'::timestamptz',
+                    '"requestMonitors"."dateBefore" > \'now()\'::timestamptz',
                   )
                   .orWhere(
-                    `"applicationMonitors"."approved" = '${ApplicationApproved.ALLOWED}'`,
+                    `"requestMonitors"."approved" = '${RequestApprove.ALLOWED}'`,
                   )
                   .andWhere(
-                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                    '"requestMonitors"."dateWhen" <= \'now()\'::timestamptz',
                   )
-                  .andWhere('"applicationMonitors"."dateBefore" IS NULL')
-                  .from(ApplicationEntity, 'applicationMonitors'),
-              'applicationMonitors',
-              '"applicationOnlineMonitorId" = "onlineMonitors"."id"',
+                  .andWhere('"requestMonitors"."dateBefore" IS NULL')
+                  .from(RequestEntity, 'requestMonitors'),
+              'requestMonitors',
+              '"requestOnlineMonitorId" = "onlineMonitors"."id"',
             ),
 
         'onlineMonitors',
@@ -272,38 +272,38 @@ export class UserWallet {
             .select('"offlineMonitors"."userId"', 'offlineMonitorsUserId')
             .addSelect('COUNT("offlineMonitors"."userId")', 'offlineMonitors')
             .groupBy(
-              '"offlineMonitors"."userId", "applicationMonitors"."applicationOfflineMonitorId"',
+              '"offlineMonitors"."userId", "requestMonitors"."requestOfflineMonitorId"',
             )
             .where(`"offlineMonitors"."status" = '${MonitorStatus.Offline}'`)
             .from(MonitorEntity, 'offlineMonitors')
 
             .innerJoinAndSelect(
-              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+              (qbb: SelectQueryBuilder<RequestEntity>) =>
                 qbb
                   .select(
-                    '"applicationMonitors"."monitorId"',
-                    'applicationOfflineMonitorId',
+                    '"requestMonitors"."monitorId"',
+                    'requestOfflineMonitorId',
                   )
-                  .groupBy('"applicationMonitors"."monitorId"')
+                  .groupBy('"requestMonitors"."monitorId"')
                   .where(
-                    `"applicationMonitors"."approved" = '${ApplicationApproved.ALLOWED}'`,
+                    `"requestMonitors"."approved" = '${RequestApprove.ALLOWED}'`,
                   )
                   .andWhere(
-                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                    '"requestMonitors"."dateWhen" <= \'now()\'::timestamptz',
                   )
                   .andWhere(
-                    '"applicationMonitors"."dateBefore" > \'now()\'::timestamptz',
+                    '"requestMonitors"."dateBefore" > \'now()\'::timestamptz',
                   )
                   .orWhere(
-                    `"applicationMonitors"."approved" = '${ApplicationApproved.ALLOWED}'`,
+                    `"requestMonitors"."approved" = '${RequestApprove.ALLOWED}'`,
                   )
                   .andWhere(
-                    '"applicationMonitors"."dateWhen" <= \'now()\'::timestamptz',
+                    '"requestMonitors"."dateWhen" <= \'now()\'::timestamptz',
                   )
-                  .andWhere('"applicationMonitors"."dateBefore" IS NULL')
-                  .from(ApplicationEntity, 'applicationMonitors'),
-              'applicationMonitors',
-              '"applicationOfflineMonitorId" = "offlineMonitors"."id"',
+                  .andWhere('"requestMonitors"."dateBefore" IS NULL')
+                  .from(RequestEntity, 'requestMonitors'),
+              'requestMonitors',
+              '"requestOfflineMonitorId" = "offlineMonitors"."id"',
             ),
 
         'offlineMonitors',
@@ -318,39 +318,39 @@ export class UserWallet {
             .groupBy(
               `
               "emptyMonitors"."userId",
-              "applicationMonitors"."applicationEmptyMonitorId",
-              "applicationMonitors"."applicationEmptyApproved",
-              "applicationMonitors"."applicationEmptyDateBefore"
+              "requestMonitors"."requestEmptyMonitorId",
+              "requestMonitors"."requestEmptyApproved",
+              "requestMonitors"."requestEmptyDateBefore"
               `,
             )
             .from(MonitorEntity, 'emptyMonitors')
 
             .leftJoinAndSelect(
-              (qbb: SelectQueryBuilder<ApplicationEntity>) =>
+              (qbb: SelectQueryBuilder<RequestEntity>) =>
                 qbb
                   .select(
-                    '"applicationMonitors"."monitorId"',
-                    'applicationEmptyMonitorId',
+                    '"requestMonitors"."monitorId"',
+                    'requestEmptyMonitorId',
                   )
                   .addSelect(
-                    '"applicationMonitors"."approved"',
-                    'applicationEmptyApproved',
+                    '"requestMonitors"."approved"',
+                    'requestEmptyApproved',
                   )
                   .addSelect(
-                    '"applicationMonitors"."dateBefore"',
-                    'applicationEmptyDateBefore',
+                    '"requestMonitors"."dateBefore"',
+                    'requestEmptyDateBefore',
                   )
-                  .from(ApplicationEntity, 'applicationMonitors'),
-              'applicationMonitors',
-              '"applicationEmptyMonitorId" = "emptyMonitors"."id"',
+                  .from(RequestEntity, 'requestMonitors'),
+              'requestMonitors',
+              '"requestEmptyMonitorId" = "emptyMonitors"."id"',
             )
 
-            .where('"applicationMonitors"."applicationEmptyMonitorId" IS NULL')
+            .where('"requestMonitors"."requestEmptyMonitorId" IS NULL')
             .orWhere(
-              `"applicationMonitors"."applicationEmptyApproved" = '${ApplicationApproved.ALLOWED}'`,
+              `"requestMonitors"."requestEmptyApproved" = '${RequestApprove.ALLOWED}'`,
             )
             .andWhere(
-              '"applicationMonitors"."applicationEmptyDateBefore" < \'now()\'::timestamptz',
+              '"requestMonitors"."requestEmptyDateBefore" < \'now()\'::timestamptz',
             ),
 
         'emptyMonitors',

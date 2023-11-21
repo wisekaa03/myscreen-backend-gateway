@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.53
+  version: 2.42.56
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4060,7 +4060,6 @@ components:
               - minWarranty
               - maxDuration
               - orientation
-              - monitorInfo
               - model
               - angle
               - matrix
@@ -4082,29 +4081,6 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-    MonitorInfo:
-      type: object
-      properties:
-        model:
-          type: string
-          description: Модель
-          example: Samsung
-        resolution:
-          type: string
-          description: Разрешение
-          example: 3840x2190
-        angle:
-          type: number
-          description: Угол обзора
-          example: 0
-        matrix:
-          type: string
-          description: Тип матрицы
-          example: IPS
-        brightness:
-          type: number
-          description: Яркость
-          example: 0
     PlaylistStatus:
       type: string
       enum:
@@ -4281,6 +4257,11 @@ components:
           description: Скрытый
           default: false
           example: false
+        editors:
+          type: array
+          description: Подчиненные редакторы
+          items:
+            $ref: "#/components/schemas/EditorResponse"
         createdAt:
           type: string
           description: Время создания
@@ -4353,17 +4334,6 @@ components:
           description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
-        monitorInfo:
-          description: Модель и прочие характеристики монитора (deprecated)
-          example:
-            model: Samsung
-            resolution: 1920 x 1080 px
-            angle: 0
-            matrix: IPS
-            brightness: 0
-          deprecated: true
-          allOf:
-            - $ref: "#/components/schemas/MonitorInfo"
         model:
           type: string
           description: Модель
@@ -4583,8 +4553,14 @@ components:
           type: string
           description: Идентификатор устройства
           example: 111-111-111
+        groupIds:
+          description: Подчиненные мониторы в группе мониторов
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorMultipleRequest"
         multipleIds:
           description: Подчиненные мониторы в группе мониторов
+          deprecated: true
           type: array
           items:
             $ref: "#/components/schemas/MonitorMultipleRequest"
@@ -4648,12 +4624,12 @@ components:
         - playlistId
         - monitors
         - application
-    ApplicationStatus:
+    RequestStatus:
       type: string
       enum:
         - OK
         - WAITING
-    ApplicationApproved:
+    RequestApprove:
       type: string
       enum:
         - NotProcessed
@@ -4682,7 +4658,7 @@ components:
           description: OK / Подождите
           example: OK
           default: OK
-          $ref: "#/components/schemas/ApplicationStatus"
+          $ref: "#/components/schemas/RequestStatus"
         hide:
           type: boolean
           description: Скрытый
@@ -4695,7 +4671,7 @@ components:
         approved:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
-          $ref: "#/components/schemas/ApplicationApproved"
+          $ref: "#/components/schemas/RequestApprove"
         dateWhen:
           type: string
           format: date
@@ -6254,6 +6230,7 @@ components:
               - hide
               - files
               - monitors
+              - editors
               - createdAt
               - updatedAt
         scope:
@@ -6431,7 +6408,7 @@ components:
             - WAITING
           default: OK
           items:
-            $ref: "#/components/schemas/ApplicationStatus"
+            $ref: "#/components/schemas/RequestStatus"
         playlistId:
           type: string
           description: Плэйлист ID
@@ -6443,7 +6420,7 @@ components:
             - NotProcessed
             - Allowed
           items:
-            $ref: "#/components/schemas/ApplicationApproved"
+            $ref: "#/components/schemas/RequestApprove"
         dateWhen:
           type: string
           format: date
@@ -6542,7 +6519,7 @@ components:
         approved:
           description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
-          $ref: "#/components/schemas/ApplicationApproved"
+          $ref: "#/components/schemas/RequestApprove"
       required:
         - approved
     ApplicationPrecalculateRequest:

@@ -47,7 +47,7 @@ import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
 import { PlaylistService } from './playlist.service';
 import { UserEntity } from './user.entity';
-import { ApplicationService } from './application.service';
+import { RequestService } from './request.service';
 
 @Injectable()
 export class FileService {
@@ -61,8 +61,8 @@ export class FileService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => ApplicationService))
-    private readonly applicationService: ApplicationService,
+    @Inject(forwardRef(() => RequestService))
+    private readonly requestService: RequestService,
     @Inject(forwardRef(() => FolderService))
     private readonly folderService: FolderService,
     @Inject(forwardRef(() => MonitorService))
@@ -188,7 +188,7 @@ export class FileService {
           transact.create(FileEntity, { ...file, ...update, id: file.id }),
         );
 
-        await this.applicationService.websocketChange({ files: [data] });
+        await this.requestService.websocketChange({ files: [data] });
 
         return data;
       }
@@ -553,7 +553,7 @@ export class FileService {
       relations: ['folder'],
     });
 
-    await this.applicationService.websocketChange({ files, filesDelete: true });
+    await this.requestService.websocketChange({ files, filesDelete: true });
 
     // TODO: хм
     await Promise.allSettled(
