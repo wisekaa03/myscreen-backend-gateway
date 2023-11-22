@@ -8,3 +8,5 @@ export const dateLocalNow = new Date();
 export interface MonitorGroupWithPlaylist extends MonitorGroupEntity {
   playlist: PlaylistEntity;
 }
+
+export const MAIL_SERVICE = 'MAIL_SERVICE';

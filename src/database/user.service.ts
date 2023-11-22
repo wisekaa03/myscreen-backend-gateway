@@ -6,7 +6,6 @@ import {
   ForbiddenException,
   BadRequestException,
   Inject,
-  forwardRef,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -20,15 +19,21 @@ import {
 import addDays from 'date-fns/addDays';
 import subDays from 'date-fns/subDays';
 import intervalToDuration from 'date-fns/intervalToDuration';
+import { ClientProxy } from '@nestjs/microservices';
 
+import {
+  MAIL_SERVICE,
+  MailForgotPassword,
+  MailSendVerificationCode,
+} from '@/interfaces';
 import { RegisterRequest } from '@/dto/request/register.request';
 import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserExtEntity, selectUserOptions } from './user-ext.entity';
+import { fullName } from '@/utils/full-name';
 
 @Injectable()
 export class UserService {
@@ -38,8 +43,8 @@ export class UserService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => MailService))
-    private readonly mailService: MailService,
+    @Inject(MAIL_SERVICE)
+    private readonly mailService: ClientProxy,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserExtEntity)
@@ -50,16 +55,6 @@ export class UserService {
       'http://localhost',
     );
   }
-
-  /**
-   * Return full name of user.
-   * @param {UserEntity} u user - UserEntity
-   * @param {boolean} e email (default: true) - add email
-   * @returns string
-   * @memberof UserService
-   */
-  static fullName = (u: UserEntity, e = true) =>
-    [u.surname, u.name, u.middleName].join(' ') + (e ? ` <${u.email}>` : '');
 
   /**
    * Verify user permissions.
@@ -77,9 +72,9 @@ export class UserService {
     functionName: string,
     crud: CRUD,
   ): boolean {
-    const fullName = UserService.fullName(user);
+    const name = fullName(user);
     this.logger.log(
-      `User: "${fullName}" Controllers: "${controllerName}" CRUD: "${crud}"`,
+      `User: "${name}" Controllers: "${controllerName}" CRUD: "${crud}"`,
     );
     const {
       role = UserRoleEnum.Administrator,
@@ -208,7 +203,10 @@ export class UserService {
             Object.assign(user, update, { emailConfirmKey }),
           ),
         ),
-        this.mailService.sendVerificationCode(update.email, confirmUrl),
+        this.mailService.emit('sendWelcomeMessage', {
+          email: update.email,
+          confirmUrl,
+        }),
       ]).then(([{ id }]) => this.userExtRepository.findOneBy({ id }));
     }
 
@@ -288,8 +286,14 @@ export class UserService {
     if (process.env.NODE_ENV === 'production') {
       [{ id }] = await Promise.all([
         this.userRepository.save(this.userRepository.create(user)),
-        this.mailService.sendWelcomeMessage(email),
-        this.mailService.sendVerificationCode(email, confirmUrl),
+        this.mailService.emit<unknown, string>('sendWelcomeMessage', email),
+        this.mailService.emit<unknown, MailSendVerificationCode>(
+          'sendVerificationCode',
+          {
+            email,
+            confirmUrl,
+          },
+        ),
       ]);
     } else {
       ({ id } = await this.userRepository.save(
@@ -352,7 +356,13 @@ export class UserService {
       return Promise.resolve();
     }
 
-    return this.mailService.forgotPassword(email, forgotPasswordUrl);
+    return this.mailService.emit<unknown, MailForgotPassword>(
+      'forgotPassword',
+      {
+        email,
+        forgotPasswordUrl,
+      },
+    );
   }
 
   /**

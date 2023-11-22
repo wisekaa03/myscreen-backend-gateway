@@ -1,23 +1,18 @@
 import type { Response as ExpressResponse } from 'express';
-import {
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-  forwardRef,
-} from '@nestjs/common';
+import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
 import dateRu from 'date-fns/locale/ru';
+import { ClientProxy } from '@nestjs/microservices';
 
+import { lastValueFrom } from 'rxjs';
+import { MAIL_SERVICE, PrintInvoice } from '@/interfaces';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { SpecificFormat } from '@/enums/specific-format.enum';
 import { InvoiceStatus } from '@/enums/invoice-status.enum';
-import { PrintService } from '@/print/print.service';
-import { MailService } from '@/mail/mail.service';
 import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
 import { WalletService } from './wallet.service';
@@ -30,31 +25,16 @@ import { ActService } from './act.service';
 export class InvoiceService {
   private logger = new Logger(InvoiceService.name);
 
-  private acceptanceActSum: number;
-
-  private acceptanceActDescription: string;
-
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     private readonly walletService: WalletService,
     private readonly actService: ActService,
-    @Inject(forwardRef(() => PrintService))
-    private readonly printService: PrintService,
-    @Inject(forwardRef(() => MailService))
-    private readonly mailService: MailService,
+    @Inject(MAIL_SERVICE)
+    private readonly mailService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
-  ) {
-    this.acceptanceActSum = parseInt(
-      this.configService.get<string>('ACCEPTANCE_ACT_SUM', '250'),
-      10,
-    );
-    this.acceptanceActDescription = this.configService.get<string>(
-      'ACCEPTANCE_ACT_DESCRIPTION',
-      'Оплата за услуги',
-    );
-  }
+  ) {}
 
   async find(
     find: FindManyOptions<InvoiceEntity>,
@@ -140,11 +120,11 @@ export class InvoiceService {
           });
 
           // и выводится письмо о том, что счет оплачен
-          await this.mailService.invoicePayed(
-            invoiceCreate.user,
-            invoiceCreate,
+          this.mailService.emit('invoicePayed', {
+            invoice: invoiceCreate,
+            user: invoiceCreate.user,
             balance,
-          );
+          });
 
           await this.walletService.acceptanceActCreate({
             user: invoiceCreate.user,
@@ -163,19 +143,22 @@ export class InvoiceService {
               verified: true,
             },
           });
-          await this.mailService.invoiceAwaitingConfirmation(
+
+          // Вызов сервиса отправки писем
+          this.mailService.emit('invoiceAwaitingConfirmation', {
             accountantUsers,
-            invoiceCreate,
-          );
+            invoice: invoiceCreate,
+          });
+
           break;
         }
 
         // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
         case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
-          await this.mailService.invoiceConfirmed(
-            invoiceCreate.user,
-            invoiceCreate,
-          );
+          this.mailService.emit('invoiceConfirmed', {
+            user: invoiceCreate.user,
+            invoice: invoiceCreate,
+          });
 
           break;
         }
@@ -205,7 +188,13 @@ export class InvoiceService {
     if (!invoice.user) {
       throw new NotFoundException('Invoice: user not found');
     }
-    const data = await this.printService.invoice(format, invoice);
+
+    const response = await lastValueFrom(
+      this.mailService.send<Record<string, unknown>, PrintInvoice>('invoice', {
+        format,
+        invoice,
+      }),
+    );
 
     const specificFormat = formatToContentType[format]
       ? format
@@ -228,6 +217,6 @@ export class InvoiceService {
     );
     res.setHeader('Content-Type', formatToContentType[format]);
 
-    res.end(data, 'binary');
+    res.end(response?.data, 'binary');
   }
 }

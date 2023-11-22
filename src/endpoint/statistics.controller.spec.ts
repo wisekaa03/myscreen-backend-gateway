@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
+import { Observable } from 'rxjs';
 
+import { MAIL_SERVICE } from '@/interfaces';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { StatisticsController } from './statistics.controller';
-import { PlaylistService } from '@/database/playlist.service';
-import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
-import { PrintService } from '@/print/print.service';
+import { UserService } from '@/database/user.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -15,6 +15,9 @@ export const mockRepository = jest.fn(() => ({
   create: () => [],
   remove: async () => Promise.resolve([]),
   get: (key: string, defaultValue?: string) => defaultValue,
+  emit: async (event: string, data: unknown) =>
+    new Observable((s) => s.next(data)),
+  send: async (id: unknown) => new Observable((s) => s.next(id)),
   metadata: {
     columns: [],
     relations: [],
@@ -28,10 +31,9 @@ describe(StatisticsController.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [StatisticsController],
       providers: [
-        { provide: UserService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },
-        { provide: PlaylistService, useClass: mockRepository },
-        { provide: PrintService, useClass: mockRepository },
+        { provide: UserService, useClass: mockRepository },
+        { provide: MAIL_SERVICE, useClass: mockRepository },
       ],
     }).compile();
 

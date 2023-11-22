@@ -8,9 +8,7 @@ import {
   IsString,
   IsUUID,
   MinLength,
-  ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
@@ -30,7 +28,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { EditorRequest, EditorResponse } from '@/dto';
 import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';

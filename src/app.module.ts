@@ -8,14 +8,14 @@ import type { PrettyOptions } from 'pino-pretty';
 import 'pino-elasticsearch';
 import type { ClientOptions as ElasticClientOptions } from '@elastic/elasticsearch';
 import { LoggerModule, Params as NestPinoParams } from 'nestjs-pino';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import { MAIL_SERVICE } from '@/interfaces';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
-import { MailModule } from './mail/mail.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
-import { PrintModule } from './print/print.module';
 import { CrontabModule } from './crontab/crontab.module';
 
 @Module({
@@ -74,8 +74,43 @@ import { CrontabModule } from './crontab/crontab.module';
     }),
 
     AuthModule,
-    MailModule,
-    PrintModule,
+
+    ClientsModule.registerAsync({
+      isGlobal: true,
+      clients: [
+        {
+          name: MAIL_SERVICE,
+          useFactory: (configService: ConfigService) => ({
+            transport: Transport.RMQ,
+            options: {
+              urls: [
+                {
+                  hostname: configService.get<string>(
+                    'RABBITMQ_HOST',
+                    'localhost',
+                  ),
+                  port: configService.get<number>('RABBITMQ_PORT', 5672),
+                  username: configService.get<string>(
+                    'RABBITMQ_USERNAME',
+                    'guest',
+                  ),
+                  password: configService.get<string>(
+                    'RABBITMQ_PASSWORD',
+                    'guest',
+                  ),
+                },
+              ],
+              queue: 'mail_queue',
+              queueOptions: {
+                durable: true,
+              },
+            },
+          }),
+          inject: [ConfigService],
+        },
+      ],
+    }),
+
     CrontabModule,
     WSModule,
     S3Module.forRootAsync({

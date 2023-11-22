@@ -2,18 +2,20 @@ import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { Body, HttpCode, Logger, Post, Req, Res } from '@nestjs/common';
+import { Body, HttpCode, Inject, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { In } from 'typeorm';
+import { ClientProxy } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 
+import { MAIL_SERVICE, PrintReportDeviceStatus } from '@/interfaces';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
 import { UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { formatToContentType } from '@/utils/format-to-content-type';
-import { PrintService } from '@/print/print.service';
-import { PlaylistService } from '@/database/playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
+import { UserService } from '@/database/user.service';
 
 @ApiComplexDecorators('statistics', [
   UserRoleEnum.Administrator,
@@ -25,9 +27,10 @@ export class StatisticsController {
   logger = new Logger(StatisticsController.name);
 
   constructor(
+    private readonly userService: UserService,
     private readonly monitorService: MonitorService,
-    private readonly playlistService: PlaylistService,
-    private readonly printService: PrintService,
+    @Inject(MAIL_SERVICE)
+    private readonly mailService: ClientProxy,
   ) {}
 
   @Post('deviceStatus')
@@ -72,13 +75,18 @@ export class StatisticsController {
       });
     }
 
-    const data = await this.printService.reportDeviceStatus({
-      user,
-      monitors,
-      format,
-      dateFrom: new Date(dateFrom),
-      dateTo: new Date(dateTo),
-    });
+    const data = await lastValueFrom(
+      this.mailService.send<unknown, PrintReportDeviceStatus>(
+        'reportDeviceStatus',
+        {
+          user,
+          monitors,
+          format,
+          dateFrom: new Date(dateFrom),
+          dateTo: new Date(dateTo),
+        },
+      ),
+    );
 
     const specificFormat = formatToContentType[format]
       ? format
@@ -137,13 +145,15 @@ export class StatisticsController {
       });
     }
 
-    const data = await this.printService.reportViews({
-      user,
-      monitors,
-      format,
-      dateFrom: new Date(dateFrom),
-      dateTo: new Date(dateTo),
-    });
+    const data = await lastValueFrom(
+      this.mailService.send<unknown, PrintReportDeviceStatus>('reportViews', {
+        user,
+        monitors,
+        format,
+        dateFrom: new Date(dateFrom),
+        dateTo: new Date(dateTo),
+      }),
+    );
 
     const specificFormat = formatToContentType[format]
       ? format

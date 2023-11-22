@@ -5,8 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
-import { MailService } from '@/mail/mail.service';
 import { ActService } from './act.service';
+import { MAIL_SERVICE } from '@/interfaces';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -30,7 +30,7 @@ describe(WalletService.name, () => {
         WalletService,
         { provide: UserService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
-        { provide: MailService, useClass: mockRepository },
+        { provide: MAIL_SERVICE, useClass: mockRepository },
         { provide: ActService, useClass: mockRepository },
         {
           provide: getRepositoryToken(WalletEntity),

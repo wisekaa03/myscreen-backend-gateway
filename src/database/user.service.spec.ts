@@ -4,11 +4,13 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { subDays } from 'date-fns';
 import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
+import { Observable } from 'rxjs';
+import { MAIL_SERVICE } from '@/interfaces';
 import { CRUD, UserPlanEnum, UserRoleEnum } from '@/enums';
-import { MailService } from '@/mail/mail.service';
 import { UserEntity } from './user.entity';
 import { UserExtEntity } from './user-ext.entity';
 import { UserService } from './user.service';
+import { fullName } from '@/utils/full-name';
 
 const testUser: UserExtEntity = {
   id: '0000-0000-0000-0000',
@@ -72,6 +74,9 @@ export const mockRepository = jest.fn(() => ({
   sendWelcomeMessage: async () => Promise.resolve({}),
   sendVerificationCode: async () => Promise.resolve({}),
   get: (key: string, defaultValue?: string) => defaultValue,
+  emit: async (event: string, data: unknown) =>
+    new Observable((s) => s.next(data)),
+  send: async (id: unknown) => new Observable((s) => s.next(id)),
   metadata: {
     columns: [],
     relations: [],
@@ -86,7 +91,7 @@ describe(UserService.name, () => {
       providers: [
         UserService,
         { provide: ConfigService, useClass: mockRepository },
-        { provide: MailService, useClass: mockRepository },
+        { provide: MAIL_SERVICE, useClass: mockRepository },
         {
           provide: getRepositoryToken(UserEntity),
           useClass: mockRepository,
@@ -102,7 +107,7 @@ describe(UserService.name, () => {
   });
 
   test('Full name of a test user', () => {
-    const testUserFullName = UserService.fullName(testUser);
+    const testUserFullName = fullName(testUser);
     expect(testUserFullName).toBe('Steve John Doe <postmaster@domain.com>');
   });
 
