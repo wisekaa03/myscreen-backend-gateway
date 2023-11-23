@@ -42,6 +42,7 @@ import {
 } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
+import { fullName } from '@/utils/full-name';
 
 @ApiExtraModels(FolderResponse)
 @ApiComplexDecorators('folder', [
@@ -112,7 +113,7 @@ export class FolderController {
         [userData, count] = await this.userService.findAndCount({});
         data = userData.map((item) => ({
           id: `${administratorFolderId}/${item.id}`,
-          name: UserService.fullName(item),
+          name: fullName(item),
           parentFolderId,
           empty: false,
           createdAt: item.createdAt ?? new Date(),

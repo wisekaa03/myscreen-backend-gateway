@@ -11,11 +11,11 @@ import {
   FindOperator,
 } from 'typeorm';
 import subDays from 'date-fns/subDays';
+import { ClientProxy } from '@nestjs/microservices';
 
+import { MAIL_SERVICE } from '@/interfaces';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { MailService } from '@/mail/mail.service';
-// eslint-disable-next-line import/no-cycle
 import { ActService } from './act.service';
 import { UserEntity } from './user.entity';
 import { ActEntity } from './act.entity';
@@ -23,6 +23,7 @@ import { InvoiceEntity } from './invoice.entity';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
 import { UserPlanEnum } from '@/enums';
+import { fullName } from '@/utils/full-name';
 
 @Injectable()
 export class WalletService {
@@ -35,9 +36,10 @@ export class WalletService {
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-    private readonly mailService: MailService,
     @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
+    @Inject(MAIL_SERVICE)
+    private readonly mailService: ClientProxy,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
   ) {
@@ -139,9 +141,6 @@ export class WalletService {
       transact,
     }));
 
-    const fullName = `${UserService.fullName(user)} ${user.role} / ${
-      user.plan
-    }`;
     this.logger.warn(
       `[✓] User "${fullName}" balance: ₽${balance}, acceptance act in past month: ₽${actsInPastMonth}`,
     );
@@ -178,7 +177,7 @@ export class WalletService {
       this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
 
       // и вывод информации на email
-      await this.mailService.balanceChanged(user, sum, balance);
+      this.mailService.emit('balanceChanged', { user, sum, balance });
     } else {
       this.logger.warn(
         ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.acceptanceActSum}`,
@@ -193,11 +192,11 @@ export class WalletService {
       }
 
       // и вывод информации на email
-      await this.mailService.balanceNotChanged(
+      this.mailService.emit('balanceNotChanged', {
         user,
-        this.acceptanceActSum,
+        sum: this.acceptanceActSum,
         balance,
-      );
+      });
     }
   }
 

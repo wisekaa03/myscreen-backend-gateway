@@ -4,7 +4,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { getS3ConnectionToken } from 'nestjs-s3';
 import { S3_MODULE_CONNECTION } from 'nestjs-s3/dist/s3.constants';
 
-import { MailService } from '@/mail/mail.service';
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
@@ -38,7 +37,6 @@ describe(FileService.name, () => {
         FileService,
         { provide: ConfigService, useClass: mockRepository },
         { provide: RequestService, useClass: mockRepository },
-        { provide: MailService, useClass: mockRepository },
         { provide: FolderService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },
         { provide: EditorService, useClass: mockRepository },

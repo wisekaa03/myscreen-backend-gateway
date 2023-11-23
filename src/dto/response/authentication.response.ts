@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { Token } from '@/interfaces';
 import { Status } from '@/enums/status.enum';
-import { Token } from '@/dto/interface';
 import { UserExtEntity } from '@/database/user-ext.entity';
 
 export class AuthenticationPayload {

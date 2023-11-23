@@ -54,3 +54,18 @@ services:
       - "postgres:postgres"
     ports:
       - "${PGADMIN_PORT:-8080}:8080"
+
+  rabbitmq:
+    image: bitnami/rabbitmq:latest
+    restart: always
+    environment:
+      - RABBITMQ_PASSWORD=12345678
+      - RABBITMQ_USERNAME=admin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    links:
+      - "postgres:postgres"
+    ports:
+      - "5672:5672"
+      - "15672:15672"

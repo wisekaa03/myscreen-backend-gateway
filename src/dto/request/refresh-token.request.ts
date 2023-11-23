@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty } from 'class-validator';
 
-import { Token } from '@/dto/interface';
+import { Token } from '@/interfaces';
 
 export class AuthRefreshRequest {
   @ApiProperty({

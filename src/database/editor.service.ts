@@ -39,7 +39,7 @@ import {
   RequestStatus,
   VideoType,
 } from '@/enums';
-import { MonitorGroupWithPlaylist } from '@/dto/interface';
+import { MonitorGroupWithPlaylist } from '@/interfaces';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';

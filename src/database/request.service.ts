@@ -20,11 +20,12 @@ import {
 } from 'typeorm';
 import parseISO from 'date-fns/parseISO';
 import differenceInDays from 'date-fns/differenceInDays';
+import { ClientProxy } from '@nestjs/microservices';
 
+import { MAIL_SERVICE, MailSendApplicationMessage } from '@/interfaces';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { RequestApprove, MonitorMultiple } from '@/enums';
-import { MailService } from '@/mail/mail.service';
 import { RequestEntity } from './request.entity';
 import { FileEntity } from './file.entity';
 import { MonitorEntity } from './monitor.entity';
@@ -40,7 +41,8 @@ export class RequestService {
   private frontendUrl: string;
 
   constructor(
-    private readonly mailService: MailService,
+    @Inject(MAIL_SERVICE)
+    private readonly mailService: ClientProxy,
     @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
     @Inject(forwardRef(() => WSGateway))
@@ -386,17 +388,13 @@ export class RequestService {
       if (update.approved === RequestApprove.NOTPROCESSED) {
         const sellerEmail = request.seller?.email;
         if (sellerEmail) {
-          await this.mailService
-            .sendApplicationWarningMessage({
+          this.mailService.emit<unknown, MailSendApplicationMessage>(
+            'sendApplicationWarningMessage',
+            {
               email: sellerEmail,
               applicationUrl: `${this.frontendUrl}/applications`,
-            })
-            .catch((error: unknown) => {
-              this.logger.error(
-                `ApplicationService seller email=${sellerEmail}: ${error}`,
-                error,
-              );
-            });
+            },
+          );
         } else {
           this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }
@@ -444,17 +442,13 @@ export class RequestService {
       if (insert.approved === RequestApprove.NOTPROCESSED) {
         const sellerEmail = request.seller?.email;
         if (sellerEmail) {
-          await this.mailService
-            .sendApplicationWarningMessage({
+          this.mailService.emit<unknown, MailSendApplicationMessage>(
+            'sendApplicationWarningMessage',
+            {
               email: sellerEmail,
               applicationUrl: `${this.frontendUrl}/applications`,
-            })
-            .catch((error: unknown) => {
-              this.logger.error(
-                `ApplicationService seller email=${sellerEmail}: ${error}`,
-                error,
-              );
-            });
+            },
+          );
         } else {
           this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }

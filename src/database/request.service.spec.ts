@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
+import { MAIL_SERVICE } from '@/interfaces';
 import { WSGateway } from '@/websocket/ws.gateway';
-import { MailService } from '@/mail/mail.service';
 import { RequestEntity } from './request.entity';
 import { RequestService } from './request.service';
 import { UserService } from './user.service';
@@ -36,7 +36,7 @@ describe(RequestService.name, () => {
         { provide: UserService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },
         { provide: EditorService, useClass: mockRepository },
-        { provide: MailService, useClass: mockRepository },
+        { provide: MAIL_SERVICE, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
         { provide: WSGateway, useClass: mockRepository },
         {

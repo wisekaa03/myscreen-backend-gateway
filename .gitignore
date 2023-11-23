@@ -108,6 +108,7 @@ dist
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/myscreen.code-workspace
+!.vscode/myscreen-backend.code-workspace
 
 .env
 docker/postgres
