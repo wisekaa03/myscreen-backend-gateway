@@ -8,7 +8,12 @@ import type { PrettyOptions } from 'pino-pretty';
 import 'pino-elasticsearch';
 import type { ClientOptions as ElasticClientOptions } from '@elastic/elasticsearch';
 import { LoggerModule, Params as NestPinoParams } from 'nestjs-pino';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import {
+  ClientsModule,
+  Transport,
+  ProducerSerializer,
+  ProducerDeserializer,
+} from '@nestjs/microservices';
 
 import { MAIL_SERVICE } from '@/interfaces';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
@@ -103,6 +108,21 @@ import { CrontabModule } from './crontab/crontab.module';
               queue: 'mail_queue',
               queueOptions: {
                 durable: true,
+              },
+              serializer: <ProducerSerializer>{
+                serialize: (value) => ({
+                  ...value,
+                  data: JSON.stringify(value.data),
+                }),
+              },
+              deserializer: <ProducerDeserializer>{
+                deserialize: (value) => ({
+                  ...value,
+                  response:
+                    value.response?.type === 'Buffer'
+                      ? Buffer.from(value.response)
+                      : value.response,
+                }),
               },
             },
           }),

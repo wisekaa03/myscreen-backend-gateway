@@ -95,11 +95,21 @@ export class InvoiceService {
     invoice: InvoiceEntity,
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
+    const { id } = invoice;
     return this.invoiceRepository.manager.transaction(async (transact) => {
-      const invoiceCreate = await transact.save(InvoiceEntity, {
-        ...invoice,
+      const invoiceUpdated = await transact.update(InvoiceEntity, id, {
         status,
       });
+      if (!invoiceUpdated.affected) {
+        throw new NotFoundException('Invoice not found');
+      }
+      const invoiceFind = await transact.findOne(InvoiceEntity, {
+        where: { id },
+        relations: { user: true },
+      });
+      if (!invoiceFind) {
+        throw new NotFoundException('Invoice not found');
+      }
 
       switch (status) {
         // Если статус счета "Оплачен", то нужно записать в базу
@@ -109,25 +119,25 @@ export class InvoiceService {
           await transact.save(
             WalletEntity,
             this.walletService.create({
-              user: invoiceCreate.user,
-              invoice: invoiceCreate,
+              user: invoiceFind.user,
+              invoice: invoiceFind,
             }),
           );
 
           const balance = await this.walletService.walletSum({
-            userId: invoiceCreate.userId,
+            userId: invoiceFind.userId,
             transact,
           });
 
           // и выводится письмо о том, что счет оплачен
           this.mailService.emit('invoicePayed', {
-            invoice: invoiceCreate,
-            user: invoiceCreate.user,
+            invoice: invoiceFind,
+            user: invoiceFind.user,
             balance,
           });
 
           await this.walletService.acceptanceActCreate({
-            user: invoiceCreate.user,
+            user: invoiceFind.user,
             transact,
           });
 
@@ -147,7 +157,7 @@ export class InvoiceService {
           // Вызов сервиса отправки писем
           this.mailService.emit('invoiceAwaitingConfirmation', {
             accountantUsers,
-            invoice: invoiceCreate,
+            invoice: invoiceFind,
           });
 
           break;
@@ -156,8 +166,8 @@ export class InvoiceService {
         // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
         case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
           this.mailService.emit('invoiceConfirmed', {
-            user: invoiceCreate.user,
-            invoice: invoiceCreate,
+            user: invoiceFind.user,
+            invoice: invoiceFind,
           });
 
           break;
@@ -167,7 +177,7 @@ export class InvoiceService {
           break;
       }
 
-      return Object.assign(invoiceCreate, { user: undefined });
+      return Object.assign(invoiceFind, { user: undefined });
     });
   }
 
@@ -217,6 +227,6 @@ export class InvoiceService {
     );
     res.setHeader('Content-Type', formatToContentType[format]);
 
-    res.end(response?.data, 'binary');
+    res.end(response, 'binary');
   }
 }
