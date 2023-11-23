@@ -15,7 +15,7 @@ import {
   ProducerDeserializer,
 } from '@nestjs/microservices';
 
-import { MAIL_SERVICE } from '@/interfaces';
+import { EDITOR_SERVICE, FILE_SERVICE, MAIL_SERVICE } from '@/interfaces';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
@@ -106,6 +106,96 @@ import { CrontabModule } from './crontab/crontab.module';
                 },
               ],
               queue: 'mail_queue',
+              queueOptions: {
+                durable: true,
+              },
+              serializer: <ProducerSerializer>{
+                serialize: (value) => ({
+                  ...value,
+                  data: JSON.stringify(value.data),
+                }),
+              },
+              deserializer: <ProducerDeserializer>{
+                deserialize: (value) => ({
+                  ...value,
+                  response:
+                    value.response?.type === 'Buffer'
+                      ? Buffer.from(value.response)
+                      : value.response,
+                }),
+              },
+            },
+          }),
+          inject: [ConfigService],
+        },
+        {
+          name: EDITOR_SERVICE,
+          useFactory: (configService: ConfigService) => ({
+            transport: Transport.RMQ,
+            options: {
+              urls: [
+                {
+                  hostname: configService.get<string>(
+                    'RABBITMQ_HOST',
+                    'localhost',
+                  ),
+                  port: configService.get<number>('RABBITMQ_PORT', 5672),
+                  username: configService.get<string>(
+                    'RABBITMQ_USERNAME',
+                    'guest',
+                  ),
+                  password: configService.get<string>(
+                    'RABBITMQ_PASSWORD',
+                    'guest',
+                  ),
+                },
+              ],
+              queue: 'editor_queue',
+              queueOptions: {
+                durable: true,
+              },
+              serializer: <ProducerSerializer>{
+                serialize: (value) => ({
+                  ...value,
+                  data: JSON.stringify(value.data),
+                }),
+              },
+              deserializer: <ProducerDeserializer>{
+                deserialize: (value) => ({
+                  ...value,
+                  response:
+                    value.response?.type === 'Buffer'
+                      ? Buffer.from(value.response)
+                      : value.response,
+                }),
+              },
+            },
+          }),
+          inject: [ConfigService],
+        },
+        {
+          name: FILE_SERVICE,
+          useFactory: (configService: ConfigService) => ({
+            transport: Transport.RMQ,
+            options: {
+              urls: [
+                {
+                  hostname: configService.get<string>(
+                    'RABBITMQ_HOST',
+                    'localhost',
+                  ),
+                  port: configService.get<number>('RABBITMQ_PORT', 5672),
+                  username: configService.get<string>(
+                    'RABBITMQ_USERNAME',
+                    'guest',
+                  ),
+                  password: configService.get<string>(
+                    'RABBITMQ_PASSWORD',
+                    'guest',
+                  ),
+                },
+              ],
+              queue: 'file_queue',
               queueOptions: {
                 durable: true,
               },
