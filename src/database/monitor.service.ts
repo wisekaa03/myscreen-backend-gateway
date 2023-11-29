@@ -287,6 +287,12 @@ export class MonitorService {
     if (insert.monitorInfo) {
       throw new BadRequestException('Monitor info deprecated');
     }
+    if (
+      multiple === MonitorMultiple.SINGLE &&
+      !(insert.width || insert.height)
+    ) {
+      throw new BadRequestException('Monitor width or height is empty');
+    }
     const prepareMonitor: Partial<MonitorEntity> = {
       ...insert,
       userId,
