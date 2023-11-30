@@ -86,7 +86,8 @@ export class InvoiceService {
 
       return transact.findOne(InvoiceEntity, {
         where: { id },
-        relations: ['user'],
+        loadEagerRelations: true,
+        relations: { user: true },
       });
     });
   }
@@ -105,11 +106,13 @@ export class InvoiceService {
       }
       const invoiceFind = await transact.findOne(InvoiceEntity, {
         where: { id },
+        loadEagerRelations: true,
         relations: { user: true },
       });
       if (!invoiceFind) {
         throw new NotFoundException('Invoice not found');
       }
+      const { user, userId } = invoiceFind;
 
       switch (status) {
         // Если статус счета "Оплачен", то нужно записать в базу
@@ -119,25 +122,25 @@ export class InvoiceService {
           await transact.save(
             WalletEntity,
             this.walletService.create({
-              user: invoiceFind.user,
+              user,
               invoice: invoiceFind,
             }),
           );
 
           const balance = await this.walletService.walletSum({
-            userId: invoiceFind.userId,
+            userId,
             transact,
           });
 
           // и выводится письмо о том, что счет оплачен
           this.mailService.emit('invoicePayed', {
             invoice: invoiceFind,
-            user: invoiceFind.user,
+            user,
             balance,
           });
 
           await this.walletService.acceptanceActCreate({
-            user: invoiceFind.user,
+            user,
             transact,
           });
 
@@ -166,7 +169,7 @@ export class InvoiceService {
         // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
         case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
           this.mailService.emit('invoiceConfirmed', {
-            user: invoiceFind.user,
+            user,
             invoice: invoiceFind,
           });
 
@@ -177,7 +180,7 @@ export class InvoiceService {
           break;
       }
 
-      return Object.assign(invoiceFind, { user: undefined });
+      return invoiceFind;
     });
   }
 
