@@ -10,7 +10,7 @@ import { CRUD, UserPlanEnum, UserRoleEnum } from '@/enums';
 import { UserEntity } from './user.entity';
 import { UserExtEntity } from './user-ext.entity';
 import { UserService } from './user.service';
-import { fullName } from '@/utils/full-name';
+import { fullNameFunc } from '@/utils/full-name';
 
 const testUser: UserExtEntity = {
   id: '0000-0000-0000-0000',
@@ -107,7 +107,7 @@ describe(UserService.name, () => {
   });
 
   test('Full name of a test user', () => {
-    const testUserFullName = fullName(testUser);
+    const testUserFullName = fullNameFunc(testUser);
     expect(testUserFullName).toBe('Steve John Doe <postmaster@domain.com>');
   });
 

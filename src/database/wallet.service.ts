@@ -23,7 +23,7 @@ import { InvoiceEntity } from './invoice.entity';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
 import { UserPlanEnum } from '@/enums';
-import { fullName } from '@/utils/full-name';
+import { fullNameFunc } from '@/utils/full-name';
 
 @Injectable()
 export class WalletService {
@@ -140,6 +140,7 @@ export class WalletService {
       actId: Not(IsNull()),
       transact,
     }));
+    const fullName = fullNameFunc(user);
 
     this.logger.warn(
       `[✓] User "${fullName}" balance: ₽${balance}, acceptance act in past month: ₽${actsInPastMonth}`,

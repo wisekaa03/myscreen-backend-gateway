@@ -33,7 +33,7 @@ import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
 import { UserExtEntity, selectUserOptions } from './user-ext.entity';
-import { fullName } from '@/utils/full-name';
+import { fullNameFunc } from '@/utils/full-name';
 
 @Injectable()
 export class UserService {
@@ -72,7 +72,7 @@ export class UserService {
     functionName: string,
     crud: CRUD,
   ): boolean {
-    const name = fullName(user);
+    const name = fullNameFunc(user);
     this.logger.log(
       `User: "${name}" Controllers: "${controllerName}" CRUD: "${crud}"`,
     );

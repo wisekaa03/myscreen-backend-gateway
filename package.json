@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.42.70",
+  "version": "2.42.71",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -169,7 +169,7 @@
     "@types/ejs": "^3.1.5",
     "@types/express": "^4.17.21",
     "@types/geojson": "^7946.0.13",
-    "@types/jest": "^29.5.10",
+    "@types/jest": "^29.5.11",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/ms": "^0.7.34",
@@ -180,8 +180,8 @@
     "@types/pug": "^2.0.10",
     "@types/supertest": "^2.0.16",
     "@types/ws": "^8.5.10",
-    "@typescript-eslint/eslint-plugin": "^6.13.1",
-    "@typescript-eslint/parser": "^6.13.1",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2",
     "eslint": "^8.55.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-airbnb-typescript": "^17.1.0",
