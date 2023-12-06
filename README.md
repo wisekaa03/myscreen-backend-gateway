@@ -1,7 +1,7 @@
 ### Подготовка
 Перед использованием у вас должен быть .env, пример лежит в .env.example.
-- yarn docker:dev - отладочная версия чтобы подготовить postgres и pgadmin4
-- yarn docker:prod - рабочая версия, только чистый postgres
+- yarn docker:dev - отладочная версия чтобы подготовить postgres, pgadmin4 и rabbit
+- yarn docker:prod - рабочая версия, только чистый postgres, rabbit
 ### Запуск
 - yarn start:debug - отладочная версия
 - yarn build && yarn start:prod - рабочая версия
