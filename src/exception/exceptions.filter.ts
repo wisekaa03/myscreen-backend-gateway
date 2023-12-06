@@ -4,6 +4,7 @@ import {
   Logger,
   HttpException,
   HttpServer,
+  ConflictException,
 } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
@@ -26,6 +27,9 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   }
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
+    if (exception instanceof ConflictException) {
+      return super.catch(exception, host);
+    }
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
       let { message } = exception;

@@ -6,6 +6,6 @@ import { UserEntity } from '@/database/user.entity';
  * @param {boolean} isEmail (default: true) - add email
  * @returns string
  */
-export const fullNameFunc = (user: UserEntity, isEmail = true) =>
+export const getFullName = (user: UserEntity, isEmail = true) =>
   [user.surname, user.name, user.middleName].join(' ') +
   (isEmail ? ` <${user.email}>` : '');
