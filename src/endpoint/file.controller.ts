@@ -477,9 +477,7 @@ export class FileController {
     try {
       let buffer = file.preview?.preview;
       if (!buffer || buffer.length === 0) {
-        buffer = await this.fileService.previewFile(file).catch((reason) => {
-          throw reason;
-        });
+        buffer = await this.fileService.previewFile(file);
       }
 
       res.setHeader('Content-Length', buffer.length);
@@ -510,6 +508,7 @@ export class FileController {
           )};`,
         );
       }
+
       res.write(buffer);
       res.end();
     } catch (error: unknown) {

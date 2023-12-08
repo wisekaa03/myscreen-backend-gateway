@@ -35,14 +35,13 @@ import {
 import { FileCategory, UserRoleEnum, VideoType } from '@/enums';
 import { ConflictData, FileUploadRequest } from '@/dto';
 import { EditorService } from '@/database/editor.service';
-import { getS3Name } from '@/utils/get-name';
-import { FfMpegPreview } from '@/utils/ffmpeg';
+import { getS3FullName, getS3Name } from '@/utils/get-name';
+import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { FileEntity, MediaMeta } from './file.entity';
-import { FilePreviewEntity } from './file-preview.entity';
-import { FolderService } from './folder.service';
-// eslint-disable-next-line import/no-cycle
-import { MonitorService } from './monitor.service';
+import { FileEntity, MediaMeta } from '@/database/file.entity';
+import { FilePreviewEntity } from '@/database/file-preview.entity';
+import { FolderService } from '@/database/folder.service';
+import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
 import { PlaylistService } from './playlist.service';
@@ -167,7 +166,7 @@ export class FileService {
       if (update.folderId !== undefined && update.folderId !== file.folder.id) {
         const s3Name = getS3Name(file.name);
         const Key = `${update.folderId}/${file.hash}-${s3Name}`;
-        const CopySource = `${file.folder.id}/${file.hash}-${s3Name}`;
+        const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
 
         await this.s3Service
           .copyObject({
@@ -320,27 +319,21 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.HeadObjectOutput, AWS.AWSError>} S3 headers
    */
-  async headS3Object({
-    id,
-    name,
-    hash,
-    folderId,
-  }: FileEntity): Promise<HeadObjectOutput> {
-    const Key = `${folderId}/${hash}-${getS3Name(name)}`;
+  async headS3Object(file: FileEntity): Promise<HeadObjectOutput> {
     return this.s3Service
       .headObject({
         Bucket: this.bucket,
-        Key,
+        Key: getS3FullName(file),
       })
       .then((value) => {
         this.logger.debug(
-          `S3: the file "${id}" head "${Key}": ${JSON.stringify(value)}`,
+          `S3 head: file "${file.name}": ${JSON.stringify(value)}`,
         );
         return value;
       })
       .catch((error: any) => {
         throw new HttpException(
-          `S3 head error: "${name}" ${error?.code ?? 'Not found'}`,
+          `S3 head error: "${file.name}" ${error?.code ?? 'Not found'}`,
           error?.statusCode ?? 404,
         );
       });
@@ -351,16 +344,11 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.GetObjectOutput, AWS.AWSError>} S3 object
    */
-  getS3Object({
-    name,
-    hash,
-    folderId,
-  }: FileEntity): Promise<GetObjectCommandOutput> {
-    const Key = `${folderId}/${hash}-${getS3Name(name)}`;
+  getS3Object(file: FileEntity): Promise<GetObjectCommandOutput> {
     return this.s3Service.send(
       new GetObjectCommand({
         Bucket: this.bucket,
-        Key,
+        Key: getS3FullName(file),
       }),
     );
   }
@@ -370,20 +358,15 @@ export class FileService {
    * @param {FileEntity} {FileEntity} file
    * @returns {} {PromiseResult<AWS.S3.DeleteObjectOutput, AWS.AWSError>} S3 object
    */
-  async deleteS3Object({
-    name,
-    hash,
-    folderId,
-  }: FileEntity): Promise<DeleteObjectOutput> {
-    const Key = `${folderId}/${hash}-${getS3Name(name)}`;
+  async deleteS3Object(file: FileEntity): Promise<DeleteObjectOutput> {
     return this.s3Service
       .deleteObject({
         Bucket: this.bucket,
-        Key,
+        Key: getS3FullName(file),
       })
       .then((value) => {
         this.logger.debug(
-          `S3: "${Key}" has been deleted: ${value.DeleteMarker ?? true}`,
+          `S3: "${file.name}" has been deleted: ${value.DeleteMarker ?? true}`,
         );
         return value;
       });
@@ -594,51 +577,39 @@ export class FileService {
 
     if (await fs.access(outPath).catch(() => true)) {
       const outputStream = createWriteStream(filename);
-      const data: GetObjectCommandOutput = await this.getS3Object(file);
+      const data: GetObjectCommandOutput = await this.getS3Object(file).catch(
+        (error: unknown) => {
+          this.logger.error(
+            `S3 Error preview: "${file.name}" (${getS3FullName(file)})`,
+            error,
+          );
+          throw new InternalServerErrorException(error);
+        },
+      );
       if (data.Body instanceof internal.Readable) {
         await StreamPromises.pipeline(data.Body, outputStream);
         this.logger.debug(`The file "${file.name}" has been downloaded`);
+        await FfMpegPreview(file.videoType, file.meta, filename, outPath).catch(
+          (reason: unknown) => {
+            throw new InternalServerErrorException(reason);
+          },
+        );
+      } else {
+        throw new InternalServerErrorException('S3 data is not readable');
       }
     } else {
-      this.logger.debug(`The file "${file.name}" has cached`);
+      this.logger.debug(`Preview file "${file.name}" has cached`);
     }
 
-    await FfMpegPreview(file.videoType, file.meta, filename, outPath).catch(
-      (reason: unknown) => {
-        throw new InternalServerErrorException(reason);
-      },
-    );
-
     const preview = await fs.readFile(outPath);
 
-    await this.filePreviewRepository
-      .save(
-        this.filePreviewRepository.create({
-          ...file.preview,
-          file,
-          preview,
-        }),
-      )
-      .catch(() => {});
-
-    return preview;
-  }
-
-  async preview(
-    type: VideoType,
-    file: Express.Multer.File,
-    meta: MediaMeta,
-  ): Promise<Buffer> {
-    const ext = type === VideoType.Image ? 'jpg' : 'webm';
-
-    const outPath = pathJoin(
-      `${file.destination}/${pathParse(file.filename).name}-preview.${ext}`,
+    await this.filePreviewRepository.save(
+      this.filePreviewRepository.create({
+        ...file.preview,
+        file,
+        preview,
+      }),
     );
-    await FfMpegPreview(type, meta, file.path, outPath).catch((reason) => {
-      throw new InternalServerErrorException(reason);
-    });
-
-    const preview = await fs.readFile(outPath);
 
     return preview;
   }

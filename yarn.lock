@@ -7041,10 +7041,10 @@ pino-abstract-transport@^1.0.0, pino-abstract-transport@v1.1.0:
     readable-stream "^4.0.0"
     split2 "^4.0.0"
 
-pino-elasticsearch@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/pino-elasticsearch/-/pino-elasticsearch-7.0.0.tgz#66cc9e752dcdc33f89a45388cfd55637ee4e48b0"
-  integrity sha512-CBHXm9iAcmM+n/NyXHa6F6Mv0+K65vCoeXQkyNaSD2JON2/oOFtY6Ho288bUYHSLDRz9awnHl+3zZpfbo8n4+Q==
+pino-elasticsearch@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/pino-elasticsearch/-/pino-elasticsearch-8.0.0.tgz#d67fb2499e2132401b8e10e861dfb6c120a57d37"
+  integrity sha512-Q9plUD1r+NaD+LgrWB50VyYKlIRlx0U6RYcUTa/XkYFEKBWk0vePnuPaIRawPsu6/T+YVJzRnloJBQwYdiLrHA==
   dependencies:
     "@elastic/elasticsearch" "^8.0.0"
     minimist "^1.2.5"
