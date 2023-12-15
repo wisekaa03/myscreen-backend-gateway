@@ -421,6 +421,13 @@ export class FileController {
   }
 
   @Get(':fileId/preview')
+  @Roles([
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Accountant,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  ])
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-download-preview',
