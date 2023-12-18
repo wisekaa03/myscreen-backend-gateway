@@ -421,6 +421,13 @@ export class FileController {
   }
 
   @Get(':fileId/preview')
+  @Roles([
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Accountant,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  ])
   @HttpCode(200)
   @ApiOperation({
     operationId: 'file-download-preview',
@@ -477,9 +484,7 @@ export class FileController {
     try {
       let buffer = file.preview?.preview;
       if (!buffer || buffer.length === 0) {
-        buffer = await this.fileService.previewFile(file).catch((reason) => {
-          throw reason;
-        });
+        buffer = await this.fileService.previewFile(file);
       }
 
       res.setHeader('Content-Length', buffer.length);
@@ -510,6 +515,7 @@ export class FileController {
           )};`,
         );
       }
+
       res.write(buffer);
       res.end();
     } catch (error: unknown) {

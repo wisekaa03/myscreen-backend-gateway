@@ -33,9 +33,12 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
       let { message } = exception;
-      const { error } = response as Record<string, string>;
+      const { error, errors } = response as Record<string, string>;
       if (error) {
         message = `${error}: ${message}`;
+      }
+      if (errors) {
+        message = `${message}: ${JSON.stringify(errors)}`;
       }
       this.logger.error(message, this.debugLevel ? exception.stack : undefined);
 

@@ -14,14 +14,15 @@ export async function FfMpegPreview(
   filename: string,
   outPath: string,
 ): Promise<void> {
-  const logger = new Logger('FFMpeg');
+  const logger = new Logger('FfMpeg');
+
   if (type === VideoType.Image) {
     await exec(
       `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ` -vf scale="100:74" -y "${outPath}"`,
-    ).catch((reason: unknown) => {
-      logger.error(`FfMpeg: ${reason}`);
-      throw reason;
+    ).catch((error: unknown) => {
+      logger.error('FfMpeg error', error);
+      throw error;
     });
   }
 
@@ -39,16 +40,16 @@ export async function FfMpegPreview(
         ' -an' +
         ` -vf scale="100:74",fps="1/${frameInterval}"` +
         ` -y "${outPattern}"`,
-    ).catch((reason: unknown) => {
-      logger.error(`FfMpeg: ${reason}`);
-      throw reason;
+    ).catch((error: unknown) => {
+      logger.error('FfMpeg error', error);
+      throw error;
     });
 
     await exec(
       `node_modules/ffmpeg-static/ffmpeg -framerate 1/0.6 -i "${outPattern}" -q:v 10 -v error -y "${outPath}"`,
-    ).catch((reason: unknown) => {
-      logger.error(`FfMpeg: ${reason}`);
-      throw reason;
+    ).catch((error: unknown) => {
+      logger.error('FfMpeg error', error);
+      throw error;
     });
   }
 }

@@ -169,7 +169,7 @@
       "iconColour": "#FF8C00"
     },
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true
+      "source.fixAll.eslint": "explicit"
     },
     "todo-tree.general.tags": ["TODO","FIXME","BUG","DEBUG"],
     "npm.packageManager": "yarn",
@@ -198,6 +198,11 @@
     "stylelint.packageManager": "yarn",
     "todo-tree.tree.showBadges": false,
     "todo-tree.tree.disableCompactFolders": true,
-    "todo-tree.tree.showCountsInTree": true
+    "todo-tree.tree.showCountsInTree": true,
+    "[javascript][javascriptreact][typescript][typescriptreact]": {
+      "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+      }
+    }
   }
 }
