@@ -10,7 +10,7 @@ volumes:
 
 services:
   postgres:
-    image: postgis/postgis:14-3.3-alpine
+    image: postgis/postgis:14-3.4-alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -28,10 +28,10 @@ services:
       - "5432:5432"
 
   pgadmin4:
-    image: dpage/pgadmin4:7.4
+    image: dpage/pgadmin4:8.1
     restart: always
     environment:
-      PGADMIN_LISTEN_PORT: 8080
+      PGADMIN_LISTEN_PORT: 8088
       PGADMIN_DEFAULT_EMAIL: "example@example.com"
       PGADMIN_DEFAULT_PASSWORD: "QweAsdZxc321"
       PGADMIN_CONFIG_SERVER_MODE: "False"
@@ -53,7 +53,7 @@ services:
     links:
       - "postgres:postgres"
     ports:
-      - "${PGADMIN_PORT:-8080}:8080"
+      - "${PGADMIN_PORT:-8088}:8088"
 
   rabbitmq:
     image: bitnami/rabbitmq:latest

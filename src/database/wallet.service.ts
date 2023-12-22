@@ -10,7 +10,7 @@ import {
   Not,
   FindOperator,
 } from 'typeorm';
-import subDays from 'date-fns/subDays';
+import { subDays } from 'date-fns/subDays';
 import { ClientProxy } from '@nestjs/microservices';
 
 import { MAIL_SERVICE } from '@/interfaces';

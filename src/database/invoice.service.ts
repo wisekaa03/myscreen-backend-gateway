@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
-import dateRu from 'date-fns/locale/ru';
+import { ru as dateRu } from 'date-fns/locale/ru';
 import { ClientProxy } from '@nestjs/microservices';
 
 import { lastValueFrom } from 'rxjs';

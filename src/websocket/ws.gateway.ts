@@ -17,6 +17,7 @@ import type { Server, WebSocket } from 'ws';
 import { Observable, of } from 'rxjs';
 
 import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
+import { FileUploadRequest } from '@/dto';
 import { AuthService } from '@/auth/auth.service';
 import { WebSocketClient } from './interface/websocket-client';
 import { AuthTokenEvent } from './interface/auth-token.event';
@@ -190,11 +191,24 @@ export class WSGateway
   }
 
   /**
-   * monitorPlay - Нам присылают event с Монитора, мы на это отсылаем Ok и
+   * file - Нам присылают файл, мы на это отсылаем Ok
+   * @param {WebSocket} client
+   * @param {FileUploadRequest} body
+   */
+  @SubscribeMessage('file')
+  async handleFile(
+    @ConnectedSocket() client: WebSocket,
+    @MessageBody() body: FileUploadRequest,
+  ): Promise<Observable<WsResponse<string | RequestEntity[] | null>[]>> {
+    throw new WsException('Not authorized');
+  }
+
+  /**
+   * monitor - Нам присылают event с Монитора, мы на это отсылаем Ok и
    * попутно проходим всех подключенных к WS со ролью Advertiser и выставляем monitorPlayed
    */
   @SubscribeMessage('monitor')
-  async monitorPlay(
+  async handleMonitor(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() body: string | MonitorEvent,
   ): Promise<Observable<WsResponse<string>[]>> {
