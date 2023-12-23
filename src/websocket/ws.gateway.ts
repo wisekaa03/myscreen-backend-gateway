@@ -227,8 +227,23 @@ export class WSGateway
           throw new WsException(`File '${body.id}' is not exists: ${error}`);
         });
 
-      if (data.Body instanceof internal.Readable) {
-        return of(data.Body);
+      const stream = data.Body;
+      if (stream instanceof internal.Readable) {
+        // TODO: пока память не закончится, нужно переделать, но как ?
+        const download = new Promise((resolve, reject) => {
+          const chars: string[] = [];
+          stream.on('data', (chunk) => {
+            chars.push(chunk);
+          });
+          stream.on('end', () => {
+            resolve(chars.join(''));
+          });
+          stream.on('error', (error) => {
+            reject(error);
+          });
+        });
+
+        return of([{ event: 'download', data: { id: file.id, download } }]);
       }
     }
     throw new WsException('Not found file');
