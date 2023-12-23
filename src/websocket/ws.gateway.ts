@@ -230,7 +230,7 @@ export class WSGateway
       const stream = data.Body;
       if (stream instanceof internal.Readable) {
         // TODO: пока память не закончится, нужно переделать, но как ?
-        const download = new Promise<Buffer>((resolve, reject) => {
+        const download = await new Promise<Buffer>((resolve, reject) => {
           const chars: Uint8Array[] = [];
           stream.on('data', (chunk) => {
             chars.push(chunk);
@@ -243,7 +243,15 @@ export class WSGateway
           });
         });
 
-        return of([{ event: 'download', data: { id: file.id, download } }]);
+        return of([
+          {
+            event: 'download',
+            data: {
+              id: file.id,
+              download: download.toString('binary'),
+            },
+          },
+        ]);
       }
     }
     throw new WsException('Not found file');
