@@ -1,10 +1,11 @@
 /* eslint max-len:0 */
 import crypto from 'node:crypto';
+import superAgent from 'supertest';
+import TestAgent from 'supertest/lib/agent';
 import { Test, TestingModule } from '@nestjs/testing';
 import { HttpAdapterHost } from '@nestjs/core';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import superAgentRequest from 'supertest';
 import Jabber from 'jabber';
 
 import { Logger } from 'nestjs-pino';
@@ -106,7 +107,7 @@ const updateUser: UserUpdateRequest = {
 describe('Backend API (e2e)', () => {
   let app: INestApplication;
   let userService: UserService;
-  let request: superAgentRequest.SuperTest<superAgentRequest.Test>;
+  let request: TestAgent;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -132,7 +133,7 @@ describe('Backend API (e2e)', () => {
 
     await app.init();
 
-    request = superAgentRequest(app.getHttpServer());
+    request = superAgent(app.getHttpServer());
   });
 
   let user: UserFileEntity | null;

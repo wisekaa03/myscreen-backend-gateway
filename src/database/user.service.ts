@@ -16,9 +16,9 @@ import {
   type DeepPartial,
   FindManyOptions,
 } from 'typeorm';
-import addDays from 'date-fns/addDays';
-import subDays from 'date-fns/subDays';
-import intervalToDuration from 'date-fns/intervalToDuration';
+import { addDays } from 'date-fns/addDays';
+import { subDays } from 'date-fns/subDays';
+import { intervalToDuration } from 'date-fns/intervalToDuration';
 import { ClientProxy } from '@nestjs/microservices';
 
 import {

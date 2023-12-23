@@ -18,8 +18,8 @@ import {
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
-import parseISO from 'date-fns/parseISO';
-import differenceInDays from 'date-fns/differenceInDays';
+import { parseISO } from 'date-fns/parseISO';
+import { differenceInDays } from 'date-fns/differenceInDays';
 import { ClientProxy } from '@nestjs/microservices';
 
 import { MAIL_SERVICE, MailSendApplicationMessage } from '@/interfaces';

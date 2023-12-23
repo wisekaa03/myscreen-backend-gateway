@@ -1,3 +1,4 @@
+import internal from 'node:stream';
 import type { IncomingMessage } from 'http';
 import { isJWT } from 'class-validator';
 import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
@@ -17,6 +18,7 @@ import type { Server, WebSocket } from 'ws';
 import { Observable, of } from 'rxjs';
 
 import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
+import { FileIdRequest } from '@/dto';
 import { AuthService } from '@/auth/auth.service';
 import { WebSocketClient } from './interface/websocket-client';
 import { AuthTokenEvent } from './interface/auth-token.event';
@@ -27,6 +29,7 @@ import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { PlaylistService } from '@/database/playlist.service';
 import { RequestEntity } from '@/database/request.entity';
 import { RequestService } from '@/database/request.service';
+import { FileService } from '@/database/file.service';
 
 @WebSocketGateway({
   cors: {
@@ -42,6 +45,7 @@ export class WSGateway
     private readonly authService: AuthService,
     @Inject(forwardRef(() => RequestService))
     private readonly requestService: RequestService,
+    private readonly fileService: FileService,
     private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,
   ) {}
@@ -190,11 +194,75 @@ export class WSGateway
   }
 
   /**
-   * monitorPlay - Нам присылают event с Монитора, мы на это отсылаем Ok и
+   * file - Скачивание файла
+   * @param {WebSocket} client
+   * @param {FileIdRequest} body
+   */
+  @SubscribeMessage('file/download')
+  async handleFile(
+    @ConnectedSocket() client: WebSocket,
+    @MessageBody() body: FileIdRequest,
+  ): Promise<Observable<any>> {
+    const value = this.clients.get(client);
+    if (!value || !value.auth) {
+      throw new WsException('Not authorized');
+    }
+
+    if (body.id) {
+      const file = await this.fileService.findOne({
+        find: {
+          where: { id: body.id },
+          relations: {
+            folder: true,
+          },
+        },
+      });
+      if (!file) {
+        throw new WsException(`File '${body.id}' is not exists`);
+      }
+
+      const data = await this.fileService
+        .getS3Object(file)
+        .catch((error: unknown) => {
+          throw new WsException(`File '${body.id}' is not exists: ${error}`);
+        });
+
+      const stream = data.Body;
+      if (stream instanceof internal.Readable) {
+        // TODO: пока память не закончится, нужно переделать, но как ?
+        const download = await new Promise<Buffer>((resolve, reject) => {
+          const chars: Uint8Array[] = [];
+          stream.on('data', (chunk) => {
+            chars.push(chunk);
+          });
+          stream.on('end', () => {
+            resolve(Buffer.concat(chars));
+          });
+          stream.on('error', (error) => {
+            reject(error);
+          });
+        });
+
+        return of([
+          {
+            event: 'download',
+            data: {
+              id: file.id,
+              download: download.toString('binary'),
+            },
+          },
+        ]);
+      }
+    }
+    throw new WsException('Not found file');
+  }
+
+  /**
+   * monitor - Нам присылают event с Монитора, мы на это отсылаем Ok и
    * попутно проходим всех подключенных к WS со ролью Advertiser и выставляем monitorPlayed
    */
   @SubscribeMessage('monitor')
-  async monitorPlay(
+  async handleMonitor(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() body: string | MonitorEvent,
   ): Promise<Observable<WsResponse<string>[]>> {
