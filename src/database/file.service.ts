@@ -22,6 +22,7 @@ import {
   GetObjectCommandOutput,
   HeadObjectOutput,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { InjectS3, S3 } from 'nestjs-s3';
 import {
   Repository,
@@ -91,17 +92,28 @@ export class FileService {
   async find({
     find,
     caseInsensitive = true,
+    signedUrl = true,
   }: {
     find: FindManyOptions<FileEntity>;
     caseInsensitive?: boolean;
+    signedUrl?: boolean;
   }): Promise<Array<FileEntity>> {
     const conditional = TypeOrmFind.Nullable(find);
     if (find.relations === undefined) {
       conditional.relations = { monitors: true, playlists: true };
     }
-    return caseInsensitive
-      ? TypeOrmFind.findCI(this.fileRepository, conditional)
-      : this.fileRepository.find(conditional);
+
+    const files = caseInsensitive
+      ? await TypeOrmFind.findCI(this.fileRepository, conditional)
+      : await this.fileRepository.find(conditional);
+
+    if (files.length <= 0) {
+      return files;
+    }
+
+    return signedUrl
+      ? Promise.all(files.map(async (file) => this.signedUrl(file)))
+      : files;
   }
 
   /**
@@ -114,17 +126,30 @@ export class FileService {
   async findAndCount({
     find,
     caseInsensitive = true,
+    signedUrl = true,
   }: {
     find: FindManyOptions<FileEntity>;
     caseInsensitive?: boolean;
+    signedUrl?: boolean;
   }): Promise<[Array<FileEntity>, number]> {
     const conditional = TypeOrmFind.Nullable(find);
     if (find.relations === undefined) {
       conditional.relations = { monitors: true, playlists: true };
     }
-    return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(this.fileRepository, conditional)
-      : this.fileRepository.findAndCount(conditional);
+    const files = caseInsensitive
+      ? await TypeOrmFind.findAndCountCI(this.fileRepository, conditional)
+      : await this.fileRepository.findAndCount(conditional);
+
+    if (files[1] <= 0) {
+      return files;
+    }
+
+    return signedUrl
+      ? [
+          await Promise.all(files[0].map(async (file) => this.signedUrl(file))),
+          files[1],
+        ]
+      : files;
   }
 
   /**
@@ -137,17 +162,41 @@ export class FileService {
   async findOne({
     find,
     caseInsensitive = true,
+    signedUrl = true,
   }: {
     find: FindManyOptions<FileEntity>;
     caseInsensitive?: boolean;
+    signedUrl?: boolean;
   }): Promise<FileEntity | null> {
     const conditional = TypeOrmFind.Nullable(find);
     if (find.relations === undefined) {
       conditional.relations = { monitors: true, playlists: true };
     }
-    return caseInsensitive
-      ? TypeOrmFind.findOneCI(this.fileRepository, conditional)
-      : this.fileRepository.findOne(conditional);
+
+    const file = caseInsensitive
+      ? await TypeOrmFind.findOneCI(this.fileRepository, conditional)
+      : await this.fileRepository.findOne(conditional);
+    if (!file) {
+      return null;
+    }
+
+    return signedUrl ? this.signedUrl(file) : file;
+  }
+
+  async signedUrl(file: FileEntity): Promise<FileEntity> {
+    const getObject = new GetObjectCommand({
+      Bucket: this.bucket,
+      Key: getS3FullName(file),
+    });
+
+    const signedUrl = await getSignedUrl(this.s3Service, getObject, {
+      expiresIn: 60 * 60 * 24 * 7,
+    });
+
+    return this.fileRepository.create({
+      ...file,
+      signedUrl,
+    });
   }
 
   /**

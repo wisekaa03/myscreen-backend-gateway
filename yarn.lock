@@ -512,6 +512,20 @@
     "@smithy/util-middleware" "^2.0.8"
     tslib "^2.5.0"
 
+"@aws-sdk/s3-request-presigner@^3.478.0":
+  version "3.478.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/s3-request-presigner/-/s3-request-presigner-3.478.0.tgz#c80237683101646e710fa9f5d1a4a5ea37373f3b"
+  integrity sha512-Ra9ptlSZvMlmw+4zujuVhWRN4QxCpmNnnZPn8KHnll7Jmat6Fii7zMf9NUIJ5etLvTlY8y/yUEleRf9KXPBNlA==
+  dependencies:
+    "@aws-sdk/signature-v4-multi-region" "3.474.0"
+    "@aws-sdk/types" "3.468.0"
+    "@aws-sdk/util-format-url" "3.468.0"
+    "@smithy/middleware-endpoint" "^2.2.3"
+    "@smithy/protocol-http" "^3.0.11"
+    "@smithy/smithy-client" "^2.1.18"
+    "@smithy/types" "^2.7.0"
+    tslib "^2.5.0"
+
 "@aws-sdk/signature-v4-multi-region@3.474.0":
   version "3.474.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/signature-v4-multi-region/-/signature-v4-multi-region-3.474.0.tgz#192f10924899c2ccf181932b4b5f59d6b01d79d3"
@@ -589,6 +603,16 @@
   dependencies:
     "@aws-sdk/types" "3.468.0"
     "@smithy/util-endpoints" "^1.0.7"
+    tslib "^2.5.0"
+
+"@aws-sdk/util-format-url@3.468.0":
+  version "3.468.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/util-format-url/-/util-format-url-3.468.0.tgz#1376e36173321da42a58aa3bc30f008e9074c37f"
+  integrity sha512-CtHApPmudJz/Z2MHVogWfkaSw4wWHQKVLQs4Q5XjvLcDSzODzxHbiOIckFCXQm2Mme4+TTe4GFU9g869ufegXg==
+  dependencies:
+    "@aws-sdk/types" "3.468.0"
+    "@smithy/querystring-builder" "^2.0.15"
+    "@smithy/types" "^2.7.0"
     tslib "^2.5.0"
 
 "@aws-sdk/util-locate-window@^3.0.0":

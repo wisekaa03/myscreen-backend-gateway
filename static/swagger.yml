@@ -4206,6 +4206,10 @@ components:
               - "2021-12-30"
               - "2021-12-31T10:10:10"
           format: date-time
+        signedUrl:
+          type: string
+          description: Подписанный URL на файл
+          example: https://storage.yandex.ru/file.mp4
         folder:
           description: Папка
           allOf:

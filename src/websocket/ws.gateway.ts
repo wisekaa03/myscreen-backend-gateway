@@ -14,11 +14,10 @@ import {
   OnGatewayDisconnect,
   WsException,
 } from '@nestjs/websockets';
-import type { Server, WebSocket } from 'ws';
+import { type Server, type WebSocket } from 'ws';
 import { Observable, of } from 'rxjs';
 
 import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
-import { FileIdRequest } from '@/dto';
 import { AuthService } from '@/auth/auth.service';
 import { WebSocketClient } from './interface/websocket-client';
 import { AuthTokenEvent } from './interface/auth-token.event';
@@ -194,70 +193,6 @@ export class WSGateway
   }
 
   /**
-   * file - Скачивание файла
-   * @param {WebSocket} client
-   * @param {FileIdRequest} body
-   */
-  @SubscribeMessage('file/download')
-  async handleFile(
-    @ConnectedSocket() client: WebSocket,
-    @MessageBody() body: FileIdRequest,
-  ): Promise<Observable<any>> {
-    const value = this.clients.get(client);
-    if (!value || !value.auth) {
-      throw new WsException('Not authorized');
-    }
-
-    if (body.id) {
-      const file = await this.fileService.findOne({
-        find: {
-          where: { id: body.id },
-          relations: {
-            folder: true,
-          },
-        },
-      });
-      if (!file) {
-        throw new WsException(`File '${body.id}' is not exists`);
-      }
-
-      const data = await this.fileService
-        .getS3Object(file)
-        .catch((error: unknown) => {
-          throw new WsException(`File '${body.id}' is not exists: ${error}`);
-        });
-
-      const stream = data.Body;
-      if (stream instanceof internal.Readable) {
-        // TODO: пока память не закончится, нужно переделать, но как ?
-        const download = await new Promise<Buffer>((resolve, reject) => {
-          const chars: Uint8Array[] = [];
-          stream.on('data', (chunk) => {
-            chars.push(chunk);
-          });
-          stream.on('end', () => {
-            resolve(Buffer.concat(chars));
-          });
-          stream.on('error', (error) => {
-            reject(error);
-          });
-        });
-
-        return of([
-          {
-            event: 'download',
-            data: {
-              id: file.id,
-              download: download.toString('binary'),
-            },
-          },
-        ]);
-      }
-    }
-    throw new WsException('Not found file');
-  }
-
-  /**
    * monitor - Нам присылают event с Монитора, мы на это отсылаем Ok и
    * попутно проходим всех подключенных к WS со ролью Advertiser и выставляем monitorPlayed
    */
@@ -367,6 +302,17 @@ export class WSGateway
           this.logger.error('request.playlist is undefined');
           return;
         }
+        requestFind = {
+          ...requestFind,
+          playlist: {
+            ...requestFind.playlist,
+            files: await Promise.all(
+              requestFind.playlist.files.map(async (file) =>
+                this.fileService.signedUrl(file),
+              ),
+            ),
+          },
+        } as RequestEntity;
       }
 
       this.clients.forEach((value, client) => {

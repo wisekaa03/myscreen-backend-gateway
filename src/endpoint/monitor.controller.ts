@@ -564,6 +564,8 @@ export class MonitorController {
     };
     if (user.role === UserRoleEnum.Monitor) {
       find.where = { id: userId };
+    } else if (user.role === UserRoleEnum.Administrator) {
+      find.where = { id };
     } else {
       find.where = { userId, id };
     }

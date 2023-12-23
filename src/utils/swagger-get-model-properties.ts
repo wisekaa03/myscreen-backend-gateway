@@ -15,6 +15,7 @@ export const swaggerGetModelProperties = (prototype: Type<unknown>): string[] =>
         key.charAt(0) === ':' &&
         !isFunction(
           (prototype.prototype as unknown as Record<string, any>)[key],
-        ),
+        ) &&
+        key !== ':signedUrl',
     )
     .map((key: string) => key.slice(1));
