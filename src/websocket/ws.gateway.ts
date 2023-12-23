@@ -230,13 +230,13 @@ export class WSGateway
       const stream = data.Body;
       if (stream instanceof internal.Readable) {
         // TODO: пока память не закончится, нужно переделать, но как ?
-        const download = new Promise((resolve, reject) => {
-          const chars: string[] = [];
+        const download = new Promise<Buffer>((resolve, reject) => {
+          const chars: Uint8Array[] = [];
           stream.on('data', (chunk) => {
             chars.push(chunk);
           });
           stream.on('end', () => {
-            resolve(chars.join(''));
+            resolve(Buffer.concat(chars));
           });
           stream.on('error', (error) => {
             reject(error);
