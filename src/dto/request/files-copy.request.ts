@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { FileCopyRequest } from './file-copy.request';
+import { FileIdRequest } from './file-id.request';
 
 export class FilesCopyRequest {
   @ApiProperty({
@@ -18,13 +18,13 @@ export class FilesCopyRequest {
 
   @ApiProperty({
     description: 'Файлы',
-    type: FileCopyRequest,
+    type: FileIdRequest,
     isArray: true,
     required: true,
   })
   @IsDefined()
   @IsNotEmpty()
   @ValidateNested()
-  @Type(() => FileCopyRequest)
-  files!: FileCopyRequest[];
+  @Type(() => FileIdRequest)
+  files!: FileIdRequest[];
 }

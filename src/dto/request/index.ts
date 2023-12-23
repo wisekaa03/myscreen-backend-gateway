@@ -22,7 +22,7 @@ export * from './folder-id-update.request';
 export * from './file.request';
 export * from './file-upload.request';
 export * from './file-update.request';
-export * from './file-copy.request';
+export * from './file-id.request';
 export * from './files-update.request';
 export * from './files-copy.request';
 export * from './files-delete.request';

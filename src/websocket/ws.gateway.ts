@@ -1,3 +1,4 @@
+import internal from 'node:stream';
 import type { IncomingMessage } from 'http';
 import { isJWT } from 'class-validator';
 import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
@@ -17,7 +18,7 @@ import type { Server, WebSocket } from 'ws';
 import { Observable, of } from 'rxjs';
 
 import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
-import { FileUploadRequest } from '@/dto';
+import { FileIdRequest } from '@/dto';
 import { AuthService } from '@/auth/auth.service';
 import { WebSocketClient } from './interface/websocket-client';
 import { AuthTokenEvent } from './interface/auth-token.event';
@@ -28,6 +29,7 @@ import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { PlaylistService } from '@/database/playlist.service';
 import { RequestEntity } from '@/database/request.entity';
 import { RequestService } from '@/database/request.service';
+import { FileService } from '@/database/file.service';
 
 @WebSocketGateway({
   cors: {
@@ -43,6 +45,7 @@ export class WSGateway
     private readonly authService: AuthService,
     @Inject(forwardRef(() => RequestService))
     private readonly requestService: RequestService,
+    private readonly fileService: FileService,
     private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,
   ) {}
@@ -191,16 +194,44 @@ export class WSGateway
   }
 
   /**
-   * file - Нам присылают файл, мы на это отсылаем Ok
+   * file - Скачивание файла
    * @param {WebSocket} client
-   * @param {FileUploadRequest} body
+   * @param {FileIdRequest} body
    */
-  @SubscribeMessage('file')
+  @SubscribeMessage('file/download')
   async handleFile(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() body: FileUploadRequest,
-  ): Promise<Observable<WsResponse<string | RequestEntity[] | null>[]>> {
-    throw new WsException('Not authorized');
+    @MessageBody() body: FileIdRequest,
+  ): Promise<Observable<any>> {
+    const value = this.clients.get(client);
+    if (!value || !value.auth) {
+      throw new WsException('Not authorized');
+    }
+
+    if (body.id) {
+      const file = await this.fileService.findOne({
+        find: {
+          where: { id: body.id },
+          relations: {
+            folder: true,
+          },
+        },
+      });
+      if (!file) {
+        throw new WsException(`File '${body.id}' is not exists`);
+      }
+
+      const data = await this.fileService
+        .getS3Object(file)
+        .catch((error: unknown) => {
+          throw new WsException(`File '${body.id}' is not exists: ${error}`);
+        });
+
+      if (data.Body instanceof internal.Readable) {
+        return of(data.Body);
+      }
+    }
+    throw new WsException('Not found file');
   }
 
   /**
