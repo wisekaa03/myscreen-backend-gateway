@@ -512,6 +512,20 @@
     "@smithy/util-middleware" "^2.0.8"
     tslib "^2.5.0"
 
+"@aws-sdk/s3-request-presigner@^3.478.0":
+  version "3.478.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/s3-request-presigner/-/s3-request-presigner-3.478.0.tgz#c80237683101646e710fa9f5d1a4a5ea37373f3b"
+  integrity sha512-Ra9ptlSZvMlmw+4zujuVhWRN4QxCpmNnnZPn8KHnll7Jmat6Fii7zMf9NUIJ5etLvTlY8y/yUEleRf9KXPBNlA==
+  dependencies:
+    "@aws-sdk/signature-v4-multi-region" "3.474.0"
+    "@aws-sdk/types" "3.468.0"
+    "@aws-sdk/util-format-url" "3.468.0"
+    "@smithy/middleware-endpoint" "^2.2.3"
+    "@smithy/protocol-http" "^3.0.11"
+    "@smithy/smithy-client" "^2.1.18"
+    "@smithy/types" "^2.7.0"
+    tslib "^2.5.0"
+
 "@aws-sdk/signature-v4-multi-region@3.474.0":
   version "3.474.0"
   resolved "https://registry.yarnpkg.com/@aws-sdk/signature-v4-multi-region/-/signature-v4-multi-region-3.474.0.tgz#192f10924899c2ccf181932b4b5f59d6b01d79d3"
@@ -589,6 +603,16 @@
   dependencies:
     "@aws-sdk/types" "3.468.0"
     "@smithy/util-endpoints" "^1.0.7"
+    tslib "^2.5.0"
+
+"@aws-sdk/util-format-url@3.468.0":
+  version "3.468.0"
+  resolved "https://registry.yarnpkg.com/@aws-sdk/util-format-url/-/util-format-url-3.468.0.tgz#1376e36173321da42a58aa3bc30f008e9074c37f"
+  integrity sha512-CtHApPmudJz/Z2MHVogWfkaSw4wWHQKVLQs4Q5XjvLcDSzODzxHbiOIckFCXQm2Mme4+TTe4GFU9g869ufegXg==
+  dependencies:
+    "@aws-sdk/types" "3.468.0"
+    "@smithy/querystring-builder" "^2.0.15"
+    "@smithy/types" "^2.7.0"
     tslib "^2.5.0"
 
 "@aws-sdk/util-locate-window@^3.0.0":
@@ -4061,13 +4085,13 @@ eslint-plugin-import@^2.29.1:
     semver "^6.3.1"
     tsconfig-paths "^3.15.0"
 
-eslint-plugin-prettier@^5.1.1:
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-prettier/-/eslint-plugin-prettier-5.1.1.tgz#ab7d9823788b557ff7ccdd50a5849d7760cb8bef"
-  integrity sha512-WQpV3mSmIobb77s4qiCZu3dBrZZ0rj8ckSfBtRrgNK9Wnh2s3eiaxNTWloz1LJ1WtvqZES/PAI7PLvsrGt/CEA==
+eslint-plugin-prettier@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-prettier/-/eslint-plugin-prettier-5.1.2.tgz#584c94d4bf31329b2d4cbeb10fd600d17d6de742"
+  integrity sha512-dhlpWc9vOwohcWmClFcA+HjlvUpuyynYs0Rf+L/P6/0iQE6vlHW9l5bkfzN62/Stm9fbq8ku46qzde76T1xlSg==
   dependencies:
     prettier-linter-helpers "^1.0.0"
-    synckit "^0.8.5"
+    synckit "^0.8.6"
 
 eslint-scope@5.1.1:
   version "5.1.1"
@@ -8059,7 +8083,7 @@ symbol-tree@^3.2.4:
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.4.tgz#430637d248ba77e078883951fb9aa0eed7c63fa2"
   integrity sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==
 
-synckit@^0.8.5:
+synckit@^0.8.6:
   version "0.8.6"
   resolved "https://registry.yarnpkg.com/synckit/-/synckit-0.8.6.tgz#b69b7fbce3917c2673cbdc0d87fb324db4a5b409"
   integrity sha512-laHF2savN6sMeHCjLRkheIU4wo3Zg9Ln5YOjOo7sZ5dVQW8yF5pPE5SIw1dsPhq3TRp1jisKRCdPhfs/1WMqDA==

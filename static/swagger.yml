@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.81
+  version: 2.42.82
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4206,6 +4206,10 @@ components:
               - "2021-12-30"
               - "2021-12-31T10:10:10"
           format: date-time
+        signedUrl:
+          type: string
+          description: Подписанный URL на файл
+          example: https://storage.yandex.ru/file.mp4
         folder:
           description: Папка
           allOf:

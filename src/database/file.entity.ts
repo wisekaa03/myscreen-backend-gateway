@@ -23,6 +23,7 @@ import {
   IsNumber,
   IsString,
   IsUUID,
+  IsUrl,
 } from 'class-validator';
 
 import { FileCategory, VideoType } from '@/enums';
@@ -262,6 +263,15 @@ export class FileEntity {
   })
   @IsDateString({ strict: false })
   updatedAt?: Date;
+
+  @ApiProperty({
+    description: 'Подписанный URL на файл',
+    example: 'https://storage.yandex.ru/file.mp4',
+    type: 'string',
+    required: false,
+  })
+  @IsUrl()
+  signedUrl?: string;
 
   @AfterLoad()
   @AfterUpdate()

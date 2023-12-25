@@ -33,6 +33,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserExtEntity } from './user-ext.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
+import { FileService } from '@/database/file.service';
 
 @Injectable()
 export class RequestService {
@@ -43,6 +44,8 @@ export class RequestService {
   constructor(
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
+    @Inject(forwardRef(() => FileService))
+    private readonly fileService: FileService,
     @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
     @Inject(forwardRef(() => WSGateway))
@@ -214,7 +217,7 @@ export class RequestService {
     monitorId?: string;
     playlistId?: string;
     dateLocal?: Date;
-  }) {
+  }): Promise<Array<RequestEntity>> {
     const monitorRequests = await this.find({
       where: [
         {
@@ -239,7 +242,7 @@ export class RequestService {
 
     let forceReplace = false;
 
-    const expected = monitorRequests.filter(
+    let expected = monitorRequests.filter(
       ({ dateWhen, dateBefore, playlistChange }) => {
         if (forceReplace) {
           return false;
@@ -265,6 +268,22 @@ export class RequestService {
         return isExpect;
       },
     );
+
+    const expectedPromise = expected.map(
+      async (request) =>
+        ({
+          ...request,
+          playlist: {
+            ...request.playlist,
+            files: await Promise.all(
+              request.playlist.files.map(async (file) =>
+                this.fileService.signedUrl(file),
+              ),
+            ),
+          },
+        }) as RequestEntity,
+    );
+    expected = await Promise.all(expectedPromise);
 
     return expected;
   }
