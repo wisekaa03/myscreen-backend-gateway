@@ -212,6 +212,7 @@ export class WSGateway
     let monitor = await this.monitorService.findOne({
       find: {
         where: { id: value.monitorId },
+        relations: {},
       },
     });
     if (!monitor) {
@@ -233,18 +234,6 @@ export class WSGateway
     monitor = await this.monitorService.update(monitor.id, {
       playlistPlayed: bodyObject.playlistPlayed,
     });
-    const filesPromise = monitor.playlist?.files.map(async (file) =>
-      this.fileService.signedUrl(file),
-    );
-    if (filesPromise !== undefined) {
-      monitor = {
-        ...monitor,
-        playlist: {
-          ...monitor.playlist,
-          files: await Promise.all(filesPromise),
-        },
-      } as MonitorEntity;
-    }
 
     // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
     this.clients.forEach((v, c) => {
