@@ -233,15 +233,15 @@ export class WSGateway
     monitor = await this.monitorService.update(monitor.id, {
       playlistPlayed: bodyObject.playlistPlayed,
     });
-    const monitorPromise = monitor.playlist?.files.map(async (file) =>
+    const filesPromise = monitor.playlist?.files.map(async (file) =>
       this.fileService.signedUrl(file),
     );
-    if (monitorPromise !== undefined) {
+    if (filesPromise !== undefined) {
       monitor = {
         ...monitor,
         playlist: {
           ...monitor.playlist,
-          files: await Promise.all(monitorPromise),
+          files: await Promise.all(filesPromise),
         },
       } as MonitorEntity;
     }
