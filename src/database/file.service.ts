@@ -59,7 +59,7 @@ export class FileService {
 
   private downloadDir: string;
 
-  private expiresIn;
+  private signedUrlExpiresIn: number;
 
   constructor(
     private readonly configService: ConfigService,
@@ -82,7 +82,7 @@ export class FileService {
     this.region = configService.get<string>('AWS_REGION', 'ru-central1');
     this.bucket = configService.get<string>('AWS_BUCKET', 'myscreen-media');
     this.downloadDir = configService.get<string>('FILES_UPLOAD', 'upload');
-    this.expiresIn = parseInt(
+    this.signedUrlExpiresIn = parseInt(
       configService.get<string>(
         'AWS_SIGNED_URL_EXPIRES',
         `${60 * 60 * 24 * 7}`,
@@ -199,7 +199,7 @@ export class FileService {
     });
 
     const signedUrl = await getSignedUrl(this.s3Service, getObject, {
-      expiresIn: this.expiresIn,
+      expiresIn: this.signedUrlExpiresIn,
     });
 
     return {
