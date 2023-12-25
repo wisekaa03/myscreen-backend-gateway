@@ -188,7 +188,7 @@ jobs:
           echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env
           echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env
           echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env
-          echo "AWS_SIGNED_URL_EXPIRES=${{ vars.AWS_SIGNED_URL_EXPIRES }}" >>.env.test
+          echo "AWS_SIGNED_URL_EXPIRES=${{ vars.AWS_SIGNED_URL_EXPIRES }}" >>.env
 
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
