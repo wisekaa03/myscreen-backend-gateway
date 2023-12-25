@@ -233,6 +233,18 @@ export class WSGateway
     monitor = await this.monitorService.update(monitor.id, {
       playlistPlayed: bodyObject.playlistPlayed,
     });
+    const monitorPromise = monitor.playlist?.files.map(async (file) =>
+      this.fileService.signedUrl(file),
+    );
+    if (monitorPromise !== undefined) {
+      monitor = {
+        ...monitor,
+        playlist: {
+          ...monitor.playlist,
+          files: await Promise.all(monitorPromise),
+        },
+      } as MonitorEntity;
+    }
 
     // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
     this.clients.forEach((v, c) => {
