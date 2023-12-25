@@ -193,10 +193,10 @@ export class FileService {
       expiresIn: 60 * 60 * 24 * 7,
     });
 
-    return this.fileRepository.create({
+    return {
       ...file,
       signedUrl,
-    });
+    } as FileEntity;
   }
 
   /**
