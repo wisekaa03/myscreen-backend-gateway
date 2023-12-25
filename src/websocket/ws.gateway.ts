@@ -212,6 +212,7 @@ export class WSGateway
     let monitor = await this.monitorService.findOne({
       find: {
         where: { id: value.monitorId },
+        relations: {},
       },
     });
     if (!monitor) {

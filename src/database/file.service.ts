@@ -59,6 +59,8 @@ export class FileService {
 
   private downloadDir: string;
 
+  private signedUrlExpiresIn: number;
+
   constructor(
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => RequestService))
@@ -77,9 +79,16 @@ export class FileService {
     @InjectRepository(FilePreviewEntity)
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
   ) {
-    this.region = configService.get('AWS_REGION', 'ru-central1');
-    this.bucket = configService.get('AWS_BUCKET', 'myscreen-media');
-    this.downloadDir = configService.get('FILES_UPLOAD', 'upload');
+    this.region = configService.get<string>('AWS_REGION', 'ru-central1');
+    this.bucket = configService.get<string>('AWS_BUCKET', 'myscreen-media');
+    this.downloadDir = configService.get<string>('FILES_UPLOAD', 'upload');
+    this.signedUrlExpiresIn = parseInt(
+      configService.get<string>(
+        'AWS_SIGNED_URL_EXPIRES',
+        `${60 * 60 * 24 * 7}`,
+      ),
+      10,
+    ); // 7 days
   }
 
   /**
@@ -190,13 +199,13 @@ export class FileService {
     });
 
     const signedUrl = await getSignedUrl(this.s3Service, getObject, {
-      expiresIn: 60 * 60 * 24 * 7,
+      expiresIn: this.signedUrlExpiresIn,
     });
 
-    return this.fileRepository.create({
+    return {
       ...file,
       signedUrl,
-    });
+    } as FileEntity;
   }
 
   /**
