@@ -46,6 +46,7 @@ import { FileService } from '@/database/file.service';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { UserService } from '@/database/user.service';
 import { EditorEntity } from '@/database/editor.entity';
+import { FileEntity } from '@/database/file.entity';
 
 @ApiComplexDecorators('editor', [
   UserRoleEnum.Administrator,
@@ -262,24 +263,32 @@ export class EditorController {
     @Param('editorId', ParseUUIDPipe) editorId: string,
     @Body() body: EditorLayerCreateRequest,
   ): Promise<EditorLayerGetResponse> {
+    const whereEditor: FindOptionsWhere<EditorEntity> = { id: editorId };
+    if (user.role !== UserRoleEnum.Administrator) {
+      whereEditor.userId = user.id;
+    }
     const editor = await this.editorService.findOne({
-      where: { id: editorId, userId: user.id },
+      where: whereEditor,
       select: ['id', 'userId'],
-      relations: [],
+      relations: {},
     });
     if (!editor) {
-      throw new NotFoundException(`The editor ${editorId} is not found`);
+      throw new NotFoundException(`The editor id: "${editorId}" is not found`);
+    }
+
+    const whereFile: FindOptionsWhere<FileEntity> = { id: body.file };
+    if (user.role !== UserRoleEnum.Administrator) {
+      whereFile.userId = user.id;
     }
     const file = await this.fileService.findOne({
       find: {
-        where: { id: body.file, userId: user.id },
-        select: ['id', 'userId', 'videoType', 'meta', 'duration'],
+        where: whereFile,
         loadEagerRelations: false,
-        relations: [],
+        relations: {},
       },
     });
     if (!file) {
-      throw new NotFoundException(`The file ${body.file} is not found`);
+      throw new NotFoundException(`The file "${body.file}" is not found`);
     }
 
     const create: Partial<EditorLayerEntity> = {
@@ -415,13 +424,22 @@ export class EditorController {
     @Param('layerId', ParseUUIDPipe) layerId: string,
     @Param('moveIndex', ParseIntPipe) moveIndex: number,
   ): Promise<SuccessResponse> {
-    // TODO: catch error
-    /* await */ this.editorService.moveIndex(
-      user.id,
-      editorId,
-      layerId,
-      moveIndex,
-    );
+    const where: FindOptionsWhere<EditorEntity> = { id: editorId };
+    if (user.role !== UserRoleEnum.Administrator) {
+      where.userId = user.id;
+    }
+    const editor = await this.editorService.findOne({
+      where,
+    });
+    if (!editor) {
+      throw new NotFoundException(`Editor "${editorId}" not found`);
+    }
+
+    /* await */ this.editorService
+      .moveIndex(editorId, layerId, moveIndex)
+      .catch((error: unknown) => {
+        this.logger.error(error);
+      });
 
     return {
       status: Status.Success,
@@ -449,7 +467,7 @@ export class EditorController {
     const editor = await this.editorService.findOne({
       where: { userId: user.id, id: editorId },
       select: ['id', 'userId'],
-      relations: [],
+      relations: {},
     });
     if (!editor) {
       throw new NotFoundException(`Editor '${editorId}' is not found`);
@@ -457,7 +475,8 @@ export class EditorController {
     const editorLayer = await this.editorService.findOneLayer({
       where: { id: layerId },
       select: ['id'],
-      relations: [],
+      loadEagerRelations: false,
+      relations: {},
       order: {},
     });
     if (!editorLayer) {
@@ -465,7 +484,6 @@ export class EditorController {
     }
 
     const { affected } = await this.editorService.deleteLayer(
-      user.id,
       editorId,
       layerId,
     );

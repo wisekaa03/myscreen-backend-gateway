@@ -196,7 +196,7 @@ export class EditorService {
     if (updatedQuery.file === undefined) {
       throw new BadRequestException('file must exists');
     }
-    if (updatedQuery.duration === undefined && updatedQuery.file) {
+    if (updatedQuery.duration === undefined) {
       updatedQuery.duration = updatedQuery.file.duration;
     }
     if (updatedQuery.index === undefined) {
@@ -221,10 +221,10 @@ export class EditorService {
     }
 
     const layer = await this.editorLayerRepository.save(
-      this.editorLayerRepository.create(update),
+      this.editorLayerRepository.create(updatedQuery),
     );
 
-    await this.moveIndex(userId, editorId, layer.id, updatedQuery.index);
+    await this.moveIndex(editorId, layer.id, updatedQuery.index);
 
     return layer;
   }
@@ -247,9 +247,9 @@ export class EditorService {
     await this.editorLayerRepository.update(layer.id, update);
 
     if (update.index !== undefined) {
-      await this.moveIndex(userId, editorId, layer.id, update.index);
+      await this.moveIndex(editorId, layer.id, update.index);
     } else if (update.duration !== undefined) {
-      await this.moveIndex(userId, editorId, layer.id, layer.index);
+      await this.moveIndex(editorId, layer.id, layer.index);
     }
 
     return this.editorLayerRepository.findOne({
@@ -269,13 +269,12 @@ export class EditorService {
    * @returns {DeleteResult} Result
    */
   async deleteLayer(
-    userId: string,
     editorId: string,
     editorLayerId: string,
   ): Promise<DeleteResult> {
     const result = await this.editorLayerRepository.delete(editorLayerId);
 
-    await this.correctLayers(userId, editorId);
+    await this.correctLayers(editorId);
 
     return result;
   }
@@ -867,10 +866,10 @@ export class EditorService {
     }
   }
 
-  private async correctLayers(userId: string, editorId: string): Promise<void> {
+  private async correctLayers(editorId: string): Promise<void> {
     const editor = await this.editorRepository.findOne({
-      where: { id: editorId, userId },
-      relations: ['videoLayers', 'audioLayers'],
+      where: { id: editorId },
+      relations: { videoLayers: true, audioLayers: true },
     });
     if (!editor) {
       throw new NotFoundException(`The editor ${editorId} is not found`);
@@ -931,17 +930,15 @@ export class EditorService {
    * @memberof EditorService
    */
   async moveIndex(
-    userId: string,
     editorId: string,
     layerId: string,
     moveIndex: number,
   ): Promise<void> {
     const editor = await this.editorRepository.findOne({
       where: {
-        userId,
         id: editorId,
       },
-      relations: ['videoLayers', 'audioLayers'],
+      relations: { videoLayers: true, audioLayers: true },
     });
     if (!editor) {
       throw new NotFoundException('Editor not found');
@@ -987,7 +984,7 @@ export class EditorService {
 
     let start = 0;
     const layerPromises = layersBefore.map((value) => {
-      const result = {
+      const result: Partial<EditorLayerEntity> = {
         duration: value.duration,
         index: value.index,
         start,
@@ -997,9 +994,6 @@ export class EditorService {
     });
 
     const editorPromise = this.editorRepository.update(editor.id, {
-      renderingStatus: RenderingStatus.Initial,
-      renderingPercent: null,
-      renderingError: null,
       totalDuration: this.calcTotalDuration(editor.videoLayers),
     });
 
