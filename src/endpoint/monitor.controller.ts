@@ -309,43 +309,46 @@ export class MonitorController {
         throw new NotFoundException(`Monitor "${monitorId}" not found`);
       }
 
+      if (role !== UserRoleEnum.Monitor) {
+        throw new NotAcceptableException();
+      }
+      if (plan !== UserPlanEnum.Demo) {
+        throw new ForbiddenException();
+      }
+
       monitor = await this.monitorService.update(monitorId, {
         playlist,
       });
 
-      if (!(role === UserRoleEnum.Monitor || plan === UserPlanEnum.Demo)) {
-        const approved =
-          monitor.userId === userId
-            ? RequestApprove.ALLOWED
-            : RequestApprove.NOTPROCESSED;
+      const approved =
+        monitor.userId === userId
+          ? RequestApprove.ALLOWED
+          : RequestApprove.NOTPROCESSED;
 
-        // To verify user permissions for request
-        this.userService.verify(
-          user,
-          'request',
-          'updateApplication',
-          CRUD.CREATE,
-        );
+      // To verify user permissions for request
+      this.userService.verify(
+        user,
+        'request',
+        'updateApplication',
+        CRUD.CREATE,
+      );
 
-        // To create request
-        const request = await this.requestService.create({
-          sellerId: monitor.userId,
-          buyerId: userId,
-          monitor,
-          playlist,
-          approved,
-          userId,
-          dateBefore: attach.application.dateBefore,
-          dateWhen: attach.application.dateWhen,
-          playlistChange: attach.application.playlistChange,
-        });
-        if (!request) {
-          throw new BadRequestException('Request create error');
-        }
-        return request;
+      // To create request
+      const request = await this.requestService.create({
+        sellerId: monitor.userId,
+        buyerId: userId,
+        monitor,
+        playlist,
+        approved,
+        userId,
+        dateBefore: attach.application.dateBefore,
+        dateWhen: attach.application.dateWhen,
+        playlistChange: attach.application.playlistChange,
+      });
+      if (!request) {
+        throw new BadRequestException('Request create error');
       }
-
-      throw new NotAcceptableException();
+      return request;
     });
 
     const data = await Promise.all(dataPromise);
