@@ -38,6 +38,7 @@ export * from './playlist-id.request';
 export * from './playlists-get.request';
 export * from './monitor.request';
 export * from './monitor-update.request';
+export * from './monitor-group';
 export * from './monitor-create.request';
 export * from './monitors-get.request';
 export * from './monitors-playlist-attach.request';

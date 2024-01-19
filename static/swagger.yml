@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.42.92
+  version: 2.42.93
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4081,7 +4081,7 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-    MonitorMultipleResponse:
+    MonitorGroup:
       type: object
       properties:
         monitorId:
@@ -4398,6 +4398,11 @@ components:
             зеркалирования
           example: SINGLE
           $ref: "#/components/schemas/MonitorMultiple"
+        groupIds:
+          description: Подчиненные мониторы в группе мониторов
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorGroup"
         playlistPlayed:
           type: boolean
           description: Проигрывается плэйлист
@@ -4416,11 +4421,6 @@ components:
           type: boolean
           description: Избранный монитор
           example: false
-        groupIds:
-          description: Подчиненные мониторы в группе мониторов
-          type: array
-          items:
-            $ref: "#/components/schemas/MonitorMultipleResponse"
         createdAt:
           type: string
           description: Время создания
@@ -4485,23 +4485,6 @@ components:
         - status
         - count
         - data
-    MonitorMultipleRequest:
-      type: object
-      properties:
-        monitorId:
-          type: string
-          format: uuid
-          description: Подчиненный монитор в группе мониторов
-        row:
-          type: number
-          description: Подчиненный номер монитора в группе мониторов (строка)
-        col:
-          type: number
-          description: Подчиненный номер монитора в группе мониторов (колонка)
-      required:
-        - monitorId
-        - row
-        - col
     MonitorCreateRequest:
       type: object
       properties:
@@ -4583,13 +4566,7 @@ components:
           description: Подчиненные мониторы в группе мониторов
           type: array
           items:
-            $ref: "#/components/schemas/MonitorMultipleRequest"
-        multipleIds:
-          description: Подчиненные мониторы в группе мониторов
-          deprecated: true
-          type: array
-          items:
-            $ref: "#/components/schemas/MonitorMultipleRequest"
+            $ref: "#/components/schemas/MonitorGroup"
       required:
         - name
         - category
@@ -4840,6 +4817,11 @@ components:
             зеркалирования
           example: SINGLE
           $ref: "#/components/schemas/MonitorMultiple"
+        groupIds:
+          description: Подчиненные мониторы в группе мониторов
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorGroup"
         playlistPlayed:
           type: boolean
           description: Проигрывается плэйлист
@@ -4853,17 +4835,6 @@ components:
           example: *ref_121
           allOf:
             - $ref: "#/components/schemas/PointClass"
-        groupIds:
-          description: Подчиненные мониторы в группе мониторов
-          type: array
-          items:
-            $ref: "#/components/schemas/MonitorMultipleRequest"
-        multipleIds:
-          description: Подчиненные мониторы в группе мониторов
-          deprecated: true
-          type: array
-          items:
-            $ref: "#/components/schemas/MonitorMultipleRequest"
     RenderingStatus:
       type: string
       enum:

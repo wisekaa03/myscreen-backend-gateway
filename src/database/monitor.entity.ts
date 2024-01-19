@@ -39,14 +39,14 @@ import {
   MonitorOrientation,
   MonitorStatus,
 } from '@/enums';
+import { MonitorGroup } from '@/dto/request/monitor-group';
+import { MonitorFavoriteEntity } from '@/database/monitor.favorite.entity';
+import { RequestEntity } from '@/database/request.entity';
+import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
-import { MonitorFavoriteEntity } from '@/database/monitor.favorite.entity';
-import { RequestEntity } from '@/database/request.entity';
-import { MonitorGroupEntity } from '@/database/monitor.group.entity';
-import { MonitorMultipleResponse } from '@/dto';
 
 export class PointClass implements Point {
   @ApiProperty({
@@ -367,6 +367,17 @@ export class MonitorEntity {
   )
   groupMonitors?: MonitorGroupEntity[];
 
+  @ApiProperty({
+    description: 'Подчиненные мониторы в группе мониторов',
+    type: MonitorGroup,
+    isArray: true,
+    required: false,
+  })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => MonitorGroup)
+  groupIds?: MonitorGroup[];
+
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
     description: 'Проигрывается плэйлист',
@@ -432,14 +443,6 @@ export class MonitorEntity {
     required: true,
   })
   favorite!: boolean;
-
-  @ApiProperty({
-    description: 'Подчиненные мониторы в группе мониторов',
-    type: () => MonitorMultipleResponse,
-    isArray: true,
-    required: false,
-  })
-  groupIds?: MonitorMultipleResponse[];
 
   @ManyToOne(() => UserEntity, (user) => user.monitors, {
     onDelete: 'CASCADE',

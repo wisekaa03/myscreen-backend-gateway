@@ -175,7 +175,7 @@ export class MonitorController {
   @Crud(CRUD.CREATE)
   async createMonitors(
     @Req() { user }: ExpressRequest,
-    @Body() { groupIds, multipleIds, ...insert }: MonitorCreateRequest,
+    @Body() { groupIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
     const { id: userId } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
@@ -226,7 +226,7 @@ export class MonitorController {
     const data = await this.monitorService.create({
       user,
       insert,
-      groupIds: groupIds ?? multipleIds,
+      groupIds,
     });
 
     return {
@@ -611,7 +611,7 @@ export class MonitorController {
   async updateMonitor(
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
-    @Body() { groupIds, multipleIds, ...update }: MonitorUpdateRequest,
+    @Body() { groupIds, ...update }: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
     const { id: userId } = user;
     const monitor = await this.monitorService.findOne({
@@ -629,11 +629,7 @@ export class MonitorController {
     if (!monitor) {
       throw new NotFoundException(`Monitor ${id} is not found`);
     }
-    const data = await this.monitorService.update(
-      id,
-      update,
-      groupIds ?? multipleIds,
-    );
+    const data = await this.monitorService.update(id, update, groupIds);
 
     return {
       status: Status.Success,

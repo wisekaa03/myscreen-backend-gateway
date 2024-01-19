@@ -1,50 +1,16 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
-  IsDefined,
   IsNotEmpty,
   IsNumber,
   IsOptional,
-  IsUUID,
   Length,
   Min,
   ValidateNested,
 } from 'class-validator';
 
 import { MonitorEntity } from '@/database/monitor.entity';
-
-export class MonitorMultipleRequest {
-  @ApiProperty({
-    type: 'string',
-    format: 'uuid',
-    description: 'Подчиненный монитор в группе мониторов',
-    required: true,
-  })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsUUID()
-  monitorId!: string;
-
-  @ApiProperty({
-    type: 'number',
-    description: 'Подчиненный номер монитора в группе мониторов (строка)',
-    required: true,
-  })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsNumber()
-  row!: number;
-
-  @ApiProperty({
-    type: 'number',
-    description: 'Подчиненный номер монитора в группе мониторов (колонка)',
-    required: true,
-  })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsNumber()
-  col!: number;
-}
+import { MonitorGroup } from './monitor-group';
 
 export class MonitorCreateRequest extends PickType(MonitorEntity, [
   'address',
@@ -98,25 +64,13 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
   height!: number;
 
   @ApiProperty({
-    type: MonitorMultipleRequest,
+    type: MonitorGroup,
     description: 'Подчиненные мониторы в группе мониторов',
     isArray: true,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => MonitorMultipleRequest)
-  groupIds?: MonitorMultipleRequest[];
-
-  @ApiProperty({
-    type: MonitorMultipleRequest,
-    description: 'Подчиненные мониторы в группе мониторов',
-    isArray: true,
-    deprecated: true,
-    required: false,
-  })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => MonitorMultipleRequest)
-  multipleIds?: MonitorMultipleRequest[];
+  @Type(() => MonitorGroup)
+  groupIds?: MonitorGroup[];
 }

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, IsNumber, IsUUID } from 'class-validator';
 
-export class MonitorMultipleResponse {
+export class MonitorGroup {
   @ApiProperty({
     type: 'string',
     format: 'uuid',

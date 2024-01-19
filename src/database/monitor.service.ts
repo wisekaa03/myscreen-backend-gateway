@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, FindManyOptions, In, Repository } from 'typeorm';
 
 import { MonitorMultiple, MonitorStatus } from '@/enums';
-import { MonitorMultipleRequest } from '@/dto';
+import { MonitorGroup } from '@/dto/request/monitor-group';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
@@ -201,7 +201,7 @@ export class MonitorService {
   async update(
     id: string,
     update: Partial<MonitorEntity>,
-    groupIds?: MonitorMultipleRequest[],
+    groupIds?: MonitorGroup[],
   ): Promise<MonitorEntity> {
     const multipleBool = Array.isArray(groupIds);
 
@@ -324,7 +324,7 @@ export class MonitorService {
   }: {
     user: UserEntity;
     insert: Partial<MonitorEntity>;
-    groupIds?: MonitorMultipleRequest[];
+    groupIds?: MonitorGroup[];
   }) {
     const { id: userId } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
