@@ -96,27 +96,56 @@ export class MonitorService {
       monitorWhere = TypeOrmFind.Nullable(find);
     } else {
       monitorWhere = {
-        relations: { files: true, playlist: true, favorities: true },
+        relations: {
+          files: true,
+          playlist: true,
+          favorities: true,
+          groupMonitors: true,
+        },
         ...TypeOrmFind.Nullable(find),
       };
     }
 
-    const monitor = caseInsensitive
-      ? await TypeOrmFind.findAndCountCI(this.monitorRepository, monitorWhere)
-      : await this.monitorRepository.findAndCount(monitorWhere);
+    let monitors: Array<MonitorEntity> = [];
+    let count = 0;
+    if (caseInsensitive) {
+      [monitors, count] = await TypeOrmFind.findAndCountCI(
+        this.monitorRepository,
+        monitorWhere,
+      );
+    } else {
+      [monitors, count] =
+        await this.monitorRepository.findAndCount(monitorWhere);
+    }
 
-    return [
-      monitor && userId !== undefined
-        ? monitor[0].map((item: MonitorEntity) => {
-            const value = item;
-            value.favorite =
-              value.favorities?.some((i) => i.userId === userId) ?? false;
-            delete value.favorities;
-            return value;
-          })
-        : monitor[0],
-      monitor[1],
-    ];
+    if (monitors) {
+      if (userId !== undefined) {
+        monitors = monitors.map((monitor: MonitorEntity) => {
+          const value = monitor;
+          value.favorite =
+            value.favorities?.some((f) => f.userId === userId) ?? false;
+          delete value.favorities;
+          return value;
+        });
+      }
+
+      monitors = monitors.map((monitor: MonitorEntity) => {
+        const value = monitor;
+        if (value.groupMonitors) {
+          value.groupIds = value.groupMonitors.map(
+            (group: MonitorGroupEntity) => ({
+              monitorId: group.monitorId,
+              row: group.row,
+              col: group.col,
+            }),
+          );
+          delete value.groupMonitors;
+        }
+        return value;
+      });
+    }
+
+    return [monitors, count];
   }
 
   async findOne({
@@ -134,7 +163,12 @@ export class MonitorService {
       monitorWhere = TypeOrmFind.Nullable(find);
     } else {
       monitorWhere = {
-        relations: { files: true, playlist: true, favorities: true },
+        relations: {
+          files: true,
+          playlist: true,
+          favorities: true,
+          groupMonitors: true,
+        },
         ...TypeOrmFind.Nullable(find),
       };
     }
@@ -143,12 +177,22 @@ export class MonitorService {
       ? await TypeOrmFind.findOneCI(this.monitorRepository, monitorWhere)
       : await this.monitorRepository.findOne(monitorWhere);
 
-    if (monitor && userId !== undefined) {
-      monitor.favorite =
-        userId !== undefined
-          ? monitor.favorities?.some((fav) => fav.userId === userId) ?? false
-          : false;
-      delete monitor.favorities;
+    if (monitor) {
+      if (userId !== undefined) {
+        monitor.favorite =
+          userId !== undefined
+            ? monitor.favorities?.some((fav) => fav.userId === userId) ?? false
+            : false;
+        delete monitor.favorities;
+      }
+      if (monitor.groupMonitors) {
+        monitor.groupIds = monitor.groupMonitors.map((item) => ({
+          monitorId: item.monitorId,
+          row: item.row,
+          col: item.col,
+        }));
+        delete monitor.groupMonitors;
+      }
     }
 
     return monitor;

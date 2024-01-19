@@ -20,6 +20,7 @@ export * from './playlists-get.response';
 export * from './monitor-get.response';
 export * from './monitors-get.response';
 export * from './monitor-restricted.response';
+export * from './monitor-multiple.response';
 export * from './monitor.response';
 export * from './editor.response';
 export * from './editor-get.response';

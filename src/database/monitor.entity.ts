@@ -46,6 +46,7 @@ import { FileEntity } from './file.entity';
 import { MonitorFavoriteEntity } from '@/database/monitor.favorite.entity';
 import { RequestEntity } from '@/database/request.entity';
 import { MonitorGroupEntity } from '@/database/monitor.group.entity';
+import { MonitorMultipleResponse } from '@/dto';
 
 export class PointClass implements Point {
   @ApiProperty({
@@ -431,6 +432,14 @@ export class MonitorEntity {
     required: true,
   })
   favorite!: boolean;
+
+  @ApiProperty({
+    description: 'Подчиненные мониторы в группе мониторов',
+    type: () => MonitorMultipleResponse,
+    isArray: true,
+    required: false,
+  })
+  groupIds?: MonitorMultipleResponse[];
 
   @ManyToOne(() => UserEntity, (user) => user.monitors, {
     onDelete: 'CASCADE',
