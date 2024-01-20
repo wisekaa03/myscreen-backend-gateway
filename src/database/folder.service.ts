@@ -67,6 +67,7 @@ export class FolderService {
 
   async rootFolder(user: UserEntity): Promise<FolderEntity> {
     const { id: userId } = user;
+
     let folder = await this.folderRepository.findOne({
       where: { name: '<Корень>', userId },
     });
