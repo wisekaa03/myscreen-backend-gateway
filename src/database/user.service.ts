@@ -147,9 +147,9 @@ export class UserService {
       }
     } else if (role === UserRoleEnum.Advertiser) {
       if (controllerName === 'monitor' && crud !== CRUD.READ) {
-        if (functionName.search(/^monitorFavorite/) === -1) {
+        if (functionName.search(/monitorFavorite|MonitorPlaylist/) === -1) {
           throw new ForbiddenException(
-            'You have a Advertiser account, denied.',
+            'Denied. You have an Advertiser account.',
           );
         }
       }

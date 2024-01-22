@@ -27,7 +27,7 @@ services:
       - "5432:5432"
 
   rabbitmq:
-    image: bitnami/rabbitmq:latest
+    image: bitnami/rabbitmq:3.12.12
     restart: always
     environment:
       - RABBITMQ_PASSWORD=12345678

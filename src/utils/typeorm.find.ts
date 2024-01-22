@@ -29,8 +29,9 @@ export class TypeOrmFind {
     const columns = repository.metadata.ownColumns;
     if (orderBy) {
       Object.entries(orderBy).forEach(([field, direction]) => {
-        const column = columns.find((value) => value.databaseName === field)
-          ?.type;
+        const column = columns.find(
+          (value) => value.databaseName === field,
+        )?.type;
         const d = direction === 'DESC' ? 'DESC' : 'ASC';
         // TODO: эх... разобраться с relations:  || (find.relations && (find.take || find.skip))
         if (

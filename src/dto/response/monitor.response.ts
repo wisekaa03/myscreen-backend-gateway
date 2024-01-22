@@ -20,11 +20,6 @@ export class MonitorResponse extends OmitType(MonitorEntity, [
   })
   playlist?: PlaylistEntity | null;
 
-  // @ApiProperty({
-  //   required: true,
-  // })
-  // location?: Point | null;
-
   @ApiProperty({
     description: 'Фото монитора. Документы на право владения.',
     type: () => FileResponse,

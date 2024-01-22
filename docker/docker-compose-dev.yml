@@ -28,7 +28,7 @@ services:
       - "5432:5432"
 
   pgadmin4:
-    image: dpage/pgadmin4:8.1
+    image: dpage/pgadmin4:8.2
     restart: always
     environment:
       PGADMIN_LISTEN_PORT: 8088
@@ -56,7 +56,7 @@ services:
       - "${PGADMIN_PORT:-8088}:8088"
 
   rabbitmq:
-    image: bitnami/rabbitmq:latest
+    image: bitnami/rabbitmq:3.12.12
     restart: always
     environment:
       - RABBITMQ_PASSWORD=12345678

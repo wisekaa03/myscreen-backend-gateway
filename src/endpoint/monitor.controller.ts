@@ -175,7 +175,7 @@ export class MonitorController {
   @Crud(CRUD.CREATE)
   async createMonitors(
     @Req() { user }: ExpressRequest,
-    @Body() { groupIds, multipleIds, ...insert }: MonitorCreateRequest,
+    @Body() { groupIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
     const { id: userId } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
@@ -226,7 +226,7 @@ export class MonitorController {
     const data = await this.monitorService.create({
       user,
       insert,
-      groupIds: groupIds ?? multipleIds,
+      groupIds,
     });
 
     return {
@@ -309,43 +309,46 @@ export class MonitorController {
         throw new NotFoundException(`Monitor "${monitorId}" not found`);
       }
 
+      if (role !== UserRoleEnum.Monitor) {
+        throw new NotAcceptableException();
+      }
+      if (plan !== UserPlanEnum.Demo) {
+        throw new ForbiddenException();
+      }
+
       monitor = await this.monitorService.update(monitorId, {
         playlist,
       });
 
-      if (!(role === UserRoleEnum.Monitor || plan === UserPlanEnum.Demo)) {
-        const approved =
-          monitor.userId === userId
-            ? RequestApprove.ALLOWED
-            : RequestApprove.NOTPROCESSED;
+      const approved =
+        monitor.userId === userId
+          ? RequestApprove.ALLOWED
+          : RequestApprove.NOTPROCESSED;
 
-        // To verify user permissions for request
-        this.userService.verify(
-          user,
-          'request',
-          'updateApplication',
-          CRUD.CREATE,
-        );
+      // To verify user permissions for request
+      this.userService.verify(
+        user,
+        'request',
+        'updateApplication',
+        CRUD.CREATE,
+      );
 
-        // To create request
-        const request = await this.requestService.create({
-          sellerId: monitor.userId,
-          buyerId: userId,
-          monitor,
-          playlist,
-          approved,
-          userId,
-          dateBefore: attach.application.dateBefore,
-          dateWhen: attach.application.dateWhen,
-          playlistChange: attach.application.playlistChange,
-        });
-        if (!request) {
-          throw new BadRequestException('Request create error');
-        }
-        return request;
+      // To create request
+      const request = await this.requestService.create({
+        sellerId: monitor.userId,
+        buyerId: userId,
+        monitor,
+        playlist,
+        approved,
+        userId,
+        dateBefore: attach.application.dateBefore,
+        dateWhen: attach.application.dateWhen,
+        playlistChange: attach.application.playlistChange,
+      });
+      if (!request) {
+        throw new BadRequestException('Request create error');
       }
-
-      throw new NotAcceptableException();
+      return request;
     });
 
     const data = await Promise.all(dataPromise);
@@ -608,7 +611,7 @@ export class MonitorController {
   async updateMonitor(
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
-    @Body() { groupIds, multipleIds, ...update }: MonitorUpdateRequest,
+    @Body() { groupIds, ...update }: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
     const { id: userId } = user;
     const monitor = await this.monitorService.findOne({
@@ -626,11 +629,7 @@ export class MonitorController {
     if (!monitor) {
       throw new NotFoundException(`Monitor ${id} is not found`);
     }
-    const data = await this.monitorService.update(
-      id,
-      update,
-      groupIds ?? multipleIds,
-    );
+    const data = await this.monitorService.update(id, update, groupIds);
 
     return {
       status: Status.Success,
