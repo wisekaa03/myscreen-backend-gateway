@@ -309,9 +309,6 @@ export class MonitorController {
         throw new NotFoundException(`Monitor "${monitorId}" not found`);
       }
 
-      if (role !== UserRoleEnum.Monitor) {
-        throw new NotAcceptableException();
-      }
       if (plan !== UserPlanEnum.Demo) {
         throw new ForbiddenException();
       }
