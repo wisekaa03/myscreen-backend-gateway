@@ -296,7 +296,6 @@ export class MonitorEntity {
     required: true,
   })
   @IsNumber()
-  @Min(1)
   width!: number;
 
   @Column({ type: 'integer', default: 0 })
@@ -307,7 +306,6 @@ export class MonitorEntity {
     required: true,
   })
   @IsNumber()
-  @Min(1)
   height!: number;
 
   @Column({ type: 'boolean', default: false })
