@@ -203,7 +203,7 @@ export class MonitorService {
     update: Partial<MonitorEntity>,
     groupIds?: MonitorGroup[],
   ): Promise<MonitorEntity> {
-    const multipleBool = Array.isArray(groupIds);
+    const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
 
     const originalMonitor = await this.findOne({
       find: {
