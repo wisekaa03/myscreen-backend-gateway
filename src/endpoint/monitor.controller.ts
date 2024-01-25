@@ -309,7 +309,7 @@ export class MonitorController {
         throw new NotFoundException(`Monitor "${monitorId}" not found`);
       }
 
-      if (plan !== UserPlanEnum.Demo) {
+      if (plan === UserPlanEnum.Demo) {
         throw new ForbiddenException();
       }
 
