@@ -3,6 +3,7 @@ import { IsDateString, IsEnum } from 'class-validator';
 
 import { RequestApprove, RequestStatus } from '@/enums';
 import { RequestEntity } from '@/database/request.entity';
+import { MSRange } from '@/interfaces';
 
 export class ApplicationsRequest extends PartialType(
   OmitType(RequestEntity, [
@@ -54,7 +55,7 @@ export class ApplicationsRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  createdAt?: Array<Date>;
+  createdAt?: MSRange<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
@@ -69,5 +70,5 @@ export class ApplicationsRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  updatedAt?: Array<Date>;
+  updatedAt?: MSRange<Date>;
 }

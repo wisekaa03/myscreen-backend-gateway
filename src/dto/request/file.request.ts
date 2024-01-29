@@ -2,6 +2,7 @@ import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { IsDateString, IsString } from 'class-validator';
 
 import { FileEntity } from '@/database/file.entity';
+import { MSRange } from '@/interfaces';
 
 export class FileRequest extends PartialType(
   PickType(FileEntity, ['id', 'folderId', 'category', 'videoType']),
@@ -28,7 +29,7 @@ export class FileRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  createdAt?: Array<Date>;
+  createdAt?: MSRange<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
@@ -43,5 +44,5 @@ export class FileRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  updatedAt?: Array<Date>;
+  updatedAt?: MSRange<Date>;
 }

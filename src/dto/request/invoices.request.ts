@@ -2,6 +2,7 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString } from 'class-validator';
 
 import { InvoiceEntity } from '@/database/invoice.entity';
+import { MSRange } from '@/interfaces';
 
 export class InvoicesRequest extends PartialType(
   OmitType(InvoiceEntity, ['createdAt', 'updatedAt']),
@@ -19,7 +20,7 @@ export class InvoicesRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  createdAt?: Array<Date>;
+  createdAt?: MSRange<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
@@ -34,5 +35,5 @@ export class InvoicesRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  updatedAt?: Array<Date>;
+  updatedAt?: MSRange<Date>;
 }

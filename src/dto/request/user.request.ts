@@ -2,6 +2,7 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
+import { MSRange } from '@/interfaces';
 
 export class UserRequest extends PartialType(
   OmitType(UserEntity, ['createdAt', 'updatedAt']),
@@ -19,7 +20,7 @@ export class UserRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  createdAt?: Array<Date>;
+  createdAt?: MSRange<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
@@ -34,5 +35,5 @@ export class UserRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  updatedAt?: Array<Date>;
+  updatedAt?: MSRange<Date>;
 }

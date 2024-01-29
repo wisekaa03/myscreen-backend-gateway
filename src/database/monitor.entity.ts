@@ -33,6 +33,7 @@ import {
 import { Point } from 'geojson';
 import { Type } from 'class-transformer';
 
+import { MSRange } from '@/interfaces';
 import {
   MonitorCategoryEnum,
   MonitorMultiple,

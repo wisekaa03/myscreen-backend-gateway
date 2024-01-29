@@ -216,11 +216,6 @@ export class MonitorService {
       throw new NotFoundException(`Monitor "${id}" not found`);
     }
     const { userId, multiple = MonitorMultiple.SINGLE } = originalMonitor;
-    if (originalMonitor.playlistId) {
-      throw new BadRequestException(
-        `Monitor "${originalMonitor.name}"#"${id}" is attached to the playlist`,
-      );
-    }
     const { multiple: updateMultiple = multiple } = update;
     if (multiple !== updateMultiple) {
       throw new BadRequestException(

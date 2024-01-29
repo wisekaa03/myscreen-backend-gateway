@@ -2,6 +2,7 @@ import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 import { FolderEntity } from '@/database/folder.entity';
+import { MSRange } from '@/interfaces';
 
 export class FolderRequest extends PartialType(
   PickType(FolderEntity, ['name']),
@@ -38,7 +39,7 @@ export class FolderRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  createdAt?: Array<Date>;
+  createdAt?: MSRange<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
@@ -53,5 +54,5 @@ export class FolderRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  updatedAt?: Array<Date>;
+  updatedAt?: MSRange<Date>;
 }

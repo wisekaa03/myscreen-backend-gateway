@@ -1,5 +1,12 @@
 import type { Request as ExpressRequest } from 'express';
-import { Between, FindManyOptions, In, MoreThan, Not } from 'typeorm';
+import {
+  Between,
+  FindManyOptions,
+  FindOptionsWhere,
+  In,
+  MoreThan,
+  Not,
+} from 'typeorm';
 import {
   BadRequestException,
   Body,
@@ -558,13 +565,13 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationsGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {
       relations: ['playlist'],
     };
-    if (user.role === UserRoleEnum.Monitor) {
+    if (role === UserRoleEnum.Monitor) {
       find.where = { id: userId };
-    } else if (user.role === UserRoleEnum.Administrator) {
+    } else if (role === UserRoleEnum.Administrator) {
       find.where = { id };
     } else {
       find.where = { userId, id };
@@ -610,14 +617,15 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
     @Body() { groupIds, ...update }: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role } = user;
+    const where: FindOptionsWhere<MonitorEntity> = { id };
+    if (role !== UserRoleEnum.Administrator) {
+      where.userId = userId;
+    }
     const monitor = await this.monitorService.findOne({
       userId,
       find: {
-        where: {
-          userId,
-          id,
-        },
+        where,
         select: ['id'],
         loadEagerRelations: false,
         relations: {},

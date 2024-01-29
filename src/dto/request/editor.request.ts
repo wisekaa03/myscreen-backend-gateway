@@ -1,6 +1,7 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { IsDateString } from 'class-validator';
 
+import { MSRange } from '@/interfaces';
 import { EditorEntity } from '@/database/editor.entity';
 
 export class EditorRequest extends PartialType(
@@ -19,7 +20,7 @@ export class EditorRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  createdAt?: Array<Date>;
+  createdAt?: MSRange<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
@@ -34,5 +35,5 @@ export class EditorRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  updatedAt?: Array<Date>;
+  updatedAt?: MSRange<Date>;
 }

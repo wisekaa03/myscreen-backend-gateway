@@ -2,6 +2,7 @@ import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { IsDateString, IsOptional, MinLength } from 'class-validator';
 
 import { PlaylistEntity } from '@/database/playlist.entity';
+import { MSRange } from '@/interfaces';
 
 export class PlaylistRequest extends PartialType(
   PickType(PlaylistEntity, ['id', 'name', 'description', 'status']),
@@ -23,7 +24,7 @@ export class PlaylistRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  createdAt?: Array<Date>;
+  createdAt?: MSRange<Date>;
 
   @ApiProperty({
     description: 'Время изменения',
@@ -38,5 +39,5 @@ export class PlaylistRequest extends PartialType(
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
-  updatedAt?: Array<Date>;
+  updatedAt?: MSRange<Date>;
 }
