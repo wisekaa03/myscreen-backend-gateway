@@ -26,6 +26,7 @@ import {
   SuccessResponse,
   ApplicationPrecalculateRequest,
   ApplicationPrecalculateResponse,
+  ApplicationsRequest,
 } from '@/dto';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
@@ -34,6 +35,7 @@ import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
 import { RequestService } from '@/database/request.service';
+import { RequestEntity } from '@/database/request.entity';
 
 @ApiComplexDecorators('application', [
   UserRoleEnum.Administrator,
@@ -66,7 +68,9 @@ export class RequestController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
-    const sqlWhere = TypeOrmFind.Where(where);
+    const sqlWhere = TypeOrmFind.where<ApplicationsRequest, RequestEntity>(
+      where,
+    );
     if (user.role === UserRoleEnum.MonitorOwner) {
       const [data, count] = await this.requestService.findAndCount({
         ...paginationQueryToConfig(scope),
@@ -104,7 +108,7 @@ export class RequestController {
     const [data, count] = await this.requestService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where),
+      where: TypeOrmFind.where<ApplicationsRequest, RequestEntity>(where),
     });
     return {
       status: Status.Success,

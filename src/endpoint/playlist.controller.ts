@@ -25,6 +25,7 @@ import {
   PlaylistCreateRequest,
   SuccessResponse,
   PlaylistUpdateRequest,
+  PlaylistRequest,
 } from '@/dto';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
@@ -63,15 +64,26 @@ export class PlaylistController {
   @Crud(CRUD.READ)
   async findManyPlaylist(
     @Req() { user }: ExpressRequest,
-    @Body() { where, select, scope }: PlaylistsGetRequest,
+    @Body() { where: origWhere, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
+    const { id: userId, role } = user;
+    const where = TypeOrmFind.where<PlaylistEntity, PlaylistRequest>(origWhere);
+    if (Array.isArray(where)) {
+      where.push({ hide: false });
+    } else {
+      where.hide = false;
+    }
+    if (role === UserRoleEnum.Administrator) {
+      if (Array.isArray(where)) {
+        where.push({ userId });
+      } else {
+        where.userId = userId;
+      }
+    }
     const [data, count] = await this.playlistService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(
-        { hide: false, ...where },
-        user.role === UserRoleEnum.Administrator ? undefined : user,
-      ),
+      where,
     });
 
     return {

@@ -39,13 +39,13 @@ export class InvoiceService {
   async find(
     find: FindManyOptions<InvoiceEntity>,
   ): Promise<[Array<InvoiceEntity>, number]> {
-    return this.invoiceRepository.findAndCount(TypeOrmFind.Nullable(find));
+    return this.invoiceRepository.findAndCount(TypeOrmFind.findParams(find));
   }
 
   async findOne(
     find: FindManyOptions<InvoiceEntity>,
   ): Promise<InvoiceEntity | null> {
-    return this.invoiceRepository.findOne(TypeOrmFind.Nullable(find));
+    return this.invoiceRepository.findOne(TypeOrmFind.findParams(find));
   }
 
   async create(

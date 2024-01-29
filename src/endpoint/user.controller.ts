@@ -20,11 +20,14 @@ import {
   UsersGetResponse,
   UserGetResponse,
   UsersGetRequest,
+  UserRequest,
 } from '@/dto';
 import { CRUD, UserRoleEnum, Status } from '@/enums';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { UserService } from '@/database/user.service';
 import { ApiComplexDecorators, Crud } from '@/decorators';
+import { TypeOrmFind } from '@/utils/typeorm.find';
+import { UserExtEntity } from '@/database/user-ext.entity';
 
 @ApiComplexDecorators('user', [UserRoleEnum.Administrator])
 export class UserController {
@@ -49,7 +52,7 @@ export class UserController {
     const [users, count] = await this.userService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where,
+      where: TypeOrmFind.where<UserExtEntity, UserRequest>(where),
     });
     const data = users.map((user) => UserService.userEntityToUser(user));
     return {

@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsDateString } from 'class-validator';
+import { IsDateString, IsInt } from 'class-validator';
 
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MSRange } from '@/interfaces';
@@ -13,14 +13,35 @@ export class MonitorRequest extends PartialType(
     'monitorInfo',
     'groupIds',
     'files',
+    'price1s',
     'createdAt',
     'updatedAt',
   ]),
 ) {
   @ApiProperty({
+    type: 'array',
+    description: 'Стоимость показа 1 секунды в рублях',
+    oneOf: [{ type: 'number' }, { type: 'array', items: { type: 'number' } }],
+    examples: {
+      one: 1,
+      range: [1, 2],
+    },
+    required: false,
+  })
+  @IsInt({ each: true })
+  price1s!: MSRange<number>;
+
+  @ApiProperty({
     description: 'Время начала проигрывания',
-    examples: { one: ['2021-01-01'], two: ['2021-12-31', '2021-12-31'] },
-    type: 'string',
+    type: 'array',
+    oneOf: [
+      { type: 'string', format: 'date-time' },
+      { type: 'array', items: { type: 'string', format: 'date-time' } },
+    ],
+    examples: {
+      one: '2021-12-31T10:10:10',
+      range: ['2021-12-31T10:10:10', '2022-12-31T10:10:10'],
+    },
     format: 'date-time',
     isArray: true,
     required: false,
@@ -30,12 +51,15 @@ export class MonitorRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время создания',
-    example: ['2021-01-01', '2021-12-31'],
+    type: 'array',
+    oneOf: [
+      { type: 'string', format: 'date-time' },
+      { type: 'array', items: { type: 'string', format: 'date-time' } },
+    ],
     examples: {
-      one: '2021-01-01',
-      two: ['2021-12-30', '2021-12-31T10:10:10'],
+      one: '2021-12-31T10:10:10',
+      range: ['2021-12-31T10:10:10', '2022-12-31T10:10:10'],
     },
-    type: 'string',
     format: 'date-time',
     isArray: true,
     required: false,
@@ -45,12 +69,15 @@ export class MonitorRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время изменения',
-    example: ['2021-01-01', '2021-12-31'],
+    type: 'array',
+    oneOf: [
+      { type: 'string', format: 'date-time' },
+      { type: 'array', items: { type: 'string', format: 'date-time' } },
+    ],
     examples: {
-      one: '2021-01-01',
-      two: ['2021-12-30', '2021-12-31T10:10:10'],
+      one: '2021-12-31T10:10:10',
+      range: ['2021-12-31T10:10:10', '2022-12-31T10:10:10'],
     },
-    type: 'string',
     format: 'date-time',
     isArray: true,
     required: false,

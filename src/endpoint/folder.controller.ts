@@ -99,13 +99,13 @@ export class FolderController {
         [data, count] = await this.folderService.findAndCount({
           ...paginationQueryToConfig(scope),
           select,
-          where: TypeOrmFind.Where(
-            {
+          where: {
+            ...TypeOrmFind.where({
               ...where,
               parentFolderId: parentFolder.id,
-            },
-            userExpression,
-          ),
+            }),
+            userId: userExpression.id,
+          },
         });
       } else {
         // в режиме администратора выводим всех пользователей
@@ -132,7 +132,10 @@ export class FolderController {
       [data, count] = await this.folderService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
-        where: TypeOrmFind.Where(where, user),
+        where: {
+          ...TypeOrmFind.where(where),
+          userId: role === UserRoleEnum.Administrator ? undefined : user.id,
+        },
       });
       const { id: parentFolderIdUserId } =
         await this.folderService.rootFolder(user);

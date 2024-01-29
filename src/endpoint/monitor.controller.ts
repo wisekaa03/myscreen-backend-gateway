@@ -40,6 +40,7 @@ import {
   MonitorCreateRequest,
   MonitorUpdateRequest,
   Order,
+  MonitorRequest,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import {
@@ -108,17 +109,23 @@ export class MonitorController {
     };
     if (role === UserRoleEnum.Monitor) {
       // добавляем то, что содержится у нас в userId: monitorId.
-      find.where = { id: userId, ...TypeOrmFind.Where(where) };
+      find.where = {
+        id: userId,
+        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
+      };
     } else if (role === UserRoleEnum.MonitorOwner) {
-      find.where = { userId, ...TypeOrmFind.Where(where) };
+      find.where = {
+        userId,
+        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
+      };
     } else if (role === UserRoleEnum.Administrator) {
-      find.where = TypeOrmFind.Where(where);
+      find.where = TypeOrmFind.where<MonitorRequest, MonitorEntity>(where);
     } else {
       find.where = {
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
-        ...TypeOrmFind.Where(where),
+        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
       };
     }
     if (
@@ -185,7 +192,7 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { groupIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role, plan } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
     if (multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestException(
@@ -217,7 +224,7 @@ export class MonitorController {
       );
     }
 
-    if (user.plan === UserPlanEnum.Demo) {
+    if (role !== UserRoleEnum.Administrator && plan === UserPlanEnum.Demo) {
       const countMonitors = await this.monitorService.count({
         find: {
           select: ['id'],
@@ -320,7 +327,7 @@ export class MonitorController {
         throw new NotFoundException(`Monitor "${monitorId}" not found`);
       }
 
-      if (plan === UserPlanEnum.Demo) {
+      if (role === UserRoleEnum.MonitorOwner && plan === UserPlanEnum.Demo) {
         throw new ForbiddenException('У вас ДЕМО-аккаунт, измените до PRO');
       }
 

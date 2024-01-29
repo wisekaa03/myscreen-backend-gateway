@@ -70,15 +70,15 @@ export class InvoiceController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: InvoicesGetRequest,
   ): Promise<InvoicesGetResponse> {
-    const whenUser =
+    const whenUserId =
       user.role === UserRoleEnum.Administrator ||
       user.role === UserRoleEnum.Accountant
         ? undefined
-        : user;
+        : user.id;
     const [data, count] = await this.invoiceService.find({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(where, whenUser),
+      where: { ...TypeOrmFind.where(where), userId: whenUserId },
     });
 
     return {
