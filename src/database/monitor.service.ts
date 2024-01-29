@@ -222,7 +222,7 @@ export class MonitorService {
         `Monitor "${originalMonitor.name}"#"${id}" multiple not changed`,
       );
     }
-    if (multiple !== MonitorMultiple.SINGLE && multipleBool) {
+    if (multiple === MonitorMultiple.SINGLE && multipleBool) {
       throw new BadRequestException(
         `Monitor "${originalMonitor.name}"#"${id}" group monitors ID is not empty`,
       );
