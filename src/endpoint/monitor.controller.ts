@@ -59,6 +59,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { RequestService } from '@/database/request.service';
+import { PlaylistEntity } from '@/database/playlist.entity';
 
 @ApiComplexDecorators('monitor', [
   UserRoleEnum.Administrator,
@@ -268,11 +269,14 @@ export class MonitorController {
     if (!Array.isArray(attach.monitors) || attach.monitors.length < 1) {
       throw new BadRequestException('Monitors should not be null or undefined');
     }
+    const where: FindOptionsWhere<PlaylistEntity> = {
+      id: attach.playlistId,
+    };
+    if (role !== UserRoleEnum.Administrator) {
+      where.userId = userId;
+    }
     const playlist = await this.playlistService.findOne({
-      where: {
-        userId,
-        id: attach.playlistId,
-      },
+      where,
     });
     if (!playlist) {
       throw new NotFoundException(`Playlist "${attach.playlistId}" not found`);
@@ -317,7 +321,7 @@ export class MonitorController {
       }
 
       if (plan === UserPlanEnum.Demo) {
-        throw new ForbiddenException();
+        throw new ForbiddenException('У вас ДЕМО-аккаунт, измените до PRO');
       }
 
       monitor = await this.monitorService.update(monitorId, {
