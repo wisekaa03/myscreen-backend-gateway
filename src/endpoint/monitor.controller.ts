@@ -1,5 +1,12 @@
 import type { Request as ExpressRequest } from 'express';
-import { Between, FindManyOptions, In, MoreThan, Not } from 'typeorm';
+import {
+  Between,
+  FindManyOptions,
+  FindOptionsWhere,
+  In,
+  MoreThan,
+  Not,
+} from 'typeorm';
 import {
   BadRequestException,
   Body,
@@ -33,6 +40,7 @@ import {
   MonitorCreateRequest,
   MonitorUpdateRequest,
   Order,
+  MonitorRequest,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import {
@@ -52,6 +60,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { RequestService } from '@/database/request.service';
+import { PlaylistEntity } from '@/database/playlist.entity';
 
 @ApiComplexDecorators('monitor', [
   UserRoleEnum.Administrator,
@@ -100,17 +109,23 @@ export class MonitorController {
     };
     if (role === UserRoleEnum.Monitor) {
       // добавляем то, что содержится у нас в userId: monitorId.
-      find.where = { id: userId, ...TypeOrmFind.Where(where) };
+      find.where = {
+        id: userId,
+        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
+      };
     } else if (role === UserRoleEnum.MonitorOwner) {
-      find.where = { userId, ...TypeOrmFind.Where(where) };
+      find.where = {
+        userId,
+        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
+      };
     } else if (role === UserRoleEnum.Administrator) {
-      find.where = TypeOrmFind.Where(where);
+      find.where = TypeOrmFind.where<MonitorRequest, MonitorEntity>(where);
     } else {
       find.where = {
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
-        ...TypeOrmFind.Where(where),
+        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
       };
     }
     if (
@@ -177,7 +192,7 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { groupIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role, plan } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
     if (multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestException(
@@ -209,7 +224,7 @@ export class MonitorController {
       );
     }
 
-    if (user.plan === UserPlanEnum.Demo) {
+    if (role !== UserRoleEnum.Administrator && plan === UserPlanEnum.Demo) {
       const countMonitors = await this.monitorService.count({
         find: {
           select: ['id'],
@@ -261,11 +276,14 @@ export class MonitorController {
     if (!Array.isArray(attach.monitors) || attach.monitors.length < 1) {
       throw new BadRequestException('Monitors should not be null or undefined');
     }
+    const where: FindOptionsWhere<PlaylistEntity> = {
+      id: attach.playlistId,
+    };
+    if (role !== UserRoleEnum.Administrator) {
+      where.userId = userId;
+    }
     const playlist = await this.playlistService.findOne({
-      where: {
-        userId,
-        id: attach.playlistId,
-      },
+      where,
     });
     if (!playlist) {
       throw new NotFoundException(`Playlist "${attach.playlistId}" not found`);
@@ -309,8 +327,8 @@ export class MonitorController {
         throw new NotFoundException(`Monitor "${monitorId}" not found`);
       }
 
-      if (plan === UserPlanEnum.Demo) {
-        throw new ForbiddenException();
+      if (role === UserRoleEnum.MonitorOwner && plan === UserPlanEnum.Demo) {
+        throw new ForbiddenException('У вас ДЕМО-аккаунт, измените до PRO');
       }
 
       monitor = await this.monitorService.update(monitorId, {
@@ -558,13 +576,13 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationsGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {
       relations: ['playlist'],
     };
-    if (user.role === UserRoleEnum.Monitor) {
+    if (role === UserRoleEnum.Monitor) {
       find.where = { id: userId };
-    } else if (user.role === UserRoleEnum.Administrator) {
+    } else if (role === UserRoleEnum.Administrator) {
       find.where = { id };
     } else {
       find.where = { userId, id };
@@ -610,14 +628,15 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
     @Body() { groupIds, ...update }: MonitorUpdateRequest,
   ): Promise<MonitorGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role } = user;
+    const where: FindOptionsWhere<MonitorEntity> = { id };
+    if (role !== UserRoleEnum.Administrator) {
+      where.userId = userId;
+    }
     const monitor = await this.monitorService.findOne({
       userId,
       find: {
-        where: {
-          userId,
-          id,
-        },
+        where,
         select: ['id'],
         loadEagerRelations: false,
         relations: {},

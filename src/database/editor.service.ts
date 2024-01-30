@@ -87,7 +87,7 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
     caseInsensitive = true,
   ): Promise<Array<EditorEntity>> {
-    const conditional = TypeOrmFind.Nullable(find);
+    const conditional = TypeOrmFind.findParams(find);
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
@@ -100,7 +100,7 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
     caseInsensitive = true,
   ): Promise<[Array<EditorEntity>, number]> {
-    const conditional = TypeOrmFind.Nullable(find);
+    const conditional = TypeOrmFind.findParams(find);
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
     }
@@ -113,14 +113,14 @@ export class EditorService {
     find: FindManyOptions<EditorEntity>,
   ): Promise<EditorEntity | null> {
     return find.relations
-      ? this.editorRepository.findOne(TypeOrmFind.Nullable(find))
+      ? this.editorRepository.findOne(TypeOrmFind.findParams(find))
       : this.editorRepository.findOne({
           relations: {
             videoLayers: true,
             audioLayers: true,
             renderedFile: true,
           },
-          ...TypeOrmFind.Nullable(find),
+          ...TypeOrmFind.findParams(find),
         });
   }
 

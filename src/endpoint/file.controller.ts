@@ -121,10 +121,10 @@ export class FileController {
             loadEagerRelations: false,
             relations: {},
             select,
-            where: TypeOrmFind.Where(
-              { ...where, folderId: undefined },
-              userExpression,
-            ),
+            where: {
+              ...TypeOrmFind.where({ ...where, folderId: undefined }),
+              userId: userExpressionId,
+            },
           },
         });
       }
@@ -138,10 +138,11 @@ export class FileController {
           loadEagerRelations: false,
           relations: {},
           select,
-          where: TypeOrmFind.Where(
-            where,
-            user.role === UserRoleEnum.Administrator ? undefined : user,
-          ),
+          where: {
+            ...TypeOrmFind.where(where),
+            userId:
+              user.role === UserRoleEnum.Administrator ? undefined : user.id,
+          },
         },
       });
     }

@@ -81,10 +81,7 @@ export class EditorController {
     const [data, count] = await this.editorService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.Where(
-        where,
-        user.role !== UserRoleEnum.Administrator ? user : undefined,
-      ),
+      where: { ...TypeOrmFind.where(where), userId: user.id },
     });
 
     return {

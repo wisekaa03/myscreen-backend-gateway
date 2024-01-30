@@ -1,4 +1,3 @@
-import { Logger } from '@nestjs/common';
 import dayjs from 'dayjs';
 import { isDateString } from 'class-validator';
 import {
@@ -6,7 +5,6 @@ import {
   FindOptionsWhere,
   IsNull,
   ILike,
-  Equal,
   ObjectLiteral,
   Repository,
   SelectQueryBuilder,
@@ -15,8 +13,6 @@ import {
   LessThanOrEqual,
   MoreThanOrEqual,
 } from 'typeorm';
-
-import { UserEntity } from '@/database/user.entity';
 
 export class TypeOrmFind {
   private static findOrder = <Entity extends ObjectLiteral>(
@@ -83,21 +79,18 @@ export class TypeOrmFind {
     return Promise.all([qb.getMany(), qb.getCount()]);
   };
 
-  static Nullable = <Entity extends ObjectLiteral>(
+  static findParams = <Entity extends ObjectLiteral = ObjectLiteral>(
     find: FindManyOptions<Entity>,
-  ): FindManyOptions<Entity> => {
-    if (find.where) {
-      const { where, ...data } = find;
-      return {
-        where: TypeOrmFind.#Where(where),
-        ...data,
-      };
-    }
-    return find;
-  };
+  ): FindManyOptions<Entity> =>
+    find.where ? { ...find, where: TypeOrmFind.where(find.where) } : find;
 
-  static #Where = <Entity extends ObjectLiteral>(
-    where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
+  static where = <
+    Entity extends ObjectLiteral = ObjectLiteral,
+    OriginalEntity extends ObjectLiteral = ObjectLiteral,
+  >(
+    where?:
+      | FindOptionsWhere<OriginalEntity>
+      | FindOptionsWhere<OriginalEntity>[],
   ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
     if (Array.isArray(where)) {
       const whereIsNull = where.map((whereField) =>
@@ -129,7 +122,7 @@ export class TypeOrmFind {
                   ),
                 };
               }
-              return { ...accWhere, [field]: In(value) };
+              return { ...accWhere, [field]: Between(value[0], value[1]) };
             }
             if (isDateString(value)) {
               return {
@@ -157,7 +150,7 @@ export class TypeOrmFind {
           {} as Record<string, any>,
         ),
       );
-      return whereIsNull;
+      return whereIsNull as FindOptionsWhere<Entity>[];
     }
 
     const whereIsNull = where
@@ -189,7 +182,7 @@ export class TypeOrmFind {
                   ),
                 };
               }
-              return { ...accWhere, [field]: In(value) };
+              return { ...accWhere, [field]: Between(value[0], value[1]) };
             }
             if (isDateString(value)) {
               return {
@@ -217,20 +210,6 @@ export class TypeOrmFind {
           {} as Record<string, any>,
         )
       : {};
-    return whereIsNull;
-  };
-
-  static Where = <Entity extends ObjectLiteral>(
-    where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
-    user?: UserEntity,
-  ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
-    if (user) {
-      const whereIsNull = {
-        ...TypeOrmFind.#Where(where),
-        userId: Equal(user.id),
-      };
-      return whereIsNull;
-    }
-    return TypeOrmFind.#Where(where);
+    return whereIsNull as FindOptionsWhere<Entity>;
   };
 }

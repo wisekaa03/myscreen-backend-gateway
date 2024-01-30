@@ -37,11 +37,11 @@ export class PlaylistService {
     return caseInsensitive
       ? TypeOrmFind.findCI(this.playlistRepository, {
           relations: { files: true, monitors: true },
-          ...TypeOrmFind.Nullable(find),
+          ...TypeOrmFind.findParams(find),
         })
       : this.playlistRepository.find({
           relations: { files: true, monitors: true },
-          ...TypeOrmFind.Nullable(find),
+          ...TypeOrmFind.findParams(find),
         });
   }
 
@@ -52,11 +52,11 @@ export class PlaylistService {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.playlistRepository, {
           relations: { files: true, monitors: true },
-          ...TypeOrmFind.Nullable(find),
+          ...TypeOrmFind.findParams(find),
         })
       : this.playlistRepository.findAndCount({
           relations: { files: true, monitors: true },
-          ...TypeOrmFind.Nullable(find),
+          ...TypeOrmFind.findParams(find),
         });
   }
 
@@ -65,7 +65,7 @@ export class PlaylistService {
   ): Promise<PlaylistEntity | null> {
     return this.playlistRepository.findOne({
       relations: { files: true, monitors: true },
-      ...TypeOrmFind.Nullable(find),
+      ...TypeOrmFind.findParams(find),
     });
   }
 

@@ -56,13 +56,13 @@ export class WalletService {
   async find(
     find: FindManyOptions<WalletEntity>,
   ): Promise<[Array<WalletEntity>, number]> {
-    return this.walletRepository.findAndCount(TypeOrmFind.Nullable(find));
+    return this.walletRepository.findAndCount(TypeOrmFind.findParams(find));
   }
 
   async findOne(
     find: FindManyOptions<WalletEntity>,
   ): Promise<WalletEntity | null> {
-    return this.walletRepository.findOne(TypeOrmFind.Nullable(find));
+    return this.walletRepository.findOne(TypeOrmFind.findParams(find));
   }
 
   create({

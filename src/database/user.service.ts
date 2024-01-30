@@ -411,8 +411,8 @@ export class UserService {
     caseInsensitive = true,
   ): Promise<UserEntity[]> {
     return caseInsensitive
-      ? TypeOrmFind.findCI(this.userRepository, TypeOrmFind.Nullable(find))
-      : this.userRepository.find(TypeOrmFind.Nullable(find));
+      ? TypeOrmFind.findCI(this.userRepository, TypeOrmFind.findParams(find))
+      : this.userRepository.find(TypeOrmFind.findParams(find));
   }
 
   async findAndCount(
@@ -422,9 +422,9 @@ export class UserService {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(
           this.userExtRepository,
-          TypeOrmFind.Nullable(options),
+          TypeOrmFind.findParams(options),
         )
-      : this.userExtRepository.findAndCount(TypeOrmFind.Nullable(options));
+      : this.userExtRepository.findAndCount(TypeOrmFind.findParams(options));
   }
 
   async findByEmail(

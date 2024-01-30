@@ -67,7 +67,7 @@ export class RequestService {
     caseInsensitive = true,
   ): Promise<Array<RequestEntity>> {
     let result: Array<RequestEntity>;
-    const findLocal = TypeOrmFind.Nullable(find);
+    const findLocal = TypeOrmFind.findParams(find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -92,7 +92,7 @@ export class RequestService {
     caseInsensitive = true,
   ): Promise<[Array<RequestEntity>, number]> {
     let result: [Array<RequestEntity>, number];
-    const findLocal = TypeOrmFind.Nullable(find);
+    const findLocal = TypeOrmFind.findParams(find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -119,7 +119,7 @@ export class RequestService {
     caseInsensitive = true,
   ): Promise<RequestEntity | null> {
     let result: RequestEntity | null;
-    const findLocal = TypeOrmFind.Nullable(find);
+    const findLocal = TypeOrmFind.findParams(find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -133,10 +133,12 @@ export class RequestService {
     if (caseInsensitive) {
       result = await TypeOrmFind.findOneCI(
         this.requestRepository,
-        TypeOrmFind.Nullable(find),
+        TypeOrmFind.findParams(find),
       );
     } else {
-      result = await this.requestRepository.findOne(TypeOrmFind.Nullable(find));
+      result = await this.requestRepository.findOne(
+        TypeOrmFind.findParams(find),
+      );
     }
 
     return result;

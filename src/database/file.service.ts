@@ -107,7 +107,7 @@ export class FileService {
     caseInsensitive?: boolean;
     signedUrl?: boolean;
   }): Promise<Array<FileEntity>> {
-    const conditional = TypeOrmFind.Nullable(find);
+    const conditional = TypeOrmFind.findParams(find);
     if (find.relations === undefined) {
       conditional.relations = { monitors: true, playlists: true };
     }
@@ -141,7 +141,7 @@ export class FileService {
     caseInsensitive?: boolean;
     signedUrl?: boolean;
   }): Promise<[Array<FileEntity>, number]> {
-    const conditional = TypeOrmFind.Nullable(find);
+    const conditional = TypeOrmFind.findParams(find);
     if (find.relations === undefined) {
       conditional.relations = { monitors: true, playlists: true };
     }
@@ -177,7 +177,7 @@ export class FileService {
     caseInsensitive?: boolean;
     signedUrl?: boolean;
   }): Promise<FileEntity | null> {
-    const conditional = TypeOrmFind.Nullable(find);
+    const conditional = TypeOrmFind.findParams(find);
     if (find.relations === undefined) {
       conditional.relations = { monitors: true, playlists: true };
     }
