@@ -18,6 +18,7 @@ export class ApplicationCreateMonitorRequest extends OmitType(RequestEntity, [
   'playlistId',
   'approved',
   'user',
+  'sum',
   'createdAt',
   'updatedAt',
 ]) {}

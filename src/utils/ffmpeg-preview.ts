@@ -2,15 +2,15 @@ import child from 'node:child_process';
 import util from 'node:util';
 import path from 'node:path';
 import { Logger } from '@nestjs/common';
+import type { FfprobeData } from 'media-probe';
 
-import { MediaMeta } from '@/database/file.entity';
 import { VideoType } from '@/enums/video-type.enum';
 
 const exec = util.promisify(child.exec);
 
 export async function FfMpegPreview(
   type: VideoType,
-  meta: MediaMeta,
+  info: FfprobeData,
   filename: string,
   outPath: string,
 ): Promise<void> {
@@ -27,7 +27,7 @@ export async function FfMpegPreview(
   }
 
   if (type === VideoType.Video) {
-    const duration = Math.floor(meta?.duration || 0);
+    const duration = Math.floor(info.format?.duration || 0);
     const frameInterval = Math.floor(duration / 6) || 1; // 6 - Number of frames
     const filenameParsed = path.parse(filename);
     const outPattern = path.join(

@@ -31,4 +31,5 @@ export * from './editor-get-rendering-status.response';
 export * from './request.response';
 export * from './request-get.response';
 export * from './requests-get.response';
-export * from './request-precalculate.response';
+export * from './request-precalc-data.response';
+export * from './request-precalc.response';

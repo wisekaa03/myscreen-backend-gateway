@@ -2638,24 +2638,53 @@ paths:
         "501": *ref_106
       tags: *ref_107
       security: *ref_108
-  /api/v2/application/precalculate:
+  /api/v2/application/precalc-promo:
     post:
-      operationId: application-precalculate
-      summary: Возвращает предрасчет мониторов
+      operationId: request-precalc-promo
+      summary: Возвращает предрасчет мониторов (для promo)
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ApplicationPrecalculateRequest"
+              $ref: "#/components/schemas/RequestPrecalcPromoRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApplicationPrecalculateResponse"
+                $ref: "#/components/schemas/RequestPrecalcResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+  /api/v2/application/precalc-sum:
+    post:
+      operationId: request-precalc-sum
+      summary: Возвращает предрасчет мониторов (для суммы списания)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestPrecalcSumRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestPrecalcResponse"
         "400": *ref_98
         "401": *ref_99
         "403": *ref_100
@@ -2769,7 +2798,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.43.6
+  version: 2.43.7
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4241,6 +4270,9 @@ components:
           type: number
           description: Размер по вертикали
           example: 1024
+        info:
+          type: object
+          description: Параметры видео, картинки или аудио
         createdAt:
           type: string
           description: Время создания
@@ -4676,7 +4708,7 @@ components:
         - NotProcessed
         - Allowed
         - Denied
-    ApplicationResponse:
+    RequestResponse:
       type: object
       properties:
         id:
@@ -4728,6 +4760,10 @@ components:
           type: boolean
           description: "Смена текущего плэйлиста: сразу/когда закончится"
           example: false
+        sum:
+          type: number
+          description: Сумма списания
+          example: 10
         createdAt:
           type: string
           description: Время создания
@@ -4757,6 +4793,7 @@ components:
         - approved
         - dateWhen
         - playlistChange
+        - sum
     ApplicationsGetResponse:
       type: object
       properties:
@@ -4771,7 +4808,7 @@ components:
           description: Взаимодействия покупателей и продавца
           type: array
           items:
-            $ref: "#/components/schemas/ApplicationResponse"
+            $ref: "#/components/schemas/RequestResponse"
       required:
         - status
         - count
@@ -5475,6 +5512,7 @@ components:
               - duration
               - width
               - height
+              - info
               - createdAt
               - updatedAt
         scope:
@@ -6512,6 +6550,10 @@ components:
           type: boolean
           description: "Смена текущего плэйлиста: сразу/когда закончится"
           example: false
+        sum:
+          type: number
+          description: Сумма списания
+          example: 10
         dateWhen:
           type: array
           description: Время когда
@@ -6608,6 +6650,7 @@ components:
               - dateWhen
               - dateBefore
               - playlistChange
+              - sum
               - createdAt
               - updatedAt
         scope:
@@ -6624,7 +6667,7 @@ components:
         data:
           description: Взаимодействие покупателей и продавца
           allOf:
-            - $ref: "#/components/schemas/ApplicationResponse"
+            - $ref: "#/components/schemas/RequestResponse"
       required:
         - status
         - data
@@ -6637,7 +6680,7 @@ components:
           $ref: "#/components/schemas/RequestApprove"
       required:
         - approved
-    ApplicationPrecalculateRequest:
+    RequestPrecalcPromoRequest:
       type: object
       properties:
         monitorIds:
@@ -6665,7 +6708,7 @@ components:
         - playlistDuration
         - dateFrom
         - dateTo
-    ApplicationPrecalculateSumResponse:
+    RequestPrecalcDataResponse:
       type: object
       properties:
         sum:
@@ -6673,7 +6716,7 @@ components:
           description: Итоговая сумма
       required:
         - sum
-    ApplicationPrecalculateResponse:
+    RequestPrecalcResponse:
       type: object
       properties:
         status:
@@ -6683,10 +6726,41 @@ components:
         data:
           description: Возвращаемое значение
           allOf:
-            - $ref: "#/components/schemas/ApplicationPrecalculateSumResponse"
+            - $ref: "#/components/schemas/RequestPrecalcDataResponse"
       required:
         - status
         - data
+    RequestPrecalcSumRequest:
+      type: object
+      properties:
+        playlistId:
+          type: string
+          description: Плэйлист ID
+          format: uuid
+        minWarranty:
+          type: integer
+          description: Гарантированное минимальное количество показов в день
+          example: 1
+        price1s:
+          type: integer
+          description: Стоимость показа 1 секунды в рублях
+          example: 1
+        dateBefore:
+          type: string
+          description: Дата и время начала
+          example: "2021-01-01"
+          format: date
+        dateWhen:
+          type: string
+          description: Дата и время окончания
+          example: "2021-12-31"
+          format: date
+      required:
+        - playlistId
+        - minWarranty
+        - price1s
+        - dateBefore
+        - dateWhen
     CrontabCreateRequest:
       type: object
       properties:

@@ -361,10 +361,7 @@ export class FileController {
         throw new NotFoundException(`File '${id}' is not exists: ${error}`);
       });
     if (data.Body instanceof internal.Readable) {
-      res.setHeader(
-        'Content-Length',
-        String(file?.filesize) || String(file?.meta.filesize),
-      );
+      res.setHeader('Content-Length', String(file.filesize));
       res.setHeader('Cache-Control', 'private, max-age=31536000');
       // res.setHeader('Content-Type', headers['content-type']);
       // res.setHeader('Last-Modified', headers['last-modified']);
@@ -467,7 +464,7 @@ export class FileController {
           'id',
           'userId',
           'hash',
-          'meta',
+          'info',
           'videoType',
           'name',
           'duration',

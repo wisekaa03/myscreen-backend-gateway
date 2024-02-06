@@ -59,4 +59,5 @@ export * from './request-create.request';
 export * from './request-update.request';
 export * from './report-device-status.request';
 export * from './report-views.request';
-export * from './request-precalculate.request';
+export * from './request-precalc-promo.request';
+export * from './request-precalc-sum.request';

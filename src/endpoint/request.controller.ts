@@ -24,9 +24,10 @@ import {
   ApplicationsGetResponse,
   ApplicationUpdateRequest,
   SuccessResponse,
-  ApplicationPrecalculateRequest,
-  ApplicationPrecalculateResponse,
+  RequestPrecalcPromoRequest,
+  RequestPrecalcResponse,
   ApplicationsRequest,
+  RequestPrecalcSumRequest,
 } from '@/dto';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
@@ -231,16 +232,16 @@ export class RequestController {
     };
   }
 
-  @Post('precalculate')
+  @Post('precalc-promo')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'application-precalculate',
-    summary: 'Возвращает предрасчет мониторов',
+    operationId: 'request-precalc-promo',
+    summary: 'Возвращает предрасчет мониторов (для promo)',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: ApplicationPrecalculateResponse,
+    type: RequestPrecalcResponse,
   })
   @Crud(CRUD.READ)
   async precalculate(
@@ -251,14 +252,52 @@ export class RequestController {
       playlistDuration,
       dateFrom,
       dateTo,
-    }: ApplicationPrecalculateRequest,
-  ): Promise<ApplicationPrecalculateResponse> {
-    const sum = await this.requestService.precalculate({
+    }: RequestPrecalcPromoRequest,
+  ): Promise<RequestPrecalcResponse> {
+    const sum = await this.requestService.precalculatePromo({
       user,
       monitorIds,
       playlistDuration,
       dateFrom,
       dateTo,
+    });
+
+    return {
+      status: Status.Success,
+      data: { sum },
+    };
+  }
+
+  @Post('precalc-sum')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'request-precalc-sum',
+    summary: 'Возвращает предрасчет мониторов (для суммы списания)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: RequestPrecalcResponse,
+  })
+  @Crud(CRUD.READ)
+  async precalculateSum(
+    @Req() { user }: ExpressRequest,
+    @Body()
+    {
+      playlistId,
+      minWarranty,
+      price1s,
+      dateBefore,
+      dateWhen,
+    }: RequestPrecalcSumRequest,
+  ): Promise<RequestPrecalcResponse> {
+    const sum = await this.requestService.precalculateSum({
+      user,
+      minWarranty,
+      price1s,
+      dateBefore,
+      dateWhen,
+      playlistId,
     });
 
     return {

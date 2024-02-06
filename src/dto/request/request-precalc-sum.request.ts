@@ -2,32 +2,36 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
   IsDefined,
+  IsInt,
   IsNotEmpty,
-  IsNumber,
   IsUUID,
 } from 'class-validator';
 
-export class ApplicationPrecalculateRequest {
+export class RequestPrecalcSumRequest {
   @ApiProperty({
-    description: 'Мониторы для расчета',
-    type: String,
+    description: 'Плэйлист ID',
     format: 'uuid',
-    isArray: true,
-    required: true,
   })
-  @IsUUID('all', { each: true })
-  monitorIds!: string[];
+  @IsUUID()
+  playlistId!: string;
 
   @ApiProperty({
-    description: 'Длительность плейлиста (в секундах)',
-    type: Number,
-    example: 60,
+    type: 'integer',
+    description: 'Гарантированное минимальное количество показов в день',
+    example: 1,
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsNumber()
-  playlistDuration!: number;
+  @IsInt()
+  minWarranty!: number;
+
+  @ApiProperty({
+    type: 'integer',
+    description: 'Стоимость показа 1 секунды в рублях',
+    example: 1,
+    required: true,
+  })
+  @IsInt()
+  price1s!: number;
 
   @ApiProperty({
     description: 'Дата и время начала',
@@ -39,7 +43,7 @@ export class ApplicationPrecalculateRequest {
   @IsDefined()
   @IsNotEmpty()
   @IsDateString({ strict: false })
-  dateFrom!: string;
+  dateBefore!: string;
 
   @ApiProperty({
     description: 'Дата и время окончания',
@@ -51,5 +55,5 @@ export class ApplicationPrecalculateRequest {
   @IsDefined()
   @IsNotEmpty()
   @IsDateString({ strict: false })
-  dateTo!: string;
+  dateWhen!: string;
 }

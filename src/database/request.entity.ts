@@ -13,6 +13,7 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
+  IsNumber,
   IsUUID,
   Validate,
 } from 'class-validator';
@@ -218,6 +219,15 @@ export class RequestEntity {
   })
   @IsBoolean()
   playlistChange!: boolean;
+
+  @Column({ type: 'integer', default: 0 })
+  @ApiProperty({
+    description: 'Сумма списания',
+    example: 10,
+    required: true,
+  })
+  @IsNumber()
+  sum!: number;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
