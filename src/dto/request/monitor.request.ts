@@ -14,6 +14,8 @@ export class MonitorRequest extends PartialType(
     'groupIds',
     'files',
     'price1s',
+    'minWarranty',
+    'maxDuration',
     'createdAt',
     'updatedAt',
   ]),
@@ -21,7 +23,7 @@ export class MonitorRequest extends PartialType(
   @ApiProperty({
     type: 'array',
     description: 'Стоимость показа 1 секунды в рублях',
-    oneOf: [{ type: 'number' }, { type: 'array', items: { type: 'number' } }],
+    oneOf: [{ type: 'integer' }, { type: 'array', items: { type: 'integer' } }],
     examples: {
       one: 1,
       range: [1, 2],
@@ -30,6 +32,32 @@ export class MonitorRequest extends PartialType(
   })
   @IsInt({ each: true })
   price1s!: MSRange<number>;
+
+  @ApiProperty({
+    type: 'array',
+    description: 'Гарантированное минимальное количество показов в день',
+    oneOf: [{ type: 'integer' }, { type: 'array', items: { type: 'integer' } }],
+    examples: {
+      one: 1,
+      range: [1, 2],
+    },
+    required: false,
+  })
+  @IsInt({ each: true })
+  minWarranty!: MSRange<number>;
+
+  @ApiProperty({
+    type: 'array',
+    description: 'Максимальная длительность плэйлиста в секундах',
+    oneOf: [{ type: 'integer' }, { type: 'array', items: { type: 'integer' } }],
+    examples: {
+      one: 1,
+      range: [1, 2],
+    },
+    required: false,
+  })
+  @IsInt({ each: true })
+  maxDuration!: MSRange<number>;
 
   @ApiProperty({
     description: 'Время начала проигрывания',

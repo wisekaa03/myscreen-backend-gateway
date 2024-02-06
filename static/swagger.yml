@@ -2769,7 +2769,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.43.5
+  version: 2.43.6
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3783,14 +3783,6 @@ components:
           description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
-        minWarranty:
-          type: integer
-          description: Гарантированное минимальное количество показов в день
-          example: 1
-        maxDuration:
-          type: integer
-          description: Максимальная длительность плэйлиста в секундах
-          example: 1
         orientation:
           description: Ориентация экрана
           example: Horizontal
@@ -3869,10 +3861,38 @@ components:
               - 2
           items:
             oneOf:
-              - type: number
+              - type: integer
               - type: array
                 items:
-                  type: number
+                  type: integer
+        minWarranty:
+          type: array
+          description: Гарантированное минимальное количество показов в день
+          examples:
+            one: 1
+            range:
+              - 1
+              - 2
+          items:
+            oneOf:
+              - type: integer
+              - type: array
+                items:
+                  type: integer
+        maxDuration:
+          type: array
+          description: Максимальная длительность плэйлиста в секундах
+          examples:
+            one: 1
+            range:
+              - 1
+              - 2
+          items:
+            oneOf:
+              - type: integer
+              - type: array
+                items:
+                  type: integer
         dateWhenApp:
           description: Время начала проигрывания
           examples:
@@ -6048,9 +6068,19 @@ components:
           example: AWAITING_CONFIRMATION
           $ref: "#/components/schemas/InvoiceStatus"
         sum:
-          type: number
+          type: array
           description: Сумма счета
-          example: 1000
+          examples:
+            one: 1000
+            range:
+              - 1000
+              - 2000
+          items:
+            oneOf:
+              - type: number
+              - type: array
+                items:
+                  type: number
         createdAt:
           description: Время создания
           examples:
@@ -6446,41 +6476,77 @@ components:
           description: Монитор ID
           format: uuid
         status:
-          type: array
           description: Ок / Подождите
-          example:
-            - OK
-            - WAITING
+          example: OK
           default: OK
-          items:
-            $ref: "#/components/schemas/RequestStatus"
+          oneOf:
+            - type: enum
+            - type: array
+              items:
+                type: enum
+          examples:
+            one: OK
+            range:
+              - OK
+              - WAITING
+          $ref: "#/components/schemas/RequestStatus"
         playlistId:
           type: string
           description: Плэйлист ID
           format: uuid
         approved:
-          type: array
           description: Не обработан / Разрешен / Запрещен
-          example:
-            - NotProcessed
-            - Allowed
-          items:
-            $ref: "#/components/schemas/RequestApprove"
-        dateWhen:
-          type: string
-          format: date
-          description: Время когда
-          example: "2021-01-01"
-        dateBefore:
-          type: string
-          format: date
-          description: Время до
-          example: "2021-10-01"
-          nullable: true
+          example: NotProcessed
+          oneOf:
+            - type: enum
+            - type: array
+              items:
+                type: enum
+          examples:
+            one: NotProcessed
+            range:
+              - NotProcessed
+              - Allowed
+          $ref: "#/components/schemas/RequestApprove"
         playlistChange:
           type: boolean
           description: "Смена текущего плэйлиста: сразу/когда закончится"
           example: false
+        dateWhen:
+          type: array
+          description: Время когда
+          examples:
+            one: "2021-12-31T10:10:10"
+            range:
+              - "2021-12-31T10:10:10"
+              - "2022-12-31T10:10:10"
+          format: date-time
+          items:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: array
+                items:
+                  type: string
+                  format: date-time
+        dateBefore:
+          type: array
+          description: Время до
+          examples:
+            one: "2021-12-31T10:10:10"
+            range:
+              - "2021-12-31T10:10:10"
+              - "2022-12-31T10:10:10"
+          format: date-time
+          nullable: true
+          items:
+            oneOf:
+              - type: string
+                format: date-time
+              - type: array
+                items:
+                  type: string
+                  format: date-time
         createdAt:
           description: Время создания
           examples:
