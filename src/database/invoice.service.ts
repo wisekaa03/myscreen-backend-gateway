@@ -1,6 +1,5 @@
 import type { Response as ExpressResponse } from 'express';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
@@ -19,7 +18,6 @@ import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
 import { UserRoleEnum } from '@/enums';
-import { ActService } from './act.service';
 
 @Injectable()
 export class InvoiceService {
@@ -27,9 +25,7 @@ export class InvoiceService {
 
   constructor(
     private readonly userService: UserService,
-    private readonly configService: ConfigService,
     private readonly walletService: WalletService,
-    private readonly actService: ActService,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
     @InjectRepository(InvoiceEntity)

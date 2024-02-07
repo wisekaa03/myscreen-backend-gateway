@@ -272,101 +272,49 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<ApplicationsGetResponse> {
-    const { id: userId, role, plan } = user;
-    if (!Array.isArray(attach.monitors) || attach.monitors.length < 1) {
-      throw new BadRequestException('Monitors should not be null or undefined');
+    if (
+      user.role === UserRoleEnum.MonitorOwner &&
+      user.plan === UserPlanEnum.Demo
+    ) {
+      throw new ForbiddenException('You have a DEMO-account, update it to PRO');
     }
-    const where: FindOptionsWhere<PlaylistEntity> = {
-      id: attach.playlistId,
-    };
-    if (role !== UserRoleEnum.Administrator) {
-      where.userId = userId;
-    }
-    const playlist = await this.playlistService.findOne({
-      where,
-    });
-    if (!playlist) {
-      throw new NotFoundException(`Playlist "${attach.playlistId}" not found`);
-    }
+
+    // To verify user permissions for request
+    this.userService.verify(user, 'request', 'updateApplication', CRUD.CREATE);
 
     // TODO: 1. Забронированное и доступное время для создания заявки
     // TODO: 1.1. При подачи заявки Рекламодателем нужно проверять нет ли пересечения
     // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
     // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
     // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
-    if (role === UserRoleEnum.Advertiser) {
-      const tryPromise = attach.monitors.map(async (monitorId) => {
-        const approved = await this.requestService.find({
-          where: {
-            monitorId,
-            dateWhen: attach.application.dateBefore
-              ? Between(
-                  attach.application.dateWhen,
-                  attach.application.dateBefore,
-                )
-              : attach.application.dateWhen,
-            approved: Not(RequestApprove.DENIED),
-          },
-        });
-        if (approved.length > 0) {
-          throw new NotAcceptableException('This time is overlapped');
-        }
-      });
-      await Promise.all(tryPromise);
+    const approved = await this.requestService.find({
+      where: {
+        monitorId: In(attach.monitorsId),
+        dateWhen: attach.application.dateBefore
+          ? Between(attach.application.dateWhen, attach.application.dateBefore)
+          : attach.application.dateWhen,
+        // Подсчитываем все заявки, кроме Denied, в том числе и NotProcessing
+        approved: Not(RequestApprove.DENIED),
+      },
+    });
+    if (approved.length > 0) {
+      throw new NotAcceptableException('This time is overlapped');
     }
 
-    const dataPromise = attach.monitors.map(async (monitorId) => {
-      let monitor = await this.monitorService.findOne({
-        find: {
-          where: { id: monitorId },
-          loadEagerRelations: false,
-          relations: {},
-        },
-      });
-      if (!monitor) {
-        throw new NotFoundException(`Monitor "${monitorId}" not found`);
-      }
-
-      if (role === UserRoleEnum.MonitorOwner && plan === UserPlanEnum.Demo) {
-        throw new ForbiddenException('У вас ДЕМО-аккаунт, измените до PRO');
-      }
-
-      monitor = await this.monitorService.update(monitorId, {
-        playlist,
-      });
-
-      const approved =
-        monitor.userId === userId
-          ? RequestApprove.ALLOWED
-          : RequestApprove.NOTPROCESSED;
-
-      // To verify user permissions for request
-      this.userService.verify(
-        user,
-        'request',
-        'updateApplication',
-        CRUD.CREATE,
-      );
-
-      // To create request
-      const request = await this.requestService.create({
-        sellerId: monitor.userId,
-        buyerId: userId,
-        monitor,
-        playlist,
-        approved,
-        userId,
-        dateBefore: attach.application.dateBefore,
-        dateWhen: attach.application.dateWhen,
-        playlistChange: attach.application.playlistChange,
-      });
-      if (!request) {
-        throw new BadRequestException('Request create error');
-      }
-      return request;
+    // To create requests
+    const {
+      playlistId,
+      monitorsId,
+      application: { dateBefore, dateWhen, playlistChange },
+    } = attach;
+    const data = await this.requestService.create({
+      user,
+      playlistId,
+      monitorsId,
+      dateBefore,
+      dateWhen,
+      playlistChange,
     });
-
-    const data = await Promise.all(dataPromise);
 
     return {
       status: Status.Success,
@@ -397,7 +345,7 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<MonitorsGetResponse> {
-    if (attach.monitors.length === 0) {
+    if (attach.monitorsId.length === 0) {
       throw new BadRequestException();
     }
     const playlist = await this.playlistService.findOne({
@@ -410,7 +358,7 @@ export class MonitorController {
       throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
     }
 
-    const dataPromise = attach.monitors.map(async (monitorId) => {
+    const dataPromise = attach.monitorsId.map(async (monitorId) => {
       const monitor = await this.monitorService.findOne({
         userId: user.id,
         find: {

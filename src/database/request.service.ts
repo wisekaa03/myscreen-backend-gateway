@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   forwardRef,
   Inject,
   Injectable,
@@ -9,9 +10,11 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import {
+  DeepPartial,
   DeleteResult,
   FindManyOptions,
   FindOneOptions,
+  FindOptionsWhere,
   In,
   IsNull,
   LessThanOrEqual,
@@ -25,7 +28,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { MAIL_SERVICE, MailSendApplicationMessage } from '@/interfaces';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { RequestApprove, MonitorMultiple } from '@/enums';
+import { RequestApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
 import { RequestEntity } from './request.entity';
 import { FileEntity } from './file.entity';
 import { MonitorEntity } from './monitor.entity';
@@ -35,16 +38,25 @@ import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { PlaylistService } from './playlist.service';
+import { ActService } from './act.service';
+import { WalletService } from './wallet.service';
+import { getFullName } from '@/utils/full-name';
 
 @Injectable()
 export class RequestService {
   private logger = new Logger(RequestService.name);
+
+  private comission: number;
 
   private frontendUrl: string;
 
   constructor(
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
+    @Inject(forwardRef(() => ActService))
+    private readonly actService: ActService,
+    @Inject(forwardRef(() => WalletService))
+    private readonly walletService: WalletService,
     @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @Inject(forwardRef(() => EditorService))
@@ -59,6 +71,7 @@ export class RequestService {
     private readonly requestRepository: Repository<RequestEntity>,
     configService: ConfigService,
   ) {
+    this.comission = parseInt(configService.get<string>('COMISSION', '5'), 10);
     this.frontendUrl = configService.get<string>(
       'FRONTEND_URL',
       'http://localhost',
@@ -394,7 +407,7 @@ export class RequestService {
         relations = {
           buyer: true,
           seller: true,
-          monitor: { groupMonitors: true },
+          monitor: { groupMonitors: true, user: true },
           playlist: { files: true },
           user: true,
         };
@@ -423,8 +436,23 @@ export class RequestService {
           this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }
       } else if (update.approved === RequestApprove.ALLOWED) {
+        // Оплата поступает на пользователя - владельца монитора
+        const sumIncrement = -(request.sum * (100 - this.comission)) / 100;
+        await this.actService.create({
+          user: request.monitor.user,
+          sum: sumIncrement,
+          description: `Оплата за монитор "${request.monitor.name}" рекламодателем "${getFullName(request.user)}"`,
+        });
+
         await this.requestPostCreate({ request });
       } else if (update.approved === RequestApprove.DENIED) {
+        // Оплата поступает на пользователя - владельца монитора
+        await this.actService.create({
+          user: request.monitor.user,
+          sum: request.sum,
+          description: `Снята оплата за монитор "${request.monitor.name}" рекламодателем "${getFullName(request.user)}"`,
+        });
+
         await this.requestPreDelete({ request });
       }
 
@@ -432,57 +460,157 @@ export class RequestService {
     });
   }
 
-  async create(insert: Partial<RequestEntity>) {
+  async create({
+    user,
+    playlistId,
+    monitorsId,
+    dateWhen,
+    dateBefore,
+    playlistChange,
+  }: {
+    user: UserExtEntity;
+    playlistId: string;
+    monitorsId: Array<string>;
+    dateWhen: Date;
+    dateBefore: Date | null;
+    playlistChange: boolean;
+  }): Promise<RequestEntity[]> {
+    const { id: userId, role } = user;
+
+    // Проверяем наличие плейлиста
+    if (!Array.isArray(monitorsId) || monitorsId.length < 1) {
+      throw new BadRequestException('Monitors should not be null or undefined');
+    }
+    const where: FindOptionsWhere<PlaylistEntity> = {
+      id: playlistId,
+    };
+    if (role !== UserRoleEnum.Administrator) {
+      where.userId = userId;
+    }
+    const playlist = await this.playlistService.findOne({
+      where,
+    });
+    if (!playlist) {
+      throw new NotFoundException(`Playlist "${playlistId}" not found`);
+    }
+
     return this.requestRepository.manager.transaction(async (transact) => {
-      const insertResult = await transact.insert(
-        RequestEntity,
-        transact.create(RequestEntity, insert),
-      );
-      if (!insertResult.identifiers[0]) {
-        throw new NotFoundException('Error when creating Application');
-      }
-      const { id } = insertResult.identifiers[0];
-
-      let relations: FindOneOptions<RequestEntity>['relations'];
-      if (!(insert.approved === RequestApprove.NOTPROCESSED || !insert.hide)) {
-        relations = { seller: true };
-      } else {
-        relations = {
-          buyer: true,
-          seller: true,
-          monitor: { groupMonitors: true },
-          playlist: { files: true },
-          user: true,
-        };
-      }
-      const request = await transact.findOne(RequestEntity, {
-        where: { id },
-        relations,
-      });
-      if (!request) {
-        throw new NotFoundException('Application not found');
-      }
-
-      if (insert.approved === RequestApprove.NOTPROCESSED) {
-        const sellerEmail = request.seller?.email;
-        if (sellerEmail) {
-          this.mailService.emit<unknown, MailSendApplicationMessage>(
-            'sendApplicationWarningMessage',
-            {
-              email: sellerEmail,
-              applicationUrl: `${this.frontendUrl}/applications`,
-            },
-          );
-        } else {
-          this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
+      const requestsPromise = monitorsId.map(async (monitorId) => {
+        // Проверяем наличие мониторов
+        let monitor = await this.monitorService.findOne({
+          find: {
+            where: { id: monitorId },
+            loadEagerRelations: false,
+            relations: {},
+          },
+        });
+        if (!monitor) {
+          throw new NotFoundException(`Monitor "${monitorsId}" not found`);
         }
-      } else if (insert.approved === RequestApprove.ALLOWED) {
-        await this.requestPostCreate({ request });
-      } else if (insert.approved === RequestApprove.DENIED) {
-        await this.requestPreDelete({ request });
-      }
 
-      return request;
+        monitor = await this.monitorService.update(monitorId, {
+          playlist,
+        });
+
+        const approved =
+          monitor.userId === userId
+            ? RequestApprove.ALLOWED
+            : RequestApprove.NOTPROCESSED;
+
+        const sum = await this.precalculateSum({
+          user,
+          minWarranty: monitor.minWarranty,
+          price1s: monitor.price1s,
+          dateBefore,
+          dateWhen,
+          playlistId,
+        });
+
+        const insert: DeepPartial<RequestEntity> = {
+          sellerId: monitor.userId,
+          buyerId: userId,
+          monitor,
+          playlist,
+          approved,
+          userId,
+          dateBefore,
+          dateWhen,
+          playlistChange,
+          sum,
+        };
+
+        const insertResult = await transact.insert(
+          RequestEntity,
+          transact.create(RequestEntity, insert),
+        );
+        if (!insertResult.identifiers[0]) {
+          throw new NotFoundException('Error when creating Request');
+        }
+        const { id } = insertResult.identifiers[0];
+
+        let relations: FindOneOptions<RequestEntity>['relations'];
+        if (
+          !(insert.approved === RequestApprove.NOTPROCESSED || !insert.hide)
+        ) {
+          relations = { buyer: true, seller: true };
+        } else {
+          relations = {
+            buyer: true,
+            seller: true,
+            monitor: { groupMonitors: true },
+            playlist: { files: true },
+            user: true,
+          };
+        }
+        const request = await transact.findOne(RequestEntity, {
+          where: { id },
+          relations,
+        });
+        if (!request) {
+          throw new NotFoundException('Request not found');
+        }
+
+        // Списываем средства со счета пользователя Рекламодателя
+        await this.actService.create({
+          user,
+          sum,
+          description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+        });
+
+        // Отправляем письмо продавцу
+        if (insert.approved === RequestApprove.NOTPROCESSED) {
+          const sellerEmail = request.seller?.email;
+          if (sellerEmail) {
+            this.mailService.emit<unknown, MailSendApplicationMessage>(
+              'sendApplicationWarningMessage',
+              {
+                email: sellerEmail,
+                applicationUrl: `${this.frontendUrl}/applications`,
+              },
+            );
+          } else {
+            this.logger.error(
+              `ApplicationService seller email='${sellerEmail}'`,
+            );
+          }
+        } else if (insert.approved === RequestApprove.ALLOWED) {
+          // Оплата поступает на пользователя - владельца монитора
+          const sumIncrement = -(sum * (100 - this.comission)) / 100;
+          await this.actService.create({
+            user: monitor.user,
+            sum: sumIncrement,
+            description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+          });
+
+          await this.requestPostCreate({ request });
+        } else if (insert.approved === RequestApprove.DENIED) {
+          await this.requestPreDelete({ request });
+        }
+
+        return request;
+      });
+
+      return Promise.all(requestsPromise);
     });
   }
 
@@ -550,10 +678,10 @@ export class RequestService {
     user: UserExtEntity;
     minWarranty: number;
     price1s: number;
-    dateBefore: string;
-    dateWhen: string;
+    dateBefore: Date | null;
+    dateWhen: Date;
     playlistId: string;
-  }): Promise<string> {
+  }): Promise<number> {
     const playlist = await this.playlistService.findOne({
       where: { id: playlistId, userId: user.id },
       relations: ['files'],
@@ -563,19 +691,22 @@ export class RequestService {
     if (!playlist) {
       throw new NotFoundException('Playlist not found');
     }
+
     // продолжительность плейлиста заявки в сек.
     const playlistDuration = playlist.files.reduce(
       (acc, f) => acc + f.duration,
       0,
     );
+
     // арендуемое время показа за весь период в секундах.
-    const seconds =
-      playlistDuration *
-      minWarranty *
-      differenceInDays(parseISO(dateBefore), parseISO(dateWhen));
+    const diffDays = dateBefore
+      ? differenceInDays(dateBefore, dateWhen)
+      : differenceInDays(Date.now(), dateWhen);
+    const seconds = playlistDuration * minWarranty * diffDays * 24 * 60 * 60;
+
     // сумма списания
     const sum = price1s * seconds;
 
-    return String(sum);
+    return sum;
   }
 }

@@ -15,6 +15,7 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
+import { parseISO } from 'date-fns';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Not } from 'typeorm';
 
@@ -139,7 +140,7 @@ export class RequestController {
       },
     });
     if (!data) {
-      throw new NotFoundException('Application not found');
+      throw new NotFoundException('Request not found');
     }
 
     return {
@@ -181,12 +182,12 @@ export class RequestController {
       loadEagerRelations: false,
     });
     if (!application) {
-      throw new NotFoundException('Application not found');
+      throw new NotFoundException('Request not found');
     }
 
     const data = await this.requestService.update(applicationId, update);
     if (!data) {
-      throw new BadRequestException('Application exists and not exists ?');
+      throw new BadRequestException('Request exists and not exists ?');
     }
 
     return {
@@ -295,14 +296,14 @@ export class RequestController {
       user,
       minWarranty,
       price1s,
-      dateBefore,
-      dateWhen,
+      dateBefore: parseISO(dateBefore),
+      dateWhen: parseISO(dateWhen),
       playlistId,
     });
 
     return {
       status: Status.Success,
-      data: { sum },
+      data: { sum: String(sum) },
     };
   }
 }
