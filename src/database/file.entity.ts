@@ -20,7 +20,6 @@ import {
   IsEnum,
   IsJSON,
   IsNotEmpty,
-  IsNumber,
   IsString,
   IsUUID,
   IsUrl,
@@ -32,46 +31,6 @@ import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from '@/database/folder.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-
-export class MediaMeta {
-  @ApiProperty({
-    description: 'Длительность',
-    example: '200',
-    required: false,
-  })
-  @IsNumber()
-  duration?: number;
-
-  @ApiProperty({
-    description: 'Размер по горизонтали',
-    example: '200',
-    required: false,
-  })
-  @IsNumber()
-  width?: number;
-
-  @ApiProperty({
-    description: 'Размер по вертикали',
-    example: '200',
-    required: false,
-  })
-  @IsNumber()
-  height?: number;
-
-  @ApiProperty({
-    description: 'Размер файла',
-    example: '20500',
-  })
-  @IsNumber()
-  filesize!: number;
-
-  @ApiProperty({
-    description: 'Параметры видео, картинки или аудио',
-    required: false,
-  })
-  @IsJSON()
-  info?: FfprobeData;
-}
 
 @Entity('file')
 export class FileEntity {
@@ -196,7 +155,12 @@ export class FileEntity {
   height!: number;
 
   @Column({ select: false, type: 'jsonb', nullable: true })
-  meta!: MediaMeta;
+  @ApiProperty({
+    description: 'Параметры видео, картинки или аудио',
+    required: false,
+  })
+  @IsJSON()
+  info?: FfprobeData;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     cascade: true,

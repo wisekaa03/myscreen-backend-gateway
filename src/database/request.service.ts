@@ -34,6 +34,7 @@ import { UserExtEntity } from './user-ext.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
+import { PlaylistService } from './playlist.service';
 
 @Injectable()
 export class RequestService {
@@ -52,6 +53,8 @@ export class RequestService {
     private readonly wsGateway: WSGateway,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
+    @Inject(forwardRef(() => PlaylistService))
+    private readonly playlistService: PlaylistService,
     @InjectRepository(RequestEntity)
     private readonly requestRepository: Repository<RequestEntity>,
     configService: ConfigService,
@@ -496,7 +499,7 @@ export class RequestService {
     return deleteResult;
   }
 
-  async precalculate({
+  async precalculatePromo({
     user,
     playlistDuration,
     dateFrom,
@@ -532,6 +535,46 @@ export class RequestService {
         playlistDuration * monitor.price1s * monitor.minWarranty * diffDays,
       0,
     );
+
+    return String(sum);
+  }
+
+  async precalculateSum({
+    user,
+    minWarranty,
+    price1s,
+    dateBefore,
+    dateWhen,
+    playlistId,
+  }: {
+    user: UserExtEntity;
+    minWarranty: number;
+    price1s: number;
+    dateBefore: string;
+    dateWhen: string;
+    playlistId: string;
+  }): Promise<string> {
+    const playlist = await this.playlistService.findOne({
+      where: { id: playlistId, userId: user.id },
+      relations: ['files'],
+      loadEagerRelations: false,
+      select: ['id', 'files'],
+    });
+    if (!playlist) {
+      throw new NotFoundException('Playlist not found');
+    }
+    // продолжительность плейлиста заявки в сек.
+    const playlistDuration = playlist.files.reduce(
+      (acc, f) => acc + f.duration,
+      0,
+    );
+    // арендуемое время показа за весь период в секундах.
+    const seconds =
+      playlistDuration *
+      minWarranty *
+      differenceInDays(parseISO(dateBefore), parseISO(dateWhen));
+    // сумма списания
+    const sum = price1s * seconds;
 
     return String(sum);
   }

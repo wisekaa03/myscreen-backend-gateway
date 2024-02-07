@@ -65,7 +65,7 @@ export class InvoiceEntity {
   @IsEnum(InvoiceStatus)
   status!: InvoiceStatus;
 
-  @Column()
+  @Column({ type: 'integer' })
   @ApiProperty({
     description: 'Сумма счета',
     example: 1000,

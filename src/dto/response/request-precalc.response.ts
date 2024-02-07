@@ -1,17 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
+import { RequestPrecalcDataResponse } from './request-precalc-data.response';
 
-export class ApplicationPrecalculateSumResponse {
-  @ApiProperty({
-    description: 'Итоговая сумма',
-    type: String,
-    required: true,
-  })
-  sum!: string;
-}
-
-export class ApplicationPrecalculateResponse {
+export class RequestPrecalcResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -23,8 +15,8 @@ export class ApplicationPrecalculateResponse {
 
   @ApiProperty({
     description: 'Возвращаемое значение',
-    type: ApplicationPrecalculateSumResponse,
+    type: RequestPrecalcDataResponse,
     required: true,
   })
-  data!: ApplicationPrecalculateSumResponse;
+  data!: RequestPrecalcDataResponse;
 }

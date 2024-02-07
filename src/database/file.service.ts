@@ -39,7 +39,7 @@ import { EditorService } from '@/database/editor.service';
 import { getS3FullName, getS3Name } from '@/utils/get-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { FileEntity, MediaMeta } from '@/database/file.entity';
+import { FileEntity } from '@/database/file.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { FolderService } from '@/database/folder.service';
 import { MonitorService } from '@/database/monitor.service';
@@ -324,19 +324,33 @@ export class FileService {
       }
 
       const filesPromises = files.map(async (file) => {
-        const [meta, videoType, extension, preview] =
-          await this.metaInformation(file);
+        if (!file.media) {
+          throw new BadRequestException(
+            `'${file.originalname}' has no data in Ffprobe`,
+          );
+        }
+        const { mimetype, originalname, media, size } = file;
 
-        const media: DeepPartial<FileEntity> = {
+        const [mime] = mimetype.split('/');
+        const extension = pathParse(originalname).ext.slice(1);
+        const type =
+          Object.values(VideoType).find((t) => t === mime) ?? VideoType.Other;
+
+        const stream = media.streams?.[0];
+        const duration = parseFloat(stream?.duration ?? '0');
+        const width = Number(stream?.width) ?? 0;
+        const height = Number(stream?.height) ?? 0;
+
+        const fileToSave: DeepPartial<FileEntity> = {
           userId: user.id,
           folder: folder ?? undefined,
           name: file.originalname,
-          filesize: meta.filesize,
-          duration: meta.duration ?? 0,
-          width: meta.width,
-          height: meta.height,
-          meta,
-          videoType,
+          filesize: size,
+          duration,
+          width,
+          height,
+          info: media,
+          videoType: type,
           category,
           extension,
           hash: file.hash,
@@ -365,7 +379,10 @@ export class FileService {
           throw new InternalServerErrorException(error);
         }
 
-        return transact.save(FileEntity, transact.create(FileEntity, media));
+        return transact.save(
+          FileEntity,
+          transact.create(FileEntity, fileToSave),
+        );
       });
 
       return Promise.all(filesPromises);
@@ -647,11 +664,14 @@ export class FileService {
       if (data.Body instanceof internal.Readable) {
         await StreamPromises.pipeline(data.Body, outputStream);
         this.logger.debug(`The file "${file.name}" has been downloaded`);
-        await FfMpegPreview(file.videoType, file.meta, filename, outPath).catch(
-          (reason: unknown) => {
-            throw new InternalServerErrorException(reason);
-          },
-        );
+        await FfMpegPreview(
+          file.videoType,
+          file.info || {},
+          filename,
+          outPath,
+        ).catch((reason: unknown) => {
+          throw new InternalServerErrorException(reason);
+        });
       } else {
         throw new InternalServerErrorException('S3 data is not readable');
       }
@@ -670,52 +690,5 @@ export class FileService {
     );
 
     return preview;
-  }
-
-  /**
-   * Meta information
-   * @param {Express.Multer.File} file Express File
-   * @return {[MediaMeta, VideoType, string, Buffer]} [MediaMeta, VideoType, string, Buffer]
-   */
-  private async metaInformation(
-    file: Express.Multer.File,
-  ): Promise<[MediaMeta, VideoType, string, Buffer]> {
-    const [mime] = file.mimetype.split('/');
-    const extension = pathParse(file.originalname).ext.slice(1);
-    const type =
-      Object.values(VideoType).find((t) => t === mime) ?? VideoType.Other;
-
-    if (file.media) {
-      const {
-        media: { format: mediaFormat, streams },
-      } = file;
-      const { filename, ...format } = mediaFormat ?? {};
-      const meta: MediaMeta = {
-        filesize: Number(file.media.format?.size) || file.size,
-        duration: parseFloat(
-          `${
-            file.media.format?.duration ??
-            file.media.streams?.[0]?.duration ??
-            0
-          }`,
-        ),
-        width:
-          Number(file.media.format?.width) ||
-          Number(file.media.streams?.[0].width) ||
-          undefined,
-        height:
-          Number(file.media.format?.height) ||
-          file.media.streams?.[0].height ||
-          undefined,
-        info: {
-          format,
-          streams,
-        },
-      };
-
-      return [meta, type, extension, Buffer.alloc(0)];
-    }
-
-    return [{ filesize: file.size }, type, extension, Buffer.alloc(0)];
   }
 }

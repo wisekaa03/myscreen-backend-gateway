@@ -283,9 +283,7 @@ export class EditorService {
     if (layer.cutTo !== undefined && layer.cutFrom !== undefined) {
       return layer.cutTo - layer.cutFrom;
     }
-    return (
-      layer.duration ?? layer.file?.duration ?? layer.file?.meta.duration ?? 0
-    );
+    return layer.duration ?? layer.file?.duration ?? 0;
   };
 
   calcTotalDuration = (video: Partial<EditorLayerEntity>[]): number =>
