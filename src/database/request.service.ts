@@ -446,9 +446,9 @@ export class RequestService {
 
         await this.requestPostCreate({ request });
       } else if (update.approved === RequestApprove.DENIED) {
-        // Оплата поступает на пользователя - владельца монитора
+        // Снята оплата на пользователя - рекламодателя
         await this.actService.create({
-          user: request.monitor.user,
+          user: request.seller,
           sum: request.sum,
           description: `Снята оплата за монитор "${request.monitor.name}" рекламодателем "${getFullName(request.user)}"`,
         });
@@ -517,14 +517,16 @@ export class RequestService {
             ? RequestApprove.ALLOWED
             : RequestApprove.NOTPROCESSED;
 
-        const sum = await this.precalculateSum({
-          user,
-          minWarranty: monitor.minWarranty,
-          price1s: monitor.price1s,
-          dateBefore,
-          dateWhen,
-          playlistId,
-        });
+        const sum = dateBefore
+          ? await this.precalculateSum({
+              user,
+              minWarranty: monitor.minWarranty,
+              price1s: monitor.price1s,
+              dateBefore,
+              dateWhen,
+              playlistId,
+            })
+          : 0;
 
         const insert: DeepPartial<RequestEntity> = {
           sellerId: monitor.userId,
@@ -557,7 +559,7 @@ export class RequestService {
           relations = {
             buyer: true,
             seller: true,
-            monitor: { groupMonitors: true },
+            monitor: { groupMonitors: true, user: true },
             playlist: { files: true },
             user: true,
           };
@@ -597,7 +599,7 @@ export class RequestService {
           // Оплата поступает на пользователя - владельца монитора
           const sumIncrement = -(sum * (100 - this.comission)) / 100;
           await this.actService.create({
-            user: monitor.user,
+            user: request.buyer ?? monitor.user,
             sum: sumIncrement,
             description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
           });
@@ -678,7 +680,7 @@ export class RequestService {
     user: UserExtEntity;
     minWarranty: number;
     price1s: number;
-    dateBefore: Date | null;
+    dateBefore: Date;
     dateWhen: Date;
     playlistId: string;
   }): Promise<number> {
@@ -699,9 +701,7 @@ export class RequestService {
     );
 
     // арендуемое время показа за весь период в секундах.
-    const diffDays = dateBefore
-      ? differenceInDays(dateBefore, dateWhen)
-      : differenceInDays(Date.now(), dateWhen);
+    const diffDays = differenceInDays(dateBefore, dateWhen);
     const seconds = playlistDuration * minWarranty * diffDays * 24 * 60 * 60;
 
     // сумма списания
