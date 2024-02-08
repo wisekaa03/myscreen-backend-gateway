@@ -243,69 +243,69 @@ export class MonitorService {
       if (multiple !== MonitorMultiple.SINGLE && multipleBool) {
         // получаем подчиненные мониторы
         const { groupMonitors } = originalMonitor;
+        let monitorsDeleteId: MonitorGroupEntity[] = [];
         if (groupMonitors) {
-          const monitorsDeleteId = groupMonitors.reduce(
+          monitorsDeleteId = groupMonitors.reduce(
             (acc, item) =>
               groupIds.find(({ monitorId }) => monitorId === item.monitorId)
                 ? acc
                 : [...acc, item],
             [] as MonitorGroupEntity[],
           );
-          // удаляем из таблицы связей мониторов мониторы
-          if (monitorsDeleteId.length > 0) {
-            const monitorsWSchangePromise = monitorsDeleteId.map(
-              async (item) => {
-                this.requestService.websocketChange({
-                  monitor: item.monitor,
-                  monitorDelete: true,
-                });
-              },
-            );
-            await Promise.all(monitorsWSchangePromise);
+        }
 
-            await transact.delete(MonitorGroupEntity, {
-              parentMonitorId: originalMonitor.id,
-              monitorId: In(monitorsDeleteId.map((item) => item.monitorId)),
-            });
-            // и помечаем монитор как одиночный
-            await transact.update(
-              MonitorEntity,
-              { id: In(monitorsDeleteId.map((item) => item.monitorId)) },
-              { multiple: MonitorMultiple.SINGLE },
-            );
-          }
-          // обновляем мониторы в таблице связей мониторов
-          const multipleInsertPromise = groupIds.map(async (item) => {
-            const monitorMultiple = groupMonitors.find(
-              (i) => i.monitorId === item.monitorId,
-            );
-            if (monitorMultiple) {
-              await transact.update(
-                MonitorGroupEntity,
-                {
-                  parentMonitorId: originalMonitor.id,
-                  monitorId: item.monitorId,
-                },
-                {
-                  row: item.row,
-                  col: item.col,
-                },
-              );
-            } else {
-              await transact.insert(MonitorGroupEntity, {
-                userId,
-                parentMonitorId: originalMonitor.id,
-                monitorId: item.monitorId,
-                row: item.row,
-                col: item.col,
-              });
-            }
-            await transact.update(MonitorEntity, item.monitorId, {
-              multiple: MonitorMultiple.SUBORDINATE,
+        // удаляем из таблицы связей мониторов мониторы
+        if (monitorsDeleteId.length > 0) {
+          const monitorsWSchangePromise = monitorsDeleteId.map(async (item) => {
+            this.requestService.websocketChange({
+              monitor: item.monitor,
+              monitorDelete: true,
             });
           });
-          await Promise.all(multipleInsertPromise);
+          await Promise.all(monitorsWSchangePromise);
+          await transact.delete(MonitorGroupEntity, {
+            parentMonitorId: originalMonitor.id,
+            monitorId: In(monitorsDeleteId.map((item) => item.monitorId)),
+          });
+          // и помечаем монитор как одиночный
+          await transact.update(
+            MonitorEntity,
+            { id: In(monitorsDeleteId.map((item) => item.monitorId)) },
+            { multiple: MonitorMultiple.SINGLE },
+          );
         }
+
+        // обновляем мониторы в таблице связей мониторов
+        const multiplePromise = groupIds.map(async (item) => {
+          const monitorMultiple = groupMonitors?.find(
+            (i) => i.monitorId === item.monitorId,
+          );
+          if (monitorMultiple) {
+            await transact.update(
+              MonitorGroupEntity,
+              {
+                parentMonitorId: originalMonitor.id,
+                monitorId: item.monitorId,
+              },
+              {
+                row: item.row,
+                col: item.col,
+              },
+            );
+          } else {
+            await transact.insert(MonitorGroupEntity, {
+              userId,
+              parentMonitorId: originalMonitor.id,
+              monitorId: item.monitorId,
+              row: item.row,
+              col: item.col,
+            });
+          }
+          await transact.update(MonitorEntity, item.monitorId, {
+            multiple: MonitorMultiple.SUBORDINATE,
+          });
+        });
+        await Promise.all(multiplePromise);
       }
 
       return monitor;

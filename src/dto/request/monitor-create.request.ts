@@ -1,16 +1,7 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import {
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
-  Length,
-  Min,
-  ValidateNested,
-} from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, Length, Min } from 'class-validator';
 
 import { MonitorEntity } from '@/database/monitor.entity';
-import { MonitorGroup } from './monitor-group';
 
 export class MonitorCreateRequest extends PickType(MonitorEntity, [
   'address',
@@ -29,6 +20,7 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
   'maxDuration',
   'sound',
   'multiple',
+  'groupIds',
 ]) {
   @ApiProperty({
     type: 'string',
@@ -62,15 +54,4 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
   @IsNumber()
   @Min(1)
   height!: number;
-
-  @ApiProperty({
-    type: MonitorGroup,
-    description: 'Подчиненные мониторы в группе мониторов',
-    isArray: true,
-    required: false,
-  })
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => MonitorGroup)
-  groupIds?: MonitorGroup[];
 }
