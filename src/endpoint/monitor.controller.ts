@@ -60,7 +60,6 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { RequestService } from '@/database/request.service';
-import { PlaylistEntity } from '@/database/playlist.entity';
 
 @ApiComplexDecorators('monitor', [
   UserRoleEnum.Administrator,
@@ -310,8 +309,8 @@ export class MonitorController {
       user,
       playlistId,
       monitorIds,
-      dateBefore,
-      dateWhen,
+      dateBefore: dateBefore ? new Date(dateBefore) : null,
+      dateWhen: new Date(dateWhen),
       playlistChange,
     });
 

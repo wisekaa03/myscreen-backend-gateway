@@ -15,7 +15,6 @@ import {
   Post,
   Req,
 } from '@nestjs/common';
-import { parseISO } from 'date-fns';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Not } from 'typeorm';
 
@@ -296,8 +295,8 @@ export class RequestController {
       user,
       minWarranty,
       price1s,
-      dateBefore: parseISO(dateBefore),
-      dateWhen: parseISO(dateWhen),
+      dateBefore: new Date(dateBefore),
+      dateWhen: new Date(dateWhen),
       playlistId,
     });
 
