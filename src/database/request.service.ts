@@ -55,8 +55,6 @@ export class RequestService {
     private readonly mailService: ClientProxy,
     @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
-    @Inject(forwardRef(() => WalletService))
-    private readonly walletService: WalletService,
     @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @Inject(forwardRef(() => EditorService))

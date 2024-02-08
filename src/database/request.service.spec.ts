@@ -13,7 +13,6 @@ import { EditorService } from './editor.service';
 import { FileService } from './file.service';
 import { PlaylistService } from './playlist.service';
 import { ActService } from './act.service';
-import { WalletService } from './wallet.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -39,7 +38,6 @@ describe(RequestService.name, () => {
         RequestService,
         { provide: UserService, useClass: mockRepository },
         { provide: ActService, useClass: mockRepository },
-        { provide: WalletService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
