@@ -69,7 +69,7 @@ export class RequestService {
     private readonly requestRepository: Repository<RequestEntity>,
     configService: ConfigService,
   ) {
-    this.comission = parseInt(configService.get<string>('COMISSION', '5'), 10);
+    this.comission = parseInt(configService.get<string>('COMMISSION', '5'), 10);
     this.frontendUrl = configService.get<string>(
       'FRONTEND_URL',
       'http://localhost',
