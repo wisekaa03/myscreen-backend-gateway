@@ -282,6 +282,12 @@ export class MonitorController {
     // To verify user permissions for request
     this.userService.verify(user, 'request', 'updateApplication', CRUD.CREATE);
 
+    const {
+      playlistId,
+      monitorIds,
+      request: { dateBefore, dateWhen, playlistChange },
+    } = attach;
+
     // TODO: 1. Забронированное и доступное время для создания заявки
     // TODO: 1.1. При подачи заявки Рекламодателем нужно проверять нет ли пересечения
     // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
@@ -289,10 +295,8 @@ export class MonitorController {
     // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
     const approved = await this.requestService.find({
       where: {
-        monitorId: In(attach.monitorIds),
-        dateWhen: attach.application.dateBefore
-          ? Between(attach.application.dateWhen, attach.application.dateBefore)
-          : attach.application.dateWhen,
+        monitorId: In(monitorIds),
+        dateWhen: dateBefore ? Between(dateWhen, dateBefore) : dateWhen,
         // Подсчитываем все заявки, кроме Denied, в том числе и NotProcessing
         approved: Not(RequestApprove.DENIED),
       },
@@ -302,11 +306,6 @@ export class MonitorController {
     }
 
     // To create requests
-    const {
-      playlistId,
-      monitorIds,
-      application: { dateBefore, dateWhen, playlistChange },
-    } = attach;
     const data = await this.requestService.create({
       user,
       playlistId,
@@ -373,7 +372,7 @@ export class MonitorController {
       }
       if (!monitor.playlist) {
         throw new NotFoundException(
-          `Monitor "${monitorId}" is not playing playlist "${playlist.id}"`,
+          `Monitor "${monitorId}" is not playing playlist "${playlist.name}"`,
         );
       }
 
@@ -385,7 +384,7 @@ export class MonitorController {
 
     return {
       status: Status.Success,
-      count: data?.length,
+      count: data.length,
       data,
     };
   }
