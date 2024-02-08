@@ -33,7 +33,7 @@ export class ReportViewsRequest {
   })
   @IsOptional()
   @IsUUID(undefined, { each: true })
-  monitorsId?: Array<string>;
+  monitorIds?: Array<string>;
 
   @ApiProperty({
     description: 'Начальная дата',

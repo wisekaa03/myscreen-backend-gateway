@@ -463,14 +463,14 @@ export class RequestService {
   async create({
     user,
     playlistId,
-    monitorsId,
+    monitorIds,
     dateWhen,
     dateBefore,
     playlistChange,
   }: {
     user: UserExtEntity;
     playlistId: string;
-    monitorsId: Array<string>;
+    monitorIds: Array<string>;
     dateWhen: Date;
     dateBefore: Date | null;
     playlistChange: boolean;
@@ -478,7 +478,7 @@ export class RequestService {
     const { id: userId, role } = user;
 
     // Проверяем наличие плейлиста
-    if (!Array.isArray(monitorsId) || monitorsId.length < 1) {
+    if (!Array.isArray(monitorIds) || monitorIds.length < 1) {
       throw new BadRequestException('Monitors should not be null or undefined');
     }
     const where: FindOptionsWhere<PlaylistEntity> = {
@@ -495,7 +495,7 @@ export class RequestService {
     }
 
     return this.requestRepository.manager.transaction(async (transact) => {
-      const requestsPromise = monitorsId.map(async (monitorId) => {
+      const requestsPromise = monitorIds.map(async (monitorId) => {
         // Проверяем наличие мониторов
         let monitor = await this.monitorService.findOne({
           find: {
@@ -505,7 +505,7 @@ export class RequestService {
           },
         });
         if (!monitor) {
-          throw new NotFoundException(`Monitor "${monitorsId}" not found`);
+          throw new NotFoundException(`Monitor "${monitorIds}" not found`);
         }
 
         monitor = await this.monitorService.update(monitorId, {

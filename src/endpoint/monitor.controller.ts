@@ -289,7 +289,7 @@ export class MonitorController {
     // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
     const approved = await this.requestService.find({
       where: {
-        monitorId: In(attach.monitorsId),
+        monitorId: In(attach.monitorIds),
         dateWhen: attach.application.dateBefore
           ? Between(attach.application.dateWhen, attach.application.dateBefore)
           : attach.application.dateWhen,
@@ -304,13 +304,13 @@ export class MonitorController {
     // To create requests
     const {
       playlistId,
-      monitorsId,
+      monitorIds,
       application: { dateBefore, dateWhen, playlistChange },
     } = attach;
     const data = await this.requestService.create({
       user,
       playlistId,
-      monitorsId,
+      monitorIds,
       dateBefore,
       dateWhen,
       playlistChange,
@@ -345,7 +345,7 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<MonitorsGetResponse> {
-    if (attach.monitorsId.length === 0) {
+    if (attach.monitorIds.length === 0) {
       throw new BadRequestException();
     }
     const playlist = await this.playlistService.findOne({
@@ -358,7 +358,7 @@ export class MonitorController {
       throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
     }
 
-    const dataPromise = attach.monitorsId.map(async (monitorId) => {
+    const dataPromise = attach.monitorIds.map(async (monitorId) => {
       const monitor = await this.monitorService.findOne({
         userId: user.id,
         find: {

@@ -2798,7 +2798,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.43.9
+  version: 2.43.10
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4663,7 +4663,7 @@ components:
           type: string
           description: Плэйлист
           format: uuid
-        monitorsId:
+        monitorIds:
           description: Мониторы
           type: array
           items:
@@ -4675,7 +4675,7 @@ components:
             - $ref: "#/components/schemas/ApplicationCreateMonitorRequest"
       required:
         - playlistId
-        - monitorsId
+        - monitorIds
         - application
     RequestStatus:
       type: string
@@ -6389,7 +6389,7 @@ components:
         format:
           example: xlsx
           $ref: "#/components/schemas/SpecificFormat"
-        monitorsId:
+        monitorIds:
           description: Мониторы ID (если не указан, то все мониторы)
           example:
             - 1234-5678-9123-4567
@@ -6418,7 +6418,7 @@ components:
         format:
           example: xlsx
           $ref: "#/components/schemas/SpecificFormat"
-        monitorsId:
+        monitorIds:
           description: Мониторы ID (если не указан, то все мониторы)
           example:
             - 1234-5678-9123-4567

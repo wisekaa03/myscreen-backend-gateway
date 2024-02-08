@@ -24,7 +24,7 @@ export class MonitorsPlaylistAttachRequest {
   })
   @IsDefined({ each: true })
   @IsUUID('all', { each: true })
-  monitorsId!: Array<string>;
+  monitorIds!: Array<string>;
 
   @ApiProperty({
     description: 'Создание заявки',
