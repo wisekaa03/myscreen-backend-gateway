@@ -14,7 +14,6 @@ import { EditorController } from './editor.controller';
 import { FolderController } from './folder.controller';
 import { InvoiceController } from './invoice.controller';
 import { PlaylistController } from './playlist.controller';
-import { RootController } from './root.controller';
 import { StatisticsController } from './statistics.controller';
 import { RequestController } from './request.controller';
 import { CrontabController } from './crontab.controller';
@@ -31,7 +30,6 @@ import { CrontabController } from './crontab.controller';
   ],
 
   controllers: [
-    RootController,
     AuthController,
     MonitorController,
     EditorController,

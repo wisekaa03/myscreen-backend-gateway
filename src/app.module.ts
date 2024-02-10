@@ -1,4 +1,4 @@
-import { Module, Logger } from '@nestjs/common';
+import { Module, Logger, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import 'dotenv';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from 'nestjs-s3';
@@ -22,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
 import { CrontabModule } from './crontab/crontab.module';
+import { RedirectMiddleware } from './exception/redirect.middleware';
 
 @Module({
   imports: [
@@ -232,4 +233,8 @@ import { CrontabModule } from './crontab/crontab.module';
   ],
   providers: [Logger],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RedirectMiddleware).forRoutes('*');
+  }
+}
