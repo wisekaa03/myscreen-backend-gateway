@@ -125,7 +125,7 @@ describe('Backend API (e2e)', () => {
       app.useLogger(logger);
     }
 
-    apiPath = configService.get<string>('API_PATH', '/api/v2');
+    apiPath = configService.get('API_PATH', '/api/v2');
     app.setGlobalPrefix(apiPath, { exclude: ['/'] });
     app.useGlobalFilters(
       new ExceptionsFilter(httpAdaper.httpAdapter, configService),

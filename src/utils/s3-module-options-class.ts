@@ -9,16 +9,15 @@ export class S3ModuleOptionsClass implements S3ModuleOptionsFactory {
   async createS3ModuleOptions(): Promise<S3ModuleOptions> {
     return {
       config: {
-        endpoint: this.configService.get<string>(
+        endpoint: this.configService.get(
           'AWS_HOST',
           'https://storage.yandexcloud.net',
         ),
-        region: this.configService.get<string>('AWS_REGION', 'ru-central1'),
+        region: this.configService.get('AWS_REGION', 'ru-central1'),
         forcePathStyle: false,
         credentials: {
-          accessKeyId: this.configService.get<string>('AWS_ACCESS_KEY') || '',
-          secretAccessKey:
-            this.configService.get<string>('AWS_SECRET_KEY') || '',
+          accessKeyId: this.configService.get('AWS_ACCESS_KEY', ''),
+          secretAccessKey: this.configService.get('AWS_SECRET_KEY', ''),
         },
       },
     };

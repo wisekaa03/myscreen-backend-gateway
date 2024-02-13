@@ -12,34 +12,32 @@ import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
 import { UserExtEntity, selectUserOptions } from '@/database/user-ext.entity';
-import { JwtStrategy } from './jwt.strategy';
 
 @Injectable()
 export class AuthService {
   private logger = new Logger(AuthService.name);
 
-  private accessTokenExpires: string;
+  public accessTokenExpires: string;
 
-  private refreshTokenExpires: string;
+  public refreshTokenExpires: string;
 
-  private secretAccessToken: string;
+  public secretAccessToken: string;
 
   constructor(
     private readonly userService: UserService,
     private readonly refreshTokenService: RefreshTokenService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-    private readonly jwtStrategy: JwtStrategy,
   ) {
-    this.accessTokenExpires = this.configService.get<string>(
+    this.accessTokenExpires = this.configService.get(
       'JWT_ACCESS_EXPIRES',
       '10min',
     );
-    this.refreshTokenExpires = this.configService.get<string>(
+    this.refreshTokenExpires = this.configService.get(
       'JWT_REFRESH_EXPIRES',
       '30days',
     );
-    this.secretAccessToken = this.configService.get<string>(
+    this.secretAccessToken = this.configService.get(
       'JWT_ACCESS_TOKEN',
       'what ?',
     );

@@ -90,19 +90,13 @@ import { CrontabModule } from './crontab/crontab.module';
             options: {
               urls: [
                 {
-                  hostname: configService.get<string>(
-                    'RABBITMQ_HOST',
-                    'localhost',
+                  hostname: configService.get('RABBITMQ_HOST', 'localhost'),
+                  port: parseInt(
+                    configService.get('RABBITMQ_PORT', '5672'),
+                    10,
                   ),
-                  port: configService.get<number>('RABBITMQ_PORT', 5672),
-                  username: configService.get<string>(
-                    'RABBITMQ_USERNAME',
-                    'guest',
-                  ),
-                  password: configService.get<string>(
-                    'RABBITMQ_PASSWORD',
-                    'guest',
-                  ),
+                  username: configService.get('RABBITMQ_USERNAME', 'guest'),
+                  password: configService.get('RABBITMQ_PASSWORD', 'guest'),
                 },
               ],
               queue: 'mail_queue',
@@ -135,19 +129,13 @@ import { CrontabModule } from './crontab/crontab.module';
             options: {
               urls: [
                 {
-                  hostname: configService.get<string>(
-                    'RABBITMQ_HOST',
-                    'localhost',
+                  hostname: configService.get('RABBITMQ_HOST', 'localhost'),
+                  port: parseInt(
+                    configService.get('RABBITMQ_PORT', '5672'),
+                    10,
                   ),
-                  port: configService.get<number>('RABBITMQ_PORT', 5672),
-                  username: configService.get<string>(
-                    'RABBITMQ_USERNAME',
-                    'guest',
-                  ),
-                  password: configService.get<string>(
-                    'RABBITMQ_PASSWORD',
-                    'guest',
-                  ),
+                  username: configService.get('RABBITMQ_USERNAME', 'guest'),
+                  password: configService.get('RABBITMQ_PASSWORD', 'guest'),
                 },
               ],
               queue: 'editor_queue',
@@ -180,19 +168,13 @@ import { CrontabModule } from './crontab/crontab.module';
             options: {
               urls: [
                 {
-                  hostname: configService.get<string>(
-                    'RABBITMQ_HOST',
-                    'localhost',
+                  hostname: configService.get('RABBITMQ_HOST', 'localhost'),
+                  port: parseInt(
+                    configService.get('RABBITMQ_PORT', '5672'),
+                    10,
                   ),
-                  port: configService.get<number>('RABBITMQ_PORT', 5672),
-                  username: configService.get<string>(
-                    'RABBITMQ_USERNAME',
-                    'guest',
-                  ),
-                  password: configService.get<string>(
-                    'RABBITMQ_PASSWORD',
-                    'guest',
-                  ),
+                  username: configService.get('RABBITMQ_USERNAME', 'guest'),
+                  password: configService.get('RABBITMQ_PASSWORD', 'guest'),
                 },
               ],
               queue: 'file_queue',

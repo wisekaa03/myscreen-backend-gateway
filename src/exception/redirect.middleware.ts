@@ -1,6 +1,7 @@
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NextFunction, Request, Response } from 'express';
+import { FileService } from '@/database/file.service';
 
 @Injectable()
 export class RedirectMiddleware implements NestMiddleware {
@@ -8,22 +9,19 @@ export class RedirectMiddleware implements NestMiddleware {
 
   private apiPath: string;
 
-  private redirect: string;
+  private frontEndUrl: string;
 
-  constructor(configService: ConfigService) {
-    this.apiPath = configService.get<string>('API_PATH', '/api/v2');
-    this.redirect = configService.get<string>(
-      'FRONTEND_URL',
-      'https://cp.myscreen.ru',
-    );
+  constructor(configService: ConfigService, fileService: FileService) {
+    this.apiPath = configService.get('API_PATH', '/api/v2');
+    this.frontEndUrl = fileService.frontEndUrl;
   }
 
   use(req: Request, res: Response, next: NextFunction) {
     if (req.originalUrl.startsWith(this.apiPath)) {
       next();
     } else {
-      this.logger.debug(`Redirecting to ${this.redirect}`);
-      res.redirect(302, this.redirect);
+      this.logger.debug(`Redirecting to ${this.frontEndUrl}`);
+      res.redirect(302, this.frontEndUrl);
     }
   }
 }

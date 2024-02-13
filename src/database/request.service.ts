@@ -39,16 +39,13 @@ import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { PlaylistService } from './playlist.service';
 import { ActService } from './act.service';
-import { WalletService } from './wallet.service';
 import { getFullName } from '@/utils/full-name';
 
 @Injectable()
 export class RequestService {
   private logger = new Logger(RequestService.name);
 
-  private comission: number;
-
-  private frontendUrl: string;
+  public commission: number;
 
   constructor(
     @Inject(MAIL_SERVICE)
@@ -69,11 +66,7 @@ export class RequestService {
     private readonly requestRepository: Repository<RequestEntity>,
     configService: ConfigService,
   ) {
-    this.comission = parseInt(configService.get<string>('COMMISSION', '5'), 10);
-    this.frontendUrl = configService.get<string>(
-      'FRONTEND_URL',
-      'http://localhost',
-    );
+    this.commission = parseInt(configService.get('COMMISSION', '5'), 10);
   }
 
   async find(
@@ -427,7 +420,7 @@ export class RequestService {
             'sendApplicationWarningMessage',
             {
               email: sellerEmail,
-              applicationUrl: `${this.frontendUrl}/applications`,
+              applicationUrl: `${this.fileService.frontEndUrl}/applications`,
             },
           );
         } else {
@@ -435,7 +428,7 @@ export class RequestService {
         }
       } else if (update.approved === RequestApprove.ALLOWED) {
         // Оплата поступает на пользователя - владельца монитора
-        const sumIncrement = -(request.sum * (100 - this.comission)) / 100;
+        const sumIncrement = -(request.sum * (100 - this.commission)) / 100;
         await this.actService.create({
           user: request.monitor.user,
           sum: sumIncrement,
@@ -585,7 +578,7 @@ export class RequestService {
               'sendApplicationWarningMessage',
               {
                 email: sellerEmail,
-                applicationUrl: `${this.frontendUrl}/applications`,
+                applicationUrl: `${this.fileService.frontEndUrl}/applications`,
               },
             );
           } else {
@@ -595,7 +588,7 @@ export class RequestService {
           }
         } else if (insert.approved === RequestApprove.ALLOWED) {
           // Оплата поступает на пользователя - владельца монитора
-          const sumIncrement = -(sum * (100 - this.comission)) / 100;
+          const sumIncrement = -(sum * (100 - this.commission)) / 100;
           await this.actService.create({
             user: request.buyer ?? monitor.user,
             sum: sumIncrement,
