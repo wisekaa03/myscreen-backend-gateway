@@ -23,15 +23,14 @@ export class ApplicationsRequest extends PartialType(
   ]),
 ) {
   @ApiProperty({
-    type: 'array',
     description: 'Не обработан / Разрешен / Запрещен',
     enum: RequestApprove,
     enumName: 'RequestApprove',
     oneOf: [
-      { type: 'enum' },
+      { type: 'string' },
       {
         type: 'array',
-        items: { type: 'enum' },
+        items: { type: 'string' },
       },
     ],
     examples: {
@@ -44,15 +43,14 @@ export class ApplicationsRequest extends PartialType(
   approved?: MSRange<RequestApprove>;
 
   @ApiProperty({
-    type: 'array',
     description: 'Ок / Подождите',
     enum: RequestStatus,
     enumName: 'RequestStatus',
     oneOf: [
-      { type: 'enum' },
+      { type: 'string' },
       {
         type: 'array',
-        items: { type: 'enum' },
+        items: { type: 'string' },
       },
     ],
     examples: {
@@ -65,7 +63,6 @@ export class ApplicationsRequest extends PartialType(
   status?: MSRange<RequestStatus>;
 
   @ApiProperty({
-    type: 'array',
     description: 'Время когда',
     oneOf: [
       { type: 'string', format: 'date-time' },
@@ -82,7 +79,6 @@ export class ApplicationsRequest extends PartialType(
   dateWhen!: MSRange<Date>;
 
   @ApiProperty({
-    type: 'array',
     description: 'Время до',
     oneOf: [
       { type: 'string', format: 'date-time' },
@@ -101,7 +97,6 @@ export class ApplicationsRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время создания',
-    type: 'array',
     oneOf: [
       { type: 'string', format: 'date-time' },
       { type: 'array', items: { type: 'string', format: 'date-time' } },
@@ -111,7 +106,6 @@ export class ApplicationsRequest extends PartialType(
       range: ['2021-12-31T10:10:10', '2022-12-31T10:10:10'],
     },
     format: 'date-time',
-    isArray: true,
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
@@ -119,7 +113,6 @@ export class ApplicationsRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время изменения',
-    type: 'array',
     oneOf: [
       { type: 'string', format: 'date-time' },
       { type: 'array', items: { type: 'string', format: 'date-time' } },
@@ -129,7 +122,6 @@ export class ApplicationsRequest extends PartialType(
       range: ['2021-12-31T10:10:10', '2022-12-31T10:10:10'],
     },
     format: 'date-time',
-    isArray: true,
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })

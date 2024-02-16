@@ -3935,36 +3935,34 @@ components:
                   format: date-time
         createdAt:
           description: Время создания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
         updatedAt:
           description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
     Order:
       type: string
       enum:
@@ -4268,7 +4266,10 @@ components:
           example: 1024
         info:
           type: object
-          description: Параметры видео, картинки или аудио
+          description: Параметры видео, картинки или аудио, используется FfprobeData
+          example: >-
+            { format: { size: "100000", filename: "foo.mp4" }, streams: [{
+            codec_name: "h264", width: 1024, height: 1024 }] }
         createdAt:
           type: string
           description: Время создания
@@ -4906,36 +4907,34 @@ components:
           $ref: "#/components/schemas/RenderingStatus"
         createdAt:
           description: Время создания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
         updatedAt:
           description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
     EditorsGetRequest:
       type: object
       properties:
@@ -5418,36 +5417,34 @@ components:
           $ref: "#/components/schemas/FileCategory"
         createdAt:
           description: Время создания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
         updatedAt:
           description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
       required:
         - folderId
     FilesGetRequest:
@@ -5638,20 +5635,19 @@ components:
                   format: date-time
         updatedAt:
           description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
     FoldersGetRequest:
       type: object
       properties:
@@ -5941,36 +5937,34 @@ components:
           maxLength: 254
         createdAt:
           description: Время создания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
         updatedAt:
           description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
     UsersGetRequest:
       type: object
       properties:
@@ -6076,36 +6070,34 @@ components:
                   type: number
         createdAt:
           description: Время создания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
         updatedAt:
           description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
     InvoicesGetRequest:
       type: object
       properties:
@@ -6243,36 +6235,34 @@ components:
           $ref: "#/components/schemas/PlaylistStatus"
         createdAt:
           description: Время создания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
         updatedAt:
           description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
     PlaylistsGetRequest:
       type: object
       properties:
@@ -6464,10 +6454,10 @@ components:
         status:
           example: OK
           oneOf:
-            - type: enum
+            - type: string
             - type: array
               items:
-                type: enum
+                type: string
           examples:
             one: OK
             range:
@@ -6481,10 +6471,10 @@ components:
         approved:
           example: NotProcessed
           oneOf:
-            - type: enum
+            - type: string
             - type: array
               items:
-                type: enum
+                type: string
           examples:
             one: NotProcessed
             range:
@@ -6500,25 +6490,29 @@ components:
           description: Сумма списания
           example: 10
         dateWhen:
-          type: array
           description: Время когда
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
           format: date-time
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
         dateBefore:
-          type: array
           description: Время до
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
@@ -6526,46 +6520,36 @@ components:
               - "2022-12-31T10:10:10"
           format: date-time
           nullable: true
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
         createdAt:
           description: Время создания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
         updatedAt:
           description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
     ApplicationsGetRequest:
       type: object
       properties:

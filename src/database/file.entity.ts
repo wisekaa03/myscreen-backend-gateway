@@ -156,7 +156,10 @@ export class FileEntity {
 
   @Column({ select: false, type: 'jsonb', nullable: true })
   @ApiProperty({
-    description: 'Параметры видео, картинки или аудио',
+    description:
+      'Параметры видео, картинки или аудио, используется FfprobeData',
+    example:
+      '{ format: { size: "100000", filename: "foo.mp4" }, streams: [{ codec_name: "h264", width: 1024, height: 1024 }] }',
     required: false,
   })
   @IsJSON()

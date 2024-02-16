@@ -88,10 +88,8 @@ export class TypeOrmFind {
     Entity extends ObjectLiteral = ObjectLiteral,
     OriginalEntity extends ObjectLiteral = ObjectLiteral,
   >(
-    where?:
-      | FindOptionsWhere<OriginalEntity>
-      | FindOptionsWhere<OriginalEntity>[],
-  ): FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[] => {
+    where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
+  ): FindOptionsWhere<OriginalEntity> | FindOptionsWhere<OriginalEntity>[] => {
     if (Array.isArray(where)) {
       const whereIsNull = where.map((whereField) =>
         Object.entries(whereField).reduce(
@@ -150,7 +148,7 @@ export class TypeOrmFind {
           {} as Record<string, any>,
         ),
       );
-      return whereIsNull as FindOptionsWhere<Entity>[];
+      return whereIsNull as FindOptionsWhere<OriginalEntity>[];
     }
 
     const whereIsNull = where
@@ -210,6 +208,6 @@ export class TypeOrmFind {
           {} as Record<string, any>,
         )
       : {};
-    return whereIsNull as FindOptionsWhere<Entity>;
+    return whereIsNull as FindOptionsWhere<OriginalEntity>;
   };
 }

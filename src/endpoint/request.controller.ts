@@ -67,18 +67,18 @@ export class RequestController {
   @Crud(CRUD.READ)
   async findMany(
     @Req() { user }: ExpressRequest,
-    @Body() { where, select, scope }: ApplicationsGetRequest,
+    @Body() { where: origWhere, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
-    const sqlWhere = TypeOrmFind.where<ApplicationsRequest, RequestEntity>(
-      where,
+    const where = TypeOrmFind.where<ApplicationsRequest, RequestEntity>(
+      origWhere,
     );
     if (user.role === UserRoleEnum.MonitorOwner) {
       const [data, count] = await this.requestService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { hide: false, ...sqlWhere, buyerId: Not(user.id) },
-          { hide: false, ...sqlWhere, sellerId: Not(user.id) },
+          { hide: false, ...where, buyerId: Not(user.id) },
+          { hide: false, ...where, sellerId: Not(user.id) },
         ],
       });
 
@@ -94,8 +94,8 @@ export class RequestController {
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { hide: false, ...sqlWhere, buyerId: user.id },
-          { hide: false, ...sqlWhere, sellerId: user.id },
+          { hide: false, ...where, buyerId: user.id },
+          { hide: false, ...where, sellerId: user.id },
         ],
       });
 
@@ -109,7 +109,7 @@ export class RequestController {
     const [data, count] = await this.requestService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.where<ApplicationsRequest, RequestEntity>(where),
+      where,
     });
     return {
       status: Status.Success,
