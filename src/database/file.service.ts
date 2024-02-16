@@ -57,7 +57,9 @@ export class FileService {
 
   private region: string;
 
-  private downloadDir: string;
+  public downloadDir: string;
+
+  public frontEndUrl: string;
 
   private signedUrlExpiresIn: number;
 
@@ -79,14 +81,16 @@ export class FileService {
     @InjectRepository(FilePreviewEntity)
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
   ) {
-    this.region = configService.get<string>('AWS_REGION', 'ru-central1');
-    this.bucket = configService.get<string>('AWS_BUCKET', 'myscreen-media');
-    this.downloadDir = configService.get<string>('FILES_UPLOAD', 'upload');
+    this.frontEndUrl = this.configService.get(
+      'FRONTEND_URL',
+      'https://cp.myscreen.ru',
+    );
+    this.downloadDir = configService.get('FILES_UPLOAD', 'upload');
+
+    this.region = configService.get('AWS_REGION', 'ru-central1');
+    this.bucket = configService.get('AWS_BUCKET', 'myscreen-media');
     this.signedUrlExpiresIn = parseInt(
-      configService.get<string>(
-        'AWS_SIGNED_URL_EXPIRES',
-        `${60 * 60 * 24 * 7}`,
-      ),
+      configService.get('AWS_SIGNED_URL_EXPIRES', `${60 * 60 * 24 * 7}`),
       10,
     ); // 7 days
   }
@@ -641,7 +645,7 @@ export class FileService {
     });
   }
 
-  async previewFile(file: FileEntity): Promise<Buffer> {
+  async downloadPreviewFile(file: FileEntity): Promise<Buffer> {
     await fs.mkdir(this.downloadDir, { recursive: true });
     const filename = pathJoin(this.downloadDir, file.name);
     let outPath = pathJoin(

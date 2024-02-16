@@ -1,4 +1,4 @@
-import { Module, Logger } from '@nestjs/common';
+import { Module, Logger, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MulterModule } from '@nestjs/platform-express';
 
@@ -6,6 +6,7 @@ import { MulterModuleOptionsClass } from '@/utils/multer-module-options-class';
 import { AuthModule } from '@/auth/auth.module';
 import { DatabaseModule } from '@/database/database.module';
 import { WSModule } from '@/websocket/ws.module';
+import { RedirectMiddleware } from '@/exception/redirect.middleware';
 import { AuthController } from './auth.controller';
 import { UserController } from './user.controller';
 import { FileController } from './file.controller';
@@ -14,7 +15,6 @@ import { EditorController } from './editor.controller';
 import { FolderController } from './folder.controller';
 import { InvoiceController } from './invoice.controller';
 import { PlaylistController } from './playlist.controller';
-import { RootController } from './root.controller';
 import { StatisticsController } from './statistics.controller';
 import { RequestController } from './request.controller';
 import { CrontabController } from './crontab.controller';
@@ -31,7 +31,6 @@ import { CrontabController } from './crontab.controller';
   ],
 
   controllers: [
-    RootController,
     AuthController,
     MonitorController,
     EditorController,
@@ -47,4 +46,8 @@ import { CrontabController } from './crontab.controller';
 
   providers: [Logger],
 })
-export class EndpointModule {}
+export class EndpointModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RedirectMiddleware).forRoutes('*');
+  }
+}

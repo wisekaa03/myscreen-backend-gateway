@@ -339,7 +339,7 @@ export class FileController {
     },
   })
   @Crud(CRUD.READ)
-  async getFileS3(
+  async downloadFile(
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
@@ -452,7 +452,7 @@ export class FileController {
     },
   })
   @Crud(CRUD.READ)
-  async getFilePreview(
+  async downloadPreviewFile(
     @Res() res: ExpressResponse,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<void> {
@@ -482,7 +482,7 @@ export class FileController {
     try {
       let buffer = file.preview?.preview;
       if (!buffer || buffer.length === 0) {
-        buffer = await this.fileService.previewFile(file);
+        buffer = await this.fileService.downloadPreviewFile(file);
       }
 
       res.setHeader('Content-Length', buffer.length);

@@ -1,6 +1,5 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ConfigService } from '@nestjs/config';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 
 import { ActStatus } from '@/enums';
@@ -14,20 +13,12 @@ import { WalletService } from '@/database/wallet.service';
 export class ActService {
   private logger = new Logger(ActService.name);
 
-  private acceptanceActDescription: string;
-
   constructor(
-    private readonly configService: ConfigService,
     @Inject(forwardRef(() => WalletService))
     private readonly walletService: WalletService,
     @InjectRepository(ActEntity)
     private readonly actRepository: Repository<ActEntity>,
-  ) {
-    this.acceptanceActDescription = this.configService.get<string>(
-      'ACCEPTANCE_ACT_DESCRIPTION',
-      'Оплата за услуги',
-    );
-  }
+  ) {}
 
   async find(
     find: FindManyOptions<ActEntity>,
@@ -51,7 +42,7 @@ export class ActService {
     return this.actRepository.manager.transaction(async (transact) => {
       const actCreated: DeepPartial<ActEntity> = {
         sum,
-        description: description ?? this.acceptanceActDescription,
+        description: description ?? this.walletService.acceptanceActDescription,
         status: ActStatus.COMPLETE,
         userId: user.id,
       };

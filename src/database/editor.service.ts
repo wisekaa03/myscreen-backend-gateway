@@ -4,7 +4,7 @@ import {
   promises as fs,
   ReadStream,
 } from 'node:fs';
-import internal from 'stream';
+import internal from 'node:stream';
 import StreamPromises from 'node:stream/promises';
 import path from 'node:path';
 import child from 'node:child_process';
@@ -59,8 +59,6 @@ const exec = util.promisify(child.exec);
 export class EditorService {
   private logger = new Logger(EditorService.name);
 
-  private tempDirectory: string;
-
   constructor(
     private readonly configService: ConfigService,
     private readonly crontabService: CrontabService,
@@ -76,12 +74,7 @@ export class EditorService {
     private readonly editorRepository: Repository<EditorEntity>,
     @InjectRepository(EditorLayerEntity)
     private readonly editorLayerRepository: Repository<EditorLayerEntity>,
-  ) {
-    this.tempDirectory = this.configService.get<string>(
-      'FILES_UPLOAD',
-      'upload',
-    );
-  }
+  ) {}
 
   async find(
     find: FindManyOptions<EditorEntity>,
@@ -317,18 +310,18 @@ export class EditorService {
     editor: EditorEntity,
     audio: boolean,
   ): Promise<[string, Editly.Config]> {
-    await fs.mkdir(this.tempDirectory, { recursive: true });
+    const { downloadDir } = this.fileService;
+    await fs.mkdir(downloadDir, { recursive: true });
 
     const videoLayersPromise = editor.videoLayers.map(
-      async (layer: EditorLayerEntity) =>
-        this.prepareFile(this.tempDirectory, layer),
+      async (layer: EditorLayerEntity) => this.prepareFile(downloadDir, layer),
     );
     const layers = await Promise.all(videoLayersPromise);
 
     if (audio) {
       const audioLayersPromise = editor.audioLayers.map(
         async (layer: EditorLayerEntity) =>
-          this.prepareFile(this.tempDirectory, layer),
+          this.prepareFile(downloadDir, layer),
       );
       await Promise.all(audioLayersPromise);
     }
@@ -380,7 +373,7 @@ export class EditorService {
     }));
 
     return [
-      this.tempDirectory,
+      downloadDir,
       {
         width,
         height,
@@ -389,7 +382,7 @@ export class EditorService {
         clips,
         loopAudio: true,
         audioTracks,
-        outPath: path.join(this.tempDirectory, editor.id),
+        outPath: path.join(downloadDir, editor.id),
       },
     ];
   }

@@ -2798,7 +2798,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.43.8
+  version: 2.44.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3033,11 +3033,13 @@ components:
         - message
     Status:
       type: string
+      description: Статус операции
       enum:
         - success
         - error
     UserRoleResponse:
       type: string
+      description: Роль пользователя
       enum:
         - monitor
         - monitor-owner
@@ -3046,6 +3048,7 @@ components:
         - accountant
     UserPlan:
       type: string
+      description: План пользователя
       enum:
         - DEMO
         - FULL
@@ -3175,7 +3178,6 @@ components:
           description: Дисковое пространство
           example: 20000000
         role:
-          description: Роль пользователя
           example: advertiser
           $ref: "#/components/schemas/UserRoleResponse"
         verified:
@@ -3183,7 +3185,6 @@ components:
           description: EMail подтвержден
           example: true
         plan:
-          description: План пользователя
           example: FULL
           $ref: "#/components/schemas/UserPlan"
         company:
@@ -3296,7 +3297,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -3308,6 +3308,7 @@ components:
         - data
     UserRoleRequest:
       type: string
+      description: Роль пользователя
       enum:
         - monitor-owner
         - advertiser
@@ -3433,11 +3434,9 @@ components:
           example: Тухбатуллина Юлия Евгеньевна
           maxLength: 254
         role:
-          description: Роль пользователя
           example: advertiser
           $ref: "#/components/schemas/UserRoleRequest"
         plan:
-          description: План пользователя
           example: FULL
           $ref: "#/components/schemas/UserPlan"
     LoginRequest:
@@ -3486,7 +3485,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         payload:
@@ -3623,7 +3621,6 @@ components:
           example: Тухбатуллина Юлия Евгеньевна
           maxLength: 254
         role:
-          description: Роль пользователя
           example: advertiser
           $ref: "#/components/schemas/UserRoleRequest"
         password:
@@ -3652,7 +3649,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         payload:
@@ -3674,7 +3670,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
       required:
@@ -3738,6 +3733,7 @@ components:
           example: "1"
     MonitorCategory:
       type: string
+      description: Категория
       enum:
         - FOOD
         - CAFES_AND_RESTAURANTS
@@ -3754,16 +3750,22 @@ components:
         - GAS_STATION
     MonitorOrientation:
       type: string
+      description: Ориентация экрана
       enum:
         - Horizontal
         - Vertical
     MonitorStatus:
       type: string
+      description: Подключен
       enum:
         - offline
         - online
     MonitorMultiple:
       type: string
+      description: >-
+        Обычный монитор, много мониторов с режимом масштабирования или
+        зеркалирования
+      default: SINGLE
       enum:
         - SINGLE
         - SUBORDINATE
@@ -3809,11 +3811,9 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
-          description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
         orientation:
-          description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         model:
@@ -3849,14 +3849,9 @@ components:
           description: "Есть звук: true/false"
           example: true
         status:
-          description: Подключен
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
         multiple:
-          default: SINGLE
-          description: >-
-            Обычный монитор, много мониторов с режимом масштабирования или
-            зеркалирования
           example: SINGLE
           $ref: "#/components/schemas/MonitorMultiple"
         playlistPlayed:
@@ -4167,12 +4162,14 @@ components:
         - col
     PlaylistStatus:
       type: string
+      description: Статус
       enum:
         - Offline
         - Broadcast
         - NoBroadcast
     VideoType:
       type: string
+      description: Тип файла
       enum:
         - video
         - image
@@ -4180,6 +4177,7 @@ components:
         - other
     FileCategory:
       type: string
+      description: В какую категорию относить файл
       enum:
         - ownership
         - photo
@@ -4247,11 +4245,9 @@ components:
           description: Hash файла
           example: 2b0439011a3a215ae1756bfc342e5bbc
         videoType:
-          description: Тип файла
           example: video
           $ref: "#/components/schemas/VideoType"
         category:
-          description: В какую категорию относить файл
           example: media
           $ref: "#/components/schemas/FileCategory"
         filesize:
@@ -4340,7 +4336,6 @@ components:
           example: описание плэйлиста
           nullable: true
         status:
-          description: Статус
           example: Offline
           $ref: "#/components/schemas/PlaylistStatus"
         hide:
@@ -4406,7 +4401,6 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
-          description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
         price1s:
@@ -4422,7 +4416,6 @@ components:
           description: Максимальная длительность плэйлиста в секундах
           example: 1
         orientation:
-          description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         model:
@@ -4458,14 +4451,9 @@ components:
           description: "Есть звук: true/false"
           example: true
         status:
-          description: Подключен
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
         multiple:
-          default: SINGLE
-          description: >-
-            Обычный монитор, много мониторов с режимом масштабирования или
-            зеркалирования
           example: SINGLE
           $ref: "#/components/schemas/MonitorMultiple"
         groupIds:
@@ -4540,7 +4528,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -4568,7 +4555,6 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
-          description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
         price1s:
@@ -4584,7 +4570,6 @@ components:
           description: Максимальная длительность плэйлиста в секундах
           example: 1
         orientation:
-          description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         model:
@@ -4618,12 +4603,13 @@ components:
           description: "Есть звук: true/false"
           example: true
         multiple:
-          default: SINGLE
-          description: >-
-            Обычный монитор, много мониторов с режимом масштабирования или
-            зеркалирования
           example: SINGLE
           $ref: "#/components/schemas/MonitorMultiple"
+        groupIds:
+          description: Подчиненные мониторы в группе мониторов
+          type: array
+          items:
+            $ref: "#/components/schemas/MonitorGroup"
         location:
           example: *ref_121
           allOf:
@@ -4632,11 +4618,6 @@ components:
           type: string
           description: Идентификатор устройства
           example: 111-111-111
-        groupIds:
-          description: Подчиненные мониторы в группе мониторов
-          type: array
-          items:
-            $ref: "#/components/schemas/MonitorGroup"
       required:
         - name
         - category
@@ -4645,7 +4626,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -4655,7 +4635,7 @@ components:
       required:
         - status
         - data
-    ApplicationCreateMonitorRequest:
+    RequestCreateMonitorRequest:
       type: object
       properties:
         dateWhen:
@@ -4683,27 +4663,30 @@ components:
           type: string
           description: Плэйлист
           format: uuid
-        monitors:
+        monitorIds:
           description: Мониторы
           type: array
           items:
             type: string
             format: uuid
-        application:
+        request:
           description: Создание заявки
           allOf:
-            - $ref: "#/components/schemas/ApplicationCreateMonitorRequest"
+            - $ref: "#/components/schemas/RequestCreateMonitorRequest"
       required:
         - playlistId
-        - monitors
-        - application
+        - monitorIds
+        - request
     RequestStatus:
       type: string
+      description: Ок / Подождите
+      default: OK
       enum:
         - OK
         - WAITING
     RequestApprove:
       type: string
+      description: Не обработан / Разрешен / Запрещен
       enum:
         - NotProcessed
         - Allowed
@@ -4728,9 +4711,7 @@ components:
           allOf:
             - $ref: "#/components/schemas/MonitorResponse"
         status:
-          description: OK / Подождите
           example: OK
-          default: OK
           $ref: "#/components/schemas/RequestStatus"
         hide:
           type: boolean
@@ -4742,7 +4723,6 @@ components:
           allOf:
             - $ref: "#/components/schemas/PlaylistResponse"
         approved:
-          description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
           $ref: "#/components/schemas/RequestApprove"
         dateWhen:
@@ -4798,7 +4778,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -4830,7 +4809,6 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
-          description: Категория
           example: GAS_STATION
           $ref: "#/components/schemas/MonitorCategory"
         price1s:
@@ -4846,7 +4824,6 @@ components:
           description: Максимальная длительность плэйлиста в секундах
           example: 1
         orientation:
-          description: Ориентация экрана
           example: Horizontal
           $ref: "#/components/schemas/MonitorOrientation"
         model:
@@ -4882,14 +4859,9 @@ components:
           description: "Есть звук: true/false"
           example: true
         status:
-          description: Подключен
           example: offline
           $ref: "#/components/schemas/MonitorStatus"
         multiple:
-          default: SINGLE
-          description: >-
-            Обычный монитор, много мониторов с режимом масштабирования или
-            зеркалирования
           example: SINGLE
           $ref: "#/components/schemas/MonitorMultiple"
         groupIds:
@@ -4912,6 +4884,7 @@ components:
             - $ref: "#/components/schemas/PointClass"
     RenderingStatus:
       type: string
+      description: Статус рендеринга
       enum:
         - initial
         - ready
@@ -4929,7 +4902,6 @@ components:
           description: Имя редактора
           example: имя редактора
         renderingStatus:
-          description: Статус рендеринга
           example: initial
           $ref: "#/components/schemas/RenderingStatus"
         createdAt:
@@ -5103,7 +5075,6 @@ components:
           description: Фреймрейт
           example: 24
         renderingStatus:
-          description: Статус рендеринга
           example: initial
           $ref: "#/components/schemas/RenderingStatus"
         renderingPercent:
@@ -5176,7 +5147,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -5224,7 +5194,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -5312,7 +5281,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -5375,7 +5343,6 @@ components:
           description: Идентификатор редактора
           format: uuid
         renderingStatus:
-          description: Статус рендеринга
           example: initial
           $ref: "#/components/schemas/RenderingStatus"
         renderingPercent:
@@ -5401,7 +5368,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -5427,7 +5393,6 @@ components:
           description: Идентификатор папки
           format: uuid
         category:
-          description: В какую категорию относить файл
           example: media
           $ref: "#/components/schemas/FileCategory"
         monitorId:
@@ -5446,11 +5411,9 @@ components:
           description: Идентификатор папки
           format: uuid
         videoType:
-          description: Тип файла
           example: video
           $ref: "#/components/schemas/VideoType"
         category:
-          description: В какую категорию относить файл
           example: media
           $ref: "#/components/schemas/FileCategory"
         createdAt:
@@ -5523,7 +5486,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -5542,7 +5504,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -5588,7 +5549,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -5719,7 +5679,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -5753,7 +5712,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -5901,7 +5859,6 @@ components:
           description: Дисковое пространство
           example: 20000000
         role:
-          description: Роль пользователя
           example: advertiser
           $ref: "#/components/schemas/UserRoleResponse"
         verified:
@@ -5909,7 +5866,6 @@ components:
           description: EMail подтвержден
           example: true
         plan:
-          description: План пользователя
           example: FULL
           $ref: "#/components/schemas/UserPlan"
         company:
@@ -6065,7 +6021,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -6082,6 +6037,7 @@ components:
         - data
     InvoiceStatus:
       type: string
+      description: Подтверждение/отклонение счёта
       enum:
         - AWAITING_CONFIRMATION
         - CONFIRMED_PENDING_PAYMENT
@@ -6102,7 +6058,6 @@ components:
           description: Описание заказа
           example: описание заказа
         status:
-          description: Подтверждение/отклонение счёта
           example: AWAITING_CONFIRMATION
           $ref: "#/components/schemas/InvoiceStatus"
         sum:
@@ -6191,7 +6146,6 @@ components:
           description: Описание заказа
           example: описание заказа
         status:
-          description: Подтверждение/отклонение счёта
           example: AWAITING_CONFIRMATION
           $ref: "#/components/schemas/InvoiceStatus"
         sum:
@@ -6228,7 +6182,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -6260,7 +6213,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -6287,7 +6239,6 @@ components:
           example: описание плэйлиста
           nullable: true
         status:
-          description: Статус
           example: Offline
           $ref: "#/components/schemas/PlaylistStatus"
         createdAt:
@@ -6354,7 +6305,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         count:
@@ -6397,7 +6347,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -6430,6 +6379,7 @@ components:
             format: uuid
     SpecificFormat:
       type: string
+      description: Формат получаемого файла
       enum:
         - xlsx
         - pdf
@@ -6437,10 +6387,9 @@ components:
       type: object
       properties:
         format:
-          description: Формат получаемого файла
           example: xlsx
           $ref: "#/components/schemas/SpecificFormat"
-        monitorsId:
+        monitorIds:
           description: Мониторы ID (если не указан, то все мониторы)
           example:
             - 1234-5678-9123-4567
@@ -6467,10 +6416,9 @@ components:
       type: object
       properties:
         format:
-          description: Формат получаемого файла
           example: xlsx
           $ref: "#/components/schemas/SpecificFormat"
-        monitorsId:
+        monitorIds:
           description: Мониторы ID (если не указан, то все мониторы)
           example:
             - 1234-5678-9123-4567
@@ -6514,9 +6462,7 @@ components:
           description: Монитор ID
           format: uuid
         status:
-          description: Ок / Подождите
           example: OK
-          default: OK
           oneOf:
             - type: enum
             - type: array
@@ -6533,7 +6479,6 @@ components:
           description: Плэйлист ID
           format: uuid
         approved:
-          description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
           oneOf:
             - type: enum
@@ -6661,7 +6606,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:
@@ -6675,7 +6619,6 @@ components:
       type: object
       properties:
         approved:
-          description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
           $ref: "#/components/schemas/RequestApprove"
       required:
@@ -6720,7 +6663,6 @@ components:
       type: object
       properties:
         status:
-          description: Статус операции
           example: success
           $ref: "#/components/schemas/Status"
         data:

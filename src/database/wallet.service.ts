@@ -29,9 +29,9 @@ import { getFullName } from '@/utils/full-name';
 export class WalletService {
   private logger = new Logger(WalletService.name);
 
-  private acceptanceActSum: number;
+  public acceptanceActSum: number;
 
-  private acceptanceActDescription: string;
+  public acceptanceActDescription: string;
 
   constructor(
     private readonly userService: UserService,
@@ -44,10 +44,10 @@ export class WalletService {
     private readonly walletRepository: Repository<WalletEntity>,
   ) {
     this.acceptanceActSum = parseInt(
-      this.configService.get<string>('ACCEPTANCE_ACT_SUM', '250'),
+      this.configService.get('ACCEPTANCE_ACT_SUM', '250'),
       10,
     );
-    this.acceptanceActDescription = this.configService.get<string>(
+    this.acceptanceActDescription = this.configService.get(
       'ACCEPTANCE_ACT_DESCRIPTION',
       'Оплата за услуги',
     );
@@ -215,7 +215,7 @@ export class WalletService {
         this.acceptanceActCreate({ user, transact }),
       );
 
-      await Promise.allSettled(promiseUsers);
+      await Promise.all(promiseUsers);
     });
   }
 }

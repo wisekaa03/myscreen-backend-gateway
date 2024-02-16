@@ -79,6 +79,7 @@ jobs:
 
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env.test
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env.test
+          echo "COMMISSION=${{ vars.COMMISSION }}" >>.env.test
 
           echo "RABBITMQ_HOST=${{ vars.RABBITMQ_HOST }}" >>.env.test
           echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env.test
@@ -192,6 +193,7 @@ jobs:
 
           echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
           echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
+          echo "COMMISSION=${{ vars.COMMISSION }}" >>.env
 
           echo "RABBITMQ_HOST=${{ vars.RABBITMQ_HOST }}" >>.env
           echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env

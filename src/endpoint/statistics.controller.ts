@@ -63,14 +63,14 @@ export class StatisticsController {
   async reportDeviceStatus(
     @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
-    @Body() { format, monitorsId, dateFrom, dateTo }: ReportDeviceStatusRequest,
+    @Body() { format, monitorIds, dateFrom, dateTo }: ReportDeviceStatusRequest,
   ): Promise<void> {
     let monitors: MonitorEntity[] | undefined;
-    if (Array.isArray(monitorsId) && monitorsId.length > 0) {
+    if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
         find: {
-          where: { userId: user.id, id: In(monitorsId) },
+          where: { userId: user.id, id: In(monitorIds) },
         },
       });
     }
@@ -132,15 +132,15 @@ export class StatisticsController {
   async reportViews(
     @Req() { user }: ExpressRequest,
     @Res() res: ExpressResponse,
-    @Body() { format, monitorsId, dateFrom, dateTo }: ReportViewsRequest,
+    @Body() { format, monitorIds, dateFrom, dateTo }: ReportViewsRequest,
   ): Promise<void> {
     let monitors: MonitorEntity[] | undefined;
-    if (Array.isArray(monitorsId) && monitorsId.length > 0) {
+    if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
 
         find: {
-          where: { userId: user.id, id: In(monitorsId) },
+          where: { userId: user.id, id: In(monitorIds) },
         },
       });
     }

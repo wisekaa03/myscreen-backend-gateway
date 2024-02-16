@@ -64,5 +64,5 @@ describe(FileService.name, () => {
   });
 
   // TODO: should inspect:
-  // TODO: - getMediaFiles, getMediaFile, upload, getMediaFileS3, delete, metaInformation
+  // TODO: - getMediaFiles, getMediaFile, upload, getMediaFileS3, delete
 });

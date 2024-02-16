@@ -18,8 +18,8 @@ export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
     const logLevel = this.configService.get<string>('LOG_LEVEL');
     return {
       type: this.configService.get<any>('DB_TYPE', 'postgres'),
-      host: this.configService.get<string>('DB_HOST'),
-      port: parseInt(this.configService.get<string>('DB_PORT', '5432'), 10),
+      host: this.configService.get('DB_HOST'),
+      port: parseInt(this.configService.get('DB_PORT', '5432'), 10),
       username: this.configService.get<string>('DB_USERNAME'),
       password: this.configService.get<string>('DB_PASSWORD'),
       database: this.configService.get<string>('DB_DATABASE'),

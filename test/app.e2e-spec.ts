@@ -108,6 +108,7 @@ describe('Backend API (e2e)', () => {
   let app: INestApplication;
   let userService: UserService;
   let request: TestAgent;
+  let apiPath = '/api/v2';
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -124,6 +125,8 @@ describe('Backend API (e2e)', () => {
       app.useLogger(logger);
     }
 
+    apiPath = configService.get('API_PATH', '/api/v2');
+    app.setGlobalPrefix(apiPath, { exclude: ['/'] });
     app.useGlobalFilters(
       new ExceptionsFilter(httpAdaper.httpAdapter, configService),
     );
@@ -158,7 +161,7 @@ describe('Backend API (e2e)', () => {
      */
     test('POST /auth/register (Регистрация пользователя)', async () => {
       await request
-        .post('/auth/register')
+        .post(`${apiPath}/auth/register`)
         .send(registerRequest)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -172,7 +175,7 @@ describe('Backend API (e2e)', () => {
 
     test('POST /auth/login [email пока не подтвержден] (Авторизация пользователя)', async () => {
       await request
-        .post('/auth/login')
+        .post(`${apiPath}/auth/login`)
         .send(loginRequest)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -184,7 +187,7 @@ describe('Backend API (e2e)', () => {
      */
     test('POST /auth/register [опять, с теми же самыми параметрами] (Регистрация пользователя)', async () => {
       await request
-        .post('/auth/register')
+        .post(`${apiPath}/auth/register`)
         .send(registerRequest)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -196,7 +199,7 @@ describe('Backend API (e2e)', () => {
      */
     test('POST /auth/register [email изменен, пароль изменен] (Регистрация пользователя)', async () => {
       await request
-        .post('/auth/register')
+        .post(`${apiPath}/auth/register`)
         .send({ ...registerRequest, email: '', password: '' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -214,7 +217,7 @@ describe('Backend API (e2e)', () => {
         };
 
         await request
-          .post('/auth/email-verify')
+          .post(`${apiPath}/auth/email-verify`)
           .send(verify)
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
@@ -232,7 +235,7 @@ describe('Backend API (e2e)', () => {
      */
     test('POST /auth/login [с пустым паролем] (Авторизация пользователя)', async () => {
       await request
-        .post('/auth/login')
+        .post(`${apiPath}/auth/login`)
         .send({ email: 'foo@bar.baz' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -241,7 +244,7 @@ describe('Backend API (e2e)', () => {
 
     test('POST /auth/login [с пустым email] (Авторизация пользователя)', async () => {
       await request
-        .post('/auth/login')
+        .post(`${apiPath}/auth/login`)
         .send({ password: 'Secret~123456' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -250,7 +253,7 @@ describe('Backend API (e2e)', () => {
 
     test('POST /auth/login [с неправильным паролем] (Авторизация пользователя)', async () => {
       await request
-        .post('/auth/login')
+        .post(`${apiPath}/auth/login`)
         .send({ ...loginRequest, password: 'sss' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -259,7 +262,7 @@ describe('Backend API (e2e)', () => {
 
     test('POST /auth/login [с неправильным email] (Авторизация пользователя)', async () => {
       await request
-        .post('/auth/login')
+        .post(`${apiPath}/auth/login`)
         .send({ ...loginRequest, email: 'sss' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -271,7 +274,7 @@ describe('Backend API (e2e)', () => {
      */
     test('POST /auth/login [success] (Авторизация пользователя)', async () => {
       const { body }: { body: AuthResponse } = await request
-        .post('/auth/login')
+        .post(`${apiPath}/auth/login`)
         .send(loginRequest)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -293,7 +296,7 @@ describe('Backend API (e2e)', () => {
      */
     test('PATCH /auth (Изменение аккаунта пользователя)', async () => {
       const { body }: { body: UserGetResponse } = await request
-        .patch('/auth')
+        .patch(`${apiPath}/auth`)
         .auth(token, { type: 'bearer' })
         .send(updateUser)
         .set('Accept', 'application/json')
@@ -310,7 +313,7 @@ describe('Backend API (e2e)', () => {
      */
     test('GET /auth (Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию)', async () => {
       await request
-        .get('/auth')
+        .get(`${apiPath}/auth`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -328,7 +331,7 @@ describe('Backend API (e2e)', () => {
     test('POST /auth/refresh [неправильный refresh_token] (Обновление токена)', async () => {
       const verify: VerifyEmailRequest = { verify: 'фывфвафавыаы' };
       await request
-        .post('/auth/refresh')
+        .post(`${apiPath}/auth/refresh`)
         .send(verify)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -340,7 +343,7 @@ describe('Backend API (e2e)', () => {
      */
     test('POST /auth/refresh [отсутствие refresh_token] (Обновление токена)', async () => {
       await request
-        .post('/auth/refresh')
+        .post(`${apiPath}/auth/refresh`)
         .send({})
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -349,7 +352,7 @@ describe('Backend API (e2e)', () => {
 
     test('POST /auth/refresh [success] (Обновление токена)', async () => {
       const verify: AuthRefreshRequest = { refreshToken: refreshToken ?? '' };
-      const content = request.post('/auth/refresh').send(verify);
+      const content = request.post(`${apiPath}/auth/refresh`).send(verify);
 
       await content
         .set('Accept', 'application/json')
@@ -366,7 +369,7 @@ describe('Backend API (e2e)', () => {
      * Отправить на почту пользователю разрешение на смену пароля [отсутствие email]
      */
     test('POST /auth/reset-password [отсутствие email] (Отправить на почту пользователю разрешение на смену пароля)', async () => {
-      const body = request.post('/auth/reset-password').send({});
+      const body = request.post(`${apiPath}/auth/reset-password`).send({});
 
       await body
         .set('Accept', 'application/json')
@@ -383,7 +386,7 @@ describe('Backend API (e2e)', () => {
       };
 
       await request
-        .post('/auth/reset-password')
+        .post(`${apiPath}/auth/reset-password`)
         .send(verify)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -400,7 +403,7 @@ describe('Backend API (e2e)', () => {
      */
     test('PATCH /auth/disable [неавторизован] (Скрытие аккаунта пользователя)', async () => {
       await request
-        .patch('/auth/disable')
+        .patch(`${apiPath}/auth/disable`)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(401);
@@ -411,7 +414,7 @@ describe('Backend API (e2e)', () => {
      */
     test('PATCH /auth/disable [success] (Скрытие аккаунта пользователя)', async () => {
       await request
-        .patch('/auth/disable')
+        .patch(`${apiPath}/auth/disable`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -448,7 +451,7 @@ describe('Backend API (e2e)', () => {
      */
     test('POST /folder [ scope: { limit: 0 } }] (Получение списка папок)', async () => {
       await request
-        .post('/folder')
+        .post(`${apiPath}/folder`)
         .auth(token, { type: 'bearer' })
         .send({ where: {}, scope: { limit: 0 } })
         .set('Accept', 'application/json')
@@ -461,7 +464,7 @@ describe('Backend API (e2e)', () => {
      */
     test('PUT /folder [name: "bar"] (Создание новой папки)', async () => {
       await request
-        .put('/folder')
+        .put(`${apiPath}/folder`)
         .auth(token, { type: 'bearer' })
         .send({ name: 'bar' })
         .set('Accept', 'application/json')
@@ -477,7 +480,7 @@ describe('Backend API (e2e)', () => {
 
     test('PUT /folder [name: "baz"] (Создание новой папки)', async () => {
       await request
-        .put('/folder')
+        .put(`${apiPath}/folder`)
         .auth(token, { type: 'bearer' })
         .send({ name: 'baz' })
         .set('Accept', 'application/json')
@@ -497,7 +500,7 @@ describe('Backend API (e2e)', () => {
      */
     test('PUT /folder [name: "foo", parentFolderId] (Создание новой под-папки)', async () => {
       await request
-        .put('/folder')
+        .put(`${apiPath}/folder`)
         .auth(token, { type: 'bearer' })
         .send({ name: 'foo', parentFolderId })
         .set('Accept', 'application/json')
@@ -517,7 +520,7 @@ describe('Backend API (e2e)', () => {
      */
     test('PUT /folder [name: "baz", parentFolderId] (Создание новой под-папки)', async () => {
       await request
-        .put('/folder')
+        .put(`${apiPath}/folder`)
         .auth(token, { type: 'bearer' })
         .send({ name: 'baz', parentFolderId: parentFolderId2 })
         .set('Accept', 'application/json')
@@ -541,7 +544,7 @@ describe('Backend API (e2e)', () => {
       }
 
       await request
-        .post('/folder')
+        .post(`${apiPath}/folder`)
         .auth(token, { type: 'bearer' })
         .send({
           where: { id: '' },
@@ -561,7 +564,7 @@ describe('Backend API (e2e)', () => {
       }
 
       const content = request
-        .post('/folder')
+        .post(`${apiPath}/folder`)
         .auth(token, { type: 'bearer' })
         .send({ where: {}, scope: {} })
         .set('Accept', 'application/json')
@@ -585,7 +588,7 @@ describe('Backend API (e2e)', () => {
       }
 
       const { body }: { body: FolderGetResponse } = await request
-        .patch(`/folder/${folderId2}`)
+        .patch(`${apiPath}/folder/${folderId2}`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .send({
@@ -610,7 +613,7 @@ describe('Backend API (e2e)', () => {
       }
 
       await request
-        .patch(`/folder/${folderId2}`)
+        .patch(`${apiPath}/folder/${folderId2}`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .send({
@@ -630,7 +633,7 @@ describe('Backend API (e2e)', () => {
       }
 
       await request
-        .get(`/folder/${folderId2}`)
+        .get(`${apiPath}/folder/${folderId2}`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -653,7 +656,7 @@ describe('Backend API (e2e)', () => {
       }
 
       await request
-        .delete(`/folder/${folderId2}`)
+        .delete(`${apiPath}/folder/${folderId2}`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -679,7 +682,7 @@ describe('Backend API (e2e)', () => {
       }
 
       await request
-        .post('/file')
+        .post(`${apiPath}/file`)
         .auth(token, { type: 'bearer' })
         .send({
           where: { folderId: '111' },
@@ -703,7 +706,7 @@ describe('Backend API (e2e)', () => {
       };
 
       await request
-        .post('/file')
+        .post(`${apiPath}/file`)
         .auth(token, { type: 'bearer' })
         .send(files)
         .set('Accept', 'application/json')
@@ -730,7 +733,7 @@ describe('Backend API (e2e)', () => {
       const files = `${__dirname}/testing.png`;
 
       const { body }: { body: FilesUploadResponse } = await request
-        .put('/file')
+        .put(`${apiPath}/file`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .field(field)
@@ -754,7 +757,7 @@ describe('Backend API (e2e)', () => {
       }
 
       const { body }: { body: unknown } = await request
-        .get(`/file/${mediaId1}`)
+        .get(`${apiPath}/file/${mediaId1}`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect(200);
@@ -771,7 +774,7 @@ describe('Backend API (e2e)', () => {
       }
 
       const { body }: { body: unknown } = await request
-        .get(`/file/${mediaId1}/preview`)
+        .get(`${apiPath}/file/${mediaId1}/preview`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect(200);
@@ -788,7 +791,7 @@ describe('Backend API (e2e)', () => {
       }
 
       const { body }: { body: SuccessResponse } = await request
-        .delete(`/file/${mediaId1}`)
+        .delete(`${apiPath}/file/${mediaId1}`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -831,7 +834,7 @@ describe('Backend API (e2e)', () => {
 
     test('POST /auth/login [success] (Повторная авторизация пользователя)', async () => {
       await request
-        .post('/auth/login')
+        .post(`${apiPath}/auth/login`)
         .send(loginRequest)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -855,7 +858,7 @@ describe('Backend API (e2e)', () => {
         expect(false).toBe(true);
       }
 
-      const url = `/user/${userId}`;
+      const url = `${apiPath}/user/${userId}`;
       await request
         .delete(url)
         .auth(token, { type: 'bearer' })
