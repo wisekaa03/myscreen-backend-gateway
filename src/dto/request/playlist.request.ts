@@ -13,7 +13,6 @@ export class PlaylistRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время создания',
-    type: 'array',
     oneOf: [
       { type: 'string', format: 'date-time' },
       { type: 'array', items: { type: 'string', format: 'date-time' } },
@@ -23,7 +22,6 @@ export class PlaylistRequest extends PartialType(
       range: ['2021-12-31T10:10:10', '2022-12-31T10:10:10'],
     },
     format: 'date-time',
-    isArray: true,
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
@@ -31,7 +29,6 @@ export class PlaylistRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время изменения',
-    type: 'array',
     oneOf: [
       { type: 'string', format: 'date-time' },
       { type: 'array', items: { type: 'string', format: 'date-time' } },
@@ -41,7 +38,6 @@ export class PlaylistRequest extends PartialType(
       range: ['2021-12-31T10:10:10', '2022-12-31T10:10:10'],
     },
     format: 'date-time',
-    isArray: true,
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })

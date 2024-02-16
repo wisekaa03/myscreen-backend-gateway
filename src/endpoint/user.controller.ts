@@ -47,12 +47,13 @@ export class UserController {
   })
   @Crud(CRUD.READ)
   async users(
-    @Body() { where, select, scope }: UsersGetRequest,
+    @Body() { where: origWhere, select, scope }: UsersGetRequest,
   ): Promise<UsersGetResponse> {
+    const where = TypeOrmFind.where<UserRequest, UserExtEntity>(origWhere);
     const [users, count] = await this.userService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: TypeOrmFind.where<UserExtEntity, UserRequest>(where),
+      where,
     });
     const data = users.map((user) => UserService.userEntityToUser(user));
     return {

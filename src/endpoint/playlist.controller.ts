@@ -67,7 +67,7 @@ export class PlaylistController {
     @Body() { where: origWhere, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
     const { id: userId, role } = user;
-    const where = TypeOrmFind.where<PlaylistEntity, PlaylistRequest>(origWhere);
+    const where = TypeOrmFind.where<PlaylistRequest, PlaylistEntity>(origWhere);
     if (Array.isArray(where)) {
       where.push({ hide: false });
     } else {
