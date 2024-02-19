@@ -3,7 +3,7 @@ import { IsDateString, IsEnum, Validate } from 'class-validator';
 
 import { RequestApprove, RequestStatus } from '@/enums';
 import { RequestEntity } from '@/database/request.entity';
-import { MSRange } from '@/interfaces';
+import { MSRange, MSRangeEnum } from '@/interfaces';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 
 export class ApplicationsRequest extends PartialType(
@@ -15,6 +15,8 @@ export class ApplicationsRequest extends PartialType(
     'hide',
     'parentRequest',
     'parentRequestId',
+    'status',
+    'approved',
     'user',
     'dateWhen',
     'dateBefore',
@@ -23,44 +25,32 @@ export class ApplicationsRequest extends PartialType(
   ]),
 ) {
   @ApiProperty({
+    type: 'enum',
     description: 'Не обработан / Разрешен / Запрещен',
     enum: RequestApprove,
     enumName: 'RequestApprove',
-    oneOf: [
-      { type: 'string' },
-      {
-        type: 'array',
-        items: { type: 'string' },
-      },
-    ],
-    examples: {
-      one: RequestApprove.NOTPROCESSED,
+    example: {
       range: [RequestApprove.NOTPROCESSED, RequestApprove.ALLOWED],
     },
+    isArray: true,
     required: false,
   })
   @IsEnum(RequestApprove, { each: true })
-  approved?: MSRange<RequestApprove>;
+  approved?: MSRangeEnum<RequestApprove>;
 
   @ApiProperty({
+    type: 'enum',
     description: 'Ок / Подождите',
     enum: RequestStatus,
     enumName: 'RequestStatus',
-    oneOf: [
-      { type: 'string' },
-      {
-        type: 'array',
-        items: { type: 'string' },
-      },
-    ],
-    examples: {
-      one: RequestStatus.OK,
+    example: {
       range: [RequestStatus.OK, RequestStatus.WAITING],
     },
+    isArray: true,
     required: false,
   })
   @IsEnum(RequestStatus, { each: true })
-  status?: MSRange<RequestStatus>;
+  status?: MSRangeEnum<RequestStatus>;
 
   @ApiProperty({
     description: 'Время когда',

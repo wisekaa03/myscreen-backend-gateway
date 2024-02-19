@@ -14,7 +14,6 @@ export class InvoicesRequest extends PartialType(
   OmitType(InvoiceEntity, ['sum', 'createdAt', 'updatedAt']),
 ) {
   @ApiProperty({
-    type: 'array',
     description: 'Сумма счета',
     oneOf: [{ type: 'number' }, { type: 'array', items: { type: 'number' } }],
     examples: {

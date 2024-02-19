@@ -1,15 +1,29 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsDateString, IsOptional, MinLength } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, MinLength } from 'class-validator';
 
 import { PlaylistEntity } from '@/database/playlist.entity';
-import { MSRange } from '@/interfaces';
+import { MSRange, MSRangeEnum } from '@/interfaces';
+import { PlaylistStatusEnum } from '@/enums';
 
 export class PlaylistRequest extends PartialType(
-  PickType(PlaylistEntity, ['id', 'name', 'description', 'status']),
+  PickType(PlaylistEntity, ['id', 'name', 'description']),
 ) {
   @IsOptional()
   @MinLength(0)
   name!: string;
+
+  @ApiProperty({
+    description: 'Статус',
+    enum: PlaylistStatusEnum,
+    enumName: 'PlaylistStatus',
+    example: {
+      range: [PlaylistStatusEnum.Offline, PlaylistStatusEnum.Broadcast],
+    },
+    isArray: true,
+    required: false,
+  })
+  @IsEnum(PlaylistStatusEnum, { each: true })
+  status!: MSRangeEnum<PlaylistStatusEnum>;
 
   @ApiProperty({
     description: 'Время создания',
