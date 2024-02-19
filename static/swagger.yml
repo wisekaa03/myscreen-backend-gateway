@@ -2798,7 +2798,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.44.3
+  version: 2.44.6
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4681,7 +4681,6 @@ components:
     RequestStatus:
       type: string
       description: Ок / Подождите
-      default: OK
       enum:
         - OK
         - WAITING
@@ -6055,19 +6054,17 @@ components:
           example: AWAITING_CONFIRMATION
           $ref: "#/components/schemas/InvoiceStatus"
         sum:
-          type: array
           description: Сумма счета
+          oneOf:
+            - type: number
+            - type: array
+              items:
+                type: number
           examples:
             one: 1000
             range:
               - 1000
               - 2000
-          items:
-            oneOf:
-              - type: number
-              - type: array
-                items:
-                  type: number
         createdAt:
           description: Время создания
           oneOf:
@@ -6231,8 +6228,13 @@ components:
           example: описание плэйлиста
           nullable: true
         status:
-          example: Offline
-          $ref: "#/components/schemas/PlaylistStatus"
+          type: array
+          example:
+            range:
+              - Offline
+              - Broadcast
+          items:
+            $ref: "#/components/schemas/PlaylistStatus"
         createdAt:
           description: Время создания
           oneOf:
@@ -6451,36 +6453,10 @@ components:
           type: string
           description: Монитор ID
           format: uuid
-        status:
-          example: OK
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                type: string
-          examples:
-            one: OK
-            range:
-              - OK
-              - WAITING
-          $ref: "#/components/schemas/RequestStatus"
         playlistId:
           type: string
           description: Плэйлист ID
           format: uuid
-        approved:
-          example: NotProcessed
-          oneOf:
-            - type: string
-            - type: array
-              items:
-                type: string
-          examples:
-            one: NotProcessed
-            range:
-              - NotProcessed
-              - Allowed
-          $ref: "#/components/schemas/RequestApprove"
         playlistChange:
           type: boolean
           description: "Смена текущего плэйлиста: сразу/когда закончится"
@@ -6489,6 +6465,22 @@ components:
           type: number
           description: Сумма списания
           example: 10
+        approved:
+          type: array
+          example:
+            range:
+              - NotProcessed
+              - Allowed
+          items:
+            $ref: "#/components/schemas/RequestApprove"
+        status:
+          type: array
+          example:
+            range:
+              - OK
+              - WAITING
+          items:
+            $ref: "#/components/schemas/RequestStatus"
         dateWhen:
           description: Время когда
           oneOf:

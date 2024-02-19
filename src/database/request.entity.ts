@@ -23,6 +23,7 @@ import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { MSRangeEnum } from '@/interfaces';
 
 @Entity('application')
 export class RequestEntity {
@@ -121,7 +122,7 @@ export class RequestEntity {
     required: false,
   })
   @IsEnum(RequestStatus, { each: true })
-  status!: RequestStatus | Array<RequestStatus>;
+  status!: RequestStatus;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
@@ -184,7 +185,7 @@ export class RequestEntity {
     required: true,
   })
   @IsEnum(RequestApprove, { each: true })
-  approved!: RequestApprove | Array<RequestApprove>;
+  approved!: RequestApprove;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   @Index()
