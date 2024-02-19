@@ -3876,63 +3876,56 @@ components:
           description: Избранный монитор
           example: false
         price1s:
-          type: array
           description: Стоимость показа 1 секунды в рублях
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
           examples:
             one: 1
             range:
               - 1
               - 2
-          items:
-            oneOf:
-              - type: integer
-              - type: array
-                items:
-                  type: integer
         minWarranty:
-          type: array
           description: Гарантированное минимальное количество показов в день
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
           examples:
             one: 1
             range:
               - 1
               - 2
-          items:
-            oneOf:
-              - type: integer
-              - type: array
-                items:
-                  type: integer
         maxDuration:
-          type: array
           description: Максимальная длительность плэйлиста в секундах
+          oneOf:
+            - type: integer
+            - type: array
+              items:
+                type: integer
           examples:
             one: 1
             range:
               - 1
               - 2
-          items:
-            oneOf:
-              - type: integer
-              - type: array
-                items:
-                  type: integer
         dateWhenApp:
           description: Время начала проигрывания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
           examples:
             one: "2021-12-31T10:10:10"
             range:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
-          type: array
-          items:
-            oneOf:
-              - type: string
-                format: date-time
-              - type: array
-                items:
-                  type: string
-                  format: date-time
+          format: date-time
         createdAt:
           description: Время создания
           oneOf:
