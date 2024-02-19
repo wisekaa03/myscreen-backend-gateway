@@ -6,13 +6,11 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
-  Unique,
 } from 'typeorm';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('monitor_multiple')
-@Unique(['monitor'])
 export class MonitorGroupEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({

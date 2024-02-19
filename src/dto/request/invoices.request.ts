@@ -22,8 +22,6 @@ export class InvoicesRequest extends PartialType(
     },
     required: false,
   })
-  @IsDefined({ each: true })
-  @IsNotEmpty({ each: true })
   @IsNumber(undefined, { each: true })
   @Min(100, { each: true })
   sum?: MSRange<number>;

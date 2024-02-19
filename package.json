@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.44.7",
+  "version": "2.44.8",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -104,7 +104,7 @@
     "**/**/qs": ">=6.11.2",
     "**/**/universalify": ">=2.0.1",
     "**/**/uuid": ">=9.0.1",
-    "**/**/webpack": ">=5.90.2",
+    "**/**/webpack": ">=5.90.3",
     "**/**/which": ">=4.0.0",
     "**/**/write-file-atomic": ">=5.0.1",
     "**/**/ws": ">=8.16.0"
@@ -196,6 +196,6 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
-    "webpack": "^5.90.2"
+    "webpack": "^5.90.3"
   }
 }
