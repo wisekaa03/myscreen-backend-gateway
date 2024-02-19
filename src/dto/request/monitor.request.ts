@@ -21,7 +21,6 @@ export class MonitorRequest extends PartialType(
   ]),
 ) {
   @ApiProperty({
-    type: 'array',
     description: 'Стоимость показа 1 секунды в рублях',
     oneOf: [{ type: 'integer' }, { type: 'array', items: { type: 'integer' } }],
     examples: {
@@ -34,7 +33,6 @@ export class MonitorRequest extends PartialType(
   price1s!: MSRange<number>;
 
   @ApiProperty({
-    type: 'array',
     description: 'Гарантированное минимальное количество показов в день',
     oneOf: [{ type: 'integer' }, { type: 'array', items: { type: 'integer' } }],
     examples: {
@@ -47,7 +45,6 @@ export class MonitorRequest extends PartialType(
   minWarranty!: MSRange<number>;
 
   @ApiProperty({
-    type: 'array',
     description: 'Максимальная длительность плэйлиста в секундах',
     oneOf: [{ type: 'integer' }, { type: 'array', items: { type: 'integer' } }],
     examples: {
@@ -61,7 +58,6 @@ export class MonitorRequest extends PartialType(
 
   @ApiProperty({
     description: 'Время начала проигрывания',
-    type: 'array',
     oneOf: [
       { type: 'string', format: 'date-time' },
       { type: 'array', items: { type: 'string', format: 'date-time' } },
@@ -71,7 +67,6 @@ export class MonitorRequest extends PartialType(
       range: ['2021-12-31T10:10:10', '2022-12-31T10:10:10'],
     },
     format: 'date-time',
-    isArray: true,
     required: false,
   })
   @IsDateString({ strict: false }, { each: true })
