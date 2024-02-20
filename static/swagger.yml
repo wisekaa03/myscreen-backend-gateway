@@ -2798,7 +2798,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.44.9
+  version: 2.44.10
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -6029,7 +6029,7 @@ components:
         - CONFIRMED_PENDING_PAYMENT
         - PAID
         - CANCELLED
-    InvoicesRequest:
+    InvoiceRequest:
       type: object
       properties:
         id:
@@ -6043,9 +6043,6 @@ components:
           type: string
           description: Описание заказа
           example: описание заказа
-        status:
-          example: AWAITING_CONFIRMATION
-          $ref: "#/components/schemas/InvoiceStatus"
         sum:
           description: Сумма счета
           oneOf:
@@ -6058,6 +6055,14 @@ components:
             range:
               - 1000
               - 2000
+        status:
+          type: array
+          example:
+            range:
+              - AWAITING_CONFIRMATION
+              - CANCELLED
+          items:
+            $ref: "#/components/schemas/InvoiceStatus"
         createdAt:
           description: Время создания
           oneOf:
@@ -6094,7 +6099,7 @@ components:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/InvoicesRequest"
+            - $ref: "#/components/schemas/InvoiceRequest"
         select:
           type: array
           description: Выбрать поля
