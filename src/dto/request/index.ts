@@ -28,7 +28,7 @@ export * from './files-copy.request';
 export * from './files-delete.request';
 export * from './files-get.request';
 export * from './file-preview.request';
-export * from './invoices.request';
+export * from './invoice.request';
 export * from './invoices-get.request';
 export * from './invoice-create.request';
 export * from './playlist.request';

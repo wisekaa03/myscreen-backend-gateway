@@ -25,8 +25,12 @@ import {
   ResetPasswordInvitationRequest,
   FilesGetRequest,
   AuthRefreshRequest,
+  MonitorsGetRequest,
+  MonitorsGetResponse,
+  InvoicesGetRequest,
+  InvoicesGetResponse,
 } from '@/dto';
-import { Status, UserRoleEnum } from '@/enums';
+import { MonitorStatus, Status, UserRoleEnum } from '@/enums';
 import { generateMailToken } from '@/utils/mail-token';
 import { validationPipeOptions } from '@/utils/validation-pipe-options';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
@@ -798,6 +802,128 @@ describe('Backend API (e2e)', () => {
         .expect(200);
 
       expect(body.status).toBe(Status.Success);
+    });
+  });
+
+  /**
+   *
+   * Мониторы
+   *
+   */
+  describe('Мониторы /monitor', () => {
+    /**
+     * Получение списка мониторов (неуспешно)
+     */
+    test('POST /monitor [unsuccess] (Получение списка мониторов)', async () => {
+      if (!token) {
+        expect(false).toEqual(true);
+      }
+
+      const monitors: MonitorsGetRequest = {
+        where: {},
+        scope: { limit: 0 },
+      };
+
+      await request
+        .post(`${apiPath}/monitor`)
+        .auth(token, { type: 'bearer' })
+        .send(monitors)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
+
+    /**
+     * Получение списка файлов
+     */
+    test('POST /monitor (Получение списка мониторов)', async () => {
+      if (!token) {
+        expect(false).toEqual(true);
+      }
+
+      const monitors: MonitorsGetRequest = {
+        where: {
+          name: '%',
+          status: MonitorStatus.Offline,
+          price1s: [0, 10000],
+          minWarranty: [0, 10000],
+          maxDuration: [0, 10000],
+          dateWhenApp: [
+            new Date('2000-01-01T00:00:00'),
+            new Date('2030-01-01T00:00:00'),
+          ],
+        },
+        scope: {},
+      };
+
+      await request
+        .post(`${apiPath}/monitor`)
+        .auth(token, { type: 'bearer' })
+        .send(monitors)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data[0]?.user?.password).toBeUndefined();
+        });
+    });
+  });
+
+  /**
+   *
+   * Счета
+   *
+   */
+  describe('Счета /invoice', () => {
+    /**
+     * Получение списка счетов (неуспешно)
+     */
+    test('POST /invoice [unsuccess] (Получение списка счетов)', async () => {
+      if (!token) {
+        expect(false).toEqual(true);
+      }
+
+      const invoices: InvoicesGetRequest = {
+        where: {},
+        scope: { limit: 0 },
+      };
+
+      await request
+        .post(`${apiPath}/invoice`)
+        .auth(token, { type: 'bearer' })
+        .send(invoices)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
+
+    /**
+     * Получение списка счетов
+     */
+    test('POST /invoice (Получение списка счетов)', async () => {
+      if (!token) {
+        expect(false).toEqual(true);
+      }
+
+      const invoices: InvoicesGetRequest = {
+        where: { sum: [100, 10000] },
+        scope: {},
+      };
+
+      await request
+        .post(`${apiPath}/invoice`)
+        .auth(token, { type: 'bearer' })
+        .send(invoices)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoicesGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data[0]?.user?.password).toBeUndefined();
+        });
     });
   });
 
