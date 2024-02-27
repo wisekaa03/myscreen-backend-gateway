@@ -14,14 +14,12 @@ import {
   In,
 } from 'typeorm';
 
+import { administratorFolderId, administratorFolderName } from '@/constants';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderFileNumberEntity } from './folder.view.entity';
 import { UserEntity } from './user.entity';
-
-export const administratorFolderId = '00000000-0000-0000-0000-000000000000';
-export const administratorFolderName = '<Администраторская папка>';
 
 @Injectable()
 export class FolderService {
@@ -41,8 +39,11 @@ export class FolderService {
     caseInsensitive = true,
   ): Promise<FolderEntity[]> {
     return caseInsensitive
-      ? TypeOrmFind.findCI(this.folderRepository, TypeOrmFind.findParams(find))
-      : this.folderRepository.find(TypeOrmFind.findParams(find));
+      ? TypeOrmFind.findCI(
+          this.folderRepository,
+          TypeOrmFind.findParams(FolderEntity, find),
+        )
+      : this.folderRepository.find(TypeOrmFind.findParams(FolderEntity, find));
   }
 
   async findAndCount(
@@ -52,10 +53,10 @@ export class FolderService {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(
           this.folderFilenumberRepository,
-          TypeOrmFind.findParams(find),
+          TypeOrmFind.findParams(FolderFileNumberEntity, find),
         )
       : this.folderFilenumberRepository.findAndCount(
-          TypeOrmFind.findParams(find),
+          TypeOrmFind.findParams(FolderFileNumberEntity, find),
         );
   }
 
@@ -63,7 +64,7 @@ export class FolderService {
     find: FindOneOptions<FolderEntity>,
   ): Promise<FolderEntity | null> {
     return this.folderFilenumberRepository.findOne(
-      TypeOrmFind.findParams(find),
+      TypeOrmFind.findParams(FolderFileNumberEntity, find),
     );
   }
 

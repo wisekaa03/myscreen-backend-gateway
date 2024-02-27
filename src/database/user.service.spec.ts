@@ -5,7 +5,7 @@ import { subDays } from 'date-fns';
 import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
 import { Observable } from 'rxjs';
-import { MAIL_SERVICE } from '@/interfaces';
+import { MAIL_SERVICE } from '@/constants';
 import { CRUD, UserPlanEnum, UserRoleEnum } from '@/enums';
 import { UserEntity } from './user.entity';
 import { UserExtEntity } from './user-ext.entity';

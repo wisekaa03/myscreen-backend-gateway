@@ -25,7 +25,6 @@ import {
   PlaylistCreateRequest,
   SuccessResponse,
   PlaylistUpdateRequest,
-  PlaylistRequest,
 } from '@/dto';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
@@ -67,7 +66,7 @@ export class PlaylistController {
     @Body() { where: origWhere, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
     const { id: userId, role } = user;
-    const where = TypeOrmFind.where<PlaylistRequest, PlaylistEntity>(origWhere);
+    const where = TypeOrmFind.where(PlaylistEntity, origWhere);
     if (Array.isArray(where)) {
       where.push({ hide: false });
     } else {

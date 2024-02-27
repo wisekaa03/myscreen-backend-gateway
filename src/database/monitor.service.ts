@@ -43,11 +43,11 @@ export class MonitorService {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
-      monitorWhere = TypeOrmFind.findParams(find);
+      monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
     } else {
       monitorWhere = {
         relations: { files: true, playlist: true, favorities: true },
-        ...TypeOrmFind.findParams(find),
+        ...TypeOrmFind.findParams(MonitorEntity, find),
       };
     }
 
@@ -73,7 +73,7 @@ export class MonitorService {
     find: FindManyOptions<MonitorEntity>;
     caseInsensitive?: boolean;
   }): Promise<number> {
-    const monitorWhere = TypeOrmFind.findParams(find);
+    const monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
     const monitor = caseInsensitive
       ? await TypeOrmFind.countCI(this.monitorRepository, monitorWhere)
       : await this.monitorRepository.count(monitorWhere);
@@ -93,7 +93,7 @@ export class MonitorService {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
-      monitorWhere = TypeOrmFind.findParams(find);
+      monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
     } else {
       monitorWhere = {
         relations: {
@@ -102,7 +102,7 @@ export class MonitorService {
           favorities: true,
           groupMonitors: true,
         },
-        ...TypeOrmFind.findParams(find),
+        ...TypeOrmFind.findParams(MonitorEntity, find),
       };
     }
 
@@ -160,7 +160,7 @@ export class MonitorService {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
-      monitorWhere = TypeOrmFind.findParams(find);
+      monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
     } else {
       monitorWhere = {
         relations: {
@@ -169,7 +169,7 @@ export class MonitorService {
           favorities: true,
           groupMonitors: true,
         },
-        ...TypeOrmFind.findParams(find),
+        ...TypeOrmFind.findParams(MonitorEntity, find),
       };
     }
 

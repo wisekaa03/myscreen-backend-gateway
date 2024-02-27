@@ -8,7 +8,8 @@ import { In } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
-import { MAIL_SERVICE, PrintReportDeviceStatus } from '@/interfaces';
+import { PrintReportDeviceStatus } from '@/interfaces';
+import { MAIL_SERVICE } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
 import { UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';

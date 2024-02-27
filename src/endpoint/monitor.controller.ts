@@ -110,21 +110,21 @@ export class MonitorController {
       // добавляем то, что содержится у нас в userId: monitorId.
       find.where = {
         id: userId,
-        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
+        ...TypeOrmFind.where(MonitorEntity, where),
       };
     } else if (role === UserRoleEnum.MonitorOwner) {
       find.where = {
         userId,
-        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
+        ...TypeOrmFind.where(MonitorEntity, where),
       };
     } else if (role === UserRoleEnum.Administrator) {
-      find.where = TypeOrmFind.where<MonitorRequest, MonitorEntity>(where);
+      find.where = TypeOrmFind.where(MonitorEntity, where);
     } else {
       find.where = {
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
-        ...TypeOrmFind.where<MonitorRequest, MonitorEntity>(where),
+        ...TypeOrmFind.where(MonitorEntity, where),
       };
     }
     if (
@@ -211,9 +211,13 @@ export class MonitorController {
         );
       }
     }
+    const where: FindOptionsWhere<MonitorEntity> = { name: insert.name };
+    if (role !== UserRoleEnum.Administrator) {
+      where.userId = userId;
+    }
     const findMonitor = await this.monitorService.findOne({
       find: {
-        where: { name: insert.name, userId },
+        where,
         select: ['id', 'name'],
       },
     });

@@ -21,11 +21,8 @@ import { subDays } from 'date-fns/subDays';
 import { intervalToDuration } from 'date-fns/intervalToDuration';
 import { ClientProxy } from '@nestjs/microservices';
 
-import {
-  MAIL_SERVICE,
-  MailForgotPassword,
-  MailSendVerificationCode,
-} from '@/interfaces';
+import { MailForgotPassword, MailSendVerificationCode } from '@/interfaces';
+import { MAIL_SERVICE } from '@/constants';
 import { RegisterRequest } from '@/dto/request/register.request';
 import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
@@ -412,8 +409,11 @@ export class UserService {
     caseInsensitive = true,
   ): Promise<UserEntity[]> {
     return caseInsensitive
-      ? TypeOrmFind.findCI(this.userRepository, TypeOrmFind.findParams(find))
-      : this.userRepository.find(TypeOrmFind.findParams(find));
+      ? TypeOrmFind.findCI(
+          this.userRepository,
+          TypeOrmFind.findParams(UserEntity, find),
+        )
+      : this.userRepository.find(TypeOrmFind.findParams(UserEntity, find));
   }
 
   async findAndCount(
@@ -423,9 +423,11 @@ export class UserService {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(
           this.userExtRepository,
-          TypeOrmFind.findParams(options),
+          TypeOrmFind.findParams(UserExtEntity, options),
         )
-      : this.userExtRepository.findAndCount(TypeOrmFind.findParams(options));
+      : this.userExtRepository.findAndCount(
+          TypeOrmFind.findParams(UserExtEntity, options),
+        );
   }
 
   async findByEmail(

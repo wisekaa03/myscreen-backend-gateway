@@ -15,7 +15,7 @@ import {
   ProducerDeserializer,
 } from '@nestjs/microservices';
 
-import { EDITOR_SERVICE, FILE_SERVICE, MAIL_SERVICE } from '@/interfaces';
+import { EDITOR_SERVICE, FILE_SERVICE, MAIL_SERVICE } from '@/constants';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';

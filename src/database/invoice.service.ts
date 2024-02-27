@@ -7,7 +7,8 @@ import { ru as dateRu } from 'date-fns/locale/ru';
 import { ClientProxy } from '@nestjs/microservices';
 
 import { lastValueFrom } from 'rxjs';
-import { MAIL_SERVICE, PrintInvoice } from '@/interfaces';
+import { PrintInvoice } from '@/interfaces';
+import { MAIL_SERVICE } from '@/constants';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { SpecificFormat } from '@/enums/specific-format.enum';
@@ -35,13 +36,17 @@ export class InvoiceService {
   async find(
     find: FindManyOptions<InvoiceEntity>,
   ): Promise<[Array<InvoiceEntity>, number]> {
-    return this.invoiceRepository.findAndCount(TypeOrmFind.findParams(find));
+    return this.invoiceRepository.findAndCount(
+      TypeOrmFind.findParams(InvoiceEntity, find),
+    );
   }
 
   async findOne(
     find: FindManyOptions<InvoiceEntity>,
   ): Promise<InvoiceEntity | null> {
-    return this.invoiceRepository.findOne(TypeOrmFind.findParams(find));
+    return this.invoiceRepository.findOne(
+      TypeOrmFind.findParams(InvoiceEntity, find),
+    );
   }
 
   async create(

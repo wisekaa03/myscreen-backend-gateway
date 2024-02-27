@@ -26,7 +26,6 @@ import {
   SuccessResponse,
   RequestPrecalcPromoRequest,
   RequestPrecalcResponse,
-  ApplicationsRequest,
   RequestPrecalcSumRequest,
 } from '@/dto';
 import { ApiComplexDecorators, Crud } from '@/decorators';
@@ -69,9 +68,7 @@ export class RequestController {
     @Req() { user }: ExpressRequest,
     @Body() { where: origWhere, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
-    const where = TypeOrmFind.where<ApplicationsRequest, RequestEntity>(
-      origWhere,
-    );
+    const where = TypeOrmFind.where(RequestEntity, origWhere);
     if (user.role === UserRoleEnum.MonitorOwner) {
       const [data, count] = await this.requestService.findAndCount({
         ...paginationQueryToConfig(scope),

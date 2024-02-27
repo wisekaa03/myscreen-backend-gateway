@@ -50,16 +50,14 @@ import {
   FilesCopyRequest,
 } from '@/dto';
 import { UserRoleEnum, VideoType, Status, CRUD } from '@/enums';
+import { administratorFolderId } from '@/constants';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FileEntity } from '@/database/file.entity';
-import {
-  FolderService,
-  administratorFolderId,
-} from '@/database/folder.service';
+import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
 
 @ApiExtraModels(FileUploadRequest)
@@ -122,7 +120,10 @@ export class FileController {
             relations: {},
             select,
             where: {
-              ...TypeOrmFind.where({ ...where, folderId: undefined }),
+              ...TypeOrmFind.where(FileEntity, {
+                ...where,
+                folderId: undefined,
+              }),
               userId: userExpressionId,
             },
           },
@@ -139,7 +140,7 @@ export class FileController {
           relations: {},
           select,
           where: {
-            ...TypeOrmFind.where(where),
+            ...TypeOrmFind.where(FileEntity, where),
             userId:
               user.role === UserRoleEnum.Administrator ? undefined : user.id,
           },
