@@ -211,9 +211,13 @@ export class MonitorController {
         );
       }
     }
+    const where: FindOptionsWhere<MonitorEntity> = { name: insert.name };
+    if (role !== UserRoleEnum.Administrator) {
+      where.userId = userId;
+    }
     const findMonitor = await this.monitorService.findOne({
       find: {
-        where: { name: insert.name, userId },
+        where,
         select: ['id', 'name'],
       },
     });
