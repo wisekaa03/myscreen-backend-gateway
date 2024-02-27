@@ -1,5 +1,5 @@
 import { Type } from '@nestjs/common';
-import { isFunction, isString } from '@nestjs/common/utils/shared.utils';
+import { isFunction } from '@nestjs/common/utils/shared.utils';
 import { DECORATORS } from '@nestjs/swagger/dist/constants';
 
 export const swaggerGetModelProperties = (prototype: Type<unknown>): string[] =>
@@ -9,14 +9,12 @@ export const swaggerGetModelProperties = (prototype: Type<unknown>): string[] =>
       prototype.prototype,
     ) || []
   )
-    .filter(isString)
+    .map((key: string) => key.slice(1))
     .filter(
       (key: string) =>
-        key.charAt(0) === ':' &&
         !isFunction(
           (prototype.prototype as unknown as Record<string, any>)[key],
         ) &&
-        key !== ':signedUrl' &&
-        key !== ':groupIds',
-    )
-    .map((key: string) => key.slice(1));
+        key !== 'signedUrl' &&
+        key !== 'groupIds',
+    );

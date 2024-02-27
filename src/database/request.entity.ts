@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Generated,
   Index,
   JoinColumn,
   ManyToOne,
@@ -23,7 +24,6 @@ import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { MSRangeEnum } from '@/interfaces';
 
 @Entity('application')
 export class RequestEntity {
@@ -34,6 +34,15 @@ export class RequestEntity {
   })
   @IsUUID()
   id?: string;
+
+  @Generated('increment')
+  @Index()
+  @Column({ type: 'integer' })
+  @ApiProperty({
+    description: 'Номер заявки',
+  })
+  @IsNumber()
+  seqNo!: number;
 
   @ManyToOne(() => UserEntity, (buyer) => buyer.id, {
     onDelete: 'CASCADE',

@@ -13,7 +13,7 @@ import {
 import { subDays } from 'date-fns/subDays';
 import { ClientProxy } from '@nestjs/microservices';
 
-import { MAIL_SERVICE } from '@/interfaces';
+import { MAIL_SERVICE } from '@/constants';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { ActService } from './act.service';
@@ -56,13 +56,17 @@ export class WalletService {
   async find(
     find: FindManyOptions<WalletEntity>,
   ): Promise<[Array<WalletEntity>, number]> {
-    return this.walletRepository.findAndCount(TypeOrmFind.findParams(find));
+    return this.walletRepository.findAndCount(
+      TypeOrmFind.findParams(WalletEntity, find),
+    );
   }
 
   async findOne(
     find: FindManyOptions<WalletEntity>,
   ): Promise<WalletEntity | null> {
-    return this.walletRepository.findOne(TypeOrmFind.findParams(find));
+    return this.walletRepository.findOne(
+      TypeOrmFind.findParams(WalletEntity, find),
+    );
   }
 
   create({

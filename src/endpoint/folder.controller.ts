@@ -31,15 +31,13 @@ import {
   FoldersCopyRequest,
   FolderIdUpdateRequest,
 } from '@/dto';
+import { administratorFolderId } from '@/constants';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FolderEntity } from '@/database/folder.entity';
-import {
-  FolderService,
-  administratorFolderId,
-} from '@/database/folder.service';
+import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { getFullName } from '@/utils/full-name';
@@ -100,7 +98,7 @@ export class FolderController {
           ...paginationQueryToConfig(scope),
           select,
           where: {
-            ...TypeOrmFind.where({
+            ...TypeOrmFind.where(FolderEntity, {
               ...where,
               parentFolderId: parentFolder.id,
             }),
@@ -133,7 +131,7 @@ export class FolderController {
         ...paginationQueryToConfig(scope),
         select,
         where: {
-          ...TypeOrmFind.where(where),
+          ...TypeOrmFind.where(FolderEntity, where),
           userId: role === UserRoleEnum.Administrator ? undefined : user.id,
         },
       });

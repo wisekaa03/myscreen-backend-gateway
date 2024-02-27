@@ -25,7 +25,8 @@ import { parseISO } from 'date-fns/parseISO';
 import { differenceInDays } from 'date-fns/differenceInDays';
 import { ClientProxy } from '@nestjs/microservices';
 
-import { MAIL_SERVICE, MailSendApplicationMessage } from '@/interfaces';
+import { MailSendApplicationMessage } from '@/interfaces';
+import { MAIL_SERVICE } from '@/constants';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { RequestApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
@@ -74,7 +75,7 @@ export class RequestService {
     caseInsensitive = true,
   ): Promise<Array<RequestEntity>> {
     let result: Array<RequestEntity>;
-    const findLocal = TypeOrmFind.findParams(find);
+    const findLocal = TypeOrmFind.findParams(RequestEntity, find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -99,7 +100,7 @@ export class RequestService {
     caseInsensitive = true,
   ): Promise<[Array<RequestEntity>, number]> {
     let result: [Array<RequestEntity>, number];
-    const findLocal = TypeOrmFind.findParams(find);
+    const findLocal = TypeOrmFind.findParams(RequestEntity, find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -126,7 +127,7 @@ export class RequestService {
     caseInsensitive = true,
   ): Promise<RequestEntity | null> {
     let result: RequestEntity | null;
-    const findLocal = TypeOrmFind.findParams(find);
+    const findLocal = TypeOrmFind.findParams(RequestEntity, find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -140,11 +141,11 @@ export class RequestService {
     if (caseInsensitive) {
       result = await TypeOrmFind.findOneCI(
         this.requestRepository,
-        TypeOrmFind.findParams(find),
+        TypeOrmFind.findParams(RequestEntity, find),
       );
     } else {
       result = await this.requestRepository.findOne(
-        TypeOrmFind.findParams(find),
+        TypeOrmFind.findParams(RequestEntity, find),
       );
     }
 

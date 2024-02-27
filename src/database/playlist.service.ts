@@ -13,7 +13,6 @@ import {
   FindOptionsWhere,
   Repository,
 } from 'typeorm';
-import { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserRoleEnum } from '@/enums/user-role.enum';
@@ -37,11 +36,11 @@ export class PlaylistService {
     return caseInsensitive
       ? TypeOrmFind.findCI(this.playlistRepository, {
           relations: { files: true, monitors: true },
-          ...TypeOrmFind.findParams(find),
+          ...TypeOrmFind.findParams(PlaylistEntity, find),
         })
       : this.playlistRepository.find({
           relations: { files: true, monitors: true },
-          ...TypeOrmFind.findParams(find),
+          ...TypeOrmFind.findParams(PlaylistEntity, find),
         });
   }
 
@@ -52,11 +51,11 @@ export class PlaylistService {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.playlistRepository, {
           relations: { files: true, monitors: true },
-          ...TypeOrmFind.findParams(find),
+          ...TypeOrmFind.findParams(PlaylistEntity, find),
         })
       : this.playlistRepository.findAndCount({
           relations: { files: true, monitors: true },
-          ...TypeOrmFind.findParams(find),
+          ...TypeOrmFind.findParams(PlaylistEntity, find),
         });
   }
 
@@ -65,7 +64,7 @@ export class PlaylistService {
   ): Promise<PlaylistEntity | null> {
     return this.playlistRepository.findOne({
       relations: { files: true, monitors: true },
-      ...TypeOrmFind.findParams(find),
+      ...TypeOrmFind.findParams(PlaylistEntity, find),
     });
   }
 

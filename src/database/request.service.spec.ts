@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-import { MAIL_SERVICE } from '@/interfaces';
+import { MAIL_SERVICE } from '@/constants';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { RequestEntity } from './request.entity';
 import { RequestService } from './request.service';

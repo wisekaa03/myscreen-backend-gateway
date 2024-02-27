@@ -81,7 +81,7 @@ export class EditorController {
     const [data, count] = await this.editorService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
-      where: { ...TypeOrmFind.where(where), userId: user.id },
+      where: { ...TypeOrmFind.where(EditorEntity, where), userId: user.id },
     });
 
     return {

@@ -78,7 +78,7 @@ export class InvoiceController {
     const [data, count] = await this.invoiceService.find({
       ...paginationQueryToConfig(scope),
       select,
-      where: { ...TypeOrmFind.where(where), userId: whenUserId },
+      where: { ...TypeOrmFind.where(InvoiceEntity, where), userId: whenUserId },
     });
 
     return {

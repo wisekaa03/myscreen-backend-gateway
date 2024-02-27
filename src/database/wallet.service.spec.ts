@@ -6,7 +6,7 @@ import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
 import { ActService } from './act.service';
-import { MAIL_SERVICE } from '@/interfaces';
+import { MAIL_SERVICE } from '@/constants';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),

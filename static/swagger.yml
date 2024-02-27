@@ -2798,7 +2798,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.44.11
+  version: 2.44.12
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4691,6 +4691,9 @@ components:
           type: string
           description: Идентификатор взаимодействия
           format: uuid
+        seqNo:
+          type: number
+          description: Номер заявки
         buyer:
           description: Покупатель
           allOf:
@@ -4759,6 +4762,7 @@ components:
           format: date-time
       required:
         - id
+        - seqNo
         - buyer
         - seller
         - monitor
@@ -6438,6 +6442,9 @@ components:
           type: string
           description: Идентификатор взаимодействия
           format: uuid
+        seqNo:
+          type: number
+          description: Номер заявки
         buyerId:
           type: object
           description: Покупатель ID
@@ -6555,6 +6562,7 @@ components:
             type: string
             enum:
               - id
+              - seqNo
               - buyer
               - buyerId
               - seller

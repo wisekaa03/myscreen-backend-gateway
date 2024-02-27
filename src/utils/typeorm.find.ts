@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import { isDateString } from 'class-validator';
+import { intersection } from 'lodash';
 import {
   FindManyOptions,
   FindOptionsWhere,
@@ -12,6 +13,9 @@ import {
   In,
   LessThanOrEqual,
   MoreThanOrEqual,
+  getMetadataArgsStorage,
+  EntityTarget,
+  FindOptionsRelations,
 } from 'typeorm';
 
 export class TypeOrmFind {
@@ -19,10 +23,24 @@ export class TypeOrmFind {
     repository: Repository<Entity>,
     find: FindManyOptions<Entity>,
   ): SelectQueryBuilder<Entity> => {
-    const { order: orderBy /* ...withoutOrder */ } = find;
-    const qb = repository.createQueryBuilder();
-    qb.setFindOptions(find);
+    const { order: orderBy, select, ...data } = find;
+    let { relations, loadEagerRelations } = find;
     const columns = repository.metadata.ownColumns;
+    const qb = repository.createQueryBuilder();
+    if (select) {
+      relations = intersection(
+        select as string[],
+        Object.keys(relations as FindOptionsRelations<Entity>),
+      );
+      loadEagerRelations = false;
+    }
+    qb.setFindOptions({
+      ...data,
+      ...orderBy,
+      select,
+      relations,
+      loadEagerRelations,
+    });
     if (orderBy) {
       Object.entries(orderBy).forEach(([field, direction]) => {
         const column = columns.find(
@@ -31,7 +49,7 @@ export class TypeOrmFind {
         const d = direction === 'DESC' ? 'DESC' : 'ASC';
         // TODO: эх... разобраться с relations:  || (find.relations && (find.take || find.skip))
         if (
-          column !== String ||
+          column !== 'string' ||
           (find.relations &&
             ((Array.isArray(find.relations) && find.relations.length > 0) ||
               Object.keys(find.relations).length > 0) &&
@@ -76,20 +94,27 @@ export class TypeOrmFind {
     find: FindManyOptions<Entity>,
   ): Promise<[Entity[], number]> => {
     const qb = this.findOrder(repository, find);
-    return Promise.all([qb.getMany(), qb.getCount()]);
+    return qb.getManyAndCount();
   };
 
   static findParams = <Entity extends ObjectLiteral = ObjectLiteral>(
+    entityClass: EntityTarget<Entity>,
     find: FindManyOptions<Entity>,
   ): FindManyOptions<Entity> =>
-    find.where ? { ...find, where: TypeOrmFind.where(find.where) } : find;
+    find.where
+      ? { ...find, where: TypeOrmFind.where(entityClass, find.where) }
+      : find;
 
   static where = <
     Entity extends ObjectLiteral = ObjectLiteral,
     OriginalEntity extends ObjectLiteral = ObjectLiteral,
   >(
+    entityClass: EntityTarget<OriginalEntity>,
     where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[],
   ): FindOptionsWhere<OriginalEntity> | FindOptionsWhere<OriginalEntity>[] => {
+    const enumColumns = getMetadataArgsStorage().columns.filter(
+      (value) => value.options.type === 'enum',
+    );
     if (Array.isArray(where)) {
       const whereIsNull = where.map((whereField) =>
         Object.entries(whereField).reduce(
@@ -119,6 +144,11 @@ export class TypeOrmFind {
                     dayjs(value[0]).endOf('day').toDate(),
                   ),
                 };
+              }
+              if (
+                enumColumns.filter((v) => v.propertyName === field).length > 0
+              ) {
+                return { ...accWhere, [field]: In(value) };
               }
               return { ...accWhere, [field]: Between(value[0], value[1]) };
             }
@@ -179,6 +209,11 @@ export class TypeOrmFind {
                     dayjs(value[0]).endOf('day').toDate(),
                   ),
                 };
+              }
+              if (
+                enumColumns.filter((v) => v.propertyName === field).length > 0
+              ) {
+                return { ...accWhere, [field]: In(value) };
               }
               return { ...accWhere, [field]: Between(value[0], value[1]) };
             }

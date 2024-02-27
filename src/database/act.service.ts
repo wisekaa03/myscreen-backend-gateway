@@ -23,11 +23,13 @@ export class ActService {
   async find(
     find: FindManyOptions<ActEntity>,
   ): Promise<[Array<ActEntity>, number]> {
-    return this.actRepository.findAndCount(TypeOrmFind.findParams(find));
+    return this.actRepository.findAndCount(
+      TypeOrmFind.findParams(ActEntity, find),
+    );
   }
 
   async findOne(find: FindManyOptions<ActEntity>): Promise<ActEntity | null> {
-    return this.actRepository.findOne(TypeOrmFind.findParams(find));
+    return this.actRepository.findOne(TypeOrmFind.findParams(ActEntity, find));
   }
 
   async create({
