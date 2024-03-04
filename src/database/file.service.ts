@@ -507,73 +507,82 @@ export class FileService {
 
   async deletePrep(filesId: string[]): Promise<void> {
     const [videoFiles, audioFiles, playlistFiles] = await Promise.all([
-      this.editorService.find({
-        where: [
-          {
-            videoLayers: {
-              file: { id: In(filesId) },
+      this.editorService.find(
+        {
+          where: [
+            {
+              videoLayers: {
+                file: { id: In(filesId) },
+              },
             },
-          },
-        ],
-        select: {
-          id: true,
-          name: true,
-          videoLayers: {
-            id: true,
-            file: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-        relations: {
-          videoLayers: {
-            file: true,
-          },
-        },
-        loadEagerRelations: false,
-      }),
-      this.editorService.find({
-        where: [
-          {
-            audioLayers: {
-              file: { id: In(filesId) },
-            },
-          },
-        ],
-        select: {
-          id: true,
-          name: true,
-          audioLayers: {
-            id: true,
-            file: {
-              id: true,
-              name: true,
-            },
-          },
-        },
-        relations: {
-          audioLayers: {
-            file: true,
-          },
-        },
-        loadEagerRelations: false,
-      }),
-      this.playlistService.find({
-        where: { files: { id: In(filesId) } },
-        select: {
-          id: true,
-          name: true,
-          files: {
+          ],
+          select: {
             id: true,
             name: true,
+            videoLayers: {
+              id: true,
+              file: {
+                id: true,
+                name: true,
+              },
+            },
           },
+          relations: {
+            videoLayers: {
+              file: true,
+            },
+          },
+          loadEagerRelations: false,
         },
-        relations: {
-          files: true,
+        false,
+      ),
+      this.editorService.find(
+        {
+          where: [
+            {
+              audioLayers: {
+                file: { id: In(filesId) },
+              },
+            },
+          ],
+          select: {
+            id: true,
+            name: true,
+            audioLayers: {
+              id: true,
+              file: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          relations: {
+            audioLayers: {
+              file: true,
+            },
+          },
+          loadEagerRelations: false,
         },
-        loadEagerRelations: false,
-      }),
+        false,
+      ),
+      this.playlistService.find(
+        {
+          where: { files: { id: In(filesId) } },
+          select: {
+            id: true,
+            name: true,
+            files: {
+              id: true,
+              name: true,
+            },
+          },
+          relations: {
+            files: true,
+          },
+          loadEagerRelations: false,
+        },
+        false,
+      ),
     ]);
 
     if (
@@ -614,13 +623,9 @@ export class FileService {
    * @param {string} filesId Files ID
    * @return {DeleteResult} {DeleteResult}
    */
-  async delete(user: UserEntity, filesId: string[]): Promise<DeleteResult> {
-    const where: FindOptionsWhere<FileEntity> = { id: In(filesId) };
-    if (user.role !== UserRoleEnum.Administrator) {
-      where.userId = user.id;
-    }
+  async delete(filesId: string[]): Promise<DeleteResult> {
     const files = await this.fileRepository.find({
-      where,
+      where: { id: In(filesId) },
       relations: ['folder'],
     });
 
@@ -641,7 +646,6 @@ export class FileService {
 
     return this.fileRepository.delete({
       id: In(files.map((file) => file.id)),
-      userId: user.id,
     });
   }
 
