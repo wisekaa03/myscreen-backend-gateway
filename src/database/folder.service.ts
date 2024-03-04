@@ -184,11 +184,11 @@ export class FolderService {
     });
   }
 
-  async delete(user: UserEntity, foldersId: string[]): Promise<DeleteResult> {
+  async delete(foldersId: string[]): Promise<DeleteResult> {
     return this.folderRepository.manager.transaction(async (transact) => {
       const folderSubId = await transact
         .find(FolderEntity, {
-          where: { userId: user.id, parentFolderId: In(foldersId) },
+          where: { parentFolderId: In(foldersId) },
           relations: [],
           loadEagerRelations: false,
           select: ['id'],
@@ -199,18 +199,18 @@ export class FolderService {
       const filesId = await this.fileService
         .find({
           find: {
-            where: { userId: user.id, folderId: In(fullFolders) },
+            where: { folderId: In(fullFolders) },
             relations: [],
             loadEagerRelations: false,
             select: ['id'],
           },
+          caseInsensitive: false,
         })
         .then((files) => files.map((file) => file.id));
       await this.fileService.deletePrep(filesId);
-      await this.fileService.delete(user, filesId);
+      await this.fileService.delete(filesId);
 
       return transact.delete(FolderEntity, {
-        userId: user.id,
         id: In(fullFolders),
       });
     });

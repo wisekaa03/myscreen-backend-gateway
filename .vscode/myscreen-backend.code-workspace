@@ -28,7 +28,6 @@
     // "editor.fontWeight": "500", // Medium
     // "editor.fontWeight": "600", // Bold
     "jest.debugMode": true,
-    "jest.showCoverageOnLoad": false,
     // "jest.pathToJest": "yarn test",
     // "jest.restartJestOnSnapshotUpdate": true,
     "javascript.format.enable": false,
@@ -47,25 +46,25 @@
     "[javascript]": {
       "editor.formatOnSave": false,
       "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true,
+        "source.fixAll.eslint": "explicit"
       }
     },
     "[javascriptreact]": {
       "editor.formatOnSave": false,
       "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true,
+        "source.fixAll.eslint": "explicit"
       }
     },
     "[typescript]": {
       "editor.formatOnSave": false,
       "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true,
+        "source.fixAll.eslint": "explicit"
       }
     },
     "[typescriptreact]": {
       "editor.formatOnSave": false,
       "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true,
+        "source.fixAll.eslint": "explicit"
       }
     },
     "typescript.tsdk": "node_modules/typescript/lib",
@@ -73,8 +72,6 @@
     "less.lint.float": "warning",
     "eslint.enable": true,
     "eslint.lintTask.enable": true,
-    "eslint.alwaysShowStatus": true,
-    "eslint.packageManager": "yarn",
     "eslint.trace.server": "verbose",
     "eslint.validate": [
       "javascript",
@@ -173,7 +170,6 @@
     },
     "todo-tree.general.tags": ["TODO","FIXME","BUG","DEBUG"],
     "npm.packageManager": "yarn",
-    "debug.node.autoAttach": "onlyWithFlag",
     "cSpell.language": "en,ru,en-GB,en-US",
     "cSpell.allowCompoundWords": true,
     "cSpell.enableFiletypes": [

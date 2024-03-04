@@ -595,7 +595,7 @@ export class FileController {
   ): Promise<SuccessResponse> {
     await this.fileService.deletePrep(filesId);
 
-    const { affected } = await this.fileService.delete(user, filesId);
+    const { affected } = await this.fileService.delete(filesId);
     if (!affected) {
       throw new NotFoundException('This file is not exists');
     }
@@ -623,7 +623,7 @@ export class FileController {
   ): Promise<SuccessResponse> {
     await this.fileService.deletePrep([fileId]);
 
-    const { affected } = await this.fileService.delete(user, [fileId]);
+    const { affected } = await this.fileService.delete([fileId]);
     if (!affected) {
       throw new NotFoundException('This file is not exists');
     }
