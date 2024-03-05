@@ -5,6 +5,7 @@ import {
   JoinColumn,
   OneToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,7 +15,7 @@ import { IsUUID } from 'class-validator';
 import { FileEntity } from './file.entity';
 
 @Entity('file_preview')
-@Unique(['file'])
+@Unique('preview_uniq_file', ['file'])
 export class FilePreviewEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
@@ -32,6 +33,9 @@ export class FilePreviewEntity {
   })
   @JoinColumn()
   file!: FileEntity;
+
+  @RelationId((preview: FilePreviewEntity) => preview.file)
+  fileId!: string;
 
   @Column({ type: 'bytea', nullable: true })
   preview!: Uint8Array;

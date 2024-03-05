@@ -472,6 +472,8 @@ export class FileController {
           'width',
           'height',
           'folderId',
+          'preview',
+          'folder',
         ],
         relations: { preview: true, folder: true },
       },
@@ -481,10 +483,7 @@ export class FileController {
     }
 
     try {
-      let buffer = file.preview?.preview;
-      if (!buffer || buffer.length === 0) {
-        buffer = await this.fileService.downloadPreviewFile(file);
-      }
+      const buffer = await this.fileService.downloadPreviewFile(file);
 
       res.setHeader('Content-Length', buffer.length);
       res.setHeader('Cache-Control', 'private, max-age=315360');
