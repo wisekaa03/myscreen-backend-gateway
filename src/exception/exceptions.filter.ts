@@ -10,7 +10,12 @@ import { BaseExceptionFilter } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { TypeORMError } from 'typeorm';
 
-import { InternalServerError, HttpError } from '@/dto';
+import {
+  InternalServerError,
+  HttpError,
+  ConflictData,
+  ConflictError,
+} from '@/dto';
 
 @Catch()
 export class ExceptionsFilter extends BaseExceptionFilter<Error> {
@@ -27,12 +32,12 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   }
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
-    if (exception instanceof ConflictException) {
-      return super.catch(exception, host);
-    }
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
-      let { message } = exception;
+      let { message } =
+        exception instanceof ConflictException
+          ? (response as ConflictData)
+          : exception;
       const { error, errors } = response as Record<string, string>;
       if (error) {
         message = `${error}: ${message}`;
@@ -45,12 +50,18 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
       let exceptionHttp: HttpException;
       const { name } = exception;
       if (HttpError[name as keyof typeof HttpError]) {
-        exceptionHttp = new HttpError[name as keyof typeof HttpError](message);
+        exceptionHttp =
+          name === 'ConflictException'
+            ? new ConflictError(message, {}, response as ConflictData)
+            : new HttpError[name as keyof typeof HttpError](message);
       } else {
         exceptionHttp = new InternalServerError(message);
       }
 
-      return super.catch(Object.assign(exception, exceptionHttp), host);
+      return super.catch(
+        Object.assign(exception, exceptionHttp, response),
+        host,
+      );
     }
 
     if (exception instanceof TypeORMError) {

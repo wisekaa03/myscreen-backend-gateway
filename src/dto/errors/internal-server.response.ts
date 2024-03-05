@@ -1,10 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  HttpException,
+  HttpExceptionOptions,
+  HttpStatus,
+} from '@nestjs/common';
 
 import { Status } from '@/enums/status.enum';
 
 export class InternalServerError extends HttpException {
-  constructor(message?: string) {
+  constructor(message?: string, options?: HttpExceptionOptions) {
     super(
       {
         status: Status.Error,
@@ -13,6 +17,7 @@ export class InternalServerError extends HttpException {
         message: message ?? 'Server error',
       },
       HttpStatus.INTERNAL_SERVER_ERROR,
+      options,
     );
   }
 

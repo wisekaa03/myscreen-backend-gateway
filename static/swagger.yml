@@ -2798,7 +2798,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.44.15
+  version: 2.44.16
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2948,6 +2948,9 @@ components:
     ConflictData:
       type: object
       properties:
+        message:
+          type: string
+          description: Описание ошибки
         video:
           description: Редакторы (видео)
           allOf:
@@ -2964,6 +2967,8 @@ components:
           description: Мониторы
           allOf:
             - $ref: "#/components/schemas/ConflictDataFile"
+      required:
+        - message
     ConflictError:
       type: object
       properties:
@@ -2976,13 +2981,13 @@ components:
         message:
           type: string
           example: Conflict exists
-        data:
+        error:
           $ref: "#/components/schemas/ConflictData"
       required:
         - statusCode
         - code
         - message
-        - data
+        - error
     PreconditionFailedError:
       type: object
       properties:
