@@ -2948,9 +2948,6 @@ components:
     ConflictData:
       type: object
       properties:
-        message:
-          type: string
-          description: Описание ошибки
         video:
           description: Редакторы (видео)
           allOf:
@@ -2967,8 +2964,6 @@ components:
           description: Мониторы
           allOf:
             - $ref: "#/components/schemas/ConflictDataFile"
-      required:
-        - message
     ConflictError:
       type: object
       properties:
