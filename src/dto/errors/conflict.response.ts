@@ -1,4 +1,8 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  HttpExceptionOptions,
+} from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
@@ -28,6 +32,8 @@ export class ConflictDataFile {
 }
 
 export class ConflictData {
+  message!: string;
+
   @ApiProperty({
     type: () => ConflictDataFile,
     description: 'Редакторы (видео)',
@@ -58,16 +64,22 @@ export class ConflictData {
 }
 
 export class ConflictError extends HttpException {
-  constructor(message?: string, data?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    options?: HttpExceptionOptions,
+    error?: ConflictData,
+  ) {
+    const { message: origMessage, ...data } = error ?? {};
     super(
       {
         status: Status.Error,
         statusCode: HttpStatus.CONFLICT,
         code: 'server-error.10000',
         message: message ?? 'Conflict exists',
-        data,
+        error: data,
       },
       HttpStatus.CONFLICT,
+      options,
     );
   }
 
@@ -86,5 +98,5 @@ export class ConflictError extends HttpException {
     type: () => ConflictData,
     required: true,
   })
-  data!: ConflictData;
+  error!: ConflictData;
 }

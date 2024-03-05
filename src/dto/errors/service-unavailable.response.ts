@@ -1,10 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { HttpException, HttpStatus } from '@nestjs/common';
+import {
+  HttpException,
+  HttpExceptionOptions,
+  HttpStatus,
+} from '@nestjs/common';
 
 import { Status } from '@/enums/status.enum';
 
 export class ServiceUnavailableError extends HttpException {
-  constructor(message?: string) {
+  constructor(message?: string, options?: HttpExceptionOptions) {
     super(
       {
         status: Status.Error,
@@ -13,6 +17,7 @@ export class ServiceUnavailableError extends HttpException {
         message: message ?? 'Service Unavailable',
       },
       HttpStatus.SERVICE_UNAVAILABLE,
+      options,
     );
   }
 

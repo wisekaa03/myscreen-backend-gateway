@@ -30,10 +30,9 @@ import {
   DeepPartial,
   DeleteResult,
   In,
-  FindOptionsWhere,
 } from 'typeorm';
 
-import { FileCategory, UserRoleEnum, VideoType } from '@/enums';
+import { FileCategory, VideoType } from '@/enums';
 import { ConflictData, FileUploadRequest } from '@/dto';
 import { EditorService } from '@/database/editor.service';
 import { getS3FullName, getS3Name } from '@/utils/get-name';
@@ -590,7 +589,10 @@ export class FileService {
       (Array.isArray(audioFiles) && audioFiles.length > 0) ||
       (Array.isArray(playlistFiles) && playlistFiles.length > 0)
     ) {
-      const errorMsg = {} as ConflictData;
+      const errorMsg: ConflictData = {
+        message:
+          'Video/audio editors, playlists do not allow to delete this file',
+      };
       if (Array.isArray(videoFiles) && videoFiles.length > 0) {
         errorMsg.video = videoFiles.map((editor) => ({
           id: editor.id,
