@@ -32,11 +32,6 @@ export class ConflictDataFile {
 }
 
 export class ConflictData {
-  @ApiProperty({
-    type: () => String,
-    description: 'Описание ошибки',
-    required: true,
-  })
   message!: string;
 
   @ApiProperty({
