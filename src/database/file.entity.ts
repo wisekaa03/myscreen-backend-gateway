@@ -171,11 +171,10 @@ export class FileEntity {
     onDelete: 'CASCADE',
     eager: false,
   })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn()
   user!: UserEntity;
 
-  @Column()
-  @Index()
+  @Column({ type: 'uuid' })
   @IsUUID()
   userId!: string;
 

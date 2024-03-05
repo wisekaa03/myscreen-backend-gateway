@@ -175,11 +175,11 @@ export class EditorLayerEntity {
   })
   file!: FileEntity;
 
-  @Column({ select: false })
+  @Column({ type: 'uuid', select: false })
   @IsUUID()
   fileId!: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ select: false })
   @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T00:00:00.000Z',
@@ -194,7 +194,7 @@ export class EditorLayerEntity {
   @IsDateString({ strict: false })
   createdAt?: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ select: false })
   @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T00:00:00.000Z',

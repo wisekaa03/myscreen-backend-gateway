@@ -23,6 +23,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   Unique,
+  RelationId,
 } from 'typeorm';
 
 import { RenderingStatus } from '@/enums/rendering-status.enum';
@@ -144,10 +145,11 @@ export class EditorEntity {
     onUpdate: 'CASCADE',
     eager: false,
   })
-  @JoinColumn({ name: 'playlistId' })
+  @JoinColumn()
   playlist?: PlaylistEntity | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
+  @RelationId((editor: EditorEntity) => editor.playlist)
   @IsUUID()
   playlistId?: string | null;
 
@@ -205,7 +207,7 @@ export class EditorEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column({ select: false })
+  @Column({ type: 'uuid', select: false })
   @IsUUID()
   userId!: string;
 

@@ -298,7 +298,111 @@ export class FileController {
     };
   }
 
-  @Get(':fileId')
+  @Get('preview/:fileId')
+  @Roles([
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Accountant,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+  ])
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'file-download-preview',
+    summary: 'Получить файл превью',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    content: {
+      'video/webm': {
+        encoding: {
+          video_webm: {
+            contentType: 'video/webm',
+          },
+        },
+      },
+      'image/jpeg': {
+        encoding: {
+          image_jpeg: {
+            contentType: 'image/jpeg',
+          },
+        },
+      },
+    },
+  })
+  @Crud(CRUD.READ)
+  async downloadPreviewFile(
+    @Res() res: ExpressResponse,
+    @Param('fileId', ParseUUIDPipe) fileId: string,
+  ): Promise<void> {
+    const where: FindOptionsWhere<FileEntity> = { id: fileId };
+    const file = await this.fileService.findOne({
+      find: {
+        where,
+        select: [
+          'id',
+          'userId',
+          'hash',
+          'info',
+          'videoType',
+          'name',
+          'duration',
+          'width',
+          'height',
+          'folderId',
+          'preview',
+          'folder',
+        ],
+        relations: { preview: true, folder: true },
+      },
+    });
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    try {
+      const buffer = await this.fileService.downloadPreviewFile(file);
+
+      res.setHeader('Content-Length', buffer.length);
+      res.setHeader('Cache-Control', 'private, max-age=315360');
+      const fileParse = pathParse(file.name);
+      if (file.videoType === VideoType.Video) {
+        res.setHeader('Content-Type', 'video/webm');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment;filename=${encodeURIComponent(
+            `${fileParse.name}-preview.webm`,
+          )};`,
+        );
+      } else if (file.videoType === VideoType.Image) {
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment;filename=${encodeURIComponent(
+            `${fileParse.name}-preview.jpeg`,
+          )};`,
+        );
+      } else {
+        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment;filename=${encodeURIComponent(
+            `${fileParse.name}-preview${fileParse.ext}`,
+          )};`,
+        );
+      }
+
+      this.logger.debug(`The preview file '${file?.name}' has been downloaded`);
+
+      res.write(buffer);
+      res.end();
+    } catch (error: unknown) {
+      throw new NotFoundException(error);
+    }
+  }
+
+  @Get('download/:fileId')
   @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.Accountant,
@@ -419,108 +523,6 @@ export class FileController {
     };
   }
 
-  @Get(':fileId/preview')
-  @Roles([
-    UserRoleEnum.Administrator,
-    UserRoleEnum.Accountant,
-    UserRoleEnum.Advertiser,
-    UserRoleEnum.MonitorOwner,
-    UserRoleEnum.Monitor,
-  ])
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'file-download-preview',
-    summary: 'Получить файл превью',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    content: {
-      'video/webm': {
-        encoding: {
-          video_webm: {
-            contentType: 'video/webm',
-          },
-        },
-      },
-      'image/jpeg': {
-        encoding: {
-          image_jpeg: {
-            contentType: 'image/jpeg',
-          },
-        },
-      },
-    },
-  })
-  @Crud(CRUD.READ)
-  async downloadPreviewFile(
-    @Res() res: ExpressResponse,
-    @Param('fileId', ParseUUIDPipe) fileId: string,
-  ): Promise<void> {
-    const where: FindOptionsWhere<FileEntity> = { id: fileId };
-    const file = await this.fileService.findOne({
-      find: {
-        where,
-        select: [
-          'id',
-          'userId',
-          'hash',
-          'info',
-          'videoType',
-          'name',
-          'duration',
-          'width',
-          'height',
-          'folderId',
-          'preview',
-          'folder',
-        ],
-        relations: { preview: true, folder: true },
-      },
-    });
-    if (!file) {
-      throw new NotFoundException('File not found');
-    }
-
-    try {
-      const buffer = await this.fileService.downloadPreviewFile(file);
-
-      res.setHeader('Content-Length', buffer.length);
-      res.setHeader('Cache-Control', 'private, max-age=315360');
-      const fileParse = pathParse(file.name);
-      if (file.videoType === VideoType.Video) {
-        res.setHeader('Content-Type', 'video/webm');
-        res.setHeader(
-          'Content-Disposition',
-          `attachment;filename=${encodeURIComponent(
-            `${fileParse.name}-preview.webm`,
-          )};`,
-        );
-      } else if (file.videoType === VideoType.Image) {
-        res.setHeader('Content-Type', 'image/jpeg');
-        res.setHeader(
-          'Content-Disposition',
-          `attachment;filename=${encodeURIComponent(
-            `${fileParse.name}-preview.jpeg`,
-          )};`,
-        );
-      } else {
-        res.setHeader('Content-Type', 'application/octet-stream');
-        res.setHeader(
-          'Content-Disposition',
-          `attachment;filename=${encodeURIComponent(
-            `${fileParse.name}-preview${fileParse.ext}`,
-          )};`,
-        );
-      }
-
-      res.write(buffer);
-      res.end();
-    } catch (error: unknown) {
-      throw new NotFoundException(error);
-    }
-  }
-
   @Patch(':fileId')
   @HttpCode(200)
   @ApiOperation({
@@ -538,12 +540,13 @@ export class FileController {
     @Param('fileId', ParseUUIDPipe) id: string,
     @Body() update: FileUpdateRequest,
   ): Promise<FileGetResponse> {
+    const where: FindOptionsWhere<FileEntity> = { id };
+    if (user.role !== UserRoleEnum.Administrator) {
+      where.userId = user.id;
+    }
     const file = await this.fileService.findOne({
       find: {
-        where: {
-          userId: user.id,
-          id,
-        },
+        where,
       },
     });
     if (!file) {

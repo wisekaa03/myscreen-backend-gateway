@@ -8,7 +8,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  Unique,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import {
@@ -52,11 +52,11 @@ export class FolderEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ name: 'userId' })
-  @Index()
+  @JoinColumn()
   user!: UserEntity;
 
   @Column()
+  @RelationId((folder: FolderEntity) => folder.user)
   @IsUUID()
   userId!: string;
 
@@ -67,11 +67,11 @@ export class FolderEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ name: 'parentFolderId' })
-  @Index()
+  @JoinColumn()
   parentFolder!: FolderEntity | null;
 
   @Column({ nullable: true })
+  @RelationId((folder: FolderEntity) => folder.parentFolder)
   @ApiProperty({
     description: 'Родительская папка ID',
     type: 'string',

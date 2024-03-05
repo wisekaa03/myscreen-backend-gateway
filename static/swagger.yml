@@ -1319,7 +1319,40 @@ paths:
         "501": *ref_40
       tags: *ref_41
       security: *ref_42
-  /api/v2/file/{fileId}:
+  /api/v2/file/preview/{fileId}:
+    get:
+      operationId: file-download-preview
+      summary: Получить файл превью
+      parameters:
+        - name: fileId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            video/webm:
+              encoding:
+                video_webm:
+                  contentType: video/webm
+            image/jpeg:
+              encoding:
+                image_jpeg:
+                  contentType: image/jpeg
+        "400": *ref_32
+        "401": *ref_33
+        "403": *ref_34
+        "404": *ref_35
+        "406": *ref_36
+        "409": *ref_37
+        "412": *ref_38
+        "500": *ref_39
+        "501": *ref_40
+      tags: *ref_41
+      security: *ref_42
+  /api/v2/file/download/{fileId}:
     get:
       operationId: file-download
       summary: Скачивание файла
@@ -1356,6 +1389,7 @@ paths:
         "501": *ref_40
       tags: *ref_41
       security: *ref_42
+  /api/v2/file/{fileId}:
     post:
       operationId: file-get
       summary: Получить файл
@@ -1432,39 +1466,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
-        "400": *ref_32
-        "401": *ref_33
-        "403": *ref_34
-        "404": *ref_35
-        "406": *ref_36
-        "409": *ref_37
-        "412": *ref_38
-        "500": *ref_39
-        "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
-  /api/v2/file/{fileId}/preview:
-    get:
-      operationId: file-download-preview
-      summary: Получить файл превью
-      parameters:
-        - name: fileId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Успешный ответ
-          content:
-            video/webm:
-              encoding:
-                video_webm:
-                  contentType: video/webm
-            image/jpeg:
-              encoding:
-                image_jpeg:
-                  contentType: image/jpeg
         "400": *ref_32
         "401": *ref_33
         "403": *ref_34
@@ -2798,7 +2799,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.44.17
+  version: 2.44.18
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev

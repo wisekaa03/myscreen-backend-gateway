@@ -20,20 +20,21 @@ export class FilePreviewEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор превью',
-    example: '1234567',
     format: 'uuid',
     required: true,
   })
   @IsUUID()
   id!: string;
 
-  @OneToOne(() => FileEntity, (file) => file.id, {
+  @OneToOne(() => FileEntity, (file) => file.preview, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
+    nullable: true,
   })
   @JoinColumn()
   file!: FileEntity;
 
+  @Column({ type: 'uuid', nullable: true })
   @RelationId((preview: FilePreviewEntity) => preview.file)
   fileId!: string;
 
