@@ -73,7 +73,6 @@ export class InvoiceEntity {
   @IsDefined()
   @IsNotEmpty()
   @IsNumber()
-  @Min(100)
   sum!: number;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {

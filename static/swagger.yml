@@ -2796,10 +2796,80 @@ paths:
         "501": *ref_117
       tags: *ref_118
       security: *ref_119
+  /api/v2/constants:
+    get:
+      operationId: constants-get
+      summary: Получение списка констант
+      parameters: []
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConstantsGetResponse"
+        "400":
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "406":
+          description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
+        "409":
+          description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "412":
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
+        "500":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "501":
+          description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
+      tags:
+        - constants
+      security:
+        - bearer: []
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.44.18
+  version: 2.44.19
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -6693,6 +6763,35 @@ components:
           type: string
           description: "Crontab: \"Second Minute Hour DayOfMonth Month DayOfWeek\""
           example: 0 0 0 * * *
+    ConstantsResponse:
+      type: object
+      properties:
+        SUBSCRIPTION_FEE:
+          type: number
+          description: Стоимость подписки
+        MIN_INVOICE_SUM:
+          type: number
+          description: Минимальная сумма счета
+        COMMISSION_PERCENT:
+          type: number
+          description: Процент комиссии
+      required:
+        - SUBSCRIPTION_FEE
+        - MIN_INVOICE_SUM
+        - COMMISSION_PERCENT
+    ConstantsGetResponse:
+      type: object
+      properties:
+        status:
+          example: success
+          $ref: "#/components/schemas/Status"
+        data:
+          description: Константы
+          allOf:
+            - $ref: "#/components/schemas/ConstantsResponse"
+      required:
+        - status
+        - data
 externalDocs:
   description: MyScreen backend API
   url: https://api.myscreen.ru

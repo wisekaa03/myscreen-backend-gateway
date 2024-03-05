@@ -5,10 +5,12 @@ import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import { format as dateFormat } from 'date-fns';
 import { ru as dateRu } from 'date-fns/locale/ru';
 import { ClientProxy } from '@nestjs/microservices';
-
 import { lastValueFrom } from 'rxjs';
+import { ConfigService } from '@nestjs/config';
+
 import { PrintInvoice } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
+import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { SpecificFormat } from '@/enums/specific-format.enum';
@@ -18,20 +20,27 @@ import { UserEntity } from './user.entity';
 import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
-import { UserRoleEnum } from '@/enums';
 
 @Injectable()
 export class InvoiceService {
   private logger = new Logger(InvoiceService.name);
 
+  public minInvoiceSum: number;
+
   constructor(
     private readonly userService: UserService,
+    private readonly configService: ConfigService,
     private readonly walletService: WalletService,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
-  ) {}
+  ) {
+    this.minInvoiceSum = parseInt(
+      this.configService.get('MIN_INVOICE_SUM', '100'),
+      10,
+    );
+  }
 
   async find(
     find: FindManyOptions<InvoiceEntity>,
