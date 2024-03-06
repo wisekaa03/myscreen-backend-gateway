@@ -3021,20 +3021,24 @@ components:
       properties:
         video:
           description: Редакторы (видео)
-          allOf:
-            - $ref: "#/components/schemas/ConflictDataFile"
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictDataFile"
         audio:
           description: Редакторы (аудио)
-          allOf:
-            - $ref: "#/components/schemas/ConflictDataFile"
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictDataFile"
         playlist:
           description: Плэйлисты
-          allOf:
-            - $ref: "#/components/schemas/ConflictDataFile"
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictDataFile"
         monitor:
           description: Мониторы
-          allOf:
-            - $ref: "#/components/schemas/ConflictDataFile"
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictDataFile"
     ConflictError:
       type: object
       properties:
