@@ -15,7 +15,7 @@ import {
   HttpError,
   ConflictData,
   ConflictError,
-} from '@/dto';
+} from '@/errors';
 
 @Catch()
 export class ExceptionsFilter extends BaseExceptionFilter<Error> {
@@ -58,10 +58,8 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         exceptionHttp = new InternalServerError(message);
       }
 
-      return super.catch(
-        Object.assign(exception, exceptionHttp, response),
-        host,
-      );
+      const errorToThrow = Object.assign(exception, response, exceptionHttp);
+      return super.catch(errorToThrow, host);
     }
 
     if (exception instanceof TypeORMError) {

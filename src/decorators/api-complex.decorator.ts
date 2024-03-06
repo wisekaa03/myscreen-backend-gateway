@@ -16,7 +16,7 @@ import {
   NotImplementedError,
   PreconditionFailedError,
   UnauthorizedError,
-} from '@/dto';
+} from '@/errors';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { Roles } from './roles.decorator';

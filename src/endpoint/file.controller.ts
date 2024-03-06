@@ -36,7 +36,6 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 
 import { isUUID } from 'class-validator';
 import {
-  BadRequestError,
   SuccessResponse,
   FilesGetRequest,
   FilesGetResponse,
@@ -280,7 +279,7 @@ export class FileController {
       },
     });
     if (filesCopy.length !== files.length) {
-      throw new BadRequestError();
+      throw new BadRequestException();
     }
     const folder = await this.folderService.findOne({
       where: { userId: user.id, id: toFolder },
