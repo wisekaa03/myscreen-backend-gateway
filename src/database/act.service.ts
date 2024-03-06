@@ -44,7 +44,7 @@ export class ActService {
     return this.actRepository.manager.transaction(async (transact) => {
       const actCreated: DeepPartial<ActEntity> = {
         sum,
-        description: description ?? this.walletService.acceptanceActDescription,
+        description: description ?? this.walletService.subscriptionDescription,
         status: ActStatus.COMPLETE,
         userId: user.id,
       };

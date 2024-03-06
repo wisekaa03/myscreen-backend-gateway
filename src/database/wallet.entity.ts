@@ -2,10 +2,10 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
@@ -14,7 +14,6 @@ import {
   IsDefined,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
   IsUUID,
 } from 'class-validator';
 
@@ -52,9 +51,8 @@ export class WalletEntity {
   @JoinColumn()
   invoice!: InvoiceEntity | null;
 
-  @Column({ nullable: true })
-  @Index()
-  @IsOptional()
+  @Column({ type: 'uuid', nullable: true })
+  @RelationId((wallet: WalletEntity) => wallet.invoice)
   @IsUUID()
   invoiceId!: string | null;
 
@@ -68,9 +66,8 @@ export class WalletEntity {
   @JoinColumn()
   act!: ActEntity | null;
 
-  @Column({ nullable: true })
-  @Index()
-  @IsOptional()
+  @Column({ type: 'uuid', nullable: true })
+  @RelationId((wallet: WalletEntity) => wallet.act)
   @IsUUID()
   actId!: string | null;
 
@@ -83,8 +80,8 @@ export class WalletEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column()
-  @Index()
+  @Column({ type: 'uuid' })
+  @RelationId((wallet: WalletEntity) => wallet.user)
   @IsUUID()
   userId!: string;
 

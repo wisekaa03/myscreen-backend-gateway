@@ -6,6 +6,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
@@ -28,7 +29,8 @@ export class RefreshTokenEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column({ select: false })
+  @Column({ type: 'uuid' })
+  @RelationId((refreshToken: RefreshTokenEntity) => refreshToken.user)
   @IsUUID()
   userId!: string;
 
@@ -41,7 +43,7 @@ export class RefreshTokenEntity {
   @Column({ default: '' })
   fingerprint?: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ select: false })
   @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T00:00:00.000Z',
@@ -56,7 +58,7 @@ export class RefreshTokenEntity {
   @IsDateString({ strict: false })
   createdAt?: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ select: false })
   @ApiProperty({
     description: 'Время изменения',
     example: '2021-01-01T00:00:00.000Z',

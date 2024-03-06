@@ -322,6 +322,7 @@ export class FolderController {
     if (foldersId.includes(rootFolder.id)) {
       throw new BadRequestException('This is a root folder in a list');
     }
+
     const { affected } = await this.folderService.delete(foldersId);
     if (!affected) {
       throw new NotFoundException('This folder is not exists');
@@ -423,6 +424,7 @@ export class FolderController {
     if (folderId === rootFolder.id) {
       throw new BadRequestException('This is a root folder in a list');
     }
+
     const { affected } = await this.folderService.delete([folderId]);
     if (!affected) {
       throw new NotFoundException('This folder is not exists');

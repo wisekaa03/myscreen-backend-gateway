@@ -755,13 +755,13 @@ describe('Backend API (e2e)', () => {
     /**
      * Скачивание медиа [success]
      */
-    test('GET /file/{mediaId} [success] (Скачивание медиа)', async () => {
+    test('GET /file/download/{mediaId} [success] (Скачивание медиа)', async () => {
       if (!token || !mediaId1) {
         expect(false).toEqual(true);
       }
 
       const { body }: { body: unknown } = await request
-        .get(`${apiPath}/file/${mediaId1}`)
+        .get(`${apiPath}/file/download/${mediaId1}`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect(200);
@@ -772,13 +772,13 @@ describe('Backend API (e2e)', () => {
     /**
      * Скачивание предпросмотра [success]
      */
-    test('GET /file/{mediaId}/preview [success] (Скачивание предпросмотра)', async () => {
+    test('GET /file/preview/{mediaId} [success] (Скачивание предпросмотра)', async () => {
       if (!token || !mediaId1) {
         expect(false).toEqual(true);
       }
 
       const { body }: { body: unknown } = await request
-        .get(`${apiPath}/file/${mediaId1}/preview`)
+        .get(`${apiPath}/file/preview/${mediaId1}`)
         .auth(token, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect(200);

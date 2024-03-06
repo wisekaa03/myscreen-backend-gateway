@@ -85,7 +85,7 @@ export class ActEntity {
   @JoinColumn()
   user!: UserEntity;
 
-  @Column()
+  @Column({ type: 'uuid' })
   @IsUUID()
   userId!: string;
 

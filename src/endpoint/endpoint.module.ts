@@ -18,6 +18,7 @@ import { PlaylistController } from './playlist.controller';
 import { StatisticsController } from './statistics.controller';
 import { RequestController } from './request.controller';
 import { CrontabController } from './crontab.controller';
+import { ConstantsController } from './constants.controller';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { CrontabController } from './crontab.controller';
     StatisticsController,
     RequestController,
     CrontabController,
+    ConstantsController,
   ],
 
   providers: [Logger],

@@ -583,39 +583,34 @@ export class FileService {
         false,
       ),
     ]);
-
     if (
-      (Array.isArray(videoFiles) && videoFiles.length > 0) ||
-      (Array.isArray(audioFiles) && audioFiles.length > 0) ||
-      (Array.isArray(playlistFiles) && playlistFiles.length > 0)
+      videoFiles.length === 0 &&
+      audioFiles.length === 0 &&
+      playlistFiles.length === 0
     ) {
-      const errorMsg: ConflictData = {
-        message:
-          'Video/audio editors, playlists do not allow to delete this file',
-      };
-      if (Array.isArray(videoFiles) && videoFiles.length > 0) {
-        errorMsg.video = videoFiles.map((editor) => ({
-          id: editor.id,
-          name: editor.name,
-          file: editor.videoLayers.map((layer) => layer.file)?.pop(),
-        }));
-      }
-      if (Array.isArray(audioFiles) && audioFiles.length > 0) {
-        errorMsg.audio = audioFiles.map((editor) => ({
-          id: editor.id,
-          name: editor.name,
-          file: editor.audioLayers.map((layer) => layer.file)?.pop(),
-        }));
-      }
-      if (Array.isArray(playlistFiles) && playlistFiles.length > 0) {
-        errorMsg.playlist = playlistFiles.map((playlist) => ({
-          id: playlist.id,
-          name: playlist.name,
-          file: playlist.files?.find((file) => filesId.includes(file.id)),
-        }));
-      }
-      throw new ConflictException(errorMsg);
+      return;
     }
+
+    const errorMsg: ConflictData = {
+      message:
+        'Video/audio editors, playlists do not allow to delete this file',
+    };
+    errorMsg.video = videoFiles.map((editor) => ({
+      id: editor.id,
+      name: editor.name,
+      file: editor.videoLayers.map((layer) => layer.file).at(0),
+    }));
+    errorMsg.audio = audioFiles.map((editor) => ({
+      id: editor.id,
+      name: editor.name,
+      file: editor.audioLayers.map((layer) => layer.file).at(0),
+    }));
+    errorMsg.playlist = playlistFiles.map((playlist) => ({
+      id: playlist.id,
+      name: playlist.name,
+      file: playlist.files.find((file) => filesId.includes(file.id)),
+    }));
+    throw new ConflictException(errorMsg);
   }
 
   /**
@@ -628,29 +623,36 @@ export class FileService {
   async delete(filesId: string[]): Promise<DeleteResult> {
     const files = await this.fileRepository.find({
       where: { id: In(filesId) },
-      relations: ['folder'],
+      relations: { folder: true },
     });
+    if (files.length === 0) {
+      return { affected: 0, raw: 0 };
+    }
 
     await this.requestService.websocketChange({ files, filesDelete: true });
 
-    // TODO: хм
-    await Promise.allSettled(
-      files.map(async (file) => {
-        this.headS3Object(file).then(() => {
-          this.deleteS3Object(file).catch((error) => {
-            this.logger.error(
-              `S3 Error deleteObject: ${JSON.stringify(error)}`,
-            );
-          });
+    const filesS3DeletePromise = files.map(async (file) => {
+      this.headS3Object(file).then(() => {
+        this.deleteS3Object(file).catch((error) => {
+          this.logger.error(`S3 Error deleteObject: ${JSON.stringify(error)}`);
         });
-      }),
-    );
-
-    return this.fileRepository.delete({
-      id: In(files.map((file) => file.id)),
+      });
     });
+    await Promise.allSettled(filesS3DeletePromise);
+
+    const filesDeleteId = files.map((file) => file.id);
+    const filesDelete = await this.fileRepository.delete({
+      id: In(filesDeleteId),
+    });
+    return filesDelete;
   }
 
+  /**
+   * Скачивает предпросмотр файла
+   *
+   * @param file FileEntity with PreviewEntity
+   * @returns Buffer preview
+   */
   async downloadPreviewFile(file: FileEntity): Promise<Buffer> {
     await fs.mkdir(this.downloadDir, { recursive: true });
     const filename = pathJoin(this.downloadDir, file.name);
@@ -691,13 +693,12 @@ export class FileService {
 
     const preview = await fs.readFile(outPath);
 
-    await this.filePreviewRepository.save(
-      this.filePreviewRepository.create({
-        ...file.preview,
-        file,
-        preview,
-      }),
-    );
+    const id = file.preview?.id;
+    if (id) {
+      await this.filePreviewRepository.update(id, { preview });
+    } else {
+      await this.filePreviewRepository.insert({ fileId: file.id, preview });
+    }
 
     return preview;
   }

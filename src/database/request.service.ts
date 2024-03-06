@@ -46,7 +46,7 @@ import { getFullName } from '@/utils/full-name';
 export class RequestService {
   private logger = new Logger(RequestService.name);
 
-  public commission: number;
+  public commissionPercent: number;
 
   constructor(
     @Inject(MAIL_SERVICE)
@@ -67,7 +67,10 @@ export class RequestService {
     private readonly requestRepository: Repository<RequestEntity>,
     configService: ConfigService,
   ) {
-    this.commission = parseInt(configService.get('COMMISSION', '5'), 10);
+    this.commissionPercent = parseInt(
+      configService.get('COMMISSION_PERCENT', '5'),
+      10,
+    );
   }
 
   async find(
@@ -429,7 +432,8 @@ export class RequestService {
         }
       } else if (update.approved === RequestApprove.ALLOWED) {
         // Оплата поступает на пользователя - владельца монитора
-        const sumIncrement = -(request.sum * (100 - this.commission)) / 100;
+        const sumIncrement =
+          -(request.sum * (100 - this.commissionPercent)) / 100;
         await this.actService.create({
           user: request.monitor.user,
           sum: sumIncrement,
@@ -589,7 +593,7 @@ export class RequestService {
           }
         } else if (insert.approved === RequestApprove.ALLOWED) {
           // Оплата поступает на пользователя - владельца монитора
-          const sumIncrement = -(sum * (100 - this.commission)) / 100;
+          const sumIncrement = -(sum * (100 - this.commissionPercent)) / 100;
           await this.actService.create({
             user: request.buyer ?? monitor.user,
             sum: sumIncrement,

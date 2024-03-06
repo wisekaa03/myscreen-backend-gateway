@@ -171,11 +171,10 @@ export class FileEntity {
     onDelete: 'CASCADE',
     eager: false,
   })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn()
   user!: UserEntity;
 
-  @Column()
-  @Index()
+  @Column({ type: 'uuid' })
   @IsUUID()
   userId!: string;
 
@@ -185,7 +184,7 @@ export class FileEntity {
     onUpdate: 'CASCADE',
     eager: false,
   })
-  preview?: FilePreviewEntity | Partial<FilePreviewEntity>;
+  preview?: FilePreviewEntity;
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.files, {
     onDelete: 'CASCADE',

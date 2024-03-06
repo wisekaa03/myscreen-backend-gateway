@@ -77,9 +77,10 @@ jobs:
           echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env.test
           echo "AWS_SIGNED_URL_EXPIRES=${{ vars.AWS_SIGNED_URL_EXPIRES }}" >>.env.test
 
-          echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env.test
-          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env.test
-          echo "COMMISSION=${{ vars.COMMISSION }}" >>.env.test
+          echo "SUBSCRIPTION_FEE=${{ vars.SUBSCRIPTION_FEE }}" >>.env.test
+          echo "SUBSCRIPTION_DESCRIPTION=${{ vars.SUBSCRIPTION_DESCRIPTION }}" >>.env.test
+          echo "COMMISSION_PERCENT=${{ vars.COMMISSION_PERCENT }}" >>.env.test
+          echo "MIN_INVOICE_SUM=${{ vars.MIN_INVOICE_SUM }}" >>.env.test
 
           echo "RABBITMQ_HOST=${{ vars.RABBITMQ_HOST }}" >>.env.test
           echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env.test
@@ -191,9 +192,10 @@ jobs:
           echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env
           echo "AWS_SIGNED_URL_EXPIRES=${{ vars.AWS_SIGNED_URL_EXPIRES }}" >>.env
 
-          echo "ACCEPTANCE_ACT_SUM=${{ vars.ACCEPTANCE_ACT_SUM }}" >>.env
-          echo "ACCEPTANCE_ACT_DESCRIPTION=${{ vars.ACCEPTANCE_ACT_DESCRIPTION }}" >>.env
-          echo "COMMISSION=${{ vars.COMMISSION }}" >>.env
+          echo "SUBSCRIPTION_FEE=${{ vars.SUBSCRIPTION_FEE }}" >>.env
+          echo "SUBSCRIPTION_DESCRIPTION=${{ vars.SUBSCRIPTION_DESCRIPTION }}" >>.env
+          echo "COMMISSION_PERCENT=${{ vars.COMMISSION_PERCENT }}" >>.env
+          echo "MIN_INVOICE_SUM=${{ vars.MIN_INVOICE_SUM }}" >>.env
 
           echo "RABBITMQ_HOST=${{ vars.RABBITMQ_HOST }}" >>.env
           echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env

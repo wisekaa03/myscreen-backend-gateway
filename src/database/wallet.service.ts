@@ -29,9 +29,9 @@ import { getFullName } from '@/utils/full-name';
 export class WalletService {
   private logger = new Logger(WalletService.name);
 
-  public acceptanceActSum: number;
+  public subscriptionFee: number;
 
-  public acceptanceActDescription: string;
+  public subscriptionDescription: string;
 
   constructor(
     private readonly userService: UserService,
@@ -43,12 +43,12 @@ export class WalletService {
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
   ) {
-    this.acceptanceActSum = parseInt(
-      this.configService.get('ACCEPTANCE_ACT_SUM', '250'),
+    this.subscriptionFee = parseInt(
+      this.configService.get('SUBSCRIPTION_FEE', '250'),
       10,
     );
-    this.acceptanceActDescription = this.configService.get(
-      'ACCEPTANCE_ACT_DESCRIPTION',
+    this.subscriptionDescription = this.configService.get(
+      'SUBSCRIPTION_DESCRIPTION',
       'Оплата за услуги',
     );
   }
@@ -150,20 +150,20 @@ export class WalletService {
       `[✓] User "${fullName}" balance: ₽${balance}, acceptance act in past month: ₽${actsInPastMonth}`,
     );
 
-    if (actsInPastMonth >= this.acceptanceActSum) {
+    if (actsInPastMonth >= this.subscriptionFee) {
       this.logger.warn(
         ` [ ] Skipping "${fullName}" because acceptance act was issued in the last month. Balance ₽${balance}`,
       );
-    } else if (balance > this.acceptanceActSum) {
+    } else if (balance > this.subscriptionFee) {
       // теперь списание средств с баланса и создание акта
-      const sum = this.acceptanceActSum;
+      const sum = this.subscriptionFee;
       this.logger.warn(
         ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
       );
       await this.actService.create({
         user,
         sum,
-        description: this.acceptanceActDescription,
+        description: this.subscriptionDescription,
       });
 
       // проверяем план пользователя
@@ -185,7 +185,7 @@ export class WalletService {
       this.mailService.emit('balanceChanged', { user, sum, balance });
     } else {
       this.logger.warn(
-        ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.acceptanceActSum}`,
+        ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.subscriptionFee}`,
       );
 
       // проверяем план пользователя
@@ -199,7 +199,7 @@ export class WalletService {
       // и вывод информации на email
       this.mailService.emit('balanceNotChanged', {
         user,
-        sum: this.acceptanceActSum,
+        sum: this.subscriptionFee,
         balance,
       });
     }
