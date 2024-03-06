@@ -408,12 +408,6 @@ export class FileService {
           `S3 head: file "${file.name}": ${JSON.stringify(value)}`,
         );
         return value;
-      })
-      .catch((error: any) => {
-        throw new HttpException(
-          `S3 head error: "${file.name}" ${error?.code ?? 'Not found'}`,
-          error?.statusCode ?? 404,
-        );
       });
   }
 
@@ -616,7 +610,6 @@ export class FileService {
   /**
    * Delete files
    * @async
-   * @param {UserEntity} user User
    * @param {string} filesId Files ID
    * @return {DeleteResult} {DeleteResult}
    */
@@ -632,10 +625,8 @@ export class FileService {
     await this.requestService.websocketChange({ files, filesDelete: true });
 
     const filesS3DeletePromise = files.map(async (file) => {
-      this.headS3Object(file).then(() => {
-        this.deleteS3Object(file).catch((error) => {
-          this.logger.error(`S3 Error deleteObject: ${JSON.stringify(error)}`);
-        });
+      this.deleteS3Object(file).catch((error) => {
+        this.logger.error(`S3 Error deleteObject: ${JSON.stringify(error)}`);
       });
     });
     await Promise.allSettled(filesS3DeletePromise);
@@ -650,7 +641,7 @@ export class FileService {
   /**
    * Скачивает предпросмотр файла
    *
-   * @param file FileEntity with PreviewEntity
+   * @param {FileEntity} file FileEntity with PreviewEntity
    * @returns Buffer preview
    */
   async downloadPreviewFile(file: FileEntity): Promise<Buffer> {

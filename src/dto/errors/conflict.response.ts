@@ -37,30 +37,34 @@ export class ConflictData {
   @ApiProperty({
     type: () => ConflictDataFile,
     description: 'Редакторы (видео)',
+    isArray: true,
     required: false,
   })
-  video?: ConflictDataFile[] | null;
+  video?: ConflictDataFile[];
 
   @ApiProperty({
     type: () => ConflictDataFile,
     description: 'Редакторы (аудио)',
+    isArray: true,
     required: false,
   })
-  audio?: ConflictDataFile[] | null;
+  audio?: ConflictDataFile[];
 
   @ApiProperty({
     type: () => ConflictDataFile,
     description: 'Плэйлисты',
+    isArray: true,
     required: false,
   })
-  playlist?: ConflictDataFile[] | null;
+  playlist?: ConflictDataFile[];
 
   @ApiProperty({
     type: () => ConflictDataFile,
     description: 'Мониторы',
+    isArray: true,
     required: false,
   })
-  monitor?: ConflictDataFile[] | null;
+  monitor?: ConflictDataFile[];
 }
 
 export class ConflictError extends HttpException {
