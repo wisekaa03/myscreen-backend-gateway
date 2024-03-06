@@ -200,9 +200,9 @@ export class FolderService {
         .find({
           find: {
             where: { folderId: In(fullFolders) },
-            relations: [],
+            relations: {},
             loadEagerRelations: false,
-            select: ['id'],
+            select: ['id', 'folderId', 'name', 'hash'],
           },
           caseInsensitive: false,
         })
