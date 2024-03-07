@@ -19,7 +19,6 @@ import {
 import { ApiExtraModels, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import {
-  BadRequestError,
   FoldersGetResponse,
   FoldersGetRequest,
   FolderCreateRequest,
@@ -266,19 +265,19 @@ export class FolderController {
       where: { userId: user.id, id: toFolder },
     });
     if (!toFolderEntity) {
-      throw new BadRequestError(`Folder ${toFolder} is not exist`);
+      throw new BadRequestException(`Folder ${toFolder} is not exist`);
     }
     const foldersCopy = await this.folderService.find({
       where: { userId: user.id, id: In(foldersIds) },
       relations: ['files'],
     });
     if (foldersCopy.length !== folders.length) {
-      throw new BadRequestError('The number of folders does not match');
+      throw new BadRequestException('The number of folders does not match');
     }
     if (
       foldersCopy.some((folderCopy) => folderCopy.parentFolderId === toFolder)
     ) {
-      throw new BadRequestError('Copying to the same directory');
+      throw new BadRequestException('Copying to the same directory');
     }
     if (
       foldersCopy.some(
@@ -286,7 +285,7 @@ export class FolderController {
           folderCopy.parentFolderId !== foldersCopy[0].parentFolderId,
       )
     ) {
-      throw new BadRequestError('Copying multiple sources into one');
+      throw new BadRequestException('Copying multiple sources into one');
     }
 
     const data = await this.folderService.copy(

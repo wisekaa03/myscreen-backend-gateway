@@ -6,7 +6,6 @@ import {
   BadRequestException,
   ConflictException,
   forwardRef,
-  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -33,7 +32,8 @@ import {
 } from 'typeorm';
 
 import { FileCategory, VideoType } from '@/enums';
-import { ConflictData, FileUploadRequest } from '@/dto';
+import { FileUploadRequest } from '@/dto';
+import { ConflictData } from '@/errors';
 import { EditorService } from '@/database/editor.service';
 import { getS3FullName, getS3Name } from '@/utils/get-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
@@ -661,7 +661,7 @@ export class FileService {
             `S3 Error preview: "${file.name}" (${getS3FullName(file)})`,
             error,
           );
-          throw new InternalServerErrorException(error);
+          throw new NotFoundException(error);
         },
       );
       if (data.Body instanceof internal.Readable) {
