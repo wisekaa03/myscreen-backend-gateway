@@ -55,7 +55,7 @@ export class RequestController {
   @Post()
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'applications-get',
+    operationId: 'requests-get',
     summary: 'Получение списка заявок',
   })
   @ApiResponse({
@@ -68,14 +68,15 @@ export class RequestController {
     @Req() { user }: ExpressRequest,
     @Body() { where: origWhere, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
+    const { id: userId } = user;
     const where = TypeOrmFind.where(RequestEntity, origWhere);
     if (user.role === UserRoleEnum.MonitorOwner) {
       const [data, count] = await this.requestService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { hide: false, ...where, buyerId: Not(user.id) },
-          { hide: false, ...where, sellerId: Not(user.id) },
+          { userId, hide: false, ...where, buyerId: Not(user.id) },
+          { userId, hide: false, ...where, sellerId: Not(user.id) },
         ],
       });
 
@@ -91,8 +92,8 @@ export class RequestController {
         ...paginationQueryToConfig(scope),
         select,
         where: [
-          { hide: false, ...where, buyerId: user.id },
-          { hide: false, ...where, sellerId: user.id },
+          { userId, hide: false, ...where, buyerId: user.id },
+          { userId, hide: false, ...where, sellerId: user.id },
         ],
       });
 

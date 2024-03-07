@@ -16,3 +16,4 @@ export * from './act-status.enum';
 export * from './crud.enum';
 export * from './monitor-mupliple.enum';
 export * from './request-status.enum';
+export * from './wallet-transaction-type.enum';

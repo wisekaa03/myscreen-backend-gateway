@@ -1,8 +1,12 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import { DeepPartial, Repository } from 'typeorm';
 
 import { ActStatus } from '@/enums';
+import {
+  FindManyOptionsCaseInsensitive,
+  FindOneOptionsCaseInsensitive,
+} from '@/interfaces';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
@@ -21,15 +25,36 @@ export class ActService {
   ) {}
 
   async find(
-    find: FindManyOptions<ActEntity>,
-  ): Promise<[Array<ActEntity>, number]> {
-    return this.actRepository.findAndCount(
-      TypeOrmFind.findParams(ActEntity, find),
-    );
+    find: FindManyOptionsCaseInsensitive<ActEntity>,
+  ): Promise<ActEntity[]> {
+    return !find.caseInsensitive
+      ? this.actRepository.find(TypeOrmFind.findParams(ActEntity, find))
+      : TypeOrmFind.findCI(
+          this.actRepository,
+          TypeOrmFind.findParams(ActEntity, find),
+        );
   }
 
-  async findOne(find: FindManyOptions<ActEntity>): Promise<ActEntity | null> {
-    return this.actRepository.findOne(TypeOrmFind.findParams(ActEntity, find));
+  async findAndCount(
+    find: FindManyOptionsCaseInsensitive<ActEntity>,
+  ): Promise<[ActEntity[], number]> {
+    return !find.caseInsensitive
+      ? this.actRepository.findAndCount(TypeOrmFind.findParams(ActEntity, find))
+      : TypeOrmFind.findAndCountCI(
+          this.actRepository,
+          TypeOrmFind.findParams(ActEntity, find),
+        );
+  }
+
+  async findOne(
+    find: FindOneOptionsCaseInsensitive<ActEntity>,
+  ): Promise<ActEntity | null> {
+    return !find.caseInsensitive
+      ? this.actRepository.findOne(TypeOrmFind.findParams(ActEntity, find))
+      : TypeOrmFind.findOneCI(
+          this.actRepository,
+          TypeOrmFind.findParams(ActEntity, find),
+        );
   }
 
   async create({

@@ -33,3 +33,5 @@ export * from './request-get.response';
 export * from './requests-get.response';
 export * from './request-precalc-data.response';
 export * from './request-precalc.response';
+export * from './wallet-operations-get.response';
+export * from './wallet.response';

@@ -19,6 +19,7 @@ import { StatisticsController } from './statistics.controller';
 import { RequestController } from './request.controller';
 import { CrontabController } from './crontab.controller';
 import { ConstantsController } from './constants.controller';
+import { WalletController } from './wallet.controller';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { ConstantsController } from './constants.controller';
     RequestController,
     CrontabController,
     ConstantsController,
+    WalletController,
   ],
 
   providers: [Logger],
