@@ -6,13 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Repository,
-  type FindOneOptions,
-  type FindManyOptions,
-  DeleteResult,
-  In,
-} from 'typeorm';
+import { Repository, DeleteResult, In } from 'typeorm';
 
 import { administratorFolderId, administratorFolderName } from '@/constants';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -20,6 +14,10 @@ import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderFileNumberEntity } from './folder.view.entity';
 import { UserEntity } from './user.entity';
+import {
+  FindManyOptionsCaseInsensitive,
+  FindOneOptionsCaseInsensitive,
+} from '@/interfaces';
 
 @Injectable()
 export class FolderService {
@@ -35,37 +33,40 @@ export class FolderService {
   ) {}
 
   async find(
-    find: FindManyOptions<FolderEntity>,
-    caseInsensitive = true,
+    find: FindManyOptionsCaseInsensitive<FolderEntity>,
   ): Promise<FolderEntity[]> {
-    return caseInsensitive
-      ? TypeOrmFind.findCI(
+    return !find.caseInsensitive
+      ? this.folderRepository.find(TypeOrmFind.findParams(FolderEntity, find))
+      : TypeOrmFind.findCI(
           this.folderRepository,
           TypeOrmFind.findParams(FolderEntity, find),
-        )
-      : this.folderRepository.find(TypeOrmFind.findParams(FolderEntity, find));
+        );
   }
 
   async findAndCount(
-    find: FindManyOptions<FolderEntity>,
-    caseInsensitive = true,
+    find: FindManyOptionsCaseInsensitive<FolderEntity>,
   ): Promise<[FolderEntity[], number]> {
-    return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(
-          this.folderFilenumberRepository,
+    return !find.caseInsensitive
+      ? this.folderFilenumberRepository.findAndCount(
           TypeOrmFind.findParams(FolderFileNumberEntity, find),
         )
-      : this.folderFilenumberRepository.findAndCount(
+      : TypeOrmFind.findAndCountCI(
+          this.folderFilenumberRepository,
           TypeOrmFind.findParams(FolderFileNumberEntity, find),
         );
   }
 
   async findOne(
-    find: FindOneOptions<FolderEntity>,
+    find: FindOneOptionsCaseInsensitive<FolderEntity>,
   ): Promise<FolderEntity | null> {
-    return this.folderFilenumberRepository.findOne(
-      TypeOrmFind.findParams(FolderFileNumberEntity, find),
-    );
+    return !find.caseInsensitive
+      ? this.folderFilenumberRepository.findOne(
+          TypeOrmFind.findParams(FolderFileNumberEntity, find),
+        )
+      : TypeOrmFind.findOneCI(
+          this.folderFilenumberRepository,
+          TypeOrmFind.findParams(FolderFileNumberEntity, find),
+        );
   }
 
   async rootFolder(user: UserEntity): Promise<FolderEntity> {

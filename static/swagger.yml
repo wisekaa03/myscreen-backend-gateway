@@ -16,22 +16,58 @@ paths:
                 $ref: "#/components/schemas/UserGetResponse"
         "400": &ref_0
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_1
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_2
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_3
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_4
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_5
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_6
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_7
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_8
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_9
         - auth
       security:
@@ -305,22 +341,58 @@ paths:
                 $ref: "#/components/schemas/MonitorsGetResponse"
         "400": &ref_10
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_11
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_12
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_13
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_14
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_15
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_16
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_17
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_18
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_19
         - monitor
       security: &ref_20
@@ -602,22 +674,58 @@ paths:
                 $ref: "#/components/schemas/EditorsGetResponse"
         "400": &ref_21
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_22
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_23
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_24
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_25
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_26
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_27
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_28
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_29
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_30
         - editor
       security: &ref_31
@@ -1028,22 +1136,58 @@ paths:
                 $ref: "#/components/schemas/FilesGetResponse"
         "400": &ref_32
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_33
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_34
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_35
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_36
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_37
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_38
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_39
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_40
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_41
         - file
       security: &ref_42
@@ -1353,22 +1497,58 @@ paths:
                 $ref: "#/components/schemas/FoldersGetResponse"
         "400": &ref_43
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_44
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_45
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_46
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_47
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_48
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_49
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_50
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_51
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_52
         - folder
       security: &ref_53
@@ -1594,22 +1774,58 @@ paths:
                 $ref: "#/components/schemas/UsersGetResponse"
         "400": &ref_54
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_55
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_56
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_57
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_58
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_59
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_60
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_61
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_62
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_63
         - user
       security: &ref_64
@@ -1778,22 +1994,58 @@ paths:
                 $ref: "#/components/schemas/InvoicesGetResponse"
         "400": &ref_65
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_66
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_67
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_68
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_69
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_70
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_71
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_72
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_73
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_74
         - invoice
       security: &ref_75
@@ -1936,22 +2188,58 @@ paths:
                 $ref: "#/components/schemas/PlaylistsGetResponse"
         "400": &ref_76
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_77
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_78
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_79
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_80
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_81
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_82
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_83
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_84
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_85
         - playlist
       security: &ref_86
@@ -2097,22 +2385,58 @@ paths:
                   contentType: application/pdf
         "400": &ref_87
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_88
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_89
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_90
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_91
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_92
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_93
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_94
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_95
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_96
         - statistics
       security: &ref_97
@@ -2171,22 +2495,58 @@ paths:
                 $ref: "#/components/schemas/ApplicationsGetResponse"
         "400": &ref_98
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_99
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_100
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_101
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_102
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_103
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_104
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_105
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_106
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_107
         - application
       security: &ref_108
@@ -2357,22 +2717,58 @@ paths:
                 $ref: "#/components/schemas/SuccessResponse"
         "400": &ref_109
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401": &ref_110
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403": &ref_111
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404": &ref_112
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406": &ref_113
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409": &ref_114
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412": &ref_115
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500": &ref_116
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501": &ref_117
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_118
         - crontab
       security: &ref_119
@@ -2414,24 +2810,136 @@ paths:
                 $ref: "#/components/schemas/ConstantsGetResponse"
         "400":
           description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
         "401":
           description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
         "403":
           description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
         "404":
           description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
         "406":
           description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
         "409":
           description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
         "412":
           description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
         "500":
           description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
         "501":
           description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
       tags:
         - constants
+      security:
+        - bearer: []
+  /api/v2/wallet:
+    post:
+      operationId: wallet-operations-get
+      summary: Получение списка операций
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WalletOperationsGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletOperationsGetRequest"
+        "400":
+          description: Ответ будет таким если с данным что-то не так
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BadRequestError"
+        "401":
+          description: Ответ для незарегистрированного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: Ответ для неавторизованного пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForbiddenError"
+        "404":
+          description: Не найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+        "406":
+          description: Не принято значение
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotAcceptableError"
+        "409":
+          description: Ответ для конфликта файлов
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+        "412":
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreconditionFailedError"
+        "500":
+          description: Ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalServerError"
+        "501":
+          description: Пока не реализовано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotImplementedError"
+      tags:
+        - wallet
       security:
         - bearer: []
 info:
@@ -2475,6 +2983,205 @@ components:
       description: Токен авторизации
       name: token
   schemas:
+    BadRequestError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 400
+        code:
+          type: string
+          example: server-error.10004
+        message:
+          type: string
+          example: Bad request
+      required:
+        - statusCode
+        - code
+        - message
+    UnauthorizedError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 401
+        code:
+          type: string
+          example: server-error.10001
+        message:
+          type: string
+          example: Unauthorized request
+      required:
+        - statusCode
+        - code
+        - message
+    ForbiddenError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 403
+        code:
+          type: string
+          example: server-error.10002
+        message:
+          type: string
+          example: Forbidden
+      required:
+        - statusCode
+        - code
+        - message
+    NotFoundError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 404
+        code:
+          type: string
+          example: server-error.10005
+        message:
+          type: string
+          example: Not Found
+      required:
+        - statusCode
+        - code
+        - message
+    NotAcceptableError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 406
+        code:
+          type: string
+          example: server-error.10000
+        message:
+          type: string
+          example: Not Acceptable
+      required:
+        - statusCode
+        - code
+        - message
+    FileIDResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор файла
+          format: uuid
+        name:
+          type: string
+          description: Имя файла
+          example: foo.mp4
+      required:
+        - id
+        - name
+    ConflictDataFile:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID ссылки
+          format: uuid
+        name:
+          type: string
+          description: Имя ссылки
+          example: Имя ссылки
+        file:
+          description: Файл
+          allOf:
+            - $ref: "#/components/schemas/FileIDResponse"
+    ConflictData:
+      type: object
+      properties:
+        video:
+          description: Редакторы (видео)
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictDataFile"
+        audio:
+          description: Редакторы (аудио)
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictDataFile"
+        playlist:
+          description: Плэйлисты
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictDataFile"
+        monitor:
+          description: Мониторы
+          type: array
+          items:
+            $ref: "#/components/schemas/ConflictDataFile"
+    ConflictError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 409
+        code:
+          type: string
+          example: server-error.10000
+        message:
+          type: string
+          example: Conflict exists
+        error:
+          $ref: "#/components/schemas/ConflictData"
+      required:
+        - statusCode
+        - code
+        - message
+        - error
+    PreconditionFailedError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 412
+        code:
+          type: string
+          example: server-error.10002
+        message:
+          type: string
+          example: User exists
+      required:
+        - statusCode
+        - code
+        - message
+    InternalServerError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 500
+        code:
+          type: string
+          example: server-error.10000
+        message:
+          type: string
+          example: Server error
+      required:
+        - statusCode
+        - code
+        - message
+    NotImplementedError:
+      type: object
+      properties:
+        statusCode:
+          type: number
+          example: 501
+        code:
+          type: string
+          example: server-error.10000
+        message:
+          type: string
+          example: Server error
+      required:
+        - statusCode
+        - code
+        - message
     Status:
       type: string
       description: Статус операции
@@ -6165,6 +6872,88 @@ components:
       required:
         - status
         - data
+    WalletTransactionType:
+      type: string
+      description: Тип транзакции
+      enum:
+        - DEBIT
+        - CREDIT
+    WalletRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор баланса
+          format: uuid
+        description:
+          type: string
+          description: Описание транзакции
+        sum:
+          type: number
+          description: Баланс
+          example: 0
+        type:
+          type: array
+          example:
+            range:
+              - DEBIT
+              - CREDIT
+          items:
+            $ref: "#/components/schemas/WalletTransactionType"
+        createdAt:
+          description: Время создания
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
+          examples:
+            one: "2021-12-31T10:10:10"
+            range:
+              - "2021-12-31T10:10:10"
+              - "2022-12-31T10:10:10"
+          format: date-time
+        updatedAt:
+          description: Время изменения
+          oneOf:
+            - type: string
+              format: date-time
+            - type: array
+              items:
+                type: string
+                format: date-time
+          examples:
+            one: "2021-12-31T10:10:10"
+            range:
+              - "2021-12-31T10:10:10"
+              - "2022-12-31T10:10:10"
+          format: date-time
+    WalletOperationsGetRequest:
+      type: object
+      properties:
+        where:
+          description: Запрос
+          allOf:
+            - $ref: "#/components/schemas/WalletRequest"
+        select:
+          type: array
+          description: Выбрать поля
+          example: []
+          items:
+            type: string
+            enum:
+              - id
+              - type
+              - description
+              - sum
+              - createdAt
+              - updatedAt
+        scope:
+          description: Рамки для запроса
+          allOf:
+            - $ref: "#/components/schemas/LimitRequest"
 externalDocs:
   description: MyScreen backend API
   url: https://api.myscreen.ru

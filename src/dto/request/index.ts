@@ -61,3 +61,5 @@ export * from './report-device-status.request';
 export * from './report-views.request';
 export * from './request-precalc-promo.request';
 export * from './request-precalc-sum.request';
+export * from './wallet-operations-get.request';
+export * from './wallet.request';

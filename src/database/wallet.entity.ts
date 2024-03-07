@@ -12,14 +12,17 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
   IsDefined,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsString,
   IsUUID,
 } from 'class-validator';
 
 import { UserEntity } from './user.entity';
 import { InvoiceEntity } from './invoice.entity';
 import { ActEntity } from './act.entity';
+import { WalletTransactionType } from '@/enums';
 
 @Entity('wallet')
 export class WalletEntity {
@@ -30,6 +33,30 @@ export class WalletEntity {
   })
   @IsUUID()
   id!: string;
+
+  @Column({
+    type: 'enum',
+    enum: WalletTransactionType,
+    default: WalletTransactionType.DEBIT,
+    comment: 'Тип транзакции',
+  })
+  @ApiProperty({
+    type: 'enum',
+    enum: WalletTransactionType,
+    enumName: 'WalletTransactionType',
+    description: 'Тип транзакции',
+    example: WalletTransactionType.DEBIT,
+  })
+  @IsEnum(WalletTransactionType)
+  type!: WalletTransactionType;
+
+  @Column({ type: 'varchar', default: '' })
+  @ApiProperty({
+    type: 'string',
+    description: 'Описание транзакции',
+  })
+  @IsString()
+  description!: string;
 
   @Column()
   @ApiProperty({
