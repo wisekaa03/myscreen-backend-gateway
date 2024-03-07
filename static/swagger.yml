@@ -2477,7 +2477,7 @@ paths:
       security: *ref_97
   /api/v2/application:
     post:
-      operationId: applications-get
+      operationId: requests-get
       summary: Получение списка заявок
       parameters: []
       requestBody:
@@ -2945,7 +2945,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.44.21
+  version: 2.45.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev

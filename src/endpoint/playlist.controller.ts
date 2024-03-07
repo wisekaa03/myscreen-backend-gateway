@@ -72,7 +72,7 @@ export class PlaylistController {
     } else {
       where.hide = false;
     }
-    if (role === UserRoleEnum.Administrator) {
+    if (role !== UserRoleEnum.Administrator) {
       if (Array.isArray(where)) {
         where.push({ userId });
       } else {
