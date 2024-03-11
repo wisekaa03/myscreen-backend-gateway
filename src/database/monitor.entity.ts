@@ -11,7 +11,6 @@ import {
   IsString,
   IsUUID,
   Length,
-  Min,
   Validate,
   ValidateNested,
 } from 'class-validator';
@@ -155,7 +154,7 @@ export class MonitorInfo {
 }
 
 @Entity('monitor')
-@Unique('IDX_user_name', ['user', 'name'])
+@Unique('user_name_Unique', ['user', 'name'])
 export class MonitorEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
@@ -326,7 +325,7 @@ export class MonitorEntity {
   sound!: boolean;
 
   @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
-  @Index()
+  @Index('monitorStatusIndex')
   @ApiProperty({
     description: 'Подключен',
     enum: MonitorStatus,
@@ -386,7 +385,7 @@ export class MonitorEntity {
   playlistPlayed!: boolean;
 
   @Column({ type: 'char', length: 11, nullable: true })
-  @Index()
+  @Index('monitorCodeIndex')
   @ApiProperty({
     type: 'string',
     description: 'Идентификатор устройства',
@@ -453,7 +452,6 @@ export class MonitorEntity {
   user!: UserEntity;
 
   @Column()
-  @Index()
   @IsUUID()
   userId!: string;
 

@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   DeepPartial,
   DeleteResult,
+  EntityManager,
   FindManyOptions,
   FindOneOptions,
   FindOptionsWhere,
@@ -303,14 +304,18 @@ export class RequestService {
 
   private async requestPostCreate({
     request,
+    entityManager,
   }: {
     request: RequestEntity;
+    entityManager?: EntityManager;
   }): Promise<void> {
     const { multiple } = request.monitor;
+    const { id, seqNo, createdAt, updatedAt, ...insert } = request;
     if (multiple === MonitorMultiple.SINGLE) {
       await this.websocketChange({ request });
     } else {
-      await this.requestRepository.manager.transaction(async (transact) => {
+      const manager = entityManager ?? this.requestRepository.manager;
+      await manager.transaction(async (transact) => {
         const groupMonitors = await this.editorService.partitionMonitors({
           request,
         });
@@ -319,21 +324,18 @@ export class RequestService {
         }
 
         const groupMonitorPromise = groupMonitors.map(async (monitor) => {
-          const { id, ...insert } = request;
-          const req = await transact.save(
-            RequestEntity,
-            transact.create(RequestEntity, {
-              ...insert,
-              hide: true,
-              parentRequestId: id,
-              monitorId: monitor.id,
-              playlistId: monitor.playlist.id,
-            }),
-          );
+          const createReq = transact.create(RequestEntity, {
+            ...insert,
+            hide: true,
+            parentRequestId: id,
+            monitorId: monitor.id,
+            playlistId: monitor.playlist.id,
+          });
+          const subReq = await transact.save(RequestEntity, createReq);
 
-          await this.websocketChange({ request: req });
+          await this.websocketChange({ request: subReq });
 
-          return req;
+          return subReq;
         });
 
         await Promise.all(groupMonitorPromise);
@@ -343,16 +345,19 @@ export class RequestService {
 
   private async requestPreDelete({
     request,
+    entityManager,
     delete: deleteLocal = false,
   }: {
     request: RequestEntity;
+    entityManager?: EntityManager;
     delete?: boolean;
   }): Promise<void> {
     const { multiple } = request.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
       await this.websocketChange({ request, requestDelete: true });
     } else {
-      await this.requestRepository.manager.transaction(async (transact) => {
+      const manager = entityManager ?? this.requestRepository.manager;
+      await manager.transaction(async (transact) => {
         const groupApplication = await transact.find(RequestEntity, {
           where: {
             parentRequestId: request.id,
@@ -440,7 +445,7 @@ export class RequestService {
           description: `Оплата за монитор "${request.monitor.name}" рекламодателем "${getFullName(request.user)}"`,
         });
 
-        await this.requestPostCreate({ request });
+        await this.requestPostCreate({ request, entityManager: transact });
       } else if (update.approved === RequestApprove.DENIED) {
         // Снята оплата на пользователя - рекламодателя
         await this.actService.create({
@@ -449,7 +454,7 @@ export class RequestService {
           description: `Снята оплата за монитор "${request.monitor.name}" рекламодателем "${getFullName(request.user)}"`,
         });
 
-        await this.requestPreDelete({ request });
+        await this.requestPreDelete({ request, entityManager: transact });
       }
 
       return request;
@@ -600,9 +605,9 @@ export class RequestService {
             description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
           });
 
-          await this.requestPostCreate({ request });
+          await this.requestPostCreate({ request, entityManager: transact });
         } else if (insert.approved === RequestApprove.DENIED) {
-          await this.requestPreDelete({ request });
+          await this.requestPreDelete({ request, entityManager: transact });
         }
 
         return request;

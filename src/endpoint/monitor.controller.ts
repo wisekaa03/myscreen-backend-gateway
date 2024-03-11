@@ -110,20 +110,26 @@ export class MonitorController {
       // добавляем то, что содержится у нас в userId: monitorId.
       find.where = {
         id: userId,
+        multiple: Not(MonitorMultiple.SUBORDINATE),
         ...TypeOrmFind.where(MonitorEntity, where),
       };
     } else if (role === UserRoleEnum.MonitorOwner) {
       find.where = {
         userId,
+        multiple: Not(MonitorMultiple.SUBORDINATE),
         ...TypeOrmFind.where(MonitorEntity, where),
       };
     } else if (role === UserRoleEnum.Administrator) {
-      find.where = TypeOrmFind.where(MonitorEntity, where);
+      find.where = {
+        multiple: Not(MonitorMultiple.SUBORDINATE),
+        ...TypeOrmFind.where(MonitorEntity, where),
+      };
     } else {
       find.where = {
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
+        multiple: Not(MonitorMultiple.SUBORDINATE),
         ...TypeOrmFind.where(MonitorEntity, where),
       };
     }
