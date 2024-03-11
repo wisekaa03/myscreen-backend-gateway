@@ -36,7 +36,7 @@ export class RequestEntity {
   id?: string;
 
   @Generated('increment')
-  @Index()
+  @Index('seqNoIndex')
   @Column({ type: 'integer' })
   @ApiProperty({
     description: 'Номер заявки',
@@ -60,7 +60,7 @@ export class RequestEntity {
   buyer!: UserEntity | null;
 
   @Column({ nullable: true })
-  @Index()
+  @Index('buyerIdIndex')
   @ApiProperty({
     description: 'Покупатель ID',
     format: 'uuid',
@@ -85,7 +85,7 @@ export class RequestEntity {
   seller!: UserEntity;
 
   @Column()
-  @Index()
+  @Index('sellerIdIndex')
   @ApiProperty({
     description: 'Продавец ID',
     format: 'uuid',
@@ -121,7 +121,7 @@ export class RequestEntity {
     enum: RequestStatus,
     default: RequestStatus.OK,
   })
-  @Index()
+  @Index('requestStatusIndex')
   @ApiProperty({
     description: 'OK / Подождите',
     enum: RequestStatus,
@@ -150,8 +150,8 @@ export class RequestEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
-  @Index()
+  @JoinColumn({ foreignKeyConstraintName: 'parentRequestIdConstraint' })
+  @Index('parentRequestIdIndex')
   parentRequest?: RequestEntity;
 
   @Column({ nullable: true })
@@ -185,7 +185,7 @@ export class RequestEntity {
     enum: RequestApprove,
     default: RequestApprove.NOTPROCESSED,
   })
-  @Index()
+  @Index('approvedIndex')
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
     enum: RequestApprove,
@@ -197,7 +197,7 @@ export class RequestEntity {
   approved!: RequestApprove;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  @Index()
+  @Index('dateWhenIndex')
   @ApiProperty({
     type: 'string',
     format: 'date',
@@ -209,7 +209,7 @@ export class RequestEntity {
   dateWhen!: Date;
 
   @Column({ type: 'timestamptz', nullable: true, default: null })
-  @Index()
+  @Index('dateBeforeIndex')
   @ApiProperty({
     type: 'string',
     format: 'date',
@@ -249,7 +249,7 @@ export class RequestEntity {
   user!: UserEntity;
 
   @Column({ select: false })
-  @Index()
+  @Index('requestUserIdIndex')
   @IsUUID()
   userId!: string;
 

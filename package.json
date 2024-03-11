@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.45.1",
+  "version": "2.45.2",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -44,7 +44,7 @@
     "**/terser/commander": "^4.1.1",
     "**/**/concat-stream": ">=2.0.0",
     "**/**/cron": ">=3.1.6",
-    "**/**/date-fns": ">=3.3.1",
+    "**/**/date-fns": ">=3.4.0",
     "**/**/debug": ">=4.3.4",
     "**/**/dotenv": ">=16.4.5",
     "**/jest-config/glob": "^8.1.0",
@@ -110,8 +110,8 @@
     "**/**/ws": ">=8.16.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.525.0",
-    "@aws-sdk/s3-request-presigner": "^3.525.0",
+    "@aws-sdk/client-s3": "^3.529.1",
+    "@aws-sdk/s3-request-presigner": "^3.529.1",
     "@elastic/elasticsearch": "^8.12.2",
     "@nestjs/common": "^10.3.3",
     "@nestjs/config": "^3.2.0",
@@ -130,7 +130,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "cron": "^3.1.6",
-    "date-fns": "^3.3.1",
+    "date-fns": "^3.4.0",
     "dayjs": "^1.11.10",
     "debug": "^4.3.4",
     "dotenv": "^16.4.5",

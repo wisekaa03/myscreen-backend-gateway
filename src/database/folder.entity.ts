@@ -24,8 +24,8 @@ import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from './file.entity';
 
 @Entity('folder')
-@Index('IDX_user_name_parentFolder', ['name', 'userId'])
-@Index('IDX_user_parentFolder', ['userId', 'parentFolderId'])
+@Index('user_name_parentFolder_Index', ['name', 'userId'])
+@Index('user_parentFolder_Index', ['userId', 'parentFolderId'])
 export class FolderEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({

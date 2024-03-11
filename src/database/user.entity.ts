@@ -51,7 +51,7 @@ export class UserEntity {
   @IsEmail()
   email!: string;
 
-  @Index()
+  @Index('userDisabledIndex')
   @Column({ type: 'boolean', default: false })
   @ApiHideProperty()
   disabled!: boolean;
