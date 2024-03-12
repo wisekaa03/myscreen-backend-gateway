@@ -26,8 +26,8 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { PlaylistService } from '@/database/playlist.service';
-import { RequestEntity } from '@/database/request.entity';
-import { RequestService } from '@/database/request.service';
+import { BidEntity } from '@/database/bid.entity';
+import { BidService } from '@/database/bid.service';
 import { FileService } from '@/database/file.service';
 
 @WebSocketGateway({
@@ -42,8 +42,8 @@ export class WSGateway
 {
   constructor(
     private readonly authService: AuthService,
-    @Inject(forwardRef(() => RequestService))
-    private readonly requestService: RequestService,
+    @Inject(forwardRef(() => BidService))
+    private readonly bidService: BidService,
     private readonly fileService: FileService,
     private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,
@@ -148,7 +148,7 @@ export class WSGateway
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() body: AuthTokenEvent,
-  ): Promise<Observable<WsResponse<string | RequestEntity[] | null>[]>> {
+  ): Promise<Observable<WsResponse<string | BidEntity[] | null>[]>> {
     if (!(body.token && body.date)) {
       throw new WsException('Not authorized');
     }
@@ -164,10 +164,10 @@ export class WSGateway
               relations: {},
             },
           });
-          let request: RequestEntity[] | null = null;
+          let request: BidEntity[] | null = null;
           if (monitor) {
             [request] = await Promise.all([
-              this.requestService.monitorRequests({
+              this.bidService.monitorRequests({
                 monitorId: monitor.id,
                 dateLocal: new Date(body.date),
               }),
@@ -277,25 +277,25 @@ export class WSGateway
    * @param monitor MonitorEntity or null
    */
   async onChange({
-    request,
+    bid,
     monitor,
   }: {
-    request?: RequestEntity;
+    bid?: BidEntity;
     monitor?: MonitorEntity;
   }): Promise<void> {
-    if (!request && !monitor) {
+    if (!bid && !monitor) {
       this.logger.error('request or monitor is required');
       return;
     }
 
-    if (request?.playlistId && request.monitorId) {
-      await this.playlistService.update(request.playlistId, {
+    if (bid?.playlistId && bid.monitorId) {
+      await this.playlistService.update(bid.playlistId, {
         status: PlaylistStatusEnum.Broadcast,
       });
-      let requestFind: RequestEntity | null = request;
-      if (!request.playlist) {
-        requestFind = await this.requestService.findOne({
-          where: { id: request.id },
+      let requestFind: BidEntity | null = bid;
+      if (!bid.playlist) {
+        requestFind = await this.bidService.findOne({
+          where: { id: bid.id },
           loadEagerRelations: false,
           relations: { playlist: { files: true } },
         });
@@ -313,11 +313,11 @@ export class WSGateway
               ),
             ),
           },
-        } as RequestEntity;
+        } as BidEntity;
       }
 
       this.clients.forEach((value, client) => {
-        if (value.monitorId === request.monitorId) {
+        if (value.monitorId === bid.monitorId) {
           client.send(
             JSON.stringify([{ event: 'application', data: requestFind }]),
           );

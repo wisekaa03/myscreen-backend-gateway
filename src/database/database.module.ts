@@ -28,8 +28,8 @@ import { UserExtEntity } from './user-ext.entity';
 import { UserService } from './user.service';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
-import { RequestService } from './request.service';
-import { RequestEntity } from './request.entity';
+import { BidService } from './bid.service';
+import { BidEntity } from './bid.entity';
 import { WalletEntity } from './wallet.entity';
 import { WalletService } from './wallet.service';
 import { ActService } from './act.service';
@@ -60,7 +60,7 @@ import { MonitorGroupEntity } from './monitor.group.entity';
       UptimeMonitoringEntity,
       UserEntity,
       RefreshTokenEntity,
-      RequestEntity,
+      BidEntity,
       UserExtEntity,
       WalletEntity,
       ActEntity,
@@ -78,7 +78,7 @@ import { MonitorGroupEntity } from './monitor.group.entity';
     PlaylistService,
     UserService,
     RefreshTokenService,
-    RequestService,
+    BidService,
     WalletService,
     ActService,
   ],
@@ -93,7 +93,7 @@ import { MonitorGroupEntity } from './monitor.group.entity';
     PlaylistService,
     UserService,
     RefreshTokenService,
-    RequestService,
+    BidService,
     WalletService,
   ],
 })

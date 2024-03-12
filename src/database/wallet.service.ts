@@ -13,6 +13,10 @@ import {
 import { subDays } from 'date-fns/subDays';
 import { ClientProxy } from '@nestjs/microservices';
 
+import {
+  FindManyOptionsCaseInsensitive,
+  FindOneOptionsCaseInsensitive,
+} from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -22,7 +26,7 @@ import { ActEntity } from './act.entity';
 import { InvoiceEntity } from './invoice.entity';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
-import { UserPlanEnum } from '@/enums';
+import { UserPlanEnum, UserStoreSpaceEnum } from '@/enums';
 import { getFullName } from '@/utils/full-name';
 
 @Injectable()
@@ -54,7 +58,7 @@ export class WalletService {
   }
 
   async find(
-    find: FindManyOptions<WalletEntity>,
+    find: FindManyOptionsCaseInsensitive<WalletEntity>,
   ): Promise<[Array<WalletEntity>, number]> {
     return this.walletRepository.findAndCount(
       TypeOrmFind.findParams(WalletEntity, find),
@@ -62,7 +66,7 @@ export class WalletService {
   }
 
   async findOne(
-    find: FindManyOptions<WalletEntity>,
+    find: FindOneOptionsCaseInsensitive<WalletEntity>,
   ): Promise<WalletEntity | null> {
     return this.walletRepository.findOne(
       TypeOrmFind.findParams(WalletEntity, find),
@@ -171,6 +175,7 @@ export class WalletService {
         // если у пользователя был демо-план и он оплатил акт, то переводим его на полный план
         await transact.update(UserEntity, user.id, {
           plan: UserPlanEnum.Full,
+          storageSpace: UserStoreSpaceEnum.FULL,
         });
       }
 
@@ -193,6 +198,7 @@ export class WalletService {
         // если у пользователя был полный план и он не оплатил акт, то переводим его на демо-план
         await transact.update(UserEntity, user.id, {
           plan: UserPlanEnum.Demo,
+          storageSpace: UserStoreSpaceEnum.DEMO,
         });
       }
 

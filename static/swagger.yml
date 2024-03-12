@@ -2477,7 +2477,7 @@ paths:
       security: *ref_97
   /api/v2/application:
     post:
-      operationId: requests-get
+      operationId: bids-get
       summary: Получение списка заявок
       parameters: []
       requestBody:
@@ -2551,12 +2551,12 @@ paths:
         - application
       security: &ref_108
         - bearer: []
-  /api/v2/application/{applicationId}:
+  /api/v2/application/{bidId}:
     get:
-      operationId: application-get
+      operationId: bid-get
       summary: Получение заявки
       parameters:
-        - name: applicationId
+        - name: bidId
           required: true
           in: path
           schema:
@@ -2580,10 +2580,10 @@ paths:
       tags: *ref_107
       security: *ref_108
     patch:
-      operationId: application-update
+      operationId: bid-update
       summary: Изменить заявку
       parameters:
-        - name: applicationId
+        - name: bidId
           required: true
           in: path
           schema:
@@ -2613,10 +2613,10 @@ paths:
       tags: *ref_107
       security: *ref_108
     delete:
-      operationId: application-delete
+      operationId: bid-delete
       summary: Удаление заявки
       parameters:
-        - name: applicationId
+        - name: bidId
           required: true
           in: path
           schema:
@@ -2641,7 +2641,7 @@ paths:
       security: *ref_108
   /api/v2/application/precalc-promo:
     post:
-      operationId: request-precalc-promo
+      operationId: bid-precalc-promo
       summary: Возвращает предрасчет мониторов (для promo)
       parameters: []
       requestBody:
@@ -2670,7 +2670,7 @@ paths:
       security: *ref_108
   /api/v2/application/precalc-sum:
     post:
-      operationId: request-precalc-sum
+      operationId: bid-precalc-sum
       summary: Возвращает предрасчет мониторов (для суммы списания)
       parameters: []
       requestBody:
@@ -2945,7 +2945,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.45.2
+  version: 2.45.3
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -2953,24 +2953,56 @@ info:
 tags:
   - name: auth
     description: Аутентификация пользователя
+    externalDocs:
+      description: Аутентификация пользователя
+      url: https://cp.dev.myscreen.ru/login
   - name: user
     description: Пользователи (только администратор)
+    externalDocs:
+      description: Пользователи
+      url: https://cp.dev.myscreen.ru/users/list
   - name: folder
     description: Папки
+    externalDocs:
+      description: Библиотека
+      url: https://cp.dev.myscreen.ru/library
   - name: file
     description: Файлы
+    externalDocs:
+      description: Библиотека
+      url: https://cp.dev.myscreen.ru/library
   - name: playlist
     description: Плейлисты
+    externalDocs:
+      description: Плейлисты
+      url: https://cp.dev.myscreen.ru/playlists/list
   - name: monitor
     description: Мониторы
+    externalDocs:
+      description: Мониторы
+      url: https://cp.dev.myscreen.ru/monitors/list
   - name: editor
     description: Редакторы
+    externalDocs:
+      description: Видео-редактор
+      url: https://cp.dev.myscreen.ru/editor/projects
   - name: application
-    description: Взаимодействия покупателей и продавца
+    description: Заявки
+    externalDocs:
+      description: Заявки
+      url: https://cp.dev.myscreen.ru/applications
+  - name: bid
+    description: Заявки
+    externalDocs:
+      description: Заявки
+      url: https://cp.dev.myscreen.ru/applications
   - name: statistics
     description: Cтатистика
   - name: invoice
     description: Счета
+    externalDocs:
+      description: Счета
+      url: https://cp.dev.myscreen.ru/accountant/invoices
   - name: crontab
     description: CronTab (только администратор)
 servers: []

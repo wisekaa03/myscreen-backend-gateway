@@ -42,11 +42,14 @@ import { UserEntity } from '@/database/user.entity';
 import { getFullName } from '@/utils/full-name';
 
 @ApiExtraModels(FolderResponse)
-@ApiComplexDecorators('folder', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-])
+@ApiComplexDecorators({
+  path: ['folder'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  ],
+})
 export class FolderController {
   logger = new Logger(FolderController.name);
 

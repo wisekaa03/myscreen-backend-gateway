@@ -1,4 +1,4 @@
-import type { Request as ExpressRequest } from 'express';
+import { type Request as ExpressRequest } from 'express';
 import {
   BadRequestException,
   Body,
@@ -34,20 +34,23 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
-import { RequestService } from '@/database/request.service';
-import { RequestEntity } from '@/database/request.entity';
+import { BidService } from '@/database/bid.service';
+import { BidEntity } from '@/database/bid.entity';
 
-@ApiComplexDecorators('application', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-])
-export class RequestController {
-  logger = new Logger(RequestController.name);
+@ApiComplexDecorators({
+  path: ['application'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  ],
+})
+export class BidController {
+  logger = new Logger(BidController.name);
 
   constructor(
     private readonly userService: UserService,
-    private readonly requestService: RequestService,
+    private readonly bidService: BidService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -55,7 +58,7 @@ export class RequestController {
   @Post()
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'requests-get',
+    operationId: 'bids-get',
     summary: 'Получение списка заявок',
   })
   @ApiResponse({
@@ -69,9 +72,9 @@ export class RequestController {
     @Body() { where: origWhere, select, scope }: ApplicationsGetRequest,
   ): Promise<ApplicationsGetResponse> {
     const { id: userId } = user;
-    const where = TypeOrmFind.where(RequestEntity, origWhere);
+    const where = TypeOrmFind.where(BidEntity, origWhere);
     if (user.role === UserRoleEnum.MonitorOwner) {
-      const [data, count] = await this.requestService.findAndCount({
+      const [data, count] = await this.bidService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
@@ -88,7 +91,7 @@ export class RequestController {
     }
 
     if (user.role === UserRoleEnum.Advertiser) {
-      const [data, count] = await this.requestService.findAndCount({
+      const [data, count] = await this.bidService.findAndCount({
         ...paginationQueryToConfig(scope),
         select,
         where: [
@@ -104,7 +107,7 @@ export class RequestController {
       };
     }
 
-    const [data, count] = await this.requestService.findAndCount({
+    const [data, count] = await this.bidService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
       where,
@@ -116,10 +119,10 @@ export class RequestController {
     };
   }
 
-  @Get(':applicationId')
+  @Get(':bidId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'application-get',
+    operationId: 'bid-get',
     summary: 'Получение заявки',
   })
   @ApiResponse({
@@ -129,9 +132,9 @@ export class RequestController {
   })
   @Crud(CRUD.READ)
   async findOne(
-    @Param('applicationId', ParseUUIDPipe) id: string,
+    @Param('bidId', ParseUUIDPipe) id: string,
   ): Promise<ApplicationGetResponse> {
-    const data = await this.requestService.findOne({
+    const data = await this.bidService.findOne({
       where: {
         id,
       },
@@ -146,10 +149,10 @@ export class RequestController {
     };
   }
 
-  @Patch(':applicationId')
+  @Patch(':bidId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'application-update',
+    operationId: 'bid-update',
     summary: 'Изменить заявку',
   })
   @ApiResponse({
@@ -159,32 +162,34 @@ export class RequestController {
   })
   @Crud(CRUD.UPDATE)
   async update(
-    @Req() { user }: ExpressRequest,
-    @Param('applicationId', ParseUUIDPipe) applicationId: string,
+    @Req() { user: { role, id: userId } }: ExpressRequest,
+    @Param('bidId', ParseUUIDPipe) bidId: string,
     @Body() update: ApplicationUpdateRequest,
   ): Promise<ApplicationGetResponse> {
-    const application = await this.requestService.findOne({
-      where: [
-        {
-          id: applicationId,
-          sellerId: user.id,
-        },
-        {
-          id: applicationId,
-          buyerId: user.id,
-        },
-      ],
-      select: ['id'],
-      relations: [],
-      loadEagerRelations: false,
-    });
-    if (!application) {
-      throw new NotFoundException('Request not found');
+    if (role !== UserRoleEnum.Administrator) {
+      const bid = await this.bidService.findOne({
+        where: [
+          {
+            id: bidId,
+            sellerId: userId,
+          },
+          {
+            id: bidId,
+            buyerId: userId,
+          },
+        ],
+        select: ['id'],
+        relations: {},
+        loadEagerRelations: false,
+      });
+      if (!bid) {
+        throw new NotFoundException('Request not found');
+      }
     }
 
-    const data = await this.requestService.update(applicationId, update);
+    const data = await this.bidService.update(bidId, update);
     if (!data) {
-      throw new BadRequestException('Request exists and not exists ?');
+      throw new BadRequestException('Bid exists and not exists ?');
     }
 
     return {
@@ -193,10 +198,10 @@ export class RequestController {
     };
   }
 
-  @Delete(':applicationId')
+  @Delete(':bidId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'application-delete',
+    operationId: 'bid-delete',
     summary: 'Удаление заявки',
   })
   @ApiResponse({
@@ -206,23 +211,28 @@ export class RequestController {
   })
   @Crud(CRUD.DELETE)
   async delete(
-    @Req() { user }: ExpressRequest,
-    @Param('applicationId', ParseUUIDPipe) id: string,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
+    @Param('bidId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
-    const application = await this.requestService.findOne({
-      where: [
-        { id, sellerId: user.id },
-        { id, buyerId: user.id },
-      ],
-      relations: { monitor: true },
-    });
-    if (!application) {
-      throw new NotFoundException(`Application "${id}" is not found`);
+    let bid: BidEntity | null;
+    if (role !== UserRoleEnum.Administrator) {
+      bid = await this.bidService.findOne({
+        where: [
+          { id, sellerId: userId },
+          { id, buyerId: userId },
+        ],
+        relations: { monitor: true },
+      });
+    } else {
+      bid = await this.bidService.findOne({ where: { id } });
+    }
+    if (!bid) {
+      throw new NotFoundException(`Bid "${id}" is not found`);
     }
 
-    const { affected } = await this.requestService.delete(application);
+    const { affected } = await this.bidService.delete(bid);
     if (!affected) {
-      throw new NotFoundException('This application is not exists');
+      throw new NotFoundException('This bid is not exists');
     }
 
     return {
@@ -233,7 +243,7 @@ export class RequestController {
   @Post('precalc-promo')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'request-precalc-promo',
+    operationId: 'bid-precalc-promo',
     summary: 'Возвращает предрасчет мониторов (для promo)',
   })
   @ApiResponse({
@@ -252,7 +262,7 @@ export class RequestController {
       dateTo,
     }: RequestPrecalcPromoRequest,
   ): Promise<RequestPrecalcResponse> {
-    const sum = await this.requestService.precalculatePromo({
+    const sum = await this.bidService.precalculatePromo({
       user,
       monitorIds,
       playlistDuration,
@@ -269,7 +279,7 @@ export class RequestController {
   @Post('precalc-sum')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'request-precalc-sum',
+    operationId: 'bid-precalc-sum',
     summary: 'Возвращает предрасчет мониторов (для суммы списания)',
   })
   @ApiResponse({
@@ -289,7 +299,7 @@ export class RequestController {
       dateWhen,
     }: RequestPrecalcSumRequest,
   ): Promise<RequestPrecalcResponse> {
-    const sum = await this.requestService.precalculateSum({
+    const sum = await this.bidService.precalculateSum({
       user,
       minWarranty,
       price1s,

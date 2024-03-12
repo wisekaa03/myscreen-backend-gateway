@@ -18,13 +18,13 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
-import { RequestService } from '@/database/request.service';
+import { BidService } from '@/database/bid.service';
 
 @Injectable()
 export class PlaylistService {
   constructor(
-    @Inject(forwardRef(() => RequestService))
-    private readonly requestService: RequestService,
+    @Inject(forwardRef(() => BidService))
+    private readonly bidService: BidService,
     @InjectRepository(PlaylistEntity)
     private readonly playlistRepository: Repository<PlaylistEntity>,
   ) {}
@@ -73,7 +73,7 @@ export class PlaylistService {
       this.playlistRepository.create(insert),
     );
 
-    await this.requestService.websocketChange({ playlist });
+    await this.bidService.websocketChange({ playlist });
 
     return playlist;
   }
@@ -91,7 +91,7 @@ export class PlaylistService {
     if (!playlist) {
       throw new NotFoundException(`Playlist with this "${id}" not found`);
     }
-    await this.requestService.websocketChange({ playlist });
+    await this.bidService.websocketChange({ playlist });
 
     return playlist;
   }
@@ -100,7 +100,7 @@ export class PlaylistService {
     user: UserEntity,
     playlist: PlaylistEntity,
   ): Promise<DeleteResult> {
-    await this.requestService.websocketChange({
+    await this.bidService.websocketChange({
       playlist,
       playlistDelete: true,
     });

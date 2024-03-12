@@ -28,7 +28,7 @@ import { ApiComplexDecorators, Crud } from '@/decorators';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserExtEntity } from '@/database/user-ext.entity';
 
-@ApiComplexDecorators('user', [UserRoleEnum.Administrator])
+@ApiComplexDecorators({ path: ['user'], roles: [UserRoleEnum.Administrator] })
 export class UserController {
   logger = new Logger(UserController.name);
 

@@ -26,7 +26,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 
 @Entity('application')
-export class RequestEntity {
+export class BidEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
     description: 'Идентификатор взаимодействия',
@@ -143,7 +143,7 @@ export class RequestEntity {
   @IsBoolean()
   hide!: boolean;
 
-  @ManyToOne(() => RequestEntity, (request) => request.id, {
+  @ManyToOne(() => BidEntity, (bid) => bid.id, {
     nullable: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
@@ -152,7 +152,7 @@ export class RequestEntity {
   })
   @JoinColumn({ foreignKeyConstraintName: 'parentRequestIdConstraint' })
   @Index('parentRequestIdIndex')
-  parentRequest?: RequestEntity;
+  parentRequest?: BidEntity;
 
   @Column({ nullable: true })
   @IsUUID()

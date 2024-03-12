@@ -6,9 +6,9 @@ import { Roles } from '@/decorators/roles.decorator';
 import { UserRoleEnum } from '@/enums';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { WSGateway } from '@/websocket/ws.gateway';
-import { RequestService } from '@/database/request.service';
+import { BidService } from '@/database/bid.service';
 import { UserService } from '@/database/user.service';
-import { RequestController } from './request.controller';
+import { BidController } from './bid.controller';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -23,21 +23,21 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(RequestController.name, () => {
-  let controller: RequestController;
+describe(BidController.name, () => {
+  let controller: BidController;
   const reflector = new Reflector();
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [RequestController],
+      controllers: [BidController],
       providers: [
-        { provide: RequestService, useClass: mockRepository },
+        { provide: BidService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
         { provide: WSGateway, useClass: mockRepository },
       ],
     }).compile();
 
-    controller = module.get(RequestController);
+    controller = module.get(BidController);
   });
 
   it('should be defined', () => {
@@ -45,14 +45,14 @@ describe(RequestController.name, () => {
   });
 
   it('JwtAuthGuard, RolesGuard and Roles', async () => {
-    const guards = Reflect.getMetadata(GUARDS_METADATA, RequestController);
+    const guards = Reflect.getMetadata(GUARDS_METADATA, BidController);
     const guardJwt = new guards[0]();
     const guardRoles = new guards[1]();
 
     expect(guardJwt).toBeInstanceOf(JwtAuthGuard);
     expect(guardRoles).toBeInstanceOf(RolesGuard);
 
-    const roles = reflector.get(Roles, RequestController);
+    const roles = reflector.get(Roles, BidController);
     expect(roles).toEqual([
       UserRoleEnum.Administrator,
       UserRoleEnum.Advertiser,

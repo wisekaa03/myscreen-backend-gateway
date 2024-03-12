@@ -21,7 +21,13 @@ import { UserRoleEnum } from '@/enums/user-role.enum';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { Roles } from './roles.decorator';
 
-export const ApiComplexDecorators = (path: string, roles?: UserRoleEnum[]) =>
+export const ApiComplexDecorators = ({
+  path,
+  roles,
+}: {
+  path: string[];
+  roles?: UserRoleEnum[];
+}) =>
   Array.isArray(roles)
     ? applyDecorators(
         ApiResponse({
@@ -72,7 +78,7 @@ export const ApiComplexDecorators = (path: string, roles?: UserRoleEnum[]) =>
         Roles(roles),
         UseGuards(JwtAuthGuard, RolesGuard),
         ApiBearerAuth(),
-        ApiTags(path),
+        ApiTags(...path),
         Controller(path),
       )
     : applyDecorators(
@@ -121,6 +127,6 @@ export const ApiComplexDecorators = (path: string, roles?: UserRoleEnum[]) =>
           description: 'Ответ для незарегистрированного пользователя',
           type: UnauthorizedError,
         }),
-        ApiTags(path),
+        ApiTags(...path),
         Controller(path),
       );

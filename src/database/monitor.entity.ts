@@ -32,7 +32,6 @@ import {
 import { Point } from 'geojson';
 import { Type } from 'class-transformer';
 
-import { MSRange } from '@/interfaces';
 import {
   MonitorCategoryEnum,
   MonitorMultiple,
@@ -41,7 +40,7 @@ import {
 } from '@/enums';
 import { MonitorGroup } from '@/dto/request/monitor-group';
 import { MonitorFavoriteEntity } from '@/database/monitor.favorite.entity';
-import { RequestEntity } from '@/database/request.entity';
+import { BidEntity } from '@/database/bid.entity';
 import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
@@ -475,10 +474,10 @@ export class MonitorEntity {
   @JoinTable()
   files?: FileEntity[];
 
-  @OneToMany(() => RequestEntity, (request) => request.monitor, {
+  @OneToMany(() => BidEntity, (bid) => bid.monitor, {
     eager: false,
   })
-  requests?: RequestEntity[];
+  requests?: BidEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

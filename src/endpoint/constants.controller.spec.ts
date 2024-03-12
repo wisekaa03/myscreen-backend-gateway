@@ -4,7 +4,7 @@ import { ConstantsController } from './constants.controller';
 import { UserService } from '@/database/user.service';
 import { WalletService } from '@/database/wallet.service';
 import { InvoiceService } from '@/database/invoice.service';
-import { RequestService } from '@/database/request.service';
+import { BidService } from '@/database/bid.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -29,7 +29,7 @@ describe('ConstantsController', () => {
         { provide: UserService, useClass: mockRepository },
         { provide: WalletService, useClass: mockRepository },
         { provide: InvoiceService, useClass: mockRepository },
-        { provide: RequestService, useClass: mockRepository },
+        { provide: BidService, useClass: mockRepository },
       ],
     }).compile();
 

@@ -1,8 +1,8 @@
 import { OmitType } from '@nestjs/swagger';
 
-import { RequestEntity } from '@/database/request.entity';
+import { BidEntity } from '@/database/bid.entity';
 
-export class ApplicationCreateRequest extends OmitType(RequestEntity, [
+export class ApplicationCreateRequest extends OmitType(BidEntity, [
   'id',
   'buyer',
   'seller',

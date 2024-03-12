@@ -16,6 +16,7 @@ import { ExceptionsFilter } from './exception/exceptions.filter';
 import { validationPipeOptions } from './utils/validation-pipe-options';
 import { WsAdapter } from './websocket/ws-adapter';
 import { AppModule } from './app.module';
+import { UserService } from './database/user.service';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -37,9 +38,11 @@ async function bootstrap() {
   });
   const logger = app.get(Logger);
   app.useLogger(logger);
+  const userService = app.get(UserService);
   const configService = app.get(ConfigService);
   const port = configService.get<string>('PORT', '3000');
   const apiPath = configService.get<string>('API_PATH', '/api/v2');
+  const { frontendUrl } = userService;
   app.disable('x-powered-by').disable('server');
   const staticAssets = pathJoin('static');
   app
@@ -66,16 +69,47 @@ async function bootstrap() {
     .setExternalDoc(description, homepage)
     .setContact(author.name, author.url, author.email)
 
-    .addTag('auth', 'Аутентификация пользователя')
-    .addTag('user', 'Пользователи (только администратор)')
-    .addTag('folder', 'Папки')
-    .addTag('file', 'Файлы')
-    .addTag('playlist', 'Плейлисты')
-    .addTag('monitor', 'Мониторы')
-    .addTag('editor', 'Редакторы')
-    .addTag('application', 'Взаимодействия покупателей и продавца')
+    .addTag('auth', 'Аутентификация пользователя', {
+      description: 'Аутентификация пользователя',
+      url: `${frontendUrl}/login`,
+    })
+    .addTag('user', 'Пользователи (только администратор)', {
+      description: 'Пользователи',
+      url: `${frontendUrl}/users/list`,
+    })
+    .addTag('folder', 'Папки', {
+      description: 'Библиотека',
+      url: `${frontendUrl}/library`,
+    })
+    .addTag('file', 'Файлы', {
+      description: 'Библиотека',
+      url: `${frontendUrl}/library`,
+    })
+    .addTag('playlist', 'Плейлисты', {
+      description: 'Плейлисты',
+      url: `${frontendUrl}/playlists/list`,
+    })
+    .addTag('monitor', 'Мониторы', {
+      description: 'Мониторы',
+      url: `${frontendUrl}/monitors/list`,
+    })
+    .addTag('editor', 'Редакторы', {
+      description: 'Видео-редактор',
+      url: `${frontendUrl}/editor/projects`,
+    })
+    .addTag('application', 'Заявки', {
+      description: 'Заявки',
+      url: `${frontendUrl}/applications`,
+    })
+    .addTag('bid', 'Заявки', {
+      description: 'Заявки',
+      url: `${frontendUrl}/applications`,
+    })
     .addTag('statistics', 'Cтатистика')
-    .addTag('invoice', 'Счета')
+    .addTag('invoice', 'Счета', {
+      description: 'Счета',
+      url: `${frontendUrl}/accountant/invoices`,
+    })
     .addTag('crontab', 'CronTab (только администратор)')
 
     .build();

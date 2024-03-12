@@ -46,11 +46,11 @@ import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from '@/database/file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
-import { RequestEntity } from './request.entity';
+import { BidEntity } from './bid.entity';
 import { PlaylistService } from './playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { CrontabService } from '@/crontab/crontab.service';
-import { RequestService } from '@/database/request.service';
+import { BidService } from '@/database/bid.service';
 
 dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
@@ -63,8 +63,8 @@ export class EditorService {
     private readonly configService: ConfigService,
     private readonly crontabService: CrontabService,
     private readonly folderService: FolderService,
-    @Inject(forwardRef(() => RequestService))
-    private readonly requestService: RequestService,
+    @Inject(forwardRef(() => BidService))
+    private readonly bidService: BidService,
     private readonly playlistService: PlaylistService,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
@@ -456,12 +456,12 @@ export class EditorService {
   }
 
   async partitionMonitors({
-    request,
+    bid,
   }: {
-    request: RequestEntity;
+    bid: BidEntity;
   }): Promise<MonitorGroupWithPlaylist[] | null> {
-    const { playlist, userId } = request;
-    const { multiple, groupMonitors } = request.monitor;
+    const { playlist, userId } = bid;
+    const { multiple, groupMonitors } = bid.monitor;
     if (!groupMonitors) {
       return null;
     }
@@ -502,7 +502,7 @@ export class EditorService {
     const widthMonitor = widthSum / groupMonitors.length;
     const heightMonitor = heightSum / groupMonitors.length;
 
-    const { files } = request.playlist;
+    const { files } = bid.playlist;
 
     const monitorPlaylistsPromise = groupMonitors.map(async (groupMonitor) => {
       const { name: monitorName, id: monitorId } = groupMonitor.monitor;
@@ -535,7 +535,7 @@ export class EditorService {
           playlistId: playlistLocal.id,
         });
         // и добавляем в редактор видео-слой с файлом
-        await this.createLayer(request.user.id, editor.id, {
+        await this.createLayer(bid.user.id, editor.id, {
           index: 0,
           cutFrom: 0,
           cutTo: file.duration,
@@ -570,7 +570,7 @@ export class EditorService {
         });
         const editorsPromise = editors.map(async (editor) => {
           await this.export({
-            user: request.user,
+            user: bid.user,
             id: editor.id,
             rerender: true,
             // TODO: customOutputArgs
@@ -810,12 +810,12 @@ export class EditorService {
                 (e) => e.renderingStatus === RenderingStatus.Ready,
               );
               if (editors.length === playlist.editors.length) {
-                const request = await this.requestService.find({
+                const request = await this.bidService.find({
                   where: { playlistId: playlist.id },
                 });
                 const requestIds = new Set<string>(...request.map((r) => r.id));
                 requestIds.forEach((requestId) => {
-                  this.requestService.update(requestId, {
+                  this.bidService.update(requestId, {
                     status: RequestStatus.OK,
                   });
                 });

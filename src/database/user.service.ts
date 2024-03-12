@@ -36,7 +36,7 @@ import { getFullName } from '@/utils/full-name';
 export class UserService {
   private logger = new Logger(UserService.name);
 
-  private frontendUrl: string;
+  public frontendUrl: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -127,7 +127,11 @@ export class UserService {
           );
         }
 
-        if (controllerName === 'application' || controllerName === 'request') {
+        if (
+          controllerName === 'bid' ||
+          controllerName === 'application' ||
+          controllerName === 'request'
+        ) {
           throw new ForbiddenException(
             'You have a Demo User account. Time to pay.',
           );

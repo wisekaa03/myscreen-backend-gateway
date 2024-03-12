@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { RequestResponse } from './request.response';
+import { RequestPrecalcDataResponse } from './bid-precalc-data.response';
 
-export class ApplicationGetResponse {
+export class RequestPrecalcResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -14,9 +14,9 @@ export class ApplicationGetResponse {
   status!: Status.Success;
 
   @ApiProperty({
-    description: 'Взаимодействие покупателей и продавца',
-    type: RequestResponse,
+    description: 'Возвращаемое значение',
+    type: RequestPrecalcDataResponse,
     required: true,
   })
-  data!: RequestResponse;
+  data!: RequestPrecalcDataResponse;
 }

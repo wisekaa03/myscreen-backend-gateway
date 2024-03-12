@@ -11,12 +11,15 @@ import { WalletService } from '@/database/wallet.service';
 import { WalletEntity } from '@/database/wallet.entity';
 import { WalletOperationsGetRequest, WalletOperationsGetResponse } from '@/dto';
 
-@ApiComplexDecorators('wallet', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-  UserRoleEnum.Accountant,
-])
+@ApiComplexDecorators({
+  path: ['wallet'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Accountant,
+  ],
+})
 export class WalletController {
   logger = new Logger(WalletController.name);
 

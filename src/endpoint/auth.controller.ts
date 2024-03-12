@@ -36,7 +36,7 @@ import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
 
-@ApiComplexDecorators('auth')
+@ApiComplexDecorators({ path: ['auth'] })
 export class AuthController {
   logger = new Logger(AuthController.name);
 
