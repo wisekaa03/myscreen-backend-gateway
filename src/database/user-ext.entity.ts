@@ -35,7 +35,7 @@ import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { WalletEntity } from './wallet.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { RequestEntity } from './request.entity';
+import { BidEntity } from './bid.entity';
 
 export class UserMetricsMonitors {
   @ApiProperty({
@@ -234,7 +234,7 @@ export class UserWallet {
             .from(MonitorEntity, 'onlineMonitors')
 
             .innerJoinAndSelect(
-              (qbb: SelectQueryBuilder<RequestEntity>) =>
+              (qbb: SelectQueryBuilder<BidEntity>) =>
                 qbb
                   .select(
                     '"requestMonitors"."monitorId"',
@@ -257,7 +257,7 @@ export class UserWallet {
                     '"requestMonitors"."dateWhen" <= \'now()\'::timestamptz',
                   )
                   .andWhere('"requestMonitors"."dateBefore" IS NULL')
-                  .from(RequestEntity, 'requestMonitors'),
+                  .from(BidEntity, 'requestMonitors'),
               'requestMonitors',
               '"requestOnlineMonitorId" = "onlineMonitors"."id"',
             ),
@@ -278,7 +278,7 @@ export class UserWallet {
             .from(MonitorEntity, 'offlineMonitors')
 
             .innerJoinAndSelect(
-              (qbb: SelectQueryBuilder<RequestEntity>) =>
+              (qbb: SelectQueryBuilder<BidEntity>) =>
                 qbb
                   .select(
                     '"requestMonitors"."monitorId"',
@@ -301,7 +301,7 @@ export class UserWallet {
                     '"requestMonitors"."dateWhen" <= \'now()\'::timestamptz',
                   )
                   .andWhere('"requestMonitors"."dateBefore" IS NULL')
-                  .from(RequestEntity, 'requestMonitors'),
+                  .from(BidEntity, 'requestMonitors'),
               'requestMonitors',
               '"requestOfflineMonitorId" = "offlineMonitors"."id"',
             ),
@@ -326,7 +326,7 @@ export class UserWallet {
             .from(MonitorEntity, 'emptyMonitors')
 
             .leftJoinAndSelect(
-              (qbb: SelectQueryBuilder<RequestEntity>) =>
+              (qbb: SelectQueryBuilder<BidEntity>) =>
                 qbb
                   .select(
                     '"requestMonitors"."monitorId"',
@@ -340,7 +340,7 @@ export class UserWallet {
                     '"requestMonitors"."dateBefore"',
                     'requestEmptyDateBefore',
                   )
-                  .from(RequestEntity, 'requestMonitors'),
+                  .from(BidEntity, 'requestMonitors'),
               'requestMonitors',
               '"requestEmptyMonitorId" = "emptyMonitors"."id"',
             )

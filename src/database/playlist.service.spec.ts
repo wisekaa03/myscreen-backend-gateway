@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 
 import { PlaylistEntity } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
-import { RequestService } from './request.service';
+import { BidService } from './bid.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -25,7 +25,7 @@ describe(PlaylistService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PlaylistService,
-        { provide: RequestService, useClass: mockRepository },
+        { provide: BidService, useClass: mockRepository },
         {
           provide: getRepositoryToken(PlaylistEntity),
           useClass: mockRepository,

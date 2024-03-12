@@ -4,8 +4,8 @@ import { ConfigService } from '@nestjs/config';
 
 import { MAIL_SERVICE } from '@/constants';
 import { WSGateway } from '@/websocket/ws.gateway';
-import { RequestEntity } from './request.entity';
-import { RequestService } from './request.service';
+import { BidEntity } from './bid.entity';
+import { BidService } from './bid.service';
 import { UserService } from './user.service';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorService } from './monitor.service';
@@ -29,13 +29,13 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(RequestService.name, () => {
-  let service: RequestService;
+describe(BidService.name, () => {
+  let service: BidService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        RequestService,
+        BidService,
         { provide: UserService, useClass: mockRepository },
         { provide: ActService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },
@@ -50,13 +50,13 @@ describe(RequestService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(RequestEntity),
+          provide: getRepositoryToken(BidEntity),
           useClass: mockRepository,
         },
       ],
     }).compile();
 
-    service = module.get(RequestService);
+    service = module.get(BidService);
   });
 
   it('should be defined', () => {

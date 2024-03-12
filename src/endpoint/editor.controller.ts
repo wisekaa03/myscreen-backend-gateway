@@ -48,11 +48,14 @@ import { UserService } from '@/database/user.service';
 import { EditorEntity } from '@/database/editor.entity';
 import { FileEntity } from '@/database/file.entity';
 
-@ApiComplexDecorators('editor', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-])
+@ApiComplexDecorators({
+  path: ['editor'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  ],
+})
 export class EditorController {
   logger = new Logger(EditorController.name);
 

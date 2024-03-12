@@ -46,7 +46,7 @@ import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
 import { PlaylistService } from './playlist.service';
 import { UserEntity } from './user.entity';
-import { RequestService } from './request.service';
+import { BidService } from './bid.service';
 
 @Injectable()
 export class FileService {
@@ -64,8 +64,8 @@ export class FileService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => RequestService))
-    private readonly requestService: RequestService,
+    @Inject(forwardRef(() => BidService))
+    private readonly bidService: BidService,
     @Inject(forwardRef(() => FolderService))
     private readonly folderService: FolderService,
     @Inject(forwardRef(() => MonitorService))
@@ -248,7 +248,7 @@ export class FileService {
           transact.create(FileEntity, { ...file, ...update, id: file.id }),
         );
 
-        await this.requestService.websocketChange({ files: [data] });
+        await this.bidService.websocketChange({ files: [data] });
 
         return data;
       }
@@ -622,7 +622,7 @@ export class FileService {
       return { affected: 0, raw: 0 };
     }
 
-    await this.requestService.websocketChange({ files, filesDelete: true });
+    await this.bidService.websocketChange({ files, filesDelete: true });
 
     const filesS3DeletePromise = files.map(async (file) => {
       this.deleteS3Object(file).catch((error) => {

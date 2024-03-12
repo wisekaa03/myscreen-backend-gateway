@@ -36,11 +36,14 @@ import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
 
-@ApiComplexDecorators('playlist', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-])
+@ApiComplexDecorators({
+  path: ['playlist'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  ],
+})
 export class PlaylistController {
   logger = new Logger(PlaylistController.name);
 

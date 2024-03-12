@@ -31,7 +31,7 @@ import { MAIL_SERVICE } from '@/constants';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { RequestApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
-import { RequestEntity } from './request.entity';
+import { BidEntity } from './bid.entity';
 import { FileEntity } from './file.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
@@ -44,8 +44,8 @@ import { ActService } from './act.service';
 import { getFullName } from '@/utils/full-name';
 
 @Injectable()
-export class RequestService {
-  private logger = new Logger(RequestService.name);
+export class BidService {
+  private logger = new Logger(BidService.name);
 
   public commissionPercent: number;
 
@@ -64,8 +64,8 @@ export class RequestService {
     private readonly monitorService: MonitorService,
     @Inject(forwardRef(() => PlaylistService))
     private readonly playlistService: PlaylistService,
-    @InjectRepository(RequestEntity)
-    private readonly requestRepository: Repository<RequestEntity>,
+    @InjectRepository(BidEntity)
+    private readonly bidRepository: Repository<BidEntity>,
     configService: ConfigService,
   ) {
     this.commissionPercent = parseInt(
@@ -75,11 +75,11 @@ export class RequestService {
   }
 
   async find(
-    find: FindManyOptions<RequestEntity>,
+    find: FindManyOptions<BidEntity>,
     caseInsensitive = true,
-  ): Promise<Array<RequestEntity>> {
-    let result: Array<RequestEntity>;
-    const findLocal = TypeOrmFind.findParams(RequestEntity, find);
+  ): Promise<Array<BidEntity>> {
+    let result: Array<BidEntity>;
+    const findLocal = TypeOrmFind.findParams(BidEntity, find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -91,20 +91,20 @@ export class RequestService {
     }
 
     if (caseInsensitive) {
-      result = await TypeOrmFind.findCI(this.requestRepository, findLocal);
+      result = await TypeOrmFind.findCI(this.bidRepository, findLocal);
     } else {
-      result = await this.requestRepository.find(findLocal);
+      result = await this.bidRepository.find(findLocal);
     }
 
     return result;
   }
 
   async findAndCount(
-    find: FindManyOptions<RequestEntity>,
+    find: FindManyOptions<BidEntity>,
     caseInsensitive = true,
-  ): Promise<[Array<RequestEntity>, number]> {
-    let result: [Array<RequestEntity>, number];
-    const findLocal = TypeOrmFind.findParams(RequestEntity, find);
+  ): Promise<[Array<BidEntity>, number]> {
+    let result: [Array<BidEntity>, number];
+    const findLocal = TypeOrmFind.findParams(BidEntity, find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -115,23 +115,20 @@ export class RequestService {
       };
     }
     if (caseInsensitive) {
-      result = await TypeOrmFind.findAndCountCI(
-        this.requestRepository,
-        findLocal,
-      );
+      result = await TypeOrmFind.findAndCountCI(this.bidRepository, findLocal);
     } else {
-      result = await this.requestRepository.findAndCount(findLocal);
+      result = await this.bidRepository.findAndCount(findLocal);
     }
 
     return result;
   }
 
   async findOne(
-    find: FindManyOptions<RequestEntity>,
+    find: FindManyOptions<BidEntity>,
     caseInsensitive = true,
-  ): Promise<RequestEntity | null> {
-    let result: RequestEntity | null;
-    const findLocal = TypeOrmFind.findParams(RequestEntity, find);
+  ): Promise<BidEntity | null> {
+    let result: BidEntity | null;
+    const findLocal = TypeOrmFind.findParams(BidEntity, find);
 
     if (!find.relations) {
       findLocal.relations = {
@@ -144,12 +141,12 @@ export class RequestService {
 
     if (caseInsensitive) {
       result = await TypeOrmFind.findOneCI(
-        this.requestRepository,
-        TypeOrmFind.findParams(RequestEntity, find),
+        this.bidRepository,
+        TypeOrmFind.findParams(BidEntity, find),
       );
     } else {
-      result = await this.requestRepository.findOne(
-        TypeOrmFind.findParams(RequestEntity, find),
+      result = await this.bidRepository.findOne(
+        TypeOrmFind.findParams(BidEntity, find),
       );
     }
 
@@ -168,8 +165,8 @@ export class RequestService {
     filesDelete = false,
     monitor,
     monitorDelete = false,
-    request,
-    requestDelete = false,
+    bid,
+    bidDelete = false,
   }: {
     playlist?: PlaylistEntity;
     playlistDelete?: boolean;
@@ -177,39 +174,39 @@ export class RequestService {
     filesDelete?: boolean;
     monitor?: MonitorEntity;
     monitorDelete?: boolean;
-    request?: RequestEntity;
-    requestDelete?: boolean;
+    bid?: BidEntity;
+    bidDelete?: boolean;
   }) {
     if (playlist) {
       const requests = await this.monitorRequests({
         playlistId: playlist.id,
       });
 
-      const wsPromise = requests.map(async (requestLocal) =>
-        this.wsGateway.onChange({ request: requestLocal }),
+      const wsPromise = requests.map(async (bidLocal) =>
+        this.wsGateway.onChange({ bid: bidLocal }),
       );
 
       await Promise.allSettled(wsPromise);
       // } else if (files) {
     } else if (monitor) {
       if (monitorDelete) {
-        const applications = await this.monitorRequests({
+        const bids = await this.monitorRequests({
           monitorId: monitor.id,
         });
 
-        const wsPromise = applications.map(async (requestLocal) =>
-          this.wsGateway.onChange({ request: requestLocal }),
+        const wsPromise = bids.map(async (bidLocal) =>
+          this.wsGateway.onChange({ bid: bidLocal }),
         );
 
         await Promise.allSettled(wsPromise);
       } else {
         await this.wsGateway.onChange({ monitor });
       }
-    } else if (request) {
-      if (requestDelete) {
-        await this.wsGateway.onChange({ monitor: request.monitor });
+    } else if (bid) {
+      if (bidDelete) {
+        await this.wsGateway.onChange({ monitor: bid.monitor });
       } else {
-        await this.wsGateway.onChange({ request });
+        await this.wsGateway.onChange({ bid });
       }
     }
   }
@@ -221,7 +218,7 @@ export class RequestService {
    * @param {string} playlistId Плэйлист ID
    * @param {(string | Date)} [dateLocal=new Date()] Локальная для пользователя дата
    * @return {*}
-   * @memberof RequestService
+   * @memberof BidService
    */
   async monitorRequests({
     monitorId,
@@ -231,7 +228,7 @@ export class RequestService {
     monitorId?: string;
     playlistId?: string;
     dateLocal?: Date;
-  }): Promise<Array<RequestEntity>> {
+  }): Promise<Array<BidEntity>> {
     const monitorRequests = await this.find({
       where: [
         {
@@ -295,47 +292,47 @@ export class RequestService {
               ),
             ),
           },
-        }) as RequestEntity,
+        }) as BidEntity,
     );
     expected = await Promise.all(expectedPromise);
 
     return expected;
   }
 
-  private async requestPostCreate({
-    request,
+  private async bidPostCreate({
+    bid,
     entityManager,
   }: {
-    request: RequestEntity;
+    bid: BidEntity;
     entityManager?: EntityManager;
   }): Promise<void> {
-    const { multiple } = request.monitor;
-    const { id, seqNo, createdAt, updatedAt, ...insert } = request;
+    const { multiple } = bid.monitor;
+    const { id, seqNo, createdAt, updatedAt, ...insert } = bid;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.websocketChange({ request });
+      await this.websocketChange({ bid });
     } else {
-      const manager = entityManager ?? this.requestRepository.manager;
+      const manager = entityManager ?? this.bidRepository.manager;
       await manager.transaction(async (transact) => {
         const groupMonitors = await this.editorService.partitionMonitors({
-          request,
+          bid,
         });
         if (!Array.isArray(groupMonitors)) {
           throw new NotAcceptableException('Monitors or Playlists not found');
         }
 
         const groupMonitorPromise = groupMonitors.map(async (monitor) => {
-          const createReq = transact.create(RequestEntity, {
+          const createReq = transact.create(BidEntity, {
             ...insert,
             hide: true,
             parentRequestId: id,
             monitorId: monitor.id,
             playlistId: monitor.playlist.id,
           });
-          const subReq = await transact.save(RequestEntity, createReq);
+          const subBid = await transact.save(BidEntity, createReq);
 
-          await this.websocketChange({ request: subReq });
+          await this.websocketChange({ bid: subBid });
 
-          return subReq;
+          return subBid;
         });
 
         await Promise.all(groupMonitorPromise);
@@ -343,37 +340,39 @@ export class RequestService {
     }
   }
 
-  private async requestPreDelete({
-    request,
+  private async bidPreDelete({
+    bid,
     entityManager,
     delete: deleteLocal = false,
   }: {
-    request: RequestEntity;
+    bid: BidEntity;
     entityManager?: EntityManager;
     delete?: boolean;
   }): Promise<void> {
-    const { multiple } = request.monitor;
+    const { multiple } = bid.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.websocketChange({ request, requestDelete: true });
+      await this.websocketChange({ bid, bidDelete: true });
     } else {
-      const manager = entityManager ?? this.requestRepository.manager;
+      const manager = entityManager ?? this.bidRepository.manager;
       await manager.transaction(async (transact) => {
-        const groupApplication = await transact.find(RequestEntity, {
+        const groupApplication = await transact.find(BidEntity, {
           where: {
-            parentRequestId: request.id,
+            parentRequestId: bid.id,
           },
           relations: { monitor: true, playlist: true },
         });
-        const groupAppPromise = groupApplication.map(async (app) => {
+        const groupAppPromise = groupApplication.map(async (bidLocal) => {
           await this.websocketChange({
-            request: app,
-            requestDelete: true,
+            bid: bidLocal,
+            bidDelete: true,
           });
           if (deleteLocal) {
             if (multiple === MonitorMultiple.SCALING) {
-              await transact.delete(PlaylistEntity, { id: app.playlistId });
+              await transact.delete(PlaylistEntity, {
+                id: bidLocal.playlistId,
+              });
             }
-            await transact.delete(RequestEntity, { id: app.id });
+            await transact.delete(BidEntity, { id: bidLocal.id });
           }
         });
 
@@ -385,24 +384,21 @@ export class RequestService {
   /**
    * Update the application
    *
-   * @param update Partial<RequestEntity>
+   * @param update Partial<BidEntity>
    * @returns
    */
-  async update(
-    id: string,
-    update: Partial<RequestEntity>,
-  ): Promise<RequestEntity> {
-    return this.requestRepository.manager.transaction(async (transact) => {
+  async update(id: string, update: Partial<BidEntity>): Promise<BidEntity> {
+    return this.bidRepository.manager.transaction(async (transact) => {
       const updateResult = await transact.update(
-        RequestEntity,
+        BidEntity,
         id,
-        transact.create(RequestEntity, update),
+        transact.create(BidEntity, update),
       );
       if (!updateResult.affected) {
         throw new NotFoundException('Application not found');
       }
 
-      let relations: FindOneOptions<RequestEntity>['relations'];
+      let relations: FindOneOptions<BidEntity>['relations'];
       if (update.approved !== RequestApprove.NOTPROCESSED) {
         relations = {
           buyer: true,
@@ -414,16 +410,16 @@ export class RequestService {
       } else {
         relations = { seller: true };
       }
-      const request = await transact.findOne(RequestEntity, {
+      const bid = await transact.findOne(BidEntity, {
         where: { id },
         relations,
       });
-      if (!request) {
+      if (!bid) {
         throw new NotFoundException('Application not found');
       }
 
       if (update.approved === RequestApprove.NOTPROCESSED) {
-        const sellerEmail = request.seller?.email;
+        const sellerEmail = bid.seller?.email;
         if (sellerEmail) {
           this.mailService.emit<unknown, MailSendApplicationMessage>(
             'sendApplicationWarningMessage',
@@ -437,27 +433,26 @@ export class RequestService {
         }
       } else if (update.approved === RequestApprove.ALLOWED) {
         // Оплата поступает на пользователя - владельца монитора
-        const sumIncrement =
-          -(request.sum * (100 - this.commissionPercent)) / 100;
+        const sumIncrement = -(bid.sum * (100 - this.commissionPercent)) / 100;
         await this.actService.create({
-          user: request.monitor.user,
+          user: bid.monitor.user,
           sum: sumIncrement,
-          description: `Оплата за монитор "${request.monitor.name}" рекламодателем "${getFullName(request.user)}"`,
+          description: `Оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
         });
 
-        await this.requestPostCreate({ request, entityManager: transact });
+        await this.bidPostCreate({ bid, entityManager: transact });
       } else if (update.approved === RequestApprove.DENIED) {
         // Снята оплата на пользователя - рекламодателя
         await this.actService.create({
-          user: request.seller,
-          sum: request.sum,
-          description: `Снята оплата за монитор "${request.monitor.name}" рекламодателем "${getFullName(request.user)}"`,
+          user: bid.seller,
+          sum: bid.sum,
+          description: `Снята оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
         });
 
-        await this.requestPreDelete({ request, entityManager: transact });
+        await this.bidPreDelete({ bid, entityManager: transact });
       }
 
-      return request;
+      return bid;
     });
   }
 
@@ -475,7 +470,7 @@ export class RequestService {
     dateWhen: Date;
     dateBefore: Date | null;
     playlistChange: boolean;
-  }): Promise<RequestEntity[]> {
+  }): Promise<BidEntity[]> {
     const { id: userId, role } = user;
 
     // Проверяем наличие плейлиста
@@ -495,7 +490,7 @@ export class RequestService {
       throw new NotFoundException(`Playlist "${playlistId}" not found`);
     }
 
-    return this.requestRepository.manager.transaction(async (transact) => {
+    return this.bidRepository.manager.transaction(async (transact) => {
       const requestsPromise = monitorIds.map(async (monitorId) => {
         // Проверяем наличие мониторов
         let monitor = await this.monitorService.findOne({
@@ -529,7 +524,7 @@ export class RequestService {
             })
           : 0;
 
-        const insert: DeepPartial<RequestEntity> = {
+        const insert: DeepPartial<BidEntity> = {
           sellerId: monitor.userId,
           buyerId: userId,
           monitor,
@@ -543,15 +538,15 @@ export class RequestService {
         };
 
         const insertResult = await transact.insert(
-          RequestEntity,
-          transact.create(RequestEntity, insert),
+          BidEntity,
+          transact.create(BidEntity, insert),
         );
         if (!insertResult.identifiers[0]) {
           throw new NotFoundException('Error when creating Request');
         }
         const { id } = insertResult.identifiers[0];
 
-        let relations: FindOneOptions<RequestEntity>['relations'];
+        let relations: FindOneOptions<BidEntity>['relations'];
         if (
           !(insert.approved === RequestApprove.NOTPROCESSED || !insert.hide)
         ) {
@@ -565,11 +560,11 @@ export class RequestService {
             user: true,
           };
         }
-        const request = await transact.findOne(RequestEntity, {
+        const bid = await transact.findOne(BidEntity, {
           where: { id },
           relations,
         });
-        if (!request) {
+        if (!bid) {
           throw new NotFoundException('Request not found');
         }
 
@@ -582,7 +577,7 @@ export class RequestService {
 
         // Отправляем письмо продавцу
         if (insert.approved === RequestApprove.NOTPROCESSED) {
-          const sellerEmail = request.seller?.email;
+          const sellerEmail = bid.seller?.email;
           if (sellerEmail) {
             this.mailService.emit<unknown, MailSendApplicationMessage>(
               'sendApplicationWarningMessage',
@@ -600,31 +595,31 @@ export class RequestService {
           // Оплата поступает на пользователя - владельца монитора
           const sumIncrement = -(sum * (100 - this.commissionPercent)) / 100;
           await this.actService.create({
-            user: request.buyer ?? monitor.user,
+            user: bid.buyer ?? monitor.user,
             sum: sumIncrement,
             description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
           });
 
-          await this.requestPostCreate({ request, entityManager: transact });
+          await this.bidPostCreate({ bid, entityManager: transact });
         } else if (insert.approved === RequestApprove.DENIED) {
-          await this.requestPreDelete({ request, entityManager: transact });
+          await this.bidPreDelete({ bid, entityManager: transact });
         }
 
-        return request;
+        return bid;
       });
 
       return Promise.all(requestsPromise);
     });
   }
 
-  async delete(request: RequestEntity): Promise<DeleteResult> {
-    await this.requestPreDelete({
-      request,
+  async delete(bid: BidEntity): Promise<DeleteResult> {
+    await this.bidPreDelete({
+      bid,
       delete: true,
     });
 
-    const deleteResult = await this.requestRepository.delete({
-      id: request.id,
+    const deleteResult = await this.bidRepository.delete({
+      id: bid.id,
     });
 
     return deleteResult;

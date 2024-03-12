@@ -2,12 +2,12 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString, IsEnum, Validate } from 'class-validator';
 
 import { RequestApprove, RequestStatus } from '@/enums';
-import { RequestEntity } from '@/database/request.entity';
+import { BidEntity } from '@/database/bid.entity';
 import { MSRange, MSRangeEnum } from '@/interfaces';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 
 export class ApplicationsRequest extends PartialType(
-  OmitType(RequestEntity, [
+  OmitType(BidEntity, [
     'buyer',
     'seller',
     'monitor',

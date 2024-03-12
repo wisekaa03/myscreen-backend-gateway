@@ -15,14 +15,14 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
-import { RequestService } from '@/database/request.service';
+import { BidService } from '@/database/bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
 
 @Injectable()
 export class MonitorService {
   constructor(
-    @Inject(forwardRef(() => RequestService))
-    private readonly requestService: RequestService,
+    @Inject(forwardRef(() => BidService))
+    private readonly bidService: BidService,
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(MonitorGroupEntity)
@@ -237,7 +237,7 @@ export class MonitorService {
       if (!monitor) {
         throw new NotFoundException(`Monitor with this "${id}" not found`);
       }
-      await this.requestService.websocketChange({ monitor });
+      await this.bidService.websocketChange({ monitor });
 
       // а тут начинается полный трэш
       if (multiple !== MonitorMultiple.SINGLE && multipleBool) {
@@ -257,7 +257,7 @@ export class MonitorService {
         // удаляем из таблицы связей мониторов мониторы
         if (monitorsDeleteId.length > 0) {
           const monitorsWSchangePromise = monitorsDeleteId.map(async (item) => {
-            this.requestService.websocketChange({
+            this.bidService.websocketChange({
               monitor: item.monitor,
               monitorDelete: true,
             });
@@ -491,7 +491,7 @@ export class MonitorService {
   }
 
   async delete(monitor: MonitorEntity): Promise<DeleteResult> {
-    await this.requestService.websocketChange({
+    await this.bidService.websocketChange({
       monitor,
       monitorDelete: true,
     });
@@ -505,7 +505,7 @@ export class MonitorService {
         });
         if (monitorMultiple.length > 0) {
           const monitorIdsPromise = monitorMultiple.map(async (item) => {
-            await this.requestService.websocketChange({
+            await this.bidService.websocketChange({
               monitor: item.monitor,
               monitorDelete: true,
             });

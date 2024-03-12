@@ -60,11 +60,14 @@ import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
 
 @ApiExtraModels(FileUploadRequest)
-@ApiComplexDecorators('file', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-])
+@ApiComplexDecorators({
+  path: ['file'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  ],
+})
 export class FileController {
   logger = new Logger(FileController.name);
 

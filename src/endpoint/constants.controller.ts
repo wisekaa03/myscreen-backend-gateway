@@ -5,20 +5,23 @@ import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { ConstantsGetResponse } from '@/dto/response/constants-get.response';
 import { WalletService } from '@/database/wallet.service';
-import { RequestService } from '@/database/request.service';
+import { BidService } from '@/database/bid.service';
 import { InvoiceService } from '@/database/invoice.service';
 
-@ApiComplexDecorators('constants', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-])
+@ApiComplexDecorators({
+  path: ['constants'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  ],
+})
 export class ConstantsController {
   logger = new Logger(ConstantsController.name);
 
   constructor(
     private readonly walletService: WalletService,
-    private readonly requestService: RequestService,
+    private readonly bidService: BidService,
     private readonly invoiceService: InvoiceService,
   ) {}
 
@@ -38,7 +41,7 @@ export class ConstantsController {
     const data = {
       SUBSCRIPTION_FEE: this.walletService.subscriptionFee,
       MIN_INVOICE_SUM: this.invoiceService.minInvoiceSum,
-      COMMISSION_PERCENT: this.requestService.commissionPercent,
+      COMMISSION_PERCENT: this.bidService.commissionPercent,
     };
     return { status: Status.Success, data };
   }

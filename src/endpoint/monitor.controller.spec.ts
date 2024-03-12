@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
-import { RequestService } from '@/database/request.service';
+import { BidService } from '@/database/bid.service';
 import { UserService } from '@/database/user.service';
 import { MonitorController } from './monitor.controller';
 import { AuthService } from '@/auth/auth.service';
@@ -33,7 +33,7 @@ describe(MonitorController.name, () => {
         { provide: MonitorService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
-        { provide: RequestService, useClass: mockRepository },
+        { provide: BidService, useClass: mockRepository },
         { provide: WSGateway, useClass: mockRepository },
         { provide: AuthService, useClass: mockRepository },
       ],

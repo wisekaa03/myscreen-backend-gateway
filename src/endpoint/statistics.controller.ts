@@ -18,12 +18,15 @@ import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserService } from '@/database/user.service';
 
-@ApiComplexDecorators('statistics', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Accountant,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-])
+@ApiComplexDecorators({
+  path: ['statistics'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Accountant,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  ],
+})
 export class StatisticsController {
   logger = new Logger(StatisticsController.name);
 

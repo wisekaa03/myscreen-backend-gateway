@@ -6,7 +6,10 @@ import { ApiComplexDecorators, Crud } from '@/decorators';
 import { Status, CRUD, UserRoleEnum } from '@/enums';
 import { CrontabService } from '@/crontab/crontab.service';
 
-@ApiComplexDecorators('crontab', [UserRoleEnum.Administrator])
+@ApiComplexDecorators({
+  path: ['crontab'],
+  roles: [UserRoleEnum.Administrator],
+})
 export class CrontabController {
   logger = new Logger(CrontabController.name);
 

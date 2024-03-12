@@ -16,7 +16,7 @@ import { FolderController } from './folder.controller';
 import { InvoiceController } from './invoice.controller';
 import { PlaylistController } from './playlist.controller';
 import { StatisticsController } from './statistics.controller';
-import { RequestController } from './request.controller';
+import { BidController } from './bid.controller';
 import { CrontabController } from './crontab.controller';
 import { ConstantsController } from './constants.controller';
 import { WalletController } from './wallet.controller';
@@ -42,7 +42,7 @@ import { WalletController } from './wallet.controller';
     InvoiceController,
     PlaylistController,
     StatisticsController,
-    RequestController,
+    BidController,
     CrontabController,
     ConstantsController,
     WalletController,

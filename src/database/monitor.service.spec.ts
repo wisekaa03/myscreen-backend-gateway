@@ -11,7 +11,7 @@ import {
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { MonitorService } from './monitor.service';
-import { RequestService } from './request.service';
+import { BidService } from './bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
 
 export const mockRepository = jest.fn(() => ({
@@ -58,7 +58,7 @@ describe(MonitorService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MonitorService,
-        { provide: RequestService, useClass: mockRepository },
+        { provide: BidService, useClass: mockRepository },
         {
           provide: getRepositoryToken(MonitorEntity),
           useClass: mockRepository,

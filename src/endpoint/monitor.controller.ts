@@ -40,7 +40,6 @@ import {
   MonitorCreateRequest,
   MonitorUpdateRequest,
   Order,
-  MonitorRequest,
 } from '@/dto';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import {
@@ -59,13 +58,16 @@ import { UserService } from '@/database/user.service';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
-import { RequestService } from '@/database/request.service';
+import { BidService } from '@/database/bid.service';
 
-@ApiComplexDecorators('monitor', [
-  UserRoleEnum.Administrator,
-  UserRoleEnum.Advertiser,
-  UserRoleEnum.MonitorOwner,
-])
+@ApiComplexDecorators({
+  path: ['monitor'],
+  roles: [
+    UserRoleEnum.Administrator,
+    UserRoleEnum.Advertiser,
+    UserRoleEnum.MonitorOwner,
+  ],
+})
 export class MonitorController {
   logger = new Logger(MonitorController.name);
 
@@ -73,7 +75,7 @@ export class MonitorController {
     private readonly monitorService: MonitorService,
     private readonly userService: UserService,
     private readonly playlistService: PlaylistService,
-    private readonly requestService: RequestService,
+    private readonly bidService: BidService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
   ) {}
@@ -110,18 +112,15 @@ export class MonitorController {
       // добавляем то, что содержится у нас в userId: monitorId.
       find.where = {
         id: userId,
-        multiple: Not(MonitorMultiple.SUBORDINATE),
         ...TypeOrmFind.where(MonitorEntity, where),
       };
     } else if (role === UserRoleEnum.MonitorOwner) {
       find.where = {
         userId,
-        multiple: Not(MonitorMultiple.SUBORDINATE),
         ...TypeOrmFind.where(MonitorEntity, where),
       };
     } else if (role === UserRoleEnum.Administrator) {
       find.where = {
-        multiple: Not(MonitorMultiple.SUBORDINATE),
         ...TypeOrmFind.where(MonitorEntity, where),
       };
     } else {
@@ -129,7 +128,6 @@ export class MonitorController {
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
-        multiple: Not(MonitorMultiple.SUBORDINATE),
         ...TypeOrmFind.where(MonitorEntity, where),
       };
     }
@@ -140,7 +138,7 @@ export class MonitorController {
       isDateString(where.dateWhenApp[0]) &&
       isDateString(where.dateWhenApp[1])
     ) {
-      const requestsWhen = await this.requestService.find(
+      const requestsWhen = await this.bidService.find(
         {
           where: {
             dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
@@ -193,7 +191,7 @@ export class MonitorController {
     type: MonitorGetResponse,
   })
   @Crud(CRUD.CREATE)
-  async createMonitors(
+  async create(
     @Req() { user }: ExpressRequest,
     @Body() { groupIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
@@ -279,7 +277,12 @@ export class MonitorController {
   @Crud(CRUD.CREATE)
   async createMonitorPlaylist(
     @Req() { user }: ExpressRequest,
-    @Body() attach: MonitorsPlaylistAttachRequest,
+    @Body()
+    {
+      playlistId,
+      monitorIds,
+      request: { dateBefore, dateWhen, playlistChange },
+    }: MonitorsPlaylistAttachRequest,
   ): Promise<ApplicationsGetResponse> {
     if (
       user.role === UserRoleEnum.MonitorOwner &&
@@ -288,21 +291,15 @@ export class MonitorController {
       throw new ForbiddenException('You have a DEMO-account, update it to PRO');
     }
 
-    // To verify user permissions for request
-    this.userService.verify(user, 'request', 'updateApplication', CRUD.CREATE);
-
-    const {
-      playlistId,
-      monitorIds,
-      request: { dateBefore, dateWhen, playlistChange },
-    } = attach;
+    // To verify user permissions for bid
+    this.userService.verify(user, 'bid', 'updateBid', CRUD.CREATE);
 
     // TODO: 1. Забронированное и доступное время для создания заявки
     // TODO: 1.1. При подачи заявки Рекламодателем нужно проверять нет ли пересечения
     // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
     // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
     // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
-    const approved = await this.requestService.find({
+    const approved = await this.bidService.find({
       where: {
         monitorId: In(monitorIds),
         dateWhen: dateBefore ? Between(dateWhen, dateBefore) : dateWhen,
@@ -315,7 +312,7 @@ export class MonitorController {
     }
 
     // To create requests
-    const data = await this.requestService.create({
+    const data = await this.bidService.create({
       user,
       playlistId,
       monitorIds,
@@ -554,7 +551,7 @@ export class MonitorController {
       throw new NotFoundException(`Have no playlist in monitor '${id}'`);
     }
 
-    const data = await this.requestService.monitorRequests({
+    const data = await this.bidService.monitorRequests({
       monitorId: monitor.id,
     });
 
@@ -624,22 +621,23 @@ export class MonitorController {
   })
   @Crud(CRUD.DELETE)
   async deleteMonitor(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
   ): Promise<SuccessResponse> {
+    const where: FindOptionsWhere<MonitorEntity> = { id };
+    if (role !== UserRoleEnum.Administrator) {
+      where.userId = userId;
+    }
     const monitor = await this.monitorService.findOne({
       find: {
-        where: {
-          userId: user.id,
-          id,
-        },
+        where,
         select: ['id', 'name', 'multiple', 'groupMonitors'],
         loadEagerRelations: false,
         relations: { groupMonitors: true },
       },
     });
     if (!monitor) {
-      throw new NotFoundException(`Monitor '${id}' is not found`);
+      throw new NotFoundException(`Monitor '${id}' not found`);
     }
 
     const { affected } = await this.monitorService.delete(monitor);
