@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -13,9 +14,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
 
-@Entity('uptime_monitoring')
-export class UptimeMonitoringEntity {
-  @PrimaryGeneratedColumn('uuid')
+@Entity('uptime_monitoring', { comment: 'Что это!!!' })
+export class UptimeMonitoringEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор',
     format: 'uuid',

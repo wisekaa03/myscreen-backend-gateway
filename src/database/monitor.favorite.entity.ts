@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID } from 'class-validator';
 import {
+  BaseEntity,
   Column,
   Entity,
   Index,
@@ -13,9 +14,9 @@ import {
 import { MonitorEntity } from './monitor.entity';
 import { UserEntity } from './user.entity';
 
-@Entity('monitor_favorite')
-export class MonitorFavoriteEntity {
-  @PrimaryGeneratedColumn('uuid')
+@Entity('monitor_favorite', { comment: 'Избранные мониторы по пользователям' })
+export class MonitorFavoriteEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор избранного монитора',
     format: 'uuid',

@@ -24,7 +24,13 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     } else {
       parameters = param ? ` ${JSON.stringify(param)}` : '';
     }
-    this.logger.debug(message, parameters, queryRunner);
+    let msg: string;
+    if (typeof message === 'object' && message !== null) {
+      msg = JSON.stringify(message);
+    } else {
+      msg = message;
+    }
+    this.logger.debug(msg, parameters, queryRunner);
   };
 
   /**
@@ -46,7 +52,13 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     } else {
       parameters = param ? ` ${JSON.stringify(param)}` : '';
     }
-    this.logger.error(`${message}${parameters}`, error, queryRunner);
+    let msg: string;
+    if (typeof message === 'object' && message !== null) {
+      msg = JSON.stringify(message);
+    } else {
+      msg = message;
+    }
+    this.logger.error(`${msg}${parameters}`, error, queryRunner);
   };
 
   /**

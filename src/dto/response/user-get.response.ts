@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { UserExtEntity } from '@/database/user-ext.entity';
+import { UserResponse } from '@/database/user-response.entity';
 
 export class UserGetResponse {
   @ApiProperty({
@@ -14,7 +14,7 @@ export class UserGetResponse {
 
   @ApiProperty({
     description: 'Пользователь',
-    type: UserExtEntity,
+    type: UserResponse,
   })
-  data!: UserExtEntity;
+  data!: UserResponse;
 }

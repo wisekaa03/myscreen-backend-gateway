@@ -9,7 +9,7 @@ import { WalletService } from './wallet.service';
 import { UserService } from './user.service';
 import { ActService } from './act.service';
 import { MonitorService } from './monitor.service';
-import { UserExtEntity } from './user-ext.entity';
+import { UserResponse } from './user-response.entity';
 import { UserEntity } from './user.entity';
 
 export const mockRepository = jest.fn(() => ({
@@ -44,7 +44,7 @@ describe(InvoiceService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(UserExtEntity),
+          provide: getRepositoryToken(UserResponse),
           useClass: mockRepository,
         },
         {

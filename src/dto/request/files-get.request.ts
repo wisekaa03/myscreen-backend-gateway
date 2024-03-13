@@ -4,9 +4,9 @@ import { Type } from 'class-transformer';
 import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
-import { FileEntity } from '@/database/file.entity';
 import { LimitRequest } from './limit.request';
 import { FileRequest } from './file.request';
+import { FileEntity } from '@/database/file.entity';
 
 export class FilesGetRequest {
   @ApiProperty({

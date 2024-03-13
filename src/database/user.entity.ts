@@ -14,6 +14,7 @@ import {
   IsDateString,
 } from 'class-validator';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -27,7 +28,7 @@ import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
 import { MonitorEntity } from '@/database/monitor.entity';
 
-@Entity('user')
+@Entity('user', { comment: 'Пользователи' })
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty({
@@ -182,13 +183,13 @@ export class UserEntity {
   @IsEnum(UserRole)
   role!: UserRoleEnum;
 
-  @Column({ type: 'varchar', nullable: true, select: false })
+  @Column({ type: 'varchar', nullable: true })
   forgotConfirmKey?: string | null;
 
-  @Column({ type: 'varchar', nullable: true, select: false })
+  @Column({ type: 'varchar', nullable: true })
   emailConfirmKey?: string | null;
 
-  @Column({ type: 'boolean', default: false, select: false })
+  @Column({ type: 'boolean', default: false })
   @ApiProperty({
     description: 'EMail подтвержден',
     example: true,
@@ -265,7 +266,7 @@ export class UserEntity {
   @Column({ default: '' })
   @ApiProperty({
     description: 'Код Причины Постановки на учет (КПП)',
-    example: '012345678901',
+    example: '012345678',
     maxLength: 9,
     required: false,
   })
@@ -276,7 +277,7 @@ export class UserEntity {
   @Column({ default: '' })
   @ApiProperty({
     description: 'Основной Государственный Регистрационный Номер (ОГРН)',
-    example: '012345678901',
+    example: '012345678901234',
     maxLength: 15,
     required: false,
   })

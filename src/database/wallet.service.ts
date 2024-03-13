@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import {
   EntityManager,
-  FindManyOptions,
   Repository,
   Between,
   IsNull,
@@ -26,8 +25,13 @@ import { ActEntity } from './act.entity';
 import { InvoiceEntity } from './invoice.entity';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
-import { UserPlanEnum, UserStoreSpaceEnum } from '@/enums';
+import {
+  UserPlanEnum,
+  UserStoreSpaceEnum,
+  WalletTransactionType,
+} from '@/enums';
 import { getFullName } from '@/utils/full-name';
+import { UserResponse } from './user-response.entity';
 
 @Injectable()
 export class WalletService {
@@ -78,13 +82,18 @@ export class WalletService {
     invoice,
     act,
   }: {
-    user: UserEntity;
+    user: UserResponse | UserEntity;
     invoice?: InvoiceEntity;
     act?: ActEntity;
   }): WalletEntity {
+    const sum = (invoice?.sum ?? 0) - (act?.sum ?? 0);
+    const type = invoice
+      ? WalletTransactionType.DEBIT
+      : WalletTransactionType.CREDIT;
     return this.walletRepository.create({
-      sum: (invoice?.sum ?? 0) - (act?.sum ?? 0),
+      sum,
       invoice: invoice ?? null,
+      type,
       act: act ?? null,
       user,
     });
@@ -126,7 +135,7 @@ export class WalletService {
     user,
     transact,
   }: {
-    user: UserEntity;
+    user: UserResponse | UserEntity;
     transact: EntityManager;
   }) {
     // сначала проверяем, что пользователь является владельцем монитора
@@ -164,11 +173,14 @@ export class WalletService {
       this.logger.warn(
         ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
       );
-      await this.actService.create({
-        user,
-        sum,
-        description: this.subscriptionDescription,
-      });
+      if (sum !== 0) {
+        await this.actService.create({
+          user,
+          sum,
+          isSubscription: true,
+          description: this.subscriptionDescription,
+        });
+      }
 
       // проверяем план пользователя
       if (user.plan === UserPlanEnum.Demo) {
@@ -215,14 +227,17 @@ export class WalletService {
     this.logger.warn('Wallet service is calculating balance:');
 
     this.walletRepository.manager.transaction(async (transact) => {
-      const users = await transact.find(UserEntity, {
+      const users = await transact.find(UserResponse, {
         where: [
           { verified: true, disabled: false, role: UserRoleEnum.MonitorOwner },
         ],
       });
 
       const promiseUsers = users.map(async (user) =>
-        this.acceptanceActCreate({ user, transact }),
+        this.acceptanceActCreate({
+          user,
+          transact,
+        }),
       );
 
       await Promise.all(promiseUsers);

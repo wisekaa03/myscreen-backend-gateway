@@ -1,6 +1,7 @@
 import {
   AfterLoad,
   AfterUpdate,
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -30,10 +31,11 @@ import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from '@/database/folder.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
+import { MonitorResponse } from '@/dto';
 
-@Entity('file')
-export class FileEntity {
-  @PrimaryGeneratedColumn('uuid')
+@Entity('file', { comment: 'Файлы' })
+export class FileEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор файла',
     format: 'uuid',
@@ -190,12 +192,26 @@ export class FileEntity {
     onUpdate: 'CASCADE',
     nullable: true,
   })
+  @ApiProperty({
+    description: 'Мониторы',
+    required: false,
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/PlaylistResponse' }],
+    isArray: true,
+  })
   playlists?: PlaylistEntity[];
 
   @ManyToMany(() => MonitorEntity, (monitor) => monitor.files, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     nullable: true,
+  })
+  @ApiProperty({
+    description: 'Мониторы',
+    required: false,
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/MonitorResponse' }],
+    isArray: true,
   })
   monitors?: MonitorEntity[];
 

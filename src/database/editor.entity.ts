@@ -24,6 +24,7 @@ import {
   UpdateDateColumn,
   Unique,
   RelationId,
+  BaseEntity,
 } from 'typeorm';
 
 import { RenderingStatus } from '@/enums/rendering-status.enum';
@@ -34,8 +35,8 @@ import { PlaylistEntity } from './playlist.entity';
 
 @Entity('editor')
 @Unique('IDX_editor_userId_name', ['userId', 'name'])
-export class EditorEntity {
-  @PrimaryGeneratedColumn('uuid')
+export class EditorEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор редактора',
     format: 'uuid',
@@ -132,9 +133,9 @@ export class EditorEntity {
   @JoinColumn()
   @ApiProperty({
     description: 'Обработанный файл',
-    type: 'string',
     nullable: true,
     allOf: [{ $ref: '#/components/schemas/FileResponse' }],
+    required: false,
   })
   renderedFile!: FileEntity | null;
 

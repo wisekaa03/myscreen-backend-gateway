@@ -8,10 +8,9 @@ import { JWT_BASE_OPTIONS, type MyscreenJwtPayload } from '@/utils/jwt.payload';
 import { decodeMailToken } from '@/utils/mail-token';
 import { AuthenticationPayload } from '@/dto';
 import { UserService } from '@/database/user.service';
-import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
-import { UserExtEntity, selectUserOptions } from '@/database/user-ext.entity';
+import { UserResponse } from '@/database/user-response.entity';
 
 @Injectable()
 export class AuthService {
@@ -47,7 +46,7 @@ export class AuthService {
     email: string,
     password: string,
     fingerprint?: string,
-  ): Promise<[UserExtEntity, AuthenticationPayload]> {
+  ): Promise<[UserResponse, AuthenticationPayload]> {
     if (!email || !password) {
       throw new ForbiddenException('Password mismatched');
     }
@@ -73,7 +72,7 @@ export class AuthService {
     ]);
     const payload = this.buildResponsePayload(token, refresh);
 
-    return [UserService.userEntityToUser(user), payload];
+    return [user, payload];
   }
 
   private buildResponsePayload(
@@ -90,7 +89,7 @@ export class AuthService {
     return payload;
   }
 
-  async generateAccessToken(user: UserEntity): Promise<string> {
+  async generateAccessToken(user: UserResponse): Promise<string> {
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
       subject: String(user.id),
@@ -120,7 +119,7 @@ export class AuthService {
     return this.jwtService.signAsync({}, opts);
   }
 
-  async resolveRefreshToken(encoded: string): Promise<UserEntity> {
+  async resolveRefreshToken(encoded: string): Promise<UserResponse> {
     const payload = await this.decodeRefreshToken(encoded);
     const token = await this.getStoredTokenFromRefreshTokenPayload(payload);
 
@@ -178,7 +177,7 @@ export class AuthService {
       this.generateAccessToken({
         id: monitorId,
         role: UserRoleEnum.Monitor,
-      } as UserEntity),
+      } as UserResponse),
       this.createMonitorRefreshToken(monitorId),
     ]);
 
@@ -201,7 +200,7 @@ export class AuthService {
 
   private async getUserFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
-  ): Promise<UserEntity | null> {
+  ): Promise<UserResponse | null> {
     const { sub, iss } = payload;
 
     if (!sub) {
@@ -249,7 +248,7 @@ export class AuthService {
     const [email, verifyToken] = decodeMailToken(verify_email);
 
     const user = await this.userService.findByEmail(email, {
-      select: { ...selectUserOptions, emailConfirmKey: true },
+      select: ['id', 'verified', 'emailConfirmKey'],
     });
     if (!user) {
       throw new ForbiddenException();

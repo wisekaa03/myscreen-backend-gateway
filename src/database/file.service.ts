@@ -47,6 +47,7 @@ import { FolderEntity } from './folder.entity';
 import { PlaylistService } from './playlist.service';
 import { UserEntity } from './user.entity';
 import { BidService } from './bid.service';
+import { UserResponse } from './user-response.entity';
 
 @Injectable()
 export class FileService {

@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -19,15 +20,15 @@ import {
   Validate,
 } from 'class-validator';
 
-import { RequestApprove, RequestStatus } from '@/enums';
+import { BidApprove, BidStatus } from '@/enums';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 
-@Entity('application')
-export class BidEntity {
-  @PrimaryGeneratedColumn('uuid')
+@Entity('application', { comment: 'Заявки' })
+export class BidEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор взаимодействия',
     format: 'uuid',
@@ -55,7 +56,7 @@ export class BidEntity {
   @ApiProperty({
     description: 'Покупатель',
     type: 'string',
-    allOf: [{ $ref: '#/components/schemas/UserExtEntity' }],
+    allOf: [{ $ref: '#/components/schemas/UserResponse' }],
   })
   buyer!: UserEntity | null;
 
@@ -80,7 +81,7 @@ export class BidEntity {
   @ApiProperty({
     description: 'Продавец',
     type: 'string',
-    allOf: [{ $ref: '#/components/schemas/UserExtEntity' }],
+    allOf: [{ $ref: '#/components/schemas/UserResponse' }],
   })
   seller!: UserEntity;
 
@@ -118,20 +119,20 @@ export class BidEntity {
 
   @Column({
     type: 'enum',
-    enum: RequestStatus,
-    default: RequestStatus.OK,
+    enum: BidStatus,
+    default: BidStatus.OK,
   })
-  @Index('requestStatusIndex')
+  @Index('statusIndex')
   @ApiProperty({
     description: 'OK / Подождите',
-    enum: RequestStatus,
-    enumName: 'RequestStatus',
-    example: RequestStatus.OK,
-    default: RequestStatus.OK,
+    enum: BidStatus,
+    enumName: 'BidStatus',
+    example: BidStatus.OK,
+    default: BidStatus.OK,
     required: false,
   })
-  @IsEnum(RequestStatus, { each: true })
-  status!: RequestStatus;
+  @IsEnum(BidStatus, { each: true })
+  status!: BidStatus;
 
   @Column({ type: 'boolean', default: false })
   @ApiProperty({
@@ -182,19 +183,19 @@ export class BidEntity {
 
   @Column({
     type: 'enum',
-    enum: RequestApprove,
-    default: RequestApprove.NOTPROCESSED,
+    enum: BidApprove,
+    default: BidApprove.NOTPROCESSED,
   })
   @Index('approvedIndex')
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
-    enum: RequestApprove,
-    enumName: 'RequestApprove',
-    example: RequestApprove.NOTPROCESSED,
+    enum: BidApprove,
+    enumName: 'BidApprove',
+    example: BidApprove.NOTPROCESSED,
     required: true,
   })
-  @IsEnum(RequestApprove, { each: true })
-  approved!: RequestApprove;
+  @IsEnum(BidApprove, { each: true })
+  approved!: BidApprove;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
   @Index('dateWhenIndex')
@@ -249,7 +250,7 @@ export class BidEntity {
   user!: UserEntity;
 
   @Column({ select: false })
-  @Index('requestUserIdIndex')
+  @Index('userIdIndex')
   @IsUUID()
   userId!: string;
 

@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -16,8 +17,8 @@ import { FileEntity } from './file.entity';
 
 @Entity('file_preview')
 @Unique('preview_uniq_file', ['file'])
-export class FilePreviewEntity {
-  @PrimaryGeneratedColumn('uuid')
+export class FilePreviewEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор превью',
     format: 'uuid',

@@ -26,7 +26,8 @@ import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { UserService } from '@/database/user.service';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { UserExtEntity } from '@/database/user-ext.entity';
+import { UserEntity } from '@/database/user.entity';
+// import { UserExtEntity } from '@/database/user-ext.entity';
 
 @ApiComplexDecorators({ path: ['user'], roles: [UserRoleEnum.Administrator] })
 export class UserController {
@@ -48,13 +49,13 @@ export class UserController {
   async users(
     @Body() { where: origWhere, select, scope }: UsersGetRequest,
   ): Promise<UsersGetResponse> {
-    const where = TypeOrmFind.where(UserExtEntity, origWhere);
-    const [users, count] = await this.userService.findAndCount({
+    const where = TypeOrmFind.where(UserEntity, origWhere);
+    const [data, count] = await this.userService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
       where,
     });
-    const data = users.map((user) => UserService.userEntityToUser(user));
+
     return {
       status: Status.Success,
       count,
@@ -82,7 +83,7 @@ export class UserController {
       throw new ForbiddenException();
     }
 
-    await this.userService.update(user.id, { disabled: true });
+    await this.userService.update(userId, { disabled: true });
 
     return {
       status: Status.Success,
@@ -109,7 +110,7 @@ export class UserController {
       throw new ForbiddenException();
     }
 
-    await this.userService.update(user.id, { disabled: false });
+    await this.userService.update(userId, { disabled: false });
 
     return {
       status: Status.Success,
@@ -130,11 +131,10 @@ export class UserController {
   async user(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<UserGetResponse> {
-    const user = await this.userService.findById(userId, undefined, true);
-    if (!user) {
+    const data = await this.userService.findById(userId, undefined, true);
+    if (!data) {
       throw new ForbiddenException();
     }
-    const { password, ...data } = user;
 
     return {
       status: Status.Success,
@@ -163,7 +163,7 @@ export class UserController {
       throw new ForbiddenException();
     }
 
-    const data = await this.userService.update(user.id, update);
+    const data = await this.userService.update(userId, update);
     if (!data) {
       throw new NotFoundException();
     }
@@ -197,7 +197,7 @@ export class UserController {
       throw new NotFoundException('This user is not exists');
     }
 
-    const { affected } = await this.userService.delete(user);
+    const { affected } = await this.userService.delete(userId);
     if (!affected) {
       throw new NotFoundException('This user is not exists');
     }

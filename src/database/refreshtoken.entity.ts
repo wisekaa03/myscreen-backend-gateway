@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -14,10 +15,10 @@ import { IsDateString, IsUUID } from 'class-validator';
 
 import { UserEntity } from '@/database/user.entity';
 
-@Entity('refresh_token')
+@Entity('refresh_token', { comment: 'Токены обновления' })
 @Index('IDX_id_expires', ['id', 'expires'])
-export class RefreshTokenEntity {
-  @PrimaryGeneratedColumn('uuid')
+export class RefreshTokenEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   id?: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {

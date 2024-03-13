@@ -24,11 +24,11 @@ export class MonitorService {
     @Inject(forwardRef(() => BidService))
     private readonly bidService: BidService,
     @InjectRepository(MonitorEntity)
-    private readonly monitorRepository: Repository<MonitorEntity>,
+    public readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(MonitorGroupEntity)
-    private readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
+    public readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
     @InjectRepository(MonitorFavoriteEntity)
-    private readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
+    public readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
   ) {}
 
   async find({

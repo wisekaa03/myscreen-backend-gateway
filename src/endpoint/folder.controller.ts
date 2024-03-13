@@ -40,6 +40,7 @@ import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
 import { UserEntity } from '@/database/user.entity';
 import { getFullName } from '@/utils/full-name';
+import { UserResponse } from '@/database/user-response.entity';
 
 @ApiExtraModels(FolderResponse)
 @ApiComplexDecorators({
@@ -109,7 +110,7 @@ export class FolderController {
         });
       } else {
         // в режиме администратора выводим всех пользователей
-        let userData: UserEntity[];
+        let userData: UserResponse[];
         [userData, count] = await this.userService.findAndCount({});
         data = userData.map((item) => ({
           id: `${administratorFolderId}/${item.id}`,

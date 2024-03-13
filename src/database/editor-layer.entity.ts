@@ -10,6 +10,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
   AfterUpdate,
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -24,8 +25,8 @@ import { FileEntity } from './file.entity';
 import { EditorEntity } from './editor.entity';
 
 @Entity('editor_layer')
-export class EditorLayerEntity {
-  @PrimaryGeneratedColumn('uuid')
+export class EditorLayerEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор слоя',
     example: '12345678',
