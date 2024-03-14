@@ -720,8 +720,10 @@ export class UserResponse implements UserEntity {
       monthlyPayment,
       walletSum,
     } = this;
+
     this.fullName = [surname, name, middleName].filter((x) => x).join(' ');
     this.fullNameEmail = `${this.fullName} <${this.email}>`;
+
     this.metrics = {
       monitors: {
         online: parseInt(onlineMonitors ?? '0', 10),
@@ -738,24 +740,6 @@ export class UserResponse implements UserEntity {
         total: parseFloat(`${storageSpace}`),
       },
     };
-    // @ts-ignore
-    delete this.countUsedSpace;
-    // @ts-ignore
-    delete this.countMonitors;
-    // @ts-ignore
-    delete this.emptyMonitors;
-    // @ts-ignore
-    delete this.onlineMonitors;
-    // @ts-ignore
-    delete this.offlineMonitors;
-    // @ts-ignore
-    delete this.walletSum;
-    // @ts-ignore
-    delete this.playlistAdded;
-    // @ts-ignore
-    delete this.monitorPlaylistPlayed;
-    // @ts-ignore
-    delete this.monthlyPayment;
 
     this.planValidityPeriod =
       role === UserRoleEnum.MonitorOwner
@@ -776,44 +760,14 @@ export const UserResponseToExternal = ({
   password,
   emailConfirmKey,
   forgotConfirmKey,
+  countUsedSpace,
+  countMonitors,
+  onlineMonitors,
+  offlineMonitors,
+  emptyMonitors,
+  walletSum,
+  monthlyPayment,
+  playlistAdded,
+  monitorPlaylistPlayed,
   ...user
-}: UserEntity | UserResponse): UserResponse => user as UserResponse;
-
-// export class UserResponse extends PickType(UserResponseInternal, [
-//   'city',
-//   'company',
-//   'companyActualAddress',
-//   'companyBIC',
-//   'companyBank',
-//   'companyCorrespondentAccount',
-//   'companyEmail',
-//   'companyFax',
-//   'companyLegalAddress',
-//   'companyPSRN',
-//   'companyPaymentAccount',
-//   'companyPhone',
-//   'companyRRC',
-//   'companyRepresentative',
-//   'companyTIN',
-//   'country',
-//   'createdAt',
-//   'disabled',
-//   'email',
-//   'fullName',
-//   'fullNameEmail',
-//   'id',
-//   'metrics',
-//   'middleName',
-//   'monitors',
-//   // 'monthlyPayment',
-//   'name',
-//   'phoneNumber',
-//   'plan',
-//   'planValidityPeriod',
-//   'role',
-//   // 'storageSpace',
-//   'surname',
-//   'verified',
-//   'wallet',
-//   // 'walletSum',
-// ]) {}
+}: UserResponse): UserResponse => user as UserResponse;
