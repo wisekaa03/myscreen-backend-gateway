@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -23,11 +24,11 @@ import {
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from './file.entity';
 
-@Entity('folder')
+@Entity('folder', { comment: 'Папки' })
 @Index('user_name_parentFolder_Index', ['name', 'userId'])
 @Index('user_parentFolder_Index', ['userId', 'parentFolderId'])
-export class FolderEntity {
-  @PrimaryGeneratedColumn('uuid')
+export class FolderEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор файла',
     format: 'uuid',

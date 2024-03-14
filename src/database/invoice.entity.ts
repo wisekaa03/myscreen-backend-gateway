@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -17,15 +18,14 @@ import {
   IsNumber,
   IsString,
   IsUUID,
-  Min,
 } from 'class-validator';
 
 import { InvoiceStatus } from '@/enums/invoice-status.enum';
 import { UserEntity } from './user.entity';
 
-@Entity('invoice')
-export class InvoiceEntity {
-  @PrimaryGeneratedColumn('uuid')
+@Entity('invoice', { comment: 'Счета' })
+export class InvoiceEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор счёта',
     format: 'uuid',

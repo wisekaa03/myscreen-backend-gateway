@@ -17,18 +17,16 @@ export class RefreshTokenService {
 
   async find(id: string, fromMonitor = false): Promise<RefreshTokenEntity> {
     if (fromMonitor) {
-      return {
+      return this.refreshTokenEntity.create({
         id,
         expires: new Date(
           Date.now() +
             ms(this.configService.get<string>('JWT_REFRESH_EXPIRES', '30days')),
         ),
         isRevoked: false,
-        user: {} as UserEntity,
-        userId: '',
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
+      });
     }
 
     return this.refreshTokenEntity.findOneOrFail({

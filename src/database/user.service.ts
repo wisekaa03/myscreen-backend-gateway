@@ -17,11 +17,13 @@ import {
   FindManyOptions,
 } from 'typeorm';
 import { addDays } from 'date-fns/addDays';
-import { subDays } from 'date-fns/subDays';
-import { intervalToDuration } from 'date-fns/intervalToDuration';
 import { ClientProxy } from '@nestjs/microservices';
 
-import { MailForgotPassword, MailSendVerificationCode } from '@/interfaces';
+import {
+  FindManyOptionsCaseInsensitive,
+  MailForgotPassword,
+  MailSendVerificationCode,
+} from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { RegisterRequest } from '@/dto/request/register.request';
 import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
@@ -29,8 +31,7 @@ import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
-import { UserExtEntity, selectUserOptions } from './user-ext.entity';
-import { getFullName } from '@/utils/full-name';
+import { UserResponse } from './user-response.entity';
 
 @Injectable()
 export class UserService {
@@ -43,9 +44,9 @@ export class UserService {
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
     @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(UserExtEntity)
-    private readonly userExtRepository: Repository<UserExtEntity>,
+    public readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(UserResponse)
+    public readonly userResponseRepository: Repository<UserResponse>,
   ) {
     this.frontendUrl = this.configService.get(
       'FRONTEND_URL',
@@ -56,7 +57,7 @@ export class UserService {
   /**
    * Verify user permissions.
    *
-   * @param {UserExtEntity} user User
+   * @param {UserResponse} user User
    * @param {string} controllerName Controller name (monitor, application, etc.)
    * @param {string} functionName Function name (create, read, update, delete, status)
    * @param {CRUDS} crud CRUDS (CREATE, READ, UPDATE, DELETE, STATUS)
@@ -65,12 +66,12 @@ export class UserService {
    * @memberof UserService
    */
   verify(
-    user: UserExtEntity,
+    user: UserResponse,
     controllerName: string,
     functionName: string,
     crud: CRUD,
   ): boolean {
-    const name = getFullName(user);
+    const name = user.fullNameEmail;
     this.logger.log(
       `User: "${name}" Controllers: "${controllerName}" CRUD: "${crud}"`,
     );
@@ -187,7 +188,7 @@ export class UserService {
   async update(
     userId: string,
     update: Partial<UserEntity>,
-  ): Promise<UserExtEntity | null> {
+  ): Promise<UserResponse | null> {
     const user = await this.userRepository.findOneBy({ id: userId });
     if (!user) {
       throw new ForbiddenException();
@@ -209,33 +210,33 @@ export class UserService {
           email: update.email,
           confirmUrl,
         }),
-      ]).then(([{ id }]) => this.userExtRepository.findOneBy({ id }));
+      ]).then(([{ id }]) => this.userResponseRepository.findOneBy({ id }));
     }
 
     const { id } = await this.userRepository.save(
       this.userRepository.create(Object.assign(user, update)),
     );
 
-    return this.userExtRepository.findOneBy({ id });
+    return this.userResponseRepository.findOneBy({ id });
   }
 
   /**
    * Удаляет пользователя
    * @async
-   * @param {UserEntity} user User entity
+   * @param {string} id User Id
    * @returns {DeleteResult} {DeleteResult} Результат
    */
-  async delete(user: UserEntity): Promise<DeleteResult> {
-    return this.userRepository.delete(user.id);
+  async delete(id: string): Promise<DeleteResult> {
+    return this.userRepository.delete({ id });
   }
 
   /**
    * Заводит нового пользователя
    * @async
-   * @param {Partial<UserEntity>} create
+   * @param {RegisterRequest} create
    * @returns {UserEntity} Пользователь
    */
-  async register(create: RegisterRequest): Promise<UserExtEntity> {
+  async register(create: RegisterRequest): Promise<UserResponse> {
     const { email, password, role, ...createUser } = create;
     if (!email) {
       throw new BadRequestException('email must be defined');
@@ -270,7 +271,7 @@ export class UserService {
       storageSpace = UserStoreSpaceEnum.FULL;
     }
 
-    const user: DeepPartial<UserEntity> = {
+    const userPartial: DeepPartial<UserEntity> = {
       ...createUser,
       email,
       storageSpace,
@@ -281,13 +282,16 @@ export class UserService {
       verified: false,
       emailConfirmKey: genKey(),
     };
-    const verifyToken = generateMailToken(email, user.emailConfirmKey ?? '-');
+    const verifyToken = generateMailToken(
+      email,
+      userPartial.emailConfirmKey ?? '-',
+    );
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
     let id: string;
     if (process.env.NODE_ENV === 'production') {
       [{ id }] = await Promise.all([
-        this.userRepository.save(this.userRepository.create(user)),
+        this.userRepository.save(this.userRepository.create(userPartial)),
         this.mailService.emit<unknown, string>('sendWelcomeMessage', email),
         this.mailService.emit<unknown, MailSendVerificationCode>(
           'sendVerificationCode',
@@ -299,16 +303,15 @@ export class UserService {
       ]);
     } else {
       ({ id } = await this.userRepository.save(
-        this.userRepository.create(user),
+        this.userRepository.create(userPartial),
       ));
     }
 
-    const userExt = await this.userExtRepository.findOneBy({ id });
-    if (!userExt) {
+    const user = await this.userResponseRepository.findOneBy({ id });
+    if (!user) {
       throw new UnauthorizedException('User not exits ?');
     }
-
-    return UserService.userEntityToUser(userExt);
+    return user;
   }
 
   /**
@@ -343,19 +346,20 @@ export class UserService {
   async forgotPasswordInvitation(email: string): Promise<any> {
     const user = await this.userRepository.findOne({
       where: { email, disabled: false },
+      select: ['id', 'forgotConfirmKey'],
     });
     if (!user) {
       throw new ForbiddenException('User not exists', email);
     }
 
     user.forgotConfirmKey = genKey();
-    this.userRepository.save(this.userRepository.create(user));
+    await this.userRepository.save(this.userRepository.create(user));
 
     const verifyToken = generateMailToken(email, user.forgotConfirmKey);
     const forgotPasswordUrl = `${this.frontendUrl}/reset-password-verify?key=${verifyToken}`;
 
     if (process.env.NODE_ENV !== 'production') {
-      return Promise.resolve();
+      return true;
     }
 
     return this.mailService.emit<unknown, MailForgotPassword>(
@@ -377,12 +381,11 @@ export class UserService {
   async forgotPasswordVerify(
     forgotPasswordToken: string,
     password: string,
-  ): Promise<UserEntity> {
+  ): Promise<UserResponse> {
     const [email, forgotPassword] = decodeMailToken(forgotPasswordToken);
 
     const user = await this.userRepository.findOne({
       where: { email },
-      select: { ...selectUserOptions, forgotConfirmKey: true },
     });
     if (!user) {
       throw new ForbiddenException('User not exists', email);
@@ -393,7 +396,7 @@ export class UserService {
         password: createHmac('sha256', password.normalize()).digest('hex'),
         forgotConfirmKey: null,
       });
-      const userUpdated = await this.userRepository.findOne({
+      const userUpdated = await this.userResponseRepository.findOne({
         where: { id: user.id },
       });
       if (!userUpdated) {
@@ -409,37 +412,40 @@ export class UserService {
   }
 
   async find(
-    find: FindManyOptions<UserEntity>,
-    caseInsensitive = true,
-  ): Promise<UserEntity[]> {
-    return caseInsensitive
-      ? TypeOrmFind.findCI(
-          this.userRepository,
-          TypeOrmFind.findParams(UserEntity, find),
+    find: FindManyOptionsCaseInsensitive<UserResponse>,
+  ): Promise<UserResponse[]> {
+    const users = !find.caseInsensitive
+      ? await this.userResponseRepository.find(
+          TypeOrmFind.findParams(UserResponse, find),
         )
-      : this.userRepository.find(TypeOrmFind.findParams(UserEntity, find));
+      : await TypeOrmFind.findCI(
+          this.userResponseRepository,
+          TypeOrmFind.findParams(UserResponse, find),
+        );
+
+    return users;
   }
 
   async findAndCount(
-    options: FindManyOptions<UserExtEntity>,
-    caseInsensitive = true,
-  ): Promise<[UserExtEntity[], number]> {
-    return caseInsensitive
-      ? TypeOrmFind.findAndCountCI(
-          this.userExtRepository,
-          TypeOrmFind.findParams(UserExtEntity, options),
+    find: FindManyOptionsCaseInsensitive<UserResponse>,
+  ): Promise<[UserResponse[], number]> {
+    const userCount = !find.caseInsensitive
+      ? await this.userResponseRepository.findAndCount(
+          TypeOrmFind.findParams(UserResponse, find),
         )
-      : this.userExtRepository.findAndCount(
-          TypeOrmFind.findParams(UserExtEntity, options),
+      : await TypeOrmFind.findAndCountCI(
+          this.userResponseRepository,
+          TypeOrmFind.findParams(UserResponse, find),
         );
+    return userCount;
   }
 
   async findByEmail(
     email: string,
-    options?: FindManyOptions<UserEntity>,
-  ): Promise<UserExtEntity | null> {
-    return this.userExtRepository.findOne({
-      ...options,
+    find?: FindManyOptions<UserResponse>,
+  ): Promise<UserResponse | null> {
+    return this.userResponseRepository.findOne({
+      ...find,
       where: { email },
     });
   }
@@ -448,9 +454,9 @@ export class UserService {
     id: string,
     role?: UserRoleEnum,
     disabled = false,
-  ): Promise<UserExtEntity | null> {
+  ): Promise<UserResponse | null> {
     if (role === UserRoleEnum.Monitor) {
-      return {
+      return this.userResponseRepository.create({
         id,
         role: UserRoleEnum.Monitor,
         plan: UserPlanEnum.Full,
@@ -462,33 +468,14 @@ export class UserService {
         verified: true,
         createdAt: new Date(),
         updatedAt: new Date(),
-        planValidityPeriod: Number.NEGATIVE_INFINITY,
-        wallet: {
-          total: 0,
-        },
-        metrics: {
-          monitors: {
-            online: 0,
-            offline: 0,
-            empty: 0,
-            user: 0,
-          },
-          storageSpace: {
-            storage: 0,
-            total: 0,
-          },
-          playlists: {
-            added: 0,
-            played: 0,
-          },
-        },
-      };
+      });
     }
 
-    const conditions: FindManyOptions<UserEntity> = disabled
+    const find: FindManyOptions<UserEntity> = disabled
       ? { where: { id } }
       : { where: { id, disabled } };
-    return this.userExtRepository.findOne(conditions);
+
+    return this.userResponseRepository.findOne(find);
   }
 
   static validateCredentials = (
@@ -500,52 +487,4 @@ export class UserService {
     );
     return passwordSha256 === user.password;
   };
-
-  static userEntityToUser({
-    forgotConfirmKey,
-    emailConfirmKey,
-    password,
-    monitors,
-    monthlyPayment,
-    walletSum,
-    storageSpace,
-    countUsedSpace,
-    countMonitors,
-    playlistAdded,
-    playlistMonitorPlayed,
-    onlineMonitors,
-    offlineMonitors,
-    emptyMonitors,
-    wallet,
-    ...data
-  }: UserExtEntity): UserExtEntity {
-    return {
-      ...data,
-      metrics: {
-        monitors: {
-          online: parseInt(`${onlineMonitors ?? 0}`, 10),
-          offline: parseInt(`${offlineMonitors ?? 0}`, 10),
-          empty: parseInt(`${emptyMonitors ?? 0}`, 10),
-          user: parseInt(`${countMonitors ?? 0}`, 10),
-        },
-        playlists: {
-          added: parseInt(`${playlistAdded ?? 0}`, 10),
-          played: parseInt(`${playlistMonitorPlayed ?? 0}`, 10),
-        },
-        storageSpace: {
-          storage: parseFloat(`${countUsedSpace ?? 0}`),
-          total: parseFloat(`${storageSpace ?? 0}`),
-        },
-      },
-      planValidityPeriod: monthlyPayment
-        ? intervalToDuration({
-            start: monthlyPayment,
-            end: subDays(Date.now(), 28),
-          }).days ?? Number.NEGATIVE_INFINITY
-        : Number.POSITIVE_INFINITY,
-      wallet: {
-        total: wallet ? wallet.total : parseFloat(walletSum ?? '0'),
-      },
-    };
-  }
 }

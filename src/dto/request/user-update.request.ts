@@ -2,10 +2,10 @@ import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 
 import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
-import { UserExtEntity } from '@/database/user-ext.entity';
+import { UserRequest } from './user.request';
 
 export class UserUpdateRequest extends PartialType(
-  PickType(UserExtEntity, [
+  PickType(UserRequest, [
     'disabled',
     'verified',
     'email',

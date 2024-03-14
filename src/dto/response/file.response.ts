@@ -21,7 +21,8 @@ export class FileResponse extends OmitType(FileEntity, [
 
   @ApiProperty({
     description: 'Мониторы',
-    type: () => MonitorResponse,
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/MonitorResponse' }],
     required: false,
     isArray: true,
   })
@@ -29,7 +30,8 @@ export class FileResponse extends OmitType(FileEntity, [
 
   @ApiProperty({
     description: 'Плэйлисты',
-    type: () => PlaylistResponse,
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/PlaylistResponse' }],
     required: false,
     isArray: true,
   })

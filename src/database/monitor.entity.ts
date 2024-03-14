@@ -16,6 +16,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -152,10 +153,10 @@ export class MonitorInfo {
   brightness?: number;
 }
 
-@Entity('monitor')
+@Entity('monitor', { comment: 'Мониторы' })
 @Unique('user_name_Unique', ['user', 'name'])
-export class MonitorEntity {
-  @PrimaryGeneratedColumn('uuid')
+export class MonitorEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор монитора',
     format: 'uuid',

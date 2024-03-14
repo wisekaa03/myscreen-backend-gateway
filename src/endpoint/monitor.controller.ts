@@ -44,7 +44,7 @@ import {
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import {
   CRUD,
-  RequestApprove,
+  BidApprove,
   Status,
   UserPlanEnum,
   UserRoleEnum,
@@ -142,7 +142,7 @@ export class MonitorController {
         {
           where: {
             dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
-            approved: Not(RequestApprove.DENIED),
+            approved: Not(BidApprove.DENIED),
           },
           select: {
             monitorId: true,
@@ -304,7 +304,7 @@ export class MonitorController {
         monitorId: In(monitorIds),
         dateWhen: dateBefore ? Between(dateWhen, dateBefore) : dateWhen,
         // Подсчитываем все заявки, кроме Denied, в том числе и NotProcessing
-        approved: Not(RequestApprove.DENIED),
+        approved: Not(BidApprove.DENIED),
       },
     });
     if (approved.length > 0) {

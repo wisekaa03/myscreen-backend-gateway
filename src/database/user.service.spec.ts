@@ -8,83 +8,39 @@ import { Observable } from 'rxjs';
 import { MAIL_SERVICE } from '@/constants';
 import { CRUD, UserPlanEnum, UserRoleEnum } from '@/enums';
 import { UserEntity } from './user.entity';
-import { UserExtEntity } from './user-ext.entity';
 import { UserService } from './user.service';
 import { getFullName } from '@/utils/full-name';
-
-const testUser: UserExtEntity = {
-  id: '0000-0000-0000-0000',
-  disabled: false,
-  verified: false,
-  email: 'postmaster@domain.com',
-  role: UserRoleEnum.Administrator,
-  plan: UserPlanEnum.Full,
-  surname: 'Steve',
-  name: 'John',
-  middleName: 'Doe',
-  phoneNumber: '+78002000000',
-  city: 'Krasnodar',
-  country: 'RU',
-  company: 'ACME corporation',
-  companyLegalAddress: 'г. Краснодар, ул. Красная, д. 1',
-  companyActualAddress: 'г. Краснодар, ул. Красная, д. 1',
-  companyTIN: '112345678901',
-  companyRRC: '112345678901',
-  companyPSRN: '112345678901',
-  companyPhone: '+78003000000',
-  companyEmail: 'we@are.the.best',
-  companyBank: 'Банк',
-  companyBIC: '012345678',
-  companyCorrespondentAccount: '30101810400000000000',
-  companyPaymentAccount: '40802810064580000000',
-  companyFax: '+78002000000',
-  companyRepresentative: 'Тухбатуллина Евгеньевна Юлия',
-  planValidityPeriod: Number.POSITIVE_INFINITY,
-  wallet: { total: 0 },
-  metrics: {
-    monitors: {
-      online: 0,
-      offline: 0,
-      empty: 0,
-      user: 0,
-    },
-    playlists: {
-      added: 0,
-      played: 0,
-    },
-    storageSpace: {
-      storage: 0,
-      total: 0,
-    },
-  },
-};
-
-export const mockRepository = jest.fn(() => ({
-  findOne: async ({ where }: FindOneOptions<UserEntity>) => {
-    if ((where as FindOptionsWhere<UserEntity>)?.email === testUser.email) {
-      return Promise.resolve(null);
-    }
-    return Promise.resolve(testUser);
-  },
-  findOneBy: async () => Promise.resolve(testUser),
-  findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
-  remove: async () => Promise.resolve([]),
-  sendWelcomeMessage: async () => Promise.resolve({}),
-  sendVerificationCode: async () => Promise.resolve({}),
-  get: (key: string, defaultValue?: string) => defaultValue,
-  emit: async (event: string, data: unknown) =>
-    new Observable((s) => s.next(data)),
-  send: async (id: unknown) => new Observable((s) => s.next(id)),
-  metadata: {
-    columns: [],
-    relations: [],
-  },
-}));
+import { UserResponse } from './user-response.entity';
 
 describe(UserService.name, () => {
   let service: UserService;
+
+  let testUser: UserResponse;
+  let monitorTestDemo: UserResponse;
+
+  const mockRepository = jest.fn(() => ({
+    findOne: async ({ where }: FindOneOptions<UserEntity>) => {
+      if ((where as FindOptionsWhere<UserEntity>)?.email === testUser.email) {
+        return Promise.resolve(null);
+      }
+      return Promise.resolve(testUser);
+    },
+    findOneBy: async () => Promise.resolve(testUser),
+    findAndCount: async () => Promise.resolve([]),
+    save: async () => Promise.resolve([]),
+    create: (value: any) => value,
+    remove: async () => Promise.resolve([]),
+    sendWelcomeMessage: async () => Promise.resolve({}),
+    sendVerificationCode: async () => Promise.resolve({}),
+    get: (key: string, defaultValue?: string) => defaultValue,
+    emit: async (event: string, data: unknown) =>
+      new Observable((s) => s.next(data)),
+    send: async (id: unknown) => new Observable((s) => s.next(id)),
+    metadata: {
+      columns: [],
+      relations: [],
+    },
+  }));
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -97,22 +53,67 @@ describe(UserService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(UserExtEntity),
+          provide: getRepositoryToken(UserResponse),
           useClass: mockRepository,
         },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
-  });
+    testUser = service.userResponseRepository.create({
+      id: '0000-0000-0000-0000',
+      disabled: false,
+      verified: false,
+      email: 'postmaster@domain.com',
+      role: UserRoleEnum.Administrator,
+      plan: UserPlanEnum.Full,
+      surname: 'Steve',
+      name: 'John',
+      middleName: 'Doe',
+      fullName: 'Steve John Doe',
+      fullNameEmail: 'Steve John Doe <postmaster@domain.com>',
+      phoneNumber: '+78002000000',
+      city: 'Krasnodar',
+      country: 'RU',
+      company: 'ACME corporation',
+      companyLegalAddress: 'г. Краснодар, ул. Красная, д. 1',
+      companyActualAddress: 'г. Краснодар, ул. Красная, д. 1',
+      companyTIN: '112345678901',
+      companyRRC: '112345678901',
+      companyPSRN: '112345678901',
+      companyPhone: '+78003000000',
+      companyEmail: 'we@are.the.best',
+      companyBank: 'Банк',
+      companyBIC: '012345678',
+      companyCorrespondentAccount: '30101810400000000000',
+      companyPaymentAccount: '40802810064580000000',
+      companyFax: '+78002000000',
+      companyRepresentative: 'Тухбатуллина Евгеньевна Юлия',
+      planValidityPeriod: Number.POSITIVE_INFINITY,
+      countMonitors: 0,
+      onlineMonitors: 0,
+      offlineMonitors: 0,
+      emptyMonitors: 0,
+      wallet: { total: 0 },
+      metrics: {
+        monitors: {
+          online: 0,
+          offline: 0,
+          empty: 0,
+          user: 0,
+        },
+        playlists: {
+          added: 0,
+          played: 0,
+        },
+        storageSpace: {
+          storage: 0,
+          total: 0,
+        },
+      },
+    });
 
-  test('Full name of a test user', () => {
-    const testUserFullName = getFullName(testUser);
-    expect(testUserFullName).toBe('Steve John Doe <postmaster@domain.com>');
-  });
-
-  describe('User Monitor-owner Demo permissions', () => {
-    const monitorTestDemo: UserExtEntity = {
+    monitorTestDemo = {
       ...testUser,
       role: UserRoleEnum.MonitorOwner,
       plan: UserPlanEnum.Demo,
@@ -120,14 +121,23 @@ describe(UserService.name, () => {
       countUsedSpace: 1000000000,
       createdAt: subDays(new Date(), 100),
     };
+  });
 
+  test('Full name of a test user', () => {
+    let testUserFullName = getFullName(testUser);
+    expect(testUserFullName).toBe('Steve John Doe <postmaster@domain.com>');
+    testUserFullName = testUser.fullNameEmail;
+    expect(testUserFullName).toBe('Steve John Doe <postmaster@domain.com>');
+  });
+
+  describe('User Monitor-owner Demo permissions', () => {
     test('Administrator and Accountant users', async () => {
       expect(
         service.verify(
           {
             ...monitorTestDemo,
             role: UserRoleEnum.Administrator,
-          },
+          } as UserResponse,
           'auth',
           'login',
           CRUD.READ,
@@ -138,7 +148,7 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             role: UserRoleEnum.Accountant,
-          },
+          } as UserResponse,
           'invoice',
           'get',
           CRUD.READ,
@@ -162,7 +172,7 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             countMonitors: 5,
-          } as UserExtEntity,
+          } as UserResponse,
           'monitor',
           'create',
           CRUD.CREATE,
@@ -221,7 +231,7 @@ describe(UserService.name, () => {
             ...monitorTestDemo,
             countMonitors: 4,
             createdAt: subDays(Date.now(), 15),
-          } as UserExtEntity,
+          },
           'monitor',
           'create',
           CRUD.CREATE,
@@ -261,7 +271,10 @@ describe(UserService.name, () => {
 
   test('Register user', async () => {
     process.env.NODE_ENV = 'production';
-    const testUserRegister = { ...testUser, password: 'aA1!aaaa' };
+    const testUserRegister = {
+      ...testUser,
+      password: 'aA1!aaaa',
+    };
     const user = await service.register(testUserRegister);
     expect(user).toStrictEqual(testUser);
   });

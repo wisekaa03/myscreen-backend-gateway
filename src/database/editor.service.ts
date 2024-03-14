@@ -36,7 +36,7 @@ import {
   MonitorMultiple,
   MonitorOrientation,
   RenderingStatus,
-  RequestStatus,
+  BidStatus,
   VideoType,
 } from '@/enums';
 import { MonitorGroupWithPlaylist } from '@/interfaces';
@@ -51,6 +51,7 @@ import { PlaylistService } from './playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { CrontabService } from '@/crontab/crontab.service';
 import { BidService } from '@/database/bid.service';
+import { UserResponse } from './user-response.entity';
 
 dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
@@ -816,7 +817,7 @@ export class EditorService {
                 const requestIds = new Set<string>(...request.map((r) => r.id));
                 requestIds.forEach((requestId) => {
                   this.bidService.update(requestId, {
-                    status: RequestStatus.OK,
+                    status: BidStatus.OK,
                   });
                 });
               }

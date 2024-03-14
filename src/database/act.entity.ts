@@ -1,4 +1,5 @@
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -18,14 +19,18 @@ import {
   IsString,
   IsUUID,
   Min,
+  IsBoolean,
 } from 'class-validator';
 
 import { ActStatus } from '@/enums/act-status.enum';
 import { UserEntity } from './user.entity';
 
-@Entity('act')
-export class ActEntity {
-  @PrimaryGeneratedColumn('uuid')
+@Entity('act', {
+  comment: 'Акты выполненных работ',
+  orderBy: { createdAt: 'ASC' },
+})
+export class ActEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Идентификатор акта выполненных работ',
     format: 'uuid',
@@ -59,6 +64,10 @@ export class ActEntity {
   @IsNumber()
   @Min(100)
   sum!: number;
+
+  @Column({ type: 'boolean', default: false })
+  @IsBoolean()
+  isSubscription!: boolean;
 
   @Column({
     type: 'enum',

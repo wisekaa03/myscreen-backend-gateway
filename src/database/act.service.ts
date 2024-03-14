@@ -8,10 +8,11 @@ import {
   FindOneOptionsCaseInsensitive,
 } from '@/interfaces';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
 import { ActEntity } from './act.entity';
 import { WalletService } from '@/database/wallet.service';
+import { UserResponse } from './user-response.entity';
+import { UserEntity } from './user.entity';
 
 @Injectable()
 export class ActService {
@@ -60,16 +61,19 @@ export class ActService {
   async create({
     user,
     sum,
+    isSubscription = false,
     description,
   }: {
-    user: UserEntity;
+    user: UserResponse | UserEntity;
     sum: number;
+    isSubscription: boolean;
     description?: string;
   }): Promise<ActEntity> {
     return this.actRepository.manager.transaction(async (transact) => {
       const actCreated: DeepPartial<ActEntity> = {
         sum,
         description: description ?? this.walletService.subscriptionDescription,
+        isSubscription,
         status: ActStatus.COMPLETE,
         userId: user.id,
       };

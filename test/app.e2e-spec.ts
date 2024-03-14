@@ -35,12 +35,12 @@ import { generateMailToken } from '@/utils/mail-token';
 import { validationPipeOptions } from '@/utils/validation-pipe-options';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
 import { UserEntity } from '@/database/user.entity';
-import { UserExtEntity } from '@/database/user-ext.entity';
 import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
 import { WsAdapter } from '@/websocket/ws-adapter';
+import { UserResponse } from '@/database/user-response.entity';
 
-type UserFileEntity = UserEntity & Partial<UserExtEntity>;
+type UserFileEntity = UserEntity & Partial<UserResponse>;
 
 const generatePassword = (
   length = 20,
@@ -172,7 +172,7 @@ describe('Backend API (e2e)', () => {
         .expect(201)
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.data.id).toBeDefined();
-          expect(body.data.password).toBeUndefined();
+          expect((body.data as any).password).toBeUndefined();
           userId = body.data.id;
         });
     });

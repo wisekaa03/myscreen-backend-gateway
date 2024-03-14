@@ -18,6 +18,7 @@ import {
   FindManyOptionsCaseInsensitive,
   FindOneOptionsCaseInsensitive,
 } from '@/interfaces';
+import { UserResponse } from './user-response.entity';
 
 @Injectable()
 export class FolderService {
@@ -109,7 +110,7 @@ export class FolderService {
     return folder;
   }
 
-  async administratorFolder(user: UserEntity): Promise<FolderEntity> {
+  async administratorFolder(user: UserResponse): Promise<FolderEntity> {
     const parentFolder = await this.rootFolder(user);
 
     return {

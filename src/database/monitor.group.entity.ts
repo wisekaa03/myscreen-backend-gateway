@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsUUID } from 'class-validator';
 import {
+  BaseEntity,
   Column,
   Entity,
   JoinColumn,
@@ -10,9 +11,9 @@ import {
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
 
-@Entity('monitor_multiple')
-export class MonitorGroupEntity {
-  @PrimaryGeneratedColumn('uuid')
+@Entity('monitor_multiple', { comment: 'Групповые мониторы' })
+export class MonitorGroupEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
   @ApiProperty({
     description: 'Групповой идентификатор монитора',
     format: 'uuid',

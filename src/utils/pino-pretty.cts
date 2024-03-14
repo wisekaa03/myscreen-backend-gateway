@@ -9,7 +9,11 @@ export default (opts: LoggerOptions) =>
       messageKey: string,
       // levelLabel: string,
     ) => {
-      const message = `[${log.context || 'HTTP'}] ${log[messageKey]}`;
+      const messageText =
+        typeof log[messageKey] === 'object'
+          ? JSON.stringify(log[messageKey])
+          : log[messageKey];
+      const message = `[${log.context || 'HTTP'}] ${messageText}`;
       // eslint-disable-next-line no-param-reassign
       delete log.context;
       return message;

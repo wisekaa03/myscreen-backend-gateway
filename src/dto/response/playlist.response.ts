@@ -18,6 +18,7 @@ export class PlaylistResponse extends OmitType(PlaylistEntity, [
   @ApiProperty({
     description: 'Файлы',
     type: () => FileResponse,
+    items: { $ref: '#/components/schemas/FileResponse' },
     isArray: true,
   })
   files?: FileResponse[];

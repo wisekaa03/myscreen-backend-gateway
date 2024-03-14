@@ -2945,7 +2945,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.45.3
+  version: 2.46.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3306,7 +3306,7 @@ components:
         - monitors
         - storageSpace
         - playlists
-    UserExtEntity:
+    UserResponse:
       type: object
       properties:
         id:
@@ -3472,6 +3472,12 @@ components:
           description: Метрика
           allOf:
             - $ref: "#/components/schemas/UserMetrics"
+        fullName:
+          type: string
+          description: Полное имя
+        fullNameEmail:
+          type: string
+          description: Полное имя и email
       required:
         - id
         - email
@@ -3485,7 +3491,7 @@ components:
         data:
           description: Пользователь
           allOf:
-            - $ref: "#/components/schemas/UserExtEntity"
+            - $ref: "#/components/schemas/UserResponse"
       required:
         - status
         - data
@@ -3514,8 +3520,8 @@ components:
         name:
           type: string
           description: Имя
-          example: John
           maxLength: 50
+          example: John
           nullable: true
         middleName:
           type: string
@@ -3569,12 +3575,12 @@ components:
         companyRRC:
           type: string
           description: Код Причины Постановки на учет (КПП)
-          example: "012345678901"
+          example: "012345678"
           maxLength: 9
         companyPSRN:
           type: string
           description: Основной Государственный Регистрационный Номер (ОГРН)
-          example: "012345678901"
+          example: "012345678901234"
           maxLength: 15
         companyPhone:
           type: string
@@ -3677,7 +3683,7 @@ components:
         data:
           description: Пользователь
           allOf:
-            - $ref: "#/components/schemas/UserExtEntity"
+            - $ref: "#/components/schemas/UserResponse"
       required:
         - status
         - payload
@@ -3701,8 +3707,8 @@ components:
         name:
           type: string
           description: Имя
-          example: John
           maxLength: 50
+          example: John
           nullable: true
         middleName:
           type: string
@@ -3732,6 +3738,9 @@ components:
           type: number
           description: Дисковое пространство
           example: 20000000
+        role:
+          example: advertiser
+          $ref: "#/components/schemas/UserRoleRequest"
         company:
           type: string
           description: Компания
@@ -3756,12 +3765,12 @@ components:
         companyRRC:
           type: string
           description: Код Причины Постановки на учет (КПП)
-          example: "012345678901"
+          example: "012345678"
           maxLength: 9
         companyPSRN:
           type: string
           description: Основной Государственный Регистрационный Номер (ОГРН)
-          example: "012345678901"
+          example: "012345678901234"
           maxLength: 15
         companyPhone:
           type: string
@@ -3803,9 +3812,6 @@ components:
           description: Представитель организации
           example: Тухбатуллина Юлия Евгеньевна
           maxLength: 254
-        role:
-          example: advertiser
-          $ref: "#/components/schemas/UserRoleRequest"
         password:
           type: string
           example: Secret~12345678
@@ -4478,12 +4484,14 @@ components:
           description: Мониторы
           type: array
           items:
-            $ref: "#/components/schemas/MonitorResponse"
+            allOf:
+              - $ref: "#/components/schemas/MonitorResponse"
         playlists:
           description: Плэйлисты
           type: array
           items:
-            $ref: "#/components/schemas/PlaylistResponse"
+            allOf:
+              - $ref: "#/components/schemas/PlaylistResponse"
       required:
         - id
         - name
@@ -4552,9 +4560,9 @@ components:
             $ref: "#/components/schemas/MonitorResponse"
         files:
           description: Файлы
-          type: array
           items:
             $ref: "#/components/schemas/FileResponse"
+          type: array
       required:
         - id
         - name
@@ -4854,13 +4862,13 @@ components:
         - playlistId
         - monitorIds
         - request
-    RequestStatus:
+    BidStatus:
       type: string
       description: Ок / Подождите
       enum:
         - OK
         - WAITING
-    RequestApprove:
+    BidApprove:
       type: string
       description: Не обработан / Разрешен / Запрещен
       enum:
@@ -4880,18 +4888,18 @@ components:
         buyer:
           description: Покупатель
           allOf:
-            - $ref: "#/components/schemas/UserExtEntity"
+            - $ref: "#/components/schemas/UserResponse"
         seller:
           description: Продавец
           allOf:
-            - $ref: "#/components/schemas/UserExtEntity"
+            - $ref: "#/components/schemas/UserResponse"
         monitor:
           description: Монитор
           allOf:
             - $ref: "#/components/schemas/MonitorResponse"
         status:
           example: OK
-          $ref: "#/components/schemas/RequestStatus"
+          $ref: "#/components/schemas/BidStatus"
         hide:
           type: boolean
           description: Скрытый
@@ -4903,7 +4911,7 @@ components:
             - $ref: "#/components/schemas/PlaylistResponse"
         approved:
           example: NotProcessed
-          $ref: "#/components/schemas/RequestApprove"
+          $ref: "#/components/schemas/BidApprove"
         dateWhen:
           type: string
           format: date
@@ -5316,7 +5324,6 @@ components:
         - renderingStatus
         - renderingPercent
         - renderingError
-        - renderedFile
         - keepSourceAudio
         - totalDuration
         - videoLayers
@@ -5541,7 +5548,6 @@ components:
         - renderingStatus
         - renderingPercent
         - renderingError
-        - renderedFile
     EditorGetRenderingStatusResponse:
       type: object
       properties:
@@ -5652,6 +5658,8 @@ components:
               - width
               - height
               - info
+              - playlists
+              - monitors
               - createdAt
               - updatedAt
         scope:
@@ -6067,12 +6075,12 @@ components:
         companyRRC:
           type: string
           description: Код Причины Постановки на учет (КПП)
-          example: "012345678901"
+          example: "012345678"
           maxLength: 9
         companyPSRN:
           type: string
           description: Основной Государственный Регистрационный Номер (ОГРН)
-          example: "012345678901"
+          example: "012345678901234"
           maxLength: 15
         companyPhone:
           type: string
@@ -6203,7 +6211,7 @@ components:
           description: Пользователи
           type: array
           items:
-            $ref: "#/components/schemas/UserExtEntity"
+            $ref: "#/components/schemas/UserResponse"
       required:
         - status
         - count
@@ -6510,9 +6518,6 @@ components:
           nullable: true
         files:
           description: Файлы
-          example:
-            - 1234-5678-9123-4567
-            - 7654-3219-8765-4321
           type: array
           items:
             type: string
@@ -6660,7 +6665,7 @@ components:
               - NotProcessed
               - Allowed
           items:
-            $ref: "#/components/schemas/RequestApprove"
+            $ref: "#/components/schemas/BidApprove"
         status:
           type: array
           example:
@@ -6668,7 +6673,7 @@ components:
               - OK
               - WAITING
           items:
-            $ref: "#/components/schemas/RequestStatus"
+            $ref: "#/components/schemas/BidStatus"
         dateWhen:
           description: Время когда
           oneOf:
@@ -6785,7 +6790,7 @@ components:
       properties:
         approved:
           example: NotProcessed
-          $ref: "#/components/schemas/RequestApprove"
+          $ref: "#/components/schemas/BidApprove"
       required:
         - approved
     RequestPrecalcPromoRequest:

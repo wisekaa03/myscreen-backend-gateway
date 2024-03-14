@@ -35,6 +35,7 @@ import { RolesGuard, JwtAuthGuard } from '@/guards';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
+import { UserResponseToExternal } from '@/database/user-response.entity';
 
 @ApiComplexDecorators({ path: ['auth'] })
 export class AuthController {
@@ -62,11 +63,11 @@ export class AuthController {
   })
   @Crud(CRUD.READ)
   async authorization(
-    @Req() { user: data }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
   ): Promise<UserGetResponse> {
     return {
       status: Status.Success,
-      data,
+      data: UserResponseToExternal(user),
     };
   }
 
@@ -90,44 +91,38 @@ export class AuthController {
   })
   @Crud(CRUD.UPDATE)
   async update(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id, role } }: ExpressRequest,
     @Body() update: UserUpdateRequest,
   ): Promise<UserGetResponse> {
-    if (user.role !== UserRoleEnum.Administrator && update.role !== undefined) {
+    if (role !== UserRoleEnum.Administrator && update.role !== undefined) {
       throw new NotAcceptableException(
         'Role is updated when Administrator logged in',
       );
     }
-    if (user.role !== UserRoleEnum.Administrator && update.plan !== undefined) {
+    if (role !== UserRoleEnum.Administrator && update.plan !== undefined) {
       throw new NotAcceptableException(
         'Plan is updated when Administrator logged in',
       );
     }
-    if (
-      user.role !== UserRoleEnum.Administrator &&
-      update.disabled !== undefined
-    ) {
+    if (role !== UserRoleEnum.Administrator && update.disabled !== undefined) {
       throw new NotAcceptableException(
         'Disabled is updated when Administrator logged in',
       );
     }
-    if (
-      user.role !== UserRoleEnum.Administrator &&
-      update.verified !== undefined
-    ) {
+    if (role !== UserRoleEnum.Administrator && update.verified !== undefined) {
       throw new NotAcceptableException(
         'Verified is updated when Administrator logged in',
       );
     }
 
-    const data = await this.userService.update(user.id, update);
-    if (!data) {
+    const user = await this.userService.update(id, update);
+    if (!user) {
       throw new UnauthorizedException();
     }
 
     return {
       status: Status.Success,
-      data: UserService.userEntityToUser(data),
+      data: UserResponseToExternal(user),
     };
   }
 
@@ -157,7 +152,7 @@ export class AuthController {
     return {
       status: Status.Success,
       payload,
-      data,
+      data: UserResponseToExternal(data),
     };
   }
 
@@ -178,7 +173,7 @@ export class AuthController {
 
     return {
       status: Status.Success,
-      data,
+      data: UserResponseToExternal(data),
     };
   }
 

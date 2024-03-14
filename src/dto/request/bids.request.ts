@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { IsDateString, IsEnum, Validate } from 'class-validator';
 
-import { RequestApprove, RequestStatus } from '@/enums';
+import { BidApprove, BidStatus } from '@/enums';
 import { BidEntity } from '@/database/bid.entity';
 import { MSRange, MSRangeEnum } from '@/interfaces';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
@@ -27,30 +27,30 @@ export class ApplicationsRequest extends PartialType(
   @ApiProperty({
     type: 'enum',
     description: 'Не обработан / Разрешен / Запрещен',
-    enum: RequestApprove,
-    enumName: 'RequestApprove',
+    enum: BidApprove,
+    enumName: 'BidApprove',
     example: {
-      range: [RequestApprove.NOTPROCESSED, RequestApprove.ALLOWED],
+      range: [BidApprove.NOTPROCESSED, BidApprove.ALLOWED],
     },
     isArray: true,
     required: false,
   })
-  @IsEnum(RequestApprove, { each: true })
-  approved?: MSRangeEnum<RequestApprove>;
+  @IsEnum(BidApprove, { each: true })
+  approved?: MSRangeEnum<BidApprove>;
 
   @ApiProperty({
     type: 'enum',
     description: 'Ок / Подождите',
-    enum: RequestStatus,
-    enumName: 'RequestStatus',
+    enum: BidStatus,
+    enumName: 'BidStatus',
     example: {
-      range: [RequestStatus.OK, RequestStatus.WAITING],
+      range: [BidStatus.OK, BidStatus.WAITING],
     },
     isArray: true,
     required: false,
   })
-  @IsEnum(RequestStatus, { each: true })
-  status?: MSRangeEnum<RequestStatus>;
+  @IsEnum(BidStatus, { each: true })
+  status?: MSRangeEnum<BidStatus>;
 
   @ApiProperty({
     description: 'Время когда',

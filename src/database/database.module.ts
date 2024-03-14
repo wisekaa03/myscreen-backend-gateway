@@ -24,7 +24,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
 import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
 import { UserEntity } from './user.entity';
-import { UserExtEntity } from './user-ext.entity';
+import { UserResponse } from './user-response.entity';
 import { UserService } from './user.service';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
@@ -59,9 +59,9 @@ import { MonitorGroupEntity } from './monitor.group.entity';
       PlaylistEntity,
       UptimeMonitoringEntity,
       UserEntity,
+      UserResponse,
       RefreshTokenEntity,
       BidEntity,
-      UserExtEntity,
       WalletEntity,
       ActEntity,
     ]),

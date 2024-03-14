@@ -1,8 +1,8 @@
 import { Request } from 'express';
-import { UserExtEntity } from '@/database/user-ext.entity';
+import { UserResponse } from '@/dto';
 
 declare module 'express' {
   export interface Request {
-    user: UserExtEntity;
+    user: UserResponse;
   }
 }

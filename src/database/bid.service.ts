@@ -30,18 +30,18 @@ import { MailSendApplicationMessage } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { RequestApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
+import { BidApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
 import { BidEntity } from './bid.entity';
 import { FileEntity } from './file.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { UserExtEntity } from './user-ext.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { PlaylistService } from './playlist.service';
 import { ActService } from './act.service';
 import { getFullName } from '@/utils/full-name';
+import { UserResponse } from './user-response.entity';
 
 @Injectable()
 export class BidService {
@@ -234,14 +234,14 @@ export class BidService {
         {
           monitorId,
           playlistId,
-          approved: RequestApprove.ALLOWED,
+          approved: BidApprove.ALLOWED,
           dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: MoreThanOrEqual<Date>(dateLocal),
         },
         {
           monitorId,
           playlistId,
-          approved: RequestApprove.ALLOWED,
+          approved: BidApprove.ALLOWED,
           dateWhen: LessThanOrEqual<Date>(dateLocal),
           dateBefore: IsNull(),
         },
@@ -399,7 +399,7 @@ export class BidService {
       }
 
       let relations: FindOneOptions<BidEntity>['relations'];
-      if (update.approved !== RequestApprove.NOTPROCESSED) {
+      if (update.approved !== BidApprove.NOTPROCESSED) {
         relations = {
           buyer: true,
           seller: true,
@@ -418,7 +418,7 @@ export class BidService {
         throw new NotFoundException('Application not found');
       }
 
-      if (update.approved === RequestApprove.NOTPROCESSED) {
+      if (update.approved === BidApprove.NOTPROCESSED) {
         const sellerEmail = bid.seller?.email;
         if (sellerEmail) {
           this.mailService.emit<unknown, MailSendApplicationMessage>(
@@ -431,23 +431,29 @@ export class BidService {
         } else {
           this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
         }
-      } else if (update.approved === RequestApprove.ALLOWED) {
+      } else if (update.approved === BidApprove.ALLOWED) {
         // Оплата поступает на пользователя - владельца монитора
         const sumIncrement = -(bid.sum * (100 - this.commissionPercent)) / 100;
-        await this.actService.create({
-          user: bid.monitor.user,
-          sum: sumIncrement,
-          description: `Оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
-        });
+        if (sumIncrement !== 0) {
+          await this.actService.create({
+            user: bid.monitor.user,
+            sum: sumIncrement,
+            isSubscription: false,
+            description: `Оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
+          });
+        }
 
         await this.bidPostCreate({ bid, entityManager: transact });
-      } else if (update.approved === RequestApprove.DENIED) {
+      } else if (update.approved === BidApprove.DENIED) {
         // Снята оплата на пользователя - рекламодателя
-        await this.actService.create({
-          user: bid.seller,
-          sum: bid.sum,
-          description: `Снята оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
-        });
+        if (bid.sum !== 0) {
+          await this.actService.create({
+            user: bid.seller,
+            sum: bid.sum,
+            isSubscription: false,
+            description: `Снята оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
+          });
+        }
 
         await this.bidPreDelete({ bid, entityManager: transact });
       }
@@ -464,7 +470,7 @@ export class BidService {
     dateBefore,
     playlistChange,
   }: {
-    user: UserExtEntity;
+    user: UserResponse;
     playlistId: string;
     monitorIds: Array<string>;
     dateWhen: Date;
@@ -510,8 +516,8 @@ export class BidService {
 
         const approved =
           monitor.userId === userId
-            ? RequestApprove.ALLOWED
-            : RequestApprove.NOTPROCESSED;
+            ? BidApprove.ALLOWED
+            : BidApprove.NOTPROCESSED;
 
         const sum = dateBefore
           ? await this.precalculateSum({
@@ -547,9 +553,7 @@ export class BidService {
         const { id } = insertResult.identifiers[0];
 
         let relations: FindOneOptions<BidEntity>['relations'];
-        if (
-          !(insert.approved === RequestApprove.NOTPROCESSED || !insert.hide)
-        ) {
+        if (!(insert.approved === BidApprove.NOTPROCESSED || !insert.hide)) {
           relations = { buyer: true, seller: true };
         } else {
           relations = {
@@ -569,14 +573,17 @@ export class BidService {
         }
 
         // Списываем средства со счета пользователя Рекламодателя
-        await this.actService.create({
-          user,
-          sum,
-          description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
-        });
+        if (sum !== 0) {
+          await this.actService.create({
+            user,
+            sum,
+            isSubscription: false,
+            description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+          });
+        }
 
         // Отправляем письмо продавцу
-        if (insert.approved === RequestApprove.NOTPROCESSED) {
+        if (insert.approved === BidApprove.NOTPROCESSED) {
           const sellerEmail = bid.seller?.email;
           if (sellerEmail) {
             this.mailService.emit<unknown, MailSendApplicationMessage>(
@@ -591,17 +598,21 @@ export class BidService {
               `ApplicationService seller email='${sellerEmail}'`,
             );
           }
-        } else if (insert.approved === RequestApprove.ALLOWED) {
+        } else if (insert.approved === BidApprove.ALLOWED) {
           // Оплата поступает на пользователя - владельца монитора
           const sumIncrement = -(sum * (100 - this.commissionPercent)) / 100;
-          await this.actService.create({
-            user: bid.buyer ?? monitor.user,
-            sum: sumIncrement,
-            description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
-          });
+          const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
+          if (sumIncrement !== 0) {
+            await this.actService.create({
+              user: actUserResponse,
+              sum: sumIncrement,
+              isSubscription: false,
+              description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+            });
+          }
 
           await this.bidPostCreate({ bid, entityManager: transact });
-        } else if (insert.approved === RequestApprove.DENIED) {
+        } else if (insert.approved === BidApprove.DENIED) {
           await this.bidPreDelete({ bid, entityManager: transact });
         }
 
@@ -632,7 +643,7 @@ export class BidService {
     dateTo,
     monitorIds,
   }: {
-    user: UserExtEntity;
+    user: UserResponse;
     playlistDuration: number;
     dateFrom: string;
     dateTo: string;
@@ -673,7 +684,7 @@ export class BidService {
     dateWhen,
     playlistId,
   }: {
-    user: UserExtEntity;
+    user: UserResponse;
     minWarranty: number;
     price1s: number;
     dateBefore: Date;
