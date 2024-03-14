@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsDefined, IsUUID, ValidateNested } from 'class-validator';
 
-import { RequestCreateMonitorRequest } from './bid-create-monitor.request';
+import { BidCreateMonitorRequest } from './bid-create-monitor.request';
 
 export class MonitorsPlaylistAttachRequest {
   @ApiProperty({
@@ -28,11 +28,11 @@ export class MonitorsPlaylistAttachRequest {
 
   @ApiProperty({
     description: 'Создание заявки',
-    type: RequestCreateMonitorRequest,
+    type: BidCreateMonitorRequest,
     required: true,
   })
   @IsDefined()
   @ValidateNested()
-  @Type(() => RequestCreateMonitorRequest)
-  request!: RequestCreateMonitorRequest;
+  @Type(() => BidCreateMonitorRequest)
+  request!: BidCreateMonitorRequest;
 }

@@ -38,7 +38,7 @@ import { EditorEntity } from '@/database/editor.entity';
 @Entity('playlist', { comment: 'Плейлисты' })
 @Unique('IDX_userId_name', ['userId', 'name'])
 export class PlaylistEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_column_id' })
   @ApiProperty({
     description: 'Идентификатор плэйлиста',
     format: 'uuid',

@@ -493,7 +493,7 @@ export class BidService {
       where,
     });
     if (!playlist) {
-      throw new NotFoundException(`Playlist "${playlistId}" not found`);
+      throw new NotFoundException(`Playlist '${playlistId}' not found`);
     }
 
     return this.bidRepository.manager.transaction(async (transact) => {
@@ -507,7 +507,7 @@ export class BidService {
           },
         });
         if (!monitor) {
-          throw new NotFoundException(`Monitor "${monitorIds}" not found`);
+          throw new NotFoundException(`Monitor '${monitorIds}' not found`);
         }
 
         monitor = await this.monitorService.update(monitorId, {

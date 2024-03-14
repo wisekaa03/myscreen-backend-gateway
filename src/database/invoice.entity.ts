@@ -25,7 +25,7 @@ import { UserEntity } from './user.entity';
 
 @Entity('invoice', { comment: 'Счета' })
 export class InvoiceEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_invoice_id' })
   @ApiProperty({
     description: 'Идентификатор счёта',
     format: 'uuid',

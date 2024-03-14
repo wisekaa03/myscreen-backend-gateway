@@ -179,7 +179,7 @@ export class FolderController {
         })
       : await this.folderService.rootFolder(user);
     if (!parentFolder) {
-      throw new BadRequestException(`Folder "${parentFolderId}" is not exists`);
+      throw new BadRequestException(`Folder '${parentFolderId}' is not exists`);
     }
 
     return {
@@ -269,7 +269,7 @@ export class FolderController {
       where: { userId: user.id, id: toFolder },
     });
     if (!toFolderEntity) {
-      throw new BadRequestException(`Folder ${toFolder} is not exist`);
+      throw new BadRequestException(`Folder '${toFolder}' is not exist`);
     }
     const foldersCopy = await this.folderService.find({
       where: { userId: user.id, id: In(foldersIds) },
@@ -356,7 +356,7 @@ export class FolderController {
       where: { userId: user.id, id },
     });
     if (!data) {
-      throw new NotFoundException(`Folder ${id} is not exists`);
+      throw new NotFoundException(`Folder '${id}' is not exists`);
     }
 
     return {

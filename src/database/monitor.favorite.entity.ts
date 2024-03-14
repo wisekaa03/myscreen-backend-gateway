@@ -16,7 +16,9 @@ import { UserEntity } from './user.entity';
 
 @Entity('monitor_favorite', { comment: 'Избранные мониторы по пользователям' })
 export class MonitorFavoriteEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', {
+    primaryKeyConstraintName: 'PK_monitor_favorite_id',
+  })
   @ApiProperty({
     description: 'Идентификатор избранного монитора',
     format: 'uuid',

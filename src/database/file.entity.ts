@@ -31,11 +31,10 @@ import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from '@/database/folder.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { MonitorResponse } from '@/dto';
 
 @Entity('file', { comment: 'Файлы' })
 export class FileEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_file_id' })
   @ApiProperty({
     description: 'Идентификатор файла',
     format: 'uuid',

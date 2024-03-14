@@ -28,7 +28,7 @@ import { PlaylistEntity } from './playlist.entity';
 
 @Entity('application', { comment: 'Заявки' })
 export class BidEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_bid_id' })
   @ApiProperty({
     description: 'Идентификатор взаимодействия',
     format: 'uuid',
@@ -37,7 +37,7 @@ export class BidEntity extends BaseEntity {
   id?: string;
 
   @Generated('increment')
-  @Index('seqNoIndex')
+  @Index('bidSeqNoIndex')
   @Column({ type: 'integer' })
   @ApiProperty({
     description: 'Номер заявки',
@@ -61,7 +61,7 @@ export class BidEntity extends BaseEntity {
   buyer!: UserEntity | null;
 
   @Column({ nullable: true })
-  @Index('buyerIdIndex')
+  @Index('bidBuyerIdIndex')
   @ApiProperty({
     description: 'Покупатель ID',
     format: 'uuid',
@@ -86,7 +86,7 @@ export class BidEntity extends BaseEntity {
   seller!: UserEntity;
 
   @Column()
-  @Index('sellerIdIndex')
+  @Index('bidSellerIdIndex')
   @ApiProperty({
     description: 'Продавец ID',
     format: 'uuid',
@@ -122,7 +122,7 @@ export class BidEntity extends BaseEntity {
     enum: BidStatus,
     default: BidStatus.OK,
   })
-  @Index('statusIndex')
+  @Index('bidStatusIndex')
   @ApiProperty({
     description: 'OK / Подождите',
     enum: BidStatus,
@@ -151,8 +151,8 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'parentRequestIdConstraint' })
-  @Index('parentRequestIdIndex')
+  @JoinColumn({ foreignKeyConstraintName: 'bidParentRequestIdConstraint' })
+  @Index('bidParentRequestIdIndex')
   parentRequest?: BidEntity;
 
   @Column({ nullable: true })
@@ -186,7 +186,7 @@ export class BidEntity extends BaseEntity {
     enum: BidApprove,
     default: BidApprove.NOTPROCESSED,
   })
-  @Index('approvedIndex')
+  @Index('bidApprovedIndex')
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
     enum: BidApprove,
@@ -198,7 +198,7 @@ export class BidEntity extends BaseEntity {
   approved!: BidApprove;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  @Index('dateWhenIndex')
+  @Index('bidDateWhenIndex')
   @ApiProperty({
     type: 'string',
     format: 'date',
@@ -210,7 +210,7 @@ export class BidEntity extends BaseEntity {
   dateWhen!: Date;
 
   @Column({ type: 'timestamptz', nullable: true, default: null })
-  @Index('dateBeforeIndex')
+  @Index('bidDateBeforeIndex')
   @ApiProperty({
     type: 'string',
     format: 'date',
@@ -250,7 +250,7 @@ export class BidEntity extends BaseEntity {
   user!: UserEntity;
 
   @Column({ select: false })
-  @Index('userIdIndex')
+  @Index('bidUserIdIndex')
   @IsUUID()
   userId!: string;
 

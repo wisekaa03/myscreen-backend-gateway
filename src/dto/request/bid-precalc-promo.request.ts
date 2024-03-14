@@ -7,7 +7,7 @@ import {
   IsUUID,
 } from 'class-validator';
 
-export class RequestPrecalcPromoRequest {
+export class BidPrecalcPromoRequest {
   @ApiProperty({
     description: 'Мониторы для расчета',
     type: String,

@@ -53,7 +53,6 @@ export * from './editor-get.request';
 export * from './editor-export.request';
 export * from './auth-monitor.request';
 export * from './bid.request';
-export * from './bids.request';
 export * from './bids-get.request';
 export * from './bid-create.request';
 export * from './bid-update.request';

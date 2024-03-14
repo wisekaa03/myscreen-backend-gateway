@@ -26,7 +26,9 @@ import { EditorEntity } from './editor.entity';
 
 @Entity('editor_layer')
 export class EditorLayerEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', {
+    primaryKeyConstraintName: 'PK_editor_layer_id',
+  })
   @ApiProperty({
     description: 'Идентификатор слоя',
     example: '12345678',

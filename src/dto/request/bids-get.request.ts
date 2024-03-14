@@ -6,18 +6,18 @@ import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
 import { BidEntity } from '@/database/bid.entity';
 import { LimitRequest } from './limit.request';
-import { ApplicationsRequest } from './bids.request';
+import { BidRequest } from './bid.request';
 
-export class ApplicationsGetRequest {
+export class BidsGetRequest {
   @ApiProperty({
     description: 'Запрос',
-    type: ApplicationsRequest,
+    type: BidRequest,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => ApplicationsRequest)
-  where?: FindOptionsWhere<ApplicationsRequest>;
+  @Type(() => BidRequest)
+  where?: FindOptionsWhere<BidRequest>;
 
   @ApiProperty({
     description: 'Выбрать поля',
@@ -28,15 +28,15 @@ export class ApplicationsGetRequest {
     required: false,
   })
   @IsArray()
-  select?: FindOptionsSelect<ApplicationsRequest>;
+  select?: FindOptionsSelect<BidRequest>;
 
   @ApiProperty({
     description: 'Рамки для запроса',
-    type: LimitRequest<ApplicationsRequest>,
+    type: LimitRequest<BidRequest>,
     required: false,
   })
   @IsOptional()
   @ValidateNested()
-  @Type(() => LimitRequest<ApplicationsRequest>)
-  scope?: LimitRequest<ApplicationsRequest>;
+  @Type(() => LimitRequest<BidRequest>)
+  scope?: LimitRequest<BidRequest>;
 }

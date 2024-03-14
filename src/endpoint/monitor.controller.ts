@@ -35,7 +35,7 @@ import {
   MonitorsGetRequest,
   MonitorsGetResponse,
   MonitorsPlaylistAttachRequest,
-  ApplicationsGetResponse,
+  BidsGetResponse,
   SuccessResponse,
   MonitorCreateRequest,
   MonitorUpdateRequest,
@@ -107,6 +107,7 @@ export class MonitorController {
     const find: FindManyOptions<MonitorEntity> = {
       ...paginationQueryToConfig(scope),
       select,
+      relations: { groupMonitors: true },
     };
     if (role === UserRoleEnum.Monitor) {
       // добавляем то, что содержится у нас в userId: monitorId.
@@ -125,10 +126,10 @@ export class MonitorController {
       };
     } else {
       find.where = {
+        ...TypeOrmFind.where(MonitorEntity, where),
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
-        ...TypeOrmFind.where(MonitorEntity, where),
       };
     }
     if (
@@ -147,7 +148,7 @@ export class MonitorController {
           select: {
             monitorId: true,
           },
-          relations: [],
+          relations: {},
         },
         false,
       );
@@ -199,7 +200,7 @@ export class MonitorController {
     const { multiple = MonitorMultiple.SINGLE } = insert;
     if (multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestException(
-        'Monitor with "multiple"="SUBORDINATE" can not be created',
+        "Monitor with 'multiple'='SUBORDINATE' can not be created",
       );
     }
     if (multiple === MonitorMultiple.SINGLE) {
@@ -211,7 +212,7 @@ export class MonitorController {
       });
       if (findMonitor) {
         throw new BadRequestException(
-          `Monitor with code "${findMonitor.code}" already exists`,
+          `Monitor with code '${findMonitor.code}' already exists`,
         );
       }
     }
@@ -227,7 +228,7 @@ export class MonitorController {
     });
     if (findMonitor) {
       throw new BadRequestException(
-        `Monitor already exists: "${findMonitor.name}"#"${findMonitor.id}"`,
+        `Monitor already exists: '${findMonitor.name}'#'${findMonitor.id}'`,
       );
     }
 
@@ -283,7 +284,7 @@ export class MonitorController {
       monitorIds,
       request: { dateBefore, dateWhen, playlistChange },
     }: MonitorsPlaylistAttachRequest,
-  ): Promise<ApplicationsGetResponse> {
+  ): Promise<BidsGetResponse> {
     if (
       user.role === UserRoleEnum.MonitorOwner &&
       user.plan === UserPlanEnum.Demo
@@ -374,11 +375,11 @@ export class MonitorController {
         },
       });
       if (!monitor) {
-        throw new NotFoundException(`Monitor "${monitorId}" not found`);
+        throw new NotFoundException(`Monitor '${monitorId}' not found`);
       }
       if (!monitor.playlist) {
         throw new NotFoundException(
-          `Monitor "${monitorId}" is not playing playlist "${playlist.name}"`,
+          `Monitor '${monitorId}' is not playing playlist "${playlist.name}"`,
         );
       }
 
@@ -516,19 +517,19 @@ export class MonitorController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'monitor-get-applications',
+    operationId: 'monitor-get-bid',
     summary: 'Получение плэйлиста монитора',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: ApplicationsGetResponse,
+    type: BidsGetResponse,
   })
   @Crud(CRUD.READ)
   async getMonitorApplications(
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
-  ): Promise<ApplicationsGetResponse> {
+  ): Promise<BidsGetResponse> {
     const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {
       relations: ['playlist'],
@@ -545,7 +546,7 @@ export class MonitorController {
       find,
     });
     if (!monitor) {
-      throw new NotFoundException(`Monitor "${id}" not found`);
+      throw new NotFoundException(`Monitor '${id}' not found`);
     }
     if (!monitor.playlist) {
       throw new NotFoundException(`Have no playlist in monitor '${id}'`);
@@ -576,7 +577,7 @@ export class MonitorController {
     type: MonitorGetResponse,
   })
   @Crud(CRUD.UPDATE)
-  async updateMonitor(
+  async update(
     @Req() { user }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) id: string,
     @Body() { groupIds, ...update }: MonitorUpdateRequest,
@@ -585,6 +586,12 @@ export class MonitorController {
     const where: FindOptionsWhere<MonitorEntity> = { id };
     if (role !== UserRoleEnum.Administrator) {
       where.userId = userId;
+    }
+    const foundMonitorIds = groupIds?.find(
+      (monitor) => monitor.monitorId === id,
+    );
+    if (foundMonitorIds) {
+      throw new BadRequestException(`Monitor '${id}' is found in groupIds`);
     }
     const monitor = await this.monitorService.findOne({
       userId,
@@ -596,7 +603,7 @@ export class MonitorController {
       },
     });
     if (!monitor) {
-      throw new NotFoundException(`Monitor ${id} is not found`);
+      throw new NotFoundException(`Monitor '${id}' is not found`);
     }
     const data = await this.monitorService.update(id, update, groupIds);
 

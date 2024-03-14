@@ -130,12 +130,12 @@ export class EditorService {
   ): Promise<EditorEntity> {
     const updated = await this.editorRepository.update(id, insert);
     if (!updated.affected) {
-      throw new NotAcceptableException(`Editor with this ${id} not found`);
+      throw new NotAcceptableException(`Editor with this '${id}' not found`);
     }
 
     const editor = await this.findOne({ where: { id } });
     if (!editor) {
-      throw new NotFoundException(`Editor with this ${id} not found`);
+      throw new NotFoundException(`Editor with this '${id}' not found`);
     }
 
     return editor;
@@ -785,7 +785,7 @@ export class EditorService {
             }
 
             throw new NotFoundException(
-              `Upload file not found: ${JSON.stringify(files)}`,
+              `Upload file not found: '${JSON.stringify(files)}'`,
             );
           })
           .catch((reason) => {
@@ -866,7 +866,7 @@ export class EditorService {
       relations: { videoLayers: true, audioLayers: true },
     });
     if (!editor) {
-      throw new NotFoundException(`The editor ${editorId} is not found`);
+      throw new NotFoundException(`The editor '${editorId}' is not found`);
     }
 
     let start = 0;

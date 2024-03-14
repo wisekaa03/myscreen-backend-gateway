@@ -185,7 +185,7 @@ export class EditorController {
       where,
     });
     if (!editor) {
-      throw new NotFoundException(`Editor ${id} not found`);
+      throw new NotFoundException(`Editor '${id}' not found`);
     }
 
     if (update.name !== undefined) {
@@ -273,7 +273,7 @@ export class EditorController {
       relations: {},
     });
     if (!editor) {
-      throw new NotFoundException(`The editor id: "${editorId}" is not found`);
+      throw new NotFoundException(`The editor id: '${editorId}' is not found`);
     }
 
     const whereFile: FindOptionsWhere<FileEntity> = { id: body.file };
@@ -288,7 +288,7 @@ export class EditorController {
       },
     });
     if (!file) {
-      throw new NotFoundException(`The file "${body.file}" is not found`);
+      throw new NotFoundException(`The file '${body.file}' is not found`);
     }
 
     const create: Partial<EditorLayerEntity> = {
@@ -432,7 +432,7 @@ export class EditorController {
       where,
     });
     if (!editor) {
-      throw new NotFoundException(`Editor "${editorId}" not found`);
+      throw new NotFoundException(`Editor '${editorId}' not found`);
     }
 
     /* await */ this.editorService

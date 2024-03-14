@@ -256,7 +256,7 @@ export class UserService {
       },
     });
     if (existingUser) {
-      throw new PreconditionFailedException(`User exists: ${create.email}`);
+      throw new PreconditionFailedException(`User exists: '${create.email}'`);
     }
 
     const plan =

@@ -1,11 +1,10 @@
-import { ApiHideProperty, ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   DataSource,
   OneToMany,
   SelectQueryBuilder,
   ViewColumn,
   ViewEntity,
-  BaseEntity,
   AfterLoad,
   AfterInsert,
   AfterUpdate,
@@ -20,7 +19,12 @@ import {
   UserRoleEnum,
 } from '@/enums';
 import { FileEntity } from './file.entity';
-import { UserEntity } from './user.entity';
+import {
+  UserEntity,
+  defaultCountry,
+  defaultLanguage,
+  defaultLocale,
+} from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { WalletEntity } from './wallet.entity';
 import { PlaylistEntity } from './playlist.entity';
@@ -418,17 +422,34 @@ export class UserResponse implements UserEntity {
     nullable: true,
     required: false,
   })
-  city?: string;
+  city!: string;
 
   @ViewColumn()
   @ApiProperty({
     description: 'Страна',
-    example: 'RU',
+    example: defaultCountry,
     maxLength: 2,
-    nullable: true,
     required: false,
   })
-  country?: string;
+  country!: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Предпочитаемый язык',
+    example: defaultLanguage,
+    maxLength: 6,
+    required: false,
+  })
+  preferredLanguage!: string;
+
+  @ViewColumn()
+  @ApiProperty({
+    description: 'Настройки даты',
+    example: defaultLocale,
+    maxLength: 6,
+    required: false,
+  })
+  locale!: string;
 
   @ViewColumn()
   @ApiProperty({

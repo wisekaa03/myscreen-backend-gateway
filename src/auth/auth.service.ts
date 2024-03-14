@@ -191,9 +191,9 @@ export class AuthService {
       });
     } catch (e) {
       if (e instanceof TokenExpiredError) {
-        throw new ForbiddenException(`Token ${token} expired`);
+        throw new ForbiddenException(`Token '${token}' expired`);
       } else {
-        throw new ForbiddenException(`Token ${token} malformed`);
+        throw new ForbiddenException(`Token '${token}' malformed`);
       }
     }
   }
@@ -205,7 +205,7 @@ export class AuthService {
 
     if (!sub) {
       throw new ForbiddenException(
-        `Token ${JSON.stringify(payload)} malformed`,
+        `Token '${JSON.stringify(payload)}' malformed`,
       );
     }
 
@@ -221,7 +221,7 @@ export class AuthService {
     const { jti: tokenId, iss } = payload;
     if (!tokenId) {
       throw new ForbiddenException(
-        `Token ${JSON.stringify(payload)} malformed`,
+        `Token '${JSON.stringify(payload)}' malformed`,
       );
     }
 

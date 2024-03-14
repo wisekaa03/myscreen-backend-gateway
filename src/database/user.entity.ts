@@ -13,8 +13,8 @@ import {
   IsNumber,
   IsDateString,
 } from 'class-validator';
+import locale from 'country-locale-map';
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -27,6 +27,11 @@ import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 
 import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
 import { MonitorEntity } from '@/database/monitor.entity';
+
+export const defaultLocation = locale.getCountryByName('Russia');
+export const defaultCountry = defaultLocation?.alpha2;
+export const defaultLanguage = defaultLocation?.languages[0];
+export const defaultLocale = defaultLocation?.default_locale;
 
 @Entity('user', { comment: 'Пользователи' })
 export class UserEntity {
@@ -130,27 +135,53 @@ export class UserEntity {
     description: 'Город',
     example: 'Krasnodar',
     maxLength: 100,
-    nullable: true,
     required: false,
   })
   @IsString()
   @MaxLength(100)
-  city?: string;
+  city!: string;
 
   @Column({
-    default: 'RU',
     length: 2,
     comment: 'Страна',
+    default: defaultCountry,
   })
   @ApiProperty({
     description: 'Страна',
-    example: 'RU',
+    example: defaultCountry,
     maxLength: 2,
-    nullable: true,
     required: false,
   })
   @IsISO31661Alpha2()
-  country?: string;
+  country!: string;
+
+  @Column({
+    length: 6,
+    comment: 'Предпочитаемый язык',
+    default: defaultLanguage,
+  })
+  @ApiProperty({
+    description: 'Предпочитаемый язык',
+    example: defaultLanguage,
+    maxLength: 6,
+    required: false,
+  })
+  @IsString()
+  preferredLanguage!: string;
+
+  @Column({
+    length: 6,
+    comment: 'Настройки даты',
+    default: defaultLocale,
+  })
+  @ApiProperty({
+    description: 'Настройки даты',
+    example: defaultLocale,
+    maxLength: 6,
+    required: false,
+  })
+  @IsString()
+  locale!: string;
 
   @Column({
     type: 'bigint',
