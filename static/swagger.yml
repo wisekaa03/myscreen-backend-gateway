@@ -2549,9 +2549,127 @@ paths:
                 $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_107
         - application
+        - bid
       security: &ref_108
         - bearer: []
+  /api/v2/bid:
+    post:
+      operationId: bids-get
+      summary: Получение списка заявок
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidsGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidsGetResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
   /api/v2/application/{bidId}:
+    get:
+      operationId: bid-get
+      summary: Получение заявки
+      parameters:
+        - name: bidId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidGetResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+    patch:
+      operationId: bid-update
+      summary: Изменить заявку
+      parameters:
+        - name: bidId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidGetResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+    delete:
+      operationId: bid-delete
+      summary: Удаление заявки
+      parameters:
+        - name: bidId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+  /api/v2/bid/{bidId}:
     get:
       operationId: bid-get
       summary: Получение заявки
@@ -2668,7 +2786,65 @@ paths:
         "501": *ref_106
       tags: *ref_107
       security: *ref_108
+  /api/v2/bid/precalc-promo:
+    post:
+      operationId: bid-precalc-promo
+      summary: Возвращает предрасчет мониторов (для promo)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidPrecalcPromoRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidPrecalcResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
   /api/v2/application/precalc-sum:
+    post:
+      operationId: bid-precalc-sum
+      summary: Возвращает предрасчет мониторов (для суммы списания)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidPrecalcSumRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidPrecalcResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+  /api/v2/bid/precalc-sum:
     post:
       operationId: bid-precalc-sum
       summary: Возвращает предрасчет мониторов (для суммы списания)
@@ -3005,6 +3181,10 @@ tags:
       url: https://cp.dev.myscreen.ru/accountant/invoices
   - name: crontab
     description: CronTab (только администратор)
+  - name: constants
+    description: Серверные заданные константы
+  - name: wallet
+    description: Кошелек, получение дебета/кредита
 servers: []
 components:
   securitySchemes:

@@ -50,8 +50,8 @@ export class FolderController {
   logger = new Logger(FolderController.name);
 
   constructor(
-    private readonly folderService: FolderService,
     private readonly userService: UserService,
+    private readonly folderService: FolderService,
   ) {}
 
   @Post()

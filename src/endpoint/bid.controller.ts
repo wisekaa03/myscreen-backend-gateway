@@ -3,10 +3,8 @@ import {
   BadRequestException,
   Body,
   Delete,
-  forwardRef,
   Get,
   HttpCode,
-  Inject,
   Logger,
   NotFoundException,
   Param,
@@ -32,13 +30,12 @@ import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
 import { BidService } from '@/database/bid.service';
 import { BidEntity } from '@/database/bid.entity';
 
 @ApiComplexDecorators({
-  path: ['application'],
+  path: ['application', 'bid'],
   roles: [
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
@@ -51,8 +48,6 @@ export class BidController {
   constructor(
     private readonly userService: UserService,
     private readonly bidService: BidService,
-    @Inject(forwardRef(() => WSGateway))
-    private readonly wsGateway: WSGateway,
   ) {}
 
   @Post()

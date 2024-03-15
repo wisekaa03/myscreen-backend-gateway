@@ -12,10 +12,8 @@ import {
   Body,
   Delete,
   ForbiddenException,
-  forwardRef,
   Get,
   HttpCode,
-  Inject,
   Logger,
   NotAcceptableException,
   NotFoundException,
@@ -51,7 +49,6 @@ import {
   MonitorMultiple,
 } from '@/enums';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserService } from '@/database/user.service';
@@ -72,12 +69,10 @@ export class MonitorController {
   logger = new Logger(MonitorController.name);
 
   constructor(
-    private readonly monitorService: MonitorService,
     private readonly userService: UserService,
+    private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
     private readonly bidService: BidService,
-    @Inject(forwardRef(() => WSGateway))
-    private readonly wsGateway: WSGateway,
   ) {}
 
   @Post()
