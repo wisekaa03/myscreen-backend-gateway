@@ -61,6 +61,7 @@ services:
     image: bitnami/rabbitmq:3.12.13
     restart: always
     environment:
+      - RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS=true
       - RABBITMQ_PASSWORD=MAnMCMrP7q
       - RABBITMQ_USERNAME=admin
     volumes:
