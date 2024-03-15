@@ -131,6 +131,13 @@ export class WalletService {
           .then((sum) => sum ?? 0);
   }
 
+  /**
+   * Создание акта на оплату абонентской платы
+   * TODO: Переписать с использованием ActEntity isSubscription
+   *
+   * @param {UserEntity | UserResponse} user UserEntity | UserResponse
+   * @param {EntityManager} transact EntityManager
+   */
   async acceptanceActCreate({
     user,
     transact,
