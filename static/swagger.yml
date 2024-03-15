@@ -2945,7 +2945,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.47.0
+  version: 2.47.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -4859,14 +4859,14 @@ components:
           items:
             type: string
             format: uuid
-        request:
+        bid:
           description: Создание заявки
           allOf:
             - $ref: "#/components/schemas/BidCreateMonitorRequest"
       required:
         - playlistId
         - monitorIds
-        - request
+        - bid
     BidStatus:
       type: string
       description: Ок / Подождите

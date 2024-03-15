@@ -34,5 +34,5 @@ export class MonitorsPlaylistAttachRequest {
   @IsDefined()
   @ValidateNested()
   @Type(() => BidCreateMonitorRequest)
-  request!: BidCreateMonitorRequest;
+  bid!: BidCreateMonitorRequest;
 }

@@ -226,14 +226,14 @@ export class FileController {
   })
   @Crud(CRUD.UPDATE)
   async updateFilesDB(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { files }: FilesUpdateRequest,
   ): Promise<FilesGetResponse> {
     const filesPromise = files.map(async (file) => {
       const fileDB = await this.fileService.findOne({
         find: {
           where: {
-            userId: user.id,
+            userId,
             id: file.id,
           },
         },
@@ -272,26 +272,26 @@ export class FileController {
   })
   @Crud(CRUD.UPDATE)
   async copyFiles(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { toFolder, files }: FilesCopyRequest,
   ): Promise<FilesGetResponse> {
     const filesIds = files.map((file) => file.id);
     const filesCopy = await this.fileService.find({
       find: {
-        where: { userId: user.id, id: In(filesIds) },
+        where: { userId, id: In(filesIds) },
       },
     });
     if (filesCopy.length !== files.length) {
       throw new BadRequestException();
     }
     const folder = await this.folderService.findOne({
-      where: { userId: user.id, id: toFolder },
+      where: { userId, id: toFolder },
     });
     if (!folder) {
       throw new NotFoundException(`Folder '${toFolder}' is not exist`);
     }
 
-    const data = await this.fileService.copy(user.id, folder, filesCopy);
+    const data = await this.fileService.copy(userId, folder, filesCopy);
 
     return {
       status: Status.Success,
@@ -594,9 +594,19 @@ export class FileController {
   })
   @Crud(CRUD.DELETE)
   async deleteFiles(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId, role } }: ExpressRequest,
     @Body() { filesId }: FilesDeleteRequest,
   ): Promise<SuccessResponse> {
+    if (role !== UserRoleEnum.Administrator) {
+      const files = await this.fileService.find({
+        find: {
+          where: { userId, id: In(filesId) },
+        },
+      });
+      if (files.length !== filesId.length) {
+        throw new BadRequestException('Not all files in the database exists');
+      }
+    }
     await this.fileService.deletePrep(filesId);
 
     const { affected } = await this.fileService.delete(filesId);

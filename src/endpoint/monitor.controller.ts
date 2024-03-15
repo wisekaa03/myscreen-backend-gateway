@@ -139,7 +139,7 @@ export class MonitorController {
       isDateString(where.dateWhenApp[0]) &&
       isDateString(where.dateWhenApp[1])
     ) {
-      const requestsWhen = await this.bidService.find(
+      const bidsWhen = await this.bidService.find(
         {
           where: {
             dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
@@ -149,11 +149,12 @@ export class MonitorController {
             monitorId: true,
           },
           relations: {},
+          loadEagerRelations: false,
         },
         false,
       );
       find.where = {
-        id: In(requestsWhen.map((request) => request.monitorId)),
+        id: In(bidsWhen.map((bid) => bid.monitorId)),
       };
     }
     const [data, count] = await this.monitorService.findAndCount({
@@ -282,7 +283,7 @@ export class MonitorController {
     {
       playlistId,
       monitorIds,
-      request: { dateBefore, dateWhen, playlistChange },
+      bid: { dateBefore, dateWhen, playlistChange },
     }: MonitorsPlaylistAttachRequest,
   ): Promise<BidsGetResponse> {
     if (
@@ -312,7 +313,7 @@ export class MonitorController {
       throw new NotAcceptableException('This time is overlapped');
     }
 
-    // To create requests
+    // To create bids
     const data = await this.bidService.create({
       user,
       playlistId,

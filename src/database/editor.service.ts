@@ -811,12 +811,12 @@ export class EditorService {
                 (e) => e.renderingStatus === RenderingStatus.Ready,
               );
               if (editors.length === playlist.editors.length) {
-                const request = await this.bidService.find({
+                const bid = await this.bidService.find({
                   where: { playlistId: playlist.id },
                 });
-                const requestIds = new Set<string>(...request.map((r) => r.id));
-                requestIds.forEach((requestId) => {
-                  this.bidService.update(requestId, {
+                const bidIds = new Set<string>(...bid.map((r) => r.id));
+                bidIds.forEach((bidId) => {
+                  this.bidService.update(bidId, {
                     status: BidStatus.OK,
                   });
                 });

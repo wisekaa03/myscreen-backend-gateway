@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.47.0",
+  "version": "2.47.1",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Vyaliy",
@@ -44,7 +44,6 @@
     "**/terser/commander": "^4.1.1",
     "**/**/concat-stream": ">=2.0.0",
     "**/**/cron": ">=3.1.6",
-    "**/**/date-fns": ">=3.4.0",
     "**/**/debug": ">=4.3.4",
     "**/**/dotenv": ">=16.4.5",
     "**/jest-config/glob": "^8.1.0",
@@ -131,7 +130,7 @@
     "class-validator": "^0.14.1",
     "country-locale-map": "^1.9.4",
     "cron": "^3.1.6",
-    "date-fns": "^3.4.0",
+    "date-fns": "^3.5.0",
     "dayjs": "^1.11.10",
     "debug": "^4.3.4",
     "dotenv": "^16.4.5",
@@ -177,7 +176,7 @@
     "@types/lodash": "^4.17.0",
     "@types/ms": "^0.7.34",
     "@types/multer": "^1.4.11",
-    "@types/node": "^20.11.27",
+    "@types/node": "^20.11.28",
     "@types/passport": "^1.0.16",
     "@types/passport-jwt": "^4.0.1",
     "@types/pug": "^2.0.10",

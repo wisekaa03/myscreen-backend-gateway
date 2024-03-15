@@ -478,7 +478,7 @@ export class MonitorEntity extends BaseEntity {
   @OneToMany(() => BidEntity, (bid) => bid.monitor, {
     eager: false,
   })
-  requests?: BidEntity[];
+  bids?: BidEntity[];
 
   @CreateDateColumn()
   @ApiProperty({
