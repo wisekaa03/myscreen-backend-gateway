@@ -11,12 +11,13 @@ import { UserEntity } from './user.entity';
 import { UserService } from './user.service';
 import { getFullName } from '@/utils/full-name';
 import { UserResponse } from './user-response.entity';
+import { RegisterRequest } from '@/dto';
 
 describe(UserService.name, () => {
   let service: UserService;
 
-  let testUser: UserResponse;
-  let monitorTestDemo: UserResponse;
+  let testUser: Partial<UserResponse>;
+  let monitorTestDemo: Partial<UserResponse>;
 
   const mockRepository = jest.fn(() => ({
     findOne: async ({ where }: FindOneOptions<UserEntity>) => {
@@ -60,7 +61,7 @@ describe(UserService.name, () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
-    testUser = service.userResponseRepository.create({
+    testUser = {
       id: '0000-0000-0000-0000',
       disabled: false,
       verified: false,
@@ -90,10 +91,6 @@ describe(UserService.name, () => {
       companyFax: '+78002000000',
       companyRepresentative: 'Тухбатуллина Евгеньевна Юлия',
       planValidityPeriod: Number.POSITIVE_INFINITY,
-      countMonitors: 0,
-      onlineMonitors: 0,
-      offlineMonitors: 0,
-      emptyMonitors: 0,
       wallet: { total: 0 },
       metrics: {
         monitors: {
@@ -111,23 +108,25 @@ describe(UserService.name, () => {
           total: 0,
         },
       },
-    });
+    };
 
     monitorTestDemo = {
       ...testUser,
       role: UserRoleEnum.MonitorOwner,
       plan: UserPlanEnum.Demo,
-      countMonitors: 5,
-      countUsedSpace: 1000000000,
       createdAt: subDays(new Date(), 100),
     };
   });
 
   test('Full name of a test user', () => {
-    let testUserFullName = getFullName(testUser);
-    expect(testUserFullName).toBe('Steve John Doe <postmaster@domain.com>');
-    testUserFullName = testUser.fullNameEmail;
-    expect(testUserFullName).toBe('Steve John Doe <postmaster@domain.com>');
+    const testUserFullNameGetFullName = getFullName(testUser);
+    expect(testUserFullNameGetFullName).toBe(
+      'Steve John Doe <postmaster@domain.com>',
+    );
+    const testUserFullNameEmail = testUser.fullNameEmail;
+    expect(testUserFullNameEmail).toBe(
+      'Steve John Doe <postmaster@domain.com>',
+    );
   });
 
   describe('User Monitor-owner Demo permissions', () => {
@@ -157,12 +156,22 @@ describe(UserService.name, () => {
     });
 
     test('Access to Auth and invoice', () => {
-      expect(service.verify(monitorTestDemo, 'auth', 'get', CRUD.READ)).toBe(
-        true,
-      );
-      expect(service.verify(monitorTestDemo, 'invoice', 'get', CRUD.READ)).toBe(
-        true,
-      );
+      expect(
+        service.verify(
+          monitorTestDemo as UserResponse,
+          'auth',
+          'get',
+          CRUD.READ,
+        ),
+      ).toBe(true);
+      expect(
+        service.verify(
+          monitorTestDemo as UserResponse,
+          'invoice',
+          'get',
+          CRUD.READ,
+        ),
+      ).toBe(true);
     });
 
     test('Count of monitors: 5', async () => {
@@ -171,7 +180,7 @@ describe(UserService.name, () => {
         service.verify(
           {
             ...monitorTestDemo,
-            countMonitors: 5,
+            countMonitors: '5',
           } as UserResponse,
           'monitor',
           'create',
@@ -183,8 +192,8 @@ describe(UserService.name, () => {
         service.verify(
           {
             ...monitorTestDemo,
-            countMonitors: 5,
-          },
+            countMonitors: '5',
+          } as UserResponse,
           'monitor',
           'get',
           CRUD.READ,
@@ -195,8 +204,8 @@ describe(UserService.name, () => {
         service.verify(
           {
             ...monitorTestDemo,
-            countMonitors: 5,
-          },
+            countMonitors: '5',
+          } as UserResponse,
           'files',
           'get',
           CRUD.READ,
@@ -216,7 +225,7 @@ describe(UserService.name, () => {
               storageSpace: { storage: 0, total: 1000000 },
             },
             createdAt: subDays(Date.now(), 14),
-          },
+          } as UserResponse,
           'monitor',
           'create',
           CRUD.CREATE,
@@ -229,9 +238,9 @@ describe(UserService.name, () => {
         service.verify(
           {
             ...monitorTestDemo,
-            countMonitors: 4,
+            countMonitors: '4',
             createdAt: subDays(Date.now(), 15),
-          },
+          } as UserResponse,
           'monitor',
           'create',
           CRUD.CREATE,
@@ -246,7 +255,7 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             createdAt: subDays(Date.now(), 28),
-          },
+          } as UserResponse,
           'file',
           'create',
           CRUD.CREATE,
@@ -260,7 +269,7 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             createdAt: subDays(Date.now(), 29),
-          },
+          } as UserResponse,
           'file',
           'create',
           CRUD.CREATE,
@@ -275,7 +284,7 @@ describe(UserService.name, () => {
       ...testUser,
       password: 'aA1!aaaa',
     };
-    const user = await service.register(testUserRegister);
+    const user = await service.register(testUserRegister as RegisterRequest);
     expect(user).toStrictEqual(testUser);
   });
 
