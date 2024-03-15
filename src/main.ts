@@ -111,6 +111,8 @@ async function bootstrap() {
       url: `${frontendUrl}/accountant/invoices`,
     })
     .addTag('crontab', 'CronTab (только администратор)')
+    .addTag('constants', 'Серверные заданные константы')
+    .addTag('wallet', 'Кошелек, получение дебета/кредита')
 
     .build();
 

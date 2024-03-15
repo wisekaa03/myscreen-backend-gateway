@@ -1,5 +1,4 @@
 import type { Request as ExpressRequest } from 'express';
-import { isUUID } from 'class-validator';
 import { In } from 'typeorm';
 import {
   Logger,
@@ -30,7 +29,6 @@ import {
   FoldersCopyRequest,
   FolderIdUpdateRequest,
 } from '@/dto';
-import { administratorFolderId } from '@/constants';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
@@ -38,9 +36,6 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FolderEntity } from '@/database/folder.entity';
 import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
-import { UserEntity } from '@/database/user.entity';
-import { getFullName } from '@/utils/full-name';
-import { UserResponse } from '@/database/user-response.entity';
 
 @ApiExtraModels(FolderResponse)
 @ApiComplexDecorators({
@@ -55,8 +50,8 @@ export class FolderController {
   logger = new Logger(FolderController.name);
 
   constructor(
-    private readonly folderService: FolderService,
     private readonly userService: UserService,
+    private readonly folderService: FolderService,
   ) {}
 
   @Post()
@@ -71,83 +66,18 @@ export class FolderController {
     type: FoldersGetResponse,
   })
   @Crud(CRUD.READ)
-  async getFolders(
+  async getMany(
     @Req() { user }: ExpressRequest,
-    @Body() { scope, select, where }: FoldersGetRequest,
+    @Body() { scope, select, where: origWhere }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
-    const { role } = user;
+    const { id: userId } = user;
     let count: number = 0;
     let data: FolderResponse[] = [];
-    const parentFolderId = where?.parentFolderId?.toString();
-    if (
-      role === UserRoleEnum.Administrator &&
-      parentFolderId?.startsWith(administratorFolderId)
-    ) {
-      // мы в режиме администратора
-      const fromRegex = parentFolderId.match(
-        /^([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})\/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/,
-      );
-      if (fromRegex?.length === 3) {
-        // получили имя папки
-        const userExpressionId = fromRegex[2];
-        const userExpression =
-          await this.userService.findById(userExpressionId);
-        if (!userExpression) {
-          throw new NotFoundException('not found user expression');
-        }
-        const parentFolder =
-          await this.folderService.rootFolder(userExpression);
-        [data, count] = await this.folderService.findAndCount({
-          ...paginationQueryToConfig(scope),
-          select,
-          where: {
-            ...TypeOrmFind.where(FolderEntity, {
-              ...where,
-              parentFolderId: parentFolder.id,
-            }),
-            userId: userExpression.id,
-          },
-        });
-      } else {
-        // в режиме администратора выводим всех пользователей
-        let userData: UserResponse[];
-        [userData, count] = await this.userService.findAndCount({});
-        data = userData.map((item) => ({
-          id: `${administratorFolderId}/${item.id}`,
-          name: getFullName(item),
-          parentFolderId,
-          empty: false,
-          createdAt: item.createdAt ?? new Date(),
-          updatedAt: item.updatedAt ?? new Date(),
-        }));
-      }
-    } else {
-      // в любом другом режиме выводим все папки
-      if (
-        role !== UserRoleEnum.Administrator &&
-        parentFolderId &&
-        !isUUID(parentFolderId)
-      ) {
-        throw new BadRequestException('id must be a UUID');
-      }
-      [data, count] = await this.folderService.findAndCount({
-        ...paginationQueryToConfig(scope),
-        select,
-        where: {
-          ...TypeOrmFind.where(FolderEntity, where),
-          userId: role === UserRoleEnum.Administrator ? undefined : user.id,
-        },
-      });
-      const { id: parentFolderIdUserId } =
-        await this.folderService.rootFolder(user);
-      if (
-        role === UserRoleEnum.Administrator &&
-        parentFolderId === parentFolderIdUserId
-      ) {
-        count += 1;
-        data = [...data, await this.folderService.administratorFolder(user)];
-      }
-    }
+    [data, count] = await this.folderService.findAndCount({
+      ...paginationQueryToConfig(scope),
+      select,
+      where: { ...TypeOrmFind.where(FolderEntity, origWhere), userId },
+    });
 
     return {
       status: Status.Success,
@@ -179,7 +109,7 @@ export class FolderController {
         })
       : await this.folderService.rootFolder(user);
     if (!parentFolder) {
-      throw new BadRequestException(`Folder "${parentFolderId}" is not exists`);
+      throw new BadRequestException(`Folder '${parentFolderId}' is not exists`);
     }
 
     return {
@@ -204,7 +134,7 @@ export class FolderController {
     type: FolderGetResponse,
   })
   @Crud(CRUD.UPDATE)
-  async updateFolders(
+  async update(
     @Req() { user }: ExpressRequest,
     @Body() { folders }: FoldersUpdateRequest,
   ): Promise<FoldersGetResponse> {
@@ -260,7 +190,7 @@ export class FolderController {
     type: FolderGetResponse,
   })
   @Crud(CRUD.UPDATE)
-  async copyFolders(
+  async copy(
     @Req() { user }: ExpressRequest,
     @Body() { toFolder, folders }: FoldersCopyRequest,
   ): Promise<FoldersGetResponse> {
@@ -269,7 +199,7 @@ export class FolderController {
       where: { userId: user.id, id: toFolder },
     });
     if (!toFolderEntity) {
-      throw new BadRequestException(`Folder ${toFolder} is not exist`);
+      throw new BadRequestException(`Folder '${toFolder}' is not exist`);
     }
     const foldersCopy = await this.folderService.find({
       where: { userId: user.id, id: In(foldersIds) },
@@ -317,7 +247,7 @@ export class FolderController {
     type: SuccessResponse,
   })
   @Crud(CRUD.DELETE)
-  async deleteFolders(
+  async delete(
     @Req() { user }: ExpressRequest,
     @Body() { foldersId }: FoldersDeleteRequest,
   ): Promise<SuccessResponse> {
@@ -348,7 +278,7 @@ export class FolderController {
     type: FolderGetResponse,
   })
   @Crud(CRUD.READ)
-  async getFolder(
+  async getOne(
     @Req() { user }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) id: string,
   ): Promise<FolderGetResponse> {
@@ -356,7 +286,7 @@ export class FolderController {
       where: { userId: user.id, id },
     });
     if (!data) {
-      throw new NotFoundException(`Folder ${id} is not exists`);
+      throw new NotFoundException(`Folder '${id}' is not exists`);
     }
 
     return {

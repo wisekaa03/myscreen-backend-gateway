@@ -628,7 +628,7 @@ paths:
       security: *ref_20
   /api/v2/monitor/{monitorId}/applications:
     get:
-      operationId: monitor-get-applications
+      operationId: monitor-get-bid
       summary: Получение плэйлиста монитора
       parameters:
         - name: monitorId
@@ -642,7 +642,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApplicationsGetResponse"
+                $ref: "#/components/schemas/BidsGetResponse"
         "400": *ref_10
         "401": *ref_11
         "403": *ref_12
@@ -2485,14 +2485,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ApplicationsGetRequest"
+              $ref: "#/components/schemas/BidsGetRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApplicationsGetResponse"
+                $ref: "#/components/schemas/BidsGetResponse"
         "400": &ref_98
           description: Ответ будет таким если с данным что-то не так
           content:
@@ -2549,8 +2549,38 @@ paths:
                 $ref: "#/components/schemas/NotImplementedError"
       tags: &ref_107
         - application
+        - bid
       security: &ref_108
         - bearer: []
+  /api/v2/bid:
+    post:
+      operationId: bids-get
+      summary: Получение списка заявок
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidsGetRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidsGetResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
   /api/v2/application/{bidId}:
     get:
       operationId: bid-get
@@ -2567,7 +2597,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApplicationGetResponse"
+                $ref: "#/components/schemas/BidGetResponse"
         "400": *ref_98
         "401": *ref_99
         "403": *ref_100
@@ -2593,14 +2623,102 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ApplicationUpdateRequest"
+              $ref: "#/components/schemas/BidUpdateRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApplicationGetResponse"
+                $ref: "#/components/schemas/BidGetResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+    delete:
+      operationId: bid-delete
+      summary: Удаление заявки
+      parameters:
+        - name: bidId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+  /api/v2/bid/{bidId}:
+    get:
+      operationId: bid-get
+      summary: Получение заявки
+      parameters:
+        - name: bidId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidGetResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+    patch:
+      operationId: bid-update
+      summary: Изменить заявку
+      parameters:
+        - name: bidId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidUpdateRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidGetResponse"
         "400": *ref_98
         "401": *ref_99
         "403": *ref_100
@@ -2649,14 +2767,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RequestPrecalcPromoRequest"
+              $ref: "#/components/schemas/BidPrecalcPromoRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RequestPrecalcResponse"
+                $ref: "#/components/schemas/BidPrecalcResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+  /api/v2/bid/precalc-promo:
+    post:
+      operationId: bid-precalc-promo
+      summary: Возвращает предрасчет мониторов (для promo)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidPrecalcPromoRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidPrecalcResponse"
         "400": *ref_98
         "401": *ref_99
         "403": *ref_100
@@ -2678,14 +2825,43 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/RequestPrecalcSumRequest"
+              $ref: "#/components/schemas/BidPrecalcSumRequest"
       responses:
         "200":
           description: Успешный ответ
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RequestPrecalcResponse"
+                $ref: "#/components/schemas/BidPrecalcResponse"
+        "400": *ref_98
+        "401": *ref_99
+        "403": *ref_100
+        "404": *ref_101
+        "406": *ref_102
+        "409": *ref_103
+        "412": *ref_104
+        "500": *ref_105
+        "501": *ref_106
+      tags: *ref_107
+      security: *ref_108
+  /api/v2/bid/precalc-sum:
+    post:
+      operationId: bid-precalc-sum
+      summary: Возвращает предрасчет мониторов (для суммы списания)
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BidPrecalcSumRequest"
+      responses:
+        "200":
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BidPrecalcResponse"
         "400": *ref_98
         "401": *ref_99
         "403": *ref_100
@@ -2945,7 +3121,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.46.1
+  version: 2.47.1
   contact:
     name: Stanislav V Vyaliy
     url: https://wisekaa.dev
@@ -3005,6 +3181,10 @@ tags:
       url: https://cp.dev.myscreen.ru/accountant/invoices
   - name: crontab
     description: CronTab (только администратор)
+  - name: constants
+    description: Серверные заданные константы
+  - name: wallet
+    description: Кошелек, получение дебета/кредита
 servers: []
 components:
   securitySchemes:
@@ -3355,7 +3535,16 @@ components:
           description: Страна
           example: RU
           maxLength: 2
-          nullable: true
+        preferredLanguage:
+          type: string
+          description: Предпочитаемый язык
+          example: ru
+          maxLength: 6
+        locale:
+          type: string
+          description: Настройки даты
+          example: ru_RU
+          maxLength: 6
         storageSpace:
           type: number
           description: Дисковое пространство
@@ -3540,13 +3729,11 @@ components:
           description: Город
           example: Krasnodar
           maxLength: 100
-          nullable: true
         country:
           type: string
           description: Страна
           example: RU
           maxLength: 2
-          nullable: true
         verified:
           type: boolean
           description: EMail подтвержден
@@ -3727,13 +3914,11 @@ components:
           description: Город
           example: Krasnodar
           maxLength: 100
-          nullable: true
         country:
           type: string
           description: Страна
           example: RU
           maxLength: 2
-          nullable: true
         storageSpace:
           type: number
           description: Дисковое пространство
@@ -4820,7 +5005,7 @@ components:
       required:
         - status
         - data
-    RequestCreateMonitorRequest:
+    BidCreateMonitorRequest:
       type: object
       properties:
         dateWhen:
@@ -4854,14 +5039,14 @@ components:
           items:
             type: string
             format: uuid
-        request:
+        bid:
           description: Создание заявки
           allOf:
-            - $ref: "#/components/schemas/RequestCreateMonitorRequest"
+            - $ref: "#/components/schemas/BidCreateMonitorRequest"
       required:
         - playlistId
         - monitorIds
-        - request
+        - bid
     BidStatus:
       type: string
       description: Ок / Подождите
@@ -4875,7 +5060,7 @@ components:
         - NotProcessed
         - Allowed
         - Denied
-    RequestResponse:
+    BidResponse:
       type: object
       properties:
         id:
@@ -4962,7 +5147,7 @@ components:
         - dateWhen
         - playlistChange
         - sum
-    ApplicationsGetResponse:
+    BidsGetResponse:
       type: object
       properties:
         status:
@@ -4975,7 +5160,7 @@ components:
           description: Взаимодействия покупателей и продавца
           type: array
           items:
-            $ref: "#/components/schemas/RequestResponse"
+            $ref: "#/components/schemas/BidResponse"
       required:
         - status
         - count
@@ -6030,13 +6215,21 @@ components:
           description: Город
           example: Krasnodar
           maxLength: 100
-          nullable: true
         country:
           type: string
           description: Страна
           example: RU
           maxLength: 2
-          nullable: true
+        preferredLanguage:
+          type: string
+          description: Предпочитаемый язык
+          example: ru
+          maxLength: 6
+        locale:
+          type: string
+          description: Настройки даты
+          example: ru_RU
+          maxLength: 6
         storageSpace:
           type: number
           description: Дисковое пространство
@@ -6174,6 +6367,8 @@ components:
               - phoneNumber
               - city
               - country
+              - preferredLanguage
+              - locale
               - storageSpace
               - role
               - verified
@@ -6623,7 +6818,7 @@ components:
         - format
         - dateFrom
         - dateTo
-    ApplicationsRequest:
+    BidRequest:
       type: object
       properties:
         id:
@@ -6735,13 +6930,13 @@ components:
               - "2021-12-31T10:10:10"
               - "2022-12-31T10:10:10"
           format: date-time
-    ApplicationsGetRequest:
+    BidsGetRequest:
       type: object
       properties:
         where:
           description: Запрос
           allOf:
-            - $ref: "#/components/schemas/ApplicationsRequest"
+            - $ref: "#/components/schemas/BidRequest"
         select:
           type: array
           description: Выбрать поля
@@ -6772,7 +6967,7 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
-    ApplicationGetResponse:
+    BidGetResponse:
       type: object
       properties:
         status:
@@ -6781,11 +6976,11 @@ components:
         data:
           description: Взаимодействие покупателей и продавца
           allOf:
-            - $ref: "#/components/schemas/RequestResponse"
+            - $ref: "#/components/schemas/BidResponse"
       required:
         - status
         - data
-    ApplicationUpdateRequest:
+    BidUpdateRequest:
       type: object
       properties:
         approved:
@@ -6793,7 +6988,7 @@ components:
           $ref: "#/components/schemas/BidApprove"
       required:
         - approved
-    RequestPrecalcPromoRequest:
+    BidPrecalcPromoRequest:
       type: object
       properties:
         monitorIds:
@@ -6821,7 +7016,7 @@ components:
         - playlistDuration
         - dateFrom
         - dateTo
-    RequestPrecalcDataResponse:
+    BidPrecalcDataResponse:
       type: object
       properties:
         sum:
@@ -6829,7 +7024,7 @@ components:
           description: Итоговая сумма
       required:
         - sum
-    RequestPrecalcResponse:
+    BidPrecalcResponse:
       type: object
       properties:
         status:
@@ -6838,11 +7033,11 @@ components:
         data:
           description: Возвращаемое значение
           allOf:
-            - $ref: "#/components/schemas/RequestPrecalcDataResponse"
+            - $ref: "#/components/schemas/BidPrecalcDataResponse"
       required:
         - status
         - data
-    RequestPrecalcSumRequest:
+    BidPrecalcSumRequest:
       type: object
       properties:
         playlistId:

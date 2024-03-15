@@ -320,7 +320,7 @@ export class AuthController {
       },
     });
     if (!monitor) {
-      throw new NotFoundException(`Monitor with code "${code}" does not exist`);
+      throw new NotFoundException(`Monitor with code '${code}' does not exist`);
     }
 
     const payload = await this.authService.createMonitorToken(monitor.id);

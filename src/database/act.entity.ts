@@ -30,7 +30,7 @@ import { UserEntity } from './user.entity';
   orderBy: { createdAt: 'ASC' },
 })
 export class ActEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_act_id' })
   @ApiProperty({
     description: 'Идентификатор акта выполненных работ',
     format: 'uuid',

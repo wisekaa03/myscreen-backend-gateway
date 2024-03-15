@@ -16,7 +16,9 @@ import { UserEntity } from './user.entity';
 
 @Entity('uptime_monitoring', { comment: 'Что это!!!' })
 export class UptimeMonitoringEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', {
+    primaryKeyConstraintName: 'PK_uptime_monitoring_id',
+  })
   @ApiProperty({
     description: 'Идентификатор',
     format: 'uuid',

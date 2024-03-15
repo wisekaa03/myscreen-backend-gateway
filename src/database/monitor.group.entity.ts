@@ -13,7 +13,9 @@ import { UserEntity } from './user.entity';
 
 @Entity('monitor_multiple', { comment: 'Групповые мониторы' })
 export class MonitorGroupEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', {
+    primaryKeyConstraintName: 'PK_monitor_group_id',
+  })
   @ApiProperty({
     description: 'Групповой идентификатор монитора',
     format: 'uuid',
@@ -41,7 +43,7 @@ export class MonitorGroupEntity extends BaseEntity {
   col!: number;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
-    eager: true,
+    eager: false,
   })
   @JoinColumn()
   @ApiProperty({

@@ -17,6 +17,7 @@ import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
+import { FindManyOptionsCaseInsensitive } from '@/interfaces';
 
 @Injectable()
 export class MonitorService {
@@ -43,7 +44,10 @@ export class MonitorService {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
-      monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
+      monitorWhere = {
+        ...find,
+        ...TypeOrmFind.findParams(MonitorEntity, find),
+      };
     } else {
       monitorWhere = {
         relations: { files: true, playlist: true, favorities: true },
@@ -84,16 +88,17 @@ export class MonitorService {
   async findAndCount({
     userId,
     find,
-    caseInsensitive = true,
   }: {
     userId: string;
-    find: FindManyOptions<MonitorEntity>;
-    caseInsensitive?: boolean;
+    find: FindManyOptionsCaseInsensitive<MonitorEntity>;
   }): Promise<[Array<MonitorEntity>, number]> {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
-      monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
+      monitorWhere = {
+        ...find,
+        ...TypeOrmFind.findParams(MonitorEntity, find),
+      };
     } else {
       monitorWhere = {
         relations: {
@@ -108,14 +113,14 @@ export class MonitorService {
 
     let monitors: Array<MonitorEntity> = [];
     let count = 0;
-    if (caseInsensitive) {
+    if (!find.caseInsensitive) {
+      [monitors, count] =
+        await this.monitorRepository.findAndCount(monitorWhere);
+    } else {
       [monitors, count] = await TypeOrmFind.findAndCountCI(
         this.monitorRepository,
         monitorWhere,
       );
-    } else {
-      [monitors, count] =
-        await this.monitorRepository.findAndCount(monitorWhere);
     }
 
     if (monitors) {
@@ -151,16 +156,17 @@ export class MonitorService {
   async findOne({
     find,
     userId,
-    caseInsensitive = true,
   }: {
-    find: FindManyOptions<MonitorEntity>;
+    find: FindManyOptionsCaseInsensitive<MonitorEntity>;
     userId?: string;
-    caseInsensitive?: boolean;
   }): Promise<MonitorEntity | null> {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
-      monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
+      monitorWhere = {
+        ...find,
+        ...TypeOrmFind.findParams(MonitorEntity, find),
+      };
     } else {
       monitorWhere = {
         relations: {
@@ -173,9 +179,9 @@ export class MonitorService {
       };
     }
 
-    const monitor = caseInsensitive
-      ? await TypeOrmFind.findOneCI(this.monitorRepository, monitorWhere)
-      : await this.monitorRepository.findOne(monitorWhere);
+    const monitor = !find.caseInsensitive
+      ? await this.monitorRepository.findOne(monitorWhere)
+      : await TypeOrmFind.findOneCI(this.monitorRepository, monitorWhere);
 
     if (monitor) {
       if (userId !== undefined) {
@@ -203,7 +209,7 @@ export class MonitorService {
     update: Partial<MonitorEntity>,
     groupIds?: MonitorGroup[],
   ): Promise<MonitorEntity> {
-    const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
+    const multipleBool = Array.isArray(groupIds);
 
     const originalMonitor = await this.findOne({
       find: {
@@ -213,36 +219,58 @@ export class MonitorService {
       },
     });
     if (!originalMonitor) {
-      throw new NotFoundException(`Monitor "${id}" not found`);
+      throw new NotFoundException(`Monitor '${id}' not found`);
     }
     const { userId, multiple = MonitorMultiple.SINGLE } = originalMonitor;
     const { multiple: updateMultiple = multiple } = update;
-    if (multiple !== updateMultiple) {
+    if (multiple !== updateMultiple && multiple !== MonitorMultiple.SINGLE) {
       throw new BadRequestException(
-        `Monitor "${originalMonitor.name}"#"${id}" multiple not changed`,
+        `Monitor '${originalMonitor.name}'#'${id}' group not changed`,
       );
     }
-    if (multiple === MonitorMultiple.SINGLE && multipleBool) {
+    if (
+      (multiple === MonitorMultiple.SINGLE ||
+        multiple === MonitorMultiple.SUBORDINATE) &&
+      multipleBool &&
+      multiple === updateMultiple
+    ) {
       throw new BadRequestException(
-        `Monitor "${originalMonitor.name}"#"${id}" group monitors ID is not empty`,
+        `Monitor '${originalMonitor.name}'#'${id}' group monitors ID must be empty`,
       );
+    }
+    if (multipleBool) {
+      const originalGroupMonitors = await this.monitorRepository.find({
+        where: {
+          id: In(groupIds.map((item) => item.monitorId)),
+          multiple: MonitorMultiple.SUBORDINATE,
+        },
+      });
+      if (originalGroupMonitors.length > 0) {
+        throw new BadRequestException(
+          `Monitor '${originalMonitor.name}'#'${id}' group has a SUBORDINATE monitor`,
+        );
+      }
     }
 
-    return this.monitorRepository.manager.transaction(async (transact) => {
+    await this.monitorRepository.manager.transaction(async (transact) => {
       const updated = await transact.update(MonitorEntity, id, update);
       if (!updated.affected) {
-        throw new NotAcceptableException(`Monitor with this "${id}" not found`);
+        throw new NotAcceptableException(`Monitor with this '${id}' not found`);
       }
-      const monitor = await transact.findOne(MonitorEntity, { where: { id } });
+      const monitor = await transact.findOne(MonitorEntity, {
+        where: { id },
+        relations: { groupMonitors: { monitor: true } },
+      });
       if (!monitor) {
-        throw new NotFoundException(`Monitor with this "${id}" not found`);
+        throw new NotFoundException(`Monitor with this '${id}' not found`);
       }
+
       await this.bidService.websocketChange({ monitor });
 
       // а тут начинается полный трэш
-      if (multiple !== MonitorMultiple.SINGLE && multipleBool) {
+      if (updateMultiple !== MonitorMultiple.SINGLE && multipleBool) {
         // получаем подчиненные мониторы
-        const { groupMonitors } = originalMonitor;
+        const { groupMonitors } = monitor;
         let monitorsDeleteId: MonitorGroupEntity[] = [];
         if (groupMonitors) {
           monitorsDeleteId = groupMonitors.reduce(
@@ -310,6 +338,18 @@ export class MonitorService {
 
       return monitor;
     });
+
+    const monitorUpdated = await this.findOne({
+      find: {
+        where: { id },
+        relations: { groupMonitors: { monitor: true } },
+      },
+    });
+    if (!monitorUpdated) {
+      throw new NotFoundException(`Monitor with this '${id}' not found`);
+    }
+
+    return monitorUpdated;
   }
 
   async create({
@@ -383,7 +423,7 @@ export class MonitorService {
             }
             if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
               throw new BadRequestException(
-                `Monitor multiple "${item.monitorId}": row "${item.row}" with col "${item.col}" is already occupied`,
+                `Monitor multiple '${item.monitorId}': row '${item.row}' with col '${item.col}' is already occupied`,
               );
             }
             multipleRows.add(item.row);

@@ -164,9 +164,9 @@ export class WSGateway
               relations: {},
             },
           });
-          let request: BidEntity[] | null = null;
+          let bid: BidEntity[] | null = null;
           if (monitor) {
-            [request] = await Promise.all([
+            [bid] = await Promise.all([
               this.bidService.monitorRequests({
                 monitorId: monitor.id,
                 dateLocal: new Date(body.date),
@@ -183,7 +183,7 @@ export class WSGateway
           }
           return of([
             { event: 'auth/token', data: 'authorized' },
-            { event: 'applications', data: request },
+            { event: 'applications', data: bid },
           ]);
         }
         return of([{ event: 'auth/token', data: 'authorized' }]);
@@ -273,7 +273,7 @@ export class WSGateway
    *  - Удаление связки плэйлиста и монитора
    *  - Изменение плэйлиста файлами
    *  TODO: что-то еще
-   * @param request ApplicationEntity or null
+   * @param bid BidEntity or null
    * @param monitor MonitorEntity or null
    */
   async onChange({
@@ -284,7 +284,7 @@ export class WSGateway
     monitor?: MonitorEntity;
   }): Promise<void> {
     if (!bid && !monitor) {
-      this.logger.error('request or monitor is required');
+      this.logger.error('bid or monitor is required');
       return;
     }
 
@@ -292,23 +292,23 @@ export class WSGateway
       await this.playlistService.update(bid.playlistId, {
         status: PlaylistStatusEnum.Broadcast,
       });
-      let requestFind: BidEntity | null = bid;
+      let bidFind: BidEntity | null = bid;
       if (!bid.playlist) {
-        requestFind = await this.bidService.findOne({
+        bidFind = await this.bidService.findOne({
           where: { id: bid.id },
           loadEagerRelations: false,
           relations: { playlist: { files: true } },
         });
-        if (!requestFind) {
-          this.logger.error('request.playlist is undefined');
+        if (!bidFind) {
+          this.logger.error('bid.playlist is undefined');
           return;
         }
-        requestFind = {
-          ...requestFind,
+        bidFind = {
+          ...bidFind,
           playlist: {
-            ...requestFind.playlist,
+            ...bidFind.playlist,
             files: await Promise.all(
-              requestFind.playlist.files.map(async (file) =>
+              bidFind.playlist.files.map(async (file) =>
                 this.fileService.signedUrl(file),
               ),
             ),
@@ -319,7 +319,7 @@ export class WSGateway
       this.clients.forEach((value, client) => {
         if (value.monitorId === bid.monitorId) {
           client.send(
-            JSON.stringify([{ event: 'application', data: requestFind }]),
+            JSON.stringify([{ event: 'application', data: bidFind }]),
           );
         }
       });

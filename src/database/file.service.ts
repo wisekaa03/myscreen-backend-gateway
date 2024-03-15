@@ -308,7 +308,7 @@ export class FileService {
           },
         });
         if (!monitor) {
-          throw new NotFoundException(`Monitor "${monitorId}" not found`);
+          throw new NotFoundException(`Monitor '${monitorId}' not found`);
         }
       }
       if (!monitor && category !== FileCategory.Media) {

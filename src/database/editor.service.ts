@@ -130,12 +130,12 @@ export class EditorService {
   ): Promise<EditorEntity> {
     const updated = await this.editorRepository.update(id, insert);
     if (!updated.affected) {
-      throw new NotAcceptableException(`Editor with this ${id} not found`);
+      throw new NotAcceptableException(`Editor with this '${id}' not found`);
     }
 
     const editor = await this.findOne({ where: { id } });
     if (!editor) {
-      throw new NotFoundException(`Editor with this ${id} not found`);
+      throw new NotFoundException(`Editor with this '${id}' not found`);
     }
 
     return editor;
@@ -785,7 +785,7 @@ export class EditorService {
             }
 
             throw new NotFoundException(
-              `Upload file not found: ${JSON.stringify(files)}`,
+              `Upload file not found: '${JSON.stringify(files)}'`,
             );
           })
           .catch((reason) => {
@@ -811,12 +811,12 @@ export class EditorService {
                 (e) => e.renderingStatus === RenderingStatus.Ready,
               );
               if (editors.length === playlist.editors.length) {
-                const request = await this.bidService.find({
+                const bid = await this.bidService.find({
                   where: { playlistId: playlist.id },
                 });
-                const requestIds = new Set<string>(...request.map((r) => r.id));
-                requestIds.forEach((requestId) => {
-                  this.bidService.update(requestId, {
+                const bidIds = new Set<string>(...bid.map((r) => r.id));
+                bidIds.forEach((bidId) => {
+                  this.bidService.update(bidId, {
                     status: BidStatus.OK,
                   });
                 });
@@ -866,7 +866,7 @@ export class EditorService {
       relations: { videoLayers: true, audioLayers: true },
     });
     if (!editor) {
-      throw new NotFoundException(`The editor ${editorId} is not found`);
+      throw new NotFoundException(`The editor '${editorId}' is not found`);
     }
 
     let start = 0;

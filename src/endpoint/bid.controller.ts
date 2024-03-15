@@ -3,10 +3,8 @@ import {
   BadRequestException,
   Body,
   Delete,
-  forwardRef,
   Get,
   HttpCode,
-  Inject,
   Logger,
   NotFoundException,
   Param,
@@ -19,26 +17,25 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Not } from 'typeorm';
 
 import {
-  ApplicationsGetRequest,
-  ApplicationGetResponse,
-  ApplicationsGetResponse,
-  ApplicationUpdateRequest,
   SuccessResponse,
-  RequestPrecalcPromoRequest,
-  RequestPrecalcResponse,
-  RequestPrecalcSumRequest,
+  BidGetResponse,
+  BidsGetRequest,
+  BidsGetResponse,
+  BidUpdateRequest,
+  BidPrecalcPromoRequest,
+  BidPrecalcSumRequest,
+  BidPrecalcResponse,
 } from '@/dto';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { UserService } from '@/database/user.service';
 import { BidService } from '@/database/bid.service';
 import { BidEntity } from '@/database/bid.entity';
 
 @ApiComplexDecorators({
-  path: ['application'],
+  path: ['application', 'bid'],
   roles: [
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
@@ -51,8 +48,6 @@ export class BidController {
   constructor(
     private readonly userService: UserService,
     private readonly bidService: BidService,
-    @Inject(forwardRef(() => WSGateway))
-    private readonly wsGateway: WSGateway,
   ) {}
 
   @Post()
@@ -64,13 +59,13 @@ export class BidController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: ApplicationsGetResponse,
+    type: BidsGetResponse,
   })
   @Crud(CRUD.READ)
   async findMany(
     @Req() { user }: ExpressRequest,
-    @Body() { where: origWhere, select, scope }: ApplicationsGetRequest,
-  ): Promise<ApplicationsGetResponse> {
+    @Body() { where: origWhere, select, scope }: BidsGetRequest,
+  ): Promise<BidsGetResponse> {
     const { id: userId } = user;
     const where = TypeOrmFind.where(BidEntity, origWhere);
     if (user.role === UserRoleEnum.MonitorOwner) {
@@ -128,12 +123,12 @@ export class BidController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: ApplicationGetResponse,
+    type: BidGetResponse,
   })
   @Crud(CRUD.READ)
   async findOne(
     @Param('bidId', ParseUUIDPipe) id: string,
-  ): Promise<ApplicationGetResponse> {
+  ): Promise<BidGetResponse> {
     const data = await this.bidService.findOne({
       where: {
         id,
@@ -158,14 +153,14 @@ export class BidController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: ApplicationGetResponse,
+    type: BidGetResponse,
   })
   @Crud(CRUD.UPDATE)
   async update(
     @Req() { user: { role, id: userId } }: ExpressRequest,
     @Param('bidId', ParseUUIDPipe) bidId: string,
-    @Body() update: ApplicationUpdateRequest,
-  ): Promise<ApplicationGetResponse> {
+    @Body() update: BidUpdateRequest,
+  ): Promise<BidGetResponse> {
     if (role !== UserRoleEnum.Administrator) {
       const bid = await this.bidService.findOne({
         where: [
@@ -227,7 +222,7 @@ export class BidController {
       bid = await this.bidService.findOne({ where: { id } });
     }
     if (!bid) {
-      throw new NotFoundException(`Bid "${id}" is not found`);
+      throw new NotFoundException(`Bid '${id}' is not found`);
     }
 
     const { affected } = await this.bidService.delete(bid);
@@ -249,19 +244,14 @@ export class BidController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: RequestPrecalcResponse,
+    type: BidPrecalcResponse,
   })
   @Crud(CRUD.READ)
   async precalculate(
     @Req() { user }: ExpressRequest,
     @Body()
-    {
-      monitorIds,
-      playlistDuration,
-      dateFrom,
-      dateTo,
-    }: RequestPrecalcPromoRequest,
-  ): Promise<RequestPrecalcResponse> {
+    { monitorIds, playlistDuration, dateFrom, dateTo }: BidPrecalcPromoRequest,
+  ): Promise<BidPrecalcResponse> {
     const sum = await this.bidService.precalculatePromo({
       user,
       monitorIds,
@@ -285,7 +275,7 @@ export class BidController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: RequestPrecalcResponse,
+    type: BidPrecalcResponse,
   })
   @Crud(CRUD.READ)
   async precalculateSum(
@@ -297,8 +287,8 @@ export class BidController {
       price1s,
       dateBefore,
       dateWhen,
-    }: RequestPrecalcSumRequest,
-  ): Promise<RequestPrecalcResponse> {
+    }: BidPrecalcSumRequest,
+  ): Promise<BidPrecalcResponse> {
     const sum = await this.bidService.precalculateSum({
       user,
       minWarranty,

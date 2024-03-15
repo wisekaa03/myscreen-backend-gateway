@@ -28,7 +28,7 @@ import { FileEntity } from './file.entity';
 @Index('user_name_parentFolder_Index', ['name', 'userId'])
 @Index('user_parentFolder_Index', ['userId', 'parentFolderId'])
 export class FolderEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_folder_id' })
   @ApiProperty({
     description: 'Идентификатор файла',
     format: 'uuid',

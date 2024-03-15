@@ -7,7 +7,7 @@ import {
   IsUUID,
 } from 'class-validator';
 
-export class RequestPrecalcSumRequest {
+export class BidPrecalcSumRequest {
   @ApiProperty({
     description: 'Плэйлист ID',
     format: 'uuid',

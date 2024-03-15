@@ -18,7 +18,9 @@ import { UserEntity } from '@/database/user.entity';
 @Entity('refresh_token', { comment: 'Токены обновления' })
 @Index('IDX_id_expires', ['id', 'expires'])
 export class RefreshTokenEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', {
+    primaryKeyConstraintName: 'PK_refreshtoken_id',
+  })
   id?: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {

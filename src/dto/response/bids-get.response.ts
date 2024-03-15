@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { RequestResponse } from './bid.response';
+import { BidResponse } from './bid.response';
 
-export class ApplicationsGetResponse {
+export class BidsGetResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -18,9 +18,9 @@ export class ApplicationsGetResponse {
 
   @ApiProperty({
     description: 'Взаимодействия покупателей и продавца',
-    type: RequestResponse,
+    type: BidResponse,
     isArray: true,
     required: true,
   })
-  data!: RequestResponse[];
+  data!: BidResponse[];
 }

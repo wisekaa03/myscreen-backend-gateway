@@ -178,11 +178,11 @@ export class BidService {
     bidDelete?: boolean;
   }) {
     if (playlist) {
-      const requests = await this.monitorRequests({
+      const bids = await this.monitorRequests({
         playlistId: playlist.id,
       });
 
-      const wsPromise = requests.map(async (bidLocal) =>
+      const wsPromise = bids.map(async (bidLocal) =>
         this.wsGateway.onChange({ bid: bidLocal }),
       );
 
@@ -212,7 +212,7 @@ export class BidService {
   }
 
   /**
-   * Get the requests for the monitor
+   * Get the bids for the monitor
    *
    * @param {string} monitorId Монитор ID
    * @param {string} playlistId Плэйлист ID
@@ -281,13 +281,13 @@ export class BidService {
     );
 
     const expectedPromise = expected.map(
-      async (request) =>
+      async (bid) =>
         ({
-          ...request,
+          ...bid,
           playlist: {
-            ...request.playlist,
+            ...bid.playlist,
             files: await Promise.all(
-              request.playlist.files.map(async (file) =>
+              bid.playlist.files.map(async (file) =>
                 this.fileService.signedUrl(file),
               ),
             ),
@@ -493,11 +493,11 @@ export class BidService {
       where,
     });
     if (!playlist) {
-      throw new NotFoundException(`Playlist "${playlistId}" not found`);
+      throw new NotFoundException(`Playlist '${playlistId}' not found`);
     }
 
     return this.bidRepository.manager.transaction(async (transact) => {
-      const requestsPromise = monitorIds.map(async (monitorId) => {
+      const bidsPromise = monitorIds.map(async (monitorId) => {
         // Проверяем наличие мониторов
         let monitor = await this.monitorService.findOne({
           find: {
@@ -507,7 +507,7 @@ export class BidService {
           },
         });
         if (!monitor) {
-          throw new NotFoundException(`Monitor "${monitorIds}" not found`);
+          throw new NotFoundException(`Monitor '${monitorIds}' not found`);
         }
 
         monitor = await this.monitorService.update(monitorId, {
@@ -619,7 +619,7 @@ export class BidService {
         return bid;
       });
 
-      return Promise.all(requestsPromise);
+      return Promise.all(bidsPromise);
     });
   }
 

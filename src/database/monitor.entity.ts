@@ -156,7 +156,7 @@ export class MonitorInfo {
 @Entity('monitor', { comment: 'Мониторы' })
 @Unique('user_name_Unique', ['user', 'name'])
 export class MonitorEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_monitor_id' })
   @ApiProperty({
     description: 'Идентификатор монитора',
     format: 'uuid',
@@ -478,7 +478,7 @@ export class MonitorEntity extends BaseEntity {
   @OneToMany(() => BidEntity, (bid) => bid.monitor, {
     eager: false,
   })
-  requests?: BidEntity[];
+  bids?: BidEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

@@ -27,7 +27,7 @@ import { WalletTransactionType } from '@/enums';
 
 @Entity('wallet', { comment: 'Деньги в бумажнике' })
 export class WalletEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_wallet_id' })
   @ApiProperty({
     description: 'Идентификатор баланса',
     format: 'uuid',

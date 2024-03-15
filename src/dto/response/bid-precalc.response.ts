@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
-import { RequestPrecalcDataResponse } from './bid-precalc-data.response';
+import { BidPrecalcDataResponse } from './bid-precalc-data.response';
 
-export class RequestPrecalcResponse {
+export class BidPrecalcResponse {
   @ApiProperty({
     description: 'Статус операции',
     enum: Status,
@@ -15,8 +15,8 @@ export class RequestPrecalcResponse {
 
   @ApiProperty({
     description: 'Возвращаемое значение',
-    type: RequestPrecalcDataResponse,
+    type: BidPrecalcDataResponse,
     required: true,
   })
-  data!: RequestPrecalcDataResponse;
+  data!: BidPrecalcDataResponse;
 }

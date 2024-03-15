@@ -14,6 +14,8 @@ import { InvoiceService } from '@/database/invoice.service';
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,
     UserRoleEnum.MonitorOwner,
+    UserRoleEnum.Monitor,
+    UserRoleEnum.Accountant,
   ],
 })
 export class ConstantsController {
