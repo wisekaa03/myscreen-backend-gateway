@@ -20,22 +20,14 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      # - name: Cache Yarn
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: |
-      #       ~/.cache/yarn
-      #     key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-yarn-
       - name: Linux update
         run: sudo apt-get update -y
       - name: Linux upgrade
         run: sudo apt-get upgrade -y
       - name: Install Linux dependencies
         run: sudo apt-get install -y ffmpeg build-essential libxi-dev
-                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
-                  libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+          libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
+          libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Environment variables
@@ -129,22 +121,239 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: '.nvmrc'
-      # - name: Cache Yarn
-      #   uses: actions/cache/restore@v3
-      #   with:
-      #     path: |
-      #       ~/.cache/yarn
-      #     key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-yarn-
       - name: Linux update
         run: sudo apt-get update -y
       - name: Linux upgrade
         run: sudo apt-get upgrade -y
       - name: Install Linux dependencies
         run: sudo apt-get install -y ffmpeg build-essential libxi-dev
-                  libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
-                  libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+          libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
+          libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+      - name: Install Yarn dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build
+        run: |
+          yarn build
+          rm -rf node_modules
+      - name: Install Yarn dependencies (production)
+        run: yarn install --production --frozen-lockfile
+      - name: Environment variables
+        run: |
+          rm -rf .env
+          touch .env
+
+          # Server config
+          echo "PORT=${{ vars.PORT }}" >>.env
+          echo "API_PATH=${{ vars.API_PATH }}" >>.env
+          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >>.env
+          echo "FILES_UPLOAD=${{ vars.FILES_UPLOAD }}" >>.env
+          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >>.env
+
+          # PostgreSQL Credentials
+          echo "DB_DATABASE=${{ vars.DB_DATABASE }}" >>.env
+          echo "DB_USERNAME=${{ vars.DB_USERNAME }}" >>.env
+          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >>.env
+          echo "DB_PORT=${{ vars.DB_PORT }}" >>.env
+          echo "DB_HOST=${{ vars.DB_HOST }}" >>.env
+          echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env
+          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env
+
+          # JWT Credentials
+          echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env
+          echo "JWT_ACCESS_EXPIRES=${{ vars.JWT_ACCESS_EXPIRES }}" >>.env
+          echo "JWT_REFRESH_TOKEN=${{ vars.JWT_REFRESH_TOKEN }}" >>.env
+          echo "JWT_REFRESH_EXPIRES=${{ vars.JWT_REFRESH_EXPIRES }}" >>.env
+
+          # Logstash config
+          # echo "KIBANA_HOST=${{ vars.KIBANA_HOST }}" >>.env
+          # echo "KIBANA_PORT=${{ vars.KIBANA_PORT }}" >>.env
+
+          # Secrets
+          echo "AWS_HOST=${{ vars.AWS_HOST }}" >>.env
+          echo "AWS_ACCESS_KEY=${{ vars.AWS_ACCESS_KEY }}" >>.env
+          echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env
+          echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env
+          echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env
+          echo "AWS_SIGNED_URL_EXPIRES=${{ vars.AWS_SIGNED_URL_EXPIRES }}" >>.env
+
+          echo "SUBSCRIPTION_FEE=${{ vars.SUBSCRIPTION_FEE }}" >>.env
+          echo "SUBSCRIPTION_DESCRIPTION=${{ vars.SUBSCRIPTION_DESCRIPTION }}" >>.env
+          echo "COMMISSION_PERCENT=${{ vars.COMMISSION_PERCENT }}" >>.env
+          echo "MIN_INVOICE_SUM=${{ vars.MIN_INVOICE_SUM }}" >>.env
+
+          echo "RABBITMQ_HOST=${{ vars.RABBITMQ_HOST }}" >>.env
+          echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env
+          echo "RABBITMQ_USERNAME=${{ vars.RABBITMQ_USERNAME }}" >>.env
+          echo "RABBITMQ_PASSWORD=${{ vars.RABBITMQ_PASSWORD }}" >>.env
+      - name: Install SSH key
+        if: ${{ contains(runner.name, 'myscreen') == false }}
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.SSH_KNOWN_HOSTS }}
+          if_key_exists: replace
+          name: id_rsa
+      - name: Deploying to Production
+        run: |
+          rsync -rlDzc -i --del -e "$SSH_PARAMS" "./" \
+            "$REMOTE_USER"@"$REMOTE_HOST":"$REMOTE_TARGET" \
+            --include="node_modules/exceljs/**/doc/" \
+            --exclude="node_modules/**/AUTHORS" \
+            --exclude="node_modules/**/ChangeLog" \
+            --exclude="node_modules/**/CHANGES" \
+            --exclude="node_modules/**/README.markdown" \
+            --exclude="node_modules/**/README.mdown" \
+            --exclude="node_modules/**/readme.markdown" \
+            --exclude="node_modules/**/NOTICE" \
+            --exclude="node_modules/**/LICENSE" \
+            --exclude="node_modules/**/License" \
+            --exclude="node_modules/**/LICENSE.*" \
+            --exclude="node_modules/**/LICENCE" \
+            --exclude="node_modules/**/license" \
+            --exclude="node_modules/**/.babelrc" \
+            --exclude="node_modules/**/.editorconfig" \
+            --exclude="node_modules/**/.gitattributes" \
+            --exclude="node_modules/**/.travis*" \
+            --exclude="node_modules/**/.prettierrc*" \
+            --exclude="node_modules/**/.airtap.*" \
+            --exclude="node_modules/**/Gruntfile.*" \
+            --exclude="node_modules/**/.npmignore" \
+            --exclude="node_modules/**/.nvmrc" \
+            --exclude="node_modules/**/.eslint*" \
+            --exclude="node_modules/**/.nycrc*" \
+            --exclude="node_modules/**/.jshintrc" \
+            --exclude="node_modules/**/renovate.json" \
+            --exclude="node_modules/**/jest.*" \
+            --exclude="node_modules/**/bower.json" \
+            --exclude="node_modules/**/.taprc*" \
+            --exclude="node_modules/**/.commitlintrc.*" \
+            --exclude="node_modules/**/.release-it.json" \
+            --exclude="node_modules/**/nest-cli.json" \
+            --exclude="node_modules/**/.tsbuildinfo" \
+            --exclude="node_modules/**/Makefile" \
+            --exclude="node_modules/**/tsconfig*" \
+            --exclude="node_modules/**/tslint.*" \
+            --exclude="node_modules/**/mocha.opts" \
+            --exclude="node_modules/**/.dockerignore" \
+            --exclude="node_modules/**/codecov.*" \
+            --exclude="node_modules/**/test/" \
+            --exclude="node_modules/**/tests/" \
+            --exclude="node_modules/**/.github/" \
+            --exclude="node_modules/**/.circleci/" \
+            --exclude="node_modules/**/.vscode/" \
+            --exclude="node_modules/**/.husky/" \
+            --exclude="node_modules/**/docs/" \
+            --exclude="node_modules/**/doc/" \
+            --exclude="node_modules/**/example/" \
+            --exclude="node_modules/**/examples/" \
+            --exclude="node_modules/.yarn-integrity" \
+            --exclude="node_modules/**.test.js" \
+            --exclude="node_modules/**.js.flow" \
+            --exclude="node_modules/**.config.js" \
+            --exclude="node_modules/**.txt" \
+            --exclude="node_modules/**.wiki" \
+            --exclude="node_modules/**.lock" \
+            --exclude="node_modules/**.ts" \
+            --exclude="node_modules/**.cts" \
+            --exclude="node_modules/**.mts" \
+            --exclude="node_modules/**.md~" \
+            --exclude="node_modules/**.md" \
+            --exclude="node_modules/**.map" \
+            --exclude="dist/**.ts" \
+            --exclude="dist/**.map" \
+            --include="dist/***" \
+            --include="templates/***" \
+            --include="static/***" \
+            --include="upload/***" \
+            --include="node_modules/***" \
+            --include=".env" \
+            --include="ecosystem.config.js" \
+            --include="package.json" \
+            --include="yarn.lock" \
+            --exclude='*'
+      - name: Run remote commands
+        run: |
+          # Copy the Yandex.Cloud certificate
+          SSH_COMMAND+='mkdir -p '$REMOTE_TARGET'/certs && '
+          SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O '$REMOTE_TARGET'/certs/root.crt && '
+
+          # Cleanup `upload` folder
+          SSH_COMMAND+='find '$REMOTE_TARGET'/upload -type f -atime +7 -delete && '
+
+          # Yarn pm2 starting
+          SSH_COMMAND+='cd '$REMOTE_TARGET' && yarn pm2:start'
+
+          # Run command
+          $SSH_PARAMS -t "$REMOTE_USER"@"$REMOTE_HOST" $SSH_COMMAND
+      - name: Notify if the deployment was successful (Finished)
+        if: ${{ success() }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ vars.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+            [Finished](${{env.JOB_URL}})
+            Deploy by *${{github.actor}}*
+            Repo: *${{env.REPO_NAME}}*
+            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
+      - name: Notify if deployment fails (ERROR)
+        if: ${{ failure() }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ vars.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+            [ERRORED](${{env.JOB_URL}})
+            Deploy by *${{github.actor}}*
+            Repo: *${{env.REPO_NAME}}*
+            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
+
+  production:
+    needs: 'test'
+    if: github.ref_name == 'main'
+    runs-on: self-hosted
+    environment: production
+    env:
+      SSH_PARAMS: 'ssh -o StrictHostKeyChecking=no'
+      REMOTE_USER: ${{ secrets.REMOTE_USER }}
+      REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+      REMOTE_TARGET: ${{ vars.REMOTE_TARGET }}
+    steps:
+      - name: Initializing the repository
+        uses: actions/checkout@v3
+      - name: Telegram notification
+        run: |
+          echo "REPO_NAME=${{github.repository}}" | sed -r "s/^(\w+=).+\/(.*)/\1\2/g" >> "${GITHUB_ENV}"
+          echo "JOB_URL=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "${GITHUB_ENV}"
+          echo "SERVER_URL=develop" >> "${GITHUB_ENV}"
+      - name: Notify if the deployment was successful (Starting)
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ vars.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+            [Starting](${{env.JOB_URL}})
+            Deploy by *${{github.actor}}*
+            Repo: *${{env.REPO_NAME}}*
+            Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
+            Server: *${{env.SERVER_URL}}*
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - name: Linux update
+        run: sudo apt-get update -y
+      - name: Linux upgrade
+        run: sudo apt-get upgrade -y
+      - name: Install Linux dependencies
+        run: sudo apt-get install -y ffmpeg build-essential libxi-dev
+          libglu1-mesa-dev libglew-dev pkg-config libcairo2-dev
+          libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Build

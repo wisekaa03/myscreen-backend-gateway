@@ -7,6 +7,8 @@ networks:
 volumes:
   postgres:
   pgadmin4:
+  rabbitmq_data:
+    driver: local
 
 services:
   postgres:
@@ -56,16 +58,14 @@ services:
       - "${PGADMIN_PORT:-8088}:8088"
 
   rabbitmq:
-    image: bitnami/rabbitmq:3.12.12
+    image: bitnami/rabbitmq:3.12.13
     restart: always
     environment:
-      - RABBITMQ_PASSWORD=12345678
+      - RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS=true
+      - RABBITMQ_PASSWORD=MAnMCMrP7q
       - RABBITMQ_USERNAME=admin
-    depends_on:
-      postgres:
-        condition: service_healthy
-    links:
-      - "postgres:postgres"
+    volumes:
+      - rabbitmq_data:/bitnami/rabbitmq/mnesia
     ports:
       - "5672:5672"
       - "15672:15672"

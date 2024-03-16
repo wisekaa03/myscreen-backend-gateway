@@ -288,24 +288,17 @@ export class UserService {
     );
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
 
-    let id: string;
-    if (process.env.NODE_ENV === 'production') {
-      [{ id }] = await Promise.all([
-        this.userRepository.save(this.userRepository.create(userPartial)),
-        this.mailService.emit<unknown, string>('sendWelcomeMessage', email),
-        this.mailService.emit<unknown, MailSendVerificationCode>(
-          'sendVerificationCode',
-          {
-            email,
-            confirmUrl,
-          },
-        ),
-      ]);
-    } else {
-      ({ id } = await this.userRepository.save(
-        this.userRepository.create(userPartial),
-      ));
-    }
+    const [{ id }] = await Promise.all([
+      this.userRepository.save(this.userRepository.create(userPartial)),
+      this.mailService.emit<unknown, string>('sendWelcomeMessage', email),
+      this.mailService.emit<unknown, MailSendVerificationCode>(
+        'sendVerificationCode',
+        {
+          email,
+          confirmUrl,
+        },
+      ),
+    ]);
 
     const user = await this.userResponseRepository.findOneBy({ id });
     if (!user) {
