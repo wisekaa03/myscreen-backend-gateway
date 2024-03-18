@@ -27,6 +27,7 @@ export class BidsGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<BidRequest>;
 

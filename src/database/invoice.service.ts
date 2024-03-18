@@ -37,7 +37,7 @@ export class InvoiceService {
     private readonly invoiceRepository: Repository<InvoiceEntity>,
   ) {
     this.minInvoiceSum = parseInt(
-      this.configService.get('MIN_INVOICE_SUM', '100'),
+      this.configService.getOrThrow('MIN_INVOICE_SUM'),
       10,
     );
   }
@@ -212,10 +212,14 @@ export class InvoiceService {
       throw new NotFoundException('Invoice: user not found');
     }
 
+    const language =
+      invoice.user.preferredLanguage ??
+      this.configService.getOrThrow('LANGUAGE_DEFAULT');
     const response = await lastValueFrom(
       this.mailService.send<Record<string, unknown>, PrintInvoice>('invoice', {
         format,
         invoice,
+        language,
       }),
     );
 

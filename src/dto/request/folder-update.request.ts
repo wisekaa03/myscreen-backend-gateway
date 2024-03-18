@@ -6,6 +6,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class FolderUpdateRequest {
   @ApiProperty({
@@ -13,9 +14,9 @@ export class FolderUpdateRequest {
     format: 'uuid',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsString()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   id!: string;
 
   @ApiProperty({
@@ -25,8 +26,8 @@ export class FolderUpdateRequest {
     required: false,
   })
   @IsOptional()
-  @IsString()
-  @MinLength(1)
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @MinLength(1, { message: i18nValidationMessage('validation.MIN_LENGTH') })
   name?: string;
 
   @ApiProperty({
@@ -36,6 +37,6 @@ export class FolderUpdateRequest {
     required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   parentFolderId?: string;
 }

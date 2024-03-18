@@ -27,6 +27,7 @@ export class FoldersGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<FolderRequest>;
 

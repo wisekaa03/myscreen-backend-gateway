@@ -78,6 +78,8 @@ jobs:
           echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env.test
           echo "RABBITMQ_USERNAME=${{ vars.RABBITMQ_USERNAME }}" >>.env.test
           echo "RABBITMQ_PASSWORD=${{ vars.RABBITMQ_PASSWORD }}" >>.env.test
+
+          echo "LANGUAGE_DEFAULT=${{ vars.LANGUAGE_DEFAULT }}" >>.env.test
       - name: Test
         run: yarn test
       - name: Test end to end
@@ -185,6 +187,8 @@ jobs:
           echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env
           echo "RABBITMQ_USERNAME=${{ vars.RABBITMQ_USERNAME }}" >>.env
           echo "RABBITMQ_PASSWORD=${{ vars.RABBITMQ_PASSWORD }}" >>.env
+
+          echo "LANGUAGE_DEFAULT=${{ vars.LANGUAGE_DEFAULT }}" >>.env
       - name: Install SSH key
         if: ${{ contains(runner.name, 'myscreen') == false }}
         uses: shimataro/ssh-key-action@v2
@@ -410,6 +414,8 @@ jobs:
           echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env
           echo "RABBITMQ_USERNAME=${{ vars.RABBITMQ_USERNAME }}" >>.env
           echo "RABBITMQ_PASSWORD=${{ vars.RABBITMQ_PASSWORD }}" >>.env
+
+          echo "LANGUAGE_DEFAULT=${{ vars.LANGUAGE_DEFAULT }}" >>.env
       - name: Install SSH key
         if: ${{ contains(runner.name, 'myscreen') == false }}
         uses: shimataro/ssh-key-action@v2

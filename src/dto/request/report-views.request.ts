@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsUUID,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { SpecificFormat } from '@/enums/specific-format.enum';
 
@@ -18,9 +19,11 @@ export class ReportViewsRequest {
     example: SpecificFormat.XLSX,
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsEnum(SpecificFormat)
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsEnum(SpecificFormat, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   format!: SpecificFormat;
 
   @ApiProperty({
@@ -32,7 +35,10 @@ export class ReportViewsRequest {
     required: false,
   })
   @IsOptional()
-  @IsUUID(undefined, { each: true })
+  @IsUUID('all', {
+    each: true,
+    message: i18nValidationMessage('validation.IS_UUID'),
+  })
   monitorIds?: Array<string>;
 
   @ApiProperty({
@@ -42,9 +48,12 @@ export class ReportViewsRequest {
     format: 'date',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsDateString({ strict: false })
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   dateFrom!: string;
 
   @ApiProperty({
@@ -54,8 +63,11 @@ export class ReportViewsRequest {
     format: 'date',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsDateString({ strict: false })
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   dateTo!: string;
 }

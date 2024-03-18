@@ -1,5 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber, IsOptional, Length, Min } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { MonitorEntity } from '@/database/monitor.entity';
 
@@ -29,8 +30,8 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
     required: false,
   })
   @IsOptional()
-  @IsNotEmpty()
-  @Length(11, 11)
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @Length(11, 11, { message: i18nValidationMessage('validation.LENGTH') })
   code!: string;
 
   @ApiProperty({
@@ -40,8 +41,11 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
     default: 1920,
     required: false,
   })
-  @IsNumber()
-  @Min(1)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(1, { message: i18nValidationMessage('validation.MIN') })
   width!: number;
 
   @ApiProperty({
@@ -51,7 +55,10 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
     default: 1080,
     required: false,
   })
-  @IsNumber()
-  @Min(1)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(1, { message: i18nValidationMessage('validation.MIN') })
   height!: number;
 }

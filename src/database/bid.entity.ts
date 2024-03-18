@@ -15,10 +15,12 @@ import {
   IsBoolean,
   IsDateString,
   IsEnum,
+  IsInt,
   IsNumber,
   IsUUID,
   Validate,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { BidApprove, BidStatus } from '@/enums';
 import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
@@ -33,7 +35,7 @@ export class BidEntity extends BaseEntity {
     description: 'Идентификатор взаимодействия',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id?: string;
 
   @Generated('increment')
@@ -42,7 +44,7 @@ export class BidEntity extends BaseEntity {
   @ApiProperty({
     description: 'Номер заявки',
   })
-  @IsNumber()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   seqNo!: number;
 
   @ManyToOne(() => UserEntity, (buyer) => buyer.id, {
@@ -52,7 +54,7 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_buyer_id' })
   @ApiProperty({
     description: 'Покупатель',
     type: 'string',
@@ -68,7 +70,7 @@ export class BidEntity extends BaseEntity {
     nullable: true,
     required: false,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   buyerId!: string | null;
 
   @ManyToOne(() => UserEntity, (seller) => seller.id, {
@@ -77,7 +79,7 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_seller_id' })
   @ApiProperty({
     description: 'Продавец',
     type: 'string',
@@ -92,7 +94,7 @@ export class BidEntity extends BaseEntity {
     format: 'uuid',
     required: false,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   sellerId!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
@@ -101,7 +103,7 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_monitor_id' })
   @ApiProperty({
     description: 'Монитор',
     type: 'string',
@@ -114,7 +116,7 @@ export class BidEntity extends BaseEntity {
     description: 'Монитор ID',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   monitorId!: string;
 
   @Column({
@@ -131,7 +133,10 @@ export class BidEntity extends BaseEntity {
     default: BidStatus.OK,
     required: false,
   })
-  @IsEnum(BidStatus, { each: true })
+  @IsEnum(BidStatus, {
+    each: true,
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   status!: BidStatus;
 
   @Column({ type: 'boolean', default: false })
@@ -141,7 +146,7 @@ export class BidEntity extends BaseEntity {
     example: false,
     required: false,
   })
-  @IsBoolean()
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   hide!: boolean;
 
   @ManyToOne(() => BidEntity, (bid) => bid.id, {
@@ -151,12 +156,12 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'bidParentRequestIdConstraint' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_parent_request_id' })
   @Index('bidParentRequestIdIndex')
   parentRequest?: BidEntity;
 
-  @Column({ nullable: true })
-  @IsUUID()
+  @Column({ type: 'uuid', nullable: true })
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   parentRequestId?: string;
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
@@ -165,7 +170,7 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_playlist_id' })
   @ApiProperty({
     description: 'Плэйлист',
     type: 'string',
@@ -173,12 +178,12 @@ export class BidEntity extends BaseEntity {
   })
   playlist!: PlaylistEntity;
 
-  @Column({ select: false })
+  @Column({ type: 'uuid', select: false })
   @ApiProperty({
     description: 'Плэйлист ID',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   playlistId!: string;
 
   @Column({
@@ -194,7 +199,10 @@ export class BidEntity extends BaseEntity {
     example: BidApprove.NOTPROCESSED,
     required: true,
   })
-  @IsEnum(BidApprove, { each: true })
+  @IsEnum(BidApprove, {
+    each: true,
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   approved!: BidApprove;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
@@ -206,7 +214,10 @@ export class BidEntity extends BaseEntity {
     example: '2021-01-01',
     required: true,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   dateWhen!: Date;
 
   @Column({ type: 'timestamptz', nullable: true, default: null })
@@ -228,16 +239,16 @@ export class BidEntity extends BaseEntity {
     example: false,
     required: true,
   })
-  @IsBoolean()
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   playlistChange!: boolean;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'float', default: 0 })
   @ApiProperty({
     description: 'Сумма списания',
     example: 10,
     required: true,
   })
-  @IsNumber()
+  @IsNumber({}, { message: i18nValidationMessage('validation.IS_NUMBER') })
   sum!: number;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -246,12 +257,12 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_user_id' })
   user!: UserEntity;
 
   @Column({ select: false })
   @Index('bidUserIdIndex')
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @CreateDateColumn()
@@ -266,7 +277,10 @@ export class BidEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -281,6 +295,9 @@ export class BidEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 }

@@ -27,6 +27,7 @@ export class InvoicesGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<InvoiceRequest>;
 

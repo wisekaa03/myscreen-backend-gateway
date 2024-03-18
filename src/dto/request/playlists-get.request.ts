@@ -27,6 +27,7 @@ export class PlaylistsGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<PlaylistRequest>;
 

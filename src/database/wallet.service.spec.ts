@@ -15,6 +15,7 @@ export const mockRepository = jest.fn(() => ({
   create: () => [],
   remove: async () => Promise.resolve([]),
   get: (key: string, defaultValue?: string) => defaultValue,
+  getOrThrow: (key: string, defaultValue?: string) => '250',
   metadata: {
     columns: [],
     relations: [],

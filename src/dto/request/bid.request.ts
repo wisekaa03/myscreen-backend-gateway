@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsDateString, IsEnum, Validate } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, Validate } from 'class-validator';
 
+import { i18nValidationMessage } from 'nestjs-i18n';
 import { BidApprove, BidStatus } from '@/enums';
 import { BidEntity } from '@/database/bid.entity';
 import { MSRange, MSRangeEnum } from '@/interfaces';
@@ -35,7 +36,11 @@ export class BidRequest extends PartialType(
     isArray: true,
     required: false,
   })
-  @IsEnum(BidApprove, { each: true })
+  @IsOptional()
+  @IsEnum(BidApprove, {
+    each: true,
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   approved?: MSRangeEnum<BidApprove>;
 
   @ApiProperty({
@@ -49,7 +54,11 @@ export class BidRequest extends PartialType(
     isArray: true,
     required: false,
   })
-  @IsEnum(BidStatus, { each: true })
+  @IsOptional()
+  @IsEnum(BidStatus, {
+    each: true,
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   status?: MSRangeEnum<BidStatus>;
 
   @ApiProperty({
@@ -65,8 +74,15 @@ export class BidRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
-  dateWhen!: MSRange<Date>;
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    {
+      each: true,
+      message: i18nValidationMessage('validation.IS_DATE_RANGE'),
+    },
+  )
+  dateWhen?: MSRange<Date>;
 
   @ApiProperty({
     description: 'Время до',
@@ -82,8 +98,12 @@ export class BidRequest extends PartialType(
     nullable: true,
     required: false,
   })
-  @Validate(IsDateStringOrNull, { each: true })
-  dateBefore!: MSRange<Date | null>;
+  @IsOptional()
+  @Validate(IsDateStringOrNull, {
+    each: true,
+    message: i18nValidationMessage('validation.IS_DATE_RANGE'),
+  })
+  dateBefore?: MSRange<Date | null>;
 
   @ApiProperty({
     description: 'Время создания',
@@ -98,7 +118,14 @@ export class BidRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    {
+      each: true,
+      message: i18nValidationMessage('validation.IS_DATE_RANGE'),
+    },
+  )
   createdAt?: MSRange<Date>;
 
   @ApiProperty({
@@ -114,6 +141,13 @@ export class BidRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    {
+      each: true,
+      message: i18nValidationMessage('validation.IS_DATE_RANGE'),
+    },
+  )
   updatedAt?: MSRange<Date>;
 }

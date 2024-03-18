@@ -6,6 +6,7 @@ export * from './mail-invoice-payed';
 export * from './mail-invoice-awaiting-confirmation';
 export * from './mail-balance-changed';
 export * from './mail-balance-not-changed';
+export * from './mail-welcome-message';
 export * from './print-report-device-status';
 export * from './print-invoice';
 export * from './interface';

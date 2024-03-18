@@ -112,13 +112,15 @@ export class FolderController {
       throw new BadRequestException(`Folder '${parentFolderId}' is not exists`);
     }
 
+    const data = await this.folderService.create({
+      userId,
+      name,
+      parentFolderId: parentFolder.id,
+    });
+
     return {
       status: Status.Success,
-      data: await this.folderService.create({
-        userId,
-        name,
-        parentFolderId: parentFolder.id,
-      }),
+      data,
     };
   }
 

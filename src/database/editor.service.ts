@@ -51,7 +51,6 @@ import { PlaylistService } from './playlist.service';
 import { MonitorService } from '@/database/monitor.service';
 import { CrontabService } from '@/crontab/crontab.service';
 import { BidService } from '@/database/bid.service';
-import { UserResponse } from './user-response.entity';
 
 dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);

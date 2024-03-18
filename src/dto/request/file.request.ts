@@ -1,5 +1,6 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsDateString, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { FileEntity } from '@/database/file.entity';
 import { MSRange } from '@/interfaces';
@@ -13,7 +14,8 @@ export class FileRequest extends PartialType(
     format: 'uuid',
     required: true,
   })
-  @IsString()
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('INVALID_STRING') })
   folderId?: string;
 
   @ApiProperty({
@@ -29,7 +31,11 @@ export class FileRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   createdAt?: MSRange<Date>;
 
   @ApiProperty({
@@ -45,6 +51,10 @@ export class FileRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   updatedAt?: MSRange<Date>;
 }

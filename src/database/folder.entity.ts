@@ -19,7 +19,9 @@ import {
   IsDefined,
   IsString,
   IsDateString,
+  IsOptional,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from './file.entity';
@@ -33,7 +35,7 @@ export class FolderEntity extends BaseEntity {
     description: 'Идентификатор файла',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Column()
@@ -41,9 +43,9 @@ export class FolderEntity extends BaseEntity {
     description: 'Наименование папки',
     example: 'bar',
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsString()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   @MinLength(1)
   name!: string;
 
@@ -53,12 +55,12 @@ export class FolderEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_folder_user' })
   user!: UserEntity;
 
-  @Column()
+  @Column({ type: 'uuid' })
   @RelationId((folder: FolderEntity) => folder.user)
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @ManyToOne(() => FolderEntity, (folder) => folder.id, {
@@ -68,7 +70,7 @@ export class FolderEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_folder_parentFolder' })
   parentFolder!: FolderEntity | null;
 
   @Column({ nullable: true })
@@ -80,7 +82,8 @@ export class FolderEntity extends BaseEntity {
     nullable: true,
     required: false,
   })
-  @IsUUID()
+  @IsOptional()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   parentFolderId!: string | null;
 
   @OneToMany(() => FileEntity, (file) => file.folder, {
@@ -103,7 +106,10 @@ export class FolderEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -118,6 +124,9 @@ export class FolderEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 }

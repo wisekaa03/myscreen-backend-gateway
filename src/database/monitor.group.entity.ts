@@ -4,10 +4,13 @@ import {
   BaseEntity,
   Column,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { i18nValidationMessage } from 'nestjs-i18n';
+
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
 
@@ -21,7 +24,7 @@ export class MonitorGroupEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Column({ type: 'smallint', nullable: false, default: 0 })
@@ -51,11 +54,11 @@ export class MonitorGroupEntity extends BaseEntity {
     type: 'string',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   parentMonitor!: MonitorEntity;
 
   @Column()
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   parentMonitorId!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
@@ -70,11 +73,11 @@ export class MonitorGroupEntity extends BaseEntity {
     type: 'string',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   monitor!: MonitorEntity;
 
   @Column()
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   monitorId!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -86,7 +89,8 @@ export class MonitorGroupEntity extends BaseEntity {
   @JoinColumn({ name: 'userId' })
   user!: UserEntity;
 
-  @Column()
-  @IsUUID()
+  @Column({ type: 'uuid' })
+  @Index('monitorGroupUserIdIndex')
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 }

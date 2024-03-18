@@ -1,6 +1,7 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsDateString } from 'class-validator';
+import { IsDateString, IsOptional } from 'class-validator';
 
+import { i18nValidationMessage } from 'nestjs-i18n';
 import { MSRange } from '@/interfaces';
 import { EditorEntity } from '@/database/editor.entity';
 
@@ -20,7 +21,11 @@ export class EditorRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   createdAt?: MSRange<Date>;
 
   @ApiProperty({
@@ -36,6 +41,10 @@ export class EditorRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   updatedAt?: MSRange<Date>;
 }

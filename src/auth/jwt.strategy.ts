@@ -10,7 +10,7 @@ import { UserResponse } from '@/database/user-response.entity';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private readonly authService: AuthService,
+    authService: AuthService,
     private readonly userService: UserService,
   ) {
     super({

@@ -52,12 +52,11 @@ export class WalletService {
     private readonly walletRepository: Repository<WalletEntity>,
   ) {
     this.subscriptionFee = parseInt(
-      this.configService.get('SUBSCRIPTION_FEE', '250'),
+      this.configService.getOrThrow('SUBSCRIPTION_FEE'),
       10,
     );
-    this.subscriptionDescription = this.configService.get(
+    this.subscriptionDescription = this.configService.getOrThrow(
       'SUBSCRIPTION_DESCRIPTION',
-      'Оплата за услуги',
     );
   }
 

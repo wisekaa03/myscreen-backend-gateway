@@ -28,6 +28,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
@@ -44,7 +45,7 @@ export class PlaylistEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Column()
@@ -53,9 +54,9 @@ export class PlaylistEntity extends BaseEntity {
     example: 'имя плэйлиста',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @MinLength(6)
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @MinLength(6, { message: i18nValidationMessage('validation.MIN_LENGTH') })
   name!: string;
 
   @Column({ nullable: true })
@@ -65,8 +66,8 @@ export class PlaylistEntity extends BaseEntity {
     nullable: true,
     required: false,
   })
-  @IsString()
-  @MinLength(1)
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @MinLength(1, { message: i18nValidationMessage('validation.MIN_LENGTH') })
   description!: string;
 
   @Column({
@@ -81,7 +82,9 @@ export class PlaylistEntity extends BaseEntity {
     example: PlaylistStatusEnum.Offline,
     required: true,
   })
-  @IsEnum(PlaylistStatusEnum)
+  @IsEnum(PlaylistStatusEnum, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   status!: PlaylistStatusEnum;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -90,12 +93,12 @@ export class PlaylistEntity extends BaseEntity {
     onUpdate: 'CASCADE',
     eager: false,
   })
-  @JoinColumn({ name: 'userId' })
+  @JoinColumn({ name: 'userId', foreignKeyConstraintName: 'FK_playlist_user' })
   user!: UserEntity;
 
-  @Column()
-  @Index()
-  @IsUUID()
+  @Column({ type: 'uuid' })
+  @Index('playlistUserIdIndex')
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @Column({ type: 'boolean', default: false })
@@ -105,7 +108,7 @@ export class PlaylistEntity extends BaseEntity {
     example: false,
     required: false,
   })
-  @IsBoolean()
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   hide!: boolean;
 
   @ManyToMany(() => FileEntity, (file) => file.playlists, {
@@ -119,7 +122,10 @@ export class PlaylistEntity extends BaseEntity {
     description: 'Файлы',
     type: FileEntity,
   })
-  @IsUUID('all', { each: true })
+  @IsUUID('all', {
+    each: true,
+    message: i18nValidationMessage('validation.IS_UUID'),
+  })
   files!: FileEntity[];
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.playlist, {
@@ -162,7 +168,10 @@ export class PlaylistEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -177,7 +186,10 @@ export class PlaylistEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 
   @AfterLoad()

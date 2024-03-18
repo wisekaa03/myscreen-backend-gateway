@@ -6,8 +6,10 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   IsUUID,
+  Min,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -26,6 +28,7 @@ import {
   RelationId,
   BaseEntity,
 } from 'typeorm';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { RenderingStatus } from '@/enums/rendering-status.enum';
 import { UserEntity } from './user.entity';
@@ -42,7 +45,7 @@ export class EditorEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Column()
@@ -51,8 +54,8 @@ export class EditorEntity extends BaseEntity {
     example: 'имя редактора',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   name!: string;
 
   @Column({ type: 'integer', default: 1920 })
@@ -62,7 +65,8 @@ export class EditorEntity extends BaseEntity {
     example: 1920,
     required: true,
   })
-  @IsInt()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  @Min(0, { message: i18nValidationMessage('validation.MIN') })
   width!: number;
 
   @Column({ type: 'integer', default: 1080 })
@@ -72,7 +76,8 @@ export class EditorEntity extends BaseEntity {
     example: 1080,
     required: true,
   })
-  @IsInt()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  @Min(0, { message: i18nValidationMessage('validation.MIN') })
   height!: number;
 
   @Column({ type: 'integer', default: 24 })
@@ -82,7 +87,7 @@ export class EditorEntity extends BaseEntity {
     example: 24,
     required: true,
   })
-  @IsInt()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   fps!: number;
 
   @Column({
@@ -97,7 +102,9 @@ export class EditorEntity extends BaseEntity {
     example: RenderingStatus.Initial,
     required: true,
   })
-  @IsEnum(RenderingStatus)
+  @IsEnum(RenderingStatus, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   renderingStatus!: RenderingStatus;
 
   @Column({
@@ -112,7 +119,10 @@ export class EditorEntity extends BaseEntity {
     nullable: true,
     required: true,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   renderingPercent!: number | null;
 
   @Column({ type: 'varchar', nullable: true })
@@ -122,7 +132,8 @@ export class EditorEntity extends BaseEntity {
     nullable: true,
     required: true,
   })
-  @IsString()
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   renderingError!: string | null;
 
   @ManyToOne(() => FileEntity, (file) => file.id, {
@@ -130,7 +141,7 @@ export class EditorEntity extends BaseEntity {
     nullable: true,
     eager: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_editor_renderedFile_id' })
   @ApiProperty({
     description: 'Обработанный файл',
     nullable: true,
@@ -146,12 +157,12 @@ export class EditorEntity extends BaseEntity {
     onUpdate: 'CASCADE',
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_editor_playlist_id' })
   playlist?: PlaylistEntity | null;
 
   @Column({ type: 'uuid', nullable: true })
   @RelationId((editor: EditorEntity) => editor.playlist)
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   playlistId?: string | null;
 
   @Column({ type: 'boolean', default: true })
@@ -161,7 +172,7 @@ export class EditorEntity extends BaseEntity {
     example: true,
     required: true,
   })
-  @IsBoolean()
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   keepSourceAudio!: boolean;
 
   @Column({ type: 'numeric', default: 0 })
@@ -171,7 +182,10 @@ export class EditorEntity extends BaseEntity {
     example: 0,
     required: true,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   totalDuration!: number;
 
   @ManyToMany(() => EditorLayerEntity, (layer) => layer.video, {
@@ -205,11 +219,11 @@ export class EditorEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_editor_user_id' })
   user!: UserEntity;
 
   @Column({ type: 'uuid', select: false })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @CreateDateColumn()
@@ -224,7 +238,10 @@ export class EditorEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -239,7 +256,10 @@ export class EditorEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 
   @AfterLoad()

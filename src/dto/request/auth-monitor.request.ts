@@ -6,6 +6,7 @@ import {
   Length,
   Matches,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class AuthMonitorRequest {
   @ApiProperty({
@@ -20,10 +21,12 @@ export class AuthMonitorRequest {
     example: '123-456-789',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsString()
-  @Length(11, 11)
-  @Matches(/^[0-9]{3}-[0-9]{3}-[0-9]{3}$/)
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @Length(11, 11, { message: i18nValidationMessage('validation.LENGTH') })
+  @Matches(/^[0-9]{3}-[0-9]{3}-[0-9]{3}$/, {
+    message: i18nValidationMessage('validation.MATCHES'),
+  })
   code!: string;
 }

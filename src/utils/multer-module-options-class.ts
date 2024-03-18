@@ -23,7 +23,7 @@ export class MulterModuleOptionsClass implements MulterOptionsFactory {
           file: Express.Multer.File,
           callback: (error: Error | null, path: string) => void,
         ) => {
-          callback(null, this.configService.get('FILES_UPLOAD', 'upload'));
+          callback(null, this.configService.getOrThrow('FILES_UPLOAD'));
         },
       }),
     };

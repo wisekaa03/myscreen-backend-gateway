@@ -24,6 +24,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
 import { MonitorEntity } from '@/database/monitor.entity';
@@ -40,7 +41,7 @@ export class UserEntity {
     description: 'Идентификатор пользователя',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Column({ type: 'varchar', unique: true })
@@ -52,9 +53,9 @@ export class UserEntity {
     maxLength: 254,
     example: 'foo@bar.baz',
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsEmail()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.NOT_EMPTY') })
+  @IsEmail({}, { message: i18nValidationMessage('validation.IS_EMAIL') })
   email!: string;
 
   @Index('userDisabledIndex')
@@ -71,8 +72,8 @@ export class UserEntity {
     nullable: true,
     required: false,
   })
-  @IsString()
-  @MaxLength(50)
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @MaxLength(50, { message: i18nValidationMessage('validation.MAX_LENGTH') })
   surname!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
@@ -84,8 +85,8 @@ export class UserEntity {
     nullable: true,
     required: false,
   })
-  @IsString()
-  @MaxLength(50)
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @MaxLength(50, { message: i18nValidationMessage('validation.MAX_LENGTH') })
   name!: string | null;
 
   @Column({ type: 'varchar', nullable: true })
@@ -97,8 +98,8 @@ export class UserEntity {
     nullable: true,
     required: false,
   })
-  @IsString()
-  @MaxLength(50)
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @MaxLength(50, { message: i18nValidationMessage('validation.MAX_LENGTH') })
   middleName!: string | null;
 
   @Column({ select: false })
@@ -112,10 +113,14 @@ export class UserEntity {
     format: 'password',
     pattern: '/((?=.*\\d)|(?=.*\\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
   })
-  @MinLength(8, { message: 'password is too short' })
-  @MaxLength(30, { message: 'password is too long' })
+  @MinLength(8, {
+    message: i18nValidationMessage('validation.PASSWORD_MIN_LENGTH'),
+  })
+  @MaxLength(32, {
+    message: i18nValidationMessage('validation.PASSWORD_MAX_LENGTH'),
+  })
   @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'password too weak',
+    message: i18nValidationMessage('validation.PASSWORD_TOO_WEAK'),
   })
   password?: string;
 
@@ -127,7 +132,9 @@ export class UserEntity {
     nullable: true,
     required: false,
   })
-  @IsPhoneNumber()
+  @IsPhoneNumber(undefined, {
+    message: i18nValidationMessage('validation.IS_PHONE_NUMBER'),
+  })
   phoneNumber?: string;
 
   @Column({ nullable: true })
@@ -137,8 +144,8 @@ export class UserEntity {
     maxLength: 100,
     required: false,
   })
-  @IsString()
-  @MaxLength(100)
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @MaxLength(100, { message: i18nValidationMessage('validation.MAX_LENGTH') })
   city!: string;
 
   @Column({

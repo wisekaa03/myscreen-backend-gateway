@@ -21,6 +21,7 @@ export * from './not-implemented.response';
 export * from './not-acceptable.response';
 
 export const HttpError = {
+  I18nValidationException: BadRequestError,
   BadRequestException: BadRequestError,
   ForbiddenException: ForbiddenError,
   ConflictException: ConflictError,

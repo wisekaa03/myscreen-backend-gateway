@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsUUID } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { FileEntity } from './file.entity';
 
@@ -26,7 +27,7 @@ export class FilePreviewEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @OneToOne(() => FileEntity, (file) => file.preview, {

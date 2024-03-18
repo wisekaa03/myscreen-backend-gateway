@@ -1,4 +1,4 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import {
   IsDefined,
   IsEnum,
@@ -8,34 +8,37 @@ import {
   MinLength,
 } from 'class-validator';
 
+import { i18nValidationMessage } from 'nestjs-i18n';
 import { UserRole, UserRoleEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 
-export class RegisterRequest extends PickType(UserEntity, [
-  'name',
-  'surname',
-  'middleName',
-  'phoneNumber',
-  'role',
-  'city',
-  'country',
-  'company',
-  'email',
-  'storageSpace',
-  'companyActualAddress',
-  'companyBIC',
-  'companyBank',
-  'companyCorrespondentAccount',
-  'companyEmail',
-  'companyFax',
-  'companyLegalAddress',
-  'companyPSRN',
-  'companyPaymentAccount',
-  'companyPhone',
-  'companyRRC',
-  'companyRepresentative',
-  'companyTIN',
-]) {
+export class RegisterRequest extends PartialType(
+  PickType(UserEntity, [
+    'name',
+    'surname',
+    'middleName',
+    'phoneNumber',
+    'role',
+    'city',
+    'country',
+    'company',
+    'email',
+    'preferredLanguage',
+    'companyActualAddress',
+    'companyBIC',
+    'companyBank',
+    'companyCorrespondentAccount',
+    'companyEmail',
+    'companyFax',
+    'companyLegalAddress',
+    'companyPSRN',
+    'companyPaymentAccount',
+    'companyPhone',
+    'companyRRC',
+    'companyRepresentative',
+    'companyTIN',
+  ]),
+) {
   @ApiProperty({
     description: 'Роль пользователя',
     enum: UserRole,
@@ -43,9 +46,9 @@ export class RegisterRequest extends PickType(UserEntity, [
     example: UserRoleEnum.Advertiser,
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsEnum(UserRole)
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsEnum(UserRole, { message: i18nValidationMessage('validation.IS_ENUM') })
   role!: UserRoleEnum;
 
   @ApiProperty({
@@ -53,15 +56,19 @@ export class RegisterRequest extends PickType(UserEntity, [
     description:
       'Пароля пользователя (должен удовлетворять минимальным требованиям)',
     minLength: 8,
-    maxLength: 30,
+    maxLength: 32,
     pattern: '/((?=.*d)|(?=.*W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
   })
-  @MinLength(8, { message: 'password is too short' })
-  @MaxLength(30, { message: 'password is too long' })
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: 'password too weak',
+  @MinLength(8, {
+    message: i18nValidationMessage('validation.PASSWORD_MIN_LENGTH'),
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @MaxLength(32, {
+    message: i18nValidationMessage('validation.PASSWORD_MAX_LENGTH'),
+  })
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: i18nValidationMessage('validation.PASSWORD_TOO_WEAK'),
+  })
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   password!: string;
 }

@@ -1,5 +1,13 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsNumber, Min } from 'class-validator';
+import {
+  IsDateString,
+  IsDefined,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  Min,
+} from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { InvoiceEntity } from '@/database/invoice.entity';
 import { MSRange, MSRangeEnum } from '@/interfaces';
@@ -17,8 +25,12 @@ export class InvoiceRequest extends PartialType(
     },
     required: false,
   })
-  @IsNumber(undefined, { each: true })
-  @Min(100, { each: true })
+  @IsOptional()
+  @IsNumber(undefined, {
+    each: true,
+    message: i18nValidationMessage('validation.IS_NUMBER'),
+  })
+  @Min(100, { each: true, message: i18nValidationMessage('validation.MIN') })
   sum?: MSRange<number>;
 
   @ApiProperty({
@@ -32,7 +44,11 @@ export class InvoiceRequest extends PartialType(
     isArray: true,
     required: false,
   })
-  @IsEnum(InvoiceStatus, { each: true })
+  @IsOptional()
+  @IsEnum(InvoiceStatus, {
+    each: true,
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   status!: MSRangeEnum<InvoiceStatus>;
 
   @ApiProperty({
@@ -48,7 +64,11 @@ export class InvoiceRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   createdAt?: MSRange<Date>;
 
   @ApiProperty({
@@ -64,6 +84,10 @@ export class InvoiceRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   updatedAt?: MSRange<Date>;
 }

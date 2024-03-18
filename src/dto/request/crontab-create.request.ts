@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class CrontabCreateRequest {
   @ApiProperty({
@@ -9,6 +10,6 @@ export class CrontabCreateRequest {
     required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   crontab?: string;
 }

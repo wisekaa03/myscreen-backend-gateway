@@ -29,6 +29,7 @@ export class UsersGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<UserRequest>;
 

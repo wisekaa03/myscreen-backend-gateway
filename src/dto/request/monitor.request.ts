@@ -1,6 +1,7 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsDateString, IsInt } from 'class-validator';
+import { IsDateString, IsInt, IsOptional } from 'class-validator';
 
+import { i18nValidationMessage } from 'nestjs-i18n';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MSRange } from '@/interfaces';
 
@@ -29,7 +30,7 @@ export class MonitorRequest extends PartialType(
     },
     required: false,
   })
-  @IsInt({ each: true })
+  @IsInt({ each: true, message: i18nValidationMessage('validation.IS_INT') })
   price1s!: MSRange<number>;
 
   @ApiProperty({
@@ -41,7 +42,7 @@ export class MonitorRequest extends PartialType(
     },
     required: false,
   })
-  @IsInt({ each: true })
+  @IsInt({ each: true, message: i18nValidationMessage('validation.IS_INT') })
   minWarranty!: MSRange<number>;
 
   @ApiProperty({
@@ -53,7 +54,7 @@ export class MonitorRequest extends PartialType(
     },
     required: false,
   })
-  @IsInt({ each: true })
+  @IsInt({ each: true, message: i18nValidationMessage('validation.IS_INT') })
   maxDuration!: MSRange<number>;
 
   @ApiProperty({
@@ -69,7 +70,11 @@ export class MonitorRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   dateWhenApp?: MSRange<Date>;
 
   @ApiProperty({
@@ -85,7 +90,11 @@ export class MonitorRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   createdAt?: MSRange<Date>;
 
   @ApiProperty({
@@ -101,6 +110,10 @@ export class MonitorRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   updatedAt?: MSRange<Date>;
 }

@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsUUID } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { UserEntity } from '@/database/user.entity';
 
@@ -21,6 +22,7 @@ export class RefreshTokenEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', {
     primaryKeyConstraintName: 'PK_refreshtoken_id',
   })
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id?: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -34,7 +36,7 @@ export class RefreshTokenEntity extends BaseEntity {
 
   @Column({ type: 'uuid' })
   @RelationId((refreshToken: RefreshTokenEntity) => refreshToken.user)
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @Column({ type: 'boolean' })

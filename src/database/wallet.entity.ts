@@ -19,6 +19,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { UserEntity } from './user.entity';
 import { InvoiceEntity } from './invoice.entity';
@@ -32,7 +33,7 @@ export class WalletEntity extends BaseEntity {
     description: 'Идентификатор баланса',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Column({
@@ -48,7 +49,9 @@ export class WalletEntity extends BaseEntity {
     description: 'Тип транзакции',
     example: WalletTransactionType.DEBIT,
   })
-  @IsEnum(WalletTransactionType)
+  @IsEnum(WalletTransactionType, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   type!: WalletTransactionType;
 
   @Column({ type: 'varchar', default: '' })
@@ -56,17 +59,20 @@ export class WalletEntity extends BaseEntity {
     type: 'string',
     description: 'Описание транзакции',
   })
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   description!: string;
 
-  @Column()
+  @Column({ type: 'integer', default: 0 })
   @ApiProperty({
     description: 'Баланс',
     example: 0,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsNumber()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   sum!: number;
 
   @ManyToOne(() => InvoiceEntity, (invoice) => invoice.id, {
@@ -76,12 +82,12 @@ export class WalletEntity extends BaseEntity {
     eager: false,
     nullable: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_wallet_invoice_id' })
   invoice!: InvoiceEntity | null;
 
   @Column({ type: 'uuid', nullable: true })
   @RelationId((wallet: WalletEntity) => wallet.invoice)
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   invoiceId!: string | null;
 
   @ManyToOne(() => ActEntity, (invoice) => invoice.id, {
@@ -91,12 +97,12 @@ export class WalletEntity extends BaseEntity {
     eager: false,
     nullable: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_wallet_act_id' })
   act!: ActEntity | null;
 
   @Column({ type: 'uuid', nullable: true })
   @RelationId((wallet: WalletEntity) => wallet.act)
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   actId!: string | null;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -105,12 +111,12 @@ export class WalletEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_wallet_user_id' })
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
   @RelationId((wallet: WalletEntity) => wallet.user)
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @CreateDateColumn()
@@ -125,7 +131,10 @@ export class WalletEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -140,6 +149,9 @@ export class WalletEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 }
