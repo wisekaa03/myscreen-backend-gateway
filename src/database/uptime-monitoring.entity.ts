@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { IsDateString, IsUUID } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
@@ -23,7 +24,7 @@ export class UptimeMonitoringEntity extends BaseEntity {
     description: 'Идентификатор',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id?: string;
 
   @Column({ type: 'integer' })
@@ -33,7 +34,7 @@ export class UptimeMonitoringEntity extends BaseEntity {
   count!: number;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id)
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_uptime_monitoring_monitor_id' })
   monitor!: MonitorEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -42,11 +43,11 @@ export class UptimeMonitoringEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_uptime_monitoring_user_id' })
   user!: UserEntity;
 
   @Column({ select: false })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @CreateDateColumn()
@@ -61,7 +62,10 @@ export class UptimeMonitoringEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -76,6 +80,9 @@ export class UptimeMonitoringEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 }

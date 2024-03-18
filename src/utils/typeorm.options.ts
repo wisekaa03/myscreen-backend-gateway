@@ -17,13 +17,13 @@ export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
     const cacheHost = this.configService.get<string>('REDIS_HOST');
     const logLevel = this.configService.get<string>('LOG_LEVEL');
     return {
-      type: this.configService.get<any>('DB_TYPE', 'postgres'),
-      host: this.configService.get('DB_HOST'),
-      port: parseInt(this.configService.get('DB_PORT', '5432'), 10),
-      username: this.configService.get<string>('DB_USERNAME'),
-      password: this.configService.get<string>('DB_PASSWORD'),
-      database: this.configService.get<string>('DB_DATABASE'),
-      ssl: this.configService.get<string>('DB_SSL', 'true') === 'true',
+      type: this.configService.getOrThrow<string>('DB_TYPE') as any,
+      host: this.configService.getOrThrow('DB_HOST'),
+      port: parseInt(this.configService.getOrThrow('DB_PORT'), 10),
+      username: this.configService.getOrThrow('DB_USERNAME'),
+      password: this.configService.getOrThrow('DB_PASSWORD'),
+      database: this.configService.getOrThrow<string>('DB_DATABASE'),
+      ssl: this.configService.getOrThrow('DB_SSL') === 'true',
       nativeDriver: true,
       logging: logLevel ? (logLevel.split(',') as LogLevel[]) : false,
       logger: logLevel ? new TypeOrmLogger() : undefined,

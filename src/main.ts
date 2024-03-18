@@ -10,13 +10,14 @@ import {
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
+import { I18nValidationPipe } from 'nestjs-i18n';
 
 import { version, author, homepage, description } from '../package.json';
 import { ExceptionsFilter } from './exception/exceptions.filter';
-import { validationPipeOptions } from './utils/validation-pipe-options';
 import { WsAdapter } from './websocket/ws-adapter';
 import { AppModule } from './app.module';
 import { UserService } from './database/user.service';
+import { I18nValidationExceptionMyScreenFilter } from './exception/i18nvalidationexception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -45,15 +46,17 @@ async function bootstrap() {
   const { frontendUrl } = userService;
   app.disable('x-powered-by').disable('server');
   const staticAssets = pathJoin('static');
+  const { httpAdapter } = app.get(HttpAdapterHost);
   app
     .useStaticAssets(staticAssets, {
       dotfiles: 'deny',
     })
     .setGlobalPrefix(apiPath, { exclude: ['/'] })
     .useGlobalFilters(
-      new ExceptionsFilter(app.get(HttpAdapterHost).httpAdapter, configService),
+      new ExceptionsFilter(httpAdapter, configService),
+      new I18nValidationExceptionMyScreenFilter(httpAdapter, configService),
     )
-    .useGlobalPipes(validationPipeOptions())
+    .useGlobalPipes(new I18nValidationPipe())
     .useGlobalInterceptors(new LoggerErrorInterceptor())
     .useWebSocketAdapter(new WsAdapter(app));
 

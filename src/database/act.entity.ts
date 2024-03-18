@@ -4,6 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -20,7 +21,9 @@ import {
   IsUUID,
   Min,
   IsBoolean,
+  IsInt,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { ActStatus } from '@/enums/act-status.enum';
 import { UserEntity } from './user.entity';
@@ -35,7 +38,7 @@ export class ActEntity extends BaseEntity {
     description: 'Идентификатор акта выполненных работ',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Generated('increment')
@@ -43,7 +46,7 @@ export class ActEntity extends BaseEntity {
   @ApiProperty({
     description: 'Номер акта выполненных работ',
   })
-  @IsNumber()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   seqNo!: number;
 
   @Column()
@@ -51,22 +54,25 @@ export class ActEntity extends BaseEntity {
     description: 'Описание акта выполненных работ',
     example: 'описание акта выполненных работ',
   })
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   description!: string;
 
-  @Column()
+  @Column({ type: 'float', default: 0 })
   @ApiProperty({
     description: 'Сумма акта выполненных работ',
     example: 1000,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(100)
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(100, { message: i18nValidationMessage('validation.MIN') })
   sum!: number;
 
   @Column({ type: 'boolean', default: false })
-  @IsBoolean()
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   isSubscription!: boolean;
 
   @Column({
@@ -82,7 +88,7 @@ export class ActEntity extends BaseEntity {
     description: 'Подтверждение/отклонение акта выполненных работ',
     example: ActStatus.COMPLETE,
   })
-  @IsEnum(ActStatus)
+  @IsEnum(ActStatus, { message: i18nValidationMessage('validation.IS_ENUM') })
   status!: ActStatus;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -91,11 +97,12 @@ export class ActEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_act_user_id' })
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
-  @IsUUID()
+  @Index('actUserIdIndex')
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @CreateDateColumn()
@@ -110,7 +117,10 @@ export class ActEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -125,6 +135,9 @@ export class ActEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 }

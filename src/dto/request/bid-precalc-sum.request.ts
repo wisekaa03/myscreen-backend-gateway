@@ -6,13 +6,15 @@ import {
   IsNotEmpty,
   IsUUID,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class BidPrecalcSumRequest {
   @ApiProperty({
     description: 'Плэйлист ID',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   playlistId!: string;
 
   @ApiProperty({
@@ -21,7 +23,8 @@ export class BidPrecalcSumRequest {
     example: 1,
     required: true,
   })
-  @IsInt()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   minWarranty!: number;
 
   @ApiProperty({
@@ -30,7 +33,8 @@ export class BidPrecalcSumRequest {
     example: 1,
     required: true,
   })
-  @IsInt()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   price1s!: number;
 
   @ApiProperty({
@@ -40,9 +44,12 @@ export class BidPrecalcSumRequest {
     format: 'date',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsDateString({ strict: false })
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   dateBefore!: string;
 
   @ApiProperty({
@@ -52,8 +59,11 @@ export class BidPrecalcSumRequest {
     format: 'date',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsDateString({ strict: false })
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   dateWhen!: string;
 }

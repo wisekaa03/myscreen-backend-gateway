@@ -1,5 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { FileEntity } from '@/database/file.entity';
 
@@ -10,8 +11,8 @@ export class FileUpdatesRequest extends PickType(FileEntity, ['id']) {
     required: false,
   })
   @IsOptional()
-  @IsString()
-  @MinLength(1)
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @MinLength(1, { message: i18nValidationMessage('validation.MIN_LENGTH') })
   name?: string;
 
   @ApiProperty({
@@ -21,6 +22,6 @@ export class FileUpdatesRequest extends PickType(FileEntity, ['id']) {
     required: false,
   })
   @IsOptional()
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   folderId?: string;
 }

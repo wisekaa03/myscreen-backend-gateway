@@ -5,6 +5,7 @@ import { subDays } from 'date-fns';
 import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
 import { Observable } from 'rxjs';
+import { I18nService } from 'nestjs-i18n';
 import { MAIL_SERVICE } from '@/constants';
 import { CRUD, UserPlanEnum, UserRoleEnum } from '@/enums';
 import { UserEntity } from './user.entity';
@@ -34,9 +35,11 @@ describe(UserService.name, () => {
     sendWelcomeMessage: async () => Promise.resolve({}),
     sendVerificationCode: async () => Promise.resolve({}),
     get: (key: string, defaultValue?: string) => defaultValue,
+    getOrThrow: (key: string) => key,
     emit: async (event: string, data: unknown) =>
       new Observable((s) => s.next(data)),
     send: async (id: unknown) => new Observable((s) => s.next(id)),
+    t: (value: unknown) => value,
     metadata: {
       columns: [],
       relations: [],
@@ -47,6 +50,7 @@ describe(UserService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
+        { provide: I18nService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
         { provide: MAIL_SERVICE, useClass: mockRepository },
         {

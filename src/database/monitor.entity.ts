@@ -32,6 +32,7 @@ import {
 } from 'typeorm';
 import { Point } from 'geojson';
 import { Type } from 'class-transformer';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import {
   MonitorCategoryEnum,
@@ -55,7 +56,7 @@ export class PointClass implements Point {
     example: 'Point',
     required: true,
   })
-  @IsIn(['Point'])
+  @IsIn(['Point'], { message: i18nValidationMessage('validation.IS_IN') })
   'type': 'Point' = 'Point' as const;
 
   @ApiProperty({
@@ -65,7 +66,10 @@ export class PointClass implements Point {
     example: [38.97603, 45.04484],
     required: true,
   })
-  @IsNumber({}, { each: true })
+  @IsNumber(
+    {},
+    { each: true, message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   coordinates: number[] = [];
 }
 
@@ -75,7 +79,8 @@ export class Address {
     example: 'Россия',
     required: false,
   })
-  @IsString()
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   country?: string;
 
   @ApiProperty({
@@ -83,7 +88,8 @@ export class Address {
     example: 'Краснодар',
     required: false,
   })
-  @IsString()
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   city?: string;
 
   @ApiProperty({
@@ -91,7 +97,8 @@ export class Address {
     example: 'Красная',
     required: false,
   })
-  @IsString()
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   street?: string;
 
   @ApiProperty({
@@ -99,7 +106,8 @@ export class Address {
     example: '1',
     required: false,
   })
-  @IsString()
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   house?: string;
 
   @ApiProperty({
@@ -107,7 +115,8 @@ export class Address {
     example: '1',
     required: false,
   })
-  @IsString()
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   room?: string;
 }
 
@@ -117,7 +126,8 @@ export class MonitorInfo {
     example: 'Samsung',
     required: false,
   })
-  @IsString()
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   model?: string;
 
   @ApiProperty({
@@ -125,7 +135,7 @@ export class MonitorInfo {
     example: '3840x2190',
     required: false,
   })
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   resolution?: string;
 
   @ApiProperty({
@@ -133,7 +143,10 @@ export class MonitorInfo {
     example: 0,
     required: false,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   angle?: number;
 
   @ApiProperty({
@@ -141,7 +154,7 @@ export class MonitorInfo {
     example: 'IPS',
     required: false,
   })
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   matrix?: string;
 
   @ApiProperty({
@@ -149,12 +162,15 @@ export class MonitorInfo {
     example: 0,
     required: false,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   brightness?: number;
 }
 
 @Entity('monitor', { comment: 'Мониторы' })
-@Unique('user_name_Unique', ['user', 'name'])
+@Unique('UNQ_user_name', ['user', 'name'])
 export class MonitorEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_monitor_id' })
   @ApiProperty({
@@ -162,7 +178,7 @@ export class MonitorEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Column()
@@ -170,9 +186,9 @@ export class MonitorEntity extends BaseEntity {
     description: 'Имя',
     example: 'имя монитора',
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsString()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   name!: string;
 
   @Column({ type: 'jsonb', default: {} })
@@ -200,7 +216,9 @@ export class MonitorEntity extends BaseEntity {
     example: MonitorCategoryEnum.GAS_STATION,
     required: true,
   })
-  @IsEnum(MonitorCategoryEnum)
+  @IsEnum(MonitorCategoryEnum, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   category!: MonitorCategoryEnum;
 
   @Column({ type: 'integer', default: 0 })
@@ -210,7 +228,7 @@ export class MonitorEntity extends BaseEntity {
     example: 1,
     required: false,
   })
-  @IsInt()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   price1s!: number;
 
   @Column({ type: 'integer', default: 0 })
@@ -220,7 +238,7 @@ export class MonitorEntity extends BaseEntity {
     example: 1,
     required: false,
   })
-  @IsInt()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   minWarranty!: number;
 
   @Column({ type: 'integer', default: 0 })
@@ -230,7 +248,7 @@ export class MonitorEntity extends BaseEntity {
     example: 1,
     required: false,
   })
-  @IsInt()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   maxDuration!: number;
 
   @Column({
@@ -245,7 +263,9 @@ export class MonitorEntity extends BaseEntity {
     example: MonitorOrientation.Horizontal,
     required: false,
   })
-  @IsEnum(MonitorOrientation)
+  @IsEnum(MonitorOrientation, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   orientation!: MonitorOrientation;
 
   @Column({ type: 'jsonb', default: {} })
@@ -257,8 +277,8 @@ export class MonitorEntity extends BaseEntity {
     example: 'Samsung',
     required: false,
   })
-  @IsString()
-  @Length(1, 255)
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @Length(1, 255, { message: i18nValidationMessage('validation.LENGTH') })
   model?: string;
 
   @Column({ type: 'integer', nullable: true, default: null })
@@ -267,7 +287,10 @@ export class MonitorEntity extends BaseEntity {
     example: 0,
     required: false,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   angle?: number;
 
   @Column({ type: 'varchar', nullable: true, default: null })
@@ -276,7 +299,7 @@ export class MonitorEntity extends BaseEntity {
     example: 'IPS',
     required: false,
   })
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   matrix?: string;
 
   @Column({ type: 'integer', nullable: true, default: null })
@@ -285,7 +308,10 @@ export class MonitorEntity extends BaseEntity {
     example: 100,
     required: false,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   brightness?: number;
 
   @Column({ type: 'integer', default: 0 })
@@ -295,7 +321,10 @@ export class MonitorEntity extends BaseEntity {
     example: 1920,
     required: true,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   width!: number;
 
   @Column({ type: 'integer', default: 0 })
@@ -305,7 +334,10 @@ export class MonitorEntity extends BaseEntity {
     example: 1080,
     required: true,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   height!: number;
 
   @Column({ type: 'boolean', default: false })
@@ -313,7 +345,7 @@ export class MonitorEntity extends BaseEntity {
     description: 'Присоединен',
     example: false,
   })
-  @IsBoolean()
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   attached!: boolean;
 
   @Column({ type: 'boolean', default: true })
@@ -321,7 +353,7 @@ export class MonitorEntity extends BaseEntity {
     description: 'Есть звук: true/false',
     example: true,
   })
-  @IsBoolean()
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   sound!: boolean;
 
   @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
@@ -332,7 +364,9 @@ export class MonitorEntity extends BaseEntity {
     enumName: 'MonitorStatus',
     example: MonitorStatus.Offline,
   })
-  @IsEnum(MonitorStatus)
+  @IsEnum(MonitorStatus, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   status!: MonitorStatus;
 
   @Column({
@@ -350,7 +384,9 @@ export class MonitorEntity extends BaseEntity {
     required: false,
   })
   @IsOptional()
-  @IsEnum(MonitorMultiple)
+  @IsEnum(MonitorMultiple, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   multiple!: MonitorMultiple;
 
   @OneToMany(
@@ -381,7 +417,7 @@ export class MonitorEntity extends BaseEntity {
     description: 'Проигрывается плэйлист',
     example: false,
   })
-  @IsBoolean()
+  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   playlistPlayed!: boolean;
 
   @Column({ type: 'char', length: 11, nullable: true })
@@ -393,7 +429,7 @@ export class MonitorEntity extends BaseEntity {
     nullable: true,
     required: false,
   })
-  @Length(11, 11)
+  @Length(11, 11, { message: i18nValidationMessage('validation.LENGTH') })
   code!: string | null;
 
   @Column({ type: 'timestamptz', default: null, nullable: true })
@@ -448,11 +484,11 @@ export class MonitorEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_user_id' })
   user!: UserEntity;
 
-  @Column()
-  @IsUUID()
+  @Column({ type: 'uuid' })
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.monitors, {
@@ -460,11 +496,11 @@ export class MonitorEntity extends BaseEntity {
     onUpdate: 'CASCADE',
     nullable: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_playlist_id' })
   playlist?: PlaylistEntity | null;
 
-  @Column({ nullable: true })
-  @IsUUID()
+  @Column({ type: 'uuid', nullable: true })
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   playlistId?: string | null;
 
   @ManyToMany(() => FileEntity, (file) => file.monitors, {
@@ -492,7 +528,10 @@ export class MonitorEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -507,6 +546,9 @@ export class MonitorEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 }

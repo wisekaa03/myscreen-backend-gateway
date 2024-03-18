@@ -69,7 +69,7 @@ export class BidService {
     configService: ConfigService,
   ) {
     this.commissionPercent = parseInt(
-      configService.get('COMMISSION_PERCENT', '5'),
+      configService.getOrThrow('COMMISSION_PERCENT'),
       10,
     );
   }
@@ -420,12 +420,14 @@ export class BidService {
 
       if (update.approved === BidApprove.NOTPROCESSED) {
         const sellerEmail = bid.seller?.email;
+        const language = bid.seller?.preferredLanguage;
         if (sellerEmail) {
           this.mailService.emit<unknown, MailSendApplicationMessage>(
             'sendApplicationWarningMessage',
             {
               email: sellerEmail,
               applicationUrl: `${this.fileService.frontEndUrl}/applications`,
+              language,
             },
           );
         } else {
@@ -585,12 +587,15 @@ export class BidService {
         // Отправляем письмо продавцу
         if (insert.approved === BidApprove.NOTPROCESSED) {
           const sellerEmail = bid.seller?.email;
+          const language =
+            bid.seller.preferredLanguage ?? user.preferredLanguage;
           if (sellerEmail) {
             this.mailService.emit<unknown, MailSendApplicationMessage>(
               'sendApplicationWarningMessage',
               {
                 email: sellerEmail,
                 applicationUrl: `${this.fileService.frontEndUrl}/applications`,
+                language,
               },
             );
           } else {

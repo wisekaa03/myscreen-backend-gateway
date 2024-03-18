@@ -1,3 +1,4 @@
+import * as nodePath from 'node:path';
 import { Module, Logger } from '@nestjs/common';
 import 'dotenv';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -8,6 +9,7 @@ import type { PrettyOptions } from 'pino-pretty';
 import 'pino-elasticsearch';
 import type { ClientOptions as ElasticClientOptions } from '@elastic/elasticsearch';
 import { LoggerModule, Params as NestPinoParams } from 'nestjs-pino';
+import { I18nModule } from 'nestjs-i18n';
 import {
   ClientsModule,
   Transport,
@@ -22,6 +24,7 @@ import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
 import { CrontabModule } from './crontab/crontab.module';
+import { UserLanguageResolver } from './i18n/userLanguageResolver';
 
 @Module({
   imports: [
@@ -31,6 +34,7 @@ import { CrontabModule } from './crontab/crontab.module';
       cache: true,
       envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
     }),
+
     LoggerModule.forRootAsync({
       useFactory: async (
         configService: ConfigService,
@@ -49,7 +53,7 @@ import { CrontabModule } from './crontab/crontab.module';
             singleLine: true,
             ignore: 'pid,hostname',
           },
-          level: configService.get<LevelWithSilent>('LOG_LEVEL', 'debug'),
+          level: configService.getOrThrow<LevelWithSilent>('LOG_LEVEL'),
         };
         targets.push(prettyPrint);
 
@@ -90,13 +94,10 @@ import { CrontabModule } from './crontab/crontab.module';
             options: {
               urls: [
                 {
-                  hostname: configService.get('RABBITMQ_HOST', 'localhost'),
-                  port: parseInt(
-                    configService.get('RABBITMQ_PORT', '5672'),
-                    10,
-                  ),
-                  username: configService.get('RABBITMQ_USERNAME', 'guest'),
-                  password: configService.get('RABBITMQ_PASSWORD', 'guest'),
+                  hostname: configService.getOrThrow('RABBITMQ_HOST'),
+                  port: parseInt(configService.getOrThrow('RABBITMQ_PORT'), 10),
+                  username: configService.getOrThrow('RABBITMQ_USERNAME'),
+                  password: configService.getOrThrow('RABBITMQ_PASSWORD'),
                 },
               ],
               queue: 'mail_queue',
@@ -129,13 +130,10 @@ import { CrontabModule } from './crontab/crontab.module';
             options: {
               urls: [
                 {
-                  hostname: configService.get('RABBITMQ_HOST', 'localhost'),
-                  port: parseInt(
-                    configService.get('RABBITMQ_PORT', '5672'),
-                    10,
-                  ),
-                  username: configService.get('RABBITMQ_USERNAME', 'guest'),
-                  password: configService.get('RABBITMQ_PASSWORD', 'guest'),
+                  hostname: configService.getOrThrow('RABBITMQ_HOST'),
+                  port: parseInt(configService.getOrThrow('RABBITMQ_PORT'), 10),
+                  username: configService.getOrThrow('RABBITMQ_USERNAME'),
+                  password: configService.getOrThrow('RABBITMQ_PASSWORD'),
                 },
               ],
               queue: 'editor_queue',
@@ -168,13 +166,10 @@ import { CrontabModule } from './crontab/crontab.module';
             options: {
               urls: [
                 {
-                  hostname: configService.get('RABBITMQ_HOST', 'localhost'),
-                  port: parseInt(
-                    configService.get('RABBITMQ_PORT', '5672'),
-                    10,
-                  ),
-                  username: configService.get('RABBITMQ_USERNAME', 'guest'),
-                  password: configService.get('RABBITMQ_PASSWORD', 'guest'),
+                  hostname: configService.getOrThrow('RABBITMQ_HOST'),
+                  port: parseInt(configService.getOrThrow('RABBITMQ_PORT'), 10),
+                  username: configService.getOrThrow('RABBITMQ_USERNAME'),
+                  password: configService.getOrThrow('RABBITMQ_PASSWORD'),
                 },
               ],
               queue: 'file_queue',
@@ -211,6 +206,22 @@ import { CrontabModule } from './crontab/crontab.module';
     }),
     DatabaseModule,
     EndpointModule,
+
+    I18nModule.forRootAsync({
+      useFactory: (configService: ConfigService) => ({
+        fallbackLanguage: configService.getOrThrow('LANGUAGE_DEFAULT'),
+        loaderOptions: {
+          path:
+            process.env.NODE_ENV === 'test'
+              ? nodePath.join(__dirname, 'i18n/')
+              : nodePath.join(__dirname, '../i18n/'),
+          watch: true,
+        },
+      }),
+      resolvers: [UserLanguageResolver],
+      inject: [ConfigService],
+      imports: [DatabaseModule, AuthModule, ConfigModule],
+    }),
   ],
   providers: [Logger],
 })

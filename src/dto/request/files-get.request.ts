@@ -27,6 +27,7 @@ export class FilesGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<FileRequest>;
 

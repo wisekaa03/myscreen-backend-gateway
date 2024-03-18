@@ -9,8 +9,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
-// eslint-disable-next-line import/no-cycle
 import { MonitorEntity } from './monitor.entity';
 import { UserEntity } from './user.entity';
 
@@ -24,18 +24,21 @@ export class MonitorFavoriteEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.favorities, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn({ name: 'monitorId' })
+  @JoinColumn({
+    name: 'monitorId',
+    foreignKeyConstraintName: 'FK_monitor_favorite_monitor_id',
+  })
   monitor?: MonitorEntity;
 
   @Column()
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   monitorId!: string;
 
   @ManyToOne(() => UserEntity, {
@@ -48,6 +51,6 @@ export class MonitorFavoriteEntity extends BaseEntity {
   user?: UserEntity;
 
   @Column()
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 }

@@ -27,6 +27,7 @@ export class EditorsGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<EditorRequest>;
 

@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToMany,
   ManyToOne,
@@ -24,6 +25,7 @@ import {
   IsUUID,
   IsUrl,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { FileCategory, VideoType } from '@/enums';
 import { UserEntity } from './user.entity';
@@ -40,7 +42,7 @@ export class FileEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @ManyToOne(() => FolderEntity, (folder) => folder.files, {
@@ -60,7 +62,7 @@ export class FileEntity extends BaseEntity {
   })
   @IsDefined()
   @IsNotEmpty()
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   folderId?: string;
 
   @Column()
@@ -171,11 +173,12 @@ export class FileEntity extends BaseEntity {
     onDelete: 'CASCADE',
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_file_user' })
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
-  @IsUUID()
+  @Index('file_user_id_index')
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @OneToOne(() => FilePreviewEntity, (filePreview) => filePreview.file, {
@@ -226,7 +229,10 @@ export class FileEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -241,7 +247,10 @@ export class FileEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 
   @ApiProperty({
@@ -250,7 +259,7 @@ export class FileEntity extends BaseEntity {
     type: 'string',
     required: false,
   })
-  @IsUrl()
+  @IsUrl({}, { message: i18nValidationMessage('validation.IS_URL') })
   signedUrl?: string;
 
   @AfterLoad()

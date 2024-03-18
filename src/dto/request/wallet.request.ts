@@ -1,5 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsDateString, IsEnum } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { WalletTransactionType } from '@/enums';
 import { MSRange, MSRangeEnum } from '@/interfaces';
@@ -19,7 +20,10 @@ export class WalletRequest extends PartialType(
     isArray: true,
     required: false,
   })
-  @IsEnum(WalletTransactionType, { each: true })
+  @IsEnum(WalletTransactionType, {
+    each: true,
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   type?: MSRangeEnum<WalletTransactionType>;
 
   @ApiProperty({
@@ -35,7 +39,11 @@ export class WalletRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   createdAt?: MSRange<Date>;
 
   @ApiProperty({
@@ -51,6 +59,10 @@ export class WalletRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false }, { each: true })
+  @IsOptional()
+  @IsDateString(
+    { strict: false },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
+  )
   updatedAt?: MSRange<Date>;
 }

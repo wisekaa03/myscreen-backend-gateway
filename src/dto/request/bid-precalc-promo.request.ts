@@ -6,6 +6,7 @@ import {
   IsNumber,
   IsUUID,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class BidPrecalcPromoRequest {
   @ApiProperty({
@@ -15,7 +16,11 @@ export class BidPrecalcPromoRequest {
     isArray: true,
     required: true,
   })
-  @IsUUID('all', { each: true })
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsUUID('all', {
+    each: true,
+    message: i18nValidationMessage('validation.IS_UUID'),
+  })
   monitorIds!: string[];
 
   @ApiProperty({
@@ -24,9 +29,9 @@ export class BidPrecalcPromoRequest {
     example: 60,
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsNumber()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsNumber({}, { message: i18nValidationMessage('validation.IS_NUMBER') })
   playlistDuration!: number;
 
   @ApiProperty({
@@ -36,9 +41,12 @@ export class BidPrecalcPromoRequest {
     format: 'date',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsDateString({ strict: false })
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   dateFrom!: string;
 
   @ApiProperty({
@@ -48,8 +56,11 @@ export class BidPrecalcPromoRequest {
     format: 'date',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsDateString({ strict: false })
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   dateTo!: string;
 }

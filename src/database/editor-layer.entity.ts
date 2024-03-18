@@ -20,6 +20,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { FileEntity } from './file.entity';
 import { EditorEntity } from './editor.entity';
@@ -34,7 +35,7 @@ export class EditorLayerEntity extends BaseEntity {
     example: '12345678',
     required: true,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @ManyToMany(() => EditorEntity, (editor) => editor.videoLayers, {
@@ -63,8 +64,8 @@ export class EditorLayerEntity extends BaseEntity {
     default: 1,
     required: true,
   })
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  @Min(1, { message: i18nValidationMessage('validation.MIN') })
   index!: number;
 
   @Column({ type: 'numeric', default: 10.0 })
@@ -75,8 +76,11 @@ export class EditorLayerEntity extends BaseEntity {
     default: 10,
     required: true,
   })
-  @IsNumber()
-  @Min(1)
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(1, { message: i18nValidationMessage('validation.MIN') })
   duration!: number;
 
   @Column({ type: 'numeric', default: 0.0 })
@@ -87,7 +91,10 @@ export class EditorLayerEntity extends BaseEntity {
     default: 0,
     required: true,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   cutFrom!: number;
 
   @Column({ type: 'numeric', default: 10 })
@@ -98,8 +105,11 @@ export class EditorLayerEntity extends BaseEntity {
     default: 10,
     required: true,
   })
-  @IsNumber()
-  @Min(1)
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(1, { message: i18nValidationMessage('validation.MIN') })
   cutTo!: number;
 
   @Column({ type: 'numeric', default: 0 })
@@ -110,8 +120,11 @@ export class EditorLayerEntity extends BaseEntity {
     example: 0,
     required: true,
   })
-  @IsNumber()
-  @Min(0)
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(0, { message: i18nValidationMessage('validation.MIN') })
   start!: number;
 
   @Column({ type: 'numeric', nullable: true, default: null })
@@ -120,7 +133,10 @@ export class EditorLayerEntity extends BaseEntity {
     type: 'number',
     required: false,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   cropX!: number;
 
   @Column({ type: 'numeric', nullable: true, default: null })
@@ -129,7 +145,10 @@ export class EditorLayerEntity extends BaseEntity {
     type: 'number',
     required: false,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   cropY!: number;
 
   @Column({ type: 'numeric', nullable: true, default: null })
@@ -138,7 +157,10 @@ export class EditorLayerEntity extends BaseEntity {
     type: 'number',
     required: false,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   cropW!: number;
 
   @Column({ type: 'numeric', nullable: true, default: null })
@@ -147,7 +169,10 @@ export class EditorLayerEntity extends BaseEntity {
     description: 'Высота обрезки',
     required: false,
   })
-  @IsNumber()
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   cropH!: number;
 
   @Column({ type: 'integer', default: 1 })
@@ -158,9 +183,9 @@ export class EditorLayerEntity extends BaseEntity {
     default: 1,
     required: true,
   })
-  @IsInt()
-  @Min(0)
-  @Max(1)
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  @Min(0, { message: i18nValidationMessage('validation.MIN') })
+  @Max(1, { message: i18nValidationMessage('validation.MAX') })
   mixVolume!: number;
 
   @ManyToOne(() => FileEntity, (file) => file.id, {
@@ -170,7 +195,7 @@ export class EditorLayerEntity extends BaseEntity {
     nullable: false,
     eager: true,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_editor_layer_file_id' })
   @ApiProperty({
     description: 'Файл',
     type: 'string',
@@ -179,7 +204,7 @@ export class EditorLayerEntity extends BaseEntity {
   file!: FileEntity;
 
   @Column({ type: 'uuid', select: false })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   fileId!: string;
 
   @CreateDateColumn({ select: false })
@@ -194,7 +219,10 @@ export class EditorLayerEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn({ select: false })
@@ -209,7 +237,10 @@ export class EditorLayerEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 
   // For path name

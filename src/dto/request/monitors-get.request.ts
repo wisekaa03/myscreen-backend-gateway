@@ -27,6 +27,7 @@ export class MonitorsGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<MonitorRequest>;
 

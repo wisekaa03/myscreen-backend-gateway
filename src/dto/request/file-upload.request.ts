@@ -1,5 +1,6 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { IsDefined, IsJSON, IsNotEmpty, IsUUID } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { FileCategory } from '@/enums';
 import { FileEntity } from '@/database/file.entity';
@@ -24,13 +25,13 @@ export class FileUploadRequest extends PickType(FileEntity, [
     description: 'Монитор',
     required: false,
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   monitorId?: string;
 }
 
 export class FileUploadRequestBody {
-  @IsDefined()
-  @IsNotEmpty()
-  @IsJSON()
+  @IsDefined({ message: i18nValidationMessage('validation.NOT_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.NOT_EMPTY') })
+  @IsJSON({ message: i18nValidationMessage('validation.INVALID_JSON') })
   param!: string;
 }

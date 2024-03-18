@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsOptional, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
+import { i18nValidationMessage } from 'nestjs-i18n';
 import { LimitOrderRequest } from './limit-order.request';
 
 export class LimitRequest<T = Record<string, 'DESC' | 'ASC'>> {
@@ -11,9 +12,12 @@ export class LimitRequest<T = Record<string, 'DESC' | 'ASC'>> {
     required: false,
   })
   @IsOptional()
-  @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 0 })
-  @Min(1)
-  @Max(100)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 0 },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(1, { message: i18nValidationMessage('validation.MIN') })
+  @Max(100, { message: i18nValidationMessage('validation.MAX') })
   limit?: number;
 
   @ApiProperty({
@@ -22,9 +26,12 @@ export class LimitRequest<T = Record<string, 'DESC' | 'ASC'>> {
     required: false,
   })
   @IsOptional()
-  @IsNumber({ allowNaN: false, allowInfinity: false, maxDecimalPlaces: 0 })
-  @Min(1)
-  @Max(100)
+  @IsNumber(
+    { allowNaN: false, allowInfinity: false, maxDecimalPlaces: 0 },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(1, { message: i18nValidationMessage('validation.MIN') })
+  @Max(100, { message: i18nValidationMessage('validation.MAX') })
   page?: number;
 
   @ApiProperty({

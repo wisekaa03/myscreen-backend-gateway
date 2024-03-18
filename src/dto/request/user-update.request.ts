@@ -1,6 +1,7 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 
+import { i18nValidationMessage } from 'nestjs-i18n';
 import { UserPlanEnum, UserRole, UserRoleEnum } from '@/enums';
 import { UserRequest } from './user.request';
 
@@ -40,7 +41,7 @@ export class UserUpdateRequest extends PartialType(
     required: false,
   })
   @IsOptional()
-  @IsEnum(UserRole)
+  @IsEnum(UserRole, { message: i18nValidationMessage('validation.IS_ENUM') })
   role?: UserRoleEnum;
 
   @ApiProperty({
@@ -51,6 +52,8 @@ export class UserUpdateRequest extends PartialType(
     required: false,
   })
   @IsOptional()
-  @IsEnum(UserPlanEnum)
+  @IsEnum(UserPlanEnum, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   plan?: UserPlanEnum;
 }

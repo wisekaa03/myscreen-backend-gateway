@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDefined, IsNotEmpty, IsUUID } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class FilesDeleteRequest {
   @ApiProperty({
@@ -9,8 +10,17 @@ export class FilesDeleteRequest {
     format: 'uuid',
     required: true,
   })
-  @IsDefined({ each: true })
-  @IsNotEmpty({ each: true })
-  @IsUUID('all', { each: true })
+  @IsDefined({
+    each: true,
+    message: i18nValidationMessage('validation.IS_DEFINED'),
+  })
+  @IsNotEmpty({
+    each: true,
+    message: i18nValidationMessage('validation.IS_NOT_EMPTY'),
+  })
+  @IsUUID('all', {
+    each: true,
+    message: i18nValidationMessage('validation.IS_UUID'),
+  })
   filesId!: Array<string>;
 }

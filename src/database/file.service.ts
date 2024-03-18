@@ -85,14 +85,15 @@ export class FileService {
       'FRONTEND_URL',
       'https://cp.myscreen.ru',
     );
-    this.downloadDir = configService.get('FILES_UPLOAD', 'upload');
+    this.downloadDir = configService.getOrThrow('FILES_UPLOAD');
 
-    this.region = configService.get('AWS_REGION', 'ru-central1');
-    this.bucket = configService.get('AWS_BUCKET', 'myscreen-media');
+    this.region = configService.getOrThrow('AWS_REGION');
+    this.bucket = configService.getOrThrow('AWS_BUCKET');
+    // 7 days
     this.signedUrlExpiresIn = parseInt(
-      configService.get('AWS_SIGNED_URL_EXPIRES', `${60 * 60 * 24 * 7}`),
+      configService.getOrThrow('AWS_SIGNED_URL_EXPIRES'),
       10,
-    ); // 7 days
+    );
   }
 
   /**

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUUID, MinLength } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 export class FolderIdUpdateRequest {
   @ApiProperty({
@@ -8,8 +9,9 @@ export class FolderIdUpdateRequest {
     example: 'bar',
     required: false,
   })
-  @IsString()
-  @MinLength(1)
+  @IsOptional()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @MinLength(1, { message: i18nValidationMessage('validation.MIN_LENGTH') })
   name?: string;
 
   @ApiProperty({
@@ -18,6 +20,7 @@ export class FolderIdUpdateRequest {
     format: 'uuid',
     required: false,
   })
-  @IsString()
+  @IsOptional()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   parentFolderId?: string;
 }

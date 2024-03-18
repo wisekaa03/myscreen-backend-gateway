@@ -18,11 +18,14 @@ import {
 } from 'typeorm';
 import { addDays } from 'date-fns/addDays';
 import { ClientProxy } from '@nestjs/microservices';
+import { I18nService } from 'nestjs-i18n';
 
 import {
   FindManyOptionsCaseInsensitive,
   MailForgotPassword,
+  MailSendApplicationMessage,
   MailSendVerificationCode,
+  MailWelcomeMessage,
 } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { RegisterRequest } from '@/dto/request/register.request';
@@ -40,6 +43,7 @@ export class UserService {
   public frontendUrl: string;
 
   constructor(
+    private readonly i18n: I18nService,
     private readonly configService: ConfigService,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
@@ -97,9 +101,7 @@ export class UserService {
             crud === CRUD.CREATE &&
             1 + countMonitors > 5)
         ) {
-          throw new ForbiddenException(
-            'You have a Demo User account. Time to pay.',
-          );
+          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
 
         if (
@@ -107,9 +109,7 @@ export class UserService {
           crud !== CRUD.READ &&
           addDays(createdAt, 14 + 1) < new Date()
         ) {
-          throw new ForbiddenException(
-            'You have a Demo User account. Time to pay.',
-          );
+          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
 
         if (
@@ -117,15 +117,11 @@ export class UserService {
           crud !== CRUD.READ &&
           addDays(createdAt, 28 + 1) < new Date()
         ) {
-          throw new ForbiddenException(
-            'You have a Demo User account. Time to pay.',
-          );
+          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
 
         if (countUsedSpace > UserStoreSpaceEnum.DEMO) {
-          throw new ForbiddenException(
-            'You have a Demo User account. Time to pay.',
-          );
+          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
 
         if (
@@ -133,9 +129,7 @@ export class UserService {
           controllerName === 'application' ||
           controllerName === 'request'
         ) {
-          throw new ForbiddenException(
-            'You have a Demo User account. Time to pay.',
-          );
+          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
       } else if (plan === UserPlanEnum.Full) {
         if (
@@ -199,6 +193,7 @@ export class UserService {
 
       const verifyToken = generateMailToken(update.email, emailConfirmKey);
       const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
+      const language = update.preferredLanguage ?? user.preferredLanguage;
 
       return Promise.all([
         this.userRepository.save(
@@ -209,6 +204,7 @@ export class UserService {
         this.mailService.emit('sendWelcomeMessage', {
           email: update.email,
           confirmUrl,
+          language,
         }),
       ]).then(([{ id }]) => this.userResponseRepository.findOneBy({ id }));
     }
@@ -264,10 +260,10 @@ export class UserService {
         ? UserPlanEnum.Demo
         : UserPlanEnum.Full;
 
-    let { storageSpace } = createUser;
+    let storageSpace: number;
     if (plan === UserPlanEnum.Demo) {
       storageSpace = UserStoreSpaceEnum.DEMO;
-    } else if (storageSpace === undefined) {
+    } else {
       storageSpace = UserStoreSpaceEnum.FULL;
     }
 
@@ -287,15 +283,22 @@ export class UserService {
       userPartial.emailConfirmKey ?? '-',
     );
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
+    const language =
+      createUser.preferredLanguage ??
+      this.configService.getOrThrow('LANGUAGE_DEFAULT');
 
     const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(userPartial)),
-      this.mailService.emit<unknown, string>('sendWelcomeMessage', email),
+      this.mailService.emit<unknown, MailWelcomeMessage>('sendWelcomeMessage', {
+        email,
+        language,
+      }),
       this.mailService.emit<unknown, MailSendVerificationCode>(
         'sendVerificationCode',
         {
           email,
           confirmUrl,
+          language,
         },
       ),
     ]);
@@ -355,11 +358,13 @@ export class UserService {
       return true;
     }
 
+    const language = user.preferredLanguage;
     return this.mailService.emit<unknown, MailForgotPassword>(
       'forgotPassword',
       {
         email,
         forgotPasswordUrl,
+        language,
       },
     );
   }

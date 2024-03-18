@@ -19,6 +19,7 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { InvoiceStatus } from '@/enums/invoice-status.enum';
 import { UserEntity } from './user.entity';
@@ -30,7 +31,7 @@ export class InvoiceEntity extends BaseEntity {
     description: 'Идентификатор счёта',
     format: 'uuid',
   })
-  @IsUUID()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @Generated('increment')
@@ -38,7 +39,7 @@ export class InvoiceEntity extends BaseEntity {
   @ApiProperty({
     description: 'Номер счета',
   })
-  @IsNumber()
+  @IsNumber({}, { message: i18nValidationMessage('validation.IS_NUMBER') })
   seqNo!: number;
 
   @Column()
@@ -46,7 +47,7 @@ export class InvoiceEntity extends BaseEntity {
     description: 'Описание заказа',
     example: 'описание заказа',
   })
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   description!: string;
 
   @Column({
@@ -62,17 +63,22 @@ export class InvoiceEntity extends BaseEntity {
     description: 'Подтверждение/отклонение счёта',
     example: InvoiceStatus.AWAITING_CONFIRMATION,
   })
-  @IsEnum(InvoiceStatus)
+  @IsEnum(InvoiceStatus, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   status!: InvoiceStatus;
 
-  @Column({ type: 'integer' })
+  @Column({ type: 'float', default: 0 })
   @ApiProperty({
     description: 'Сумма счета',
     example: 1000,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsNumber()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   sum!: number;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
@@ -81,11 +87,11 @@ export class InvoiceEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn()
+  @JoinColumn({ foreignKeyConstraintName: 'FK_invoice_user_id' })
   user!: UserEntity;
 
-  @Column()
-  @IsUUID()
+  @Column({ type: 'uuid' })
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
   @CreateDateColumn()
@@ -100,7 +106,10 @@ export class InvoiceEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   createdAt?: Date;
 
   @UpdateDateColumn()
@@ -115,6 +124,9 @@ export class InvoiceEntity extends BaseEntity {
     format: 'date-time',
     required: false,
   })
-  @IsDateString({ strict: false })
+  @IsDateString(
+    { strict: false },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
   updatedAt?: Date;
 }

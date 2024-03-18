@@ -7,8 +7,9 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Jabber from 'jabber';
-
 import { Logger } from 'nestjs-pino';
+import { I18nValidationPipe } from 'nestjs-i18n';
+
 import {
   AuthResponse,
   RegisterRequest,
@@ -32,7 +33,6 @@ import {
 } from '@/dto';
 import { MonitorStatus, Status, UserRoleEnum } from '@/enums';
 import { generateMailToken } from '@/utils/mail-token';
-import { validationPipeOptions } from '@/utils/validation-pipe-options';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
 import { UserEntity } from '@/database/user.entity';
 import { UserService } from '@/database/user.service';
@@ -74,6 +74,7 @@ const registerRequest: RegisterRequest = {
   name: 'John',
   surname: 'Steve',
   middleName: 'Doe',
+  preferredLanguage: 'ru',
   city: 'Krasnodar',
   country: 'RU',
   company: 'ACME corporation',
@@ -134,7 +135,7 @@ describe('Backend API (e2e)', () => {
     app.useGlobalFilters(
       new ExceptionsFilter(httpAdaper.httpAdapter, configService),
     );
-    app.useGlobalPipes(validationPipeOptions());
+    app.useGlobalPipes(new I18nValidationPipe());
     app.useWebSocketAdapter(new WsAdapter(app));
     userService = app.get<UserService>(UserService);
 
@@ -261,7 +262,7 @@ describe('Backend API (e2e)', () => {
         .send({ ...loginRequest, password: 'sss' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(403);
+        .expect(400);
     });
 
     test('POST /auth/login [с неправильным email] (Авторизация пользователя)', async () => {
@@ -270,7 +271,7 @@ describe('Backend API (e2e)', () => {
         .send({ ...loginRequest, email: 'sss' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(403);
+        .expect(400);
     });
 
     /**
@@ -622,7 +623,7 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .send({
           name: 'bar2',
-          user: {},
+          parentFolderId: '111',
         })
         .expect('Content-Type', /json/)
         .expect(400);

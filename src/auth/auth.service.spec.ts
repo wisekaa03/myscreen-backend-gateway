@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { I18nService } from 'nestjs-i18n';
 import { UserPlanEnum, UserRoleEnum } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
@@ -34,6 +35,7 @@ describe(AuthService.name, () => {
     update: async () => Promise.resolve([]),
     verify: () => true,
     get: (key: string, defaultValue?: string) => defaultValue,
+    t: (value: unknown) => value,
   }));
 
   beforeEach(async () => {
@@ -41,6 +43,7 @@ describe(AuthService.name, () => {
       providers: [
         AuthService,
         UserService,
+        { provide: I18nService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
         { provide: MAIL_SERVICE, useClass: mockRepository },
         {

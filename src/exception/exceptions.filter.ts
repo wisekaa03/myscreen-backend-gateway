@@ -10,6 +10,7 @@ import { BaseExceptionFilter } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { TypeORMError } from 'typeorm';
 
+import { I18nValidationException } from 'nestjs-i18n';
 import {
   InternalServerError,
   HttpError,
@@ -21,14 +22,14 @@ import {
 export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   logger = new Logger(ExceptionsFilter.name);
 
-  debugLevel: boolean;
+  private debugLevel: boolean;
 
   constructor(
     applicationRef: HttpServer<any, any, any>,
     configService: ConfigService,
   ) {
     super(applicationRef);
-    this.debugLevel = configService.get('LOG_LEVEL') === 'debug';
+    this.debugLevel = configService.getOrThrow('LOG_LEVEL') === 'debug';
   }
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
@@ -38,12 +39,20 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         exception instanceof ConflictException
           ? (response as ConflictData)
           : exception;
-      const { error, errors } = response as Record<string, string>;
-      if (error) {
-        message = `${error}: ${message}`;
-      }
-      if (errors) {
-        message = `${message}: ${JSON.stringify(errors)}`;
+      if (exception instanceof I18nValidationException) {
+        const { errors } = exception;
+        const errorsText = errors?.map(({ constraints }) =>
+          JSON.stringify(Object.values(constraints ?? {})),
+        );
+        message = `${message}: ${errorsText}`;
+      } else {
+        const { error, errors } = response as Record<string, string>;
+        if (error) {
+          message = `${error}: ${message}`;
+        }
+        if (errors) {
+          message = `${message}: ${JSON.stringify(errors)}`;
+        }
       }
       this.logger.error(message, this.debugLevel ? exception.stack : undefined);
 

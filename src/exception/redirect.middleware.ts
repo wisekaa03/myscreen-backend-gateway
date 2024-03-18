@@ -12,7 +12,7 @@ export class RedirectMiddleware implements NestMiddleware {
   private frontEndUrl: string;
 
   constructor(configService: ConfigService, fileService: FileService) {
-    this.apiPath = configService.get('API_PATH', '/api/v2');
+    this.apiPath = configService.getOrThrow('API_PATH');
     this.frontEndUrl = fileService.frontEndUrl;
   }
 

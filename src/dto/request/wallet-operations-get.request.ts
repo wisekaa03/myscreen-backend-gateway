@@ -27,6 +27,7 @@ export class WalletOperationsGetRequest {
     type: 'string',
     required: false,
   })
+  @IsOptional()
   @IsArray()
   select?: FindOptionsSelect<WalletRequest>;
 
