@@ -3121,7 +3121,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.47.4
+  version: 2.48.2
   contact:
     name: Stanislav V Lanskoy
     url: https://wisekaa.dev
@@ -3924,10 +3924,6 @@ components:
           description: Предпочитаемый язык
           example: ru
           maxLength: 6
-        storageSpace:
-          type: number
-          description: Дисковое пространство
-          example: 20000000
         role:
           example: advertiser
           $ref: "#/components/schemas/UserRoleRequest"
@@ -4012,7 +4008,6 @@ components:
             /((?=.*d)|(?=.*W+))(?![.
             ])(?=.*[A-Z])(?=.*[a-z]).*$/
       required:
-        - email
         - role
         - password
     AuthRefreshRequest:
