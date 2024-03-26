@@ -178,6 +178,7 @@ export class MonitorEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
+  @IsOptional()
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
@@ -216,6 +217,7 @@ export class MonitorEntity extends BaseEntity {
     example: MonitorCategoryEnum.GAS_STATION,
     required: true,
   })
+  @IsOptional()
   @IsEnum(MonitorCategoryEnum, {
     message: i18nValidationMessage('validation.IS_ENUM'),
   })
@@ -228,6 +230,7 @@ export class MonitorEntity extends BaseEntity {
     example: 1,
     required: false,
   })
+  @IsOptional()
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   price1s!: number;
 
@@ -238,6 +241,7 @@ export class MonitorEntity extends BaseEntity {
     example: 1,
     required: false,
   })
+  @IsOptional()
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   minWarranty!: number;
 
@@ -248,6 +252,7 @@ export class MonitorEntity extends BaseEntity {
     example: 1,
     required: false,
   })
+  @IsOptional()
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   maxDuration!: number;
 
@@ -263,6 +268,7 @@ export class MonitorEntity extends BaseEntity {
     example: MonitorOrientation.Horizontal,
     required: false,
   })
+  @IsOptional()
   @IsEnum(MonitorOrientation, {
     message: i18nValidationMessage('validation.IS_ENUM'),
   })
@@ -277,6 +283,7 @@ export class MonitorEntity extends BaseEntity {
     example: 'Samsung',
     required: false,
   })
+  @IsOptional()
   @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   @Length(1, 255, { message: i18nValidationMessage('validation.LENGTH') })
   model?: string;
@@ -287,6 +294,7 @@ export class MonitorEntity extends BaseEntity {
     example: 0,
     required: false,
   })
+  @IsOptional()
   @IsNumber(
     { allowInfinity: false, allowNaN: false },
     { message: i18nValidationMessage('validation.IS_NUMBER') },
@@ -299,6 +307,7 @@ export class MonitorEntity extends BaseEntity {
     example: 'IPS',
     required: false,
   })
+  @IsOptional()
   @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   matrix?: string;
 
@@ -308,6 +317,7 @@ export class MonitorEntity extends BaseEntity {
     example: 100,
     required: false,
   })
+  @IsOptional()
   @IsNumber(
     { allowInfinity: false, allowNaN: false },
     { message: i18nValidationMessage('validation.IS_NUMBER') },
@@ -345,6 +355,7 @@ export class MonitorEntity extends BaseEntity {
     description: 'Присоединен',
     example: false,
   })
+  @IsOptional()
   @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   attached!: boolean;
 
@@ -353,6 +364,7 @@ export class MonitorEntity extends BaseEntity {
     description: 'Есть звук: true/false',
     example: true,
   })
+  @IsOptional()
   @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   sound!: boolean;
 
@@ -364,6 +376,7 @@ export class MonitorEntity extends BaseEntity {
     enumName: 'MonitorStatus',
     example: MonitorStatus.Offline,
   })
+  @IsOptional()
   @IsEnum(MonitorStatus, {
     message: i18nValidationMessage('validation.IS_ENUM'),
   })

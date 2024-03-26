@@ -30,6 +30,7 @@ export class MonitorRequest extends PartialType(
     },
     required: false,
   })
+  @IsOptional()
   @IsInt({ each: true, message: i18nValidationMessage('validation.IS_INT') })
   price1s!: MSRange<number>;
 
@@ -42,6 +43,7 @@ export class MonitorRequest extends PartialType(
     },
     required: false,
   })
+  @IsOptional()
   @IsInt({ each: true, message: i18nValidationMessage('validation.IS_INT') })
   minWarranty!: MSRange<number>;
 
@@ -54,6 +56,7 @@ export class MonitorRequest extends PartialType(
     },
     required: false,
   })
+  @IsOptional()
   @IsInt({ each: true, message: i18nValidationMessage('validation.IS_INT') })
   maxDuration!: MSRange<number>;
 
