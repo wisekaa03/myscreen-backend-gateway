@@ -7,7 +7,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, FindManyOptions, In, Repository } from 'typeorm';
+import { DeleteResult, FindManyOptions, In, Not, Repository } from 'typeorm';
 
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorGroup } from '@/dto/request/monitor-group';
@@ -243,7 +243,11 @@ export class MonitorService {
         where: {
           id: In(groupIds.map((item) => item.monitorId)),
           multiple: MonitorMultiple.SUBORDINATE,
+          groupMonitors: {
+            parentMonitor: Not(id),
+          },
         },
+        relations: { groupMonitors: { monitor: true, parentMonitor: true } },
       });
       if (originalGroupMonitors.length > 0) {
         throw new BadRequestException(
