@@ -3059,7 +3059,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WalletOperationsGetRequest"
+                $ref: "#/components/schemas/WalletOperationsGetResponse"
         "400":
           description: Ответ будет таким если с данным что-то не так
           content:
@@ -3121,7 +3121,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.48.4
+  version: 2.48.5
   contact:
     name: Stanislav V Lanskoy
     url: https://wisekaa.dev
@@ -7186,6 +7186,66 @@ components:
           description: Рамки для запроса
           allOf:
             - $ref: "#/components/schemas/LimitRequest"
+    WalletResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Идентификатор баланса
+          format: uuid
+        type:
+          example: DEBIT
+          $ref: "#/components/schemas/WalletTransactionType"
+        description:
+          type: string
+          description: Описание транзакции
+        sum:
+          type: number
+          description: Баланс
+          example: 0
+        createdAt:
+          type: string
+          description: Время создания
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
+        updatedAt:
+          type: string
+          description: Время изменения
+          example: "2021-01-01T00:00:00.000Z"
+          examples:
+            one: "2021-01-01"
+            two:
+              - "2021-12-30"
+              - "2021-12-31T10:10:10"
+          format: date-time
+      required:
+        - id
+        - type
+        - description
+        - sum
+    WalletOperationsGetResponse:
+      type: object
+      properties:
+        status:
+          example: success
+          $ref: "#/components/schemas/Status"
+        count:
+          type: number
+          description: Количество операций с кошельком
+        data:
+          description: Операции с кошельком
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletResponse"
+      required:
+        - status
+        - count
+        - data
 externalDocs:
   description: MyScreen backend API
   url: https://api.myscreen.ru
