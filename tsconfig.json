@@ -29,6 +29,6 @@
       ]
     }
   },
-  "include": ["src", "typings", "test", "./jest.config.js", "ecosystem.config.js"],
-  "exclude": ["node_modules", "dist", "upload"]
+  "include": ["src", "typings", "test", "./jest.config.js", "ecosystem.config.js", "./webpack.config.js"],
+  "exclude": ["node_modules", "dist", "upload", "./webpack.config.js"]
 }

@@ -37,7 +37,7 @@ export class WalletController {
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
-    type: WalletOperationsGetRequest,
+    type: WalletOperationsGetResponse,
   })
   @Crud(CRUD.READ)
   async getWallet(

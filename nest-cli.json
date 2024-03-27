@@ -4,9 +4,17 @@
   "language": "ts",
   "sourceRoot": "src",
   "compilerOptions": {
+    "builder": {
+      "type": "tsc",
+      "options": {}
+    },
     "assets": [
       {
         "include": "i18n/**/*",
+        "watchAssets": true
+      },
+      {
+        "include": "static/**/*",
         "watchAssets": true
       }
     ],
