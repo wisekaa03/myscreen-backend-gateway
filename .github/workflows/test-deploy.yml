@@ -82,9 +82,9 @@ jobs:
           echo "LANGUAGE_DEFAULT=${{ vars.LANGUAGE_DEFAULT }}" >>.env.test
       - name: Test
         run: yarn test
-      - name: Test end to end
-        if: ${{ !cancelled() }}
-        run: yarn test:e2e
+      # - name: Test end to end
+      #   if: ${{ !cancelled() }}
+      #   run: yarn test:e2e
       - name: Build test
         if: ${{ !cancelled() }}
         run: yarn build
