@@ -312,36 +312,20 @@ export class UserWallet {
         '"playlistUserId" = "user"."id"',
       )
 
-      // Мониторы -> Плейлисты, отбор по мониторам, и условие что плейлисты.статус = Broadcast
+      // Плейлисты, условие что плейлисты.статус = Broadcast
       .leftJoinAndSelect(
-        (qb: SelectQueryBuilder<MonitorEntity>) =>
+        (qb: SelectQueryBuilder<PlaylistEntity>) =>
           qb
-            .select(
-              '"monitorPlaylistPlayed"."userId"',
-              'monitorPlaylistPlayedUserId',
-            )
-            .addSelect('COUNT(*)', 'monitorPlaylistPlayed')
-            .groupBy(
-              '"monitorPlaylistPlayed"."userId", "playlist"."playlistPlayedUserId", "playlist"."playlistStatus"',
-            )
+            .select('"playlistBroadcast"."userId"', 'playlistBroadcastUserId')
+            .addSelect('COUNT(*)', 'playlistBroadcast')
+            .groupBy('"playlistBroadcast"."userId"')
 
-            .leftJoinAndSelect(
-              (qbb: SelectQueryBuilder<PlaylistEntity>) =>
-                qbb
-                  .select('"playlist"."status"', 'playlistStatus')
-                  .addSelect('"playlist"."userId"', 'playlistPlayedUserId')
-                  .where(
-                    `"playlist"."status" = '${PlaylistStatusEnum.Broadcast}'`,
-                  )
-                  .from(PlaylistEntity, 'playlist'),
-              'playlist',
-              '"playlistPlayedUserId" = "monitorPlaylistPlayed"."userId"',
+            .where(
+              `"playlistBroadcast"."status" = '${PlaylistStatusEnum.Broadcast}'`,
             )
-
-            .where('"monitorPlaylistPlayed"."playlistPlayed" = true')
-            .from(MonitorEntity, 'monitorPlaylistPlayed'),
-        'monitorPlaylistPlayed',
-        '"monitorPlaylistPlayedUserId" = "user"."id"',
+            .from(PlaylistEntity, 'playlistBroadcast'),
+        'playlistBroadcast',
+        '"playlistBroadcastUserId" = "user"."id"',
       ),
 })
 export class UserResponse implements UserEntity {
@@ -687,7 +671,7 @@ export class UserResponse implements UserEntity {
 
   @ViewColumn()
   @ApiHideProperty()
-  monitorPlaylistPlayed!: string;
+  playlistBroadcast!: string;
 
   // Вычисляемые поля
 
@@ -735,7 +719,7 @@ export class UserResponse implements UserEntity {
       emptyMonitors,
       countMonitors,
       playlistAdded,
-      monitorPlaylistPlayed,
+      playlistBroadcast,
       countUsedSpace,
       storageSpace,
       monthlyPayment,
@@ -754,7 +738,7 @@ export class UserResponse implements UserEntity {
       },
       playlists: {
         added: parseInt(playlistAdded ?? '0', 10),
-        played: parseInt(monitorPlaylistPlayed ?? '0', 10),
+        played: parseInt(playlistBroadcast ?? '0', 10),
       },
       storageSpace: {
         storage: parseFloat(countUsedSpace ?? '0'),
@@ -789,6 +773,6 @@ export const UserResponseToExternal = ({
   walletSum,
   monthlyPayment,
   playlistAdded,
-  monitorPlaylistPlayed,
+  playlistBroadcast,
   ...user
 }: UserResponse): UserResponse => user as UserResponse;
