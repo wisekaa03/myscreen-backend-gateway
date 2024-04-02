@@ -20,6 +20,7 @@ export class WalletRequest extends PartialType(
     isArray: true,
     required: false,
   })
+  @IsOptional()
   @IsEnum(WalletTransactionType, {
     each: true,
     message: i18nValidationMessage('validation.IS_ENUM'),
