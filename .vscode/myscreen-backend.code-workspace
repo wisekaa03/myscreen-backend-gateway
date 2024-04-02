@@ -27,7 +27,7 @@
     "editor.fontWeight": "400", // Regular
     // "editor.fontWeight": "500", // Medium
     // "editor.fontWeight": "600", // Bold
-    "jest.debugMode": true,
+    "jest.debugMode": false,
     // "jest.pathToJest": "yarn test",
     // "jest.restartJestOnSnapshotUpdate": true,
     "javascript.format.enable": false,

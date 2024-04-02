@@ -45,7 +45,7 @@ async function bootstrap() {
   const apiPath = configService.get<string>('API_PATH', '/api/v2');
   const { frontendUrl } = userService;
   app.disable('x-powered-by').disable('server');
-  const staticAssets = pathJoin('static');
+  const staticAssets = pathJoin(`${__dirname}/../static`);
   const { httpAdapter } = app.get(HttpAdapterHost);
   app
     .useStaticAssets(staticAssets, {
