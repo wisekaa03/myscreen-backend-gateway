@@ -1,8 +1,8 @@
 import { Module, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository, TypeOrmModule } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
+import { InjectEntityManager, TypeOrmModule } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
 import { MonitorStatus } from '@/enums/monitor-status.enum';
 import { TypeOrmOptionsClass } from '@/utils/typeorm.options';
 import { WSModule } from '@/websocket/ws.module';
@@ -99,52 +99,25 @@ import { MonitorGroupEntity } from './monitor.group.entity';
 })
 export class DatabaseModule implements OnModuleInit {
   constructor(
-    @InjectRepository(MonitorEntity)
-    private readonly monitorRepository: Repository<MonitorEntity>,
+    @InjectEntityManager()
+    private readonly manager: EntityManager,
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.monitorRepository.manager.transaction(async (manager) => {
-      const allMonitors = await manager.find(MonitorEntity, {
-        select: [
-          'id',
-          'status',
-          'monitorInfo',
-          'angle',
-          'model',
-          'matrix',
-          'brightness',
-          'width',
-          'height',
-        ],
+    this.manager.transaction(async (manager) => {
+      const monitors = await manager.find(MonitorEntity, {
+        where: {
+          status: MonitorStatus.Online,
+        },
+        select: ['id'],
         relations: {},
         loadEagerRelations: false,
       });
-      const allMonitorsPromise = allMonitors.map(async (monitor) => {
-        const {
-          angle,
-          model,
-          matrix,
-          brightness,
-          resolution: resolutionLocal = '1920x1080',
-        } = monitor.monitorInfo || {};
-        const [widthString, heightString] = resolutionLocal.split('x');
-        const width = parseInt(widthString, 10);
-        const height = parseInt(heightString, 10);
-        const monitorUpdate: Partial<MonitorEntity> = {
+      if (monitors.length > 0) {
+        await manager.update(MonitorEntity, monitors, {
           status: MonitorStatus.Offline,
-        };
-        if (monitor.angle === null) monitorUpdate.angle = angle ?? 0;
-        if (monitor.model === null) monitorUpdate.model = model || 'unknown';
-        if (monitor.matrix === null) monitorUpdate.matrix = matrix || 'IPS';
-        if (monitor.brightness === null) {
-          monitorUpdate.brightness = brightness ?? 100;
-        }
-        if (!monitor.width) monitorUpdate.width = width;
-        if (!monitor.height) monitorUpdate.height = height;
-        await manager.update(MonitorEntity, monitor.id, monitorUpdate);
-      });
-      await Promise.all(allMonitorsPromise);
+        });
+      }
     });
   }
 }
