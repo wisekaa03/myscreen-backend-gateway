@@ -1,4 +1,4 @@
-/* eslint global-require:0, @typescript-eslint/no-var-requires:0, no-console:0 */
+/* eslint-disable no-undef */
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = (options) => {

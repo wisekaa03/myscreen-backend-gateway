@@ -1,5 +1,3 @@
-/* eslint @typescript-eslint/no-var-requires:0 */
-
 // const path = require('path');
 const { pathsToModuleNameMapper } = require('ts-jest');
 const { jsWithTs: tsjPreset } = require('ts-jest/presets');
@@ -11,7 +9,7 @@ const localPathMapper = {
   ...pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>/' }),
   // '^@public/(.*?)(\\?.*)?$': '<rootDir>/public/$1',
   // '^@images/(.*?)(\\?.*)?$': '<rootDir>/public/images/$1',
-  // eslint-disable-next-line max-len
+
   // '\\.(jpg|ico|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|css|scss|sass|less)(\\?.*)?$':
   //   '<rootDir>/apps/portal/__mocks__/fileMock.js',
 };
