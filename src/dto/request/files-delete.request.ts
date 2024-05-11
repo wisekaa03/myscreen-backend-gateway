@@ -22,5 +22,5 @@ export class FilesDeleteRequest {
     each: true,
     message: i18nValidationMessage('validation.IS_UUID'),
   })
-  filesId!: Array<string>;
+  filesId!: string[];
 }

@@ -31,7 +31,7 @@ export class MonitorsPlaylistAttachRequest {
     each: true,
     message: i18nValidationMessage('validation.IS_UUID'),
   })
-  monitorIds!: Array<string>;
+  monitorIds!: string[];
 
   @ApiProperty({
     description: 'Создание заявки',

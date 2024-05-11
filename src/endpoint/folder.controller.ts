@@ -71,7 +71,7 @@ export class FolderController {
     @Body() { scope, select, where: origWhere }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
     const { id: userId } = user;
-    let count: number = 0;
+    let count = 0;
     let data: FolderResponse[] = [];
     [data, count] = await this.folderService.findAndCount({
       ...paginationQueryToConfig(scope),

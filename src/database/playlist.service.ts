@@ -47,7 +47,7 @@ export class PlaylistService {
   async findAndCount(
     find: FindManyOptions<PlaylistEntity>,
     caseInsensitive = true,
-  ): Promise<[Array<PlaylistEntity>, number]> {
+  ): Promise<[PlaylistEntity[], number]> {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.playlistRepository, {
           relations: { files: true, monitors: true },

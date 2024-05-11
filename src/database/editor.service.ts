@@ -79,7 +79,7 @@ export class EditorService {
   async find(
     find: FindManyOptions<EditorEntity>,
     caseInsensitive = true,
-  ): Promise<Array<EditorEntity>> {
+  ): Promise<EditorEntity[]> {
     const conditional = TypeOrmFind.findParams(EditorEntity, find);
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
@@ -92,7 +92,7 @@ export class EditorService {
   async findAndCount(
     find: FindManyOptions<EditorEntity>,
     caseInsensitive = true,
-  ): Promise<[Array<EditorEntity>, number]> {
+  ): Promise<[EditorEntity[], number]> {
     const conditional = TypeOrmFind.findParams(EditorEntity, find);
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
@@ -290,7 +290,7 @@ export class EditorService {
   ): Promise<EditorLayerEntity> {
     const { file } = layer;
     const filePath = path.join(mkdirPath, file.name);
-    // eslint-disable-next-line no-param-reassign
+     
     layer.path = filePath;
 
     if (!(await fs.access(filePath).catch(() => true))) {

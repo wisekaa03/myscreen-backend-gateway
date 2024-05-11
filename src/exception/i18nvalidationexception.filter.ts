@@ -57,7 +57,7 @@ export class I18nValidationExceptionMyScreenFilter extends ExceptionsFilter {
 
     const hostType = host.getType() as string;
     if (hostType === 'graphql') {
-      // eslint-disable-next-line no-param-reassign
+       
       exception.errors = normalizedErrors as I18nValidationError[];
       return exception;
     }

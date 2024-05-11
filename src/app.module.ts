@@ -104,13 +104,13 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
               queueOptions: {
                 durable: true,
               },
-              serializer: <ProducerSerializer>{
+              serializer: {
                 serialize: (value) => ({
                   ...value,
                   data: JSON.stringify(value.data),
                 }),
-              },
-              deserializer: <ProducerDeserializer>{
+              } as ProducerSerializer,
+              deserializer: {
                 deserialize: (value) => ({
                   ...value,
                   response:
@@ -118,7 +118,7 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
                       ? Buffer.from(value.response)
                       : value.response,
                 }),
-              },
+              } as ProducerDeserializer,
             },
           }),
           inject: [ConfigService],
@@ -140,13 +140,13 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
               queueOptions: {
                 durable: true,
               },
-              serializer: <ProducerSerializer>{
+              serializer: {
                 serialize: (value) => ({
                   ...value,
                   data: JSON.stringify(value.data),
                 }),
-              },
-              deserializer: <ProducerDeserializer>{
+              } as ProducerSerializer,
+              deserializer: {
                 deserialize: (value) => ({
                   ...value,
                   response:
@@ -154,7 +154,7 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
                       ? Buffer.from(value.response)
                       : value.response,
                 }),
-              },
+              } as ProducerDeserializer,
             },
           }),
           inject: [ConfigService],
@@ -176,13 +176,13 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
               queueOptions: {
                 durable: true,
               },
-              serializer: <ProducerSerializer>{
+              serializer: {
                 serialize: (value) => ({
                   ...value,
                   data: JSON.stringify(value.data),
                 }),
-              },
-              deserializer: <ProducerDeserializer>{
+              } as ProducerSerializer,
+              deserializer: {
                 deserialize: (value) => ({
                   ...value,
                   response:
@@ -190,7 +190,7 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
                       ? Buffer.from(value.response)
                       : value.response,
                 }),
-              },
+              } as ProducerDeserializer,
             },
           }),
           inject: [ConfigService],

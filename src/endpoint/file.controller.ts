@@ -93,8 +93,8 @@ export class FileController {
     @Req() { user }: ExpressRequest,
     @Body() { where, select, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
-    let count: number = 0;
-    let data: Array<FileEntity> = [];
+    let count = 0;
+    let data: FileEntity[] = [];
     const folderId = where?.folderId?.toString();
     if (
       user.role === UserRoleEnum.Administrator &&
@@ -192,7 +192,7 @@ export class FileController {
   async uploadFiles(
     @Req() { user }: ExpressRequest,
     @Body() body: FileUploadRequestBody,
-    @UploadedFiles() files: Array<Express.Multer.File>,
+    @UploadedFiles() files: Express.Multer.File[],
   ): Promise<FilesUploadResponse> {
     if (files.length < 1) {
       throw new BadRequestException('Files expected');

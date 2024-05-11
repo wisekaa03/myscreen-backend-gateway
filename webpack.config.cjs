@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 const nodeExternals = require('webpack-node-externals');
 
 module.exports = (options) => {
