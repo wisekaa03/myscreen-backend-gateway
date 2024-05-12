@@ -73,6 +73,7 @@ export class FolderController {
     const { id: userId } = user;
     let count = 0;
     let data: FolderResponse[] = [];
+    await this.folderService.rootFolder(user);
     [data, count] = await this.folderService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
