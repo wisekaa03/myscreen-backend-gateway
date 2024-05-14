@@ -232,7 +232,7 @@ export class MonitorService {
       (multiple === MonitorMultiple.SINGLE ||
        multiple === MonitorMultiple.SUBORDINATE
       ) &&
-      multipleBool &&
+      multipleBool && groupIds.length > 0 &&
       multiple === updateMultiple
     ) {
       throw new BadRequestException(
