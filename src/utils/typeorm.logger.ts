@@ -30,6 +30,9 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     } else {
       msg = message;
     }
+    if (msg && parameters) {
+      msg = `${msg}. Params:${parameters}`;
+    }
     this.logger.debug(msg, parameters, queryRunner);
   };
 

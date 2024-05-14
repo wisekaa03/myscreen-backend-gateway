@@ -44,7 +44,7 @@ export class InvoiceService {
 
   async find(
     find: FindManyOptions<InvoiceEntity>,
-  ): Promise<[Array<InvoiceEntity>, number]> {
+  ): Promise<[InvoiceEntity[], number]> {
     return this.invoiceRepository.findAndCount(
       TypeOrmFind.findParams(InvoiceEntity, find),
     );

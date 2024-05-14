@@ -111,7 +111,7 @@ export class FileService {
     find: FindManyOptions<FileEntity>;
     caseInsensitive?: boolean;
     signedUrl?: boolean;
-  }): Promise<Array<FileEntity>> {
+  }): Promise<FileEntity[]> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = { monitors: true, playlists: true };
@@ -145,7 +145,7 @@ export class FileService {
     find: FindManyOptions<FileEntity>;
     caseInsensitive?: boolean;
     signedUrl?: boolean;
-  }): Promise<[Array<FileEntity>, number]> {
+  }): Promise<[FileEntity[], number]> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = { monitors: true, playlists: true };
@@ -276,8 +276,8 @@ export class FileService {
       category = FileCategory.Media,
       monitorId = undefined,
     }: FileUploadRequest,
-    files: Array<Express.Multer.File>,
-  ): Promise<Array<FileEntity>> {
+    files: Express.Multer.File[],
+  ): Promise<FileEntity[]> {
     return this.fileRepository.manager.transaction(async (transact) => {
       let folder: FolderEntity | null = null;
       if (!folderIdOrig) {
@@ -343,8 +343,8 @@ export class FileService {
 
         const stream = media.streams?.[0];
         const duration = parseFloat(stream?.duration ?? '0');
-        const width = Number(stream?.width) ?? 0;
-        const height = Number(stream?.height) ?? 0;
+        const width = Number(stream?.width ?? 0);
+        const height = Number(stream?.height ?? 0);
 
         const fileToSave: DeepPartial<FileEntity> = {
           userId: user.id,

@@ -22,5 +22,5 @@ export class FoldersDeleteRequest {
     each: true,
     message: i18nValidationMessage('validation.IS_UUID'),
   })
-  foldersId!: Array<string>;
+  foldersId!: string[];
 }

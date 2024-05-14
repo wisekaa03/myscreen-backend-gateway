@@ -40,7 +40,7 @@ export class MonitorService {
     userId: string;
     find: FindManyOptions<MonitorEntity>;
     caseInsensitive?: boolean;
-  }): Promise<Array<MonitorEntity>> {
+  }): Promise<MonitorEntity[]> {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
@@ -91,7 +91,7 @@ export class MonitorService {
   }: {
     userId: string;
     find: FindManyOptionsCaseInsensitive<MonitorEntity>;
-  }): Promise<[Array<MonitorEntity>, number]> {
+  }): Promise<[MonitorEntity[], number]> {
     let monitorWhere: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
@@ -111,7 +111,7 @@ export class MonitorService {
       };
     }
 
-    let monitors: Array<MonitorEntity> = [];
+    let monitors: MonitorEntity[] = [];
     let count = 0;
     if (!find.caseInsensitive) {
       [monitors, count] =
@@ -230,8 +230,9 @@ export class MonitorService {
     }
     if (
       (multiple === MonitorMultiple.SINGLE ||
-        multiple === MonitorMultiple.SUBORDINATE) &&
-      multipleBool &&
+       multiple === MonitorMultiple.SUBORDINATE
+      ) &&
+      multipleBool && groupIds.length > 0 &&
       multiple === updateMultiple
     ) {
       throw new BadRequestException(

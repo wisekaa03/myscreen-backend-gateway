@@ -62,7 +62,7 @@ export class WalletService {
 
   async find(
     find: FindManyOptionsCaseInsensitive<WalletEntity>,
-  ): Promise<[Array<WalletEntity>, number]> {
+  ): Promise<[WalletEntity[], number]> {
     return this.walletRepository.findAndCount(
       TypeOrmFind.findParams(WalletEntity, find),
     );

@@ -5,8 +5,8 @@ import { PlaylistEntity } from '@/database/playlist.entity';
 
 export type Token = string;
 
-export type MSRangeEnum<T> = Array<T>;
-export type MSRange<T> = T | Array<T>;
+export type MSRangeEnum<T> = T[];
+export type MSRange<T> = T | T[];
 
 export interface MonitorGroupWithPlaylist
   extends Pick<

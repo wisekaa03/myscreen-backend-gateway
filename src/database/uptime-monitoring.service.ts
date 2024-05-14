@@ -14,7 +14,7 @@ export class UptimeMonitoringService {
 
   async find(
     find: FindManyOptions<UptimeMonitoringEntity>,
-  ): Promise<[Array<UptimeMonitoringEntity>, number]> {
+  ): Promise<[UptimeMonitoringEntity[], number]> {
     return this.uptimeMonitoringEntity.findAndCount(find);
   }
 

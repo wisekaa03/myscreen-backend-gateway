@@ -35,7 +35,7 @@ import { BidService } from '@/database/bid.service';
 import { BidEntity } from '@/database/bid.entity';
 
 @ApiComplexDecorators({
-  path: ['application', 'bid'],
+  path: ['bid'],
   roles: [
     UserRoleEnum.Administrator,
     UserRoleEnum.Advertiser,

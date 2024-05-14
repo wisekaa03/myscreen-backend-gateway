@@ -119,7 +119,7 @@ export class WsAdapter extends AbstractWsAdapter<
       const message = JSON.parse(buffer.data);
       const messageHandler = handlers.find(
         (handler) => handler.message === message.event,
-      ) ?? { callback: () => {} };
+      ) ?? { callback: () => undefined };
       const { callback } = messageHandler;
       return transform(callback(message.data));
     } catch {
@@ -176,7 +176,7 @@ export class WsAdapter extends AbstractWsAdapter<
       const wsServersCollection = this.wsServersRegistry.get(port) ?? [];
 
       let isRequestDelegated = false;
-      // eslint-disable-next-line no-restricted-syntax
+       
       for (const wsServer of wsServersCollection) {
         if (pathname === wsServer.path) {
           wsServer.handleUpgrade(request, socket, head, (ws: WebSocket) => {
@@ -202,7 +202,7 @@ export class WsAdapter extends AbstractWsAdapter<
     const entries = this.wsServersRegistry.get(port) ?? [];
     entries.push(wsServer);
 
-    // eslint-disable-next-line no-param-reassign
+     
     wsServer.path = path;
     this.wsServersRegistry.set(port, entries);
 

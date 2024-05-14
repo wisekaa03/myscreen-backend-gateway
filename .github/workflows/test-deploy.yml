@@ -15,9 +15,9 @@ jobs:
     environment: tests
     steps:
       - name: Initializing the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
       - name: Linux update
@@ -101,7 +101,7 @@ jobs:
       REMOTE_TARGET: ${{ vars.REMOTE_TARGET }}
     steps:
       - name: Initializing the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Telegram notification
         run: |
           echo "REPO_NAME=${{github.repository}}" | sed -r "s/^(\w+=).+\/(.*)/\1\2/g" >> "${GITHUB_ENV}"
@@ -120,7 +120,7 @@ jobs:
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
             Server: *${{env.SERVER_URL}}*
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
       - name: Linux update
@@ -328,7 +328,7 @@ jobs:
       REMOTE_TARGET: ${{ vars.REMOTE_TARGET }}
     steps:
       - name: Initializing the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Telegram notification
         run: |
           echo "REPO_NAME=${{github.repository}}" | sed -r "s/^(\w+=).+\/(.*)/\1\2/g" >> "${GITHUB_ENV}"
@@ -347,7 +347,7 @@ jobs:
             Commit: [${{github.event.commits[0].message}}](https://github.com/${{github.repository}}/commit/${{github.sha}})
             Server: *${{env.SERVER_URL}}*
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
       - name: Linux update

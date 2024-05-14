@@ -77,8 +77,8 @@ export class BidService {
   async find(
     find: FindManyOptions<BidEntity>,
     caseInsensitive = true,
-  ): Promise<Array<BidEntity>> {
-    let result: Array<BidEntity>;
+  ): Promise<BidEntity[]> {
+    let result: BidEntity[];
     const findLocal = TypeOrmFind.findParams(BidEntity, find);
 
     if (!find.relations) {
@@ -102,8 +102,8 @@ export class BidService {
   async findAndCount(
     find: FindManyOptions<BidEntity>,
     caseInsensitive = true,
-  ): Promise<[Array<BidEntity>, number]> {
-    let result: [Array<BidEntity>, number];
+  ): Promise<[BidEntity[], number]> {
+    let result: [BidEntity[], number];
     const findLocal = TypeOrmFind.findParams(BidEntity, find);
 
     if (!find.relations) {
@@ -228,7 +228,7 @@ export class BidService {
     monitorId?: string;
     playlistId?: string;
     dateLocal?: Date;
-  }): Promise<Array<BidEntity>> {
+  }): Promise<BidEntity[]> {
     const monitorRequests = await this.find({
       where: [
         {
@@ -474,7 +474,7 @@ export class BidService {
   }: {
     user: UserResponse;
     playlistId: string;
-    monitorIds: Array<string>;
+    monitorIds: string[];
     dateWhen: Date;
     dateBefore: Date | null;
     playlistChange: boolean;

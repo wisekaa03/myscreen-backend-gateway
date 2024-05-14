@@ -31,6 +31,7 @@ describe(UserService.name, () => {
     findAndCount: async () => Promise.resolve([]),
     save: async () => Promise.resolve([]),
     create: (value: any) => value,
+    update: (value: any) => ({ affected: 1, raw: value }),
     remove: async () => Promise.resolve([]),
     sendWelcomeMessage: async () => Promise.resolve({}),
     sendVerificationCode: async () => Promise.resolve({}),

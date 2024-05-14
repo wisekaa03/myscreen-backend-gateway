@@ -195,25 +195,29 @@ export class UserService {
       const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
       const language = update.preferredLanguage ?? user.preferredLanguage;
 
-      return Promise.all([
-        this.userRepository.save(
-          this.userRepository.create(
-            Object.assign(user, update, { emailConfirmKey }),
-          ),
-        ),
+      const [{ affected }] = await Promise.all([
+        this.userRepository.update(user.id, { ...update, emailConfirmKey }),
         this.mailService.emit('sendWelcomeMessage', {
           email: update.email,
           confirmUrl,
           language,
         }),
-      ]).then(([{ id }]) => this.userResponseRepository.findOneBy({ id }));
+      ]);
+      if (!affected) {
+        throw new ForbiddenException();
+      }
+
+      const userUpdated = await this.userResponseRepository.findOneBy({ id: user.id });
+      return userUpdated;
     }
 
-    const { id } = await this.userRepository.save(
-      this.userRepository.create(Object.assign(user, update)),
-    );
+    const { affected } = await this.userRepository.update(user.id, update);
+    if (!affected) {
+      throw new ForbiddenException();
+    }
 
-    return this.userResponseRepository.findOneBy({ id });
+    const userUpdated = await this.userResponseRepository.findOneBy({ id: user.id });
+    return userUpdated;
   }
 
   /**
@@ -349,7 +353,7 @@ export class UserService {
     }
 
     user.forgotConfirmKey = genKey();
-    await this.userRepository.save(this.userRepository.create(user));
+    await this.userRepository.update(user.id, { forgotConfirmKey: user.forgotConfirmKey });
 
     const verifyToken = generateMailToken(email, user.forgotConfirmKey);
     const forgotPasswordUrl = `${this.frontendUrl}/reset-password-verify?key=${verifyToken}`;
@@ -393,6 +397,7 @@ export class UserService {
       await this.userRepository.update(user.id, {
         password: createHmac('sha256', password.normalize()).digest('hex'),
         forgotConfirmKey: null,
+        emailConfirmKey: null,
       });
       const userUpdated = await this.userResponseRepository.findOne({
         where: { id: user.id },

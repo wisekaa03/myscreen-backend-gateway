@@ -39,7 +39,7 @@ export class ReportViewsRequest {
     each: true,
     message: i18nValidationMessage('validation.IS_UUID'),
   })
-  monitorIds?: Array<string>;
+  monitorIds?: string[];
 
   @ApiProperty({
     description: 'Начальная дата',
