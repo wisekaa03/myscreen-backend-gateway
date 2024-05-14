@@ -230,7 +230,8 @@ export class MonitorService {
     }
     if (
       (multiple === MonitorMultiple.SINGLE ||
-        multiple === MonitorMultiple.SUBORDINATE) &&
+       multiple === MonitorMultiple.SUBORDINATE
+      ) &&
       multipleBool &&
       multiple === updateMultiple
     ) {
