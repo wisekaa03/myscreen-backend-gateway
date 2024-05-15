@@ -289,7 +289,7 @@ export class UserWallet {
               return `EXISTS (${query})`;
             })
             .andWhere(
-              "\"wallet\".\"createdAt\" BETWEEN 'now()'::timestamptz - interval '28 days' AND 'now()'::timestamptz",
+              "\"wallet\".\"createdAt\" >= now()::timestamptz - interval '28 days'",
             )
             .andWhere('"wallet"."actId" IS NOT NULL')
             .andWhere('"wallet"."invoiceId" IS NULL')
@@ -746,15 +746,16 @@ export class UserResponse implements UserEntity {
       },
     };
 
-    this.planValidityPeriod =
-      role === UserRoleEnum.MonitorOwner
-        ? monthlyPayment
-          ? intervalToDuration({
-              start: monthlyPayment,
-              end: subDays(Date.now(), 28),
-            }).days ?? Number.NEGATIVE_INFINITY
-          : Number.POSITIVE_INFINITY
-        : Number.POSITIVE_INFINITY;
+    if (role === UserRoleEnum.MonitorOwner && monthlyPayment) {
+      const planValidityPeriod = Number(intervalToDuration({
+        start: monthlyPayment,
+        end: subDays(Date.now(), 28),
+      }).days);
+      this.planValidityPeriod = planValidityPeriod >= 0 ? planValidityPeriod : 0;
+    } else {
+      this.planValidityPeriod = 0;
+    }
+
     this.wallet = {
       total: parseFloat(walletSum ?? '0'),
     };

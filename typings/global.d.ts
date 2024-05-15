@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import { UserResponse } from '@/dto';
 
 declare module 'express' {

@@ -100,13 +100,9 @@ async function bootstrap() {
       description: 'Видео-редактор',
       url: `${frontendUrl}/editor/projects`,
     })
-    .addTag('application', 'Заявки', {
-      description: 'Заявки',
-      url: `${frontendUrl}/applications`,
-    })
     .addTag('bid', 'Заявки', {
       description: 'Заявки',
-      url: `${frontendUrl}/applications`,
+      url: `${frontendUrl}/bid`,
     })
     .addTag('statistics', 'Cтатистика')
     .addTag('invoice', 'Счета', {
