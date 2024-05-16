@@ -40,6 +40,7 @@ export class RefreshTokenService {
   async create(
     userId: string,
     fingerprint?: string,
+    userAgent?: string,
   ): Promise<RefreshTokenEntity> {
     const expires = new Date(
       Date.now() +
@@ -49,7 +50,6 @@ export class RefreshTokenService {
     const refreshTokenExist = await this.refreshTokenEntity.findOne({
       where: {
         userId,
-        fingerprint,
         isRevoked: false,
         expires: MoreThan(new Date(Date.now())),
       },
@@ -60,6 +60,7 @@ export class RefreshTokenService {
       userId,
       isRevoked: false,
       fingerprint,
+      userAgent,
       expires,
     };
 

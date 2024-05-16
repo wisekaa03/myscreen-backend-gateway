@@ -46,6 +46,7 @@ export class AuthService {
     email: string,
     password: string,
     fingerprint?: string,
+    userAgent?: string,
   ): Promise<[UserResponse, AuthenticationPayload]> {
     if (!email || !password) {
       throw new ForbiddenException('Password mismatched');
@@ -66,9 +67,9 @@ export class AuthService {
       throw new ForbiddenException('Password mismatched');
     }
 
-    const [token, refresh] = await Promise.all([
+   const [token, refresh] = await Promise.all([
       this.generateAccessToken(user),
-      this.generateRefreshToken(user.id, fingerprint),
+      this.generateRefreshToken(user.id, fingerprint, userAgent),
     ]);
     const payload = this.buildResponsePayload(token, refresh);
 
@@ -103,10 +104,12 @@ export class AuthService {
   async generateRefreshToken(
     userId: string,
     fingerprint?: string,
+    userAgent?: string,
   ): Promise<string> {
     const refreshTokenUpdated = await this.refreshTokenService.create(
       userId,
       fingerprint,
+      userAgent,
     );
 
     const opts: JwtSignOptions = {

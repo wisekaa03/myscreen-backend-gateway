@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   Req,
+  Request,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -139,14 +140,17 @@ export class AuthController {
   })
   @Crud(CRUD.UPDATE)
   async login(
+    @Req() req: ExpressRequest,
     @Ip() fingerprint: string,
     @Body() { email, password }: LoginRequest,
   ): Promise<AuthResponse> {
+    const userAgent = req.headers['user-agent'] ?? '-';
     // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const [data, payload] = await this.authService.login(
       email,
       password,
       fingerprint,
+      userAgent,
     );
 
     return {
