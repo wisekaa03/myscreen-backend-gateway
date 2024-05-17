@@ -30,6 +30,7 @@ import { WalletEntity } from './wallet.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { BidEntity } from './bid.entity';
 import { ActEntity } from './act.entity';
+import { RefreshTokenEntity } from './refreshtoken.entity';
 
 export class UserMetricsMonitors {
   @ApiProperty({
@@ -112,6 +113,22 @@ export class UserWallet {
     required: false,
   })
   total?: number;
+}
+
+export class UserLastEntry {
+  @ApiProperty({
+    description: 'С какого устройства был выполнен последний вход',
+    example: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    required: false
+  })
+  userAgent?: string;
+
+  @ApiProperty({
+    description: 'Когда был выполнен последний вход',
+    example: '2020-01-01T00:00:00',
+    required: false
+  })
+  at?: string;
 }
 
 @ViewEntity({
@@ -289,7 +306,7 @@ export class UserWallet {
               return `EXISTS (${query})`;
             })
             .andWhere(
-              "\"wallet\".\"createdAt\" BETWEEN 'now()'::timestamptz - interval '28 days' AND 'now()'::timestamptz",
+              "\"wallet\".\"createdAt\" >= now()::timestamptz - interval '28 days'",
             )
             .andWhere('"wallet"."actId" IS NOT NULL')
             .andWhere('"wallet"."invoiceId" IS NULL')
@@ -319,14 +336,32 @@ export class UserWallet {
             .select('"playlistBroadcast"."userId"', 'playlistBroadcastUserId')
             .addSelect('COUNT(*)', 'playlistBroadcast')
             .groupBy('"playlistBroadcast"."userId"')
-
             .where(
               `"playlistBroadcast"."status" = '${PlaylistStatusEnum.Broadcast}'`,
             )
             .from(PlaylistEntity, 'playlistBroadcast'),
         'playlistBroadcast',
         '"playlistBroadcastUserId" = "user"."id"',
-      ),
+      )
+
+      // Refresh Token Last Login (lastEntry)
+      .leftJoinAndSelect(
+        (qb: SelectQueryBuilder<RefreshTokenEntity>) =>
+          qb
+            .select('"refreshTokenLastLogin"."userId"', 'refreshTokenLastLoginUserId')
+            .addSelect('"refreshTokenLastLogin"."updatedAt"', 'refreshTokenLastLoginUpdatedAt')
+            .addSelect('"refreshTokenLastLogin"."userAgent"', 'refreshTokenLastLoginUserAgent')
+            .groupBy('"refreshTokenLastLogin"."userId"')
+            .addGroupBy('"refreshTokenLastLogin"."updatedAt"')
+            .addGroupBy('"refreshTokenLastLogin"."userAgent"')
+            .orderBy('"refreshTokenLastLogin"."updatedAt"', 'DESC')
+            .where('"refreshTokenLastLogin"."expires" > now()')
+            .andWhere('"refreshTokenLastLogin"."isRevoked" = false')
+            .limit(1)
+            .from(RefreshTokenEntity, 'refreshTokenLastLogin'),
+        'refreshTokenLastLogin',
+        '"refreshTokenLastLoginUserId" = "user"."id"'
+      )
 })
 export class UserResponse implements UserEntity {
   @ViewColumn()
@@ -673,6 +708,14 @@ export class UserResponse implements UserEntity {
   @ApiHideProperty()
   playlistBroadcast!: string;
 
+  @ViewColumn()
+  @ApiHideProperty()
+  refreshTokenLastLoginUpdatedAt!: string;
+
+  @ViewColumn()
+  @ApiHideProperty()
+  refreshTokenLastLoginUserAgent!: string;
+
   // Вычисляемые поля
 
   @ApiProperty({
@@ -705,6 +748,12 @@ export class UserResponse implements UserEntity {
   })
   fullNameEmail!: string;
 
+  @ApiProperty({
+    description: 'Последний вход',
+    required: false
+  })
+  lastEntry!: UserLastEntry;
+
   @AfterLoad()
   @AfterInsert()
   @AfterUpdate()
@@ -724,10 +773,17 @@ export class UserResponse implements UserEntity {
       storageSpace,
       monthlyPayment,
       walletSum,
+      refreshTokenLastLoginUpdatedAt,
+      refreshTokenLastLoginUserAgent,
     } = this;
 
     this.fullName = [surname, name, middleName].filter((x) => x).join(' ');
     this.fullNameEmail = `${this.fullName} <${this.email}>`;
+
+    this.lastEntry = {
+      userAgent: refreshTokenLastLoginUserAgent,
+      at: refreshTokenLastLoginUpdatedAt,
+    };
 
     this.metrics = {
       monitors: {
@@ -746,15 +802,16 @@ export class UserResponse implements UserEntity {
       },
     };
 
-    this.planValidityPeriod =
-      role === UserRoleEnum.MonitorOwner
-        ? monthlyPayment
-          ? intervalToDuration({
-              start: monthlyPayment,
-              end: subDays(Date.now(), 28),
-            }).days ?? Number.NEGATIVE_INFINITY
-          : Number.POSITIVE_INFINITY
-        : Number.POSITIVE_INFINITY;
+    if (role === UserRoleEnum.MonitorOwner && monthlyPayment) {
+      const planValidityPeriod = Number(intervalToDuration({
+        start: monthlyPayment,
+        end: subDays(Date.now(), 28),
+      }).days);
+      this.planValidityPeriod = planValidityPeriod >= 0 ? planValidityPeriod : 0;
+    } else {
+      this.planValidityPeriod = 0;
+    }
+
     this.wallet = {
       total: parseFloat(walletSum ?? '0'),
     };
@@ -774,5 +831,7 @@ export const UserResponseToExternal = ({
   monthlyPayment,
   playlistAdded,
   playlistBroadcast,
+  refreshTokenLastLoginUpdatedAt,
+  refreshTokenLastLoginUserAgent,
   ...user
 }: UserResponse): UserResponse => user as UserResponse;

@@ -48,6 +48,9 @@ export class RefreshTokenEntity extends BaseEntity {
   @Column({ default: '' })
   fingerprint?: string;
 
+  @Column({ default: '' })
+  userAgent?: string;
+
   @CreateDateColumn({ select: false })
   @ApiProperty({
     description: 'Время создания',
