@@ -1,6 +1,7 @@
 {
   "IS_DEFINED": "{property} должен быть определен",
   "IS_EMPTY": "{property} должен быть пустым",
+  "IS_PHONE_NUMBER": "{property} должен быть телефонным номером: {value}",
   "IS_DEFINED_REFRESH": "refresh token должен быть определен",
   "IS_NOT_EMPTY": "{property} не может быть пустым",
   "IS_UUID": "{property} со значением: '{value}' не является валидным UUID",

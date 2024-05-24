@@ -2,6 +2,7 @@
   "IS_DEFINED": "{property} is not defined",
   "IS_EMPTY": "{property} must be empty",
   "IS_DEFINED_REFRESH": "the refresh token is required",
+  "IS_PHONE_NUMBER": "{property} must be a phone number: {value}",
   "IS_NOT_EMPTY": "{property} cannot be empty",
   "IS_UUID": "{property} with value: '{value}' is not a valid UUID",
   "IS_NUMBER": "{property} is not a valid number",
