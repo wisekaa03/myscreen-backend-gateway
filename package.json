@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.48.20",
+  "version": "2.48.21",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -55,11 +55,7 @@
     "**/test-exclude/glob": "^8.1.0",
     "**/@jest/reporters/glob": "^8.1.0",
     "**/**/es-abstract": ">=1.23.3",
-    "**/editly/execa": ">=9.1.0",
-    "**/default-browser/execa": ">=9.1.0",
-    "**/**/execa": "^5.1.1",
     "**/**/express": ">=4.19.2",
-    "**/**/fabric": ">=5.3.0",
     "**/**/http-proxy-agent": ">=7.0.2",
     "**/**/https-proxy-agent": ">=7.0.4",
     "**/**/gl": ">=8.0.2",
