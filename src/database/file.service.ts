@@ -225,39 +225,48 @@ export class FileService {
     update: Partial<FileEntity>,
   ): Promise<FileEntity> {
     return this.fileRepository.manager.transaction(async (transact) => {
-      if (update.folderId !== undefined && update.folderId !== file.folder.id) {
-        const s3Name = getS3Name(file.name);
-        const Key = `${update.folderId}/${file.hash}-${s3Name}`;
-        const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
-
-        await this.s3Service
-          .copyObject({
-            Bucket: this.bucket,
-            Key,
-            CopySource: `${this.bucket}/${CopySource}`,
-            MetadataDirective: 'REPLACE',
-          })
-          .then(() =>
-            this.s3Service.deleteObject({
-              Bucket: this.bucket,
-              Key: CopySource,
-            }),
-          );
-
-        const data = await transact.save(
-          FileEntity,
-          transact.create(FileEntity, { ...file, ...update, id: file.id }),
-        );
-
-        await this.bidService.websocketChange({ files: [data] });
-
-        return data;
+      const s3Name = getS3Name(file.name);
+      const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
+      let Key = `${file.folderId}/${file.hash}-${s3Name}`;
+      if (update.folderId !== undefined && update.folderId !== file.folderId) {
+        if (update.name !== undefined && update.name !== file.name) {
+          const s3NameUpdated = getS3Name(update.name);
+          Key = `${update.folderId}/${file.hash}-${s3NameUpdated}`;
+        } else {
+          Key = `${update.folderId}/${file.hash}-${s3Name}`;
+        }
+      } else if (update.name !== undefined && update.name !== file.name) {
+        const s3NameUpdated = getS3Name(update.name);
+        Key = `${file.folderId}/${file.hash}-${s3NameUpdated}`;
       }
 
-      return transact.save(
+      await this.s3Service
+        .copyObject({
+          Bucket: this.bucket,
+          Key,
+          CopySource: `${this.bucket}/${CopySource}`,
+          MetadataDirective: 'REPLACE',
+        })
+        .then(() =>
+          this.s3Service.deleteObject({
+            Bucket: this.bucket,
+            Key: CopySource,
+          }),
+        );
+
+      await transact.update(
         FileEntity,
-        transact.create(FileEntity, { ...update, id: file.id }),
+        file.id,
+        {
+          folderId: update?.folderId,
+          name: update?.name,
+        },
       );
+      const data = await transact.findOneByOrFail(FileEntity, { id: file.id });
+
+      await this.bidService.websocketChange({ files: [data] });
+
+      return data;
     });
   }
 
