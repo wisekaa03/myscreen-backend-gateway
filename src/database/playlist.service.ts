@@ -80,10 +80,12 @@ export class PlaylistService {
 
   async update(
     id: string,
-    insert: Partial<PlaylistEntity>,
+    update: Partial<PlaylistEntity>,
   ): Promise<PlaylistEntity> {
-    const updated = await this.playlistRepository.update(id, insert);
-    if (!updated.affected) {
+    const updated = await this.playlistRepository.save(
+      this.playlistRepository.create({ id, ...update })
+    );
+    if (!updated) {
       throw new NotAcceptableException(`Playlist with this '${id}' not found`);
     }
 
