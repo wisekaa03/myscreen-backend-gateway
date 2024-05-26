@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.48.25",
+  "version": "2.48.26",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -60,7 +60,7 @@
     "**/**/https-proxy-agent": ">=7.0.4",
     "**/**/gl": ">=8.0.2",
     "**/**/iconv-lite": ">=0.6.3",
-    "**/**/jsdom": ">=24.0.0",
+    "**/**/jsdom": ">=24.1.0",
     "**/**/jsonwebtoken": ">=9.0.2",
     "**/hosted-git-info/lru-cache": "^8.0.5",
     "**/@babel/helper-compilation-targets/lru-cache": "^8.0.5",
@@ -82,6 +82,7 @@
     "**/**/resolve": ">=1.22.8",
     "**/**/resolve-from": ">=5.0.0",
     "**/@mapbox/node-pre-gyp/rimraf": "^4.4.1",
+    "**/**/rrweb-cssom": ">=0.7.0",
     "**/**/safe-buffer": ">=5.2.1",
     "**/**/semver": ">=7.6.2",
     "**/**/send": ">=0.18.0",
