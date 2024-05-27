@@ -61,13 +61,13 @@ export class PlaylistEntity extends BaseEntity {
 
   @Column({ nullable: true })
   @ApiProperty({
-    description: 'Описание плэйлиста',
-    example: 'описание плэйлиста',
+    description: 'Описание плейлиста',
+    example: 'описание плейлиста',
     nullable: true,
     required: false,
   })
+  @IsOptional()
   @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
-  @MinLength(1, { message: i18nValidationMessage('validation.MIN_LENGTH') })
   description!: string;
 
   @Column({

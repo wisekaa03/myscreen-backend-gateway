@@ -95,60 +95,21 @@ export class FileController {
   ): Promise<FilesGetResponse> {
     let count = 0;
     let data: FileEntity[] = [];
-    const folderId = where?.folderId?.toString();
-    if (
-      user.role === UserRoleEnum.Administrator &&
-      folderId?.startsWith(administratorFolderId)
-    ) {
-      // мы в режиме администратора
-      const fromRegex = folderId.match(
-        /^([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})\/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/,
-      );
-      if (fromRegex?.length === 3) {
-        // получили имя папки
-        const userExpressionId = fromRegex[2];
-        const userExpression =
-          await this.userService.findById(userExpressionId);
-        if (!userExpression) {
-          throw new NotFoundException();
-        }
-        if (!isUUID(userExpressionId)) {
-          throw new BadRequestException('folderId: must be UUID');
-        }
-        [data, count] = await this.fileService.findAndCount({
-          find: {
-            ...paginationQueryToConfig(scope),
-            loadEagerRelations: false,
-            relations: {},
-            select,
-            where: {
-              ...TypeOrmFind.where(FileEntity, {
-                ...where,
-                folderId: undefined,
-              }),
-              userId: userExpressionId,
-            },
-          },
-        });
-      }
-    } else {
-      if (where?.folderId && !isUUID(where?.folderId)) {
-        throw new BadRequestException('folderId: must be UUID');
-      }
-      [data, count] = await this.fileService.findAndCount({
-        find: {
-          ...paginationQueryToConfig(scope),
-          loadEagerRelations: false,
-          relations: {},
-          select,
-          where: {
-            ...TypeOrmFind.where(FileEntity, where),
-            userId:
-              user.role === UserRoleEnum.Administrator ? undefined : user.id,
-          },
-        },
-      });
+    if (where?.folderId && !isUUID(where?.folderId)) {
+      throw new BadRequestException('folderId: must be UUID');
     }
+    [data, count] = await this.fileService.findAndCount({
+      find: {
+        ...paginationQueryToConfig(scope),
+        loadEagerRelations: false,
+        relations: {},
+        select,
+        where: {
+          ...TypeOrmFind.where(FileEntity, where),
+          userId: user.id,
+        },
+      },
+    });
 
     return {
       status: Status.Success,
@@ -559,16 +520,17 @@ export class FileController {
     if (update.folderId) {
       const folder = await this.folderService.findOne({
         where: { id: update.folderId },
+        select: { id: true },
       });
       if (!folder) {
         throw new NotFoundException('Folder not found');
       }
       data = await this.fileService.update(
         file,
-        Object.assign(file, folder, update),
+        {...file, folderId: folder.id, ...update}
       );
     } else {
-      data = await this.fileService.update(file, Object.assign(file, update));
+      data = await this.fileService.update(file, { ...file, ...update });
     }
 
     if (!data) {

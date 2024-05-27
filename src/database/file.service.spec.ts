@@ -1,8 +1,8 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { getS3ConnectionToken } from 'nestjs-s3';
-import { S3_MODULE_CONNECTION } from 'nestjs-s3/dist/s3.constants';
+import { getS3ConnectionToken } from 'nestjs-s3-aws';
+import { S3_MODULE_CONNECTION } from 'nestjs-s3-aws/dist/s3.constants';
 
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';

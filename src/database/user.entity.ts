@@ -12,6 +12,7 @@ import {
   IsDefined,
   IsNumber,
   IsDateString,
+  IsOptional,
 } from 'class-validator';
 import locale from 'country-locale-map';
 import {
@@ -132,6 +133,7 @@ export class UserEntity {
     nullable: true,
     required: false,
   })
+  @IsOptional()
   @IsPhoneNumber(undefined, {
     message: i18nValidationMessage('validation.IS_PHONE_NUMBER'),
   })
@@ -264,6 +266,7 @@ export class UserEntity {
     nullable: true,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(100)
   company?: string;
@@ -275,6 +278,7 @@ export class UserEntity {
     maxLength: 254,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(254)
   companyLegalAddress?: string;
@@ -286,6 +290,7 @@ export class UserEntity {
     maxLength: 254,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(254)
   companyActualAddress?: string;
@@ -297,6 +302,7 @@ export class UserEntity {
     maxLength: 12,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(12)
   companyTIN?: string;
@@ -308,6 +314,7 @@ export class UserEntity {
     maxLength: 9,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(9)
   companyRRC?: string;
@@ -319,6 +326,7 @@ export class UserEntity {
     maxLength: 15,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(15)
   companyPSRN?: string;
@@ -330,7 +338,10 @@ export class UserEntity {
     maxLength: 14,
     required: false,
   })
-  @IsPhoneNumber()
+  @IsOptional()
+  @IsPhoneNumber(undefined, {
+    message: i18nValidationMessage('validation.IS_PHONE_NUMBER'),
+  })
   companyPhone?: string;
 
   @Column({ default: '' })
@@ -340,6 +351,7 @@ export class UserEntity {
     maxLength: 254,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(254)
   companyEmail?: string;
@@ -351,6 +363,7 @@ export class UserEntity {
     maxLength: 254,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(254)
   companyBank?: string;
@@ -362,6 +375,7 @@ export class UserEntity {
     maxLength: 9,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(9)
   companyBIC?: string;
@@ -373,6 +387,7 @@ export class UserEntity {
     maxLength: 20,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(20)
   companyCorrespondentAccount?: string;
@@ -384,6 +399,7 @@ export class UserEntity {
     maxLength: 20,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(20)
   companyPaymentAccount?: string;
@@ -395,6 +411,7 @@ export class UserEntity {
     maxLength: 14,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(14)
   companyFax?: string;
@@ -406,6 +423,7 @@ export class UserEntity {
     maxLength: 254,
     required: false,
   })
+  @IsOptional()
   @IsString()
   @MaxLength(254)
   companyRepresentative?: string;

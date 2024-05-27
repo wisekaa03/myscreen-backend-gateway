@@ -196,7 +196,7 @@ export class UserService {
       const language = update.preferredLanguage ?? user.preferredLanguage;
 
       const [{ affected }] = await Promise.all([
-        this.userRepository.update(user.id, { ...update, emailConfirmKey }),
+        this.userRepository.update(userId, { ...update, emailConfirmKey }),
         this.mailService.emit('sendWelcomeMessage', {
           email: update.email,
           confirmUrl,
@@ -207,11 +207,11 @@ export class UserService {
         throw new ForbiddenException();
       }
 
-      const userUpdated = await this.userResponseRepository.findOneBy({ id: user.id });
+      const userUpdated = await this.userResponseRepository.findOneBy({ id: userId });
       return userUpdated;
     }
 
-    const { affected } = await this.userRepository.update(user.id, update);
+    const { affected } = await this.userRepository.update(userId, update);
     if (!affected) {
       throw new ForbiddenException();
     }

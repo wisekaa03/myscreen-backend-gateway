@@ -64,24 +64,16 @@ export class PlaylistController {
     type: PlaylistsGetResponse,
   })
   @Crud(CRUD.READ)
-  async findManyPlaylist(
+  async findMany(
     @Req() { user }: ExpressRequest,
     @Body() { where: origWhere, select, scope }: PlaylistsGetRequest,
   ): Promise<PlaylistsGetResponse> {
     const { id: userId, role } = user;
-    const where = TypeOrmFind.where(PlaylistEntity, origWhere);
-    if (Array.isArray(where)) {
-      where.push({ hide: false });
-    } else {
-      where.hide = false;
-    }
-    if (role !== UserRoleEnum.Administrator) {
-      if (Array.isArray(where)) {
-        where.push({ userId });
-      } else {
-        where.userId = userId;
-      }
-    }
+    const where = TypeOrmFind.where(PlaylistEntity, {
+      ...origWhere,
+      hide: false,
+      userId: role !== UserRoleEnum.Administrator ? userId : undefined,
+    });
     const [data, count] = await this.playlistService.findAndCount({
       ...paginationQueryToConfig(scope),
       select,
@@ -197,7 +189,7 @@ export class PlaylistController {
       throw new NotFoundException(`Playlist '${id}' not found`);
     }
 
-    let files: FileEntity[] | undefined;
+    let files: FileEntity[] = [];
     if (Array.isArray(body.files) && body.files.length > 0) {
       files = await this.fileService.find({
         find: {

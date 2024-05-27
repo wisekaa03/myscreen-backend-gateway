@@ -2,7 +2,7 @@ import * as nodePath from 'node:path';
 import { Module, Logger } from '@nestjs/common';
 import 'dotenv';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { S3Module } from 'nestjs-s3';
+import { S3Module } from 'nestjs-s3-aws';
 import { TransportTargetOptions, LevelWithSilent } from 'pino';
 import type pino from 'pino';
 import type { PrettyOptions } from 'pino-pretty';

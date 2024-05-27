@@ -22,7 +22,7 @@ import {
   HeadObjectOutput,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { InjectS3, S3 } from 'nestjs-s3';
+import { InjectS3, S3 } from 'nestjs-s3-aws';
 import {
   Repository,
   FindManyOptions,
@@ -47,7 +47,6 @@ import { FolderEntity } from './folder.entity';
 import { PlaylistService } from './playlist.service';
 import { UserEntity } from './user.entity';
 import { BidService } from './bid.service';
-import { UserResponse } from './user-response.entity';
 
 @Injectable()
 export class FileService {
@@ -226,39 +225,48 @@ export class FileService {
     update: Partial<FileEntity>,
   ): Promise<FileEntity> {
     return this.fileRepository.manager.transaction(async (transact) => {
-      if (update.folderId !== undefined && update.folderId !== file.folder.id) {
-        const s3Name = getS3Name(file.name);
-        const Key = `${update.folderId}/${file.hash}-${s3Name}`;
-        const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
-
-        await this.s3Service
-          .copyObject({
-            Bucket: this.bucket,
-            Key,
-            CopySource: `${this.bucket}/${CopySource}`,
-            MetadataDirective: 'REPLACE',
-          })
-          .then(() =>
-            this.s3Service.deleteObject({
-              Bucket: this.bucket,
-              Key: CopySource,
-            }),
-          );
-
-        const data = await transact.save(
-          FileEntity,
-          transact.create(FileEntity, { ...file, ...update, id: file.id }),
-        );
-
-        await this.bidService.websocketChange({ files: [data] });
-
-        return data;
+      const s3Name = getS3Name(file.name);
+      const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
+      let Key = `${file.folderId}/${file.hash}-${s3Name}`;
+      if (update.folderId !== undefined && update.folderId !== file.folderId) {
+        if (update.name !== undefined && update.name !== file.name) {
+          const s3NameUpdated = getS3Name(update.name);
+          Key = `${update.folderId}/${file.hash}-${s3NameUpdated}`;
+        } else {
+          Key = `${update.folderId}/${file.hash}-${s3Name}`;
+        }
+      } else if (update.name !== undefined && update.name !== file.name) {
+        const s3NameUpdated = getS3Name(update.name);
+        Key = `${file.folderId}/${file.hash}-${s3NameUpdated}`;
       }
 
-      return transact.save(
+      await this.s3Service
+        .copyObject({
+          Bucket: this.bucket,
+          Key,
+          CopySource: `${this.bucket}/${CopySource}`,
+          MetadataDirective: 'REPLACE',
+        })
+        .then(() =>
+          this.s3Service.deleteObject({
+            Bucket: this.bucket,
+            Key: CopySource,
+          }),
+        );
+
+      await transact.update(
         FileEntity,
-        transact.create(FileEntity, { ...update, id: file.id }),
+        file.id,
+        {
+          folderId: update?.folderId,
+          name: update?.name,
+        },
       );
+      const data = await transact.findOneByOrFail(FileEntity, { id: file.id });
+
+      await this.bidService.websocketChange({ files: [data] });
+
+      return data;
     });
   }
 
@@ -334,14 +342,14 @@ export class FileService {
             `'${file.originalname}' has no data in Ffprobe`,
           );
         }
-        const { mimetype, originalname, media, size } = file;
+        const { mimetype, originalname, hash, path, media: info, size: filesize } = file;
 
         const [mime] = mimetype.split('/');
         const extension = pathParse(originalname).ext.slice(1);
-        const type =
+        const videoType =
           Object.values(VideoType).find((t) => t === mime) ?? VideoType.Other;
 
-        const stream = media.streams?.[0];
+        const stream = info.streams?.[0];
         const duration = parseFloat(stream?.duration ?? '0');
         const width = Number(stream?.width ?? 0);
         const height = Number(stream?.height ?? 0);
@@ -349,37 +357,37 @@ export class FileService {
         const fileToSave: DeepPartial<FileEntity> = {
           userId: user.id,
           folder: folder ?? undefined,
-          name: file.originalname,
-          filesize: size,
+          name: originalname,
+          filesize,
           duration,
           width,
           height,
-          info: media,
-          videoType: type,
+          info,
+          videoType,
           category,
           extension,
-          hash: file.hash,
+          hash,
           preview: undefined,
           monitors: monitorId ? [{ id: monitorId }] : undefined,
         };
 
-        const Key = `${folderId}/${file.hash}-${getS3Name(file.originalname)}`;
+        const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
         try {
           const fileUploaded = await this.s3Service.putObject({
             Bucket: this.bucket,
             Key,
-            ContentType: file.mimetype,
-            Body: createReadStream(file.path),
+            ContentType: mimetype,
+            Body: createReadStream(path),
           });
           if (!fileUploaded) {
             throw new Error('Failed to upload');
           }
           this.logger.debug(
-            `S3: the file "${file.path}" uploaded to "${Key}": ${JSON.stringify(
+            `S3: the file "${path}" uploaded to "${Key}": ${JSON.stringify(
               fileUploaded,
             )}`,
           );
-        } catch (error: any) {
+        } catch (error: unknown) {
           this.logger.error(`S3 upload error: "${error?.toString()}"`, error);
           throw new InternalServerErrorException(error);
         }
