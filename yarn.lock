@@ -985,16 +985,6 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@derhuerst/http-basic@^8.2.0":
-  version "8.2.4"
-  resolved "https://registry.yarnpkg.com/@derhuerst/http-basic/-/http-basic-8.2.4.tgz#d021ebb8f65d54bea681ae6f4a8733ce89e7f59b"
-  integrity sha512-F9rL9k9Xjf5blCz8HsJRO4diy111cayL2vkY2XE4r4t3n0yPXVYy3KD3nJ1qbrSn9743UWSXH4IwuCa/HWlGFw==
-  dependencies:
-    caseless "^0.12.0"
-    concat-stream "^2.0.0"
-    http-response-object "^3.0.1"
-    parse-cache-control "^1.0.1"
-
 "@elastic/elasticsearch@>=8.13.1", "@elastic/elasticsearch@^8.0.0", "@elastic/elasticsearch@^8.13.1":
   version "8.13.1"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.13.1.tgz#0fbe8318cf7f21c599165bb901277428639d57ec"
@@ -2348,11 +2338,6 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@types/node@^10.0.3":
-  version "10.17.60"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-10.17.60.tgz#35f3d6213daed95da7f0f73e75bcc6980e90597b"
-  integrity sha512-F0KIgDJfy2nA3zMLmWGKxcH2ZVEtCZXHHdOQs2gSaQ27+lNeEfGxzkIw90aXswATX7AZ33tahPbzy6KAfUreVw==
-
 "@types/normalize-package-data@^2.4.1":
   version "2.4.4"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.4.tgz#56e2cc26c397c038fab0e3a917a12d5c5909e901"
@@ -3281,11 +3266,6 @@ canvas@^2.8.0, canvas@^2.9.3:
     nan "^2.17.0"
     simple-get "^3.0.3"
 
-caseless@^0.12.0:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/caseless/-/caseless-0.12.0.tgz#1b681c21ff84033c826543090689420d187151dc"
-  integrity sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==
-
 cctx@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/cctx/-/cctx-1.0.1.tgz#05676cdcf8a05c815ac01b34062abdd44c376159"
@@ -3532,7 +3512,7 @@ component-emitter@^1.3.0:
   resolved "https://registry.yarnpkg.com/component-emitter/-/component-emitter-1.3.1.tgz#ef1d5796f7d93f135ee6fb684340b26403c97d17"
   integrity sha512-T0+barUSQRTUQASh8bx02dl+DhF54GtIDY13Y3m9oWTklKbb3Wv974meRpeZ3lp1JpLVECWWNHC4vaG2XHXouQ==
 
-concat-stream@>=2.0.0, concat-stream@^1.5.2, concat-stream@^2.0.0:
+concat-stream@>=2.0.0, concat-stream@^1.5.2:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/concat-stream/-/concat-stream-2.0.0.tgz#414cf5af790a48c60ab9be4527d56d5e41133cb1"
   integrity sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==
@@ -4420,16 +4400,6 @@ fb-watchman@^2.0.0:
   dependencies:
     bser "2.1.1"
 
-ffmpeg-static@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/ffmpeg-static/-/ffmpeg-static-5.2.0.tgz#6ca64a5ed6e69ec4896d175c1f69dd575db7c5ef"
-  integrity sha512-WrM7kLW+do9HLr+H6tk7LzQ7kPqbAgLjdzNE32+u3Ff11gXt9Kkkd2nusGFrlWMIe+XaA97t+I8JS7sZIrvRgA==
-  dependencies:
-    "@derhuerst/http-basic" "^8.2.0"
-    env-paths "^2.2.0"
-    https-proxy-agent "^5.0.0"
-    progress "^2.0.3"
-
 figures@^3.0.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/figures/-/figures-3.2.0.tgz#625c18bd293c604dc4a8ddb2febf0c88341746af"
@@ -5030,13 +5000,6 @@ http-proxy-agent@>=7.0.2, http-proxy-agent@^7.0.0, http-proxy-agent@^7.0.2:
   dependencies:
     agent-base "^7.1.0"
     debug "^4.3.4"
-
-http-response-object@^3.0.1:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/http-response-object/-/http-response-object-3.0.2.tgz#7f435bb210454e4360d074ef1f989d5ea8aa9810"
-  integrity sha512-bqX0XTF6fnXSQcEJ2Iuyr75yVakyjIDCqroJQ/aHfSdlM743Cwqoi2nDYMzLGWUcuTWGWy8AAvOKXTfiv6q9RA==
-  dependencies:
-    "@types/node" "^10.0.3"
 
 https-proxy-agent@>=7.0.4, https-proxy-agent@^5.0.0, https-proxy-agent@^7.0.1, https-proxy-agent@^7.0.4:
   version "7.0.4"
@@ -6481,13 +6444,12 @@ ms@2.1.3, ms@^2.1.1, ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-multer-media@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.2.1.tgz#bccb90c4c7e1db4a7c12ce8c242907f0f693f61d"
-  integrity sha512-1lOE1nvQi4cuOO9tZB4Uq+h8CqVA8Tr5rDyrcJV2dA0NGfLg4xony4JPCs+OBTE54Z0svqU9L1n/sFd46ANUlg==
+multer-media@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.yarnpkg.com/multer-media/-/multer-media-3.3.1.tgz#5d5f8fc9bf10bb13bce461d19b6fec37d804507d"
+  integrity sha512-yzSmPEz9nIPRt+P/yYARwWfqObkwK7/njJrcOa9itXF81ez+zzhhOdoPc9XtjPV1vpVNZUC09ZbknJmuykB2TQ==
   dependencies:
     debug "^4.3.4"
-    ffmpeg-static "^5.2.0"
     media-probe "^1.0.1"
     multer "1.4.5-lts.1"
 
@@ -6895,11 +6857,6 @@ parent-module@^1.0.0:
   dependencies:
     callsites "^3.0.0"
 
-parse-cache-control@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/parse-cache-control/-/parse-cache-control-1.0.1.tgz#8eeab3e54fa56920fe16ba38f77fa21aacc2d74e"
-  integrity sha512-60zvsJReQPX5/QP0Kzfd/VrpjScIQ7SHBW6bFCYfEP+fp0Eppr1SHhIO5nd1PjZtvclzSzES9D/p5nFJurwfWg==
-
 parse-json@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/parse-json/-/parse-json-5.2.0.tgz#c76fc66dee54231c962b22bcc8a72cf2f99753cd"
@@ -7260,11 +7217,6 @@ process@^0.11.10:
   version "0.11.10"
   resolved "https://registry.yarnpkg.com/process/-/process-0.11.10.tgz#7332300e840161bda3e69a1d1d91a7d4bc16f182"
   integrity sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==
-
-progress@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
-  integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
 promise-breaker@^6.0.0:
   version "6.0.0"

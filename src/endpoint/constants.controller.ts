@@ -3,10 +3,11 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
-import { ConstantsGetResponse } from '@/dto/response/constants-get.response';
+import { ConstantsGetResponse, ConstantsResponse } from '@/dto';
 import { WalletService } from '@/database/wallet.service';
 import { BidService } from '@/database/bid.service';
 import { InvoiceService } from '@/database/invoice.service';
+import { version } from '../../package.json';
 
 @ApiComplexDecorators({
   path: ['constants'],
@@ -40,7 +41,8 @@ export class ConstantsController {
   })
   @Crud(CRUD.READ)
   async getConstants(): Promise<ConstantsGetResponse> {
-    const data = {
+    const data: ConstantsResponse = {
+      VERSION_BACKEND: version,
       SUBSCRIPTION_FEE: this.walletService.subscriptionFee,
       MIN_INVOICE_SUM: this.invoiceService.minInvoiceSum,
       COMMISSION_PERCENT: this.bidService.commissionPercent,
