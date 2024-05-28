@@ -3,6 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Status } from '@/enums/status.enum';
 
 export class ConstantsResponse {
+  @ApiProperty({ description: 'Версия бэкенд' })
+  VERSION_BACKEND!: string;
+
   @ApiProperty({ description: 'Стоимость подписки' })
   SUBSCRIPTION_FEE!: number;
 

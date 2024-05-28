@@ -35,3 +35,4 @@ export * from './bid-precalc-data.response';
 export * from './bid-precalc.response';
 export * from './wallet-operations-get.response';
 export * from './wallet.response';
+export * from './constants-get.response';
