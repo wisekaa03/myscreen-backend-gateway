@@ -148,12 +148,11 @@ export class PlaylistController {
     type: PlaylistGetResponse,
   })
   @Crud(CRUD.READ)
-  async findOnePlaylist(
-    @Req() { user }: ExpressRequest,
+  async findOne(
     @Param('playlistId', ParseUUIDPipe) id: string,
   ): Promise<PlaylistGetResponse> {
     const data = await this.playlistService.findOne({
-      where: { userId: user.id, id },
+      where: { id },
     });
     if (!data) {
       throw new NotFoundException(`Playlist '${id}' not found`);
