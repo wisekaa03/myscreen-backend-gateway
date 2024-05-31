@@ -187,8 +187,9 @@ export class BidService {
       );
 
       await Promise.allSettled(wsPromise);
-      // } else if (files) {
-    } else if (monitor) {
+    }
+    
+    if (monitor) {
       if (monitorDelete) {
         const bids = await this.monitorRequests({
           monitorId: monitor.id,
@@ -199,10 +200,10 @@ export class BidService {
         );
 
         await Promise.allSettled(wsPromise);
-      } else {
-        await this.wsGateway.onChange({ monitor });
       }
-    } else if (bid) {
+    }
+    
+    if (bid) {
       if (bidDelete) {
         await this.wsGateway.onChange({ monitor: bid.monitor });
       } else {

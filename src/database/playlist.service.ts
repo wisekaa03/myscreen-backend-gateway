@@ -93,7 +93,9 @@ export class PlaylistService {
     if (!playlist) {
       throw new NotFoundException(`Playlist with this '${id}' not found`);
     }
-    await this.bidService.websocketChange({ playlist });
+    if (update.status === undefined) {
+      await this.bidService.websocketChange({ playlist });
+    }
 
     return playlist;
   }
