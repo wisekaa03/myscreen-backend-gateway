@@ -1,4 +1,3 @@
-import internal from 'node:stream';
 import type { IncomingMessage } from 'http';
 import { isJWT } from 'class-validator';
 import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
@@ -288,8 +287,9 @@ export class WSGateway
       return;
     }
 
-    if (bid?.playlistId && bid.monitorId) {
-      await this.playlistService.update(bid.playlistId, {
+    if ((bid?.playlistId || bid?.playlist) && bid.monitorId) {
+      const playlistId = bid.playlistId ?? bid.playlist?.id;
+      await this.playlistService.update(playlistId, {
         status: PlaylistStatusEnum.Broadcast,
       });
       let bidFind: BidEntity | null = bid;
@@ -328,7 +328,9 @@ export class WSGateway
     if (monitor) {
       this.clients.forEach((value, client) => {
         if (value.monitorId === monitor.id) {
-          client.send(JSON.stringify([{ event: 'application', data: null }]));
+          if (!(monitor.playlistId || monitor.playlist)) {
+            client.send(JSON.stringify([{ event: 'application', data: null }]));
+          }
         }
       });
     }

@@ -296,17 +296,17 @@ export class MonitorController {
     // TODO: с другими заявки в выбранные дни/часы. Если есть, то выдавать ошибку.
     // TODO: 1.2. Во время проверок нужно учитывать заявки со статусом NotProcessing
     // TODO: и Approved. Заявки со статусом Denied не участвуют, так как они уже не актуальны.
-    const approved = await this.bidService.find({
-      where: {
-        monitorId: In(monitorIds),
-        dateWhen: dateBefore ? Between(dateWhen, dateBefore) : dateWhen,
-        // Подсчитываем все заявки, кроме Denied, в том числе и NotProcessing
-        approved: Not(BidApprove.DENIED),
-      },
-    });
-    if (approved.length > 0) {
-      throw new NotAcceptableException('This time is overlapped');
-    }
+    // const approved = await this.bidService.find({
+    //   where: {
+    //     monitorId: In(monitorIds),
+    //     dateWhen: dateBefore ? Between(dateWhen, dateBefore) : dateWhen,
+    //     // Подсчитываем все заявки, кроме Denied, в том числе и NotProcessing
+    //     approved: Not(BidApprove.DENIED),
+    //   },
+    // });
+    // if (approved.length > 0) {
+    //   throw new NotAcceptableException('This time is overlapped');
+    // }
 
     // To create bids
     const data = await this.bidService.create({
