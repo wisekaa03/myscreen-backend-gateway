@@ -62,7 +62,7 @@ export class WalletEntity extends BaseEntity {
   @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   description!: string;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'numeric', default: 0 })
   @ApiProperty({
     description: 'Баланс',
     example: 0,

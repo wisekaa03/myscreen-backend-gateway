@@ -57,7 +57,7 @@ export class ActEntity extends BaseEntity {
   @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   description!: string;
 
-  @Column({ type: 'float', default: 0 })
+  @Column({ type: 'numeric', default: 0 })
   @ApiProperty({
     description: 'Сумма акта выполненных работ',
     example: 1000,
