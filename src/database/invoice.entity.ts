@@ -68,7 +68,7 @@ export class InvoiceEntity extends BaseEntity {
   })
   status!: InvoiceStatus;
 
-  @Column({ type: 'float', default: 0 })
+  @Column({ type: 'numeric', default: 0 })
   @ApiProperty({
     description: 'Сумма счета',
     example: 1000,

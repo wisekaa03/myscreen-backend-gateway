@@ -242,7 +242,7 @@ export class BidEntity extends BaseEntity {
   @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   playlistChange!: boolean;
 
-  @Column({ type: 'float', default: 0 })
+  @Column({ type: 'numeric', default: 0 })
   @ApiProperty({
     description: 'Сумма списания',
     example: 10,
