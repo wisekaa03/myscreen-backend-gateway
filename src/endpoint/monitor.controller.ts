@@ -233,6 +233,7 @@ export class MonitorController {
         find: {
           select: ['id'],
           where: { userId: user.id },
+          relations: {},
         },
       });
       if (countMonitors > 5) {
