@@ -27,11 +27,12 @@ export class TypeOrmFind {
     let { relations, loadEagerRelations } = find;
     const columns = repository.metadata.ownColumns;
     const qb = repository.createQueryBuilder();
-    if (select) {
-      relations = intersection(
-        select as string[],
-        Object.keys(relations as FindOptionsRelations<Entity>),
-      );
+    if (select && relations) {
+      if (Array.isArray(relations)) {
+        relations = intersection(select as string[], relations);
+      } else {
+        relations = intersection(select as string[], Object.keys(relations));
+      }
       loadEagerRelations = false;
     }
     qb.setFindOptions({

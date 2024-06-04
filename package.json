@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.48.30",
+  "version": "2.48.31",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -39,6 +39,7 @@
   },
   "resolutions": {
     "**/**/@elastic/elasticsearch": ">=8.13.1",
+    "**/@angular-devkit/core/ajv": "^8.12.0",
     "**/**/arg": ">=5.0.2",
     "**/**/body-parser": ">=1.20.2",
     "**/**/brace-expansion": "^2.0.1",
@@ -149,7 +150,7 @@
     "nestjs-s3-aws": "^2.0.4",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
-    "pg": "^8.11.5",
+    "pg": "^8.12.0",
     "pino": "^9.1.0",
     "pino-elasticsearch": "^8.0.0",
     "pino-http": "^10.1.0",
@@ -176,7 +177,7 @@
     "@types/lodash": "^4.17.4",
     "@types/ms": "^0.7.34",
     "@types/multer": "^1.4.11",
-    "@types/node": "^20.14.0",
+    "@types/node": "^20.14.1",
     "@types/passport": "^1.0.16",
     "@types/passport-jwt": "^4.0.1",
     "@types/pug": "^2.0.10",
@@ -193,7 +194,7 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^7.11.0",
+    "typescript-eslint": "^7.12.0",
     "webpack": "^5.91.0",
     "webpack-node-externals": "^3.0.0"
   }
