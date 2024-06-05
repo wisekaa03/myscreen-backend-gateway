@@ -41,6 +41,8 @@ export class WalletService {
 
   public subscriptionDescription: string;
 
+  public maxNonPayment: number;
+
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
@@ -57,6 +59,10 @@ export class WalletService {
     );
     this.subscriptionDescription = this.configService.getOrThrow(
       'SUBSCRIPTION_DESCRIPTION',
+    );
+    this.maxNonPayment = this.configService.getOrThrow(
+      'MAX_NON_PAYMENT',
+      1
     );
   }
 
@@ -211,21 +217,23 @@ export class WalletService {
         ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.subscriptionFee}`,
       );
 
-      // проверяем план пользователя
-      if (user.plan !== UserPlanEnum.Demo) {
-        // если у пользователя был полный план и он не оплатил акт, то переводим его на демо-план
-        await transact.update(UserEntity, user.id, {
-          plan: UserPlanEnum.Demo,
-          storageSpace: UserStoreSpaceEnum.DEMO,
+      if (user.nonPayment > this.maxNonPayment) {
+        // проверяем план пользователя
+        if (user.plan !== UserPlanEnum.Demo) {
+          // если у пользователя был полный план и он не оплатил акт, то переводим его на демо-план
+          await transact.update(UserEntity, user.id, {
+            plan: UserPlanEnum.Demo,
+            storageSpace: UserStoreSpaceEnum.DEMO,
+          });
+        }
+
+        // и вывод информации на email
+        this.mailService.emit('balanceNotChanged', {
+          user,
+          sum: this.subscriptionFee,
+          balance,
         });
       }
-
-      // и вывод информации на email
-      this.mailService.emit('balanceNotChanged', {
-        user,
-        sum: this.subscriptionFee,
-        balance,
-      });
     }
   }
 
