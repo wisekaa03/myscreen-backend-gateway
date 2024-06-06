@@ -292,29 +292,17 @@ export class WSGateway
       await this.playlistService.update(playlistId, {
         status: PlaylistStatusEnum.Broadcast,
       });
-      let bidFind: BidEntity | null = bid;
-      if (!bid.playlist) {
-        bidFind = await this.bidService.findOne({
-          where: { id: bid.id },
-          loadEagerRelations: false,
-          relations: { playlist: { files: true } },
-        });
-        if (!bidFind) {
-          this.logger.error('bid.playlist is undefined');
-          return;
-        }
-        bidFind = {
-          ...bidFind,
-          playlist: {
-            ...bidFind.playlist,
-            files: await Promise.all(
-              bidFind.playlist.files.map(async (file) =>
-                this.fileService.signedUrl(file),
-              ),
+      const bidFind = {
+        ...bid,
+        playlist: {
+          ...bid.playlist,
+          files: await Promise.all(
+            bid.playlist.files.map(async (file) =>
+              this.fileService.signedUrl(file),
             ),
-          },
-        } as BidEntity;
-      }
+          ),
+        },
+      } as BidEntity;
 
       this.clients.forEach((value, client) => {
         if (value.monitorId === bid.monitorId) {
