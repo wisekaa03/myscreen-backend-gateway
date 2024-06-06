@@ -517,6 +517,13 @@ export class UserResponse implements UserEntity {
 
   @ViewColumn()
   @ApiProperty({
+    description: 'Сколько раз отправлялось напоминание о неуплате',
+    example: 0,
+  })
+  nonPayment!: number;
+
+  @ViewColumn()
+  @ApiProperty({
     description: 'Компания',
     example: 'ACME corporation',
     maxLength: 100,

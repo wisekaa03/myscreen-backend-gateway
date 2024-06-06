@@ -13,6 +13,7 @@ import {
   IsNumber,
   IsDateString,
   IsOptional,
+  IsBoolean,
 } from 'class-validator';
 import locale from 'country-locale-map';
 import {
@@ -257,6 +258,15 @@ export class UserEntity {
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
   monitors?: MonitorEntity[];
+
+  @Column({ type: 'smallint', default: 0 })
+  @ApiProperty({
+    description: 'Сколько раз отправлялось напоминание о неуплате',
+    example: 0,
+  })
+  @IsOptional()
+  @IsBoolean()
+  nonPayment!: number;
 
   @Column({ nullable: true })
   @ApiProperty({
