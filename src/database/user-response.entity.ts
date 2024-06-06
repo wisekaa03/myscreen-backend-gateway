@@ -9,7 +9,7 @@ import {
   AfterInsert,
   AfterUpdate,
 } from 'typeorm';
-import { intervalToDuration, subDays } from 'date-fns';
+import dayjs from 'dayjs';
 
 import {
   BidApprove,
@@ -766,7 +766,6 @@ export class UserResponse implements UserEntity {
   @AfterUpdate()
   generate() {
     const {
-      role,
       surname,
       name,
       middleName,
@@ -782,6 +781,7 @@ export class UserResponse implements UserEntity {
       walletSum,
       refreshTokenLastLoginUpdatedAt,
       refreshTokenLastLoginUserAgent,
+      createdAt = Date.now(),
     } = this;
 
     this.fullName = [surname, name, middleName].filter((x) => x).join(' ');
@@ -809,12 +809,14 @@ export class UserResponse implements UserEntity {
       },
     };
 
-    if (role === UserRoleEnum.MonitorOwner && monthlyPayment) {
-      const planValidityPeriod = Number(intervalToDuration({
-        start: monthlyPayment,
-        end: subDays(Date.now(), 28),
-      }).days);
-      this.planValidityPeriod = planValidityPeriod >= 0 ? planValidityPeriod : 0;
+    if (this.plan === UserPlanEnum.Demo) {
+      const end = dayjs(Date.now()).subtract(14, 'days');
+      const duration = dayjs(createdAt).diff(end, 'days');
+      this.planValidityPeriod = duration > 0 ? duration : 0;
+    } else if (monthlyPayment) {
+      const end = dayjs(Date.now()).subtract(28, 'days');
+      const duration = dayjs(monthlyPayment).diff(end, 'days');
+      this.planValidityPeriod = duration > 0 ? duration : 0;
     } else {
       this.planValidityPeriod = 0;
     }
