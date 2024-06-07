@@ -49,10 +49,9 @@ import {
   FilesCopyRequest,
 } from '@/dto';
 import { UserRoleEnum, VideoType, Status, CRUD } from '@/enums';
-import { administratorFolderId } from '@/constants';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FileEntity } from '@/database/file.entity';
@@ -100,7 +99,7 @@ export class FileController {
     }
     [data, count] = await this.fileService.findAndCount({
       find: {
-        ...paginationQueryToConfig(scope),
+        ...paginationQuery(scope),
         loadEagerRelations: false,
         relations: {},
         select,

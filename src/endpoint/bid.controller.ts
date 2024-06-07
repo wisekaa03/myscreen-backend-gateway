@@ -29,7 +29,7 @@ import {
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { UserService } from '@/database/user.service';
 import { BidService } from '@/database/bid.service';
 import { BidEntity } from '@/database/bid.entity';
@@ -70,7 +70,7 @@ export class BidController {
     const where = TypeOrmFind.where(BidEntity, origWhere);
     if (user.role === UserRoleEnum.MonitorOwner) {
       const [data, count] = await this.bidService.findAndCount({
-        ...paginationQueryToConfig(scope),
+        ...paginationQuery(scope),
         select,
         where: [
           { userId, hide: false, ...where, buyerId: Not(user.id) },
@@ -87,7 +87,7 @@ export class BidController {
 
     if (user.role === UserRoleEnum.Advertiser) {
       const [data, count] = await this.bidService.findAndCount({
-        ...paginationQueryToConfig(scope),
+        ...paginationQuery(scope),
         select,
         where: [
           { userId, hide: false, ...where, buyerId: user.id },
@@ -103,7 +103,7 @@ export class BidController {
     }
 
     const [data, count] = await this.bidService.findAndCount({
-      ...paginationQueryToConfig(scope),
+      ...paginationQuery(scope),
       select,
       where,
     });

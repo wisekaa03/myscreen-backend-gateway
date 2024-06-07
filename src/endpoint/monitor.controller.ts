@@ -15,7 +15,6 @@ import {
   Get,
   HttpCode,
   Logger,
-  NotAcceptableException,
   NotFoundException,
   Param,
   ParseUUIDPipe,
@@ -49,7 +48,7 @@ import {
   MonitorMultiple,
 } from '@/enums';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserService } from '@/database/user.service';
 import { MonitorEntity } from '@/database/monitor.entity';
@@ -100,7 +99,7 @@ export class MonitorController {
   ): Promise<MonitorsGetResponse> {
     const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {
-      ...paginationQueryToConfig(scope),
+      ...paginationQuery(scope),
       select,
       relations: { groupMonitors: true },
     };
@@ -122,6 +121,9 @@ export class MonitorController {
     } else {
       find.where = {
         ...TypeOrmFind.where(MonitorEntity, where),
+        user: {
+          plan: Not(UserPlanEnum.Demo),
+        },
         price1s: MoreThan(0),
         minWarranty: MoreThan(0),
         maxDuration: MoreThan(0),
@@ -282,13 +284,6 @@ export class MonitorController {
       bid: { dateBefore, dateWhen, playlistChange },
     }: MonitorsPlaylistAttachRequest,
   ): Promise<BidsGetResponse> {
-    if (
-      user.role === UserRoleEnum.MonitorOwner &&
-      user.plan === UserPlanEnum.Demo
-    ) {
-      throw new ForbiddenException('You have a DEMO-account, update it to PRO');
-    }
-
     // To verify user permissions for bid
     this.userService.verify(user, 'bid', 'updateBid', CRUD.CREATE);
 

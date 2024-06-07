@@ -22,7 +22,7 @@ import {
   UsersGetRequest,
 } from '@/dto';
 import { CRUD, UserRoleEnum, Status } from '@/enums';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { UserService } from '@/database/user.service';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -51,7 +51,7 @@ export class UserController {
   ): Promise<UsersGetResponse> {
     const where = TypeOrmFind.where(UserEntity, origWhere);
     const [data, count] = await this.userService.findAndCount({
-      ...paginationQueryToConfig(scope),
+      ...paginationQuery(scope),
       select,
       where,
     });
