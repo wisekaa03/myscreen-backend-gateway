@@ -5,7 +5,7 @@ import { LimitRequest } from '@/dto/request/limit.request';
 
 export type ScopeOrder = FindOneOptions<any>['order'];
 
-export const paginationQueryToConfig = <T>(
+export const paginationQuery = <T>(
   scope?: LimitRequest,
 ): FindManyOptions<T> => {
   const pagination: FindManyOptions<T> = {};

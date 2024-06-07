@@ -40,7 +40,7 @@ import {
 import { Crud, ApiComplexDecorators } from '@/decorators';
 import { VideoType, Status, UserRoleEnum, CRUD } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
@@ -82,7 +82,7 @@ export class EditorController {
     @Body() { where, select, scope }: EditorsGetRequest,
   ): Promise<EditorsGetResponse> {
     const [data, count] = await this.editorService.findAndCount({
-      ...paginationQueryToConfig(scope),
+      ...paginationQuery(scope),
       select,
       where: { ...TypeOrmFind.where(EditorEntity, where), userId: user.id },
     });

@@ -31,7 +31,7 @@ import {
 } from '@/dto';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FolderEntity } from '@/database/folder.entity';
 import { FolderService } from '@/database/folder.service';
@@ -75,7 +75,7 @@ export class FolderController {
     let data: FolderResponse[] = [];
     await this.folderService.rootFolder(user);
     [data, count] = await this.folderService.findAndCount({
-      ...paginationQueryToConfig(scope),
+      ...paginationQuery(scope),
       select,
       where: { ...TypeOrmFind.where(FolderEntity, origWhere), userId },
     });

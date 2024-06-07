@@ -4,7 +4,7 @@ import { Body, HttpCode, Logger, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserService } from '@/database/user.service';
 import { WalletService } from '@/database/wallet.service';
@@ -50,7 +50,7 @@ export class WalletController {
         ? undefined
         : user.id;
     const [data, count] = await this.walletService.find({
-      ...paginationQueryToConfig(scope),
+      ...paginationQuery(scope),
       select,
       where: { ...TypeOrmFind.where(WalletEntity, where), userId: whenUserId },
     });

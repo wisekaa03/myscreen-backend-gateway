@@ -38,7 +38,7 @@ import {
 } from '@/enums';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { formatToContentType } from '@/utils/format-to-content-type';
 import { InvoiceService } from '@/database/invoice.service';
@@ -80,7 +80,7 @@ export class InvoiceController {
         ? undefined
         : user.id;
     const [data, count] = await this.invoiceService.find({
-      ...paginationQueryToConfig(scope),
+      ...paginationQuery(scope),
       select,
       where: { ...TypeOrmFind.where(InvoiceEntity, where), userId: whenUserId },
     });

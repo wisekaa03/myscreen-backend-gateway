@@ -16,14 +16,13 @@ import {
   type DeepPartial,
   FindManyOptions,
 } from 'typeorm';
-import { addDays } from 'date-fns/addDays';
+import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 import { I18nService } from 'nestjs-i18n';
 
 import {
   FindManyOptionsCaseInsensitive,
   MailForgotPassword,
-  MailSendApplicationMessage,
   MailSendVerificationCode,
   MailWelcomeMessage,
 } from '@/interfaces';
@@ -95,11 +94,9 @@ export class UserService {
           return true;
         }
 
-        if (
-          (countMonitors ?? 0) > 5 ||
-          (controllerName === 'monitor' &&
+        if (controllerName === 'monitor' &&
             crud === CRUD.CREATE &&
-            1 + countMonitors > 5)
+            1 + countMonitors > 5
         ) {
           throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
@@ -107,7 +104,7 @@ export class UserService {
         if (
           controllerName === 'monitor' &&
           crud !== CRUD.READ &&
-          addDays(createdAt, 14 + 1) < new Date()
+          dayjs(createdAt).add(14 + 1, 'days').isBefore(new Date())
         ) {
           throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
@@ -115,20 +112,12 @@ export class UserService {
         if (
           controllerName === 'file' &&
           crud !== CRUD.READ &&
-          addDays(createdAt, 28 + 1) < new Date()
+          dayjs(createdAt).add(28 + 1, 'days').isBefore(new Date())
         ) {
           throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
 
-        if (countUsedSpace > UserStoreSpaceEnum.DEMO) {
-          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
-        }
-
-        if (
-          controllerName === 'bid' ||
-          controllerName === 'application' ||
-          controllerName === 'request'
-        ) {
+        if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {
           throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
       } else if (plan === UserPlanEnum.Full) {

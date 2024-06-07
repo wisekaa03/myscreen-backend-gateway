@@ -1,9 +1,9 @@
 import { Order } from '@/dto/request/limit-order.request';
-import { paginationQueryToConfig } from './pagination-query-to-config';
+import { paginationQuery } from './pagination-query';
 
 describe('pagination query to config', () => {
   it('paginationQueryToConfig', () => {
-    const config = paginationQueryToConfig({
+    const config = paginationQuery({
       limit: 10,
       page: 2,
       order: {

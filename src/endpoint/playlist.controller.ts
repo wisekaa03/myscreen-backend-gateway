@@ -29,7 +29,7 @@ import {
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { Status, UserRoleEnum, CRUD } from '@/enums';
-import { paginationQueryToConfig } from '@/utils/pagination-query-to-config';
+import { paginationQuery } from '@/utils/pagination-query';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
@@ -75,7 +75,7 @@ export class PlaylistController {
       userId: role !== UserRoleEnum.Administrator ? userId : undefined,
     });
     const [data, count] = await this.playlistService.findAndCount({
-      ...paginationQueryToConfig(scope),
+      ...paginationQuery(scope),
       select,
       where,
     });
