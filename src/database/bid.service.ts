@@ -383,7 +383,7 @@ export class BidService {
   }
 
   /**
-   * Update the application
+   * Update the bid
    *
    * @param update Partial<BidEntity>
    * @returns

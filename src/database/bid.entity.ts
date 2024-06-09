@@ -28,9 +28,9 @@ import { UserEntity } from './user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 
-@Entity('application', { comment: 'Заявки' })
+@Entity('bid', { comment: 'Заявки на воспроизведение' })
 export class BidEntity extends BaseEntity {
-  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_bid_id' })
+  @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_bid' })
   @ApiProperty({
     description: 'Идентификатор взаимодействия',
     format: 'uuid',
@@ -39,7 +39,7 @@ export class BidEntity extends BaseEntity {
   id?: string;
 
   @Generated('increment')
-  @Index('bidSeqNoIndex')
+  @Index('bidSeqNo')
   @Column({ type: 'integer' })
   @ApiProperty({
     description: 'Номер заявки',
@@ -54,7 +54,7 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_buyer_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_buyer' })
   @ApiProperty({
     description: 'Покупатель',
     type: 'string',
@@ -63,7 +63,7 @@ export class BidEntity extends BaseEntity {
   buyer!: UserEntity | null;
 
   @Column({ nullable: true })
-  @Index('bidBuyerIdIndex')
+  @Index('bidBuyer')
   @ApiProperty({
     description: 'Покупатель ID',
     format: 'uuid',
@@ -79,7 +79,7 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_seller_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_seller' })
   @ApiProperty({
     description: 'Продавец',
     type: 'string',
@@ -88,7 +88,7 @@ export class BidEntity extends BaseEntity {
   seller!: UserEntity;
 
   @Column()
-  @Index('bidSellerIdIndex')
+  @Index('bidSeller')
   @ApiProperty({
     description: 'Продавец ID',
     format: 'uuid',
@@ -103,7 +103,7 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_monitor_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_monitor' })
   @ApiProperty({
     description: 'Монитор',
     type: 'string',
@@ -124,7 +124,7 @@ export class BidEntity extends BaseEntity {
     enum: BidStatus,
     default: BidStatus.OK,
   })
-  @Index('bidStatusIndex')
+  @Index('bidStatus')
   @ApiProperty({
     description: 'OK / Подождите',
     enum: BidStatus,
@@ -156,8 +156,8 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_parent_request_id' })
-  @Index('bidParentRequestIdIndex')
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_parent_bid' })
+  @Index('bidParentBid')
   parentRequest?: BidEntity;
 
   @Column({ type: 'uuid', nullable: true })
@@ -170,7 +170,7 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: true,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_playlist_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_playlist' })
   @ApiProperty({
     description: 'Плэйлист',
     type: 'string',
@@ -191,7 +191,7 @@ export class BidEntity extends BaseEntity {
     enum: BidApprove,
     default: BidApprove.NOTPROCESSED,
   })
-  @Index('bidApprovedIndex')
+  @Index('bidApproved')
   @ApiProperty({
     description: 'Не обработан / Разрешен / Запрещен',
     enum: BidApprove,
@@ -206,7 +206,7 @@ export class BidEntity extends BaseEntity {
   approved!: BidApprove;
 
   @Column({ type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
-  @Index('bidDateWhenIndex')
+  @Index('bidDateWhen')
   @ApiProperty({
     type: 'string',
     format: 'date',
@@ -221,7 +221,7 @@ export class BidEntity extends BaseEntity {
   dateWhen!: Date;
 
   @Column({ type: 'timestamptz', nullable: true, default: null })
-  @Index('bidDateBeforeIndex')
+  @Index('bidDateBefore')
   @ApiProperty({
     type: 'string',
     format: 'date',
@@ -257,11 +257,11 @@ export class BidEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_user_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_bid_user' })
   user!: UserEntity;
 
   @Column({ select: false })
-  @Index('bidUserIdIndex')
+  @Index('bidUser')
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 
