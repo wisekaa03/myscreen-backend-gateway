@@ -118,6 +118,7 @@ export class DatabaseModule implements OnModuleInit {
           status: MonitorStatus.Offline,
         });
       }
+      await manager.query('DROP TABLE IF EXISTS public.application');
     });
   }
 }

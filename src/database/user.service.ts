@@ -61,7 +61,7 @@ export class UserService {
    * Verify user permissions.
    *
    * @param {UserResponse} user User
-   * @param {string} controllerName Controller name (monitor, application, etc.)
+   * @param {string} controllerName Controller name (monitor, bid, etc.)
    * @param {string} functionName Function name (create, read, update, delete, status)
    * @param {CRUDS} crud CRUDS (CREATE, READ, UPDATE, DELETE, STATUS)
    * @returns {boolean} true - access allowed
