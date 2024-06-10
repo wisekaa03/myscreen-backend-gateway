@@ -5,6 +5,7 @@ import { Logger } from '@nestjs/common';
 import type { FfprobeData } from 'media-probe';
 
 import { VideoType } from '@/enums/video-type.enum';
+import { fileExist } from './fs';
 
 const exec = util.promisify(child.exec);
 
@@ -16,9 +17,13 @@ export async function FfMpegPreview(
 ): Promise<void> {
   const logger = new Logger('FfMpeg');
 
+  const ffmpeg = await fileExist('node_modules/ffmpeg-static/ffmpeg')
+    ? 'node_modules/ffmpeg-static/ffmpeg'
+    : 'ffmpeg';
+
   if (type === VideoType.Image) {
     await exec(
-      `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
+      `${ffmpeg} -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ` -vf scale="100:74" -y "${outPath}"`,
     ).catch((error: unknown) => {
       logger.error('FfMpeg error', error);
@@ -36,7 +41,7 @@ export async function FfMpegPreview(
     );
 
     await exec(
-      `node_modules/ffmpeg-static/ffmpeg -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
+      `${ffmpeg} -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ' -an' +
         ` -vf scale="100:74",fps="1/${frameInterval}"` +
         ` -y "${outPattern}"`,
@@ -46,7 +51,7 @@ export async function FfMpegPreview(
     });
 
     await exec(
-      `node_modules/ffmpeg-static/ffmpeg -framerate 1/0.6 -i "${outPattern}" -q:v 10 -v error -y "${outPath}"`,
+      `${ffmpeg} -framerate 1/0.6 -i "${outPattern}" -q:v 10 -v error -y "${outPath}"`,
     ).catch((error: unknown) => {
       logger.error('FfMpeg error', error);
       throw error;
