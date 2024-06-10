@@ -91,7 +91,7 @@ export class WalletService {
     invoice?: InvoiceEntity;
     act?: ActEntity;
   }): WalletEntity {
-    const sum = (invoice?.sum ?? 0) - (act?.sum ?? 0);
+    const sum = Number(invoice?.sum ?? '0') - Number(act?.sum ?? '0');
     const type = invoice
       ? WalletTransactionType.DEBIT
       : WalletTransactionType.CREDIT;
@@ -185,7 +185,7 @@ export class WalletService {
       this.logger.warn(
         ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
       );
-      if (sum !== 0) {
+      if (Number(sum) !== 0) {
         await this.actService.create({
           user,
           sum,

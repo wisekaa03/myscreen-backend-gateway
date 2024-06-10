@@ -436,7 +436,7 @@ export class BidService {
         }
       } else if (update.approved === BidApprove.ALLOWED) {
         // Оплата поступает на пользователя - владельца монитора
-        const sumIncrement = -(bid.sum * (100 - this.commissionPercent)) / 100;
+        const sumIncrement = -(Number(bid.sum) * (100 - this.commissionPercent)) / 100;
         if (sumIncrement !== 0) {
           await this.actService.create({
             user: bid.monitor.user,
@@ -449,7 +449,7 @@ export class BidService {
         await this.bidPostCreate({ bid, entityManager: transact });
       } else if (update.approved === BidApprove.DENIED) {
         // Снята оплата на пользователя - рекламодателя
-        if (bid.sum !== 0) {
+        if (Number(bid.sum) !== 0) {
           await this.actService.create({
             user: bid.seller,
             sum: bid.sum,
@@ -576,7 +576,7 @@ export class BidService {
         }
 
         // Списываем средства со счета пользователя Рекламодателя
-        if (sum !== 0) {
+        if (Number(sum) !== 0) {
           await this.actService.create({
             user,
             sum,
@@ -606,7 +606,7 @@ export class BidService {
           }
         } else if (insert.approved === BidApprove.ALLOWED) {
           // Оплата поступает на пользователя - владельца монитора
-          const sumIncrement = -(sum * (100 - this.commissionPercent)) / 100;
+          const sumIncrement = -(Number(sum) * (100 - this.commissionPercent)) / 100;
           const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
           if (sumIncrement !== 0) {
             await this.actService.create({

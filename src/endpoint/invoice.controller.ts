@@ -108,7 +108,7 @@ export class InvoiceController {
     @Req() { user }: ExpressRequest,
     @Body() { sum, description }: InvoiceCreateRequest,
   ): Promise<InvoiceGetResponse> {
-    if (sum < this.invoiceService.minInvoiceSum) {
+    if (Number(sum) < this.invoiceService.minInvoiceSum) {
       throw new BadRequestException(
         `The sum must be more or equal than ${this.invoiceService.minInvoiceSum}`,
       );
