@@ -111,10 +111,10 @@ export class UserService {
 
         if (
           controllerName === 'file' &&
-          crud !== CRUD.READ &&
+          !(crud === CRUD.READ || crud === CRUD.DELETE) &&
           dayjs(createdAt).add(28 + 1, 'days').isBefore(new Date())
         ) {
-          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
+          throw new ForbiddenException(`${this.i18n.t('user.demoTimeIsUp')} - file`);
         }
 
         if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {
