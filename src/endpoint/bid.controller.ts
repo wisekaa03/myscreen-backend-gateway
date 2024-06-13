@@ -73,8 +73,8 @@ export class BidController {
         ...paginationQuery(scope),
         select,
         where: [
-          { userId, hide: false, ...where, buyerId: Not(user.id) },
-          { userId, hide: false, ...where, sellerId: Not(user.id) },
+          { hide: false, ...where, buyerId: Not(userId) },
+          { hide: false, ...where, sellerId: Not(userId) },
         ],
       });
 

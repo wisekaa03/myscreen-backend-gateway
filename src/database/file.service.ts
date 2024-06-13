@@ -291,10 +291,7 @@ export class FileService {
       if (!folderIdOrig) {
         folder = await this.folderService.rootFolder(user);
       } else {
-        folder =
-          (await this.folderService.findOne({
-            where: { userId: user.id, id: folderIdOrig },
-          })) ?? null;
+        folder = await this.folderService.findOne({ where: { userId: user.id, id: folderIdOrig } });
         if (!folder) {
           throw new NotFoundException(`Folder '${folderIdOrig}' not found`);
         }
