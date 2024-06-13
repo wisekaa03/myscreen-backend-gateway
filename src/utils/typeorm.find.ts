@@ -15,7 +15,6 @@ import {
   MoreThanOrEqual,
   getMetadataArgsStorage,
   EntityTarget,
-  FindOptionsRelations,
 } from 'typeorm';
 
 export class TypeOrmFind {
@@ -174,7 +173,10 @@ export class TypeOrmFind {
             if (typeof value === 'string' && /^</.test(value)) {
               return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
             }
-            return { ...accWhere, [field]: value };
+            if (typeof value !== 'undefined') {
+              return { ...accWhere, [field]: value };
+            }
+            return accWhere;
           },
           {} as Record<string, any>,
         ),
@@ -239,7 +241,10 @@ export class TypeOrmFind {
             if (typeof value === 'string' && /^</.test(value)) {
               return { ...accWhere, [field]: MoreThanOrEqual(value.slice(1)) };
             }
-            return { ...accWhere, [field]: value };
+            if (typeof value !== 'undefined') {
+              return { ...accWhere, [field]: value };
+            }
+            return accWhere;
           },
           {} as Record<string, any>,
         )
