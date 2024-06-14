@@ -254,14 +254,10 @@ export class FileService {
           }),
         );
 
-      await transact.update(
-        FileEntity,
-        file.id,
-        {
-          folderId: update?.folderId,
-          name: update?.name,
-        },
-      );
+      await transact.update(FileEntity, file.id, {
+        folderId: update?.folderId,
+        name: update?.name,
+      });
       const data = await transact.findOneByOrFail(FileEntity, { id: file.id });
 
       await this.bidService.websocketChange({ files: [data] });
@@ -291,7 +287,9 @@ export class FileService {
       if (!folderIdOrig) {
         folder = await this.folderService.rootFolder(user);
       } else {
-        folder = await this.folderService.findOne({ where: { userId: user.id, id: folderIdOrig } });
+        folder = await this.folderService.findOne({
+          where: { userId: user.id, id: folderIdOrig },
+        });
         if (!folder) {
           throw new NotFoundException(`Folder '${folderIdOrig}' not found`);
         }
@@ -339,7 +337,14 @@ export class FileService {
             `'${file.originalname}' has no data in Ffprobe`,
           );
         }
-        const { mimetype, originalname, hash, path, media: info, size: filesize } = file;
+        const {
+          mimetype,
+          originalname,
+          hash,
+          path,
+          media: info,
+          size: filesize,
+        } = file;
 
         const [mime] = mimetype.split('/');
         const extension = pathParse(originalname).ext.slice(1);

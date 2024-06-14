@@ -524,10 +524,11 @@ export class FileController {
       if (!folder) {
         throw new NotFoundException('Folder not found');
       }
-      data = await this.fileService.update(
-        file,
-        {...file, folderId: folder.id, ...update}
-      );
+      data = await this.fileService.update(file, {
+        ...file,
+        folderId: folder.id,
+        ...update,
+      });
     } else {
       data = await this.fileService.update(file, { ...file, ...update });
     }

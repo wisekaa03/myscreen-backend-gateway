@@ -118,15 +118,16 @@ export class UserWallet {
 export class UserLastEntry {
   @ApiProperty({
     description: 'С какого устройства был выполнен последний вход',
-    example: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
-    required: false
+    example:
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36',
+    required: false,
   })
   userAgent?: string;
 
   @ApiProperty({
     description: 'Когда был выполнен последний вход',
     example: '2020-01-01T00:00:00',
-    required: false
+    required: false,
   })
   at?: string;
 }
@@ -306,7 +307,7 @@ export class UserLastEntry {
               return `EXISTS (${query})`;
             })
             .andWhere(
-              "\"wallet\".\"createdAt\" >= now()::timestamptz - interval '28 days'",
+              '"wallet"."createdAt" >= now()::timestamptz - interval \'28 days\'',
             )
             .andWhere('"wallet"."actId" IS NOT NULL')
             .andWhere('"wallet"."invoiceId" IS NULL')
@@ -348,9 +349,18 @@ export class UserLastEntry {
       .leftJoinAndSelect(
         (qb: SelectQueryBuilder<RefreshTokenEntity>) =>
           qb
-            .select('"refreshTokenLastLogin"."userId"', 'refreshTokenLastLoginUserId')
-            .addSelect('"refreshTokenLastLogin"."updatedAt"', 'refreshTokenLastLoginUpdatedAt')
-            .addSelect('"refreshTokenLastLogin"."userAgent"', 'refreshTokenLastLoginUserAgent')
+            .select(
+              '"refreshTokenLastLogin"."userId"',
+              'refreshTokenLastLoginUserId',
+            )
+            .addSelect(
+              '"refreshTokenLastLogin"."updatedAt"',
+              'refreshTokenLastLoginUpdatedAt',
+            )
+            .addSelect(
+              '"refreshTokenLastLogin"."userAgent"',
+              'refreshTokenLastLoginUserAgent',
+            )
             .groupBy('"refreshTokenLastLogin"."userId"')
             .addGroupBy('"refreshTokenLastLogin"."updatedAt"')
             .addGroupBy('"refreshTokenLastLogin"."userAgent"')
@@ -360,8 +370,8 @@ export class UserLastEntry {
             .limit(1)
             .from(RefreshTokenEntity, 'refreshTokenLastLogin'),
         'refreshTokenLastLogin',
-        '"refreshTokenLastLoginUserId" = "user"."id"'
-      )
+        '"refreshTokenLastLoginUserId" = "user"."id"',
+      ),
 })
 export class UserResponse implements UserEntity {
   @ViewColumn()
@@ -757,7 +767,7 @@ export class UserResponse implements UserEntity {
 
   @ApiProperty({
     description: 'Последний вход',
-    required: false
+    required: false,
   })
   lastEntry!: UserLastEntry;
 

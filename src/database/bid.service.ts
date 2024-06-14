@@ -187,7 +187,7 @@ export class BidService {
 
       await Promise.allSettled(wsPromise);
     }
-    
+
     if (monitor) {
       if (monitorDelete) {
         const bids = await this.monitorRequests({
@@ -201,7 +201,7 @@ export class BidService {
         await Promise.allSettled(wsPromise);
       }
     }
-    
+
     if (bid) {
       if (bidDelete) {
         await this.wsGateway.onChange({ monitor: bid.monitor });
@@ -435,7 +435,8 @@ export class BidService {
         }
       } else if (update.approved === BidApprove.ALLOWED) {
         // Оплата поступает на пользователя - владельца монитора
-        const sumIncrement = -(Number(bid.sum) * (100 - this.commissionPercent)) / 100;
+        const sumIncrement =
+          -(Number(bid.sum) * (100 - this.commissionPercent)) / 100;
         if (sumIncrement !== 0) {
           await this.actService.create({
             user: bid.monitor.user,
@@ -599,13 +600,12 @@ export class BidService {
               },
             );
           } else {
-            this.logger.error(
-              `BidService seller email='${sellerEmail}'`,
-            );
+            this.logger.error(`BidService seller email='${sellerEmail}'`);
           }
         } else if (insert.approved === BidApprove.ALLOWED) {
           // Оплата поступает на пользователя - владельца монитора
-          const sumIncrement = -(Number(sum) * (100 - this.commissionPercent)) / 100;
+          const sumIncrement =
+            -(Number(sum) * (100 - this.commissionPercent)) / 100;
           const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
           if (sumIncrement !== 0) {
             await this.actService.create({

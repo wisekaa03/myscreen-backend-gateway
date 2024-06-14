@@ -57,7 +57,6 @@ export class I18nValidationExceptionMyScreenFilter extends ExceptionsFilter {
 
     const hostType = host.getType() as string;
     if (hostType === 'graphql') {
-       
       exception.errors = normalizedErrors as I18nValidationError[];
       return exception;
     }

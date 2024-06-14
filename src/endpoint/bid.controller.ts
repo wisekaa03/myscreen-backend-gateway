@@ -72,7 +72,12 @@ export class BidController {
       const [data, count] = await this.bidService.findAndCount({
         ...paginationQuery(scope),
         select,
-        where: { hide: false, ...where, buyerId: Not(userId), sellerId: userId },
+        where: {
+          hide: false,
+          ...where,
+          buyerId: Not(userId),
+          sellerId: userId,
+        },
       });
 
       return {

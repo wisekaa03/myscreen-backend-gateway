@@ -67,7 +67,7 @@ export class AuthService {
       throw new ForbiddenException('Password mismatched');
     }
 
-   const [token, refresh] = await Promise.all([
+    const [token, refresh] = await Promise.all([
       this.generateAccessToken(user),
       this.generateRefreshToken(user.id, fingerprint, userAgent),
     ]);

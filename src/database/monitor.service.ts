@@ -230,9 +230,9 @@ export class MonitorService {
     }
     if (
       (multiple === MonitorMultiple.SINGLE ||
-       multiple === MonitorMultiple.SUBORDINATE
-      ) &&
-      multipleBool && groupIds.length > 0 &&
+        multiple === MonitorMultiple.SUBORDINATE) &&
+      multipleBool &&
+      groupIds.length > 0 &&
       multiple === updateMultiple
     ) {
       throw new BadRequestException(

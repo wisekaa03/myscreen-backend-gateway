@@ -11,6 +11,6 @@ export class LogService {
 
   constructor(
     @InjectRepository(LogEntity)
-    private readonly logEntity: Repository<LogEntity>
+    private readonly logEntity: Repository<LogEntity>,
   ) {}
 }

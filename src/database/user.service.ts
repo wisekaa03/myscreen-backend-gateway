@@ -94,9 +94,10 @@ export class UserService {
           return true;
         }
 
-        if (controllerName === 'monitor' &&
-            crud === CRUD.CREATE &&
-            1 + countMonitors > 5
+        if (
+          controllerName === 'monitor' &&
+          crud === CRUD.CREATE &&
+          1 + countMonitors > 5
         ) {
           throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
@@ -104,7 +105,9 @@ export class UserService {
         if (
           controllerName === 'monitor' &&
           crud !== CRUD.READ &&
-          dayjs(createdAt).add(14 + 1, 'days').isBefore(dayjs())
+          dayjs(createdAt)
+            .add(14 + 1, 'days')
+            .isBefore(dayjs())
         ) {
           throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
@@ -112,9 +115,13 @@ export class UserService {
         if (
           controllerName === 'file' &&
           !(crud === CRUD.READ || crud === CRUD.DELETE) &&
-          dayjs(createdAt).add(28 + 1, 'days').isBefore(dayjs())
+          dayjs(createdAt)
+            .add(28 + 1, 'days')
+            .isBefore(dayjs())
         ) {
-          throw new ForbiddenException(`${this.i18n.t('user.demoTimeIsUp')} - file`);
+          throw new ForbiddenException(
+            `${this.i18n.t('user.demoTimeIsUp')} - file`,
+          );
         }
 
         if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {
@@ -196,7 +203,9 @@ export class UserService {
         throw new ForbiddenException();
       }
 
-      const userUpdated = await this.userResponseRepository.findOneBy({ id: userId });
+      const userUpdated = await this.userResponseRepository.findOneBy({
+        id: userId,
+      });
       return userUpdated;
     }
 
@@ -205,7 +214,9 @@ export class UserService {
       throw new ForbiddenException();
     }
 
-    const userUpdated = await this.userResponseRepository.findOneBy({ id: user.id });
+    const userUpdated = await this.userResponseRepository.findOneBy({
+      id: user.id,
+    });
     return userUpdated;
   }
 
@@ -342,7 +353,9 @@ export class UserService {
     }
 
     user.forgotConfirmKey = genKey();
-    await this.userRepository.update(user.id, { forgotConfirmKey: user.forgotConfirmKey });
+    await this.userRepository.update(user.id, {
+      forgotConfirmKey: user.forgotConfirmKey,
+    });
 
     const verifyToken = generateMailToken(email, user.forgotConfirmKey);
     const forgotPasswordUrl = `${this.frontendUrl}/reset-password-verify?key=${verifyToken}`;
