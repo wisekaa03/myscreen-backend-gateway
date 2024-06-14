@@ -10,11 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsDateString,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsDateString, IsString, IsUUID } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { UserEntity } from './user.entity';

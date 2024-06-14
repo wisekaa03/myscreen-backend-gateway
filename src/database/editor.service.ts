@@ -291,7 +291,7 @@ export class EditorService {
   ): Promise<EditorLayerEntity> {
     const { file } = layer;
     const filePath = path.join(mkdirPath, file.name);
-     
+
     layer.path = filePath;
 
     if (!(await fileExist(filePath))) {

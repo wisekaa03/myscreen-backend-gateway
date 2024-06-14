@@ -83,7 +83,7 @@ export class PlaylistService {
     update: Partial<PlaylistEntity>,
   ): Promise<PlaylistEntity> {
     const updated = await this.playlistRepository.save(
-      this.playlistRepository.create({ id, ...update })
+      this.playlistRepository.create({ id, ...update }),
     );
     if (!updated) {
       throw new NotAcceptableException(`Playlist with this '${id}' not found`);

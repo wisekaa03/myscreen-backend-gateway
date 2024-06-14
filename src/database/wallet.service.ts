@@ -60,10 +60,7 @@ export class WalletService {
     this.subscriptionDescription = this.configService.getOrThrow(
       'SUBSCRIPTION_DESCRIPTION',
     );
-    this.maxNonPayment = this.configService.getOrThrow(
-      'MAX_NON_PAYMENT',
-      1
-    );
+    this.maxNonPayment = this.configService.getOrThrow('MAX_NON_PAYMENT', 1);
   }
 
   async find(

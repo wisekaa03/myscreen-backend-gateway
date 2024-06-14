@@ -52,6 +52,8 @@ export class UserUpdateRequest extends PartialType(
     required: false,
   })
   @IsOptional()
-  @IsEnum(UserPlanEnum, { message: i18nValidationMessage('validation.IS_ENUM') })
+  @IsEnum(UserPlanEnum, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   plan?: UserPlanEnum;
 }

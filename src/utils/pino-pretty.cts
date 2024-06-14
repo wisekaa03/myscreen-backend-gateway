@@ -14,7 +14,7 @@ export default (opts: LoggerOptions) =>
           ? JSON.stringify(log[messageKey])
           : log[messageKey];
       const message = `[${log.context || 'HTTP'}] ${messageText}`;
-       
+
       delete log.context;
       return message;
     },

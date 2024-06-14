@@ -189,11 +189,11 @@ describe(UserService.name, () => {
             metrics: {
               monitors: {
                 offline: 5,
-                user: 5
+                user: 5,
               },
               storageSpace: {
                 storage: 0,
-              }
+              },
             },
           } as UserResponse,
           'monitor',
@@ -210,11 +210,11 @@ describe(UserService.name, () => {
             metrics: {
               monitors: {
                 offline: 5,
-                user: 5
+                user: 5,
               },
               storageSpace: {
                 storage: 0,
-              }
+              },
             },
           } as UserResponse,
           'monitor',
@@ -231,11 +231,11 @@ describe(UserService.name, () => {
             metrics: {
               monitors: {
                 offline: 5,
-                user: 5
+                user: 5,
               },
               storageSpace: {
                 storage: 0,
-              }
+              },
             },
           } as UserResponse,
           'files',

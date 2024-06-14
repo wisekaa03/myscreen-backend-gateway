@@ -176,7 +176,7 @@ export class WsAdapter extends AbstractWsAdapter<
       const wsServersCollection = this.wsServersRegistry.get(port) ?? [];
 
       let isRequestDelegated = false;
-       
+
       for (const wsServer of wsServersCollection) {
         if (pathname === wsServer.path) {
           wsServer.handleUpgrade(request, socket, head, (ws: WebSocket) => {
@@ -202,7 +202,6 @@ export class WsAdapter extends AbstractWsAdapter<
     const entries = this.wsServersRegistry.get(port) ?? [];
     entries.push(wsServer);
 
-     
     wsServer.path = path;
     this.wsServersRegistry.set(port, entries);
 

@@ -3,7 +3,7 @@ import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import dayjs from 'dayjs';
-import 'dayjs/locale/ru'
+import 'dayjs/locale/ru';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
@@ -229,7 +229,7 @@ export class InvoiceService {
 
     const createdAt = dayjs(invoice.createdAt || new Date())
       .locale('ru')
-      .format("DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm");
+      .format('DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm');
     const invoiceFilename = encodeURI(
       `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
     );

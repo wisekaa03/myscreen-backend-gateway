@@ -23,7 +23,9 @@ export class MulterModuleOptionsClass implements MulterOptionsFactory {
           file: Express.Multer.File,
           callback: (error: Error | null, path: string) => void,
         ) => {
-          file.originalname = Buffer.from(file.originalname, 'ascii').toString('utf8');
+          file.originalname = Buffer.from(file.originalname, 'ascii').toString(
+            'utf8',
+          );
           callback(null, this.configService.getOrThrow('FILES_UPLOAD'));
         },
       }),

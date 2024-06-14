@@ -17,7 +17,7 @@ export async function FfMpegPreview(
 ): Promise<void> {
   const logger = new Logger('FfMpeg');
 
-  const ffmpeg = await fileExist('node_modules/ffmpeg-static/ffmpeg')
+  const ffmpeg = (await fileExist('node_modules/ffmpeg-static/ffmpeg'))
     ? 'node_modules/ffmpeg-static/ffmpeg'
     : 'ffmpeg';
 
