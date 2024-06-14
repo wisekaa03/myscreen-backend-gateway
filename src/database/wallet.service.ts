@@ -9,7 +9,7 @@ import {
   Not,
   FindOperator,
 } from 'typeorm';
-import { subDays } from 'date-fns/subDays';
+import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 
 import {
@@ -161,7 +161,7 @@ export class WalletService {
 
     // получаем количество актов за последний месяц
     const toDate = new Date();
-    const fromDate = subDays(toDate, 28);
+    const fromDate = dayjs(toDate).subtract(28).toDate();
     const actsInPastMonth = -(await this.walletSum({
       userId,
       dates: [fromDate, toDate],

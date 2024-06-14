@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { subDays } from 'date-fns';
+import dayjs from 'dayjs';
 import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
 import { Observable } from 'rxjs';
@@ -119,7 +119,7 @@ describe(UserService.name, () => {
       ...testUser,
       role: UserRoleEnum.MonitorOwner,
       plan: UserPlanEnum.Demo,
-      createdAt: subDays(new Date(), 100),
+      createdAt: dayjs().subtract(100).toDate(),
     };
   });
 
@@ -186,6 +186,15 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             countMonitors: '5',
+            metrics: {
+              monitors: {
+                offline: 5,
+                user: 5
+              },
+              storageSpace: {
+                storage: 0,
+              }
+            },
           } as UserResponse,
           'monitor',
           'create',
@@ -198,6 +207,15 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             countMonitors: '5',
+            metrics: {
+              monitors: {
+                offline: 5,
+                user: 5
+              },
+              storageSpace: {
+                storage: 0,
+              }
+            },
           } as UserResponse,
           'monitor',
           'get',
@@ -210,6 +228,15 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             countMonitors: '5',
+            metrics: {
+              monitors: {
+                offline: 5,
+                user: 5
+              },
+              storageSpace: {
+                storage: 0,
+              }
+            },
           } as UserResponse,
           'files',
           'get',
@@ -219,6 +246,7 @@ describe(UserService.name, () => {
     });
 
     test('Access to create monitors: 14 days', async () => {
+      const createdAt = dayjs().subtract(14).toDate();
       // Доступ к управлению мониторами: 14 дней
       expect(
         service.verify(
@@ -229,7 +257,7 @@ describe(UserService.name, () => {
               playlists: { added: 0, played: 0 },
               storageSpace: { storage: 0, total: 1000000 },
             },
-            createdAt: subDays(Date.now(), 14),
+            createdAt,
           } as UserResponse,
           'monitor',
           'create',
@@ -244,7 +272,7 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             countMonitors: '4',
-            createdAt: subDays(Date.now(), 15),
+            createdAt: dayjs().subtract(15).toDate(),
           } as UserResponse,
           'monitor',
           'create',
@@ -259,7 +287,7 @@ describe(UserService.name, () => {
         service.verify(
           {
             ...monitorTestDemo,
-            createdAt: subDays(Date.now(), 28),
+            createdAt: dayjs().subtract(28).toDate(),
           } as UserResponse,
           'file',
           'create',
@@ -273,7 +301,7 @@ describe(UserService.name, () => {
         service.verify(
           {
             ...monitorTestDemo,
-            createdAt: subDays(Date.now(), 29),
+            createdAt: dayjs().subtract(29).toDate(),
           } as UserResponse,
           'file',
           'create',

@@ -11,7 +11,7 @@
       "args": [
         "--runInBand",
         "--watchAll=false",
-        "--config=./jest.config.js"
+        "--config=./jest.config.cjs"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
@@ -29,7 +29,7 @@
       "args": [
         "--runInBand",
         "--watchAll=false",
-        "--config=./test/jest-e2e.js"
+        "--config=./test/jest-e2e.cjs"
       ],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",

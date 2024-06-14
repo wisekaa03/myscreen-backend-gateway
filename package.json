@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.48.39",
+  "version": "2.48.40",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -128,7 +128,6 @@
     "class-validator": "^0.14.1",
     "country-locale-map": "^1.9.4",
     "cron": "^3.1.7",
-    "date-fns": "^3.6.0",
     "dayjs": "^1.11.11",
     "debug": "^4.3.5",
     "dotenv": "^16.4.5",

@@ -104,7 +104,7 @@ export class UserService {
         if (
           controllerName === 'monitor' &&
           crud !== CRUD.READ &&
-          dayjs(createdAt).add(14 + 1, 'days').isBefore(new Date())
+          dayjs(createdAt).add(14 + 1, 'days').isBefore(dayjs())
         ) {
           throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
         }
@@ -112,7 +112,7 @@ export class UserService {
         if (
           controllerName === 'file' &&
           !(crud === CRUD.READ || crud === CRUD.DELETE) &&
-          dayjs(createdAt).add(28 + 1, 'days').isBefore(new Date())
+          dayjs(createdAt).add(28 + 1, 'days').isBefore(dayjs())
         ) {
           throw new ForbiddenException(`${this.i18n.t('user.demoTimeIsUp')} - file`);
         }

@@ -1,4 +1,4 @@
-export * from './mail-send-application-message';
+export * from './mail-send-bid-message';
 export * from './mail-send-verification-code';
 export * from './mail-forgot-password';
 export * from './mail-invoice-confirmed';
