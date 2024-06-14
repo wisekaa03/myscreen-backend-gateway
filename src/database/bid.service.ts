@@ -22,11 +22,10 @@ import {
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
-import { parseISO } from 'date-fns/parseISO';
-import { differenceInDays } from 'date-fns/differenceInDays';
+import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 
-import { MailSendApplicationMessage } from '@/interfaces';
+import { MailSendBidMessage } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -423,16 +422,16 @@ export class BidService {
         const sellerEmail = bid.seller?.email;
         const language = bid.seller?.preferredLanguage;
         if (sellerEmail) {
-          this.mailService.emit<unknown, MailSendApplicationMessage>(
-            'sendApplicationWarningMessage',
+          this.mailService.emit<unknown, MailSendBidMessage>(
+            'sendBidWarningMessage',
             {
               email: sellerEmail,
-              applicationUrl: `${this.fileService.frontEndUrl}/applications`,
+              bidUrl: `${this.fileService.frontEndUrl}/bids`,
               language,
             },
           );
         } else {
-          this.logger.error(`ApplicationService seller email='${sellerEmail}'`);
+          this.logger.error(`BidService seller email='${sellerEmail}'`);
         }
       } else if (update.approved === BidApprove.ALLOWED) {
         // Оплата поступает на пользователя - владельца монитора
@@ -591,17 +590,17 @@ export class BidService {
           const language =
             bid.seller.preferredLanguage ?? user.preferredLanguage;
           if (sellerEmail) {
-            this.mailService.emit<unknown, MailSendApplicationMessage>(
-              'sendApplicationWarningMessage',
+            this.mailService.emit<unknown, MailSendBidMessage>(
+              'sendBidWarningMessage',
               {
                 email: sellerEmail,
-                applicationUrl: `${this.fileService.frontEndUrl}/applications`,
+                bidUrl: `${this.fileService.frontEndUrl}/bids`,
                 language,
               },
             );
           } else {
             this.logger.error(
-              `ApplicationService seller email='${sellerEmail}'`,
+              `BidService seller email='${sellerEmail}'`,
             );
           }
         } else if (insert.approved === BidApprove.ALLOWED) {
@@ -670,7 +669,7 @@ export class BidService {
     if (monitorIds && monitors.length !== monitorIds.length) {
       throw new NotFoundException('Monitors not found');
     }
-    const diffDays = differenceInDays(parseISO(dateTo), parseISO(dateFrom));
+    const diffDays = dayjs(dateTo).diff(dateFrom, 'days');
 
     const sum = monitors.reduce(
       (acc, monitor) =>
@@ -714,7 +713,7 @@ export class BidService {
     );
 
     // арендуемое время показа за весь период в секундах.
-    const diffDays = differenceInDays(dateBefore, dateWhen);
+    const diffDays = dayjs(dateBefore).diff(dateWhen, 'days');
     const seconds = playlistDuration * minWarranty * diffDays * 24 * 60 * 60;
 
     // сумма списания

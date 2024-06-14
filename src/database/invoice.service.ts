@@ -2,8 +2,8 @@ import type { Response as ExpressResponse } from 'express';
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
-import { format as dateFormat } from 'date-fns';
-import { ru as dateRu } from 'date-fns/locale/ru';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ru'
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
@@ -227,13 +227,9 @@ export class InvoiceService {
       ? format
       : SpecificFormat.XLSX;
 
-    const createdAt = dateFormat(
-      invoice.createdAt || new Date(),
-      "dd_LLLL_yyyy_'г._в'_hh_mm",
-      {
-        locale: dateRu,
-      },
-    );
+    const createdAt = dayjs(invoice.createdAt || new Date())
+      .locale('ru')
+      .format("DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm");
     const invoiceFilename = encodeURI(
       `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
     );

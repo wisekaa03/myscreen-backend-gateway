@@ -40,6 +40,7 @@ import {
   VideoType,
 } from '@/enums';
 import { MonitorGroupWithPlaylist } from '@/interfaces';
+import { fileExist } from '@/utils/fs';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
@@ -293,15 +294,13 @@ export class EditorService {
      
     layer.path = filePath;
 
-    if (!(await fs.access(filePath).catch(() => true))) {
-      return layer;
-    }
-
-    if (await this.fileService.headS3Object(file)) {
-      const outputStream = createWriteStream(filePath);
-      const data = await this.fileService.getS3Object(file);
-      if (data.Body instanceof internal.Readable) {
-        await StreamPromises.pipeline(data.Body, outputStream);
+    if (!(await fileExist(filePath))) {
+      if (await this.fileService.headS3Object(file)) {
+        const outputStream = createWriteStream(filePath);
+        const data = await this.fileService.getS3Object(file);
+        if (data.Body instanceof internal.Readable) {
+          await StreamPromises.pipeline(data.Body, outputStream);
+        }
       }
     }
 
