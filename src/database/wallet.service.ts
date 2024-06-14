@@ -161,7 +161,7 @@ export class WalletService {
 
     // получаем количество актов за последний месяц
     const toDate = new Date();
-    const fromDate = new Date(dayjs(toDate).subtract(28).toISOString());
+    const fromDate = dayjs(toDate).subtract(28).toDate();
     const actsInPastMonth = -(await this.walletSum({
       userId,
       dates: [fromDate, toDate],

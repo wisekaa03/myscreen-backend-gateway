@@ -119,7 +119,7 @@ describe(UserService.name, () => {
       ...testUser,
       role: UserRoleEnum.MonitorOwner,
       plan: UserPlanEnum.Demo,
-      createdAt: new Date(dayjs().subtract(100).toISOString()),
+      createdAt: dayjs().subtract(100).toDate(),
     };
   });
 
@@ -246,7 +246,7 @@ describe(UserService.name, () => {
     });
 
     test('Access to create monitors: 14 days', async () => {
-      const createdAt = new Date(dayjs().subtract(14).toISOString());
+      const createdAt = dayjs().subtract(14).toDate();
       // Доступ к управлению мониторами: 14 дней
       expect(
         service.verify(
@@ -272,7 +272,7 @@ describe(UserService.name, () => {
           {
             ...monitorTestDemo,
             countMonitors: '4',
-            createdAt: new Date(dayjs().subtract(15).toISOString()),
+            createdAt: dayjs().subtract(15).toDate(),
           } as UserResponse,
           'monitor',
           'create',
@@ -287,7 +287,7 @@ describe(UserService.name, () => {
         service.verify(
           {
             ...monitorTestDemo,
-            createdAt: new Date(dayjs().subtract(28).toISOString()),
+            createdAt: dayjs().subtract(28).toDate(),
           } as UserResponse,
           'file',
           'create',
@@ -301,7 +301,7 @@ describe(UserService.name, () => {
         service.verify(
           {
             ...monitorTestDemo,
-            createdAt: new Date(dayjs().subtract(29).toISOString()),
+            createdAt: dayjs().subtract(29).toDate(),
           } as UserResponse,
           'file',
           'create',
