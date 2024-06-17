@@ -128,9 +128,7 @@ export class WSGateway
       if (value.monitorId) {
         await Promise.all([
           this.monitorService
-            .update(value.monitorId, {
-              status: MonitorStatus.Offline,
-            })
+            .status(value.monitorId, MonitorStatus.Offline)
             .catch((error: unknown) => {
               this.logger.error(error);
             }),
@@ -163,17 +161,15 @@ export class WSGateway
               relations: {},
             },
           });
-          let bid: BidEntity[] | null = null;
+          let bids: BidEntity[] | null = null;
           if (monitor) {
-            [bid] = await Promise.all([
+            [bids] = await Promise.all([
               this.bidService.monitorRequests({
                 monitorId: monitor.id,
                 dateLocal: new Date(body.date),
               }),
               this.monitorService
-                .update(monitor.id, {
-                  status: MonitorStatus.Online,
-                })
+                .status(monitor.id, MonitorStatus.Online)
                 .catch((error: unknown) => {
                   this.logger.error(error);
                 }),
@@ -182,7 +178,7 @@ export class WSGateway
           }
           return of([
             { event: 'auth/token', data: 'authorized' },
-            { event: 'applications', data: bid },
+            { event: 'bids', data: bids },
           ]);
         }
         return of([{ event: 'auth/token', data: 'authorized' }]);
@@ -277,16 +273,15 @@ export class WSGateway
    */
   async onChange({
     bid,
+    bidDelete,
     monitor,
+    monitorDelete,
   }: {
     bid?: BidEntity;
+    bidDelete?: BidEntity;
     monitor?: MonitorEntity;
+    monitorDelete?: MonitorEntity;
   }): Promise<void> {
-    if (!bid && !monitor) {
-      this.logger.error('bid or monitor is required');
-      return;
-    }
-
     if ((bid?.playlistId || bid?.playlist) && bid.monitorId) {
       const playlistId = bid.playlistId ?? bid.playlist?.id;
       await this.playlistService.update(playlistId, {
@@ -306,9 +301,7 @@ export class WSGateway
 
       this.clients.forEach((value, client) => {
         if (value.monitorId === bid.monitorId) {
-          client.send(
-            JSON.stringify([{ event: 'application', data: bidFind }]),
-          );
+          client.send(JSON.stringify([{ event: 'bid', data: bidFind }]));
         }
       });
     }
@@ -317,8 +310,24 @@ export class WSGateway
       this.clients.forEach((value, client) => {
         if (value.monitorId === monitor.id) {
           if (!(monitor.playlistId || monitor.playlist)) {
-            client.send(JSON.stringify([{ event: 'application', data: null }]));
+            client.send(JSON.stringify([{ event: 'bid', data: null }]));
           }
+        }
+      });
+    }
+
+    if (monitorDelete) {
+      this.clients.forEach((value, client) => {
+        if (value.monitorId === monitorDelete.id) {
+          client.send(
+            JSON.stringify([
+              {
+                event: 'monitor/delete',
+                data: { monitorId: monitorDelete.id },
+              },
+            ]),
+          );
+          this.clients.delete(client);
         }
       });
     }

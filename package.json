@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.48.41",
+  "version": "2.48.42",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -66,7 +66,7 @@
     "**/hosted-git-info/lru-cache": "^8.0.5",
     "**/@babel/helper-compilation-targets/lru-cache": "^8.0.5",
     "**/semver/lru-cache": "^8.0.5",
-    "**/**/memfs": ">=4.9.2",
+    "**/**/memfs": ">=4.9.3",
     "**/**/meow": "^11.0.0",
     "**/@eslint/eslintrc/minimatch": "^5.1.6",
     "**/@eslint/config-array/minimatch": "^5.1.6",
@@ -104,7 +104,7 @@
     "**/**/webpack": ">=5.92.0",
     "**/**/which": ">=4.0.0",
     "**/**/write-file-atomic": ">=5.0.1",
-    "**/**/ws": ">=8.17.0"
+    "**/**/ws": ">=8.17.1"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.598.0",
@@ -159,7 +159,7 @@
     "rimraf": "^5.0.7",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.20",
-    "ws": "^8.17.0"
+    "ws": "^8.17.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.5.0",
@@ -191,7 +191,7 @@
     "prettier": "^3.3.2",
     "source-map-support": "^0.5.21",
     "supertest": "^7.0.0",
-    "ts-jest": "^29.1.4",
+    "ts-jest": "^29.1.5",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",

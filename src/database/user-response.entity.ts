@@ -12,7 +12,7 @@ import {
 import dayjs from 'dayjs';
 
 import {
-  BidApprove,
+  MonitorMultiple,
   MonitorStatus,
   PlaylistStatusEnum,
   UserPlanEnum,
@@ -147,6 +147,8 @@ export class UserLastEntry {
           qb
             .select('"monitor"."userId"', 'monitorUserId')
             .addSelect('COUNT("monitor"."userId")', 'countMonitors')
+            .where(`"monitor"."multiple" = '${MonitorMultiple.SINGLE}'`)
+            .orWhere(`"monitor"."multiple" = '${MonitorMultiple.SUBORDINATE}'`)
             .groupBy('"monitor"."userId"')
             .from(MonitorEntity, 'monitor'),
         'monitor',
@@ -162,38 +164,7 @@ export class UserLastEntry {
             .addSelect('"onlineMonitors"."userId"', 'onlineMonitorsUserId')
             .where(`"onlineMonitors"."status" = '${MonitorStatus.Online}'`)
             .groupBy('"onlineMonitors"."userId"')
-            .from(MonitorEntity, 'onlineMonitors')
-            .andWhere((qbb: SelectQueryBuilder<BidEntity>) => {
-              const query = qbb
-                .subQuery()
-                .select('"bidOnlineMonitors"."monitorId"')
-                .where(
-                  '"bidOnlineMonitors"."monitorId" = "onlineMonitors"."id"',
-                )
-                .andWhere(
-                  `"bidOnlineMonitors"."approved" = '${BidApprove.ALLOWED}'`,
-                )
-                .andWhere(
-                  '"bidOnlineMonitors"."dateWhen" <= \'now()\'::timestamptz',
-                )
-                .andWhere(
-                  '"bidOnlineMonitors"."dateBefore" > \'now()\'::timestamptz',
-                )
-                .orWhere(
-                  '"bidOnlineMonitors"."monitorId" = "onlineMonitors"."id"',
-                )
-                .andWhere(
-                  `"bidOnlineMonitors"."approved" = '${BidApprove.ALLOWED}'`,
-                )
-                .andWhere(
-                  '"bidOnlineMonitors"."dateWhen" <= \'now()\'::timestamptz',
-                )
-                .andWhere('"bidOnlineMonitors"."dateBefore" IS NULL')
-                .from(BidEntity, 'bidOnlineMonitors')
-                .getQuery();
-
-              return `EXISTS (${query})`;
-            }),
+            .from(MonitorEntity, 'onlineMonitors'),
         'onlineMonitors',
         '"onlineMonitors"."onlineMonitorsUserId" = "user"."id"',
       )
@@ -206,38 +177,7 @@ export class UserLastEntry {
             .addSelect('"offlineMonitors"."userId"', 'offlineMonitorsUserId')
             .where(`"offlineMonitors"."status" = '${MonitorStatus.Offline}'`)
             .groupBy('"offlineMonitors"."userId"')
-            .from(MonitorEntity, 'offlineMonitors')
-            .andWhere((qbb: SelectQueryBuilder<BidEntity>) => {
-              const query = qbb
-                .subQuery()
-                .select('"bidOfflineMonitors"."monitorId"')
-                .where(
-                  '"bidOfflineMonitors"."monitorId" = "offlineMonitors"."id"',
-                )
-                .andWhere(
-                  `"bidOfflineMonitors"."approved" = '${BidApprove.ALLOWED}'`,
-                )
-                .andWhere(
-                  '"bidOfflineMonitors"."dateWhen" <= \'now()\'::timestamptz',
-                )
-                .andWhere(
-                  '"bidOfflineMonitors"."dateBefore" > \'now()\'::timestamptz',
-                )
-                .orWhere(
-                  '"bidOfflineMonitors"."monitorId" = "offlineMonitors"."id"',
-                )
-                .andWhere(
-                  `"bidOfflineMonitors"."approved" = '${BidApprove.ALLOWED}'`,
-                )
-                .andWhere(
-                  '"bidOfflineMonitors"."dateWhen" <= \'now()\'::timestamptz',
-                )
-                .andWhere('"bidOfflineMonitors"."dateBefore" IS NULL')
-                .from(BidEntity, 'bidOfflineMonitors')
-                .getQuery();
-
-              return `EXISTS (${query})`;
-            }),
+            .from(MonitorEntity, 'offlineMonitors'),
         'offlineMonitors',
         '"offlineMonitors"."offlineMonitorsUserId" = "user"."id"',
       )

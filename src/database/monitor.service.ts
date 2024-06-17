@@ -290,10 +290,7 @@ export class MonitorService {
         // удаляем из таблицы связей мониторов мониторы
         if (monitorsDeleteId.length > 0) {
           const monitorsWSchangePromise = monitorsDeleteId.map(async (item) => {
-            this.bidService.websocketChange({
-              monitor: item.monitor,
-              monitorDelete: true,
-            });
+            this.bidService.websocketChange({ monitorDelete: item.monitor });
           });
           await Promise.all(monitorsWSchangePromise);
           await transact.delete(MonitorGroupEntity, {
@@ -477,21 +474,11 @@ export class MonitorService {
     await this.monitorRepository.update({ attached: true }, { attached });
   }
 
-  async status(status = MonitorStatus.Online): Promise<void> {
-    await this.monitorRepository.update(
-      {
-        status:
-          status === MonitorStatus.Online
-            ? MonitorStatus.Offline
-            : MonitorStatus.Online,
-      },
-      {
-        status:
-          status === MonitorStatus.Online
-            ? MonitorStatus.Online
-            : MonitorStatus.Offline,
-      },
-    );
+  async status(
+    monitorId: string,
+    status = MonitorStatus.Online,
+  ): Promise<void> {
+    await this.monitorRepository.update(monitorId, { status });
   }
 
   async favorite(
@@ -536,44 +523,43 @@ export class MonitorService {
   }
 
   async delete(monitor: MonitorEntity): Promise<DeleteResult> {
-    await this.bidService.websocketChange({
-      monitor,
-      monitorDelete: true,
-    });
+    const monitorId = monitor.id;
+
+    await this.bidService.websocketChange({ monitorDelete: monitor });
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
       return this.monitorRepository.manager.transaction(async (transact) => {
         const monitorMultiple = await transact.find(MonitorGroupEntity, {
           where: {
-            parentMonitorId: monitor.id,
+            parentMonitorId: monitorId,
           },
         });
         if (monitorMultiple.length > 0) {
           const monitorIdsPromise = monitorMultiple.map(async (item) => {
             await this.bidService.websocketChange({
-              monitor: item.monitor,
-              monitorDelete: true,
+              monitorDelete: item.monitor,
             });
             return item.monitorId;
           });
           const monitorIds = await Promise.all(monitorIdsPromise);
-          // TODO: заменить на Promise
-          await transact.update(
-            MonitorEntity,
-            { id: In(monitorIds) },
-            { multiple: MonitorMultiple.SINGLE },
-          );
-          await transact.delete(MonitorGroupEntity, {
-            parentMonitorId: monitor.id,
-          });
+          await Promise.all([
+            transact.update(
+              MonitorEntity,
+              { id: In(monitorIds) },
+              { multiple: MonitorMultiple.SINGLE },
+            ),
+            transact.delete(MonitorGroupEntity, {
+              parentMonitorId: monitorId,
+            }),
+          ]);
         }
 
-        return transact.delete(MonitorEntity, { id: monitor.id });
+        return transact.delete(MonitorEntity, { id: monitorId });
       });
     }
 
     return this.monitorRepository.delete({
-      id: monitor.id,
+      id: monitorId,
     });
   }
 }

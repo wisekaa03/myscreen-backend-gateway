@@ -159,55 +159,45 @@ export class BidService {
    */
   async websocketChange({
     playlist,
-    playlistDelete = false,
+    playlistDelete,
     files,
     filesDelete = false,
     monitor,
-    monitorDelete = false,
+    monitorDelete,
     bid,
-    bidDelete = false,
+    bidDelete,
   }: {
     playlist?: PlaylistEntity;
-    playlistDelete?: boolean;
+    playlistDelete?: PlaylistEntity;
     files?: FileEntity[];
     filesDelete?: boolean;
     monitor?: MonitorEntity;
-    monitorDelete?: boolean;
+    monitorDelete?: MonitorEntity;
     bid?: BidEntity;
-    bidDelete?: boolean;
+    bidDelete?: BidEntity;
   }) {
     if (playlist) {
       const bids = await this.monitorRequests({
         playlistId: playlist.id,
       });
 
-      const wsPromise = bids.map(async (bidLocal) =>
-        this.wsGateway.onChange({ bid: bidLocal }),
+      const wsPromise = bids.map(async (_bid) =>
+        this.wsGateway.onChange({ bid: _bid }),
       );
 
       await Promise.allSettled(wsPromise);
     }
 
-    if (monitor) {
-      if (monitorDelete) {
-        const bids = await this.monitorRequests({
-          monitorId: monitor.id,
-        });
-
-        const wsPromise = bids.map(async (bidLocal) =>
-          this.wsGateway.onChange({ bid: bidLocal }),
-        );
-
-        await Promise.allSettled(wsPromise);
-      }
+    if (monitorDelete) {
+      await this.wsGateway.onChange({ monitorDelete });
     }
 
     if (bid) {
-      if (bidDelete) {
-        await this.wsGateway.onChange({ monitor: bid.monitor });
-      } else {
-        await this.wsGateway.onChange({ bid });
-      }
+      await this.wsGateway.onChange({ bid });
+    }
+
+    if (bidDelete) {
+      await this.wsGateway.onChange({ bidDelete });
     }
   }
 
@@ -351,7 +341,7 @@ export class BidService {
   }): Promise<void> {
     const { multiple } = bid.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.websocketChange({ bid, bidDelete: true });
+      await this.websocketChange({ bidDelete: bid });
     } else {
       const manager = entityManager ?? this.bidRepository.manager;
       await manager.transaction(async (transact) => {
@@ -362,10 +352,7 @@ export class BidService {
           relations: { monitor: true, playlist: true },
         });
         const groupAppPromise = groupApplication.map(async (bidLocal) => {
-          await this.websocketChange({
-            bid: bidLocal,
-            bidDelete: true,
-          });
+          await this.websocketChange({ bidDelete: bidLocal });
           if (deleteLocal) {
             if (multiple === MonitorMultiple.SCALING) {
               await transact.delete(PlaylistEntity, {
