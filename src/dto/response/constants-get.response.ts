@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Status } from '@/enums/status.enum';
+import { WsEvent } from '@/enums/ws-event.enum';
 
 export class ConstantsResponse {
   @ApiProperty({ description: 'Версия бэкенд' })
@@ -14,6 +15,9 @@ export class ConstantsResponse {
 
   @ApiProperty({ description: 'Процент комиссии' })
   COMMISSION_PERCENT!: number;
+
+  @ApiProperty({ description: 'Названия WS событий' })
+  WS_EVENT!: typeof WsEvent;
 }
 
 export class ConstantsGetResponse {

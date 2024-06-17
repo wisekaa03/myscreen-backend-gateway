@@ -28,6 +28,7 @@ import { PlaylistService } from '@/database/playlist.service';
 import { BidEntity } from '@/database/bid.entity';
 import { BidService } from '@/database/bid.service';
 import { FileService } from '@/database/file.service';
+import { WsEvent } from '@/enums/ws-event.enum';
 
 @WebSocketGateway({
   cors: {
@@ -141,7 +142,7 @@ export class WSGateway
     this.clients.delete(client);
   }
 
-  @SubscribeMessage('auth/token')
+  @SubscribeMessage(WsEvent.AUTH)
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
     @MessageBody() body: AuthTokenEvent,
@@ -177,11 +178,11 @@ export class WSGateway
             ]);
           }
           return of([
-            { event: 'auth/token', data: 'authorized' },
-            { event: 'bids', data: bids },
+            { event: WsEvent.AUTH, data: 'authorized' },
+            { event: WsEvent.BIDS, data: bids },
           ]);
         }
-        return of([{ event: 'auth/token', data: 'authorized' }]);
+        return of([{ event: WsEvent.AUTH, data: 'authorized' }]);
       }
     }
     throw new WsException('Not authorized');
@@ -233,12 +234,12 @@ export class WSGateway
     // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
     this.clients.forEach((v, c) => {
       if (v.role === UserRoleEnum.Advertiser || v.monitorId === monitor?.id) {
-        c.send(JSON.stringify([{ event: 'monitor', data: monitor }]));
+        c.send(JSON.stringify([{ event: WsEvent.MONITOR, data: monitor }]));
       }
     });
 
     // и возвращаем Ok
-    return of([{ event: 'monitor', data: 'Ok' }]);
+    return of([{ event: WsEvent.MONITOR, data: 'Ok' }]);
   }
 
   /**
@@ -253,7 +254,7 @@ export class WSGateway
         client.ws.send(
           JSON.stringify([
             {
-              event: 'monitorStatus',
+              event: WsEvent.MONITOR_STATUS,
               data: [{ id: monitorId, status }],
             },
           ]),
@@ -301,7 +302,7 @@ export class WSGateway
 
       this.clients.forEach((value, client) => {
         if (value.monitorId === bid.monitorId) {
-          client.send(JSON.stringify([{ event: 'bid', data: bidFind }]));
+          client.send(JSON.stringify([{ event: WsEvent.BID, data: bidFind }]));
         }
       });
     }
@@ -310,7 +311,7 @@ export class WSGateway
       this.clients.forEach((value, client) => {
         if (value.monitorId === monitor.id) {
           if (!(monitor.playlistId || monitor.playlist)) {
-            client.send(JSON.stringify([{ event: 'bid', data: null }]));
+            client.send(JSON.stringify([{ event: WsEvent.BID, data: null }]));
           }
         }
       });
@@ -322,7 +323,7 @@ export class WSGateway
           client.send(
             JSON.stringify([
               {
-                event: 'monitor/delete',
+                event: WsEvent.MONITOR_DELETE,
                 data: { monitorId: monitorDelete.id },
               },
             ]),
