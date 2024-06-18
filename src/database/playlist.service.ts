@@ -104,10 +104,7 @@ export class PlaylistService {
     user: UserEntity,
     playlist: PlaylistEntity,
   ): Promise<DeleteResult> {
-    await this.bidService.websocketChange({
-      playlist,
-      playlistDelete: true,
-    });
+    await this.bidService.websocketChange({ playlistDelete: playlist });
 
     const deleteQuery: FindOptionsWhere<PlaylistEntity> = { id: playlist.id };
     if (user.role !== UserRoleEnum.Administrator) {

@@ -18,6 +18,7 @@ import { WsAdapter } from './websocket/ws-adapter';
 import { AppModule } from './app.module';
 import { UserService } from './database/user.service';
 import { I18nValidationExceptionMyScreenFilter } from './exception/i18nvalidationexception.filter';
+import { WsEventClass } from './dto/response/ws-event.response';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -115,7 +116,9 @@ async function bootstrap() {
 
     .build();
 
-  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig, {
+    extraModels: [WsEventClass],
+  });
   async function yamlSwagger() {
     const swaggerYml = pathJoin(staticAssets, 'swagger.yml');
     const yamlDocument = yamlDump(swaggerDocument, {
