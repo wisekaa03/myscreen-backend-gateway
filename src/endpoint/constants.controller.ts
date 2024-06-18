@@ -8,7 +8,6 @@ import { WalletService } from '@/database/wallet.service';
 import { BidService } from '@/database/bid.service';
 import { InvoiceService } from '@/database/invoice.service';
 import { version } from '../../package.json';
-import { WsEvent } from '@/enums/ws-event.enum';
 
 @ApiComplexDecorators({
   path: ['constants'],
@@ -47,7 +46,6 @@ export class ConstantsController {
       SUBSCRIPTION_FEE: this.walletService.subscriptionFee,
       MIN_INVOICE_SUM: this.invoiceService.minInvoiceSum,
       COMMISSION_PERCENT: this.bidService.commissionPercent,
-      WS_EVENT: WsEvent,
     };
     return { status: Status.Success, data };
   }
