@@ -10,7 +10,7 @@ import { BaseExceptionFilter } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { TypeORMError } from 'typeorm';
 
-import { I18nValidationException } from 'nestjs-i18n';
+import { I18nContext, I18nValidationException } from 'nestjs-i18n';
 import {
   InternalServerError,
   HttpError,
@@ -33,8 +33,11 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   }
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
+    const i18n = I18nContext.current(host);
+
     if (exception instanceof HttpException) {
       const response = exception.getResponse();
+      let messageLang: string | undefined;
       let { message } =
         exception instanceof ConflictException
           ? (response as ConflictData)
@@ -46,25 +49,40 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         );
         message = `${message}: ${errorsText}`;
       } else {
-        const { error, errors } = response as Record<string, string>;
-        if (error) {
-          message = `${error}: ${message}`;
+        messageLang = i18n?.t(`error.${message}`);
+        if (messageLang === `error.${message}`) {
+          messageLang = undefined;
         }
-        if (errors) {
-          message = `${message}: ${JSON.stringify(errors)}`;
+        if (!messageLang) {
+          const { error, errors } = response as Record<string, string>;
+          if (error) {
+            message = `${error}: ${message}`;
+          }
+          if (errors) {
+            message = `${message}: ${JSON.stringify(errors)}`;
+          }
         }
       }
-      this.logger.error(message, this.debugLevel ? exception.stack : undefined);
+      this.logger.error(
+        messageLang ?? message,
+        this.debugLevel ? exception.stack : undefined,
+      );
 
       let exceptionHttp: HttpException;
       const { name } = exception;
       if (HttpError[name as keyof typeof HttpError]) {
         exceptionHttp =
           name === 'ConflictException'
-            ? new ConflictError(message, {}, response as ConflictData)
-            : new HttpError[name as keyof typeof HttpError](message);
+            ? new ConflictError(
+                messageLang ?? message,
+                {},
+                response as ConflictData,
+              )
+            : new HttpError[name as keyof typeof HttpError](
+                messageLang ?? message,
+              );
       } else {
-        exceptionHttp = new InternalServerError(message);
+        exceptionHttp = new InternalServerError(messageLang ?? message);
       }
 
       const errorToThrow = Object.assign(exception, response, exceptionHttp);

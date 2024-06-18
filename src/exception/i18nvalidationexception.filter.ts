@@ -41,7 +41,7 @@ export class I18nValidationExceptionMyScreenFilter extends ExceptionsFilter {
   }
 
   catch(exception: I18nValidationException, host: ArgumentsHost) {
-    const i18n = I18nContext.current();
+    const i18n = I18nContext.current(host);
     if (!i18n) {
       return super.catch(
         new InternalServerErrorException('Validation error'),
