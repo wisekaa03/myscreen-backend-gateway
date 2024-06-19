@@ -141,10 +141,10 @@ export class AuthController {
   @Crud(CRUD.UPDATE)
   async login(
     @Req() req: ExpressRequest,
-    @Ip() fingerprint: string,
     @Body() { email, password }: LoginRequest,
   ): Promise<AuthResponse> {
-    const userAgent = req.headers['user-agent'] ?? '-';
+    const userAgent = req.headers['user-agent'] || '-';
+    const fingerprint = (req.headers['x-real-ip'] as string) ?? req.ip ?? '-';
     // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const [data, payload] = await this.authService.login(
       email,
@@ -191,13 +191,16 @@ export class AuthController {
   })
   @Crud(CRUD.UPDATE)
   async refresh(
-    @Ip() fingerprint: string,
+    @Req() req: ExpressRequest,
     @Body() { refreshToken }: AuthRefreshRequest,
   ): Promise<AuthRefreshResponse> {
+    const userAgent = req.headers['user-agent'] || '-';
+    const fingerprint = (req.headers['x-real-ip'] as string) ?? req.ip ?? '-';
     // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const payload = await this.authService.createAccessTokenFromRefreshToken(
       refreshToken,
       fingerprint,
+      userAgent,
     );
 
     return {
