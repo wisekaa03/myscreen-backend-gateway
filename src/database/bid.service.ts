@@ -467,7 +467,11 @@ export class BidService {
     dateBefore: Date | null;
     playlistChange: boolean;
   }): Promise<BidEntity[]> {
-    const { id: userId, role } = user;
+    const {
+      id: userId,
+      role,
+      wallet: { total: totalBalance = 0 },
+    } = user;
 
     // Проверяем наличие плейлиста
     if (!Array.isArray(monitorIds) || monitorIds.length < 1) {
@@ -509,16 +513,18 @@ export class BidService {
             ? BidApprove.ALLOWED
             : BidApprove.NOTPROCESSED;
 
-        const sum = dateBefore
-          ? await this.precalculateSum({
-              user,
-              minWarranty: monitor.minWarranty,
-              price1s: monitor.price1s,
-              dateBefore,
-              dateWhen,
-              playlistId,
-            })
-          : 0;
+        const sum = await this.precalculateSum({
+          user,
+          minWarranty: monitor.minWarranty,
+          price1s: monitor.price1s,
+          dateBefore,
+          dateWhen,
+          playlistId,
+        });
+
+        if (sum > totalBalance) {
+          throw new NotAcceptableException('BALANCE');
+        }
 
         const insert: DeepPartial<BidEntity> = {
           sellerId: monitor.userId,
@@ -538,7 +544,7 @@ export class BidService {
           transact.create(BidEntity, insert),
         );
         if (!insertResult.identifiers[0]) {
-          throw new NotFoundException('Error when creating Request');
+          throw new NotFoundException('Error when creating Bid');
         }
         const { id } = insertResult.identifiers[0];
 
@@ -559,7 +565,7 @@ export class BidService {
           relations,
         });
         if (!bid) {
-          throw new NotFoundException('Request not found');
+          throw new NotFoundException('Bid not found');
         }
 
         // Списываем средства со счета пользователя Рекламодателя
@@ -679,7 +685,7 @@ export class BidService {
     user: UserResponse;
     minWarranty: number;
     price1s: number;
-    dateBefore: Date;
+    dateBefore: Date | null;
     dateWhen: Date;
     playlistId: string;
   }): Promise<number> {
@@ -700,8 +706,8 @@ export class BidService {
     );
 
     // арендуемое время показа за весь период в секундах.
-    const diffDays = dayjs(dateBefore).diff(dateWhen, 'days');
-    const seconds = playlistDuration * minWarranty * diffDays * 24 * 60 * 60;
+    const diffDays = dayjs(dateBefore ?? Date.now()).diff(dateWhen, 'days') + 1;
+    const seconds = (minWarranty * diffDays * 24 * 60 * 60) / playlistDuration;
 
     // сумма списания
     const sum = price1s * seconds;

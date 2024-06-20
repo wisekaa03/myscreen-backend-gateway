@@ -305,7 +305,7 @@ export class UserLastEntry {
             .addGroupBy('"refreshTokenLastLogin"."updatedAt"')
             .addGroupBy('"refreshTokenLastLogin"."userAgent"')
             .orderBy('"refreshTokenLastLogin"."updatedAt"', 'DESC')
-            .where('"refreshTokenLastLogin"."expires" > now()')
+            .where('"refreshTokenLastLogin"."expires" >= now()::timestamptz')
             .andWhere('"refreshTokenLastLogin"."isRevoked" = false')
             .limit(1)
             .from(RefreshTokenEntity, 'refreshTokenLastLogin'),

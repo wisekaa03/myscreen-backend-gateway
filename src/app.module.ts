@@ -211,12 +211,18 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
       useFactory: (configService: ConfigService) => ({
         fallbackLanguage: configService.getOrThrow('LANGUAGE_DEFAULT'),
         loaderOptions: {
-          path:
-            process.env.NODE_ENV === 'test'
-              ? nodePath.join(__dirname, 'i18n/')
-              : nodePath.join(__dirname, '../i18n/'),
+          path: nodePath.join(
+            __dirname,
+            process.env.NODE_ENV === 'test' ? 'i18n/' : '../i18n/',
+          ),
           watch: true,
         },
+        typesOutputPath: nodePath.join(
+          __dirname,
+          process.env.NODE_ENV === 'test'
+            ? 'i18n/i18n.generated.ts'
+            : '../i18n/i18n.generated.ts',
+        ),
       }),
       resolvers: [UserLanguageResolver],
       inject: [ConfigService],

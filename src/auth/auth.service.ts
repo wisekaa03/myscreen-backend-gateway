@@ -144,6 +144,7 @@ export class AuthService {
   async createAccessTokenFromRefreshToken(
     refreshToken: string,
     fingerprint: string,
+    userAgent: string,
   ): Promise<AuthenticationPayload> {
     const user = await this.resolveRefreshToken(refreshToken);
     if (user.disabled) {
@@ -157,7 +158,7 @@ export class AuthService {
 
     const [token, refreshTokenUpdated] = await Promise.all([
       this.generateAccessToken(user),
-      this.generateRefreshToken(user.id, fingerprint),
+      this.generateRefreshToken(user.id, fingerprint, userAgent),
     ]);
 
     return this.buildResponsePayload(token, refreshTokenUpdated);

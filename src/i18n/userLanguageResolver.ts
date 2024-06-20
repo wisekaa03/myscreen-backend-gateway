@@ -24,7 +24,7 @@ export class UserLanguageResolver implements I18nResolver {
     if (context.getType() === 'http') {
       req = context.switchToHttp().getRequest<ExpressRequest>();
       const authorization = req?.headers?.authorization;
-      const token = authorization?.match(/Bearer (.+)/);
+      const token = authorization?.match(/[bB]earer (.+)/);
       if (token?.[1]) {
         const payload = await this.authService.jwtVerify(token[1]);
         if (payload?.sub) {
