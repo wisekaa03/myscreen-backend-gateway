@@ -11,13 +11,6 @@ import { version } from '../../package.json';
 
 @ApiComplexDecorators({
   path: ['constants'],
-  roles: [
-    UserRoleEnum.Administrator,
-    UserRoleEnum.Advertiser,
-    UserRoleEnum.MonitorOwner,
-    UserRoleEnum.Monitor,
-    UserRoleEnum.Accountant,
-  ],
 })
 export class ConstantsController {
   logger = new Logger(ConstantsController.name);
