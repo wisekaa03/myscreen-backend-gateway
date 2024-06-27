@@ -41,11 +41,11 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
     default: 1920,
     required: false,
   })
+  @IsOptional()
   @IsNumber(
-    { allowNaN: false, allowInfinity: false },
+    { allowNaN: true, allowInfinity: true, maxDecimalPlaces: 0 },
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @Min(1, { message: i18nValidationMessage('validation.MIN') })
   width!: number;
 
   @ApiProperty({
@@ -55,10 +55,10 @@ export class MonitorCreateRequest extends PickType(MonitorEntity, [
     default: 1080,
     required: false,
   })
+  @IsOptional()
   @IsNumber(
-    { allowNaN: false, allowInfinity: false },
+    { allowNaN: true, allowInfinity: true, maxDecimalPlaces: 0 },
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @Min(1, { message: i18nValidationMessage('validation.MIN') })
   height!: number;
 }
