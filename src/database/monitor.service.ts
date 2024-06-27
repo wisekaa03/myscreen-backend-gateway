@@ -486,8 +486,9 @@ export class MonitorService {
     monitorId: string,
     favorite = true,
   ): Promise<MonitorEntity | null> {
+    const { id: userId } = user;
     const monitor = await this.findOne({
-      userId: user.id,
+      userId,
       find: {
         where: { id: monitorId },
       },
@@ -498,7 +499,7 @@ export class MonitorService {
     if (favorite && !monitor.favorite) {
       const insertResult = await this.monitorFavoriteRepository.insert({
         monitorId,
-        userId: user.id,
+        userId,
       });
       if (!insertResult) {
         throw new NotFoundException('Monitor not found');
@@ -513,7 +514,7 @@ export class MonitorService {
     }
 
     return this.findOne({
-      userId: user.id,
+      userId,
       find: {
         where: { id: monitorId },
         loadEagerRelations: false,

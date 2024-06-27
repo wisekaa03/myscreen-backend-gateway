@@ -101,7 +101,7 @@ export class MonitorController {
     const find: FindManyOptions<MonitorEntity> = {
       ...paginationQuery(scope),
       select,
-      relations: { groupMonitors: true },
+      relations: { favorities: true, groupMonitors: true },
     };
     if (role === UserRoleEnum.Monitor) {
       // добавляем то, что содержится у нас в userId: monitorId.
@@ -155,7 +155,7 @@ export class MonitorController {
       };
     }
     const [data, count] = await this.monitorService.findAndCount({
-      userId: user.id,
+      userId,
       find,
     });
     if (scope?.order?.favorite) {
