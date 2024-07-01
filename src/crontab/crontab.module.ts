@@ -1,4 +1,4 @@
-import { Global, Module, forwardRef } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 
 import { ScheduleModule } from '@nestjs/schedule';
 import { DatabaseModule } from '@/database/database.module';
@@ -6,7 +6,7 @@ import { CrontabService } from './crontab.service';
 
 @Global()
 @Module({
-  imports: [forwardRef(() => DatabaseModule), ScheduleModule.forRoot()],
+  imports: [DatabaseModule, ScheduleModule.forRoot()],
   providers: [CrontabService],
   exports: [CrontabService],
 })

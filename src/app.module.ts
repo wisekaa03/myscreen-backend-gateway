@@ -82,8 +82,6 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
       inject: [ConfigService],
     }),
 
-    AuthModule,
-
     ClientsModule.registerAsync({
       isGlobal: true,
       clients: [
@@ -205,6 +203,7 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
       inject: [ConfigService],
     }),
     DatabaseModule,
+    AuthModule,
     EndpointModule,
 
     I18nModule.forRootAsync({

@@ -51,17 +51,13 @@ export class BidService {
   constructor(
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
-    @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
-    @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
-    @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
-    @Inject(forwardRef(() => PlaylistService))
     private readonly playlistService: PlaylistService,
     @InjectRepository(BidEntity)
     private readonly bidRepository: Repository<BidEntity>,

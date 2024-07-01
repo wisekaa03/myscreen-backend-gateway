@@ -27,6 +27,7 @@ describe(AuthService.name, () => {
   let userResponse: UserResponse;
 
   const mockRepository = jest.fn(() => ({
+    find: async () => Promise.resolve([]),
     findByEmail: async () => Promise.resolve({ ...user, password }),
     findOne: async () => Promise.resolve(user),
     signAsync: async () => Promise.resolve(token),
@@ -35,16 +36,18 @@ describe(AuthService.name, () => {
     update: async () => Promise.resolve([]),
     verify: () => true,
     get: (key: string, defaultValue?: string) => defaultValue,
+    getOrThrow: (key: string, defaultValue?: string) => defaultValue,
     t: (value: unknown) => value,
   }));
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        AuthService,
-        UserService,
-        { provide: I18nService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
+        { provide: JwtService, useClass: mockRepository },
+        { provide: JwtStrategy, useClass: mockRepository },
+        { provide: RefreshTokenService, useClass: mockRepository },
+        { provide: I18nService, useClass: mockRepository },
         { provide: MAIL_SERVICE, useClass: mockRepository },
         {
           provide: getRepositoryToken(UserEntity),
@@ -54,9 +57,8 @@ describe(AuthService.name, () => {
           provide: getRepositoryToken(UserResponse),
           useClass: mockRepository,
         },
-        { provide: RefreshTokenService, useClass: mockRepository },
-        { provide: JwtService, useClass: mockRepository },
-        { provide: JwtStrategy, useClass: mockRepository },
+        AuthService,
+        UserService,
       ],
     }).compile();
 

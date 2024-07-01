@@ -196,6 +196,12 @@ export class FileService {
     return signedUrl ? this.signedUrl(file) : file;
   }
 
+  async sum(userId: string): Promise<number> {
+    return this.fileRepository
+      .sum('filesize', { userId })
+      .then((sum: number | null) => sum ?? 0);
+  }
+
   async signedUrl(file: FileEntity): Promise<FileEntity> {
     const getObject = new GetObjectCommand({
       Bucket: this.bucket,

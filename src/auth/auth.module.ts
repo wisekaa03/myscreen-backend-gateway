@@ -6,24 +6,27 @@ import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from '@/database/database.module';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { WSModule } from '@/websocket/ws.module';
 
 @Module({
   imports: [
+    forwardRef(() => DatabaseModule),
+    forwardRef(() => WSModule),
+
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
         secret: configService.getOrThrow('JWT_ACCESS_TOKEN'),
         signOptions: {
           algorithm: 'HS256',
-          expiresIn: configService.get('JWT_ACCESS_EXPIRES', '10min'),
+          expiresIn: configService.getOrThrow('JWT_ACCESS_EXPIRES'),
         },
       }),
       inject: [ConfigService],
     }),
     PassportModule,
-    forwardRef(() => DatabaseModule),
   ],
 
-  providers: [JwtStrategy, AuthService],
+  providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

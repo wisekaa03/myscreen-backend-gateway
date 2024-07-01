@@ -4,15 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { type DeepPartial, MoreThan, Repository } from 'typeorm';
 
-import { UserEntity } from '@/database/user.entity';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 
 @Injectable()
 export class RefreshTokenService {
   constructor(
+    private readonly configService: ConfigService,
     @InjectRepository(RefreshTokenEntity)
     private readonly refreshTokenEntity: Repository<RefreshTokenEntity>,
-    private readonly configService: ConfigService,
   ) {}
 
   async find(id: string, fromMonitor = false): Promise<RefreshTokenEntity> {

@@ -68,6 +68,12 @@ export class PlaylistService {
     });
   }
 
+  async count(find: FindManyOptions<PlaylistEntity>): Promise<number> {
+    return this.playlistRepository.count(
+      TypeOrmFind.findParams(PlaylistEntity, find),
+    );
+  }
+
   async create(insert: DeepPartial<PlaylistEntity>): Promise<PlaylistEntity> {
     const playlist = await this.playlistRepository.save(
       this.playlistRepository.create(insert),

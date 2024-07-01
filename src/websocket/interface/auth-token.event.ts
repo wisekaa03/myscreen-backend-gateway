@@ -7,7 +7,7 @@
  *   }
  * }
  */
-export interface AuthTokenEvent {
+export interface WsAuthTokenEvent {
   token: string;
   date: string;
 }

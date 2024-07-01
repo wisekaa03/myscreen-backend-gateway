@@ -1,10 +1,8 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotAcceptableException,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, FindManyOptions, In, Not, Repository } from 'typeorm';
@@ -22,7 +20,6 @@ import { FindManyOptionsCaseInsensitive } from '@/interfaces';
 @Injectable()
 export class MonitorService {
   constructor(
-    @Inject(forwardRef(() => BidService))
     private readonly bidService: BidService,
     @InjectRepository(MonitorEntity)
     public readonly monitorRepository: Repository<MonitorEntity>,
