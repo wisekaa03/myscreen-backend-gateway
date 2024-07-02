@@ -16,6 +16,7 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
+  IsNumberString,
   IsString,
   IsUUID,
 } from 'class-validator';
@@ -68,15 +69,15 @@ export class InvoiceEntity extends BaseEntity {
   })
   status!: InvoiceStatus;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', precision: 18, scale: 2, default: 0 })
   @ApiProperty({
     description: 'Сумма счета',
     example: 1000,
   })
   @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
   @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @IsNumberString(
+    {},
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   sum!: number;

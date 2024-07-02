@@ -7,7 +7,9 @@ import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsNumberString,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   Length,
@@ -223,15 +225,18 @@ export class MonitorEntity extends BaseEntity {
   })
   category!: MonitorCategoryEnum;
 
-  @Column({ type: 'integer', default: 0 })
+  @Column({ type: 'numeric', precision: 18, scale: 6, default: 0 })
   @ApiProperty({
-    type: 'integer',
     description: 'Стоимость показа 1 секунды в рублях',
     example: 1,
     required: false,
   })
   @IsOptional()
-  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  @IsNumberString(
+    {},
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @IsPositive()
   price1s!: number;
 
   @Column({ type: 'integer', default: 0 })

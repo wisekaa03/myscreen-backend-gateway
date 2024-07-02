@@ -16,12 +16,12 @@ import {
   IsEnum,
   IsDefined,
   IsNotEmpty,
-  IsNumber,
   IsString,
   IsUUID,
   Min,
   IsBoolean,
   IsInt,
+  IsNumberString,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
@@ -57,15 +57,15 @@ export class ActEntity extends BaseEntity {
   @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   description!: string;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', precision: 18, scale: 2, default: 0 })
   @ApiProperty({
     description: 'Сумма акта выполненных работ',
     example: 1000,
   })
   @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
   @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @IsNumberString(
+    {},
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   @Min(100, { message: i18nValidationMessage('validation.MIN') })

@@ -5,6 +5,7 @@ import {
   IsInt,
   IsNumber,
   IsDateString,
+  IsPositive,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -68,9 +69,8 @@ export class EditorLayerEntity extends BaseEntity {
   @Min(1, { message: i18nValidationMessage('validation.MIN') })
   index!: number;
 
-  @Column({ type: 'numeric', default: 10.0 })
+  @Column({ type: 'numeric', precision: 18, scale: 2, default: 10 })
   @ApiProperty({
-    type: 'number',
     description: 'Длительность',
     example: 10,
     default: 10,
@@ -80,42 +80,36 @@ export class EditorLayerEntity extends BaseEntity {
     { allowInfinity: false, allowNaN: false },
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @Min(1, { message: i18nValidationMessage('validation.MIN') })
+  @IsPositive()
   duration!: number;
 
-  @Column({ type: 'numeric', default: 0.0 })
+  @Column({ type: 'numeric', precision: 18, scale: 0, default: 0 })
   @ApiProperty({
-    type: 'number',
     description: 'С какой секунды начать вырезать клип',
     example: 0,
     default: 0,
     required: true,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
-    { message: i18nValidationMessage('validation.IS_NUMBER') },
-  )
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  @Min(1, { message: i18nValidationMessage('validation.MIN') })
+  @IsPositive()
   cutFrom!: number;
 
-  @Column({ type: 'numeric', default: 10 })
+  @Column({ type: 'numeric', precision: 18, scale: 0, default: 10 })
   @ApiProperty({
-    type: 'number',
     description: 'До какой секунды вырезать клип',
     example: 10,
     default: 10,
     required: true,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
-    { message: i18nValidationMessage('validation.IS_NUMBER') },
-  )
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   @Min(1, { message: i18nValidationMessage('validation.MIN') })
+  @IsPositive()
   cutTo!: number;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', precision: 18, scale: 0, default: 0 })
   @ApiProperty({
     description: 'С какой секунды начинать воспроизводить клип',
-    type: 'number',
     default: 0,
     example: 0,
     required: true,
@@ -125,6 +119,7 @@ export class EditorLayerEntity extends BaseEntity {
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   @Min(0, { message: i18nValidationMessage('validation.MIN') })
+  @IsPositive()
   start!: number;
 
   @Column({ type: 'numeric', nullable: true, default: null })

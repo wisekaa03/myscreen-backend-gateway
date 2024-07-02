@@ -16,7 +16,7 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
-  IsNumber,
+  IsNumberString,
   IsUUID,
   Validate,
 } from 'class-validator';
@@ -242,13 +242,16 @@ export class BidEntity extends BaseEntity {
   @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   playlistChange!: boolean;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', precision: 18, scale: 2, default: 0 })
   @ApiProperty({
     description: 'Сумма списания',
     example: 10,
     required: true,
   })
-  @IsNumber({}, { message: i18nValidationMessage('validation.IS_NUMBER') })
+  @IsNumberString(
+    {},
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
   sum!: number;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
