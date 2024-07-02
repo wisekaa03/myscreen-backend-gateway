@@ -102,7 +102,7 @@ export class DatabaseModule implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.manager.transaction(async (manager) => {
+    await this.manager.transaction(async (manager) => {
       const monitors = await manager.find(MonitorEntity, {
         where: {
           status: MonitorStatus.Online,
@@ -116,7 +116,6 @@ export class DatabaseModule implements OnModuleInit {
           status: MonitorStatus.Offline,
         });
       }
-      await manager.query('DROP TABLE IF EXISTS public.application');
     });
   }
 }

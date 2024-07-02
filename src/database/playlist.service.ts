@@ -19,10 +19,12 @@ import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
+import { WalletService } from './wallet.service';
 
 @Injectable()
 export class PlaylistService {
   constructor(
+    private readonly walletService: WalletService,
     @Inject(forwardRef(() => BidService))
     private readonly bidService: BidService,
     @InjectRepository(PlaylistEntity)
@@ -80,6 +82,7 @@ export class PlaylistService {
     );
 
     await this.bidService.websocketChange({ playlist });
+    await this.walletService.wsMetrics(playlist.user);
 
     return playlist;
   }

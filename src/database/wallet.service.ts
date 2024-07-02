@@ -255,11 +255,11 @@ export class WalletService {
     });
   }
 
-  wsWallet(user: UserEntity) {
+  async wsWallet(user: UserEntity): Promise<void> {
     this.wsGateway.onWallet(user);
   }
 
-  wsMetrics(user: UserEntity) {
+  async wsMetrics(user: UserEntity): Promise<void> {
     this.wsGateway.onMetrics(user);
   }
 }

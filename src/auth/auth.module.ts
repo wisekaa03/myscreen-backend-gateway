@@ -11,7 +11,6 @@ import { WSModule } from '@/websocket/ws.module';
 @Module({
   imports: [
     forwardRef(() => DatabaseModule),
-    forwardRef(() => WSModule),
 
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({

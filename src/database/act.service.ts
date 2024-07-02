@@ -88,6 +88,8 @@ export class ActService {
         this.walletService.create({ user, act: actCreate }),
       );
 
+      await this.walletService.wsWallet(user);
+
       return actCreate;
     });
   }

@@ -41,6 +41,7 @@ import { PlaylistService } from './playlist.service';
 import { ActService } from './act.service';
 import { getFullName } from '@/utils/full-name';
 import { UserResponse } from './user-response.entity';
+import { WalletService } from './wallet.service';
 
 @Injectable()
 export class BidService {
@@ -59,6 +60,7 @@ export class BidService {
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
+    private readonly walletService: WalletService,
     @InjectRepository(BidEntity)
     private readonly bidRepository: Repository<BidEntity>,
     configService: ConfigService,
@@ -609,6 +611,9 @@ export class BidService {
         } else if (insert.approved === BidApprove.DENIED) {
           await this.bidPreDelete({ bid, entityManager: transact });
         }
+
+        this.walletService.wsMetrics(bid.seller);
+        this.walletService.wsMetrics(bid.buyer ? bid.buyer : monitor.user);
 
         return bid;
       });
