@@ -13,6 +13,7 @@ import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { MonitorService } from './monitor.service';
 import { BidService } from './bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
+import { WalletService } from './wallet.service';
 
 export const mockRepository = jest.fn(() => ({
   find: async (find: FindOneOptions<ObjectLiteral>) =>
@@ -59,6 +60,7 @@ describe(MonitorService.name, () => {
       providers: [
         MonitorService,
         { provide: BidService, useClass: mockRepository },
+        { provide: WalletService, useClass: mockRepository },
         {
           provide: getRepositoryToken(MonitorEntity),
           useClass: mockRepository,

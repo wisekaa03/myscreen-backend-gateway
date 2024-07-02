@@ -6,6 +6,6 @@
  *   }
  * }
  */
-export interface MonitorEvent {
+export interface WsMonitorEvent {
   playlistPlayed: boolean;
 }

@@ -5,7 +5,7 @@ import { DatabaseModule } from '@/database/database.module';
 import { WSGateway } from './ws.gateway';
 
 @Module({
-  imports: [forwardRef(() => AuthModule), forwardRef(() => DatabaseModule)],
+  imports: [AuthModule, forwardRef(() => DatabaseModule)],
   providers: [WSGateway],
   exports: [WSGateway],
 })

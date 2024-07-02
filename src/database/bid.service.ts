@@ -41,6 +41,7 @@ import { PlaylistService } from './playlist.service';
 import { ActService } from './act.service';
 import { getFullName } from '@/utils/full-name';
 import { UserResponse } from './user-response.entity';
+import { WalletService } from './wallet.service';
 
 @Injectable()
 export class BidService {
@@ -51,18 +52,15 @@ export class BidService {
   constructor(
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
-    @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
-    @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
-    @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
-    @Inject(forwardRef(() => PlaylistService))
     private readonly playlistService: PlaylistService,
+    private readonly walletService: WalletService,
     @InjectRepository(BidEntity)
     private readonly bidRepository: Repository<BidEntity>,
     configService: ConfigService,
@@ -613,6 +611,9 @@ export class BidService {
         } else if (insert.approved === BidApprove.DENIED) {
           await this.bidPreDelete({ bid, entityManager: transact });
         }
+
+        this.walletService.wsMetrics(bid.seller);
+        this.walletService.wsMetrics(bid.buyer ? bid.buyer : monitor.user);
 
         return bid;
       });

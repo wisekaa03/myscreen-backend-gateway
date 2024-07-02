@@ -12,6 +12,7 @@ import { MonitorService } from './monitor.service';
 import { EditorService } from './editor.service';
 import { PlaylistService } from './playlist.service';
 import { BidService } from './bid.service';
+import { WalletService } from './wallet.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -42,6 +43,7 @@ describe(FileService.name, () => {
         { provide: MonitorService, useClass: mockRepository },
         { provide: EditorService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
+        { provide: WalletService, useClass: mockRepository },
         {
           provide: getS3ConnectionToken(S3_MODULE_CONNECTION),
           useClass: mockRepository,

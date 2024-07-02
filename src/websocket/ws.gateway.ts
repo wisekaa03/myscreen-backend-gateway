@@ -1,6 +1,7 @@
 import type { IncomingMessage } from 'http';
 import { isJWT } from 'class-validator';
 import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
+import { IsNull } from 'typeorm';
 import '@nestjs/platform-ws';
 import {
   SubscribeMessage,
@@ -18,9 +19,15 @@ import { Observable, of } from 'rxjs';
 
 import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
 import { AuthService } from '@/auth/auth.service';
-import { WebSocketClient } from './interface/websocket-client';
-import { AuthTokenEvent } from './interface/auth-token.event';
-import { MonitorEvent } from './interface/monitor.event';
+import {
+  WebSocketClient,
+  WsMonitorEvent,
+  WsAuthTokenEvent,
+  WsMetricsData,
+  WsMetricsObject,
+  WsWalletData,
+  WsWalletObject,
+} from './interface';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
@@ -29,6 +36,10 @@ import { BidEntity } from '@/database/bid.entity';
 import { BidService } from '@/database/bid.service';
 import { FileService } from '@/database/file.service';
 import { WsEvent } from '@/enums/ws-event.enum';
+import { UserEntity } from '@/database/user.entity';
+import { WalletService } from '@/database/wallet.service';
+import { UserService } from '@/database/user.service';
+import { UserResponse } from '@/database/user-response.entity';
 
 @WebSocketGateway({
   cors: {
@@ -41,12 +52,14 @@ export class WSGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
 {
   constructor(
+    @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
-    @Inject(forwardRef(() => BidService))
     private readonly bidService: BidService,
     private readonly fileService: FileService,
     private readonly playlistService: PlaylistService,
     private readonly monitorService: MonitorService,
+    private readonly walletService: WalletService,
+    private readonly userService: UserService,
   ) {}
 
   @WebSocketServer()
@@ -62,7 +75,9 @@ export class WSGateway
     token: string,
   ): Promise<WebSocketClient> {
     let monitorId: string | undefined;
+    let monitor: MonitorEntity | undefined | null;
     let userId: string | undefined;
+    let user: UserResponse | undefined | null;
 
     const { sub, aud: role } = await this.authService
       .jwtVerify(token)
@@ -71,16 +86,30 @@ export class WSGateway
         throw new WsException('Not authorized');
       });
 
-    if (role === UserRoleEnum.Monitor) {
+    if (role === UserRoleEnum.Monitor && sub) {
       monitorId = sub;
+      monitor = await this.monitorService.findOne({
+        find: { where: { id: monitorId } },
+      });
+      if (!monitor) {
+        throw new WsException('Not authorized');
+      }
+
       this.logger.debug(
         `Client key='${value.key}', auth=true, role='${role}', monitorId='${monitorId}'`,
       );
-    } else {
+    } else if (sub) {
       userId = sub;
+      user = await this.userService.findById(userId);
+      if (!user) {
+        throw new WsException('Not authorized');
+      }
+
       this.logger.debug(
         `Client key='${value.key}', auth=true, role='${role}', userId='${userId}'`,
       );
+    } else {
+      throw new WsException('Not authorized');
     }
 
     const valueUpdated: WebSocketClient = {
@@ -88,7 +117,9 @@ export class WSGateway
       auth: true,
       token,
       monitorId,
+      monitor,
       userId,
+      user,
       role,
     };
     this.clients.set(client, valueUpdated);
@@ -145,8 +176,12 @@ export class WSGateway
   @SubscribeMessage(WsEvent.AUTH)
   async handleAuthToken(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() body: AuthTokenEvent,
-  ): Promise<Observable<WsResponse<string | BidEntity[] | null>[]>> {
+    @MessageBody() body: WsAuthTokenEvent,
+  ): Promise<
+    Observable<
+      WsResponse<string | BidEntity[] | WsMetricsData | WsWalletData | null>[]
+    >
+  > {
     if (!(body.token && body.date)) {
       throw new WsException('Not authorized');
     }
@@ -181,6 +216,15 @@ export class WSGateway
             { event: WsEvent.AUTH, data: 'authorized' },
             { event: WsEvent.BIDS, data: bids },
           ]);
+        } else if (value.user) {
+          const { id: userId, storageSpace } = value.user;
+          const wallet = await this.preWallet(userId);
+          const metrics = await this.preMetrics(userId, storageSpace);
+          return of([
+            { event: WsEvent.AUTH, data: 'authorized' },
+            wallet,
+            metrics,
+          ]);
         }
         return of([{ event: WsEvent.AUTH, data: 'authorized' }]);
       }
@@ -195,7 +239,7 @@ export class WSGateway
   @SubscribeMessage('monitor')
   async handleMonitor(
     @ConnectedSocket() client: WebSocket,
-    @MessageBody() body: string | MonitorEvent,
+    @MessageBody() body: string | WsMonitorEvent,
   ): Promise<Observable<WsResponse<string>[]>> {
     const value = this.clients.get(client);
     if (!value || !value.auth) {
@@ -215,7 +259,7 @@ export class WSGateway
       throw new WsException('Not exist monitorId');
     }
 
-    let bodyObject: MonitorEvent;
+    let bodyObject: WsMonitorEvent;
     if (typeof body === 'string') {
       try {
         bodyObject = JSON.parse(body);
@@ -332,6 +376,93 @@ export class WSGateway
         }
       });
     }
+  }
+
+  async preWallet(userId: string): Promise<WsWalletObject> {
+    return {
+      event: WsEvent.WALLET,
+      data: { total: await this.walletService.walletSum({ userId }) },
+    };
+  }
+
+  async onWallet(user: UserEntity): Promise<void> {
+    const { id: userId } = user;
+    this.clients.forEach(async (value, client) => {
+      if (value.userId === userId) {
+        const wallet = await this.preWallet(userId);
+        client.send(JSON.stringify([wallet]));
+      }
+    });
+  }
+
+  async preMetrics(
+    userId: string,
+    storageSpace?: number,
+  ): Promise<WsMetricsObject> {
+    const [
+      countMonitors,
+      onlineMonitors,
+      offlineMonitors,
+      emptyMonitors,
+      playlistAdded,
+      playlistBroadcast,
+      countUsedSpace,
+    ] = await Promise.all([
+      this.monitorService.count({
+        find: { where: { userId } },
+        caseInsensitive: false,
+      }),
+      this.monitorService.count({
+        find: { where: { userId, status: MonitorStatus.Online } },
+        caseInsensitive: false,
+      }),
+      this.monitorService.count({
+        find: { where: { userId, status: MonitorStatus.Offline } },
+        caseInsensitive: false,
+      }),
+      this.monitorService.count({
+        find: {
+          where: { userId, bids: { id: IsNull() } },
+        },
+        caseInsensitive: false,
+      }),
+      this.playlistService.count({
+        where: { userId },
+      }),
+      this.playlistService.count({
+        where: { userId, status: PlaylistStatusEnum.Broadcast },
+      }),
+      this.fileService.sum(userId),
+    ]);
+    return {
+      event: WsEvent.METRICS,
+      data: {
+        monitors: {
+          online: onlineMonitors,
+          offline: offlineMonitors,
+          empty: emptyMonitors,
+          user: countMonitors,
+        },
+        playlists: {
+          added: playlistAdded,
+          played: playlistBroadcast,
+        },
+        storageSpace: {
+          storage: countUsedSpace,
+          total: parseFloat(`${storageSpace}`),
+        },
+      },
+    };
+  }
+
+  async onMetrics(user: UserEntity): Promise<void> {
+    const { id: userId, storageSpace } = user;
+    this.clients.forEach(async (value, client) => {
+      if (value.userId === userId) {
+        const metrics = await this.preMetrics(userId, storageSpace);
+        client.send(JSON.stringify([metrics]));
+      }
+    });
   }
 
   countMonitors(): number {

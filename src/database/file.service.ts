@@ -47,6 +47,7 @@ import { FolderEntity } from './folder.entity';
 import { PlaylistService } from './playlist.service';
 import { UserEntity } from './user.entity';
 import { BidService } from './bid.service';
+import { WalletService } from './wallet.service';
 
 @Injectable()
 export class FileService {
@@ -73,6 +74,7 @@ export class FileService {
     @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
     private readonly playlistService: PlaylistService,
+    private readonly walletService: WalletService,
     @InjectS3()
     private readonly s3Service: S3,
     @InjectRepository(FileEntity)
@@ -194,6 +196,12 @@ export class FileService {
     }
 
     return signedUrl ? this.signedUrl(file) : file;
+  }
+
+  async sum(userId: string): Promise<number> {
+    return this.fileRepository
+      .sum('filesize', { userId })
+      .then((sum: number | null) => sum ?? 0);
   }
 
   async signedUrl(file: FileEntity): Promise<FileEntity> {
@@ -394,10 +402,14 @@ export class FileService {
           throw new InternalServerErrorException(error);
         }
 
-        return transact.save(
+        const fileUpdated = await transact.save(
           FileEntity,
           transact.create(FileEntity, fileToSave),
         );
+
+        await this.walletService.wsMetrics(user);
+
+        return fileUpdated;
       });
 
       return Promise.all(filesPromises);

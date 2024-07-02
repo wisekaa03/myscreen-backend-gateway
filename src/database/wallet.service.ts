@@ -19,12 +19,12 @@ import {
 import { MAIL_SERVICE } from '@/constants';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
+import { WSGateway } from '@/websocket/ws.gateway';
 import { ActService } from './act.service';
 import { UserEntity } from './user.entity';
 import { ActEntity } from './act.entity';
 import { InvoiceEntity } from './invoice.entity';
 import { WalletEntity } from './wallet.entity';
-import { UserService } from './user.service';
 import {
   UserPlanEnum,
   UserStoreSpaceEnum,
@@ -44,10 +44,10 @@ export class WalletService {
   public maxNonPayment: number;
 
   constructor(
-    private readonly userService: UserService,
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
+    @Inject(forwardRef(() => WSGateway))
+    private readonly wsGateway: WSGateway,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
     @InjectRepository(WalletEntity)
@@ -253,5 +253,13 @@ export class WalletService {
 
       await Promise.all(promiseUsers);
     });
+  }
+
+  async wsWallet(user: UserEntity): Promise<void> {
+    this.wsGateway.onWallet(user);
+  }
+
+  async wsMetrics(user: UserEntity): Promise<void> {
+    this.wsGateway.onMetrics(user);
   }
 }

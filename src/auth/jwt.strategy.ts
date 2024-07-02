@@ -13,12 +13,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     authService: AuthService,
     private readonly userService: UserService,
   ) {
+    const secretOrKey = authService.secretAccessToken;
+    const expiresIn = authService.accessTokenExpires;
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: authService.secretAccessToken,
+      secretOrKey,
       signOptions: {
-        expiresIn: authService.accessTokenExpires,
+        expiresIn,
       },
     });
   }

@@ -23,23 +23,17 @@ export class AuthService {
   public secretAccessToken: string;
 
   constructor(
-    private readonly userService: UserService,
-    private readonly refreshTokenService: RefreshTokenService,
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
+    private readonly userService: UserService,
+    private readonly refreshTokenService: RefreshTokenService,
   ) {
-    this.accessTokenExpires = this.configService.get(
-      'JWT_ACCESS_EXPIRES',
-      '10min',
-    );
-    this.refreshTokenExpires = this.configService.get(
+    this.accessTokenExpires =
+      this.configService.getOrThrow('JWT_ACCESS_EXPIRES');
+    this.refreshTokenExpires = this.configService.getOrThrow(
       'JWT_REFRESH_EXPIRES',
-      '30days',
     );
-    this.secretAccessToken = this.configService.get(
-      'JWT_ACCESS_TOKEN',
-      'what ?',
-    );
+    this.secretAccessToken = this.configService.getOrThrow('JWT_ACCESS_TOKEN');
   }
 
   async login(

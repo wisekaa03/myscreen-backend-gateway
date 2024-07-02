@@ -22,7 +22,6 @@ import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { PlaylistEntity } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
-import { UptimeMonitoringEntity } from './uptime-monitoring.entity';
 import { UserEntity } from './user.entity';
 import { UserResponse } from './user-response.entity';
 import { UserService } from './user.service';
@@ -38,8 +37,6 @@ import { MonitorGroupEntity } from './monitor.group.entity';
 
 @Module({
   imports: [
-    forwardRef(() => WSModule),
-
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmOptionsClass,
       inject: [ConfigService],
@@ -57,7 +54,6 @@ import { MonitorGroupEntity } from './monitor.group.entity';
       MonitorGroupEntity,
       InvoiceEntity,
       PlaylistEntity,
-      UptimeMonitoringEntity,
       UserEntity,
       UserResponse,
       RefreshTokenEntity,
@@ -65,6 +61,8 @@ import { MonitorGroupEntity } from './monitor.group.entity';
       WalletEntity,
       ActEntity,
     ]),
+
+    forwardRef(() => WSModule),
   ],
 
   providers: [
@@ -104,7 +102,7 @@ export class DatabaseModule implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    this.manager.transaction(async (manager) => {
+    await this.manager.transaction(async (manager) => {
       const monitors = await manager.find(MonitorEntity, {
         where: {
           status: MonitorStatus.Online,
@@ -118,7 +116,6 @@ export class DatabaseModule implements OnModuleInit {
           status: MonitorStatus.Offline,
         });
       }
-      await manager.query('DROP TABLE IF EXISTS public.application');
     });
   }
 }

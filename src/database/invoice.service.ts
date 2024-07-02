@@ -94,11 +94,15 @@ export class InvoiceService {
         transact.create(InvoiceEntity, invoiceChanged),
       );
 
-      return transact.findOne(InvoiceEntity, {
+      const invoiceUpdated = await transact.findOne(InvoiceEntity, {
         where: { id },
         loadEagerRelations: true,
         relations: { user: true },
       });
+
+      await this.walletService.wsWallet(user);
+
+      return invoiceUpdated;
     });
   }
 

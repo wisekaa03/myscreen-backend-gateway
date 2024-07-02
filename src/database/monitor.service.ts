@@ -1,10 +1,8 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotAcceptableException,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, FindManyOptions, In, Not, Repository } from 'typeorm';
@@ -18,12 +16,13 @@ import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
 import { FindManyOptionsCaseInsensitive } from '@/interfaces';
+import { WalletService } from './wallet.service';
 
 @Injectable()
 export class MonitorService {
   constructor(
-    @Inject(forwardRef(() => BidService))
     private readonly bidService: BidService,
+    private readonly walletService: WalletService,
     @InjectRepository(MonitorEntity)
     public readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(MonitorGroupEntity)
@@ -465,6 +464,8 @@ export class MonitorService {
 
         await Promise.all(monitorMultiple);
       }
+
+      await this.walletService.wsMetrics(user);
 
       return monitor;
     });
