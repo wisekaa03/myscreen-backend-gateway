@@ -39,6 +39,7 @@ import { WsEvent } from '@/enums/ws-event.enum';
 import { UserEntity } from '@/database/user.entity';
 import { WalletService } from '@/database/wallet.service';
 import { UserService } from '@/database/user.service';
+import { UserResponse } from '@/database/user-response.entity';
 
 @WebSocketGateway({
   cors: {
@@ -74,7 +75,9 @@ export class WSGateway
     token: string,
   ): Promise<WebSocketClient> {
     let monitorId: string | undefined;
+    let monitor: MonitorEntity | undefined | null;
     let userId: string | undefined;
+    let user: UserResponse | undefined | null;
 
     const { sub, aud: role } = await this.authService
       .jwtVerify(token)
@@ -83,16 +86,30 @@ export class WSGateway
         throw new WsException('Not authorized');
       });
 
-    if (role === UserRoleEnum.Monitor) {
+    if (role === UserRoleEnum.Monitor && sub) {
       monitorId = sub;
+      monitor = await this.monitorService.findOne({
+        find: { where: { id: monitorId } },
+      });
+      if (!monitor) {
+        throw new WsException('Not authorized');
+      }
+
       this.logger.debug(
         `Client key='${value.key}', auth=true, role='${role}', monitorId='${monitorId}'`,
       );
-    } else {
+    } else if (sub) {
       userId = sub;
+      user = await this.userService.findById(userId);
+      if (!user) {
+        throw new WsException('Not authorized');
+      }
+
       this.logger.debug(
         `Client key='${value.key}', auth=true, role='${role}', userId='${userId}'`,
       );
+    } else {
+      throw new WsException('Not authorized');
     }
 
     const valueUpdated: WebSocketClient = {
@@ -100,7 +117,9 @@ export class WSGateway
       auth: true,
       token,
       monitorId,
+      monitor,
       userId,
+      user,
       role,
     };
     this.clients.set(client, valueUpdated);
@@ -197,19 +216,15 @@ export class WSGateway
             { event: WsEvent.AUTH, data: 'authorized' },
             { event: WsEvent.BIDS, data: bids },
           ]);
-        }
-        if (value.userId) {
-          const user = await this.userService.findById(value.userId);
-          if (user) {
-            const { id: userId, storageSpace } = user;
-            const wallet = await this.preWallet(userId);
-            const metrics = await this.preMetrics(userId, storageSpace);
-            return of([
-              { event: WsEvent.AUTH, data: 'authorized' },
-              wallet,
-              metrics,
-            ]);
-          }
+        } else if (value.user) {
+          const { id: userId, storageSpace } = value.user;
+          const wallet = await this.preWallet(userId);
+          const metrics = await this.preMetrics(userId, storageSpace);
+          return of([
+            { event: WsEvent.AUTH, data: 'authorized' },
+            wallet,
+            metrics,
+          ]);
         }
         return of([{ event: WsEvent.AUTH, data: 'authorized' }]);
       }
