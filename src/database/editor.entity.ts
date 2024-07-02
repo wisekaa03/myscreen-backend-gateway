@@ -7,6 +7,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   Min,
@@ -175,13 +176,13 @@ export class EditorEntity extends BaseEntity {
   @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   keepSourceAudio!: boolean;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', precision: 18, scale: 2, default: 0 })
   @ApiProperty({
     description: 'Общее время',
-    type: 'number',
     example: 0,
     required: true,
   })
+  @IsPositive()
   @IsNumber(
     { allowInfinity: false, allowNaN: false },
     { message: i18nValidationMessage('validation.IS_NUMBER') },

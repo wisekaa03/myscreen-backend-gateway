@@ -21,6 +21,7 @@ import {
   IsEnum,
   IsJSON,
   IsNotEmpty,
+  IsPositive,
   IsString,
   IsUUID,
   IsUrl,
@@ -126,14 +127,14 @@ export class FileEntity extends BaseEntity {
   @IsNotEmpty()
   filesize!: number;
 
-  @Column({ type: 'numeric', default: 0 })
+  @Column({ type: 'numeric', precision: 18, scale: 2, default: 0 })
   @ApiProperty({
     description: 'Продолжительность видео',
-    type: 'number',
     example: 10,
   })
   @IsDefined()
   @IsNotEmpty()
+  @IsPositive()
   duration!: number;
 
   @Column({ type: 'integer', default: 1024 })
