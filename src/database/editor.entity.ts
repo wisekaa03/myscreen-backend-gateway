@@ -182,7 +182,7 @@ export class EditorEntity extends BaseEntity {
     example: 0,
     required: true,
   })
-  @IsPositive()
+  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   @IsNumber(
     { allowInfinity: false, allowNaN: false },
     { message: i18nValidationMessage('validation.IS_NUMBER') },

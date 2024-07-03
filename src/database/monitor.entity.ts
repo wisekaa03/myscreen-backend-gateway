@@ -230,13 +230,14 @@ export class MonitorEntity extends BaseEntity {
     description: 'Стоимость показа 1 секунды в рублях',
     example: 1,
     required: false,
+    default: '0',
   })
   @IsOptional()
   @IsNumberString(
     {},
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @IsPositive()
+  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   price1s!: number;
 
   @Column({ type: 'integer', default: 0 })

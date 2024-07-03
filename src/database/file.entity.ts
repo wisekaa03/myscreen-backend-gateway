@@ -61,8 +61,8 @@ export class FileEntity extends BaseEntity {
     format: 'uuid',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   folderId?: string;
 
@@ -72,8 +72,8 @@ export class FileEntity extends BaseEntity {
     example: 'foo.mp4',
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   name!: string;
 
   @Column({ default: 'mp4' })
@@ -81,8 +81,8 @@ export class FileEntity extends BaseEntity {
     description: 'Расширение файла',
     example: 'mp4',
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   extension!: string;
 
   @Column()
@@ -90,7 +90,7 @@ export class FileEntity extends BaseEntity {
     description: 'Hash файла',
     example: '2b0439011a3a215ae1756bfc342e5bbc',
   })
-  @IsString()
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   // @IsHash()
   hash!: string;
 
@@ -102,7 +102,9 @@ export class FileEntity extends BaseEntity {
     example: VideoType.Video,
     required: true,
   })
-  @IsEnum(VideoType)
+  @IsEnum(VideoType, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   videoType!: VideoType;
 
   @Column({ type: 'enum', enum: FileCategory })
@@ -113,9 +115,11 @@ export class FileEntity extends BaseEntity {
     example: FileCategory.Media,
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsEnum(FileCategory)
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsEnum(FileCategory, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   category?: FileCategory;
 
   @Column({ type: 'integer' })
@@ -123,8 +127,8 @@ export class FileEntity extends BaseEntity {
     description: 'Размер файла',
     example: 210000,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   filesize!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 2, default: 0 })
@@ -132,9 +136,9 @@ export class FileEntity extends BaseEntity {
     description: 'Продолжительность видео',
     example: 10,
   })
-  @IsDefined()
-  @IsNotEmpty()
-  @IsPositive()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
+  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   duration!: number;
 
   @Column({ type: 'integer', default: 1024 })
@@ -143,8 +147,8 @@ export class FileEntity extends BaseEntity {
     example: 1024,
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   width!: number;
 
   @Column({ type: 'integer', default: 1024 })
@@ -153,8 +157,8 @@ export class FileEntity extends BaseEntity {
     example: 1024,
     required: true,
   })
-  @IsDefined()
-  @IsNotEmpty()
+  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
+  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   height!: number;
 
   @Column({ select: false, type: 'jsonb', nullable: true })
@@ -165,7 +169,7 @@ export class FileEntity extends BaseEntity {
       '{ format: { size: "100000", filename: "foo.mp4" }, streams: [{ codec_name: "h264", width: 1024, height: 1024 }] }',
     required: false,
   })
-  @IsJSON()
+  @IsJSON({ message: i18nValidationMessage('validation.IS_JSON') })
   info?: FfprobeData;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
