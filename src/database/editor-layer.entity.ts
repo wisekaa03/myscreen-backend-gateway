@@ -80,7 +80,7 @@ export class EditorLayerEntity extends BaseEntity {
     { allowInfinity: false, allowNaN: false },
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @IsPositive()
+  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   duration!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 0, default: 0 })
@@ -92,7 +92,7 @@ export class EditorLayerEntity extends BaseEntity {
   })
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   @Min(1, { message: i18nValidationMessage('validation.MIN') })
-  @IsPositive()
+  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   cutFrom!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 0, default: 10 })
@@ -104,7 +104,7 @@ export class EditorLayerEntity extends BaseEntity {
   })
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   @Min(1, { message: i18nValidationMessage('validation.MIN') })
-  @IsPositive()
+  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   cutTo!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 0, default: 0 })
@@ -119,7 +119,7 @@ export class EditorLayerEntity extends BaseEntity {
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   @Min(0, { message: i18nValidationMessage('validation.MIN') })
-  @IsPositive()
+  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   start!: number;
 
   @Column({ type: 'numeric', nullable: true, default: null })

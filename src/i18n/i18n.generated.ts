@@ -28,6 +28,7 @@ export type I18nTranslations = {
         "IS_BOOLEAN": string;
         "IS_URL": string;
         "IS_JSON": string;
+        "IS_POSITIVE": string;
         "PASSWORD_MIN_LENGTH": string;
         "PASSWORD_MAX_LENGTH": string;
         "PASSWORD_TOO_WEAK": string;

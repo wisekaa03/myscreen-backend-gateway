@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.50.3",
+  "version": "2.50.4",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -107,8 +107,8 @@
     "**/**/ws": ">=8.17.1"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.608.0",
-    "@aws-sdk/s3-request-presigner": "^3.608.0",
+    "@aws-sdk/client-s3": "^3.609.0",
+    "@aws-sdk/s3-request-presigner": "^3.609.0",
     "@elastic/elasticsearch": "^8.14.0",
     "@nestjs/common": "^10.3.10",
     "@nestjs/config": "^3.2.3",
@@ -118,7 +118,7 @@
     "@nestjs/passport": "^10.0.3",
     "@nestjs/platform-express": "^10.3.10",
     "@nestjs/platform-ws": "^10.3.10",
-    "@nestjs/schedule": "^4.0.2",
+    "@nestjs/schedule": "^4.1.0",
     "@nestjs/swagger": "^7.4.0",
     "@nestjs/typeorm": "^10.0.2",
     "@nestjs/websockets": "^10.3.10",
@@ -165,7 +165,7 @@
   "devDependencies": {
     "@eslint/js": "^9.6.0",
     "@golevelup/ts-jest": "^0.5.0",
-    "@nestjs/cli": "^10.4.0",
+    "@nestjs/cli": "^10.4.1",
     "@nestjs/schematics": "^10.1.2",
     "@nestjs/testing": "^10.3.10",
     "@types/debug": "^4.1.12",
