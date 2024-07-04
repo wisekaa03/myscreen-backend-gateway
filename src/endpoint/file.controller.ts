@@ -6,13 +6,11 @@ import type {
 } from 'express';
 import { FindOptionsWhere, In } from 'typeorm';
 import {
-  BadRequestException,
   Body,
   Delete,
   Get,
   HttpCode,
   Logger,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -33,8 +31,9 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
-
 import { isUUID } from 'class-validator';
+
+import { BadRequestError, NotFoundError } from '@/errors';
 import {
   SuccessResponse,
   FilesGetRequest,
@@ -95,7 +94,7 @@ export class FileController {
     let count = 0;
     let data: FileEntity[] = [];
     if (where?.folderId && !isUUID(where?.folderId)) {
-      throw new BadRequestException('folderId: must be UUID');
+      throw new BadRequestError('folderId: must be UUID');
     }
     [data, count] = await this.fileService.findAndCount({
       find: {
@@ -155,14 +154,14 @@ export class FileController {
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<FilesUploadResponse> {
     if (files.length < 1) {
-      throw new BadRequestException('Files expected');
+      throw new BadRequestError('Files expected');
     }
 
     let param: FileUploadRequest;
     try {
       param = JSON.parse(body.param);
     } catch (err) {
-      throw new BadRequestException('The param must be a string');
+      throw new BadRequestError('The param must be a string');
     }
     const data = await this.fileService.upload(user, param, files);
 
@@ -200,7 +199,7 @@ export class FileController {
       });
 
       if (!fileDB) {
-        throw new NotFoundException(`Files '${file.id}' is not exists`);
+        throw new NotFoundError(`Files '${file.id}' is not exists`);
       }
 
       return this.fileService.update(fileDB, {
@@ -242,13 +241,13 @@ export class FileController {
       },
     });
     if (filesCopy.length !== files.length) {
-      throw new BadRequestException();
+      throw new BadRequestError();
     }
     const folder = await this.folderService.findOne({
       where: { userId, id: toFolder },
     });
     if (!folder) {
-      throw new NotFoundException(`Folder '${toFolder}' is not exist`);
+      throw new NotFoundError(`Folder '${toFolder}' is not exist`);
     }
 
     const data = await this.fileService.copy(userId, folder, filesCopy);
@@ -320,7 +319,7 @@ export class FileController {
       },
     });
     if (!file) {
-      throw new NotFoundException('File not found');
+      throw new NotFoundError('File not found');
     }
 
     try {
@@ -360,7 +359,7 @@ export class FileController {
       res.write(buffer);
       res.end();
     } catch (error: unknown) {
-      throw new NotFoundException(error);
+      throw new NotFoundError(error);
     }
   }
 
@@ -419,13 +418,13 @@ export class FileController {
       },
     });
     if (!file) {
-      throw new NotFoundException(`File '${id}' is not exists`);
+      throw new NotFoundError(`File '${id}' is not exists`);
     }
 
     const data = await this.fileService
       .getS3Object(file)
       .catch((error: unknown) => {
-        throw new NotFoundException(`File '${id}' is not exists: ${error}`);
+        throw new NotFoundError(`File '${id}' is not exists: ${error}`);
       });
     if (data.Body instanceof internal.Readable) {
       res.setHeader('Content-Length', String(file.filesize));
@@ -476,7 +475,7 @@ export class FileController {
       },
     });
     if (!data) {
-      throw new NotFoundException('File not found');
+      throw new NotFoundError('File not found');
     }
 
     return {
@@ -512,7 +511,7 @@ export class FileController {
       },
     });
     if (!file) {
-      throw new NotFoundException('File not found');
+      throw new NotFoundError('File not found');
     }
 
     let data: FileEntity;
@@ -522,7 +521,7 @@ export class FileController {
         select: { id: true },
       });
       if (!folder) {
-        throw new NotFoundException('Folder not found');
+        throw new NotFoundError('Folder not found');
       }
       data = await this.fileService.update(file, {
         ...file,
@@ -534,7 +533,7 @@ export class FileController {
     }
 
     if (!data) {
-      throw new BadRequestException('File exists and not exists ?');
+      throw new BadRequestError('File exists and not exists ?');
     }
 
     return {
@@ -566,14 +565,14 @@ export class FileController {
         },
       });
       if (files.length !== filesId.length) {
-        throw new BadRequestException('Not all files in the database exists');
+        throw new BadRequestError('Not all files in the database exists');
       }
     }
     await this.fileService.deletePrep(filesId);
 
     const { affected } = await this.fileService.delete(filesId);
     if (!affected) {
-      throw new NotFoundException('This file is not exists');
+      throw new NotFoundError('This file is not exists');
     }
 
     return {
@@ -601,7 +600,7 @@ export class FileController {
 
     const { affected } = await this.fileService.delete([fileId]);
     if (!affected) {
-      throw new NotFoundException('This file is not exists');
+      throw new NotFoundError('This file is not exists');
     }
 
     return {

@@ -1,12 +1,4 @@
-import {
-  BadRequestException,
-  forwardRef,
-  Inject,
-  Injectable,
-  Logger,
-  NotAcceptableException,
-  NotFoundException,
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -25,6 +17,7 @@ import {
 import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 
+import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { MailSendBidMessage } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { WSGateway } from '@/websocket/ws.gateway';
@@ -305,7 +298,7 @@ export class BidService {
           bid,
         });
         if (!Array.isArray(groupMonitors)) {
-          throw new NotAcceptableException('Monitors or Playlists not found');
+          throw new NotAcceptableError('Monitors or Playlists not found');
         }
 
         const groupMonitorPromise = groupMonitors.map(async (monitor) => {
@@ -380,7 +373,7 @@ export class BidService {
         transact.create(BidEntity, update),
       );
       if (!updateResult.affected) {
-        throw new NotFoundException('Application not found');
+        throw new NotFoundError('Application not found');
       }
 
       let relations: FindOneOptions<BidEntity>['relations'];
@@ -400,7 +393,7 @@ export class BidService {
         relations,
       });
       if (!bid) {
-        throw new NotFoundException('Application not found');
+        throw new NotFoundError('Application not found');
       }
 
       if (update.approved === BidApprove.NOTPROCESSED) {
@@ -473,7 +466,7 @@ export class BidService {
 
     // Проверяем наличие плейлиста
     if (!Array.isArray(monitorIds) || monitorIds.length < 1) {
-      throw new BadRequestException('Monitors should not be null or undefined');
+      throw new BadRequestError('Monitors should not be null or undefined');
     }
     const where: FindOptionsWhere<PlaylistEntity> = {
       id: playlistId,
@@ -485,7 +478,7 @@ export class BidService {
       where,
     });
     if (!playlist) {
-      throw new NotFoundException(`Playlist '${playlistId}' not found`);
+      throw new NotFoundError(`Playlist '${playlistId}' not found`);
     }
 
     return this.bidRepository.manager.transaction(async (transact) => {
@@ -499,7 +492,7 @@ export class BidService {
           },
         });
         if (!monitor) {
-          throw new NotFoundException(`Monitor '${monitorIds}' not found`);
+          throw new NotFoundError(`Monitor '${monitorIds}' not found`);
         }
 
         monitor = await this.monitorService.update(monitorId, {
@@ -521,7 +514,7 @@ export class BidService {
         });
 
         if (sum > totalBalance) {
-          throw new NotAcceptableException('BALANCE');
+          throw new NotAcceptableError('BALANCE');
         }
 
         const insert: DeepPartial<BidEntity> = {
@@ -542,7 +535,7 @@ export class BidService {
           transact.create(BidEntity, insert),
         );
         if (!insertResult.identifiers[0]) {
-          throw new NotFoundException('Error when creating Bid');
+          throw new NotFoundError('Error when creating Bid');
         }
         const { id } = insertResult.identifiers[0];
 
@@ -563,7 +556,7 @@ export class BidService {
           relations,
         });
         if (!bid) {
-          throw new NotFoundException('Bid not found');
+          throw new NotFoundError('Bid not found');
         }
 
         // Списываем средства со счета пользователя Рекламодателя
@@ -658,10 +651,10 @@ export class BidService {
       },
     });
     if (!monitors.length) {
-      throw new NotFoundException('Monitors not found');
+      throw new NotFoundError('Monitors not found');
     }
     if (monitorIds && monitors.length !== monitorIds.length) {
-      throw new NotFoundException('Monitors not found');
+      throw new NotFoundError('Monitors not found');
     }
     const diffDays = dayjs(dateTo).diff(dateFrom, 'days');
 
@@ -697,7 +690,7 @@ export class BidService {
       select: ['id', 'files'],
     });
     if (!playlist) {
-      throw new NotFoundException('Playlist not found');
+      throw new NotFoundError('Playlist not found');
     }
 
     // продолжительность плейлиста заявки в сек.

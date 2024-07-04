@@ -1,24 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  HttpException,
-  HttpExceptionOptions,
-  HttpStatus,
-} from '@nestjs/common';
+import { HttpStatus, PreconditionFailedException } from '@nestjs/common';
+import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
 
-export class PreconditionFailedError extends HttpException {
-  constructor(message?: string, options?: HttpExceptionOptions) {
-    super(
-      {
-        status: Status.Error,
-        statusCode: HttpStatus.PRECONDITION_FAILED,
-        code: 'server-error.10002',
-        message: message ?? 'User exists',
-      },
-      HttpStatus.PRECONDITION_FAILED,
+export class PreconditionFailedError extends PreconditionFailedException {
+  constructor(message?: string, options?: TranslateOptions) {
+    super({
+      status: Status.Error,
+      statusCode: HttpStatus.PRECONDITION_FAILED,
+      code: 'server-error.10002',
+      message: message ?? 'User exists',
       options,
-    );
+    });
+    this.initMessage();
   }
 
   @ApiProperty({ required: true, example: HttpStatus.PRECONDITION_FAILED })

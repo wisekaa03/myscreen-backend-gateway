@@ -1,12 +1,10 @@
 import { type Request as ExpressRequest } from 'express';
 import {
-  BadRequestException,
   Body,
   Delete,
   Get,
   HttpCode,
   Logger,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -16,6 +14,7 @@ import {
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Not } from 'typeorm';
 
+import { BadRequestError, NotFoundError } from '@/errors';
 import {
   SuccessResponse,
   BidGetResponse,
@@ -134,7 +133,7 @@ export class BidController {
       },
     });
     if (!data) {
-      throw new NotFoundException('Request not found');
+      throw new NotFoundError('Request not found');
     }
 
     return {
@@ -177,13 +176,13 @@ export class BidController {
         loadEagerRelations: false,
       });
       if (!bid) {
-        throw new NotFoundException('Request not found');
+        throw new NotFoundError('Request not found');
       }
     }
 
     const data = await this.bidService.update(bidId, update);
     if (!data) {
-      throw new BadRequestException('Bid exists and not exists ?');
+      throw new BadRequestError('Bid exists and not exists ?');
     }
 
     return {
@@ -221,12 +220,12 @@ export class BidController {
       bid = await this.bidService.findOne({ where: { id } });
     }
     if (!bid) {
-      throw new NotFoundException(`Bid '${id}' is not found`);
+      throw new NotFoundError(`Bid '${id}' is not found`);
     }
 
     const { affected } = await this.bidService.delete(bid);
     if (!affected) {
-      throw new NotFoundException('This bid is not exists');
+      throw new NotFoundError('This bid is not exists');
     }
 
     return {

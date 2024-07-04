@@ -1,24 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  HttpException,
-  HttpExceptionOptions,
-  HttpStatus,
-} from '@nestjs/common';
+import { BadRequestException, HttpStatus } from '@nestjs/common';
+import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
 
-export class BadRequestError extends HttpException {
-  constructor(message?: string, options?: HttpExceptionOptions) {
-    super(
-      {
-        status: Status.Error,
-        statusCode: HttpStatus.BAD_REQUEST,
-        code: 'server-error.10004',
-        message: message ?? 'Bad request',
-      },
-      HttpStatus.BAD_REQUEST,
+export class BadRequestError extends BadRequestException {
+  constructor(message?: string, options?: TranslateOptions) {
+    super({
+      status: Status.Error,
+      statusCode: HttpStatus.BAD_REQUEST,
+      code: 'server-error.10004',
+      message: message ?? 'Bad request',
       options,
-    );
+    });
+    this.initMessage();
   }
 
   @ApiProperty({ required: true, example: HttpStatus.BAD_REQUEST })

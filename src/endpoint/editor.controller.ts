@@ -3,13 +3,11 @@ import type {
   Response as ExpressResponse,
 } from 'express';
 import {
-  BadRequestException,
   Body,
   Delete,
   Get,
   HttpCode,
   Logger,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   ParseIntPipe,
@@ -18,12 +16,16 @@ import {
   Put,
   Req,
   Res,
-  InternalServerErrorException,
-  NotAcceptableException,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FindOptionsWhere } from 'typeorm';
 
+import {
+  BadRequestError,
+  InternalServerError,
+  NotAcceptableError,
+  NotFoundError,
+} from '@/errors';
 import {
   EditorUpdateRequest,
   EditorGetResponse,
@@ -114,11 +116,11 @@ export class EditorController {
       where: { userId: user.id, name: body.name },
     });
     if (Array.isArray(editor) && editor.length > 0) {
-      throw new BadRequestException('This name is already taken');
+      throw new BadRequestError('This name is already taken');
     }
     const data = await this.editorService.create({ ...body, userId: user.id });
     if (!data) {
-      throw new NotFoundException('Editor not found');
+      throw new NotFoundError('Editor not found');
     }
 
     return {
@@ -152,7 +154,7 @@ export class EditorController {
       relations: { videoLayers: true, audioLayers: true, renderedFile: true },
     });
     if (!data) {
-      throw new NotFoundException('Editor not found');
+      throw new NotFoundError('Editor not found');
     }
     return {
       status: Status.Success,
@@ -185,7 +187,7 @@ export class EditorController {
       where,
     });
     if (!editor) {
-      throw new NotFoundException(`Editor '${id}' not found`);
+      throw new NotFoundError(`Editor '${id}' not found`);
     }
 
     if (update.name !== undefined) {
@@ -196,7 +198,7 @@ export class EditorController {
         },
       });
       if (Array.isArray(editorFound) && editorFound.length > 0) {
-        throw new NotFoundException('This name already taken');
+        throw new NotFoundError('This name already taken');
       }
     }
 
@@ -233,12 +235,12 @@ export class EditorController {
       select: ['id', 'userId'],
     });
     if (!editor) {
-      throw new NotFoundException(`Editor '${id}' is not found`);
+      throw new NotFoundError(`Editor '${id}' is not found`);
     }
 
     const { affected } = await this.editorService.delete(user.id, editor);
     if (!affected) {
-      throw new NotFoundException('This editor is not exists');
+      throw new NotFoundError('This editor is not exists');
     }
 
     return {
@@ -273,7 +275,7 @@ export class EditorController {
       relations: {},
     });
     if (!editor) {
-      throw new NotFoundException(`The editor id: '${editorId}' is not found`);
+      throw new NotFoundError(`The editor id: '${editorId}' is not found`);
     }
 
     const whereFile: FindOptionsWhere<FileEntity> = { id: body.file };
@@ -288,7 +290,7 @@ export class EditorController {
       },
     });
     if (!file) {
-      throw new NotFoundException(`The file '${body.file}' is not found`);
+      throw new NotFoundError(`The file '${body.file}' is not found`);
     }
 
     const create: Partial<EditorLayerEntity> = {
@@ -337,7 +339,7 @@ export class EditorController {
       },
     });
     if (!editor) {
-      throw new NotFoundException('Editor not found');
+      throw new NotFoundError('Editor not found');
     }
     const editorLayer = await this.editorService.findOneLayer({
       where: {
@@ -345,7 +347,7 @@ export class EditorController {
       },
     });
     if (!editorLayer) {
-      throw new NotFoundException('This editor layer is not exists');
+      throw new NotFoundError('This editor layer is not exists');
     }
 
     return {
@@ -379,7 +381,7 @@ export class EditorController {
       },
     });
     if (!editor) {
-      throw new NotFoundException('Editor not found');
+      throw new NotFoundError('Editor not found');
     }
     const editorLayer = await this.editorService.findOneLayer({
       where: {
@@ -387,7 +389,7 @@ export class EditorController {
       },
     });
     if (!editorLayer) {
-      throw new NotFoundException('Editor layer not found');
+      throw new NotFoundError('Editor layer not found');
     }
 
     const data = await this.editorService.updateLayer(
@@ -397,7 +399,7 @@ export class EditorController {
       body,
     );
     if (!data) {
-      throw new NotFoundException('This editor layer is not exists');
+      throw new NotFoundError('This editor layer is not exists');
     }
 
     return {
@@ -432,7 +434,7 @@ export class EditorController {
       where,
     });
     if (!editor) {
-      throw new NotFoundException(`Editor '${editorId}' not found`);
+      throw new NotFoundError(`Editor '${editorId}' not found`);
     }
 
     /* await */ this.editorService
@@ -470,7 +472,7 @@ export class EditorController {
       relations: {},
     });
     if (!editor) {
-      throw new NotFoundException(`Editor '${editorId}' is not found`);
+      throw new NotFoundError(`Editor '${editorId}' is not found`);
     }
     const editorLayer = await this.editorService.findOneLayer({
       where: { id: layerId },
@@ -480,7 +482,7 @@ export class EditorController {
       order: {},
     });
     if (!editorLayer) {
-      throw new NotFoundException(`Editor layer '${layerId}' is not found`);
+      throw new NotFoundError(`Editor layer '${layerId}' is not found`);
     }
 
     const { affected } = await this.editorService.deleteLayer(
@@ -488,7 +490,7 @@ export class EditorController {
       layerId,
     );
     if (!affected) {
-      throw new NotFoundException('This editor layer is not exists');
+      throw new NotFoundError('This editor layer is not exists');
     }
 
     return {
@@ -530,7 +532,7 @@ export class EditorController {
       relations: ['videoLayers', 'audioLayers'],
     });
     if (!editor) {
-      throw new NotFoundException('Editor not found');
+      throw new NotFoundError('Editor not found');
     }
 
     const capturedFrame = await this.editorService.captureFrame(editor, time);
@@ -560,10 +562,10 @@ export class EditorController {
       },
     });
     if (!data) {
-      throw new NotFoundException('Editor not found');
+      throw new NotFoundError('Editor not found');
     }
     if (data.renderingError) {
-      throw new NotAcceptableException(data.renderingError);
+      throw new NotAcceptableError(data.renderingError);
     }
 
     return {
@@ -595,7 +597,7 @@ export class EditorController {
       rerender: body?.rerender,
     });
     if (!data) {
-      throw new InternalServerErrorException();
+      throw new InternalServerError();
     }
 
     return {

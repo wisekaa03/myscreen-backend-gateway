@@ -2,7 +2,7 @@ import { Get, HttpCode, Logger } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { ApiComplexDecorators, Crud } from '@/decorators';
-import { CRUD, Status, UserRoleEnum } from '@/enums';
+import { CRUD, Status } from '@/enums';
 import { ConstantsGetResponse, ConstantsResponse } from '@/dto';
 import { WalletService } from '@/database/wallet.service';
 import { BidService } from '@/database/bid.service';

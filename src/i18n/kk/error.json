@@ -1,4 +1,5 @@
 {
+  "demoTimeIsUp": "You have a Demo User account. Time to pay.",
   "PASSWORD_MISMATCHED": "Password mismatched",
   "YOU_HAVE_TO_RESPOND": "You have to respond to our email",
   "BALANCE": "Not enough balance",
@@ -8,5 +9,7 @@
   "USER_PASSWORD": "password must be defined",
   "USER_ROLE": "role must be defined",
   "USER_EXISTS": "User exists: '{email}'",
-  "FILE_MUST_EXISTS": "File must exists"
+  "USER_NOT_EXISTS": "User is not exists",
+  "FILE_MUST_EXISTS": "File must exists",
+  "CONFLICT_ERROR": "Video/audio editors, playlists do not allow to delete this file"
 }

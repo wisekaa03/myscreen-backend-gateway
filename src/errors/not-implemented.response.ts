@@ -1,24 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  HttpException,
-  HttpExceptionOptions,
-  HttpStatus,
-} from '@nestjs/common';
+import { HttpStatus, NotImplementedException } from '@nestjs/common';
+import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
 
-export class NotImplementedError extends HttpException {
-  constructor(message?: string, options?: HttpExceptionOptions) {
-    super(
-      {
-        status: Status.Error,
-        statusCode: HttpStatus.NOT_IMPLEMENTED,
-        code: 'server-error.10000',
-        message: message ?? 'Not implemented',
-      },
-      HttpStatus.NOT_IMPLEMENTED,
+export class NotImplementedError extends NotImplementedException {
+  constructor(message?: string, options?: TranslateOptions) {
+    super({
+      status: Status.Error,
+      statusCode: HttpStatus.NOT_IMPLEMENTED,
+      code: 'server-error.10000',
+      message: message ?? 'Not implemented',
       options,
-    );
+    });
+    this.initMessage();
   }
 
   @ApiProperty({ required: true, example: HttpStatus.NOT_IMPLEMENTED })

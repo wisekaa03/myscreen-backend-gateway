@@ -1,13 +1,8 @@
-import {
-  forwardRef,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult, In } from 'typeorm';
 
+import { NotFoundError } from '@/errors';
 import { administratorFolderId, administratorFolderName } from '@/constants';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
@@ -125,13 +120,13 @@ export class FolderService {
       this.folderRepository.create(folder),
     );
     if (!inserted.identifiers[0]) {
-      throw new NotFoundException('Error when creating folder');
+      throw new NotFoundError('Error when creating folder');
     }
     const { id } = inserted.identifiers[0];
 
     const find = await this.folderRepository.findOne({ where: { id } });
     if (!find) {
-      throw new NotFoundException('Error when creating folder');
+      throw new NotFoundError('Error when creating folder');
     }
 
     return find;
@@ -146,12 +141,12 @@ export class FolderService {
       this.folderRepository.create(folder),
     );
     if (!updated.affected) {
-      throw new NotFoundException('Error when updating folder');
+      throw new NotFoundError('Error when updating folder');
     }
 
     const find = await this.folderRepository.findOne({ where: { id } });
     if (!find) {
-      throw new NotFoundException('Error when updating folder');
+      throw new NotFoundError('Error when updating folder');
     }
 
     return find;

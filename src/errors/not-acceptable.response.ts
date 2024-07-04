@@ -1,24 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  HttpException,
-  HttpExceptionOptions,
-  HttpStatus,
-} from '@nestjs/common';
+import { HttpStatus, NotAcceptableException } from '@nestjs/common';
 
 import { Status } from '@/enums/status.enum';
+import { TranslateOptions } from 'nestjs-i18n';
 
-export class NotAcceptableError extends HttpException {
-  constructor(message?: string, options?: HttpExceptionOptions) {
-    super(
-      {
-        status: Status.Error,
-        statusCode: HttpStatus.NOT_ACCEPTABLE,
-        code: 'server-error.10000',
-        message: message ?? 'Not Acceptable',
-      },
-      HttpStatus.NOT_ACCEPTABLE,
+export class NotAcceptableError extends NotAcceptableException {
+  constructor(message?: string, options?: TranslateOptions) {
+    super({
+      status: Status.Error,
+      statusCode: HttpStatus.NOT_ACCEPTABLE,
+      code: 'server-error.10000',
+      message: message ?? 'Not Acceptable',
       options,
-    );
+    });
+    this.initMessage();
   }
 
   @ApiProperty({ example: HttpStatus.NOT_ACCEPTABLE })

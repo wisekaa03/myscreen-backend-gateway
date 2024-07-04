@@ -1,8 +1,9 @@
-import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type JwtSignOptions, JwtService } from '@nestjs/jwt';
 import { TokenExpiredError } from 'jsonwebtoken';
 
+import { ForbiddenError } from '@/errors';
 import { UserRoleEnum } from '@/enums';
 import { JWT_BASE_OPTIONS, type MyscreenJwtPayload } from '@/utils/jwt.payload';
 import { decodeMailToken } from '@/utils/mail-token';
@@ -43,22 +44,22 @@ export class AuthService {
     userAgent?: string,
   ): Promise<[UserResponse, AuthenticationPayload]> {
     if (!email || !password) {
-      throw new ForbiddenException('PASSWORD_MISMATCHED');
+      throw new ForbiddenError('PASSWORD_MISMATCHED');
     }
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new ForbiddenException('PASSWORD_MISMATCHED');
+      throw new ForbiddenError('PASSWORD_MISMATCHED');
     }
     if (!user.verified) {
-      throw new ForbiddenException('YOU_HAVE_TO_RESPOND');
+      throw new ForbiddenError('YOU_HAVE_TO_RESPOND');
     }
 
     const valid = user.password
       ? UserService.validateCredentials(user, password)
       : false;
     if (!valid) {
-      throw new ForbiddenException('PASSWORD_MISMATCHED');
+      throw new ForbiddenError('PASSWORD_MISMATCHED');
     }
 
     const [token, refresh] = await Promise.all([
@@ -121,15 +122,15 @@ export class AuthService {
     const token = await this.getStoredTokenFromRefreshTokenPayload(payload);
 
     if (!token) {
-      throw new ForbiddenException(`Refresh token '${encoded}' not found`);
+      throw new ForbiddenError(`Refresh token '${encoded}' not found`);
     }
     if (token.isRevoked) {
-      throw new ForbiddenException(`Refresh token '${encoded}' revoked`);
+      throw new ForbiddenError(`Refresh token '${encoded}' revoked`);
     }
 
     const user = await this.getUserFromRefreshTokenPayload(payload);
     if (!user) {
-      throw new ForbiddenException(`Refresh token '${encoded}' malformed`);
+      throw new ForbiddenError(`Refresh token '${encoded}' malformed`);
     }
 
     return user;
@@ -143,7 +144,7 @@ export class AuthService {
     const user = await this.resolveRefreshToken(refreshToken);
     if (user.disabled) {
       this.logger.warn(`User '${user.email}' is disabled`);
-      throw new ForbiddenException(`User '${user.email}' is disabled`);
+      throw new ForbiddenError(`User '${user.email}' is disabled`);
     }
 
     if (user.role === UserRoleEnum.Monitor) {
@@ -189,9 +190,9 @@ export class AuthService {
       });
     } catch (e) {
       if (e instanceof TokenExpiredError) {
-        throw new ForbiddenException(`Token '${token}' expired`);
+        throw new ForbiddenError(`Token '${token}' expired`);
       } else {
-        throw new ForbiddenException(`Token '${token}' malformed`);
+        throw new ForbiddenError(`Token '${token}' malformed`);
       }
     }
   }
@@ -202,9 +203,7 @@ export class AuthService {
     const { sub, iss } = payload;
 
     if (!sub) {
-      throw new ForbiddenException(
-        `Token '${JSON.stringify(payload)}' malformed`,
-      );
+      throw new ForbiddenError(`Token '${JSON.stringify(payload)}' malformed`);
     }
 
     if (iss === 'false') {
@@ -218,9 +217,7 @@ export class AuthService {
   ): Promise<RefreshTokenEntity | null> {
     const { jti: tokenId, iss } = payload;
     if (!tokenId) {
-      throw new ForbiddenException(
-        `Token '${JSON.stringify(payload)}' malformed`,
-      );
+      throw new ForbiddenError(`Token '${JSON.stringify(payload)}' malformed`);
     }
 
     if (iss === 'false') {
@@ -249,10 +246,10 @@ export class AuthService {
       select: ['id', 'verified', 'emailConfirmKey'],
     });
     if (!user) {
-      throw new ForbiddenException();
+      throw new ForbiddenError();
     }
     if (user.verified) {
-      throw new ForbiddenException();
+      throw new ForbiddenError();
     }
 
     if (user.emailConfirmKey === verifyToken) {
@@ -264,7 +261,7 @@ export class AuthService {
       return true;
     }
 
-    throw new ForbiddenException(
+    throw new ForbiddenError(
       `Verify email '${verifyToken}' not equal to our records`,
     );
   }

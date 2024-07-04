@@ -2,16 +2,7 @@ import { createReadStream, promises as fs, createWriteStream } from 'node:fs';
 import internal from 'node:stream';
 import StreamPromises from 'node:stream/promises';
 import { join as pathJoin, parse as pathParse } from 'node:path';
-import {
-  BadRequestException,
-  ConflictException,
-  forwardRef,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -31,9 +22,15 @@ import {
   In,
 } from 'typeorm';
 
+import {
+  BadRequestError,
+  ConflictData,
+  ConflictError,
+  InternalServerError,
+  NotFoundError,
+} from '@/errors';
 import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
-import { ConflictData } from '@/errors';
 import { EditorService } from '@/database/editor.service';
 import { getS3FullName, getS3Name } from '@/utils/get-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
@@ -299,17 +296,17 @@ export class FileService {
           where: { userId: user.id, id: folderIdOrig },
         });
         if (!folder) {
-          throw new NotFoundException(`Folder '${folderIdOrig}' not found`);
+          throw new NotFoundError(`Folder '${folderIdOrig}' not found`);
         }
       }
       const folderId = folder.id;
 
       let monitor: MonitorEntity | null = null;
       if (!monitorId && category !== FileCategory.Media) {
-        throw new NotFoundException('monitorId is expected');
+        throw new NotFoundError('monitorId is expected');
       }
       if (monitorId && category === FileCategory.Media) {
-        throw new NotFoundException("Found category: 'media' and monitorId");
+        throw new NotFoundError("Found category: 'media' and monitorId");
       }
       if (monitorId) {
         monitor = await this.monitorService.findOne({
@@ -320,19 +317,19 @@ export class FileService {
           },
         });
         if (!monitor) {
-          throw new NotFoundException(`Monitor '${monitorId}' not found`);
+          throw new NotFoundError(`Monitor '${monitorId}' not found`);
         }
       }
       if (!monitor && category !== FileCategory.Media) {
-        throw new BadRequestException('monitorId is expected');
+        throw new BadRequestError('monitorId is expected');
       }
       if (monitor && category === FileCategory.Media) {
-        throw new BadRequestException("Found category: 'media' and monitorId");
+        throw new BadRequestError("Found category: 'media' and monitorId");
       }
       if (category === FileCategory.Media) {
         files.forEach((file) => {
           if (!file.media) {
-            throw new BadRequestException(
+            throw new BadRequestError(
               `'${file.originalname}' has no data in Ffprobe, but the category specified 'media'`,
             );
           }
@@ -341,7 +338,7 @@ export class FileService {
 
       const filesPromises = files.map(async (file) => {
         if (!file.media) {
-          throw new BadRequestException(
+          throw new BadRequestError(
             `'${file.originalname}' has no data in Ffprobe`,
           );
         }
@@ -399,7 +396,7 @@ export class FileService {
           );
         } catch (error: unknown) {
           this.logger.error(`S3 upload error: "${error?.toString()}"`, error);
-          throw new InternalServerErrorException(error);
+          throw new InternalServerError(error);
         }
 
         const fileUpdated = await transact.save(
@@ -609,10 +606,7 @@ export class FileService {
       return;
     }
 
-    const errorMsg: ConflictData = {
-      message:
-        'Video/audio editors, playlists do not allow to delete this file',
-    };
+    const errorMsg: ConflictData = {};
     errorMsg.video = videoFiles.map((editor) => ({
       id: editor.id,
       name: editor.name,
@@ -628,7 +622,7 @@ export class FileService {
       name: playlist.name,
       file: playlist.files.find((file) => filesId.includes(file.id)),
     }));
-    throw new ConflictException(errorMsg);
+    throw new ConflictError('CONFLICT_ERROR', {}, errorMsg);
   }
 
   /**
@@ -685,7 +679,7 @@ export class FileService {
             `S3 Error preview: "${file.name}" (${getS3FullName(file)})`,
             error,
           );
-          throw new NotFoundException(error);
+          throw new NotFoundError(error);
         },
       );
       if (data.Body instanceof internal.Readable) {
@@ -697,10 +691,10 @@ export class FileService {
           filename,
           outPath,
         ).catch((reason: unknown) => {
-          throw new InternalServerErrorException(reason);
+          throw new InternalServerError(reason);
         });
       } else {
-        throw new InternalServerErrorException('S3 data is not readable');
+        throw new InternalServerError('S3 data is not readable');
       }
     } else {
       this.logger.debug(`Preview file "${file.name}" has cached`);

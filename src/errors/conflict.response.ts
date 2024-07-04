@@ -1,9 +1,6 @@
-import {
-  HttpException,
-  HttpStatus,
-  HttpExceptionOptions,
-} from '@nestjs/common';
+import { HttpStatus, ConflictException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
 import { FileIDResponse } from '@/dto/response/file-id.response';
@@ -32,8 +29,6 @@ export class ConflictDataFile {
 }
 
 export class ConflictData {
-  message!: string;
-
   @ApiProperty({
     type: () => ConflictDataFile,
     description: 'Редакторы (видео)',
@@ -67,24 +62,21 @@ export class ConflictData {
   monitor?: ConflictDataFile[];
 }
 
-export class ConflictError extends HttpException {
+export class ConflictError extends ConflictException {
   constructor(
     message: string,
-    options?: HttpExceptionOptions,
+    options?: TranslateOptions,
     error?: ConflictData,
   ) {
-    const { message: origMessage, ...data } = error ?? {};
-    super(
-      {
-        status: Status.Error,
-        statusCode: HttpStatus.CONFLICT,
-        code: 'server-error.10000',
-        message: message ?? 'Conflict exists',
-        error: data,
-      },
-      HttpStatus.CONFLICT,
+    super({
+      status: Status.Error,
+      statusCode: HttpStatus.CONFLICT,
+      code: 'server-error.10000',
+      message: message ?? 'Conflict exists',
       options,
-    );
+      error,
+    });
+    this.initMessage();
   }
 
   @ApiProperty({ required: true, example: HttpStatus.CONFLICT })

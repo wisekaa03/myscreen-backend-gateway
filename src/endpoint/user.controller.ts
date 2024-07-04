@@ -1,12 +1,9 @@
 import {
-  BadRequestException,
   Body,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
   Logger,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -14,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+import { ForbiddenError, NotFoundError } from '@/errors';
 import {
   UserUpdateRequest,
   SuccessResponse,
@@ -80,7 +78,7 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new ForbiddenException();
+      throw new ForbiddenError();
     }
 
     await this.userService.update(userId, { disabled: true });
@@ -107,7 +105,7 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new ForbiddenException();
+      throw new ForbiddenError();
     }
 
     await this.userService.update(userId, { disabled: false });
@@ -133,7 +131,7 @@ export class UserController {
   ): Promise<UserGetResponse> {
     const data = await this.userService.findById(userId, undefined, true);
     if (!data) {
-      throw new ForbiddenException();
+      throw new ForbiddenError();
     }
 
     return {
@@ -160,12 +158,12 @@ export class UserController {
   ): Promise<UserGetResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new ForbiddenException();
+      throw new ForbiddenError();
     }
 
     const data = await this.userService.update(userId, update);
     if (!data) {
-      throw new NotFoundException();
+      throw new NotFoundError();
     }
 
     return {
@@ -189,17 +187,14 @@ export class UserController {
   async deleteUser(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<SuccessResponse> {
-    if (!userId) {
-      throw new BadRequestException('userId is required');
-    }
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new NotFoundException('This user is not exists');
+      throw new NotFoundError('USER_NOT_EXISTS');
     }
 
     const { affected } = await this.userService.delete(userId);
     if (!affected) {
-      throw new NotFoundException('This user is not exists');
+      throw new NotFoundError('USER_NOT_EXISTS');
     }
 
     return {
