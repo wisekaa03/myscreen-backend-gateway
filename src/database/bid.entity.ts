@@ -18,12 +18,11 @@ import {
   IsInt,
   IsNumberString,
   IsUUID,
-  Validate,
+  ValidateIf,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { BidApprove, BidStatus } from '@/enums';
-import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
@@ -230,7 +229,11 @@ export class BidEntity extends BaseEntity {
     nullable: true,
     required: false,
   })
-  @Validate(IsDateStringOrNull)
+  @IsDateString(
+    { strict: true },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
+  @ValidateIf((object, value) => value !== null)
   dateBefore!: Date | null;
 
   @Column({ type: 'boolean', nullable: false, default: false })

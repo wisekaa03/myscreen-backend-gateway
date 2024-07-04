@@ -1,17 +1,17 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { I18nService } from 'nestjs-i18n';
+import { getRepositoryToken } from '@nestjs/typeorm';
+
+import { MAIL_SERVICE } from '@/constants';
 import { UserPlanEnum, UserRoleEnum } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
+import { UserEntity } from '@/database/user.entity';
+import { UserResponse } from '@/database/user-response.entity';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-import { UserEntity } from '@/database/user.entity';
-import { MAIL_SERVICE } from '@/constants';
-import { UserResponse } from '@/database/user-response.entity';
 
 UserService.validateCredentials = () => true;
 

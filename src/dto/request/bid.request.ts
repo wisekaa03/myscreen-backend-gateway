@@ -1,11 +1,10 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
-import { IsDateString, IsEnum, IsOptional, Validate } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, ValidateIf } from 'class-validator';
 
 import { i18nValidationMessage } from 'nestjs-i18n';
 import { BidApprove, BidStatus } from '@/enums';
 import { BidEntity } from '@/database/bid.entity';
 import { MSRange, MSRangeEnum } from '@/interfaces';
-import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 
 export class BidRequest extends PartialType(
   OmitType(BidEntity, [
@@ -98,11 +97,11 @@ export class BidRequest extends PartialType(
     nullable: true,
     required: false,
   })
-  @IsOptional()
-  @Validate(IsDateStringOrNull, {
-    each: true,
-    message: i18nValidationMessage('validation.IS_DATE_RANGE'),
-  })
+  @IsDateString(
+    { strict: true },
+    { each: true, message: i18nValidationMessage('validation.IS_DATE') },
+  )
+  @ValidateIf((object, value) => value !== null, { each: true })
   dateBefore?: MSRange<Date | null>;
 
   @ApiProperty({

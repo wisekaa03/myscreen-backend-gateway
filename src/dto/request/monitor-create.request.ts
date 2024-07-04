@@ -1,5 +1,5 @@
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsOptional, Length, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, Length } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { MonitorEntity } from '@/database/monitor.entity';

@@ -1,3 +1,9 @@
 {
-  "BALANCE": "Not enough balance"
+  "BALANCE": "Not enough balance",
+  "LIMITED_STORE_SPACE": "You have a limited User account to store space: {countUsedSpace} / {plan}",
+  "DENIED_ADVERTISER": "Denied. You have an Advertiser account.",
+  "USER_EMAIL": "email must be defined",
+  "USER_PASSWORD": "password must be defined",
+  "USER_ROLE": "role must be defined",
+  "USER_EXISTS": "User exists: '{email}'"
 }
