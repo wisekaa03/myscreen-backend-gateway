@@ -1,7 +1,7 @@
 import type { IncomingMessage } from 'http';
 import { isJWT } from 'class-validator';
 import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
-import { IsNull } from 'typeorm';
+import { In, IsNull } from 'typeorm';
 import '@nestjs/platform-ws';
 import {
   SubscribeMessage,
@@ -17,7 +17,12 @@ import {
 import { type Server, type WebSocket } from 'ws';
 import { Observable, of } from 'rxjs';
 
-import { MonitorStatus, PlaylistStatusEnum, UserRoleEnum } from '@/enums';
+import {
+  MonitorMultiple,
+  MonitorStatus,
+  PlaylistStatusEnum,
+  UserRoleEnum,
+} from '@/enums';
 import { AuthService } from '@/auth/auth.service';
 import {
   WebSocketClient,
@@ -409,20 +414,41 @@ export class WSGateway
       countUsedSpace,
     ] = await Promise.all([
       this.monitorService.count({
-        find: { where: { userId } },
-        caseInsensitive: false,
-      }),
-      this.monitorService.count({
-        find: { where: { userId, status: MonitorStatus.Online } },
-        caseInsensitive: false,
-      }),
-      this.monitorService.count({
-        find: { where: { userId, status: MonitorStatus.Offline } },
+        find: {
+          where: {
+            userId,
+            multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
+          },
+        },
         caseInsensitive: false,
       }),
       this.monitorService.count({
         find: {
-          where: { userId, bids: { id: IsNull() } },
+          where: {
+            userId,
+            status: MonitorStatus.Online,
+            multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
+          },
+        },
+        caseInsensitive: false,
+      }),
+      this.monitorService.count({
+        find: {
+          where: {
+            userId,
+            status: MonitorStatus.Offline,
+            multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
+          },
+        },
+        caseInsensitive: false,
+      }),
+      this.monitorService.count({
+        find: {
+          where: {
+            userId,
+            multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
+            bids: { id: IsNull() },
+          },
         },
         caseInsensitive: false,
       }),

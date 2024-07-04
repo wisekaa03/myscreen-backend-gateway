@@ -46,25 +46,27 @@
     "[javascript]": {
       "editor.formatOnSave": false,
       "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+        "source.fixAll.eslint": "always"
       }
     },
     "[javascriptreact]": {
       "editor.formatOnSave": false,
       "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+        "source.fixAll.eslint": "always"
       }
     },
     "[typescript]": {
       "editor.formatOnSave": false,
       "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+        "source.addMissingImports.ts": "always",
+        "source.fixAll.eslint": "always"
       }
     },
     "[typescriptreact]": {
       "editor.formatOnSave": false,
       "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": "explicit"
+        "source.addMissingImports.ts": "always",
+        "source.fixAll.eslint": "always"
       }
     },
     "typescript.tsdk": "node_modules/typescript/lib",
