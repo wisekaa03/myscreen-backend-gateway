@@ -18,7 +18,7 @@ import {
 } from 'typeorm';
 import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
-import { I18nService } from 'nestjs-i18n';
+import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import {
   FindManyOptionsCaseInsensitive,
@@ -99,7 +99,11 @@ export class UserService {
           crud === CRUD.CREATE &&
           1 + countMonitors > 5
         ) {
-          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
+          throw new ForbiddenException(
+            this.i18n.t('user.demoTimeIsUp', {
+              lang: I18nContext.current()?.lang,
+            }),
+          );
         }
 
         if (
@@ -109,7 +113,11 @@ export class UserService {
             .add(14 + 1, 'days')
             .isBefore(dayjs())
         ) {
-          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
+          throw new ForbiddenException(
+            this.i18n.t('user.demoTimeIsUp', {
+              lang: I18nContext.current()?.lang,
+            }),
+          );
         }
 
         if (
@@ -120,12 +128,18 @@ export class UserService {
             .isBefore(dayjs())
         ) {
           throw new ForbiddenException(
-            `${this.i18n.t('user.demoTimeIsUp')} - file`,
+            `${this.i18n.t('user.demoTimeIsUp', {
+              lang: I18nContext.current()?.lang,
+            })} - file`,
           );
         }
 
         if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {
-          throw new ForbiddenException(this.i18n.t('user.demoTimeIsUp'));
+          throw new ForbiddenException(
+            this.i18n.t('user.demoTimeIsUp', {
+              lang: I18nContext.current()?.lang,
+            }),
+          );
         }
       } else if (plan === UserPlanEnum.Full) {
         if (
@@ -134,7 +148,10 @@ export class UserService {
           crud === CRUD.CREATE
         ) {
           throw new ForbiddenException(
-            `You have a limited User account to store space: ${countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
+            this.i18n.t('error.LIMITED_STORE_SPACE', {
+              lang: I18nContext.current()?.lang,
+              args: { countUsedSpace, plan: UserStoreSpaceEnum.FULL },
+            }),
           );
         }
       }
@@ -142,7 +159,9 @@ export class UserService {
       if (controllerName === 'monitor' && crud !== CRUD.READ) {
         if (functionName.search(/monitorFavorite|MonitorPlaylist/) === -1) {
           throw new ForbiddenException(
-            'Denied. You have an Advertiser account.',
+            this.i18n.t('error.DENIED_ADVERTISER', {
+              lang: I18nContext.current()?.lang,
+            }),
           );
         }
       }
@@ -153,7 +172,10 @@ export class UserService {
         crud === CRUD.CREATE
       ) {
         throw new ForbiddenException(
-          `You have a limited User account to store space: ${countUsedSpace} / ${UserStoreSpaceEnum.FULL}`,
+          this.i18n.t('error.LIMITED_STORE_SPACE', {
+            lang: I18nContext.current()?.lang,
+            args: { countUsedSpace, plan: UserStoreSpaceEnum.FULL },
+          }),
         );
       }
     }
@@ -239,13 +261,21 @@ export class UserService {
   async register(create: RegisterRequest): Promise<UserResponse> {
     const { email, password, role, ...createUser } = create;
     if (!email) {
-      throw new BadRequestException('email must be defined');
+      throw new BadRequestException(
+        this.i18n.t('error.USER_EMAIL', { lang: I18nContext.current()?.lang }),
+      );
     }
     if (!password) {
-      throw new BadRequestException('password must be defined');
+      throw new BadRequestException(
+        this.i18n.t('error.USER_PASSWORD', {
+          lang: I18nContext.current()?.lang,
+        }),
+      );
     }
     if (!role) {
-      throw new BadRequestException('role must be defined');
+      throw new BadRequestException(
+        this.i18n.t('error.USER_ROLE', { lang: I18nContext.current()?.lang }),
+      );
     }
 
     // TODO: verify email domain
@@ -256,7 +286,12 @@ export class UserService {
       },
     });
     if (existingUser) {
-      throw new PreconditionFailedException(`User exists: '${create.email}'`);
+      throw new PreconditionFailedException(
+        this.i18n.t('error.USER_EXISTS', {
+          args: { email: create.email },
+          lang: I18nContext.current()?.lang,
+        }),
+      );
     }
 
     const plan =

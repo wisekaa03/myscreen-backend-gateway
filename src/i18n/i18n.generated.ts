@@ -7,6 +7,12 @@ import { Path } from "nestjs-i18n";
 export type I18nTranslations = {
     "error": {
         "BALANCE": string;
+        "LIMITED_STORE_SPACE": string;
+        "DENIED_ADVERTISER": string;
+        "USER_EMAIL": string;
+        "USER_PASSWORD": string;
+        "USER_ROLE": string;
+        "USER_EXISTS": string;
     };
     "user": {
         "demoTimeIsUp": string;

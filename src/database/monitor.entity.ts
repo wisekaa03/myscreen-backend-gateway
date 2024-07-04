@@ -6,14 +6,14 @@ import {
   IsIn,
   IsInt,
   IsNotEmpty,
+  isNumber,
   IsNumber,
-  IsNumberString,
+  isNumberString,
   IsOptional,
-  IsPositive,
   IsString,
   IsUUID,
   Length,
-  Validate,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
@@ -46,7 +46,6 @@ import { MonitorGroup } from '@/dto/request/monitor-group';
 import { MonitorFavoriteEntity } from '@/database/monitor.favorite.entity';
 import { BidEntity } from '@/database/bid.entity';
 import { MonitorGroupEntity } from '@/database/monitor.group.entity';
-import { IsDateStringOrNull } from '@/utils/is-date-string-or-null';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
@@ -233,11 +232,13 @@ export class MonitorEntity extends BaseEntity {
     default: '0',
   })
   @IsOptional()
-  @IsNumberString(
-    {},
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   price1s!: number;
 
   @Column({ type: 'integer', default: 0 })
@@ -460,7 +461,11 @@ export class MonitorEntity extends BaseEntity {
     nullable: true,
     required: false,
   })
-  @Validate(IsDateStringOrNull)
+  @IsDateString(
+    { strict: true },
+    { message: i18nValidationMessage('validation.IS_DATE') },
+  )
+  @ValidateIf((object, value) => value !== null)
   lastSeen?: Date | null;
 
   @Column({
