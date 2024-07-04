@@ -49,7 +49,10 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         );
         message = `${message}: ${errorsText}`;
       } else {
-        messageLang = i18n?.t(`error.${message}`);
+        messageLang = i18n?.t(`error.${message}`, {
+          lang: i18n.lang,
+          defaultValue: message,
+        });
         if (messageLang === `error.${message}`) {
           messageLang = undefined;
         }

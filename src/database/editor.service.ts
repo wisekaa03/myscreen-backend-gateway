@@ -189,7 +189,7 @@ export class EditorService {
     const updatedQuery: DeepPartial<EditorLayerEntity> = { ...update };
 
     if (updatedQuery.file === undefined) {
-      throw new BadRequestException('file must exists');
+      throw new BadRequestException('FILE_MUST_EXISTS');
     }
     if (updatedQuery.duration === undefined) {
       updatedQuery.duration = updatedQuery.file.duration;

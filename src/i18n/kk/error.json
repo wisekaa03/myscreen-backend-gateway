@@ -1,9 +1,12 @@
 {
+  "PASSWORD_MISMATCHED": "Password mismatched",
+  "YOU_HAVE_TO_RESPOND": "You have to respond to our email",
   "BALANCE": "Not enough balance",
   "LIMITED_STORE_SPACE": "You have a limited User account to store space: {countUsedSpace} / {plan}",
   "DENIED_ADVERTISER": "Denied. You have an Advertiser account.",
   "USER_EMAIL": "email must be defined",
   "USER_PASSWORD": "password must be defined",
   "USER_ROLE": "role must be defined",
-  "USER_EXISTS": "User exists: '{email}'"
+  "USER_EXISTS": "User exists: '{email}'",
+  "FILE_MUST_EXISTS": "File must exists"
 }

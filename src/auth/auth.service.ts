@@ -43,22 +43,22 @@ export class AuthService {
     userAgent?: string,
   ): Promise<[UserResponse, AuthenticationPayload]> {
     if (!email || !password) {
-      throw new ForbiddenException('Password mismatched');
+      throw new ForbiddenException('PASSWORD_MISMATCHED');
     }
 
     const user = await this.userService.findByEmail(email);
     if (!user) {
-      throw new ForbiddenException('Password mismatched');
+      throw new ForbiddenException('PASSWORD_MISMATCHED');
     }
     if (!user.verified) {
-      throw new ForbiddenException('You have to respond to our email');
+      throw new ForbiddenException('YOU_HAVE_TO_RESPOND');
     }
 
     const valid = user.password
       ? UserService.validateCredentials(user, password)
       : false;
     if (!valid) {
-      throw new ForbiddenException('Password mismatched');
+      throw new ForbiddenException('PASSWORD_MISMATCHED');
     }
 
     const [token, refresh] = await Promise.all([

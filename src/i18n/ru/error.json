@@ -1,9 +1,12 @@
 {
+  "PASSWORD_MISMATCHED": "Пароль неправильный",
+  "YOU_HAVE_TO_RESPOND": "Вы должны ответить на наш email",
   "BALANCE": "Не хватает средств на балансе",
   "LIMITED_STORE_SPACE": "У вас ограниченное место для размещения файлов: {countUsedSpace} / {plan}",
   "DENIED_ADVERTISER": "Отклонено. Вы владеете аккаунтом Рекламодателя.",
   "USER_EMAIL": "email должен быть определен",
   "USER_PASSWORD": "password должен быть определен",
   "USER_ROLE": "role должен быть определен",
-  "USER_EXISTS": "Пользователь существует: '{email}'"
+  "USER_EXISTS": "Пользователь существует: '{email}'",
+  "FILE_MUST_EXISTS": "Файл должен существовать"
 }

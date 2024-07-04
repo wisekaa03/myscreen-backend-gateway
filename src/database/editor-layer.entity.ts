@@ -83,28 +83,32 @@ export class EditorLayerEntity extends BaseEntity {
   @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   duration!: number;
 
-  @Column({ type: 'numeric', precision: 18, scale: 0, default: 0 })
+  @Column({ type: 'numeric', precision: 18, scale: 2, default: 0 })
   @ApiProperty({
     description: 'С какой секунды начать вырезать клип',
     example: 0,
     default: 0,
     required: true,
   })
-  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
-  @Min(1, { message: i18nValidationMessage('validation.MIN') })
-  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(0, { message: i18nValidationMessage('validation.MIN') })
   cutFrom!: number;
 
-  @Column({ type: 'numeric', precision: 18, scale: 0, default: 10 })
+  @Column({ type: 'numeric', precision: 18, scale: 2, default: 10 })
   @ApiProperty({
     description: 'До какой секунды вырезать клип',
     example: 10,
     default: 10,
     required: true,
   })
-  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
-  @Min(1, { message: i18nValidationMessage('validation.MIN') })
-  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
+  @IsNumber(
+    { allowInfinity: false, allowNaN: false },
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  @Min(0, { message: i18nValidationMessage('validation.MIN') })
   cutTo!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 0, default: 0 })
@@ -119,7 +123,6 @@ export class EditorLayerEntity extends BaseEntity {
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   @Min(0, { message: i18nValidationMessage('validation.MIN') })
-  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   start!: number;
 
   @Column({ type: 'numeric', nullable: true, default: null })
