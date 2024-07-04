@@ -8,14 +8,11 @@ import {
   Not,
 } from 'typeorm';
 import {
-  BadRequestException,
   Body,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
   Logger,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -27,6 +24,7 @@ import {
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { isDateString } from 'class-validator';
 
+import { BadRequestError, ForbiddenError, NotFoundError } from '@/errors';
 import {
   MonitorGetResponse,
   MonitorsGetRequest,
@@ -197,7 +195,7 @@ export class MonitorController {
     const { id: userId, role, plan } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
     if (multiple === MonitorMultiple.SUBORDINATE) {
-      throw new BadRequestException(
+      throw new BadRequestError(
         "Monitor with 'multiple'='SUBORDINATE' can not be created",
       );
     }
@@ -209,7 +207,7 @@ export class MonitorController {
         },
       });
       if (findMonitor) {
-        throw new BadRequestException(
+        throw new BadRequestError(
           `Monitor with code '${findMonitor.code}' already exists`,
         );
       }
@@ -225,7 +223,7 @@ export class MonitorController {
       },
     });
     if (findMonitor) {
-      throw new BadRequestException(
+      throw new BadRequestError(
         `Monitor already exists: '${findMonitor.name}'#'${findMonitor.id}'`,
       );
     }
@@ -239,7 +237,7 @@ export class MonitorController {
         },
       });
       if (countMonitors > 5) {
-        throw new ForbiddenException(
+        throw new ForbiddenError(
           'You have a Demo User account. There are 5 monitors limit.',
         );
       }
@@ -301,7 +299,7 @@ export class MonitorController {
     //   },
     // });
     // if (approved.length > 0) {
-    //   throw new NotAcceptableException('This time is overlapped');
+    //   throw new NotAcceptableError('This time is overlapped');
     // }
 
     // To create bids
@@ -344,7 +342,7 @@ export class MonitorController {
     @Body() attach: MonitorsPlaylistAttachRequest,
   ): Promise<MonitorsGetResponse> {
     if (attach.monitorIds.length === 0) {
-      throw new BadRequestException();
+      throw new BadRequestError();
     }
     const playlist = await this.playlistService.findOne({
       where: {
@@ -353,7 +351,7 @@ export class MonitorController {
       },
     });
     if (!playlist) {
-      throw new NotFoundException(`Playlist '${attach.playlistId}' not found`);
+      throw new NotFoundError(`Playlist '${attach.playlistId}' not found`);
     }
 
     const dataPromise = attach.monitorIds.map(async (monitorId) => {
@@ -367,10 +365,10 @@ export class MonitorController {
         },
       });
       if (!monitor) {
-        throw new NotFoundException(`Monitor '${monitorId}' not found`);
+        throw new NotFoundError(`Monitor '${monitorId}' not found`);
       }
       if (!monitor.playlist) {
-        throw new NotFoundException(
+        throw new NotFoundError(
           `Monitor '${monitorId}' is not playing playlist "${playlist.name}"`,
         );
       }
@@ -425,7 +423,7 @@ export class MonitorController {
       find,
     });
     if (!data) {
-      throw new NotFoundException(`Monitor '${id}' not found`);
+      throw new NotFoundError(`Monitor '${id}' not found`);
     }
 
     return {
@@ -458,7 +456,7 @@ export class MonitorController {
   ): Promise<MonitorGetResponse> {
     const data = await this.monitorService.favorite(user, monitorId, true);
     if (!data) {
-      throw new NotFoundException(`Monitor '${monitorId}' not found`);
+      throw new NotFoundError(`Monitor '${monitorId}' not found`);
     }
 
     return {
@@ -491,7 +489,7 @@ export class MonitorController {
   ): Promise<MonitorGetResponse> {
     const data = await this.monitorService.favorite(user, monitorId, false);
     if (!data) {
-      throw new NotFoundException(`Monitor '${monitorId}' not found`);
+      throw new NotFoundError(`Monitor '${monitorId}' not found`);
     }
 
     return {
@@ -538,10 +536,10 @@ export class MonitorController {
       find,
     });
     if (!monitor) {
-      throw new NotFoundException(`Monitor '${id}' not found`);
+      throw new NotFoundError(`Monitor '${id}' not found`);
     }
     if (!monitor.playlist) {
-      throw new NotFoundException(`Have no playlist in monitor '${id}'`);
+      throw new NotFoundError(`Have no playlist in monitor '${id}'`);
     }
 
     const data = await this.bidService.monitorRequests({
@@ -583,7 +581,7 @@ export class MonitorController {
       (monitor) => monitor.monitorId === id,
     );
     if (foundMonitorIds) {
-      throw new BadRequestException(`Monitor '${id}' is found in groupIds`);
+      throw new BadRequestError(`Monitor '${id}' is found in groupIds`);
     }
     const monitor = await this.monitorService.findOne({
       userId,
@@ -595,7 +593,7 @@ export class MonitorController {
       },
     });
     if (!monitor) {
-      throw new NotFoundException(`Monitor '${id}' is not found`);
+      throw new NotFoundError(`Monitor '${id}' is not found`);
     }
     const data = await this.monitorService.update(id, update, groupIds);
 
@@ -636,12 +634,12 @@ export class MonitorController {
       },
     });
     if (!monitor) {
-      throw new NotFoundException(`Monitor '${id}' not found`);
+      throw new NotFoundError(`Monitor '${id}' not found`);
     }
 
     const { affected } = await this.monitorService.delete(monitor);
     if (!affected) {
-      throw new NotFoundException('This monitor is not exists');
+      throw new NotFoundError('This monitor is not exists');
     }
 
     return {

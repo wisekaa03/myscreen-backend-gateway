@@ -11,15 +11,7 @@ import child from 'node:child_process';
 import util from 'node:util';
 import dayjsDuration from 'dayjs/plugin/duration';
 import dayjs from 'dayjs';
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-  NotAcceptableException,
-  NotFoundException,
-  Inject,
-  forwardRef,
-} from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
@@ -31,6 +23,7 @@ import {
 import { ffprobe } from 'media-probe';
 import Editly from 'editly';
 
+import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import {
   FileCategory,
   MonitorMultiple,
@@ -129,12 +122,12 @@ export class EditorService {
   ): Promise<EditorEntity> {
     const updated = await this.editorRepository.update(id, insert);
     if (!updated.affected) {
-      throw new NotAcceptableException(`Editor with this '${id}' not found`);
+      throw new NotAcceptableError(`Editor with this '${id}' not found`);
     }
 
     const editor = await this.findOne({ where: { id } });
     if (!editor) {
-      throw new NotFoundException(`Editor with this '${id}' not found`);
+      throw new NotFoundError(`Editor with this '${id}' not found`);
     }
 
     return editor;
@@ -189,7 +182,7 @@ export class EditorService {
     const updatedQuery: DeepPartial<EditorLayerEntity> = { ...update };
 
     if (updatedQuery.file === undefined) {
-      throw new BadRequestException('FILE_MUST_EXISTS');
+      throw new BadRequestError('FILE_MUST_EXISTS');
     }
     if (updatedQuery.duration === undefined) {
       updatedQuery.duration = updatedQuery.file.duration;
@@ -209,10 +202,10 @@ export class EditorService {
       updatedQuery.cutTo = updatedQuery.duration ?? 0;
     }
     if (updatedQuery.cutFrom > updatedQuery.cutTo) {
-      throw new BadRequestException('cutFrom must be less than cutTo');
+      throw new BadRequestError('cutFrom must be less than cutTo');
     }
     if (updatedQuery.duration !== updatedQuery.cutTo - updatedQuery.cutFrom) {
-      throw new BadRequestException('Duration must be cutTo - cutFrom');
+      throw new BadRequestError('Duration must be cutTo - cutFrom');
     }
 
     const layer = await this.editorLayerRepository.save(
@@ -413,11 +406,11 @@ export class EditorService {
 
     if (!clip || typeof clip !== 'object') {
       this.logger.error('No clip found at requested time');
-      throw new NotAcceptableException('No clip found at requested time');
+      throw new NotAcceptableError('No clip found at requested time');
     }
 
     if (!(typeof clip.layers === 'object' && Array.isArray(clip.layers))) {
-      throw new NotAcceptableException('Layers not exists');
+      throw new NotAcceptableError('Layers not exists');
     }
 
     const seekTime = time - startTime;
@@ -430,7 +423,7 @@ export class EditorService {
 
     if (isFormat('jpg')) {
       if (clip.layers.length !== 1) {
-        throw new NotAcceptableException(
+        throw new NotAcceptableError(
           'Multi-layer editing does not support for images',
         );
       }
@@ -445,7 +438,7 @@ export class EditorService {
         `ffmpeg -ss ${seekTimestamp} ${inputs} -r 1 -an -t 1 -vsync 1 -s ${width}x${height} ${outPath}`,
       );
     } else {
-      throw new NotAcceptableException('Unsupported format to be captured');
+      throw new NotAcceptableError('Unsupported format to be captured');
     }
 
     return createReadStream(outPath).on('end', () => {
@@ -637,7 +630,7 @@ export class EditorService {
       },
     });
     if (!editor) {
-      throw new NotFoundException('Editor not found');
+      throw new NotFoundError('Editor not found');
     }
     if (!rerender) {
       if (
@@ -781,7 +774,7 @@ export class EditorService {
               return renderedFile;
             }
 
-            throw new NotFoundException(
+            throw new NotFoundError(
               `Upload file not found: '${JSON.stringify(files)}'`,
             );
           })
@@ -863,7 +856,7 @@ export class EditorService {
       relations: { videoLayers: true, audioLayers: true },
     });
     if (!editor) {
-      throw new NotFoundException(`The editor '${editorId}' is not found`);
+      throw new NotFoundError(`The editor '${editorId}' is not found`);
     }
 
     let start = 0;
@@ -932,19 +925,17 @@ export class EditorService {
       relations: { videoLayers: true, audioLayers: true },
     });
     if (!editor) {
-      throw new NotFoundException('Editor not found');
+      throw new NotFoundError('Editor not found');
     }
     if (moveIndex < 1) {
-      throw new BadRequestException(
-        'moveIndex must be greater or equal than 1',
-      );
+      throw new BadRequestError('moveIndex must be greater or equal than 1');
     }
 
     let layers = editor.videoLayers;
     if (!layers.find((l) => l.id === layerId)) {
       layers = editor.audioLayers;
       if (!layers.find((l) => l.id === layerId)) {
-        throw new NotFoundException('layerId is not in editor layers');
+        throw new NotFoundError('layerId is not in editor layers');
       }
     }
 

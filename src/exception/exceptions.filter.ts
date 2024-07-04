@@ -4,19 +4,15 @@ import {
   Logger,
   HttpException,
   HttpServer,
-  ConflictException,
 } from '@nestjs/common';
+import { ValidationError } from 'class-validator';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { TypeORMError } from 'typeorm';
+import { I18nContext } from 'nestjs-i18n';
 
-import { I18nContext, I18nValidationException } from 'nestjs-i18n';
-import {
-  InternalServerError,
-  HttpError,
-  ConflictData,
-  ConflictError,
-} from '@/errors';
+import { InternalServerError, HttpError, ConflictData } from '@/errors';
+import { Status } from '@/enums';
 
 @Catch()
 export class ExceptionsFilter extends BaseExceptionFilter<Error> {
@@ -36,60 +32,53 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
     const i18n = I18nContext.current(host);
 
     if (exception instanceof HttpException) {
+      const { message } = exception;
+      const status = exception.getStatus();
       const response = exception.getResponse();
-      let messageLang: string | undefined;
-      let { message } =
-        exception instanceof ConflictException
-          ? (response as ConflictData)
-          : exception;
-      if (exception instanceof I18nValidationException) {
-        const { errors } = exception;
-        const errorsText = errors?.map(({ constraints }) =>
-          JSON.stringify(Object.values(constraints ?? {})),
-        );
-        message = `${message}: ${errorsText}`;
-      } else {
-        messageLang = i18n?.t(`error.${message}`, {
+      const responseHttpError =
+        typeof response !== 'string' ? (response as HttpError) : undefined;
+      let code: string | undefined = undefined;
+      let error: ConflictData | undefined;
+      if (responseHttpError) {
+        code = responseHttpError.code;
+        error = responseHttpError.error;
+      }
+      const errors = (exception as any).errors;
+      const errorsArray = errors?.map((element: ValidationError) =>
+        element.constraints ? Object.values(element.constraints) : undefined,
+      );
+      const errorsMessage =
+        errorsArray && errorsArray.flat(Infinity).join(', ');
+      let messageLang: string | undefined = undefined;
+      if (i18n) {
+        messageLang = i18n.t(`error.${message}`, {
           lang: i18n.lang,
           defaultValue: message,
         });
-        if (messageLang === `error.${message}`) {
-          messageLang = undefined;
-        }
-        if (!messageLang) {
-          const { error, errors } = response as Record<string, string>;
-          if (error) {
-            message = `${error}: ${message}`;
-          }
-          if (errors) {
-            message = `${message}: ${JSON.stringify(errors)}`;
-          }
-        }
-      }
-      this.logger.error(
-        messageLang ?? message,
-        this.debugLevel ? exception.stack : undefined,
-      );
-
-      let exceptionHttp: HttpException;
-      const { name } = exception;
-      if (HttpError[name as keyof typeof HttpError]) {
-        exceptionHttp =
-          name === 'ConflictException'
-            ? new ConflictError(
-                messageLang ?? message,
-                {},
-                response as ConflictData,
-              )
-            : new HttpError[name as keyof typeof HttpError](
-                messageLang ?? message,
-              );
+        this.logger.error(
+          messageLang ?? message,
+          this.debugLevel ? exception.stack : undefined,
+        );
       } else {
-        exceptionHttp = new InternalServerError(messageLang ?? message);
+        this.logger.error(
+          message,
+          this.debugLevel ? exception.stack : undefined,
+        );
       }
 
-      const errorToThrow = Object.assign(exception, response, exceptionHttp);
-      return super.catch(errorToThrow, host);
+      const exceptionHttp = Object.assign(exception, {
+        response: {
+          status: Status.Error,
+          statusCode: status,
+          message:
+            `${messageLang ?? message}` +
+            (errorsMessage ? `: ${errorsMessage}` : ''),
+          code,
+          error,
+          errors,
+        },
+      });
+      return super.catch(exceptionHttp, host);
     }
 
     if (exception instanceof TypeORMError) {

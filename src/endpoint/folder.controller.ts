@@ -5,10 +5,8 @@ import {
   Body,
   Post,
   Req,
-  BadRequestException,
   Get,
   Param,
-  NotFoundException,
   ParseUUIDPipe,
   Delete,
   Patch,
@@ -17,6 +15,7 @@ import {
 } from '@nestjs/common';
 import { ApiExtraModels, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
+import { BadRequestError, NotFoundError } from '@/errors';
 import {
   FoldersGetResponse,
   FoldersGetRequest,
@@ -110,7 +109,7 @@ export class FolderController {
         })
       : await this.folderService.rootFolder(user);
     if (!parentFolder) {
-      throw new BadRequestException(`Folder '${parentFolderId}' is not exists`);
+      throw new BadRequestError(`Folder '${parentFolderId}' is not exists`);
     }
 
     const data = await this.folderService.create({
@@ -157,7 +156,7 @@ export class FolderController {
           parentFolders.length === parentFoldersId.length
         )
       ) {
-        throw new NotFoundException(
+        throw new NotFoundError(
           `Folders '${parentFoldersId.join(', ')}' is not exists`,
         );
       }
@@ -202,19 +201,19 @@ export class FolderController {
       where: { userId: user.id, id: toFolder },
     });
     if (!toFolderEntity) {
-      throw new BadRequestException(`Folder '${toFolder}' is not exist`);
+      throw new BadRequestError(`Folder '${toFolder}' is not exist`);
     }
     const foldersCopy = await this.folderService.find({
       where: { userId: user.id, id: In(foldersIds) },
       relations: ['files'],
     });
     if (foldersCopy.length !== folders.length) {
-      throw new BadRequestException('The number of folders does not match');
+      throw new BadRequestError('The number of folders does not match');
     }
     if (
       foldersCopy.some((folderCopy) => folderCopy.parentFolderId === toFolder)
     ) {
-      throw new BadRequestException('Copying to the same directory');
+      throw new BadRequestError('Copying to the same directory');
     }
     if (
       foldersCopy.some(
@@ -222,7 +221,7 @@ export class FolderController {
           folderCopy.parentFolderId !== foldersCopy[0].parentFolderId,
       )
     ) {
-      throw new BadRequestException('Copying multiple sources into one');
+      throw new BadRequestError('Copying multiple sources into one');
     }
 
     const data = await this.folderService.copy(
@@ -256,12 +255,12 @@ export class FolderController {
   ): Promise<SuccessResponse> {
     const rootFolder = await this.folderService.rootFolder(user);
     if (foldersId.includes(rootFolder.id)) {
-      throw new BadRequestException('This is a root folder in a list');
+      throw new BadRequestError('This is a root folder in a list');
     }
 
     const { affected } = await this.folderService.delete(foldersId);
     if (!affected) {
-      throw new NotFoundException('This folder is not exists');
+      throw new NotFoundError('This folder is not exists');
     }
 
     return {
@@ -289,7 +288,7 @@ export class FolderController {
       where: { userId: user.id, id },
     });
     if (!data) {
-      throw new NotFoundException(`Folder '${id}' is not exists`);
+      throw new NotFoundError(`Folder '${id}' is not exists`);
     }
 
     return {
@@ -325,7 +324,7 @@ export class FolderController {
         },
       });
       if (!parentFolder) {
-        throw new NotFoundException(`Folder '${parentFolderId}' is not exists`);
+        throw new NotFoundError(`Folder '${parentFolderId}' is not exists`);
       }
     }
 
@@ -358,12 +357,12 @@ export class FolderController {
   ): Promise<SuccessResponse> {
     const rootFolder = await this.folderService.rootFolder(user);
     if (folderId === rootFolder.id) {
-      throw new BadRequestException('This is a root folder in a list');
+      throw new BadRequestError('This is a root folder in a list');
     }
 
     const { affected } = await this.folderService.delete([folderId]);
     if (!affected) {
-      throw new NotFoundException('This folder is not exists');
+      throw new NotFoundError('This folder is not exists');
     }
 
     return {

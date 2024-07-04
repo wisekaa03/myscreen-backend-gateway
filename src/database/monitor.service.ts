@@ -1,12 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotAcceptableException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, FindManyOptions, In, Not, Repository } from 'typeorm';
 
+import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorGroup } from '@/dto/request/monitor-group';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -218,12 +214,12 @@ export class MonitorService {
       },
     });
     if (!originalMonitor) {
-      throw new NotFoundException(`Monitor '${id}' not found`);
+      throw new NotFoundError(`Monitor '${id}' not found`);
     }
     const { userId, multiple = MonitorMultiple.SINGLE } = originalMonitor;
     const { multiple: updateMultiple = multiple } = update;
     if (multiple !== updateMultiple && multiple !== MonitorMultiple.SINGLE) {
-      throw new BadRequestException(
+      throw new BadRequestError(
         `Monitor '${originalMonitor.name}'#'${id}' group not changed`,
       );
     }
@@ -234,7 +230,7 @@ export class MonitorService {
       groupIds.length > 0 &&
       multiple === updateMultiple
     ) {
-      throw new BadRequestException(
+      throw new BadRequestError(
         `Monitor '${originalMonitor.name}'#'${id}' group monitors ID must be empty`,
       );
     }
@@ -250,7 +246,7 @@ export class MonitorService {
         relations: { groupMonitors: { monitor: true, parentMonitor: true } },
       });
       if (originalGroupMonitors.length > 0) {
-        throw new BadRequestException(
+        throw new BadRequestError(
           `Monitor '${originalMonitor.name}'#'${id}' group has a SUBORDINATE monitor`,
         );
       }
@@ -259,14 +255,14 @@ export class MonitorService {
     await this.monitorRepository.manager.transaction(async (transact) => {
       const updated = await transact.update(MonitorEntity, id, update);
       if (!updated.affected) {
-        throw new NotAcceptableException(`Monitor with this '${id}' not found`);
+        throw new NotAcceptableError(`Monitor with this '${id}' not found`);
       }
       const monitor = await transact.findOne(MonitorEntity, {
         where: { id },
         relations: { groupMonitors: { monitor: true } },
       });
       if (!monitor) {
-        throw new NotFoundException(`Monitor with this '${id}' not found`);
+        throw new NotFoundError(`Monitor with this '${id}' not found`);
       }
 
       await this.bidService.websocketChange({ monitor });
@@ -347,7 +343,7 @@ export class MonitorService {
       },
     });
     if (!monitorUpdated) {
-      throw new NotFoundException(`Monitor with this '${id}' not found`);
+      throw new NotFoundError(`Monitor with this '${id}' not found`);
     }
 
     return monitorUpdated;
@@ -365,13 +361,13 @@ export class MonitorService {
     const { id: userId } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
     if (insert.monitorInfo) {
-      throw new BadRequestException('Monitor info deprecated');
+      throw new BadRequestError('Monitor info deprecated');
     }
     if (
       multiple === MonitorMultiple.SINGLE &&
       !(insert.width || insert.height)
     ) {
-      throw new BadRequestException('Monitor width or height is empty');
+      throw new BadRequestError('Monitor width or height is empty');
     }
     const prepareMonitor: Partial<MonitorEntity> = {
       ...insert,
@@ -385,20 +381,20 @@ export class MonitorService {
       );
       const monitorInsertedId = monitorInserted.identifiers[0]?.id;
       if (!monitorInsertedId) {
-        throw new NotAcceptableException('Monitor not created');
+        throw new NotAcceptableError('Monitor not created');
       }
       const monitor = await transact.findOne(MonitorEntity, {
         where: { id: monitorInsertedId },
       });
       if (!monitor) {
-        throw new NotAcceptableException('Monitor not created');
+        throw new NotAcceptableError('Monitor not created');
       }
 
       let groupMonitors: MonitorEntity[] = [];
       const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
       if (multiple !== MonitorMultiple.SINGLE) {
         if (!groupIds || groupIds.length === 0) {
-          throw new BadRequestException('Group monitors ID is empty');
+          throw new BadRequestError('Group monitors ID is empty');
         }
 
         const multipleMonitorIds = groupIds.map((item) => item.monitorId);
@@ -413,7 +409,7 @@ export class MonitorService {
           Array.isArray(groupMonitors) &&
           groupMonitors.length !== groupIds.length
         ) {
-          throw new BadRequestException('Not found ID of some monitors');
+          throw new BadRequestError('Not found ID of some monitors');
         }
         if (multiple === MonitorMultiple.SCALING) {
           const multipleRows = new Set<number>();
@@ -423,7 +419,7 @@ export class MonitorService {
               multipleCols.clear();
             }
             if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
-              throw new BadRequestException(
+              throw new BadRequestError(
                 `Monitor multiple '${item.monitorId}': row '${item.row}' with col '${item.col}' is already occupied`,
               );
             }
@@ -432,7 +428,7 @@ export class MonitorService {
           });
         }
       } else if (multipleBool) {
-        throw new BadRequestException('Group monitors ID is not empty');
+        throw new BadRequestError('Group monitors ID is not empty');
       }
 
       if (multipleBool) {
@@ -440,7 +436,7 @@ export class MonitorService {
           const groupMonitorId = groupMonitor.id;
           const item = groupIds.find((i) => i.monitorId === groupMonitorId);
           if (!item) {
-            throw new BadRequestException('Not found ID of some monitors');
+            throw new BadRequestError('Not found ID of some monitors');
           }
 
           // добавляем в таблицу связей мониторов монитор
@@ -495,7 +491,7 @@ export class MonitorService {
       },
     });
     if (!monitor) {
-      throw new NotFoundException('Monitor not found');
+      throw new NotFoundError('Monitor not found');
     }
     if (favorite && !monitor.favorite) {
       const insertResult = await this.monitorFavoriteRepository.insert({
@@ -503,14 +499,14 @@ export class MonitorService {
         userId,
       });
       if (!insertResult) {
-        throw new NotFoundException('Monitor not found');
+        throw new NotFoundError('Monitor not found');
       }
     } else if (!favorite && monitor.favorite) {
       const { affected } = await this.monitorFavoriteRepository.delete({
         monitorId: monitor.id,
       });
       if (!affected) {
-        throw new NotFoundException('Monitor not found');
+        throw new NotFoundError('Monitor not found');
       }
     }
 

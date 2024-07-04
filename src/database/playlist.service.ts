@@ -1,10 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  NotAcceptableException,
-  NotFoundException,
-  forwardRef,
-} from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
@@ -20,6 +14,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
 import { WalletService } from './wallet.service';
+import { NotAcceptableError, NotFoundError } from '@/errors';
 
 @Injectable()
 export class PlaylistService {
@@ -95,12 +90,12 @@ export class PlaylistService {
       this.playlistRepository.create({ id, ...update }),
     );
     if (!updated) {
-      throw new NotAcceptableException(`Playlist with this '${id}' not found`);
+      throw new NotAcceptableError(`Playlist with this '${id}' not found`);
     }
 
     const playlist = await this.findOne({ where: { id } });
     if (!playlist) {
-      throw new NotFoundException(`Playlist with this '${id}' not found`);
+      throw new NotFoundError(`Playlist with this '${id}' not found`);
     }
     if (update.status === undefined) {
       await this.bidService.websocketChange({ playlist });

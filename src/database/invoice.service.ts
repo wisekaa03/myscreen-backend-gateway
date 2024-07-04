@@ -1,5 +1,5 @@
 import type { Response as ExpressResponse } from 'express';
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import dayjs from 'dayjs';
@@ -8,6 +8,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 
+import { NotFoundError } from '@/errors';
 import { PrintInvoice } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { UserRoleEnum } from '@/enums';
@@ -116,7 +117,7 @@ export class InvoiceService {
         status,
       });
       if (!invoiceUpdated.affected) {
-        throw new NotFoundException('Invoice not found');
+        throw new NotFoundError('Invoice not found');
       }
       const invoiceFind = await transact.findOne(InvoiceEntity, {
         where: { id },
@@ -124,7 +125,7 @@ export class InvoiceService {
         relations: { user: true },
       });
       if (!invoiceFind) {
-        throw new NotFoundException('Invoice not found');
+        throw new NotFoundError('Invoice not found');
       }
       const { user, userId } = invoiceFind;
 
@@ -213,7 +214,7 @@ export class InvoiceService {
     invoice: InvoiceEntity,
   ): Promise<void> {
     if (!invoice.user) {
-      throw new NotFoundException('Invoice: user not found');
+      throw new NotFoundError('Invoice: user not found');
     }
 
     const language =

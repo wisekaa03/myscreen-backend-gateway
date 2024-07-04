@@ -1,12 +1,10 @@
 import { Request as ExpressRequest } from 'express';
 import {
-  BadRequestException,
   Body,
   Delete,
   Get,
   HttpCode,
   Logger,
-  NotFoundException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -18,6 +16,7 @@ import {
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FindOptionsWhere, In } from 'typeorm';
 
+import { BadRequestError, NotFoundError } from '@/errors';
 import {
   PlaylistsGetRequest,
   PlaylistsGetResponse,
@@ -104,7 +103,7 @@ export class PlaylistController {
     @Body() body: PlaylistCreateRequest,
   ): Promise<PlaylistGetResponse> {
     if (!(Array.isArray(body.files) && body.files.length > 0)) {
-      throw new BadRequestException('Files must exist');
+      throw new BadRequestError('Files must exist');
     }
     const files = await this.fileService.find({
       find: {
@@ -114,7 +113,7 @@ export class PlaylistController {
       },
     });
     if (!(Array.isArray(files) && body.files.length === files.length)) {
-      throw new NotFoundException('Specified file(s) does not exist');
+      throw new NotFoundError('Specified file(s) does not exist');
     }
 
     const data = await this.playlistService.create({
@@ -155,7 +154,7 @@ export class PlaylistController {
       where: { id },
     });
     if (!data) {
-      throw new NotFoundException(`Playlist '${id}' not found`);
+      throw new NotFoundError(`Playlist '${id}' not found`);
     }
 
     return {
@@ -185,7 +184,7 @@ export class PlaylistController {
       where: { id },
     });
     if (!playlist) {
-      throw new NotFoundException(`Playlist '${id}' not found`);
+      throw new NotFoundError(`Playlist '${id}' not found`);
     }
 
     let files: FileEntity[] = [];
@@ -198,7 +197,7 @@ export class PlaylistController {
         },
       });
       if (!(Array.isArray(files) && body.files.length === files.length)) {
-        throw new NotFoundException('Specified file(s) does not exist');
+        throw new NotFoundError('Specified file(s) does not exist');
       }
     }
 
@@ -232,12 +231,12 @@ export class PlaylistController {
     }
     const data = await this.playlistService.findOne({ where });
     if (!data) {
-      throw new NotFoundException(`Playlist '${id}' not found`);
+      throw new NotFoundError(`Playlist '${id}' not found`);
     }
 
     const { affected } = await this.playlistService.delete(user, data);
     if (!affected) {
-      throw new NotFoundException('This playlist is not exists');
+      throw new NotFoundError('This playlist is not exists');
     }
 
     return {
