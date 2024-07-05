@@ -61,6 +61,7 @@ async function bootstrap() {
       new I18nValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,
+        forbidUnknownValues: true,
       }),
     )
     .useGlobalInterceptors(new LoggerErrorInterceptor())

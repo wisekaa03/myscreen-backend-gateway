@@ -164,7 +164,7 @@ describe('Backend API (e2e)', () => {
     const configService = app.get(ConfigService);
 
     const logLevel = configService.get('LOG_LEVEL');
-    if (logLevel) {
+    if (logLevel === 'debug') {
       const logger = app.get(Logger);
       app.useLogger(logger);
     }
@@ -174,7 +174,13 @@ describe('Backend API (e2e)', () => {
     app.useGlobalFilters(
       new ExceptionsFilter(httpAdaper.httpAdapter, configService),
     );
-    app.useGlobalPipes(new I18nValidationPipe());
+    app.useGlobalPipes(
+      new I18nValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        forbidUnknownValues: true,
+      }),
+    );
     app.useWebSocketAdapter(new WsAdapter(app));
     userService = app.get<UserService>(UserService);
 
@@ -415,7 +421,7 @@ describe('Backend API (e2e)', () => {
   /**
    * Авторизация
    */
-  describe('Авторизация (изменение)', () => {
+  describe('Изменение advertiser-monitor', () => {
     /**
      * Изменение аккаунта пользователя
      */
@@ -475,7 +481,7 @@ describe('Backend API (e2e)', () => {
         .send({ ...updateUser, password: 'Gruodis19771203!' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(406);
+        .expect(400);
     });
 
     /**
@@ -491,6 +497,42 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.id).toBe(userIdAdvertiser);
+          expect(body.data.password).toBeUndefined();
+          expect(body.data.surname).toBe(updateUser.surname);
+          expect(body.data.name).toBe(updateUser.name);
+          expect(body.data.middleName).toBe(updateUser.middleName);
+          expect(body.data.phoneNumber).toBe(updateUser.phoneNumber);
+          expect(body.data.city).toBe(updateUser.city);
+          expect(body.data.country).toBe(updateUser.country);
+          expect(body.data.locale).toBe(updateUser.locale);
+          expect(body.data.preferredLanguage).toBe(
+            updateUser.preferredLanguage,
+          );
+          expect(body.data.company).toBe(updateUser.company);
+          expect(body.data.companyLegalAddress).toBe(
+            updateUser.companyLegalAddress,
+          );
+          expect(body.data.companyActualAddress).toBe(
+            updateUser.companyActualAddress,
+          );
+          expect(body.data.companyTIN).toBe(updateUser.companyTIN);
+          expect(body.data.companyRRC).toBe(updateUser.companyRRC);
+          expect(body.data.companyPSRN).toBe(updateUser.companyPSRN);
+          expect(body.data.companyPhone).toBe(updateUser.companyPhone);
+          expect(body.data.companyEmail).toBe(updateUser.companyEmail);
+          expect(body.data.companyBank).toBe(updateUser.companyBank);
+          expect(body.data.companyBIC).toBe(updateUser.companyBIC);
+          expect(body.data.companyCorrespondentAccount).toBe(
+            updateUser.companyCorrespondentAccount,
+          );
+          expect(body.data.companyPaymentAccount).toBe(
+            updateUser.companyPaymentAccount,
+          );
+          expect(body.data.companyFax).toBe(updateUser.companyFax);
+          expect(body.data.companyRepresentative).toBe(
+            updateUser.companyRepresentative,
+          );
+          expect(body.data.company).toBe(updateUser.company);
           expect(body.data.password).toBeUndefined();
         });
     });

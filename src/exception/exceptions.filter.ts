@@ -4,12 +4,17 @@ import {
   Logger,
   HttpException,
   HttpServer,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { TypeORMError } from 'typeorm';
-import { I18nContext } from 'nestjs-i18n';
+import {
+  I18nContext,
+  I18nValidationException,
+  TranslateOptions,
+} from 'nestjs-i18n';
 
 import { InternalServerError, HttpError, ConflictData } from '@/errors';
 import { Status } from '@/enums';
@@ -30,18 +35,28 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
     const i18n = I18nContext.current(host);
+    let { message } = exception;
+
+    if (exception instanceof I18nValidationException) {
+      if (message === 'Bad Request') {
+        message = 'BAD_REQUEST';
+      }
+    } else if (exception instanceof UnauthorizedException) {
+      message = 'UNAUTHORIZED';
+    }
 
     if (exception instanceof HttpException) {
-      const { message } = exception;
       const status = exception.getStatus();
       const response = exception.getResponse();
       const responseHttpError =
         typeof response !== 'string' ? (response as HttpError) : undefined;
       let code: string | undefined = undefined;
       let error: ConflictData | undefined;
+      let options: TranslateOptions | undefined;
       if (responseHttpError) {
         code = responseHttpError.code;
         error = responseHttpError.error;
+        options = responseHttpError.options;
       }
       const errors = (exception as any).errors;
       const errorsArray = errors?.map((element: ValidationError) =>
@@ -54,6 +69,7 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
         messageLang = i18n.t(`error.${message}`, {
           lang: i18n.lang,
           defaultValue: message,
+          ...options,
         });
         this.logger.error(
           messageLang ?? message,
