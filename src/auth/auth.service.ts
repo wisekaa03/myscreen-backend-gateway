@@ -242,9 +242,7 @@ export class AuthService {
   async verifyEmail(verify_email: string): Promise<true> {
     const [email, verifyToken] = decodeMailToken(verify_email);
 
-    const user = await this.userService.findByEmail(email, {
-      select: ['id', 'verified', 'emailConfirmKey'],
-    });
+    const user = await this.userService.findByEmail(email);
     if (!user) {
       throw new ForbiddenError();
     }
@@ -253,7 +251,7 @@ export class AuthService {
     }
 
     if (user.emailConfirmKey === verifyToken) {
-      await this.userService.update(user.id, {
+      await this.userService.update(user, {
         emailConfirmKey: null,
         verified: true,
       });

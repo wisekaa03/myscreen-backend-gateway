@@ -10,7 +10,7 @@ export class ServiceUnavailableError extends ServiceUnavailableException {
       status: Status.Error,
       statusCode: HttpStatus.SERVICE_UNAVAILABLE,
       code: 'server-error.10000',
-      message: message ?? 'Service Unavailable',
+      message: message ?? 'SERVICE_UNAVAILABLE',
       options,
     });
     this.initMessage();

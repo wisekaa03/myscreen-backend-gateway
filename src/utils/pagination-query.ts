@@ -1,6 +1,6 @@
 import type { FindManyOptions, FindOneOptions } from 'typeorm';
-import { BadRequestException } from '@nestjs/common';
 
+import { BadRequestError } from '@/errors';
 import { LimitRequest } from '@/dto/request/limit.request';
 
 export type ScopeOrder = FindOneOptions<any>['order'];
@@ -33,7 +33,7 @@ export const paginationQuery = <T>(
             case undefined:
               break;
             default:
-              throw new BadRequestException(
+              throw new BadRequestError(
                 `Order field '${field}' is not an 'ASC' or 'DESC'`,
               );
           }

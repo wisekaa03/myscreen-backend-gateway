@@ -550,7 +550,7 @@ describe('Backend API (e2e)', () => {
      */
     test('Change user Disabled: False (database access)', async () => {
       if (userAdvertiser) {
-        const userUpdate = await userService.update(userAdvertiser.id, {
+        const userUpdate = await userService.update(userAdvertiser, {
           disabled: false,
         });
         expect(userUpdate).toBeDefined();
@@ -1133,7 +1133,7 @@ describe('Backend API (e2e)', () => {
      */
     test('Change user Role: Administrator (database access)', async () => {
       if (userAdvertiser) {
-        const userUpdate = await userService.update(userAdvertiser.id, {
+        const userUpdate = await userService.update(userAdvertiser, {
           role: UserRoleEnum.Administrator,
         });
         expect(userUpdate).toBeDefined();

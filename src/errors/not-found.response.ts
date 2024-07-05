@@ -10,7 +10,7 @@ export class NotFoundError extends NotFoundException {
       status: Status.Error,
       statusCode: HttpStatus.NOT_FOUND,
       code: 'server-error.10005',
-      message: message ?? 'Not Found',
+      message: message ?? 'NOT_FOUND',
       options,
     });
     this.initMessage();

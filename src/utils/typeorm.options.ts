@@ -47,7 +47,10 @@ export class TypeOrmOptionsClass implements TypeOrmOptionsFactory {
               keyPrefix: 'DATABASE:',
             },
             alwaysEnabled: true,
-            duration: 15 * 60 * 1000,
+            duration: parseInt(
+              this.configService.get<string>('REDIS_DURATION', '1000'),
+              10,
+            ),
           }
         : undefined,
     };

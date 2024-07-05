@@ -63,7 +63,7 @@ export class UserService {
    * @param {string} functionName Function name (create, read, update, delete, status)
    * @param {CRUDS} crud CRUDS (CREATE, READ, UPDATE, DELETE, STATUS)
    * @returns {boolean} true - access allowed
-   * @throws {ForbiddenException} ForbiddenException
+   * @throws {ForbiddenError} ForbiddenError
    * @memberof UserService
    */
   verify(
@@ -182,14 +182,10 @@ export class UserService {
    * @returns {UserEntity} Результат
    */
   async update(
-    userId: string,
+    user: UserEntity,
     update: Partial<UserEntity>,
   ): Promise<UserResponse | null> {
-    const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) {
-      throw new ForbiddenError();
-    }
-
+    const { id: userId } = user;
     if (update.email !== undefined && user.email !== update.email) {
       const emailConfirmKey = genKey();
 

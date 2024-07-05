@@ -38,11 +38,11 @@ import {
   InvoiceStatus,
   CRUD,
 } from '@/enums';
+import { formatToContentType } from '@/constants';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQuery } from '@/utils/pagination-query';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { formatToContentType } from '@/utils/format-to-content-type';
 import { InvoiceService } from '@/database/invoice.service';
 import { InvoiceEntity } from '@/database/invoice.entity';
 

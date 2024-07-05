@@ -72,7 +72,7 @@ export class ConflictError extends ConflictException {
       status: Status.Error,
       statusCode: HttpStatus.CONFLICT,
       code: 'server-error.10000',
-      message: message ?? 'Conflict exists',
+      message: message ?? 'CONFLICT',
       options,
       error,
     });

@@ -163,13 +163,24 @@ export class WSGateway
     this.logger.debug(`Disconnect: key='${value.key}'`);
     if (value.role === UserRoleEnum.Monitor) {
       if (value.monitorId) {
+        const monitor = await this.monitorService.findOne({
+          find: {
+            where: { id: value.monitorId },
+            loadEagerRelations: false,
+            relations: { user: true },
+          },
+        });
         await Promise.all([
           this.monitorService
             .status(value.monitorId, MonitorStatus.Offline)
             .catch((error: unknown) => {
               this.logger.error(error);
             }),
-          this.monitorStatus(value.monitorId, MonitorStatus.Offline),
+          this.monitorStatus(
+            value.monitorId,
+            MonitorStatus.Offline,
+            monitor?.user,
+          ),
         ]);
       } else {
         this.logger.error('monitorId is undefined ?');
@@ -199,7 +210,7 @@ export class WSGateway
             find: {
               where: { id: value.monitorId },
               loadEagerRelations: false,
-              relations: {},
+              relations: { user: true },
             },
           });
           let bids: BidEntity[] | null = null;
@@ -214,7 +225,11 @@ export class WSGateway
                 .catch((error: unknown) => {
                   this.logger.error(error);
                 }),
-              this.monitorStatus(monitor.id, MonitorStatus.Online),
+              this.monitorStatus(
+                monitor.id,
+                MonitorStatus.Online,
+                monitor.user,
+              ),
             ]);
           }
           return of([
@@ -297,6 +312,7 @@ export class WSGateway
   private async monitorStatus(
     monitorId: string,
     status: MonitorStatus,
+    user?: UserEntity,
   ): Promise<void> {
     this.clients.forEach((client) => {
       if (client.auth && client.userId) {
@@ -310,6 +326,10 @@ export class WSGateway
         );
       }
     });
+
+    if (user) {
+      await this.onMetrics(user);
+    }
   }
 
   /**

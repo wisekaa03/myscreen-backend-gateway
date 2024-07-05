@@ -10,10 +10,9 @@ import { ConfigService } from '@nestjs/config';
 
 import { NotFoundError } from '@/errors';
 import { PrintInvoice } from '@/interfaces';
-import { MAIL_SERVICE } from '@/constants';
+import { MAIL_SERVICE, formatToContentType } from '@/constants';
 import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { formatToContentType } from '@/utils/format-to-content-type';
 import { SpecificFormat } from '@/enums/specific-format.enum';
 import { InvoiceStatus } from '@/enums/invoice-status.enum';
 import { InvoiceEntity } from './invoice.entity';

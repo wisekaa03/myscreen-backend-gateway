@@ -10,7 +10,7 @@ export class NotImplementedError extends NotImplementedException {
       status: Status.Error,
       statusCode: HttpStatus.NOT_IMPLEMENTED,
       code: 'server-error.10000',
-      message: message ?? 'Not implemented',
+      message: message ?? 'NOT_IMPLEMENTED',
       options,
     });
     this.initMessage();
