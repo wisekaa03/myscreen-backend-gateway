@@ -10,7 +10,7 @@ export class PreconditionFailedError extends PreconditionFailedException {
       status: Status.Error,
       statusCode: HttpStatus.PRECONDITION_FAILED,
       code: 'server-error.10002',
-      message: message ?? 'User exists',
+      message: message ?? 'PRECONDITION',
       options,
     });
     this.initMessage();

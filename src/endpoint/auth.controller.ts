@@ -3,17 +3,15 @@ import {
   Get,
   HttpCode,
   Logger,
-  NotAcceptableException,
-  NotFoundException,
   Patch,
   Post,
   Req,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Request as ExpressRequest } from 'express';
 
+import { NotAcceptableError, NotFoundError, UnauthorizedError } from '@/errors';
 import {
   LoginRequest,
   UserUpdateRequest,
@@ -90,38 +88,39 @@ export class AuthController {
   })
   @Crud(CRUD.UPDATE)
   async update(
-    @Req() { user: { id, role } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() update: UserUpdateRequest,
   ): Promise<UserGetResponse> {
+    const { role } = user;
     if (role !== UserRoleEnum.Administrator && update.role !== undefined) {
-      throw new NotAcceptableException(
+      throw new NotAcceptableError(
         'Role is updated when Administrator logged in',
       );
     }
     if (role !== UserRoleEnum.Administrator && update.plan !== undefined) {
-      throw new NotAcceptableException(
+      throw new NotAcceptableError(
         'Plan is updated when Administrator logged in',
       );
     }
     if (role !== UserRoleEnum.Administrator && update.disabled !== undefined) {
-      throw new NotAcceptableException(
+      throw new NotAcceptableError(
         'Disabled is updated when Administrator logged in',
       );
     }
     if (role !== UserRoleEnum.Administrator && update.verified !== undefined) {
-      throw new NotAcceptableException(
+      throw new NotAcceptableError(
         'Verified is updated when Administrator logged in',
       );
     }
 
-    const user = await this.userService.update(id, update);
-    if (!user) {
-      throw new UnauthorizedException();
+    const data = await this.userService.update(user, update);
+    if (!data) {
+      throw new UnauthorizedError();
     }
 
     return {
       status: Status.Success,
-      data: UserResponseToExternal(user),
+      data: UserResponseToExternal(data),
     };
   }
 
@@ -292,10 +291,8 @@ export class AuthController {
     type: SuccessResponse,
   })
   @Crud(CRUD.DELETE)
-  async disable(
-    @Req() { user: { id: userId } }: ExpressRequest,
-  ): Promise<SuccessResponse> {
-    await this.userService.update(userId, { disabled: true });
+  async disable(@Req() { user }: ExpressRequest): Promise<SuccessResponse> {
+    await this.userService.update(user, { disabled: true });
 
     return {
       status: Status.Success,
@@ -325,7 +322,7 @@ export class AuthController {
       },
     });
     if (!monitor) {
-      throw new NotFoundException(`Monitor with code '${code}' does not exist`);
+      throw new NotFoundError(`Monitor with code '${code}' does not exist`);
     }
 
     const payload = await this.authService.createMonitorToken(monitor.id);

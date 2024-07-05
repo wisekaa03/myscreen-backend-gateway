@@ -9,11 +9,10 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
 import { PrintReportDeviceStatus } from '@/interfaces';
-import { MAIL_SERVICE } from '@/constants';
+import { MAIL_SERVICE, formatToContentType } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
 import { UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
-import { formatToContentType } from '@/utils/format-to-content-type';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { UserService } from '@/database/user.service';

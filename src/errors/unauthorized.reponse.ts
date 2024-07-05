@@ -10,7 +10,7 @@ export class UnauthorizedError extends UnauthorizedException {
       status: Status.Error,
       statusCode: HttpStatus.UNAUTHORIZED,
       code: 'server-error.10001',
-      message: message ?? 'Unauthorized request',
+      message: message ?? 'UNAUTHORIZED',
       options,
     });
     this.initMessage();

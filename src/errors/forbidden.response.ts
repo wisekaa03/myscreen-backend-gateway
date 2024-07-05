@@ -10,7 +10,7 @@ export class ForbiddenError extends ForbiddenException {
       status: Status.Error,
       statusCode: HttpStatus.FORBIDDEN,
       code: 'server-error.10002',
-      message: message ?? 'Forbidden',
+      message: message ?? 'FORBIDDEN',
       options,
     });
     this.initMessage();

@@ -10,7 +10,7 @@ export class BadRequestError extends BadRequestException {
       status: Status.Error,
       statusCode: HttpStatus.BAD_REQUEST,
       code: 'server-error.10004',
-      message: message ?? 'Bad request',
+      message: message ?? 'BAD_REQUEST',
       options,
     });
     this.initMessage();

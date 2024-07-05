@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.51.1",
+  "version": "2.51.2",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -15,6 +15,8 @@
     "pm2:start": "pm2 restart ecosystem.config.cjs",
     "pm2:delete": "pm2 delete ecosystem.config.cjs",
     "build": "NODE_ENV=production nest build",
+    "clean": "rimraf dist",
+    "clean:all": "rimraf dist node_modules ~/.npm/_cacache ~/.cache/yarn",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "NODE_ENV=production nest start",
     "start:dev": "NODE_ENV=development nest start --watch",

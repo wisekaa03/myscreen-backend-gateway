@@ -32,7 +32,7 @@ import {
 import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
 import { EditorService } from '@/database/editor.service';
-import { getS3FullName, getS3Name } from '@/utils/get-name';
+import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileEntity } from '@/database/file.entity';

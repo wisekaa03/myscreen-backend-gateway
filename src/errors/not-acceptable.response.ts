@@ -10,7 +10,7 @@ export class NotAcceptableError extends NotAcceptableException {
       status: Status.Error,
       statusCode: HttpStatus.NOT_ACCEPTABLE,
       code: 'server-error.10000',
-      message: message ?? 'Not Acceptable',
+      message: message ?? 'NOT_ACCEPTABLE',
       options,
     });
     this.initMessage();

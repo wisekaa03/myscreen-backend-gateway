@@ -10,7 +10,7 @@ export class InternalServerError extends InternalServerErrorException {
       status: Status.Error,
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       code: 'server-error.10000',
-      message: message ?? 'Server error',
+      message: message ?? 'SERVER_ERROR',
       options,
     });
     this.initMessage();

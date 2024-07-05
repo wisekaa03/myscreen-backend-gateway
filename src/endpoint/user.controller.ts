@@ -81,7 +81,7 @@ export class UserController {
       throw new ForbiddenError();
     }
 
-    await this.userService.update(userId, { disabled: true });
+    await this.userService.update(user, { disabled: true });
 
     return {
       status: Status.Success,
@@ -108,7 +108,7 @@ export class UserController {
       throw new ForbiddenError();
     }
 
-    await this.userService.update(userId, { disabled: false });
+    await this.userService.update(user, { disabled: false });
 
     return {
       status: Status.Success,
@@ -161,7 +161,7 @@ export class UserController {
       throw new ForbiddenError();
     }
 
-    const data = await this.userService.update(userId, update);
+    const data = await this.userService.update(user, update);
     if (!data) {
       throw new NotFoundError();
     }
