@@ -31,6 +31,7 @@ import {
   InvoicesGetRequest,
   InvoicesGetResponse,
   MonitorCreateRequest,
+  ConstantsGetResponse,
 } from '@/dto';
 import {
   MonitorCategoryEnum,
@@ -129,6 +130,8 @@ const updateUser: UserUpdateRequest = {
   phoneNumber: '+78003000000',
   city: 'Krasnodar',
   country: 'RU',
+  locale: 'en_US',
+  preferredLanguage: 'en',
   company: 'ACME corporation',
   companyLegalAddress: 'г. Краснодар, ул. Красная, д. 1',
   companyActualAddress: 'г. Краснодар, ул. Красная, д. 1',
@@ -409,7 +412,10 @@ describe('Backend API (e2e)', () => {
     });
   });
 
-  describe('Пользователь (изменение)', () => {
+  /**
+   * Авторизация
+   */
+  describe('Авторизация (изменение)', () => {
     /**
      * Изменение аккаунта пользователя
      */
@@ -423,9 +429,54 @@ describe('Backend API (e2e)', () => {
         .expect(200);
       expect(body.status).toBe(Status.Success);
       expect(body.data.id).toBe(userIdAdvertiser);
+      expect(body.data.surname).toBe(updateUser.surname);
+      expect(body.data.name).toBe(updateUser.name);
+      expect(body.data.middleName).toBe(updateUser.middleName);
+      expect(body.data.phoneNumber).toBe(updateUser.phoneNumber);
+      expect(body.data.city).toBe(updateUser.city);
+      expect(body.data.country).toBe(updateUser.country);
+      expect(body.data.locale).toBe(updateUser.locale);
+      expect(body.data.preferredLanguage).toBe(updateUser.preferredLanguage);
+      expect(body.data.company).toBe(updateUser.company);
+      expect(body.data.companyLegalAddress).toBe(
+        updateUser.companyLegalAddress,
+      );
+      expect(body.data.companyActualAddress).toBe(
+        updateUser.companyActualAddress,
+      );
+      expect(body.data.companyTIN).toBe(updateUser.companyTIN);
+      expect(body.data.companyRRC).toBe(updateUser.companyRRC);
+      expect(body.data.companyPSRN).toBe(updateUser.companyPSRN);
+      expect(body.data.companyPhone).toBe(updateUser.companyPhone);
+      expect(body.data.companyEmail).toBe(updateUser.companyEmail);
+      expect(body.data.companyBank).toBe(updateUser.companyBank);
+      expect(body.data.companyBIC).toBe(updateUser.companyBIC);
+      expect(body.data.companyCorrespondentAccount).toBe(
+        updateUser.companyCorrespondentAccount,
+      );
+      expect(body.data.companyPaymentAccount).toBe(
+        updateUser.companyPaymentAccount,
+      );
+      expect(body.data.companyFax).toBe(updateUser.companyFax);
+      expect(body.data.companyRepresentative).toBe(
+        updateUser.companyRepresentative,
+      );
+      expect(body.data.company).toBe(updateUser.company);
       expect(body.data.password).toBeUndefined();
     });
-    // TODO: проверить изменение пользователя
+
+    /**
+     * Изменение аккаунта пользователя (с паролем - неудача)
+     */
+    test('PATCH /auth (Изменение аккаунта пользователя: неудача)', async () => {
+      await request
+        .patch(`${apiPath}/auth`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .send({ ...updateUser, password: 'Gruodis19771203!' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(406);
+    });
 
     /**
      * Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию
@@ -558,6 +609,28 @@ describe('Backend API (e2e)', () => {
       } else {
         expect(false).toEqual(true);
       }
+    });
+  });
+
+  /**
+   * Константы
+   */
+  describe('Константы /constants', () => {
+    /**
+     * Константы
+     */
+    test('GET /constants (Константы)', async () => {
+      await request
+        .get(`${apiPath}/constants`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: ConstantsGetResponse }) => {
+          expect(body.data.COMMISSION_PERCENT).toBeGreaterThanOrEqual(0);
+          expect(body.data.MIN_INVOICE_SUM).toBeGreaterThanOrEqual(0);
+          expect(body.data.SUBSCRIPTION_FEE).toBeGreaterThanOrEqual(0);
+          expect(body.data.VERSION_BACKEND).toBeDefined();
+        });
     });
   });
 

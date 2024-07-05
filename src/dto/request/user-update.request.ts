@@ -31,6 +31,8 @@ export class UserUpdateRequest extends PartialType(
     'companyEmail',
     'companyRepresentative',
     'companyFax',
+    'locale',
+    'preferredLanguage',
   ]),
 ) {
   @ApiProperty({
