@@ -32,8 +32,11 @@ import {
   InvoicesGetResponse,
   MonitorCreateRequest,
   ConstantsGetResponse,
+  BidsGetRequest,
+  BidsGetResponse,
 } from '@/dto';
 import {
+  BidStatus,
   MonitorCategoryEnum,
   MonitorMultiple,
   MonitorOrientation,
@@ -203,6 +206,8 @@ describe('Backend API (e2e)', () => {
   let folderId2 = '';
   let folderId3 = '';
   let mediaId1 = '';
+  let monitorName1 = '';
+  let monitorCode1 = '';
 
   /**
    *
@@ -1109,10 +1114,12 @@ describe('Backend API (e2e)', () => {
       if (!tokenMonitorOwner) {
         expect(false).toEqual(true);
       }
+      monitorName1 = '% test monitor % ' + jabber.createWord(5);
+      monitorCode1 = generateCode();
 
       const monitor: MonitorCreateRequest = {
-        name: '% test monitor % ' + jabber.createWord(5),
-        code: generateCode(),
+        name: monitorName1,
+        code: monitorCode1,
         price1s: 1,
         minWarranty: 10,
         maxDuration: 10000,
@@ -1174,6 +1181,63 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(200)
         .then(({ body }: { body: MonitorsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data[0]?.user?.password).toBeUndefined();
+        });
+    });
+  });
+
+  /**
+   *
+   * Заявки
+   *
+   */
+  describe('Заявки /bid', () => {
+    /**
+     * Получение списка заявок (неуспешно)
+     */
+    test('POST /bid [unsuccess] (Получение списка заявок)', async () => {
+      if (!tokenAdvertiser) {
+        expect(false).toEqual(true);
+      }
+
+      const bids: BidsGetRequest = {
+        where: {},
+        scope: { limit: 0 },
+      };
+
+      await request
+        .post(`${apiPath}/bid`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .send(bids)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
+
+    /**
+     * Получение списка заявок
+     */
+    test('POST /bid (Получение списка заявок)', async () => {
+      if (!tokenAdvertiser) {
+        expect(false).toEqual(true);
+      }
+
+      const bids: BidsGetRequest = {
+        where: {
+          status: BidStatus.OK,
+        },
+      };
+
+      await request
+        .post(`${apiPath}/bid`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .send(bids)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data[0]?.user?.password).toBeUndefined();

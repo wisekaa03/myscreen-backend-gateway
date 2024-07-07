@@ -97,6 +97,7 @@ export class BidRequest extends PartialType(
     nullable: true,
     required: false,
   })
+  @IsOptional()
   @IsDateString(
     { strict: true },
     { each: true, message: i18nValidationMessage('validation.IS_DATE') },

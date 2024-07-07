@@ -17,6 +17,7 @@ import {
   IsEnum,
   IsInt,
   IsNumberString,
+  IsOptional,
   IsUUID,
   ValidateIf,
 } from 'class-validator';
@@ -61,7 +62,7 @@ export class BidEntity extends BaseEntity {
   })
   buyer!: UserEntity | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'uuid', nullable: true })
   @Index('bidBuyer')
   @ApiProperty({
     description: 'Покупатель ID',
@@ -86,7 +87,7 @@ export class BidEntity extends BaseEntity {
   })
   seller!: UserEntity;
 
-  @Column()
+  @Column({ type: 'uuid' })
   @Index('bidSeller')
   @ApiProperty({
     description: 'Продавец ID',
@@ -229,6 +230,7 @@ export class BidEntity extends BaseEntity {
     nullable: true,
     required: false,
   })
+  @IsOptional()
   @IsDateString(
     { strict: true },
     { message: i18nValidationMessage('validation.IS_DATE') },

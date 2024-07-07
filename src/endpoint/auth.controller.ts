@@ -169,7 +169,6 @@ export class AuthController {
   ): Promise<AuthResponse> {
     const userAgent = req.headers['user-agent'] || '-';
     const fingerprint = (req.headers['x-real-ip'] as string) ?? req.ip ?? '-';
-    // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const [data, payload] = await this.authService.login(
       email,
       password,
