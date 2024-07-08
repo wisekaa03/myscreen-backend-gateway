@@ -31,8 +31,12 @@ import {
   InvoicesGetRequest,
   InvoicesGetResponse,
   MonitorCreateRequest,
+  ConstantsGetResponse,
+  BidsGetRequest,
+  BidsGetResponse,
 } from '@/dto';
 import {
+  BidStatus,
   MonitorCategoryEnum,
   MonitorMultiple,
   MonitorOrientation,
@@ -129,6 +133,8 @@ const updateUser: UserUpdateRequest = {
   phoneNumber: '+78003000000',
   city: 'Krasnodar',
   country: 'RU',
+  locale: 'en_US',
+  preferredLanguage: 'en',
   company: 'ACME corporation',
   companyLegalAddress: 'г. Краснодар, ул. Красная, д. 1',
   companyActualAddress: 'г. Краснодар, ул. Красная, д. 1',
@@ -161,7 +167,7 @@ describe('Backend API (e2e)', () => {
     const configService = app.get(ConfigService);
 
     const logLevel = configService.get('LOG_LEVEL');
-    if (logLevel) {
+    if (logLevel === 'debug') {
       const logger = app.get(Logger);
       app.useLogger(logger);
     }
@@ -171,7 +177,13 @@ describe('Backend API (e2e)', () => {
     app.useGlobalFilters(
       new ExceptionsFilter(httpAdaper.httpAdapter, configService),
     );
-    app.useGlobalPipes(new I18nValidationPipe());
+    app.useGlobalPipes(
+      new I18nValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        forbidUnknownValues: true,
+      }),
+    );
     app.useWebSocketAdapter(new WsAdapter(app));
     userService = app.get<UserService>(UserService);
 
@@ -194,6 +206,8 @@ describe('Backend API (e2e)', () => {
   let folderId2 = '';
   let folderId3 = '';
   let mediaId1 = '';
+  let monitorName1 = '';
+  let monitorCode1 = '';
 
   /**
    *
@@ -409,7 +423,10 @@ describe('Backend API (e2e)', () => {
     });
   });
 
-  describe('Пользователь (изменение)', () => {
+  /**
+   * Авторизация
+   */
+  describe('Изменение advertiser-monitor', () => {
     /**
      * Изменение аккаунта пользователя
      */
@@ -423,9 +440,54 @@ describe('Backend API (e2e)', () => {
         .expect(200);
       expect(body.status).toBe(Status.Success);
       expect(body.data.id).toBe(userIdAdvertiser);
+      expect(body.data.surname).toBe(updateUser.surname);
+      expect(body.data.name).toBe(updateUser.name);
+      expect(body.data.middleName).toBe(updateUser.middleName);
+      expect(body.data.phoneNumber).toBe(updateUser.phoneNumber);
+      expect(body.data.city).toBe(updateUser.city);
+      expect(body.data.country).toBe(updateUser.country);
+      expect(body.data.locale).toBe(updateUser.locale);
+      expect(body.data.preferredLanguage).toBe(updateUser.preferredLanguage);
+      expect(body.data.company).toBe(updateUser.company);
+      expect(body.data.companyLegalAddress).toBe(
+        updateUser.companyLegalAddress,
+      );
+      expect(body.data.companyActualAddress).toBe(
+        updateUser.companyActualAddress,
+      );
+      expect(body.data.companyTIN).toBe(updateUser.companyTIN);
+      expect(body.data.companyRRC).toBe(updateUser.companyRRC);
+      expect(body.data.companyPSRN).toBe(updateUser.companyPSRN);
+      expect(body.data.companyPhone).toBe(updateUser.companyPhone);
+      expect(body.data.companyEmail).toBe(updateUser.companyEmail);
+      expect(body.data.companyBank).toBe(updateUser.companyBank);
+      expect(body.data.companyBIC).toBe(updateUser.companyBIC);
+      expect(body.data.companyCorrespondentAccount).toBe(
+        updateUser.companyCorrespondentAccount,
+      );
+      expect(body.data.companyPaymentAccount).toBe(
+        updateUser.companyPaymentAccount,
+      );
+      expect(body.data.companyFax).toBe(updateUser.companyFax);
+      expect(body.data.companyRepresentative).toBe(
+        updateUser.companyRepresentative,
+      );
+      expect(body.data.company).toBe(updateUser.company);
       expect(body.data.password).toBeUndefined();
     });
-    // TODO: проверить изменение пользователя
+
+    /**
+     * Изменение аккаунта пользователя (с паролем - неудача)
+     */
+    test('PATCH /auth (Изменение аккаунта пользователя: неудача)', async () => {
+      await request
+        .patch(`${apiPath}/auth`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .send({ ...updateUser, password: 'Gruodis19771203!' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
 
     /**
      * Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию
@@ -440,6 +502,42 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.id).toBe(userIdAdvertiser);
+          expect(body.data.password).toBeUndefined();
+          expect(body.data.surname).toBe(updateUser.surname);
+          expect(body.data.name).toBe(updateUser.name);
+          expect(body.data.middleName).toBe(updateUser.middleName);
+          expect(body.data.phoneNumber).toBe(updateUser.phoneNumber);
+          expect(body.data.city).toBe(updateUser.city);
+          expect(body.data.country).toBe(updateUser.country);
+          expect(body.data.locale).toBe(updateUser.locale);
+          expect(body.data.preferredLanguage).toBe(
+            updateUser.preferredLanguage,
+          );
+          expect(body.data.company).toBe(updateUser.company);
+          expect(body.data.companyLegalAddress).toBe(
+            updateUser.companyLegalAddress,
+          );
+          expect(body.data.companyActualAddress).toBe(
+            updateUser.companyActualAddress,
+          );
+          expect(body.data.companyTIN).toBe(updateUser.companyTIN);
+          expect(body.data.companyRRC).toBe(updateUser.companyRRC);
+          expect(body.data.companyPSRN).toBe(updateUser.companyPSRN);
+          expect(body.data.companyPhone).toBe(updateUser.companyPhone);
+          expect(body.data.companyEmail).toBe(updateUser.companyEmail);
+          expect(body.data.companyBank).toBe(updateUser.companyBank);
+          expect(body.data.companyBIC).toBe(updateUser.companyBIC);
+          expect(body.data.companyCorrespondentAccount).toBe(
+            updateUser.companyCorrespondentAccount,
+          );
+          expect(body.data.companyPaymentAccount).toBe(
+            updateUser.companyPaymentAccount,
+          );
+          expect(body.data.companyFax).toBe(updateUser.companyFax);
+          expect(body.data.companyRepresentative).toBe(
+            updateUser.companyRepresentative,
+          );
+          expect(body.data.company).toBe(updateUser.company);
           expect(body.data.password).toBeUndefined();
         });
     });
@@ -558,6 +656,28 @@ describe('Backend API (e2e)', () => {
       } else {
         expect(false).toEqual(true);
       }
+    });
+  });
+
+  /**
+   * Константы
+   */
+  describe('Константы /constants', () => {
+    /**
+     * Константы
+     */
+    test('GET /constants (Константы)', async () => {
+      await request
+        .get(`${apiPath}/constants`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: ConstantsGetResponse }) => {
+          expect(body.data.COMMISSION_PERCENT).toBeGreaterThanOrEqual(0);
+          expect(body.data.MIN_INVOICE_SUM).toBeGreaterThanOrEqual(0);
+          expect(body.data.SUBSCRIPTION_FEE).toBeGreaterThanOrEqual(0);
+          expect(body.data.VERSION_BACKEND).toBeDefined();
+        });
     });
   });
 
@@ -994,10 +1114,12 @@ describe('Backend API (e2e)', () => {
       if (!tokenMonitorOwner) {
         expect(false).toEqual(true);
       }
+      monitorName1 = '% test monitor % ' + jabber.createWord(5);
+      monitorCode1 = generateCode();
 
       const monitor: MonitorCreateRequest = {
-        name: '% test monitor % ' + jabber.createWord(5),
-        code: generateCode(),
+        name: monitorName1,
+        code: monitorCode1,
         price1s: 1,
         minWarranty: 10,
         maxDuration: 10000,
@@ -1059,6 +1181,63 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(200)
         .then(({ body }: { body: MonitorsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data[0]?.user?.password).toBeUndefined();
+        });
+    });
+  });
+
+  /**
+   *
+   * Заявки
+   *
+   */
+  describe('Заявки /bid', () => {
+    /**
+     * Получение списка заявок (неуспешно)
+     */
+    test('POST /bid [unsuccess] (Получение списка заявок)', async () => {
+      if (!tokenAdvertiser) {
+        expect(false).toEqual(true);
+      }
+
+      const bids: BidsGetRequest = {
+        where: {},
+        scope: { limit: 0 },
+      };
+
+      await request
+        .post(`${apiPath}/bid`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .send(bids)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(400);
+    });
+
+    /**
+     * Получение списка заявок
+     */
+    test('POST /bid (Получение списка заявок)', async () => {
+      if (!tokenAdvertiser) {
+        expect(false).toEqual(true);
+      }
+
+      const bids: BidsGetRequest = {
+        where: {
+          status: BidStatus.OK,
+        },
+      };
+
+      await request
+        .post(`${apiPath}/bid`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .send(bids)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data[0]?.user?.password).toBeUndefined();

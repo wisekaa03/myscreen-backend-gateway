@@ -57,7 +57,13 @@ async function bootstrap() {
       new ExceptionsFilter(httpAdapter, configService),
       new I18nValidationExceptionMyScreenFilter(httpAdapter, configService),
     )
-    .useGlobalPipes(new I18nValidationPipe())
+    .useGlobalPipes(
+      new I18nValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        forbidUnknownValues: true,
+      }),
+    )
     .useGlobalInterceptors(new LoggerErrorInterceptor())
     .useWebSocketAdapter(new WsAdapter(app));
 

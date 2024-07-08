@@ -33,6 +33,7 @@ import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
 import { UserResponseToExternal } from '@/database/user-response.entity';
+import { UserEntity } from '@/database/user.entity';
 
 @ApiComplexDecorators({ path: ['auth'] })
 export class AuthController {
@@ -107,10 +108,36 @@ export class AuthController {
         'Disabled is updated when Administrator logged in',
       );
     }
-    if (role !== UserRoleEnum.Administrator && update.verified !== undefined) {
+    if (
+      role !== UserRoleEnum.Administrator &&
+      (update as UserEntity).verified !== undefined
+    ) {
       throw new NotAcceptableError(
         'Verified is updated when Administrator logged in',
       );
+    }
+    if ((update as UserEntity).password !== undefined) {
+      throw new NotAcceptableError(
+        'The password is changed using a different procedure',
+      );
+    }
+    if ((update as UserEntity).emailConfirmKey !== undefined) {
+      throw new NotAcceptableError('Hidden column');
+    }
+    if ((update as UserEntity).forgotConfirmKey !== undefined) {
+      throw new NotAcceptableError('Hidden column');
+    }
+    if ((update as UserEntity).id !== undefined) {
+      throw new NotAcceptableError('Hidden column');
+    }
+    if ((update as UserEntity).nonPayment !== undefined) {
+      throw new NotAcceptableError('Hidden column');
+    }
+    if ((update as UserEntity).updatedAt !== undefined) {
+      throw new NotAcceptableError('Hidden column');
+    }
+    if ((update as UserEntity).createdAt !== undefined) {
+      throw new NotAcceptableError('Hidden column');
     }
 
     const data = await this.userService.update(user, update);
@@ -142,7 +169,6 @@ export class AuthController {
   ): Promise<AuthResponse> {
     const userAgent = req.headers['user-agent'] || '-';
     const fingerprint = (req.headers['x-real-ip'] as string) ?? req.ip ?? '-';
-    // DEBUG: нужно ли нам это, fingerprint ? я считаю что нужно :)
     const [data, payload] = await this.authService.login(
       email,
       password,
