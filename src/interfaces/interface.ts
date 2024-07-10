@@ -24,8 +24,10 @@ export interface MonitorGroupWithPlaylist
 
 export interface FindManyOptionsCaseInsensitive<T> extends FindManyOptions<T> {
   caseInsensitive?: boolean;
+  fromView?: boolean;
 }
 
 export interface FindOneOptionsCaseInsensitive<T> extends FindOneOptions<T> {
   caseInsensitive?: boolean;
+  fromView?: boolean;
 }

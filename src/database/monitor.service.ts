@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, FindManyOptions, In, Not, Repository } from 'typeorm';
 
+import { FindManyOptionsCaseInsensitive } from '@/interfaces';
 import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorGroup } from '@/dto/request/monitor-group';
@@ -11,7 +12,6 @@ import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
-import { FindManyOptionsCaseInsensitive } from '@/interfaces';
 import { WalletService } from './wallet.service';
 
 @Injectable()
@@ -65,19 +65,27 @@ export class MonitorService {
       : monitor;
   }
 
-  async count({
-    find,
-    caseInsensitive = true,
-  }: {
-    find: FindManyOptions<MonitorEntity>;
-    caseInsensitive?: boolean;
-  }): Promise<number> {
+  async count(
+    find: FindManyOptionsCaseInsensitive<MonitorEntity>,
+  ): Promise<number> {
     const monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
-    const monitor = caseInsensitive
+    const monitor = find.caseInsensitive
       ? await TypeOrmFind.countCI(this.monitorRepository, monitorWhere)
       : await this.monitorRepository.count(monitorWhere);
 
     return monitor;
+  }
+
+  async countMonitors(userId: string): Promise<number> {
+    return this.count({
+      where: {
+        userId,
+        multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
+      },
+      caseInsensitive: false,
+      loadEagerRelations: false,
+      relations: {},
+    });
   }
 
   async findAndCount({

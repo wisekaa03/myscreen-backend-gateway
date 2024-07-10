@@ -46,12 +46,15 @@ export class BidService {
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
     private readonly actService: ActService,
+    @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
+    @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
     @Inject(forwardRef(() => WSGateway))
     private readonly wsGateway: WSGateway,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
+    @Inject(forwardRef(() => PlaylistService))
     private readonly playlistService: PlaylistService,
     private readonly walletService: WalletService,
     @InjectRepository(BidEntity)
@@ -458,11 +461,8 @@ export class BidService {
     dateBefore: Date | null;
     playlistChange: boolean;
   }): Promise<BidEntity[]> {
-    const {
-      id: userId,
-      role,
-      wallet: { total: totalBalance = 0 },
-    } = user;
+    const { id: userId, role } = user;
+    const totalBalance = await this.walletService.walletSum({ userId });
 
     // Проверяем наличие плейлиста
     if (!Array.isArray(monitorIds) || monitorIds.length < 1) {

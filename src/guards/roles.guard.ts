@@ -18,7 +18,7 @@ export class RolesGuard implements CanActivate {
     private readonly userService: UserService,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const executionClass = context.getClass();
     const executionHanlder = context.getHandler();
 
@@ -43,7 +43,7 @@ export class RolesGuard implements CanActivate {
         executionHanlder,
         executionClass,
       ]) ?? CRUD.READ;
-    this.userService.verify(user, className, functionName, requiredCRUD);
+    await this.userService.verify(user, className, functionName, requiredCRUD);
 
     return !userRole ? false : requiredRoles.some((role) => userRole === role);
   }
