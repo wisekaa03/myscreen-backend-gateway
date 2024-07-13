@@ -190,7 +190,8 @@ export class MonitorService {
       if (userId !== undefined) {
         monitor.favorite =
           userId !== undefined
-            ? monitor.favorities?.some((fav) => fav.userId === userId) ?? false
+            ? (monitor.favorities?.some((fav) => fav.userId === userId) ??
+              false)
             : false;
         delete monitor.favorities;
       }
