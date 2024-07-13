@@ -17,7 +17,12 @@ import {
   ProducerDeserializer,
 } from '@nestjs/microservices';
 
-import { EDITOR_SERVICE, FILE_SERVICE, MAIL_SERVICE } from '@/constants';
+import {
+  EDITOR_SERVICE,
+  FILE_SERVICE,
+  FORM_SERVICE,
+  MAIL_SERVICE,
+} from '@/constants';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
@@ -99,6 +104,42 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
                 },
               ],
               queue: 'mail_queue',
+              queueOptions: {
+                durable: true,
+              },
+              serializer: {
+                serialize: (value) => ({
+                  ...value,
+                  data: JSON.stringify(value.data),
+                }),
+              } as ProducerSerializer,
+              deserializer: {
+                deserialize: (value) => ({
+                  ...value,
+                  response:
+                    value.response?.type === 'Buffer'
+                      ? Buffer.from(value.response)
+                      : value.response,
+                }),
+              } as ProducerDeserializer,
+            },
+          }),
+          inject: [ConfigService],
+        },
+        {
+          name: FORM_SERVICE,
+          useFactory: (configService: ConfigService) => ({
+            transport: Transport.RMQ,
+            options: {
+              urls: [
+                {
+                  hostname: configService.getOrThrow('RABBITMQ_HOST'),
+                  port: parseInt(configService.getOrThrow('RABBITMQ_PORT'), 10),
+                  username: configService.getOrThrow('RABBITMQ_USERNAME'),
+                  password: configService.getOrThrow('RABBITMQ_PASSWORD'),
+                },
+              ],
+              queue: 'form_queue',
               queueOptions: {
                 durable: true,
               },

@@ -16,9 +16,9 @@ import {
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsNumberString,
   IsString,
   IsUUID,
+  Min,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
@@ -76,10 +76,8 @@ export class InvoiceEntity extends BaseEntity {
   })
   @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
   @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
-  @IsNumberString(
-    {},
-    { message: i18nValidationMessage('validation.IS_NUMBER') },
-  )
+  @IsNumber({}, { message: i18nValidationMessage('validation.IS_NUMBER') })
+  @Min(0, { message: i18nValidationMessage('validation.IS_MIN') })
   sum!: number;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {

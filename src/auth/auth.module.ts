@@ -6,7 +6,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from '@/database/database.module';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-import { WSModule } from '@/websocket/ws.module';
 
 @Module({
   imports: [

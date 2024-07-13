@@ -98,7 +98,7 @@ export class InvoiceController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'invoice-create',
-    summary: 'Выставление счетов',
+    summary: 'Выставление счета',
   })
   @ApiResponse({
     status: 200,

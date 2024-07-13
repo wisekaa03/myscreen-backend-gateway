@@ -8,7 +8,11 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 
-import { NotFoundError } from '@/errors';
+import {
+  BadRequestError,
+  NotFoundError,
+  ServiceUnavailableError,
+} from '@/errors';
 import { PrintInvoice } from '@/interfaces';
 import { MAIL_SERVICE, formatToContentType } from '@/constants';
 import { UserRoleEnum } from '@/enums';
@@ -63,17 +67,21 @@ export class InvoiceService {
     sum: number,
     description?: string,
   ): Promise<InvoiceEntity | null> {
+    if (sum < this.minInvoiceSum) {
+      throw new BadRequestError('INVOICE_MINIMUM_SUM');
+    }
+    const { id: userId } = user;
     return this.invoiceRepository.manager.transaction(async (transact) => {
       // Если у пользователя есть счет со статусом "Ожидает подтверждения",
       // "Подтвержден, ожидает оплаты", то нужно присвоить ему статус "Аннулирован".
       const invoices = await transact.find(InvoiceEntity, {
         where: [
-          { userId: user.id, status: InvoiceStatus.AWAITING_CONFIRMATION },
-          { userId: user.id, status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT },
+          { userId, status: InvoiceStatus.AWAITING_CONFIRMATION },
+          { userId, status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT },
         ],
       });
       if (invoices.length > 0) {
-        const invoicesPromise = Object.values(invoices).map((invoice) =>
+        const invoicesPromise = Object.values(invoices)?.map((invoice) =>
           transact.save(InvoiceEntity, {
             ...invoice,
             status: InvoiceStatus.CANCELLED,
@@ -85,7 +93,7 @@ export class InvoiceService {
       const invoiceChanged: DeepPartial<InvoiceEntity> = {
         sum,
         description,
-        userId: user.id,
+        userId,
         status: InvoiceStatus.AWAITING_CONFIRMATION,
       };
 
@@ -219,13 +227,27 @@ export class InvoiceService {
     const language =
       invoice.user.preferredLanguage ??
       this.configService.getOrThrow('LANGUAGE_DEFAULT');
-    const response = await lastValueFrom(
-      this.mailService.send<Record<string, unknown>, PrintInvoice>('invoice', {
+
+    // TODO: сделать через form_service
+    let response;
+    try {
+      const emailInvoice = this.mailService.send<
+        Record<string, unknown>,
+        PrintInvoice
+      >('invoice', {
         format,
         invoice,
         language,
-      }),
-    );
+      });
+
+      response = await lastValueFrom(emailInvoice, { defaultValue: {} }).catch(
+        (error) => {
+          throw new ServiceUnavailableError(error);
+        },
+      );
+    } catch (error: unknown) {
+      throw new ServiceUnavailableError(error);
+    }
 
     const specificFormat = formatToContentType[format]
       ? format
