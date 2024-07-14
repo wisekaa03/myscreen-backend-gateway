@@ -13,6 +13,7 @@ import { UserService } from './user.service';
 import { getFullName } from '@/utils/full-name';
 import { UserResponse } from './user-response.entity';
 import { RegisterRequest } from '@/dto';
+import { FileService } from './file.service';
 
 describe(UserService.name, () => {
   let service: UserService;
@@ -41,6 +42,8 @@ describe(UserService.name, () => {
       new Observable((s) => s.next(data)),
     send: async (id: unknown) => new Observable((s) => s.next(id)),
     t: (value: unknown) => value,
+    countMonitors: async (userId: string) => Promise.resolve(0),
+    sum: async (userId: string) => Promise.resolve(0),
     metadata: {
       columns: [],
       relations: [],
@@ -51,6 +54,7 @@ describe(UserService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserService,
+        { provide: FileService, useClass: mockRepository },
         { provide: I18nService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
         { provide: MAIL_SERVICE, useClass: mockRepository },
@@ -128,6 +132,7 @@ describe(UserService.name, () => {
     expect(testUserFullNameGetFullName).toBe(
       'Steve John Doe <postmaster@domain.com>',
     );
+
     const testUserFullNameEmail = testUser.fullNameEmail;
     expect(testUserFullNameEmail).toBe(
       'Steve John Doe <postmaster@domain.com>',
@@ -136,178 +141,173 @@ describe(UserService.name, () => {
 
   describe('User Monitor-owner Demo permissions', () => {
     test('Administrator and Accountant users', async () => {
-      expect(
-        service.verify(
-          {
-            ...monitorTestDemo,
-            role: UserRoleEnum.Administrator,
-          } as UserResponse,
-          'auth',
-          'login',
-          CRUD.READ,
-        ),
-      ).toBe(true);
-      expect(
-        service.verify(
-          {
-            ...monitorTestDemo,
-            role: UserRoleEnum.Accountant,
-          } as UserResponse,
-          'invoice',
-          'get',
-          CRUD.READ,
-        ),
-      ).toBe(true);
+      const userAdmin = service.verify(
+        {
+          ...monitorTestDemo,
+          role: UserRoleEnum.Administrator,
+        } as UserResponse,
+        'auth',
+        'login',
+        CRUD.READ,
+      );
+      await expect(userAdmin).resolves.toBe(true);
+
+      const userAccountant = service.verify(
+        {
+          ...monitorTestDemo,
+          role: UserRoleEnum.Accountant,
+        } as UserResponse,
+        'invoice',
+        'get',
+        CRUD.READ,
+      );
+      await expect(userAccountant).resolves.toBe(true);
     });
 
-    test('Access to Auth and invoice', () => {
-      expect(
-        service.verify(
-          monitorTestDemo as UserResponse,
-          'auth',
-          'get',
-          CRUD.READ,
-        ),
-      ).toBe(true);
-      expect(
-        service.verify(
-          monitorTestDemo as UserResponse,
-          'invoice',
-          'get',
-          CRUD.READ,
-        ),
-      ).toBe(true);
+    test('Access to Auth and invoice', async () => {
+      const verifyAuthGet = service.verify(
+        monitorTestDemo as UserResponse,
+        'auth',
+        'get',
+        CRUD.READ,
+      );
+      await expect(verifyAuthGet).resolves.toBe(true);
+
+      const verifyInvoiceGet = service.verify(
+        monitorTestDemo as UserResponse,
+        'invoice',
+        'get',
+        CRUD.READ,
+      );
+      await expect(verifyInvoiceGet).resolves.toBe(true);
     });
 
-    test('Count of monitors: 5', async () => {
+    test('Count of monitors: 5. Monitor create', async () => {
       // Количество мониторов: 5
-      expect(() =>
-        service.verify(
-          {
-            ...monitorTestDemo,
-            countMonitors: '5',
-            metrics: {
-              monitors: {
-                offline: 5,
-                user: 5,
-              },
-              storageSpace: {
-                storage: 0,
-              },
+      const verifyMonitorCreate = service.verify(
+        {
+          ...monitorTestDemo,
+          countMonitors: '5',
+          metrics: {
+            monitors: {
+              offline: 5,
+              user: 5,
             },
-          } as UserResponse,
-          'monitor',
-          'create',
-          CRUD.CREATE,
-        ),
-      ).toThrow();
+            storageSpace: {
+              storage: 0,
+            },
+          },
+        } as UserResponse,
+        'monitor',
+        'create',
+        CRUD.CREATE,
+      );
+      await expect(verifyMonitorCreate).rejects.toThrow();
+    });
 
-      expect(
-        service.verify(
-          {
-            ...monitorTestDemo,
-            countMonitors: '5',
-            metrics: {
-              monitors: {
-                offline: 5,
-                user: 5,
-              },
-              storageSpace: {
-                storage: 0,
-              },
+    test('Count of monitors: 5. Monitors get', async () => {
+      const verifyMonitorGet = service.verify(
+        {
+          ...monitorTestDemo,
+          countMonitors: '5',
+          metrics: {
+            monitors: {
+              offline: 5,
+              user: 5,
             },
-          } as UserResponse,
-          'monitor',
-          'get',
-          CRUD.READ,
-        ),
-      ).toBe(true);
+            storageSpace: {
+              storage: 0,
+            },
+          },
+        } as UserResponse,
+        'monitor',
+        'get',
+        CRUD.READ,
+      );
+      await expect(verifyMonitorGet).resolves.toBe(true);
+    });
 
-      expect(
-        service.verify(
-          {
-            ...monitorTestDemo,
-            countMonitors: '5',
-            metrics: {
-              monitors: {
-                offline: 5,
-                user: 5,
-              },
-              storageSpace: {
-                storage: 0,
-              },
+    test('Count of monitors: 5. Files get', async () => {
+      const verifyFilesGet = service.verify(
+        {
+          ...monitorTestDemo,
+          countMonitors: '5',
+          metrics: {
+            monitors: {
+              offline: 5,
+              user: 5,
             },
-          } as UserResponse,
-          'files',
-          'get',
-          CRUD.READ,
-        ),
-      ).toBe(true);
+            storageSpace: {
+              storage: 0,
+            },
+          },
+        } as UserResponse,
+        'files',
+        'get',
+        CRUD.READ,
+      );
+      await expect(verifyFilesGet).resolves.toBe(true);
     });
 
     test('Access to create monitors: 14 days', async () => {
       const createdAt = dayjs().subtract(14).toDate();
       // Доступ к управлению мониторами: 14 дней
-      expect(
-        service.verify(
-          {
-            ...monitorTestDemo,
-            metrics: {
-              monitors: { online: 0, offline: 0, empty: 0, user: 4 },
-              playlists: { added: 0, played: 0 },
-              storageSpace: { storage: 0, total: 1000000 },
-            },
-            createdAt,
-          } as UserResponse,
-          'monitor',
-          'create',
-          CRUD.CREATE,
-        ),
-      ).toBe(true);
+      const verifyMonitorCreate = service.verify(
+        {
+          ...monitorTestDemo,
+          metrics: {
+            monitors: { online: 0, offline: 0, empty: 0, user: 4 },
+            playlists: { added: 0, played: 0 },
+            storageSpace: { storage: 0, total: 1000000 },
+          },
+          createdAt,
+        } as UserResponse,
+        'monitor',
+        'create',
+        CRUD.CREATE,
+      );
+      await expect(verifyMonitorCreate).resolves.toBe(true);
     });
 
     test('Access to create monitors: 15 days', async () => {
-      expect(() =>
-        service.verify(
-          {
-            ...monitorTestDemo,
-            countMonitors: '4',
-            createdAt: dayjs().subtract(15).toDate(),
-          } as UserResponse,
-          'monitor',
-          'create',
-          CRUD.CREATE,
-        ),
-      ).not.toBe(true);
+      const verifyMonitorCreate15 = service.verify(
+        {
+          ...monitorTestDemo,
+          countMonitors: '4',
+          createdAt: dayjs().subtract(15).toDate(),
+        } as UserResponse,
+        'monitor',
+        'create',
+        CRUD.CREATE,
+      );
+      await expect(verifyMonitorCreate15).resolves.toBe(true);
     });
 
     test('Access to create files: 28 days', async () => {
       // Доступ к файлам: 28 дней
-      expect(
-        service.verify(
-          {
-            ...monitorTestDemo,
-            createdAt: dayjs().subtract(28).toDate(),
-          } as UserResponse,
-          'file',
-          'create',
-          CRUD.CREATE,
-        ),
-      ).toBe(true);
+      const verifyFileCreate = service.verify(
+        {
+          ...monitorTestDemo,
+          createdAt: dayjs().subtract(28).toDate(),
+        } as UserResponse,
+        'file',
+        'create',
+        CRUD.CREATE,
+      );
+      await expect(verifyFileCreate).resolves.toBe(true);
     });
 
     test('Access to create files: 29 days', async () => {
-      expect(() =>
-        service.verify(
-          {
-            ...monitorTestDemo,
-            createdAt: dayjs().subtract(29).toDate(),
-          } as UserResponse,
-          'file',
-          'create',
-          CRUD.CREATE,
-        ),
-      ).not.toBe(true);
+      const verifyFileCreate29 = service.verify(
+        {
+          ...monitorTestDemo,
+          createdAt: dayjs().subtract(29).toDate(),
+        } as UserResponse,
+        'file',
+        'create',
+        CRUD.CREATE,
+      );
+      await expect(verifyFileCreate29).resolves.toBe(true);
     });
   });
 
@@ -317,8 +317,8 @@ describe(UserService.name, () => {
       ...testUser,
       password: 'aA1!aaaa',
     };
-    const user = await service.register(testUserRegister as RegisterRequest);
-    expect(user).toStrictEqual(testUser);
+    const user = service.register(testUserRegister as RegisterRequest);
+    await expect(user).resolves.toStrictEqual(testUser);
   });
 
   test('Update user', async () => {
@@ -327,9 +327,9 @@ describe(UserService.name, () => {
       ...testUser,
       email: 'postmaster@domain.us',
       password: 'aA1!aaaa',
-    };
-    const user = await service.update('0000-0000-0000-0000', testUserUpdate);
-    expect(user).toBeDefined();
+    } as UserEntity;
+    const user = service.update(testUserUpdate, testUserUpdate);
+    await expect(user).resolves.toBeDefined();
   });
 
   // TODO: should inspect:

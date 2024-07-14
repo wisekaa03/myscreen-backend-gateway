@@ -389,6 +389,16 @@ export class MonitorEntity extends BaseEntity {
   })
   status!: MonitorStatus;
 
+  @Column({ type: 'integer', default: 0 })
+  @ApiProperty({
+    description: 'Количество подключенных мониторов в группе',
+    example: 0,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  groupOnlineMonitors?: number;
+
   @Column({
     type: 'enum',
     enum: MonitorMultiple,

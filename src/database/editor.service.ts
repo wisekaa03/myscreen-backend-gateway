@@ -62,6 +62,7 @@ export class EditorService {
     private readonly playlistService: PlaylistService,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
+    @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @InjectRepository(EditorEntity)
     private readonly editorRepository: Repository<EditorEntity>,

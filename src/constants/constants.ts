@@ -1,6 +1,7 @@
 import { SpecificFormat } from '@/enums/specific-format.enum';
 
 export const MAIL_SERVICE = 'MAIL_SERVICE';
+export const FORM_SERVICE = 'FORM_SERVICE';
 export const EDITOR_SERVICE = 'EDITOR_EXPORT_SERVICE';
 export const FILE_SERVICE = 'FILE_SERVICE';
 

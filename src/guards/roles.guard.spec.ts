@@ -41,7 +41,7 @@ describe(RolesGuard.name, () => {
     expect(rolesGuard).toBeDefined();
   });
 
-  it('canActivate roles', () => {
+  it('canActivate roles', async () => {
     const roles = reflector.get(Roles, MockRole);
     expect(roles).toStrictEqual([UserRoleEnum.Administrator]);
 
@@ -52,7 +52,7 @@ describe(RolesGuard.name, () => {
     expect(guardRoles).toEqual({ reflector });
 
     const mockExecutionContext = createMock<ExecutionContext>();
-    const result = guardRoles.canActivate(mockExecutionContext);
+    const result = await guardRoles.canActivate(mockExecutionContext);
     expect(result).toBe(true);
   });
 });

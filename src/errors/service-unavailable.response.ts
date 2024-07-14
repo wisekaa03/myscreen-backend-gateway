@@ -5,7 +5,7 @@ import { TranslateOptions } from 'nestjs-i18n';
 import { Status } from '@/enums/status.enum';
 
 export class ServiceUnavailableError extends ServiceUnavailableException {
-  constructor(message?: string, options?: TranslateOptions) {
+  constructor(message?: unknown, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.SERVICE_UNAVAILABLE,

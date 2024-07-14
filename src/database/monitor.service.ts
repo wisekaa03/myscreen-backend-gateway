@@ -1,7 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, FindManyOptions, In, Not, Repository } from 'typeorm';
+import {
+  DeleteResult,
+  FindManyOptions,
+  In,
+  Not,
+  Repository,
+  UpdateResult,
+} from 'typeorm';
 
+import { FindManyOptionsCaseInsensitive } from '@/interfaces';
 import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorGroup } from '@/dto/request/monitor-group';
@@ -11,11 +19,12 @@ import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
-import { FindManyOptionsCaseInsensitive } from '@/interfaces';
 import { WalletService } from './wallet.service';
 
 @Injectable()
 export class MonitorService {
+  private logger = new Logger(MonitorService.name);
+
   constructor(
     private readonly bidService: BidService,
     private readonly walletService: WalletService,
@@ -65,19 +74,27 @@ export class MonitorService {
       : monitor;
   }
 
-  async count({
-    find,
-    caseInsensitive = true,
-  }: {
-    find: FindManyOptions<MonitorEntity>;
-    caseInsensitive?: boolean;
-  }): Promise<number> {
+  async count(
+    find: FindManyOptionsCaseInsensitive<MonitorEntity>,
+  ): Promise<number> {
     const monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
-    const monitor = caseInsensitive
+    const monitor = find.caseInsensitive
       ? await TypeOrmFind.countCI(this.monitorRepository, monitorWhere)
       : await this.monitorRepository.count(monitorWhere);
 
     return monitor;
+  }
+
+  async countMonitors(userId: string): Promise<number> {
+    return this.count({
+      where: {
+        userId,
+        multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
+      },
+      caseInsensitive: false,
+      loadEagerRelations: false,
+      relations: {},
+    });
   }
 
   async findAndCount({
@@ -182,7 +199,8 @@ export class MonitorService {
       if (userId !== undefined) {
         monitor.favorite =
           userId !== undefined
-            ? monitor.favorities?.some((fav) => fav.userId === userId) ?? false
+            ? (monitor.favorities?.some((fav) => fav.userId === userId) ??
+              false)
             : false;
         delete monitor.favorities;
       }
@@ -472,10 +490,58 @@ export class MonitorService {
   }
 
   async status(
-    monitorId: string,
+    monitor: MonitorEntity,
     status = MonitorStatus.Online,
-  ): Promise<void> {
-    await this.monitorRepository.update(monitorId, { status });
+  ): Promise<UpdateResult> {
+    const { id } = monitor;
+    if (monitor.multiple === MonitorMultiple.SUBORDINATE) {
+      const groupMonitor = await this.monitorGroupRepository.findOne({
+        where: { monitorId: id },
+        select: ['id', 'parentMonitorId'],
+        loadEagerRelations: false,
+        relations: {},
+      });
+      if (groupMonitor) {
+        const { parentMonitorId } = groupMonitor;
+        if (status === MonitorStatus.Online) {
+          await this.monitorRepository.increment(
+            { id: parentMonitorId },
+            'groupOnlineMonitors',
+            1,
+          );
+        } else {
+          await this.monitorRepository.decrement(
+            { id: parentMonitorId },
+            'groupOnlineMonitors',
+            1,
+          );
+        }
+        const monitorGroup = await this.monitorRepository.findOne({
+          where: { id: parentMonitorId },
+          loadEagerRelations: false,
+          relations: { groupMonitors: true },
+        });
+        if (monitorGroup) {
+          const onlineMonitors = monitorGroup.groupMonitors?.length ?? Infinity;
+          if (monitorGroup.groupOnlineMonitors === onlineMonitors) {
+            if (monitorGroup.status !== MonitorStatus.Online) {
+              await this.monitorRepository.update(
+                { id: monitorGroup.id },
+                { status: MonitorStatus.Online },
+              );
+            }
+          } else {
+            if (monitorGroup.status !== MonitorStatus.Offline) {
+              await this.monitorRepository.update(
+                { id: monitorGroup.id },
+                { status: MonitorStatus.Offline },
+              );
+            }
+          }
+        }
+      }
+    }
+    return this.monitorRepository.update(id, { status });
   }
 
   async favorite(

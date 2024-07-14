@@ -20,6 +20,7 @@ import {
 } from '@/errors';
 import {
   FindManyOptionsCaseInsensitive,
+  FindOneOptionsCaseInsensitive,
   MailForgotPassword,
   MailSendVerificationCode,
   MailWelcomeMessage,
@@ -66,12 +67,12 @@ export class UserService {
    * @throws {ForbiddenError} ForbiddenError
    * @memberof UserService
    */
-  verify(
+  async verify(
     user: UserResponse,
     controllerName: string,
     functionName: string,
     crud: CRUD,
-  ): boolean {
+  ): Promise<boolean> {
     const name = user.fullNameEmail;
     this.logger.log(
       `User: "${name}" Controllers: "${controllerName}" CRUD: "${crud}"`,
@@ -95,7 +96,7 @@ export class UserService {
         if (
           controllerName === 'monitor' &&
           crud === CRUD.CREATE &&
-          1 + countMonitors > 5
+          1 + Number(countMonitors) > 5
         ) {
           throw new ForbiddenError('demoTimeIsUp', {
             lang: I18nContext.current()?.lang,
@@ -439,6 +440,34 @@ export class UserService {
         );
 
     return users;
+  }
+
+  async findOne(
+    find: FindOneOptionsCaseInsensitive<UserResponse | UserEntity>,
+  ): Promise<UserResponse | UserEntity | null> {
+    if (!find.fromView) {
+      if (!find.caseInsensitive) {
+        return this.userRepository.findOne(
+          TypeOrmFind.findParams(UserEntity, find),
+        );
+      }
+
+      return TypeOrmFind.findOneCI(
+        this.userRepository,
+        TypeOrmFind.findParams(UserEntity, find),
+      );
+    }
+
+    if (!find.caseInsensitive) {
+      return this.userResponseRepository.findOne(
+        TypeOrmFind.findParams(UserResponse, find),
+      );
+    }
+
+    return TypeOrmFind.findOneCI(
+      this.userResponseRepository,
+      TypeOrmFind.findParams(UserResponse, find),
+    );
   }
 
   async findAndCount(

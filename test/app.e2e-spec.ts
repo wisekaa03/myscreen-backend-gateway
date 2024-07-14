@@ -34,6 +34,8 @@ import {
   ConstantsGetResponse,
   BidsGetRequest,
   BidsGetResponse,
+  InvoiceCreateRequest,
+  InvoiceGetResponse,
 } from '@/dto';
 import {
   BidStatus,
@@ -208,6 +210,7 @@ describe('Backend API (e2e)', () => {
   let mediaId1 = '';
   let monitorName1 = '';
   let monitorCode1 = '';
+  let invoiceId = '';
 
   /**
    *
@@ -1299,6 +1302,53 @@ describe('Backend API (e2e)', () => {
           expect(body.data[0]?.user?.password).toBeUndefined();
         });
     });
+
+    /**
+     * Выставление счета
+     */
+    test('PUT /invoice (Выставление счета)', async () => {
+      if (!tokenAdvertiser) {
+        expect(false).toEqual(true);
+      }
+
+      const invoice: InvoiceCreateRequest = {
+        sum: 1000,
+        description: 'тестовый запуск',
+      };
+
+      await request
+        .put(`${apiPath}/invoice`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .send(invoice)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data?.user?.password).toBeUndefined();
+          invoiceId = body.data.id;
+        });
+    });
+
+    // /**
+    //  * Скачивание счета
+    //  */
+    // test('GET /invoice/download/:invoiceId/:format (Скачивание счета)', async () => {
+    //   if (!tokenAdvertiser) {
+    //     expect(false).toEqual(true);
+    //   }
+    //   if (!invoiceId) {
+    //     expect(false).toEqual(true);
+    //   }
+
+    //   await request
+    //     .get(`${apiPath}/invoice/download/${invoiceId}/xlsx`)
+    //     .auth(tokenAdvertiser, { type: 'bearer' })
+    //     .set('Accept', 'application/json')
+    //     .expect('Content-Type', /application\/vnd.ms-excel/)
+    //     .expect(200);
+    // });
   });
 
   /**

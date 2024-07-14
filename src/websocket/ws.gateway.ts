@@ -59,11 +59,14 @@ export class WSGateway
   constructor(
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
+    @Inject(forwardRef(() => BidService))
     private readonly bidService: BidService,
     private readonly fileService: FileService,
     private readonly playlistService: PlaylistService,
+    @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
     private readonly walletService: WalletService,
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
   ) {}
 
@@ -170,18 +173,20 @@ export class WSGateway
             relations: { user: true },
           },
         });
-        await Promise.all([
-          this.monitorService
-            .status(value.monitorId, MonitorStatus.Offline)
-            .catch((error: unknown) => {
-              this.logger.error(error);
-            }),
-          this.monitorStatus(
-            value.monitorId,
-            MonitorStatus.Offline,
-            monitor?.user,
-          ),
-        ]);
+        if (monitor) {
+          await Promise.all([
+            this.monitorService
+              .status(monitor, MonitorStatus.Offline)
+              .catch((error: unknown) => {
+                this.logger.error(error);
+              }),
+            this.monitorStatus(
+              value.monitorId,
+              MonitorStatus.Offline,
+              monitor?.user,
+            ),
+          ]);
+        }
       } else {
         this.logger.error('monitorId is undefined ?');
       }
@@ -221,7 +226,7 @@ export class WSGateway
                 dateLocal: new Date(body.date),
               }),
               this.monitorService
-                .status(monitor.id, MonitorStatus.Online)
+                .status(monitor, MonitorStatus.Online)
                 .catch((error: unknown) => {
                   this.logger.error(error);
                 }),
@@ -433,50 +438,46 @@ export class WSGateway
       playlistBroadcast,
       countUsedSpace,
     ] = await Promise.all([
+      this.monitorService.countMonitors(userId),
       this.monitorService.count({
-        find: {
-          where: {
-            userId,
-            multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
-          },
+        where: {
+          userId,
+          status: MonitorStatus.Online,
+          multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
         },
         caseInsensitive: false,
+        loadEagerRelations: false,
+        relations: {},
       }),
       this.monitorService.count({
-        find: {
-          where: {
-            userId,
-            status: MonitorStatus.Online,
-            multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
-          },
+        where: {
+          userId,
+          status: MonitorStatus.Offline,
+          multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
         },
         caseInsensitive: false,
+        loadEagerRelations: false,
+        relations: {},
       }),
       this.monitorService.count({
-        find: {
-          where: {
-            userId,
-            status: MonitorStatus.Offline,
-            multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
-          },
+        where: {
+          userId,
+          multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
+          bids: { id: IsNull() },
         },
         caseInsensitive: false,
-      }),
-      this.monitorService.count({
-        find: {
-          where: {
-            userId,
-            multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
-            bids: { id: IsNull() },
-          },
-        },
-        caseInsensitive: false,
+        loadEagerRelations: false,
+        relations: {},
       }),
       this.playlistService.count({
         where: { userId },
+        loadEagerRelations: false,
+        relations: {},
       }),
       this.playlistService.count({
         where: { userId, status: PlaylistStatusEnum.Broadcast },
+        loadEagerRelations: false,
+        relations: {},
       }),
       this.fileService.sum(userId),
     ]);

@@ -229,13 +229,7 @@ export class MonitorController {
     }
 
     if (role !== UserRoleEnum.Administrator && plan === UserPlanEnum.Demo) {
-      const countMonitors = await this.monitorService.count({
-        find: {
-          select: ['id'],
-          where: { userId: user.id },
-          relations: {},
-        },
-      });
+      const countMonitors = await this.monitorService.countMonitors(userId);
       if (countMonitors > 5) {
         throw new ForbiddenError(
           'You have a Demo User account. There are 5 monitors limit.',
@@ -283,7 +277,7 @@ export class MonitorController {
     }: MonitorsPlaylistAttachRequest,
   ): Promise<BidsGetResponse> {
     // To verify user permissions for bid
-    this.userService.verify(user, 'bid', 'updateBid', CRUD.CREATE);
+    await this.userService.verify(user, 'bid', 'updateBid', CRUD.CREATE);
 
     // TODO: 1. Забронированное и доступное время для создания заявки
     // TODO: 1.1. При подачи заявки Рекламодателем нужно проверять нет ли пересечения

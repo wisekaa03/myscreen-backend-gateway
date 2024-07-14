@@ -28,7 +28,14 @@ export class UserLanguageResolver implements I18nResolver {
       if (token?.[1]) {
         const payload = await this.authService.jwtVerify(token[1]);
         if (payload?.sub) {
-          const user = await this.userService.findById(payload.sub);
+          const user = await this.userService.findOne({
+            where: { id: payload.sub },
+            select: ['id', 'preferredLanguage'],
+            loadEagerRelations: false,
+            relations: {},
+            fromView: false,
+            caseInsensitive: false,
+          });
           if (user) {
             preferredLanguage = user.preferredLanguage;
           }
