@@ -173,18 +173,20 @@ export class WSGateway
             relations: { user: true },
           },
         });
-        await Promise.all([
-          this.monitorService
-            .status(value.monitorId, MonitorStatus.Offline)
-            .catch((error: unknown) => {
-              this.logger.error(error);
-            }),
-          this.monitorStatus(
-            value.monitorId,
-            MonitorStatus.Offline,
-            monitor?.user,
-          ),
-        ]);
+        if (monitor) {
+          await Promise.all([
+            this.monitorService
+              .status(monitor, MonitorStatus.Offline)
+              .catch((error: unknown) => {
+                this.logger.error(error);
+              }),
+            this.monitorStatus(
+              value.monitorId,
+              MonitorStatus.Offline,
+              monitor?.user,
+            ),
+          ]);
+        }
       } else {
         this.logger.error('monitorId is undefined ?');
       }
@@ -224,7 +226,7 @@ export class WSGateway
                 dateLocal: new Date(body.date),
               }),
               this.monitorService
-                .status(monitor.id, MonitorStatus.Online)
+                .status(monitor, MonitorStatus.Online)
                 .catch((error: unknown) => {
                   this.logger.error(error);
                 }),

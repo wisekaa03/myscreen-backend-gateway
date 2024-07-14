@@ -1,6 +1,6 @@
 import { Module, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { EntityManager } from 'typeorm';
+import { EntityManager, MoreThan } from 'typeorm';
 import { InjectEntityManager, TypeOrmModule } from '@nestjs/typeorm';
 
 import { MonitorStatus } from '@/enums/monitor-status.enum';
@@ -104,9 +104,12 @@ export class DatabaseModule implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     await this.manager.transaction(async (manager) => {
       const monitors = await manager.find(MonitorEntity, {
-        where: {
-          status: MonitorStatus.Online,
-        },
+        where: [
+          {
+            status: MonitorStatus.Online,
+          },
+          { groupOnlineMonitors: MoreThan(0) },
+        ],
         select: ['id'],
         relations: {},
         loadEagerRelations: false,
@@ -114,6 +117,7 @@ export class DatabaseModule implements OnModuleInit {
       if (monitors.length > 0) {
         await manager.update(MonitorEntity, monitors, {
           status: MonitorStatus.Offline,
+          groupOnlineMonitors: 0,
         });
       }
     });
