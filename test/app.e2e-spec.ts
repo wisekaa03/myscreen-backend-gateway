@@ -7,6 +7,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { INestApplication } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Jabber from 'jabber';
+import WebSocket from 'ws';
 import { Logger } from 'nestjs-pino';
 import { I18nValidationPipe } from 'nestjs-i18n';
 
@@ -45,6 +46,7 @@ import {
   MonitorStatus,
   Status,
   UserRoleEnum,
+  UserStoreSpaceEnum,
 } from '@/enums';
 import { generateMailToken } from '@/utils/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
@@ -53,6 +55,7 @@ import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
 import { WsAdapter } from '@/websocket/ws-adapter';
 import { UserResponse } from '@/database/user-response.entity';
+import { WsEvent } from '@/enums/ws-event.enum';
 
 type UserFileEntity = UserEntity & Partial<UserResponse>;
 
@@ -155,9 +158,15 @@ const updateUser: UserUpdateRequest = {
 
 describe('Backend API (e2e)', () => {
   let app: INestApplication;
+  let configService: ConfigService;
+  let port: number;
+  let wsUrl: string;
   let userService: UserService;
   let request: TestAgent;
   let apiPath = '/api/v2';
+  let logger: Logger;
+  let ws1: WebSocket;
+  let ws2: WebSocket;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -166,15 +175,15 @@ describe('Backend API (e2e)', () => {
     app = moduleFixture.createNestApplication();
 
     const httpAdaper = app.get(HttpAdapterHost);
-    const configService = app.get(ConfigService);
+    configService = app.get(ConfigService);
 
-    const logLevel = configService.get('LOG_LEVEL');
+    const logLevel = configService.getOrThrow('LOG_LEVEL');
     if (logLevel === 'debug') {
-      const logger = app.get(Logger);
+      logger = app.get(Logger);
       app.useLogger(logger);
     }
 
-    apiPath = configService.get('API_PATH', '/api/v2');
+    apiPath = configService.getOrThrow('API_PATH', '/api/v2');
     app.setGlobalPrefix(apiPath, { exclude: ['/'] });
     app.useGlobalFilters(
       new ExceptionsFilter(httpAdaper.httpAdapter, configService),
@@ -188,10 +197,11 @@ describe('Backend API (e2e)', () => {
     );
     app.useWebSocketAdapter(new WsAdapter(app));
     userService = app.get<UserService>(UserService);
-
-    await app.init();
+    port = parseInt(configService.getOrThrow('PORT'), 10);
+    await app.listen(port);
 
     request = superAgent(app.getHttpServer());
+    wsUrl = `ws://localhost:${port}/ws`;
   });
 
   let userAdvertiser: UserFileEntity | null;
@@ -259,7 +269,7 @@ describe('Backend API (e2e)', () => {
     /**
      * Регистрация пользователя опять
      */
-    test('POST /auth/register [email изменен, пароль изменен] (Регистрация пользователя)', async () => {
+    test('POST /auth/register [email пуст, пароль пуст] (Регистрация пользователя)', async () => {
       await request
         .post(`${apiPath}/auth/register`)
         .send({ ...registerRequestAdvertiser, email: '', password: '' })
@@ -352,6 +362,46 @@ describe('Backend API (e2e)', () => {
 
       tokenAdvertiser = body.payload.token;
       refreshTokenAdvertiser = body.payload.refreshToken;
+    });
+
+    /**
+     * WS авторизация пользователя
+     */
+    test("WebSocket 'auth/token' (Авторизация пользователя)", async () => {
+      ws1 = new WebSocket(wsUrl);
+      await new Promise((resolve) => ws1.on('open', resolve));
+
+      ws1.send(
+        JSON.stringify({
+          event: 'auth/token',
+          data: {
+            token: tokenAdvertiser,
+            date: new Date().toISOString(),
+          },
+        }),
+      );
+      const wsMessage = await new Promise<string>((resolve) => {
+        ws1.on('message', (dataBuffer: Buffer) => {
+          const data = dataBuffer.toString('utf8');
+          resolve(data);
+        });
+      });
+
+      expect(wsMessage).toBeDefined();
+      const dataJson = JSON.parse(wsMessage);
+      expect(dataJson).toBeDefined();
+      const authorized = dataJson[0];
+      const wallet = dataJson[1];
+      const metrics = dataJson[2];
+      expect(authorized).toBeDefined();
+      expect(authorized.event).toBe(WsEvent.AUTH);
+      expect(authorized.data).toBe('authorized');
+      expect(wallet).toBeDefined();
+      expect(wallet.event).toBe(WsEvent.WALLET);
+      expect(wallet.data?.total).toBeDefined();
+      expect(metrics).toBeDefined();
+      expect(metrics.event).toBe(WsEvent.METRICS);
+      expect(metrics.data).toBeDefined();
     });
   });
 
@@ -1437,7 +1487,8 @@ describe('Backend API (e2e)', () => {
     });
   });
 
-  afterAll(async () => {
-    await app.close();
+  afterAll(() => {
+    ws1?.close();
+    app?.close();
   });
 });

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeleteResult,
@@ -14,6 +14,7 @@ import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorGroup } from '@/dto/request/monitor-group';
 import { TypeOrmFind } from '@/utils/typeorm.find';
+import { WSGateway } from '@/websocket/ws.gateway';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
@@ -28,6 +29,8 @@ export class MonitorService {
   constructor(
     private readonly bidService: BidService,
     private readonly walletService: WalletService,
+    @Inject(forwardRef(() => WSGateway))
+    private readonly wsGateway: WSGateway,
     @InjectRepository(MonitorEntity)
     public readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(MonitorGroupEntity)
@@ -492,6 +495,7 @@ export class MonitorService {
   async status(
     monitor: MonitorEntity,
     status = MonitorStatus.Online,
+    user: UserEntity,
   ): Promise<UpdateResult> {
     const { id } = monitor;
     if (monitor.multiple === MonitorMultiple.SUBORDINATE) {
@@ -529,6 +533,7 @@ export class MonitorService {
                 { id: monitorGroup.id },
                 { status: MonitorStatus.Online },
               );
+              this.wsGateway.monitorStatus(monitorGroup, MonitorStatus.Online);
             }
           } else {
             if (monitorGroup.status !== MonitorStatus.Offline) {
@@ -536,12 +541,17 @@ export class MonitorService {
                 { id: monitorGroup.id },
                 { status: MonitorStatus.Offline },
               );
+              this.wsGateway.monitorStatus(monitorGroup, MonitorStatus.Offline);
             }
           }
         }
       }
     }
-    return this.monitorRepository.update(id, { status });
+
+    const updated = await this.monitorRepository.update(id, { status });
+    await this.wsGateway.monitorStatus(monitor, status, user);
+
+    return updated;
   }
 
   async favorite(
