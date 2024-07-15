@@ -8,13 +8,13 @@ import {
   Repository,
 } from 'typeorm';
 
+import { NotFoundError } from '@/errors';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
 import { WalletService } from './wallet.service';
-import { NotAcceptableError, NotFoundError } from '@/errors';
 
 @Injectable()
 export class PlaylistService {
@@ -72,12 +72,23 @@ export class PlaylistService {
   }
 
   async create(insert: DeepPartial<PlaylistEntity>): Promise<PlaylistEntity> {
-    const playlist = await this.playlistRepository.save(
+    const playlistCreated = await this.playlistRepository.save(
       this.playlistRepository.create(insert),
     );
+    const playlist = await this.playlistRepository.findOne({
+      where: { id: playlistCreated.id },
+      relations: { user: true, files: true },
+    });
+    if (!playlist) {
+      throw new NotFoundError('PLAYLIST_NOT_FOUND', {
+        args: { id: playlistCreated.id },
+      });
+    }
 
-    await this.bidService.websocketChange({ playlist });
-    await this.walletService.wsMetrics(playlist.user);
+    await Promise.all([
+      this.bidService.websocketChange({ playlist }),
+      this.walletService.wsMetrics(playlist.user),
+    ]);
 
     return playlist;
   }
@@ -90,12 +101,12 @@ export class PlaylistService {
       this.playlistRepository.create({ id, ...update }),
     );
     if (!updated) {
-      throw new NotAcceptableError(`Playlist with this '${id}' not found`);
+      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
     }
 
     const playlist = await this.findOne({ where: { id } });
     if (!playlist) {
-      throw new NotFoundError(`Playlist with this '${id}' not found`);
+      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
     }
     if (update.status === undefined) {
       await this.bidService.websocketChange({ playlist });

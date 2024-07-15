@@ -154,7 +154,7 @@ export class PlaylistController {
       where: { id },
     });
     if (!data) {
-      throw new NotFoundError(`Playlist '${id}' not found`);
+      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
     }
 
     return {
@@ -184,7 +184,7 @@ export class PlaylistController {
       where: { id },
     });
     if (!playlist) {
-      throw new NotFoundError(`Playlist '${id}' not found`);
+      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
     }
 
     let files: FileEntity[] = [];
@@ -231,12 +231,12 @@ export class PlaylistController {
     }
     const data = await this.playlistService.findOne({ where });
     if (!data) {
-      throw new NotFoundError(`Playlist '${id}' not found`);
+      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
     }
 
     const { affected } = await this.playlistService.delete(user, data);
     if (!affected) {
-      throw new NotFoundError('This playlist is not exists');
+      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
     }
 
     return {

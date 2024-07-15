@@ -541,7 +541,7 @@ export class BidService {
 
         let relations: FindOneOptions<BidEntity>['relations'];
         if (!(insert.approved === BidApprove.NOTPROCESSED || !insert.hide)) {
-          relations = { buyer: true, seller: true };
+          relations = { buyer: true, seller: true, user: true };
         } else {
           relations = {
             buyer: true,
@@ -605,8 +605,10 @@ export class BidService {
           await this.bidPreDelete({ bid, entityManager: transact });
         }
 
-        this.walletService.wsMetrics(bid.seller);
-        this.walletService.wsMetrics(bid.buyer ? bid.buyer : monitor.user);
+        await Promise.all([
+          this.walletService.wsMetrics(bid.seller),
+          this.walletService.wsMetrics(bid.buyer ? bid.buyer : monitor.user),
+        ]);
 
         return bid;
       });
