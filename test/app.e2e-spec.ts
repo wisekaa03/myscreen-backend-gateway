@@ -159,6 +159,8 @@ const updateUser: UserUpdateRequest = {
 describe('Backend API (e2e)', () => {
   let app: INestApplication;
   let configService: ConfigService;
+  let port: number;
+  let wsUrl: string;
   let userService: UserService;
   let request: TestAgent;
   let apiPath = '/api/v2';
@@ -175,13 +177,13 @@ describe('Backend API (e2e)', () => {
     const httpAdaper = app.get(HttpAdapterHost);
     configService = app.get(ConfigService);
 
-    const logLevel = configService.get('LOG_LEVEL');
+    const logLevel = configService.getOrThrow('LOG_LEVEL');
     if (logLevel === 'debug') {
       logger = app.get(Logger);
       app.useLogger(logger);
     }
 
-    apiPath = configService.get('API_PATH', '/api/v2');
+    apiPath = configService.getOrThrow('API_PATH', '/api/v2');
     app.setGlobalPrefix(apiPath, { exclude: ['/'] });
     app.useGlobalFilters(
       new ExceptionsFilter(httpAdaper.httpAdapter, configService),
@@ -195,9 +197,11 @@ describe('Backend API (e2e)', () => {
     );
     app.useWebSocketAdapter(new WsAdapter(app));
     userService = app.get<UserService>(UserService);
-    await app.listen(configService.get<number>('PORT', 8080));
+    port = parseInt(configService.getOrThrow('PORT'), 10);
+    await app.listen(port);
 
     request = superAgent(app.getHttpServer());
+    wsUrl = `ws://localhost:${port}/ws`;
   });
 
   let userAdvertiser: UserFileEntity | null;
@@ -364,7 +368,7 @@ describe('Backend API (e2e)', () => {
      * WS авторизация пользователя
      */
     test("WebSocket 'auth/token' (Авторизация пользователя)", async () => {
-      ws1 = new WebSocket(new URL('ws://localhost:8080/ws'));
+      ws1 = new WebSocket(wsUrl);
       await new Promise((resolve) => ws1.on('open', resolve));
 
       ws1.send(
@@ -386,19 +390,18 @@ describe('Backend API (e2e)', () => {
       expect(wsMessage).toBeDefined();
       const dataJson = JSON.parse(wsMessage);
       expect(dataJson).toBeDefined();
-      // const authorized = dataJson[0];
-      // const wallet = dataJson[1];
-      // const metrics = dataJson[2];
-      // expect(authorized).toBeDefined();
-      // expect(authorized.event).toBe(WsEvent.AUTH);
-      // expect(authorized.data).toBe('authorized');
-      // expect(wallet).toBeDefined();
-      // expect(wallet.event).toBe(WsEvent.WALLET);
-      // expect(wallet.data?.total).toBeDefined();
-      // expect(metrics).toBeDefined();
-      // expect(metrics.event).toBe(WsEvent.METRICS);
-      // expect(metrics.data).toBeDefined();
-      // ws1.close();
+      const authorized = dataJson[0];
+      const wallet = dataJson[1];
+      const metrics = dataJson[2];
+      expect(authorized).toBeDefined();
+      expect(authorized.event).toBe(WsEvent.AUTH);
+      expect(authorized.data).toBe('authorized');
+      expect(wallet).toBeDefined();
+      expect(wallet.event).toBe(WsEvent.WALLET);
+      expect(wallet.data?.total).toBeDefined();
+      expect(metrics).toBeDefined();
+      expect(metrics.event).toBe(WsEvent.METRICS);
+      expect(metrics.data).toBeDefined();
     });
   });
 
@@ -1484,7 +1487,8 @@ describe('Backend API (e2e)', () => {
     });
   });
 
-  afterAll(async () => {
-    await app.close();
+  afterAll(() => {
+    ws1?.close();
+    app?.close();
   });
 });
