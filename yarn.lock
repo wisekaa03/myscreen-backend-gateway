@@ -3137,7 +3137,7 @@ bowser@^2.11.0:
   resolved "https://registry.yarnpkg.com/bowser/-/bowser-2.11.0.tgz#5ca3c35757a7aa5771500c70a73a9f91ef420a8f"
   integrity sha512-AlcaJBi/pqqJBIQ8U9Mcpc9i8Aqxn88Skv5d+xBX006BY5u8N3mGLHa5Lgppa7L/HfwgwLgZ6NYs+Ag6uUmJRA==
 
-brace-expansion@^1.1.7, brace-expansion@^2.0.1:
+brace-expansion@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-2.0.1.tgz#1edc459e0f0c548486ecf9fc99f2221364b9a0ae"
   integrity sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==
@@ -7149,10 +7149,10 @@ pino-std-serializers@^7.0.0:
   resolved "https://registry.yarnpkg.com/pino-std-serializers/-/pino-std-serializers-7.0.0.tgz#7c625038b13718dbbd84ab446bd673dc52259e3b"
   integrity sha512-e906FRY0+tV27iq4juKzSYPbUj2do2X2JX4EzSca1631EB2QJQUqGbDuERal7LCtOpxl6x3+nvo9NPZcmjkiFA==
 
-pino@^9.0.0, pino@^9.3.0:
-  version "9.3.0"
-  resolved "https://registry.yarnpkg.com/pino/-/pino-9.3.0.tgz#d80f3989711b2ee2c5691ccddfad3e827e0368fd"
-  integrity sha512-W9e1K47Gb8VJLn43j8lythxaKdzHG8tUPYvO8r1kWg7Z7ry/78UJeZ/1UA7ejumgvSPcJ9eBt4AN4gjJioDG7w==
+pino@^9.0.0, pino@^9.3.1:
+  version "9.3.1"
+  resolved "https://registry.yarnpkg.com/pino/-/pino-9.3.1.tgz#1a2720a58ed2dbc41bdf063366dd3dd717d050c8"
+  integrity sha512-afSfrq/hUiW/MFmQcLEwV9Zh8Ry6MrMTOyBU53o/fc0gEl+1OZ/Fks/xQCM2nOC0C/OfDtQMnT2d8c3kpcfSzA==
   dependencies:
     atomic-sleep "^1.0.0"
     fast-redact "^3.1.1"
