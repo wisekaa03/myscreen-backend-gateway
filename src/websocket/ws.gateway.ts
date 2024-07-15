@@ -174,18 +174,11 @@ export class WSGateway
           },
         });
         if (monitor) {
-          await Promise.all([
-            this.monitorService
-              .status(monitor, MonitorStatus.Offline)
-              .catch((error: unknown) => {
-                this.logger.error(error);
-              }),
-            this.monitorStatus(
-              value.monitorId,
-              MonitorStatus.Offline,
-              monitor?.user,
-            ),
-          ]);
+          await this.monitorService
+            .status(monitor, MonitorStatus.Offline, monitor.user)
+            .catch((error: unknown) => {
+              this.logger.error(error);
+            });
         }
       } else {
         this.logger.error('monitorId is undefined ?');
@@ -226,15 +219,10 @@ export class WSGateway
                 dateLocal: new Date(body.date),
               }),
               this.monitorService
-                .status(monitor, MonitorStatus.Online)
+                .status(monitor, MonitorStatus.Online, monitor.user)
                 .catch((error: unknown) => {
                   this.logger.error(error);
                 }),
-              this.monitorStatus(
-                monitor.id,
-                MonitorStatus.Online,
-                monitor.user,
-              ),
             ]);
           }
           return of([
@@ -314,18 +302,19 @@ export class WSGateway
   /**
    * Отсылает всем подключенным клиентам (не мониторам) изменения статуса монитора
    */
-  private async monitorStatus(
-    monitorId: string,
+  public async monitorStatus(
+    monitor: MonitorEntity,
     status: MonitorStatus,
     user?: UserEntity,
   ): Promise<void> {
+    const { id } = monitor;
     this.clients.forEach((client) => {
       if (client.auth && client.userId) {
         client.ws.send(
           JSON.stringify([
             {
               event: WsEvent.MONITOR_STATUS,
-              data: [{ id: monitorId, status }],
+              data: [{ id, status }],
             },
           ]),
         );
