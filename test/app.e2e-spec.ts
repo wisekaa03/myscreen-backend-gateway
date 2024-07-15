@@ -195,7 +195,6 @@ describe('Backend API (e2e)', () => {
     );
     app.useWebSocketAdapter(new WsAdapter(app));
     userService = app.get<UserService>(UserService);
-    await app.init();
     await app.listen(configService.get<number>('PORT', 8080));
 
     request = superAgent(app.getHttpServer());
