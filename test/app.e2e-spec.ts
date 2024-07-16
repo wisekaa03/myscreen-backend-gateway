@@ -1,5 +1,6 @@
 /* eslint max-len:0 */
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import superAgent from 'supertest';
 import TestAgent from 'supertest/lib/agent';
 import { Test, TestingModule } from '@nestjs/testing';
@@ -37,16 +38,20 @@ import {
   BidsGetResponse,
   InvoiceCreateRequest,
   InvoiceGetResponse,
+  WalletOperationsGetResponse,
+  WalletOperationsGetRequest,
 } from '@/dto';
 import {
   BidStatus,
+  InvoiceStatus,
   MonitorCategoryEnum,
   MonitorMultiple,
   MonitorOrientation,
   MonitorStatus,
   Status,
+  UserPlanEnum,
   UserRoleEnum,
-  UserStoreSpaceEnum,
+  WalletTransactionType,
 } from '@/enums';
 import { generateMailToken } from '@/utils/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
@@ -56,8 +61,13 @@ import { AppModule } from '@/app.module';
 import { WsAdapter } from '@/websocket/ws-adapter';
 import { UserResponse } from '@/database/user-response.entity';
 import { WsEvent } from '@/enums/ws-event.enum';
+import { HttpError } from '@/errors';
 
 type UserFileEntity = UserEntity & Partial<UserResponse>;
+
+const fileTestingDirname = `${__dirname}/testing.png`;
+const fileTestingBuffer = fs.readFileSync(fileTestingDirname);
+const fileTestingBinary = fileTestingBuffer.toString('binary');
 
 const generatePassword = (
   length = 20,
@@ -79,6 +89,8 @@ const emailAdvertiser = jabber.createEmail();
 const passwordAdvertiser = generatePassword(20);
 const emailMonitorOwner = jabber.createEmail();
 const passwordMonitorOwner = generatePassword(20);
+const emailAccountant = jabber.createEmail();
+const passwordAccountant = generatePassword(20);
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -97,9 +109,9 @@ const registerRequestAdvertiser: RegisterRequest = {
   email: emailAdvertiser,
   password: passwordAdvertiser,
   role: UserRoleEnum.Advertiser,
-  name: 'John',
-  surname: 'Steve',
-  middleName: 'Doe',
+  name: 'Advertiser',
+  surname: 'Advertiser',
+  middleName: 'Advertiser',
   preferredLanguage: 'ru',
   city: 'Krasnodar',
   country: 'RU',
@@ -111,9 +123,23 @@ const registerRequestMonitorOwner: RegisterRequest = {
   email: emailMonitorOwner,
   password: passwordMonitorOwner,
   role: UserRoleEnum.MonitorOwner,
-  name: 'John',
-  surname: 'Steve',
-  middleName: 'Doe',
+  name: 'MonitorOwner',
+  surname: 'MonitorOwner',
+  middleName: 'MonitorOwner',
+  preferredLanguage: 'ru',
+  city: 'Krasnodar',
+  country: 'RU',
+  company: 'ACME corporation',
+  phoneNumber: '+78002000000',
+};
+
+const registerRequestAccountant: RegisterRequest = {
+  email: emailAccountant,
+  password: passwordAccountant,
+  role: UserRoleEnum.MonitorOwner,
+  name: 'Accountant',
+  surname: 'Accountant',
+  middleName: 'Accountant',
   preferredLanguage: 'ru',
   city: 'Krasnodar',
   country: 'RU',
@@ -131,10 +157,15 @@ const loginRequestMonitorOwner: LoginRequest = {
   password: passwordMonitorOwner,
 };
 
+const loginRequestAccountant: LoginRequest = {
+  email: emailAccountant,
+  password: passwordAccountant,
+};
+
 const updateUser: UserUpdateRequest = {
-  surname: 'Steve 2',
-  name: 'John 2',
-  middleName: 'Doe 2',
+  surname: 'Monitor',
+  name: 'Owner',
+  middleName: 'the best monitor-owner !',
   phoneNumber: '+78003000000',
   city: 'Krasnodar',
   country: 'RU',
@@ -156,18 +187,38 @@ const updateUser: UserUpdateRequest = {
   companyRepresentative: 'Тухбатуллина Евгеньевна Юлия',
 };
 
-describe('Backend API (e2e)', () => {
-  let app: INestApplication;
-  let configService: ConfigService;
-  let port: number;
-  let wsUrl: string;
-  let userService: UserService;
-  let request: TestAgent;
-  let apiPath = '/api/v2';
-  let logger: Logger;
-  let ws1: WebSocket;
-  let ws2: WebSocket;
+const invoiceSum = 1000;
 
+let app: INestApplication;
+let ws1: WebSocket;
+let ws2: WebSocket;
+
+let configService: ConfigService;
+let port: number;
+let wsUrl: string;
+let userService: UserService;
+let request: TestAgent;
+let apiPath = '/api/v2';
+let logger: Logger;
+
+let userAdvertiser: UserFileEntity | null;
+let userMonitorOwner: UserFileEntity | null;
+let userAccountant: UserFileEntity | null;
+
+let tokenAdvertiser = '';
+let refreshTokenAdvertiser: string | undefined = '';
+
+let tokenMonitorOwner = '';
+let refreshTokenMonitorOwner: string | undefined = '';
+
+let tokenAccountant = '';
+let refreshTokenAccountant: string | undefined = '';
+
+let userIdAdvertiser = '';
+let userIdMonitorOwner = '';
+let userIdAccountant: string;
+
+describe('Backend API (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -204,14 +255,6 @@ describe('Backend API (e2e)', () => {
     wsUrl = `ws://localhost:${port}/ws`;
   });
 
-  let userAdvertiser: UserFileEntity | null;
-  let userMonitorOwner: UserFileEntity | null;
-  let tokenAdvertiser = '';
-  let refreshTokenAdvertiser: string | undefined = '';
-  let tokenMonitorOwner = '';
-  let refreshTokenMonitorOwner: string | undefined = '';
-  let userIdAdvertiser = '';
-  let userIdMonitorOwner = '';
   let parentFolderId = '';
   let parentFolderId2 = '';
   let folderId1 = '';
@@ -1024,7 +1067,7 @@ describe('Backend API (e2e)', () => {
       const field = {
         param: `{ "folderId": "${folderId1}", "category": "media" }`,
       };
-      const files = `${__dirname}/testing.png`;
+      const files = fileTestingDirname;
 
       const { body }: { body: FilesUploadResponse } = await request
         .put(`${apiPath}/file`)
@@ -1487,8 +1530,673 @@ describe('Backend API (e2e)', () => {
     });
   });
 
+  /**
+   *
+   *
+   *
+   * Бизнес-логика. Пользовательский путь.
+   *
+   *
+   *
+   */
+  describe('Register: MonitorOwner, Advertiser, Accountant', () => {
+    /**
+     * Регистрация пользователя: MonitorOwner
+     */
+    test('POST /auth/register (MonitorOwner)', async () => {
+      await request
+        .post(`${apiPath}/auth/register`)
+        .send(registerRequestMonitorOwner)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: UserGetResponse }) => {
+          expect(body.data.id).toBeDefined();
+          expect((body.data as any).password).toBeUndefined();
+          userIdMonitorOwner = body.data.id;
+          // попадает в демо-режим ?
+        });
+    });
+    /**
+     * Подтвердить email пользователя MonitorOwner
+     */
+    test('POST /auth/email-verify (MonitorOwner)', async () => {
+      userMonitorOwner = await userService.findById(userIdMonitorOwner);
+      if (userMonitorOwner) {
+        const verify: VerifyEmailRequest = {
+          verify: generateMailToken(
+            userMonitorOwner.email,
+            userMonitorOwner.emailConfirmKey ?? '-',
+          ),
+        };
+
+        await request
+          .post(`${apiPath}/auth/email-verify`)
+          .send(verify)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .then(({ body }: { body: SuccessResponse }) => {
+            expect(body.status).toBe(Status.Success);
+          });
+      } else {
+        expect(false).toEqual(true);
+      }
+    });
+    /**
+     * Авторизация пользователя MonitorOwner
+     */
+    test('POST /auth/login (MonitorOwner)', async () => {
+      const { body }: { body: AuthResponse } = await request
+        .post(`${apiPath}/auth/login`)
+        .send(loginRequestMonitorOwner)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200);
+      expect(body.payload.type).toBe('bearer');
+      expect(body.data.id).toBe(userIdMonitorOwner);
+      expect(body.data.role).toBe(UserRoleEnum.MonitorOwner);
+      expect(body.data.planValidityPeriod).toBe(13);
+      expect(body.data.surname).toBe(registerRequestMonitorOwner.surname);
+      expect(body.data.name).toBe(registerRequestMonitorOwner.name);
+      expect(body.data.middleName).toBe(registerRequestMonitorOwner.middleName);
+      expect(body.data.plan).toBe(UserPlanEnum.Demo);
+      expect(body.payload?.token).toBeDefined();
+      expect(body.payload?.refreshToken).toBeDefined();
+      expect((body.data as any).password).toBeUndefined();
+
+      tokenMonitorOwner = body.payload.token;
+      refreshTokenMonitorOwner = body.payload.refreshToken;
+    });
+
+    /**
+     * Регистрация пользователя: Advertiser
+     */
+    test('POST /auth/register (Advertiser)', async () => {
+      await request
+        .post(`${apiPath}/auth/register`)
+        .send(registerRequestAdvertiser)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: UserGetResponse }) => {
+          expect(body.data.id).toBeDefined();
+          expect((body.data as any).password).toBeUndefined();
+          userIdAdvertiser = body.data.id;
+          // попадает в демо-режим ?
+        });
+    });
+    /**
+     * Подтвердить email пользователя Advertiser
+     */
+    test('POST /auth/email-verify (Advertiser)', async () => {
+      userAdvertiser = await userService.findById(userIdAdvertiser);
+      if (userAdvertiser) {
+        const verify: VerifyEmailRequest = {
+          verify: generateMailToken(
+            userAdvertiser.email,
+            userAdvertiser.emailConfirmKey ?? '-',
+          ),
+        };
+
+        await request
+          .post(`${apiPath}/auth/email-verify`)
+          .send(verify)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .then(({ body }: { body: SuccessResponse }) => {
+            expect(body.status).toBe(Status.Success);
+          });
+      } else {
+        expect(false).toEqual(true);
+      }
+    });
+    /**
+     * Авторизация пользователя Advertiser
+     */
+    test('POST /auth/login (Advertiser)', async () => {
+      const { body }: { body: AuthResponse } = await request
+        .post(`${apiPath}/auth/login`)
+        .send(loginRequestAdvertiser)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200);
+      expect(body.payload?.type).toBe('bearer');
+      expect(body.data?.id).toBe(userIdAdvertiser);
+      expect(body.data.role).toBe(UserRoleEnum.Advertiser);
+      expect(body.data.planValidityPeriod).toBe(0);
+      expect(body.data.surname).toBe(registerRequestAdvertiser.surname);
+      expect(body.data.name).toBe(registerRequestAdvertiser.name);
+      expect(body.data.middleName).toBe(registerRequestAdvertiser.middleName);
+      expect(body.data.plan).toBe(UserPlanEnum.Full);
+      expect(body.payload?.token).toBeDefined();
+      expect(body.payload?.refreshToken).toBeDefined();
+      expect((body.data as any).password).toBeUndefined();
+
+      tokenAdvertiser = body.payload.token;
+      refreshTokenAdvertiser = body.payload.refreshToken;
+    });
+
+    /**
+     * Регистрация пользователя: Accountant
+     */
+    test('POST /auth/register (Accountant)', async () => {
+      await request
+        .post(`${apiPath}/auth/register`)
+        .send(registerRequestAccountant)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: UserGetResponse }) => {
+          expect(body.data.id).toBeDefined();
+          expect((body.data as any).password).toBeUndefined();
+          userIdAccountant = body.data.id;
+          // попадает в демо-режим ?
+        });
+    });
+    /**
+     * Подтвердить email пользователя Accountant
+     */
+    test('POST /auth/email-verify (Accountant)', async () => {
+      userAccountant = await userService.findById(userIdAccountant);
+      if (userAccountant) {
+        const verify: VerifyEmailRequest = {
+          verify: generateMailToken(
+            userAccountant.email,
+            userAccountant.emailConfirmKey ?? '-',
+          ),
+        };
+
+        await request
+          .post(`${apiPath}/auth/email-verify`)
+          .send(verify)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .then(({ body }: { body: SuccessResponse }) => {
+            expect(body.status).toBe(Status.Success);
+          });
+
+        userAccountant = await userService.update(userAccountant, {
+          role: UserRoleEnum.Accountant,
+          plan: UserPlanEnum.VIP,
+        });
+        expect(userAccountant?.role).toBe(UserRoleEnum.Accountant);
+      } else {
+        expect(false).toEqual(true);
+      }
+    });
+    /**
+     * Авторизация пользователя Accountant
+     */
+    test('POST /auth/login (Accountant)', async () => {
+      const { body }: { body: AuthResponse } = await request
+        .post(`${apiPath}/auth/login`)
+        .send(loginRequestAccountant)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200);
+      expect(body.payload?.type).toBe('bearer');
+      expect(body.data?.id).toBe(userIdAccountant);
+      expect(body.data.role).toBe(UserRoleEnum.Accountant);
+      expect(body.data.planValidityPeriod).toBe(0);
+      expect(body.data.surname).toBe(registerRequestAccountant.surname);
+      expect(body.data.name).toBe(registerRequestAccountant.name);
+      expect(body.data.middleName).toBe(registerRequestAccountant.middleName);
+      expect(body.data.plan).toBe(UserPlanEnum.VIP);
+      expect(body.payload?.token).toBeDefined();
+      expect(body.payload?.refreshToken).toBeDefined();
+      expect((body.data as any).password).toBeUndefined();
+
+      tokenAccountant = body.payload.token;
+      refreshTokenAccountant = body.payload.refreshToken;
+    });
+
+    /**
+     * Изменение аккаунта пользователя
+     */
+    test('PATCH /auth (Изменение пользователя: monitor-owner)', async () => {
+      const { body }: { body: UserGetResponse } = await request
+        .patch(`${apiPath}/auth`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .send(updateUser)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200);
+      expect(body.status).toBe(Status.Success);
+      expect(body.data.id).toBe(userIdMonitorOwner);
+      expect(body.data.role).toBe(UserRoleEnum.MonitorOwner);
+      expect(body.data.surname).toBe(updateUser.surname);
+      expect(body.data.name).toBe(updateUser.name);
+      expect(body.data.middleName).toBe(updateUser.middleName);
+      expect(body.data.phoneNumber).toBe(updateUser.phoneNumber);
+      expect(body.data.city).toBe(updateUser.city);
+      expect(body.data.country).toBe(updateUser.country);
+      expect(body.data.locale).toBe(updateUser.locale);
+      expect(body.data.preferredLanguage).toBe(updateUser.preferredLanguage);
+      expect(body.data.company).toBe(updateUser.company);
+      expect(body.data.companyLegalAddress).toBe(
+        updateUser.companyLegalAddress,
+      );
+      expect(body.data.companyActualAddress).toBe(
+        updateUser.companyActualAddress,
+      );
+      expect(body.data.companyTIN).toBe(updateUser.companyTIN);
+      expect(body.data.companyRRC).toBe(updateUser.companyRRC);
+      expect(body.data.companyPSRN).toBe(updateUser.companyPSRN);
+      expect(body.data.companyPhone).toBe(updateUser.companyPhone);
+      expect(body.data.companyEmail).toBe(updateUser.companyEmail);
+      expect(body.data.companyBank).toBe(updateUser.companyBank);
+      expect(body.data.companyBIC).toBe(updateUser.companyBIC);
+      expect(body.data.companyCorrespondentAccount).toBe(
+        updateUser.companyCorrespondentAccount,
+      );
+      expect(body.data.companyPaymentAccount).toBe(
+        updateUser.companyPaymentAccount,
+      );
+      expect(body.data.companyFax).toBe(updateUser.companyFax);
+      expect(body.data.companyRepresentative).toBe(
+        updateUser.companyRepresentative,
+      );
+      expect(body.data.company).toBe(updateUser.company);
+      expect(body.data.password).toBeUndefined();
+    });
+
+    /**
+     * Выставление счета monitor-owner
+     */
+    test('PUT /invoice (Выставление счета monitor-owner)', async () => {
+      if (!tokenMonitorOwner) {
+        expect(false).toEqual(true);
+      }
+
+      const invoice: InvoiceCreateRequest = {
+        sum: invoiceSum,
+        description: 'Тестовый',
+      };
+
+      await request
+        .put(`${apiPath}/invoice`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .send(invoice)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBeDefined();
+          expect(body.data?.user?.password).toBeUndefined();
+          invoiceId = body.data.id;
+        });
+    });
+
+    /**
+     * Подтверждение счета accountant
+     */
+    test(`GET /invoice/confirmed/{invoiceId} (Подтверждение счета пользователем Accountant)`, async () => {
+      if (!tokenAccountant) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .get(`${apiPath}/invoice/confirmed/${invoiceId}`)
+        .auth(tokenAccountant, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(invoiceId);
+          expect(body.data.status).toBe(
+            InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
+          );
+          expect(body.data?.user?.password).toBeUndefined();
+          invoiceId = body.data.id;
+        });
+    });
+
+    /**
+     * Оплата счета accountant
+     */
+    test(`GET /invoice/payed/{invoiceId} (Оплата счета пользователем Accountant)`, async () => {
+      if (!tokenAccountant) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .get(`${apiPath}/invoice/payed/${invoiceId}`)
+        .auth(tokenAccountant, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(invoiceId);
+          expect(body.data.status).toBe(InvoiceStatus.PAID);
+          expect(body.data?.user?.password).toBeUndefined();
+          invoiceId = body.data.id;
+        });
+    });
+
+    /**
+     * История операций monitor-owner
+     */
+    test('POST /wallet (История операций monitor-owner)', async () => {
+      if (!tokenMonitorOwner) {
+        expect(false).toEqual(true);
+      }
+
+      const wallet: WalletOperationsGetRequest = {
+        where: { type: WalletTransactionType.DEBIT },
+        scope: {},
+      };
+
+      await request
+        .post(`${apiPath}/wallet`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .send(wallet)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: WalletOperationsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.count).toBe(1);
+          expect(Number(body.data[0].sum)).toBe(invoiceSum);
+          expect(body.data[0].invoiceId).toBeDefined();
+          expect(body.data[0]?.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
+     * WS авторизация пользователя monitor-owner и проверка wallet
+     */
+    test("WebSocket 'auth/token' (Авторизация пользователя monitor-wallet)", async () => {
+      ws2 = new WebSocket(wsUrl);
+      await new Promise((resolve) => ws2.on('open', resolve));
+
+      ws2.send(
+        JSON.stringify({
+          event: 'auth/token',
+          data: {
+            token: tokenMonitorOwner,
+            date: new Date().toISOString(),
+          },
+        }),
+      );
+      const wsMessage = await new Promise<string>((resolve) => {
+        ws2.on('message', (dataBuffer: Buffer) => {
+          resolve(dataBuffer.toString('utf8'));
+        });
+      });
+
+      expect(wsMessage).toBeDefined();
+      const dataJson = JSON.parse(wsMessage);
+      expect(dataJson).toBeDefined();
+      const authorized = dataJson[0];
+      const wallet = dataJson[1];
+      const metrics = dataJson[2];
+      expect(authorized).toBeDefined();
+      expect(authorized.event).toBe(WsEvent.AUTH);
+      expect(authorized.data).toBe('authorized');
+      expect(wallet).toBeDefined();
+      expect(wallet.event).toBe(WsEvent.WALLET);
+      expect(wallet.data?.total).toBe(
+        invoiceSum - configService.getOrThrow('SUBSCRIPTION_FEE'),
+      );
+      expect(metrics).toBeDefined();
+      expect(metrics.event).toBe(WsEvent.METRICS);
+      expect(metrics.data).toBeDefined();
+    });
+
+    /**
+     * Создание новой папки
+     */
+    test('PUT /folder [name: "bar"] (Создание новой папки monitor-owner)', async () => {
+      await request
+        .put(`${apiPath}/folder`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .send({ name: 'bar' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: FolderGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data.name).toBe('bar');
+          expect((body.data as any)?.user?.password).toBeUndefined();
+          parentFolderId = body.data.id;
+        });
+    });
+
+    test('PUT /folder [name: "baz"] (Создание новой папки monitor-owner)', async () => {
+      await request
+        .put(`${apiPath}/folder`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .send({ name: 'baz' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: FolderGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data.name).toBe('baz');
+          expect((body.data as any)?.user?.password).toBeUndefined();
+          parentFolderId2 = body.data.id;
+          folderId3 = body.data.id;
+        });
+    });
+
+    /**
+     * Создание новой под-папки
+     */
+    test('PUT /folder [name: "foo", parentFolderId] (Создание новой под-папки monitor-owner)', async () => {
+      await request
+        .put(`${apiPath}/folder`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .send({ name: 'foo', parentFolderId })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: FolderGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data.name).toBe('foo');
+          expect(body.data.parentFolderId).toBe(parentFolderId);
+          expect((body.data as any)?.user?.password).toBeUndefined();
+          folderId1 = body.data.id;
+        });
+    });
+
+    /**
+     * Создание новой под-папки
+     */
+    test('PUT /folder [name: "baz", parentFolderId] (Создание новой под-папки monitor-owner)', async () => {
+      await request
+        .put(`${apiPath}/folder`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .send({ name: 'baz', parentFolderId: parentFolderId2 })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .then(({ body }: { body: FolderGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data.name).toBe('baz');
+          expect(body.data.parentFolderId).toBe(parentFolderId2);
+          expect((body.data as any)?.user?.password).toBeUndefined();
+          folderId2 = body.data.id;
+        });
+    });
+
+    /**
+     * Загрузка файлов [success]
+     */
+    test('PUT /file [success] (Загрузка файлов monitor-owner)', async () => {
+      if (!tokenMonitorOwner || !folderId1) {
+        expect(false).toEqual(true);
+      }
+
+      const field = {
+        param: `{ "folderId": "${folderId1}", "category": "media" }`,
+      };
+      const files = fileTestingDirname;
+
+      const { body }: { body: FilesUploadResponse } = await request
+        .put(`${apiPath}/file`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .field(field)
+        .attach('files', files)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(body.status).toBe(Status.Success);
+      expect(body.data).toBeDefined();
+      expect(body.data[0].id).toBeDefined();
+      mediaId1 = body.data[0].id;
+      expect(body.data[0]?.user?.password).toBeUndefined();
+    });
+
+    /**
+     * Скачивание медиа [success]
+     */
+    test('GET /file/download/{mediaId} [success] (Скачивание медиа monitor-owner)', async () => {
+      if (!tokenMonitorOwner || !mediaId1) {
+        expect(false).toEqual(true);
+      }
+
+      const { body }: { body: HttpError | string } = await request
+        .get(`${apiPath}/file/download/${mediaId1}`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(body).toBeDefined();
+      expect((body as HttpError)?.status).toBeUndefined();
+    });
+
+    /**
+     * Скачивание предпросмотра [success]
+     */
+    test('GET /file/preview/{mediaId} [success] (Скачивание предпросмотра monitor-owner)', async () => {
+      if (!tokenMonitorOwner || !mediaId1) {
+        expect(false).toEqual(true);
+      }
+
+      const { body }: { body: HttpError | string } = await request
+        .get(`${apiPath}/file/preview/${mediaId1}`)
+        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(body).toBeDefined();
+      expect((body as HttpError)?.status).toBeUndefined();
+    });
+
+    /**
+     *
+     * Повышаем роли до администратора и проверяем /user, и после этого удаляем
+     *
+     */
+    describe('Повышаем роли до администратора и проверяем /user, и после этого удаляем', () => {
+      /**
+       * Administrator
+       */
+      test('Change user Role: Administrator (database access)', async () => {
+        if (userAdvertiser) {
+          const userUpdate = await userService.update(userAdvertiser, {
+            role: UserRoleEnum.Administrator,
+          });
+          expect(userUpdate).toBeDefined();
+          if (!userUpdate) {
+            return;
+          }
+          expect(userUpdate.id).toBe(userIdAdvertiser);
+          expect(userUpdate.role).toBe(UserRoleEnum.Administrator);
+        } else {
+          expect(false).toEqual(true);
+        }
+      });
+
+      test('POST /auth/login [success] (Повторная авторизация пользователя)', async () => {
+        await request
+          .post(`${apiPath}/auth/login`)
+          .send(loginRequestAdvertiser)
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .then(({ body }: { body: AuthResponse }) => {
+            expect(body.payload?.type).toBe('bearer');
+            expect(body.data?.id).toBe(userIdAdvertiser);
+            expect(body.data?.role).toBe(UserRoleEnum.Administrator);
+            expect(body.payload?.token).toBeDefined();
+            expect(body.payload?.refreshToken).toBeDefined();
+            expect((body.data as any).password).toBeUndefined();
+            tokenAdvertiser = body.payload?.token ?? '';
+            refreshTokenAdvertiser = body.payload?.refreshToken ?? '';
+          });
+      });
+
+      /**
+       * Удаление аккаунта пользователя monitor-owner (только администратор)
+       */
+      test(`/user/{userIdMonitorOwner} (Удаление пользователя monitor-owner)`, async () => {
+        if (!tokenMonitorOwner || !userIdMonitorOwner) {
+          expect(false).toBe(true);
+        }
+
+        const url = `${apiPath}/user/${userIdMonitorOwner}`;
+        await request
+          .delete(url)
+          .auth(tokenAdvertiser, { type: 'bearer' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .expect({ status: Status.Success });
+      });
+
+      /**
+       * Удаление аккаунта пользователя accountant (только администратор)
+       */
+      test(`/user/{userIdAccountant} (Удаление пользователя accountant)`, async () => {
+        if (!tokenAccountant || !userIdAccountant) {
+          expect(false).toBe(true);
+        }
+
+        const url = `${apiPath}/user/${userIdAccountant}`;
+        await request
+          .delete(url)
+          .auth(tokenAdvertiser, { type: 'bearer' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .expect({ status: Status.Success });
+      });
+
+      /**
+       * Удаление пользователя advertiser
+       */
+      test(`/user/{userIdAdvertiser} (Удаление пользователя advertiser)`, async () => {
+        if (!tokenAdvertiser || !userIdAdvertiser) {
+          expect(false).toBe(true);
+        }
+
+        const url = `${apiPath}/user/${userIdAdvertiser}`;
+        await request
+          .delete(url)
+          .auth(tokenAdvertiser, { type: 'bearer' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .expect({ status: Status.Success });
+      });
+    });
+  });
+
   afterAll(() => {
     ws1?.close();
+    ws2?.close();
     app?.close();
   });
 });
