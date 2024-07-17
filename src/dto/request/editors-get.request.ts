@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { FindOptionsSelect, FindOptionsWhere } from 'typeorm';
+import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { swaggerGetModelProperties } from '@/utils/swagger-get-model-properties';
 import { EditorEntity } from '@/database/editor.entity';
@@ -14,7 +15,7 @@ export class EditorsGetRequest {
     type: EditorRequest,
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @ValidateNested()
   @Type(() => EditorRequest)
   where?: FindOptionsWhere<EditorRequest>;
@@ -27,7 +28,7 @@ export class EditorsGetRequest {
     type: 'string',
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @IsArray()
   select?: FindOptionsSelect<EditorRequest>;
 
@@ -36,7 +37,7 @@ export class EditorsGetRequest {
     type: LimitRequest<EditorRequest>,
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @ValidateNested()
   @Type(() => LimitRequest<EditorRequest>)
   scope?: LimitRequest<EditorRequest>;

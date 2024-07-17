@@ -10,7 +10,7 @@ export class FileUpdatesRequest extends PickType(FileEntity, ['id']) {
     example: 'foo.mp4',
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   @MinLength(1, { message: i18nValidationMessage('validation.MIN_LENGTH') })
   name?: string;
@@ -21,7 +21,7 @@ export class FileUpdatesRequest extends PickType(FileEntity, ['id']) {
     format: 'uuid',
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   folderId?: string;
 }
