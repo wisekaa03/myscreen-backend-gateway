@@ -1,5 +1,5 @@
 import type { Response as ExpressResponse } from 'express';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import dayjs from 'dayjs';
@@ -21,9 +21,9 @@ import { SpecificFormat } from '@/enums/specific-format.enum';
 import { InvoiceStatus } from '@/enums/invoice-status.enum';
 import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
-import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
-import { UserService } from './user.service';
+import { WsStatistics } from './ws.statistics';
+import { WalletService } from './wallet.service';
 
 @Injectable()
 export class InvoiceService {
@@ -32,13 +32,16 @@ export class InvoiceService {
   public minInvoiceSum: number;
 
   constructor(
-    private readonly userService: UserService,
     private readonly configService: ConfigService,
     private readonly walletService: WalletService,
+    @Inject(forwardRef(() => WsStatistics))
+    private readonly wsStatistics: WsStatistics,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {
     this.minInvoiceSum = parseInt(
       this.configService.getOrThrow('MIN_INVOICE_SUM'),
@@ -108,7 +111,7 @@ export class InvoiceService {
         relations: { user: true },
       });
 
-      await this.walletService.wsWallet(user);
+      await this.wsStatistics.onWallet(user);
 
       return invoiceUpdated;
     });
@@ -161,12 +164,18 @@ export class InvoiceService {
             balance,
           });
 
+          await this.walletService.acceptanceActCreate({
+            user,
+            transact,
+            balance,
+          });
+
           break;
         }
 
         // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
         case InvoiceStatus.AWAITING_CONFIRMATION: {
-          const accountantUsers = await this.userService.find({
+          const accountantUsers = await this.userRepository.find({
             where: {
               role: UserRoleEnum.Accountant,
               disabled: false,

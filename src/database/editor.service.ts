@@ -12,7 +12,6 @@ import util from 'node:util';
 import dayjsDuration from 'dayjs/plugin/duration';
 import dayjs from 'dayjs';
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
@@ -42,9 +41,7 @@ import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
 import { BidEntity } from './bid.entity';
 import { PlaylistService } from './playlist.service';
-import { MonitorService } from '@/database/monitor.service';
-import { CrontabService } from '@/crontab/crontab.service';
-import { BidService } from '@/database/bid.service';
+import { MonitorEntity } from './monitor.entity';
 
 dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
@@ -54,20 +51,19 @@ export class EditorService {
   private logger = new Logger(EditorService.name);
 
   constructor(
-    private readonly configService: ConfigService,
-    private readonly crontabService: CrontabService,
     private readonly folderService: FolderService,
-    @Inject(forwardRef(() => BidService))
-    private readonly bidService: BidService,
+    @Inject(forwardRef(() => PlaylistService))
     private readonly playlistService: PlaylistService,
-    @Inject(forwardRef(() => MonitorService))
-    private readonly monitorService: MonitorService,
     @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @InjectRepository(EditorEntity)
     private readonly editorRepository: Repository<EditorEntity>,
     @InjectRepository(EditorLayerEntity)
     private readonly editorLayerRepository: Repository<EditorLayerEntity>,
+    @InjectRepository(BidEntity)
+    private readonly bidRepository: Repository<BidEntity>,
+    @InjectRepository(MonitorEntity)
+    private readonly monitorRepository: Repository<MonitorEntity>,
   ) {}
 
   async find(
@@ -507,7 +503,7 @@ export class EditorService {
         hide: true,
       });
       // добавляем в плэйлист монитор
-      await this.monitorService.update(monitorId, {
+      await this.monitorRepository.update(monitorId, {
         playlist: playlistLocal,
       });
       // создаем редакторы
@@ -802,12 +798,12 @@ export class EditorService {
                 (e) => e.renderingStatus === RenderingStatus.Ready,
               );
               if (editors.length === playlist.editors.length) {
-                const bid = await this.bidService.find({
+                const bid = await this.bidRepository.find({
                   where: { playlistId: playlist.id },
                 });
                 const bidIds = new Set<string>(...bid.map((r) => r.id));
                 bidIds.forEach((bidId) => {
-                  this.bidService.update(bidId, {
+                  this.bidRepository.update(bidId, {
                     status: BidStatus.OK,
                   });
                 });

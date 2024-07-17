@@ -40,6 +40,8 @@ import {
   InvoiceGetResponse,
   WalletOperationsGetResponse,
   WalletOperationsGetRequest,
+  PlaylistCreateRequest,
+  PlaylistGetResponse,
 } from '@/dto';
 import {
   BidStatus,
@@ -65,9 +67,11 @@ import { HttpError } from '@/errors';
 
 type UserFileEntity = UserEntity & Partial<UserResponse>;
 
-const fileTestingDirname = `${__dirname}/testing.png`;
-const fileTestingBuffer = fs.readFileSync(fileTestingDirname);
-const fileTestingBinary = fileTestingBuffer.toString('binary');
+const imageTestingDirname = `${__dirname}/testing.png`;
+// const imageTestingBuffer = fs.readFileSync(imageTestingDirname);
+// const imageTestingBinary = imageTestingBuffer.toString('binary');
+const videoTestingDirname = `${__dirname}/testing.mp4`;
+// const videoTestingBuffer = fs.readFileSync(videoTestingDirname);
 
 const generatePassword = (
   length = 20,
@@ -205,17 +209,17 @@ let userAdvertiser: UserFileEntity | null;
 let userMonitorOwner: UserFileEntity | null;
 let userAccountant: UserFileEntity | null;
 
-let tokenAdvertiser = '';
-let refreshTokenAdvertiser: string | undefined = '';
+let tokenAdvertiser: string;
+let refreshTokenAdvertiser: string | undefined;
 
-let tokenMonitorOwner = '';
-let refreshTokenMonitorOwner: string | undefined = '';
+let tokenMonitorOwner: string;
+let refreshTokenMonitorOwner: string | undefined;
 
-let tokenAccountant = '';
-let refreshTokenAccountant: string | undefined = '';
+let tokenAccountant: string;
+let refreshTokenAccountant: string | undefined;
 
-let userIdAdvertiser = '';
-let userIdMonitorOwner = '';
+let userIdAdvertiser: string;
+let userIdMonitorOwner: string;
 let userIdAccountant: string;
 
 describe('Backend API (e2e)', () => {
@@ -255,15 +259,17 @@ describe('Backend API (e2e)', () => {
     wsUrl = `ws://localhost:${port}/ws`;
   });
 
-  let parentFolderId = '';
-  let parentFolderId2 = '';
-  let folderId1 = '';
-  let folderId2 = '';
-  let folderId3 = '';
-  let mediaId1 = '';
-  let monitorName1 = '';
-  let monitorCode1 = '';
-  let invoiceId = '';
+  let parentFolderId: string;
+  let parentFolderId2: string;
+  let folderId1: string;
+  let folderId2: string;
+  let folderId3: string;
+  let mediaId1: string;
+  let videoIdAdvertiser: string;
+  let monitorName1: string;
+  let monitorCode1: string;
+  let invoiceId: string;
+  let playlistAdvertiserId1: string;
 
   /**
    *
@@ -1067,7 +1073,7 @@ describe('Backend API (e2e)', () => {
       const field = {
         param: `{ "folderId": "${folderId1}", "category": "media" }`,
       };
-      const files = fileTestingDirname;
+      const files = imageTestingDirname;
 
       const { body }: { body: FilesUploadResponse } = await request
         .put(`${apiPath}/file`)
@@ -1469,12 +1475,6 @@ describe('Backend API (e2e)', () => {
       }
     });
 
-    // TODO: GET /user - Получение информации о пользователях (только администратор)
-    // TODO: GET /user/{userId} - Получение информации о пользователе (только администратор)
-    // TODO: POST /user/{userId} - Изменение информации о пользователе (только администратор)
-    // TODO: DELETE /user/disable/{userId} - Скрытие аккаунта пользователя (только администратор)
-    // TODO: POST /user/enable/{userId} - Открытие аккаунта пользователя (только администратор)
-
     test('POST /auth/login [success] (Повторная авторизация пользователя)', async () => {
       await request
         .post(`${apiPath}/auth/login`)
@@ -1539,7 +1539,7 @@ describe('Backend API (e2e)', () => {
    *
    *
    */
-  describe('Register: MonitorOwner, Advertiser, Accountant', () => {
+  describe('Пользовательский путь: MonitorOwner, Advertiser, Accountant', () => {
     /**
      * Регистрация пользователя: MonitorOwner
      */
@@ -1913,7 +1913,7 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * WS авторизация пользователя monitor-owner и проверка wallet
+     * WebSocket авторизация пользователя monitor-owner и проверка wallet
      */
     test("WebSocket 'auth/token' (Авторизация пользователя monitor-wallet)", async () => {
       ws2 = new WebSocket(wsUrl);
@@ -1945,14 +1945,16 @@ describe('Backend API (e2e)', () => {
       expect(authorized.data).toBe('authorized');
       expect(wallet).toBeDefined();
       expect(wallet.event).toBe(WsEvent.WALLET);
-      expect(wallet.data?.total).toBe(invoiceSum);
+      expect(wallet.data?.total).toBe(
+        invoiceSum - configService.getOrThrow('SUBSCRIPTION_FEE'),
+      );
       expect(metrics).toBeDefined();
       expect(metrics.event).toBe(WsEvent.METRICS);
       expect(metrics.data).toBeDefined();
     });
 
     /**
-     * Создание новой папки
+     * Создание новой папки monitor-owner
      */
     test('PUT /folder [name: "bar"] (Создание новой папки monitor-owner)', async () => {
       await request
@@ -1988,7 +1990,7 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Создание новой под-папки
+     * Создание новой под-папки monitor-owner
      */
     test('PUT /folder [name: "foo", parentFolderId] (Создание новой под-папки monitor-owner)', async () => {
       await request
@@ -2008,7 +2010,7 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Создание новой под-папки
+     * Создание новой под-папки monitor-owner
      */
     test('PUT /folder [name: "baz", parentFolderId] (Создание новой под-папки monitor-owner)', async () => {
       await request
@@ -2028,7 +2030,7 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Загрузка файлов [success]
+     * Загрузка файлов monitor-owner [success]
      */
     test('PUT /file [success] (Загрузка файлов monitor-owner)', async () => {
       if (!tokenMonitorOwner || !folderId1) {
@@ -2038,7 +2040,7 @@ describe('Backend API (e2e)', () => {
       const field = {
         param: `{ "folderId": "${folderId1}", "category": "media" }`,
       };
-      const files = fileTestingDirname;
+      const files = imageTestingDirname;
 
       const { body }: { body: FilesUploadResponse } = await request
         .put(`${apiPath}/file`)
@@ -2057,7 +2059,7 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Скачивание медиа [success]
+     * Скачивание медиа monitor-owner [success]
      */
     test('GET /file/download/{mediaId} [success] (Скачивание медиа monitor-owner)', async () => {
       if (!tokenMonitorOwner || !mediaId1) {
@@ -2075,7 +2077,7 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Скачивание предпросмотра [success]
+     * Скачивание предпросмотра monitor-owner [success]
      */
     test('GET /file/preview/{mediaId} [success] (Скачивание предпросмотра monitor-owner)', async () => {
       if (!tokenMonitorOwner || !mediaId1) {
@@ -2090,6 +2092,65 @@ describe('Backend API (e2e)', () => {
 
       expect(body).toBeDefined();
       expect((body as HttpError)?.status).toBeUndefined();
+    });
+
+    /**
+     * Загрузка файлов advertiser [success]
+     */
+    test('PUT /file [success] (Загрузка файлов advertiser)', async () => {
+      if (!tokenAdvertiser) {
+        expect(false).toEqual(true);
+      }
+
+      const field = {
+        param: `{ "category": "media" }`,
+      };
+      const files = videoTestingDirname;
+
+      const { body }: { body: FilesUploadResponse } = await request
+        .put(`${apiPath}/file`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .field(field)
+        .attach('files', files)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(body.status).toBe(Status.Success);
+      expect(body.data).toBeDefined();
+      expect(body.data[0].id).toBeDefined();
+      videoIdAdvertiser = body.data[0].id;
+      expect(body.data[0]?.user?.password).toBeUndefined();
+    });
+
+    /**
+     * Создаем плэйлист из видео advertiser
+     */
+    test('PUT /playlist', async () => {
+      if (!tokenAdvertiser || !videoIdAdvertiser) {
+        expect(false).toEqual(true);
+      }
+
+      const playlistCreate: PlaylistCreateRequest = {
+        name: 'Testing 1',
+        description: 'testing from e2e',
+        files: [videoIdAdvertiser],
+      };
+
+      await request
+        .put(`${apiPath}/playlist`)
+        .auth(tokenAdvertiser, { type: 'bearer' })
+        .send(playlistCreate)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: PlaylistGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBeDefined();
+          expect(body.data?.user?.password).toBeUndefined();
+          playlistAdvertiserId1 = body.data.id;
+        });
     });
 
     /**
@@ -2137,6 +2198,23 @@ describe('Backend API (e2e)', () => {
       });
 
       /**
+       * Удаление файлов monitor-owner
+       */
+      test('DELETE /file/{mediaId} (Удаление файлов)', async () => {
+        if (!tokenAdvertiser || !mediaId1) {
+          expect(false).toEqual(true);
+        }
+
+        const { body }: { body: SuccessResponse } = await request
+          .delete(`${apiPath}/file/${mediaId1}`)
+          .auth(tokenAdvertiser, { type: 'bearer' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
+        expect(body.status).toBe(Status.Success);
+      });
+
+      /**
        * Удаление аккаунта пользователя monitor-owner (только администратор)
        */
       test(`/user/{userIdMonitorOwner} (Удаление пользователя monitor-owner)`, async () => {
@@ -2170,6 +2248,40 @@ describe('Backend API (e2e)', () => {
           .expect('Content-Type', /json/)
           .expect(200)
           .expect({ status: Status.Success });
+      });
+
+      /**
+       * Удаление плэйлиста advertiser
+       */
+      test('DELETE /playlist/{playlistAdvertiserId1} (Удаление плэйлиста)', async () => {
+        if (!tokenAdvertiser || !playlistAdvertiserId1) {
+          expect(false).toEqual(true);
+        }
+
+        const { body }: { body: SuccessResponse } = await request
+          .delete(`${apiPath}/playlist/${playlistAdvertiserId1}`)
+          .auth(tokenAdvertiser, { type: 'bearer' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
+        expect(body.status).toBe(Status.Success);
+      });
+
+      /**
+       * Удаление файлов advertiser
+       */
+      test('DELETE /file/{videIdAdvertiser} (Удаление файлов)', async () => {
+        if (!tokenAdvertiser || !videoIdAdvertiser) {
+          expect(false).toEqual(true);
+        }
+
+        const { body }: { body: SuccessResponse } = await request
+          .delete(`${apiPath}/file/${videoIdAdvertiser}`)
+          .auth(tokenAdvertiser, { type: 'bearer' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
+        expect(body.status).toBe(Status.Success);
       });
 
       /**

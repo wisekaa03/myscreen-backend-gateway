@@ -31,20 +31,17 @@ import {
 } from '@/errors';
 import { FileCategory, VideoType } from '@/enums';
 import { FileUploadRequest } from '@/dto';
-import { EditorService } from '@/database/editor.service';
 import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileEntity } from '@/database/file.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
-import { FolderService } from '@/database/folder.service';
-import { MonitorService } from '@/database/monitor.service';
+import { EditorEntity } from './editor.entity';
+import { PlaylistEntity } from './playlist.entity';
 import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
-import { PlaylistService } from './playlist.service';
 import { UserEntity } from './user.entity';
-import { BidService } from './bid.service';
-import { WalletService } from './wallet.service';
+import { WsStatistics } from './ws.statistics';
 
 @Injectable()
 export class FileService {
@@ -62,20 +59,20 @@ export class FileService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => BidService))
-    private readonly bidService: BidService,
-    @Inject(forwardRef(() => FolderService))
-    private readonly folderService: FolderService,
-    @Inject(forwardRef(() => MonitorService))
-    private readonly monitorService: MonitorService,
-    @Inject(forwardRef(() => EditorService))
-    private readonly editorService: EditorService,
-    private readonly playlistService: PlaylistService,
-    private readonly walletService: WalletService,
+    @Inject(forwardRef(() => WsStatistics))
+    private readonly wsStatistics: WsStatistics,
     @InjectS3()
     private readonly s3Service: S3,
+    @InjectRepository(FolderEntity)
+    private readonly folderRepository: Repository<FolderEntity>,
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
+    @InjectRepository(EditorEntity)
+    private readonly editorRepository: Repository<EditorEntity>,
+    @InjectRepository(PlaylistEntity)
+    private readonly playlistRepository: Repository<PlaylistEntity>,
+    @InjectRepository(MonitorEntity)
+    private readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(FilePreviewEntity)
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
   ) {
@@ -217,6 +214,41 @@ export class FileService {
     } as FileEntity;
   }
 
+  async createFolder(folder: Partial<FolderEntity>): Promise<FolderEntity> {
+    const inserted = await this.folderRepository.insert(
+      this.folderRepository.create(folder),
+    );
+    if (!inserted.identifiers[0]) {
+      throw new NotFoundError('Error when creating folder');
+    }
+    const { id } = inserted.identifiers[0];
+
+    const find = await this.folderRepository.findOne({ where: { id } });
+    if (!find) {
+      throw new NotFoundError('Error when creating folder');
+    }
+
+    return find;
+  }
+
+  async rootFolder(user: UserEntity): Promise<FolderEntity> {
+    const { id: userId } = user;
+
+    let folder = await this.folderRepository.findOne({
+      where: { name: '<Корень>', userId },
+    });
+
+    if (!folder) {
+      folder = await this.createFolder({
+        name: '<Корень>',
+        parentFolderId: null,
+        userId,
+      });
+    }
+
+    return folder;
+  }
+
   /**
    * Update file
    *
@@ -265,7 +297,7 @@ export class FileService {
       });
       const data = await transact.findOneByOrFail(FileEntity, { id: file.id });
 
-      await this.bidService.websocketChange({ files: [data] });
+      await this.wsStatistics.onChange({ files: [data] });
 
       return data;
     });
@@ -289,11 +321,12 @@ export class FileService {
   ): Promise<FileEntity[]> {
     return this.fileRepository.manager.transaction(async (transact) => {
       let folder: FolderEntity | null = null;
+      const { id: userId } = user;
       if (!folderIdOrig) {
-        folder = await this.folderService.rootFolder(user);
+        folder = await this.rootFolder(user);
       } else {
-        folder = await this.folderService.findOne({
-          where: { userId: user.id, id: folderIdOrig },
+        folder = await this.folderRepository.findOne({
+          where: { userId, id: folderIdOrig },
         });
         if (!folder) {
           throw new NotFoundError(`Folder '${folderIdOrig}' not found`);
@@ -309,12 +342,10 @@ export class FileService {
         throw new NotFoundError("Found category: 'media' and monitorId");
       }
       if (monitorId) {
-        monitor = await this.monitorService.findOne({
-          find: {
-            where: { id: monitorId },
-            loadEagerRelations: false,
-            relations: {},
-          },
+        monitor = await this.monitorRepository.findOne({
+          where: { id: monitorId },
+          loadEagerRelations: false,
+          relations: {},
         });
         if (!monitor) {
           throw new NotFoundError(`Monitor '${monitorId}' not found`);
@@ -362,7 +393,7 @@ export class FileService {
         const height = Number(stream?.height ?? 0);
 
         const fileToSave: DeepPartial<FileEntity> = {
-          userId: user.id,
+          userId,
           folder: folder ?? undefined,
           name: originalname,
           filesize,
@@ -404,7 +435,7 @@ export class FileService {
           transact.create(FileEntity, fileToSave),
         );
 
-        await this.walletService.wsMetrics(user);
+        await this.wsStatistics.onMetrics(user);
 
         return fileUpdated;
       });
@@ -521,82 +552,73 @@ export class FileService {
 
   async deletePrep(filesId: string[]): Promise<void> {
     const [videoFiles, audioFiles, playlistFiles] = await Promise.all([
-      this.editorService.find(
-        {
-          where: [
-            {
-              videoLayers: {
-                file: { id: In(filesId) },
-              },
-            },
-          ],
-          select: {
-            id: true,
-            name: true,
+      this.editorRepository.find({
+        where: [
+          {
             videoLayers: {
-              id: true,
-              file: {
-                id: true,
-                name: true,
-              },
+              file: { id: In(filesId) },
             },
           },
-          relations: {
-            videoLayers: {
-              file: true,
-            },
-          },
-          loadEagerRelations: false,
-        },
-        false,
-      ),
-      this.editorService.find(
-        {
-          where: [
-            {
-              audioLayers: {
-                file: { id: In(filesId) },
-              },
-            },
-          ],
-          select: {
+        ],
+        select: {
+          id: true,
+          name: true,
+          videoLayers: {
             id: true,
-            name: true,
-            audioLayers: {
-              id: true,
-              file: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-          relations: {
-            audioLayers: {
-              file: true,
-            },
-          },
-          loadEagerRelations: false,
-        },
-        false,
-      ),
-      this.playlistService.find(
-        {
-          where: { files: { id: In(filesId) } },
-          select: {
-            id: true,
-            name: true,
-            files: {
+            file: {
               id: true,
               name: true,
             },
           },
-          relations: {
-            files: true,
-          },
-          loadEagerRelations: false,
         },
-        false,
-      ),
+        relations: {
+          videoLayers: {
+            file: true,
+          },
+        },
+        loadEagerRelations: false,
+      }),
+      this.editorRepository.find({
+        where: [
+          {
+            audioLayers: {
+              file: { id: In(filesId) },
+            },
+          },
+        ],
+        select: {
+          id: true,
+          name: true,
+          audioLayers: {
+            id: true,
+            file: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        relations: {
+          audioLayers: {
+            file: true,
+          },
+        },
+        loadEagerRelations: false,
+      }),
+      this.playlistRepository.find({
+        where: { files: { id: In(filesId) } },
+        select: {
+          id: true,
+          name: true,
+          files: {
+            id: true,
+            name: true,
+          },
+        },
+        relations: {
+          files: true,
+        },
+        loadEagerRelations: false,
+      }),
     ]);
     if (
       videoFiles.length === 0 &&
@@ -640,7 +662,7 @@ export class FileService {
       return { affected: 0, raw: 0 };
     }
 
-    await this.bidService.websocketChange({ files, filesDelete: true });
+    await this.wsStatistics.onChange({ filesDelete: files });
 
     const filesS3DeletePromise = files.map(async (file) => {
       this.deleteS3Object(file).catch((error) => {
@@ -649,7 +671,7 @@ export class FileService {
     });
     await Promise.allSettled(filesS3DeletePromise);
 
-    const filesDeleteId = files.map((file) => file.id);
+    const filesDeleteId = files.map(({ id }) => id);
     const filesDelete = await this.fileRepository.delete({
       id: In(filesDeleteId),
     });

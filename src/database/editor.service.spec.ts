@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
@@ -8,9 +7,8 @@ import { EditorService } from './editor.service';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { PlaylistService } from './playlist.service';
-import { MonitorService } from './monitor.service';
-import { CrontabService } from '@/crontab/crontab.service';
-import { BidService } from './bid.service';
+import { BidEntity } from './bid.entity';
+import { MonitorEntity } from './monitor.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -34,19 +32,23 @@ describe(EditorService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EditorService,
-        { provide: ConfigService, useClass: mockRepository },
-        { provide: CrontabService, useClass: mockRepository },
-        { provide: FileService, useClass: mockRepository },
-        { provide: BidService, useClass: mockRepository },
         { provide: FolderService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
-        { provide: MonitorService, useClass: mockRepository },
+        { provide: FileService, useClass: mockRepository },
         {
           provide: getRepositoryToken(EditorEntity),
           useClass: mockRepository,
         },
         {
+          provide: getRepositoryToken(BidEntity),
+          useClass: mockRepository,
+        },
+        {
           provide: getRepositoryToken(EditorLayerEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(MonitorEntity),
           useClass: mockRepository,
         },
       ],

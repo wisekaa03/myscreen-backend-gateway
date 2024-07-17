@@ -14,6 +14,7 @@ import { getFullName } from '@/utils/full-name';
 import { UserResponse } from './user-response.entity';
 import { RegisterRequest } from '@/dto';
 import { FileService } from './file.service';
+import { FileEntity } from './file.entity';
 
 describe(UserService.name, () => {
   let service: UserService;
@@ -64,6 +65,10 @@ describe(UserService.name, () => {
         },
         {
           provide: getRepositoryToken(UserResponse),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(FileEntity),
           useClass: mockRepository,
         },
       ],

@@ -237,15 +237,16 @@ import { UserLanguageResolver } from './i18n/userLanguageResolver';
       ],
     }),
 
-    CrontabModule,
-    WSModule,
     S3Module.forRootAsync({
       useClass: S3ModuleOptionsClass,
       inject: [ConfigService],
     }),
+
     DatabaseModule,
     AuthModule,
     EndpointModule,
+    WSModule,
+    CrontabModule,
 
     I18nModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({

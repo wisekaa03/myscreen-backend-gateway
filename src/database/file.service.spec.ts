@@ -4,15 +4,14 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { getS3ConnectionToken } from 'nestjs-s3-aws';
 import { S3_MODULE_CONNECTION } from 'nestjs-s3-aws/dist/s3.constants';
 
-import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
 import { FileService } from './file.service';
-import { MonitorService } from './monitor.service';
-import { EditorService } from './editor.service';
-import { PlaylistService } from './playlist.service';
-import { BidService } from './bid.service';
-import { WalletService } from './wallet.service';
+import { EditorEntity } from './editor.entity';
+import { MonitorEntity } from './monitor.entity';
+import { PlaylistEntity } from './playlist.entity';
+import { FolderEntity } from './folder.entity';
+import { WsStatistics } from './ws.statistics';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -38,14 +37,13 @@ describe(FileService.name, () => {
       providers: [
         FileService,
         { provide: ConfigService, useClass: mockRepository },
-        { provide: BidService, useClass: mockRepository },
-        { provide: FolderService, useClass: mockRepository },
-        { provide: MonitorService, useClass: mockRepository },
-        { provide: EditorService, useClass: mockRepository },
-        { provide: PlaylistService, useClass: mockRepository },
-        { provide: WalletService, useClass: mockRepository },
+        { provide: WsStatistics, useClass: mockRepository },
         {
           provide: getS3ConnectionToken(S3_MODULE_CONNECTION),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(FolderEntity),
           useClass: mockRepository,
         },
         {
@@ -54,6 +52,18 @@ describe(FileService.name, () => {
         },
         {
           provide: getRepositoryToken(FilePreviewEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(EditorEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(MonitorEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(PlaylistEntity),
           useClass: mockRepository,
         },
       ],

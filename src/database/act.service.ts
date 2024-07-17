@@ -13,6 +13,7 @@ import { ActEntity } from './act.entity';
 import { WalletService } from '@/database/wallet.service';
 import { UserResponse } from './user-response.entity';
 import { UserEntity } from './user.entity';
+import { WsStatistics } from './ws.statistics';
 
 @Injectable()
 export class ActService {
@@ -21,6 +22,8 @@ export class ActService {
   constructor(
     @Inject(forwardRef(() => WalletService))
     private readonly walletService: WalletService,
+    @Inject(forwardRef(() => WsStatistics))
+    private readonly wsStatistics: WsStatistics,
     @InjectRepository(ActEntity)
     private readonly actRepository: Repository<ActEntity>,
   ) {}
@@ -88,7 +91,7 @@ export class ActService {
         this.walletService.create({ user, act: actCreate }),
       );
 
-      await this.walletService.wsWallet(user);
+      await this.wsStatistics.onWallet(user);
 
       return actCreate;
     });

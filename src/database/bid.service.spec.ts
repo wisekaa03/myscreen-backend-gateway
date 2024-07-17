@@ -3,7 +3,6 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
 import { MAIL_SERVICE } from '@/constants';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { BidEntity } from './bid.entity';
 import { BidService } from './bid.service';
 import { UserService } from './user.service';
@@ -11,9 +10,10 @@ import { MonitorEntity } from './monitor.entity';
 import { MonitorService } from './monitor.service';
 import { EditorService } from './editor.service';
 import { FileService } from './file.service';
-import { PlaylistService } from './playlist.service';
 import { ActService } from './act.service';
 import { WalletService } from './wallet.service';
+import { PlaylistEntity } from './playlist.entity';
+import { WsStatistics } from './ws.statistics';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -41,12 +41,11 @@ describe(BidService.name, () => {
         { provide: UserService, useClass: mockRepository },
         { provide: ActService, useClass: mockRepository },
         { provide: MonitorService, useClass: mockRepository },
-        { provide: PlaylistService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
         { provide: EditorService, useClass: mockRepository },
         { provide: MAIL_SERVICE, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
-        { provide: WSGateway, useClass: mockRepository },
+        { provide: WsStatistics, useClass: mockRepository },
         { provide: WalletService, useClass: mockRepository },
         {
           provide: getRepositoryToken(MonitorEntity),
@@ -54,6 +53,10 @@ describe(BidService.name, () => {
         },
         {
           provide: getRepositoryToken(BidEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(PlaylistEntity),
           useClass: mockRepository,
         },
       ],

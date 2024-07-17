@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
@@ -7,10 +7,9 @@ import { DatabaseModule } from '@/database/database.module';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 
+@Global()
 @Module({
   imports: [
-    forwardRef(() => DatabaseModule),
-
     JwtModule.registerAsync({
       useFactory: async (configService: ConfigService) => ({
         secret: configService.getOrThrow('JWT_ACCESS_TOKEN'),
@@ -22,6 +21,8 @@ import { JwtStrategy } from './jwt.strategy';
       inject: [ConfigService],
     }),
     PassportModule,
+
+    DatabaseModule,
   ],
 
   providers: [AuthService, JwtStrategy],

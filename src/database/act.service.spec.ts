@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { WalletService } from './wallet.service';
 import { ActEntity } from './act.entity';
 import { ActService } from './act.service';
+import { WsStatistics } from './ws.statistics';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -29,6 +30,7 @@ describe(ActService.name, () => {
       providers: [
         ActService,
         { provide: WalletService, useClass: mockRepository },
+        { provide: WsStatistics, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
         {
           provide: getRepositoryToken(ActEntity),

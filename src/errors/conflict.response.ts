@@ -60,6 +60,14 @@ export class ConflictData {
     required: false,
   })
   monitor?: ConflictDataFile[];
+
+  @ApiProperty({
+    type: () => ConflictDataFile,
+    description: 'Файлы',
+    isArray: true,
+    required: false,
+  })
+  files?: ConflictDataFile[];
 }
 
 export class ConflictError extends ConflictException {

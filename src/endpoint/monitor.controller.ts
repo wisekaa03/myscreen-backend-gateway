@@ -536,7 +536,7 @@ export class MonitorController {
       throw new NotFoundError(`Have no playlist in monitor '${id}'`);
     }
 
-    const data = await this.bidService.monitorRequests({
+    const data = await this.bidService.monitorPlaylistToBids({
       monitorId: monitor.id,
     });
 

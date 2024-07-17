@@ -14,6 +14,7 @@ import {
   FindOneOptionsCaseInsensitive,
 } from '@/interfaces';
 import { UserResponse } from './user-response.entity';
+import { FileEntity } from './file.entity';
 
 @Injectable()
 export class FolderService {
@@ -24,6 +25,8 @@ export class FolderService {
     private readonly fileService: FileService,
     @InjectRepository(FolderEntity)
     private readonly folderRepository: Repository<FolderEntity>,
+    @InjectRepository(FileEntity)
+    private readonly fileRepository: Repository<FileEntity>,
     @InjectRepository(FolderFileNumberEntity)
     private readonly folderFilenumberRepository: Repository<FolderFileNumberEntity>,
   ) {}
@@ -193,15 +196,12 @@ export class FolderService {
         .then((folders) => folders.map((folder) => folder.id));
 
       const fullFolders = [...foldersId, ...folderSubId];
-      const filesId = await this.fileService
+      const filesId = await this.fileRepository
         .find({
-          find: {
-            where: { folderId: In(fullFolders) },
-            relations: {},
-            loadEagerRelations: false,
-            select: ['id', 'folderId', 'name', 'hash'],
-          },
-          caseInsensitive: false,
+          where: { folderId: In(fullFolders) },
+          relations: {},
+          loadEagerRelations: false,
+          select: ['id', 'folderId', 'name', 'hash'],
         })
         .then((files) => files.map((file) => file.id));
       await this.fileService.deletePrep(filesId);

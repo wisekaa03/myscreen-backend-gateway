@@ -14,6 +14,8 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import {
   BadRequestError,
+  ConflictData,
+  ConflictError,
   ForbiddenError,
   PreconditionFailedError,
   UnauthorizedError,
@@ -33,6 +35,8 @@ import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from './user.entity';
 import { UserResponse } from './user-response.entity';
+import { FileEntity } from './file.entity';
+import { FileService } from './file.service';
 
 @Injectable()
 export class UserService {
@@ -43,12 +47,15 @@ export class UserService {
   constructor(
     private readonly i18n: I18nService,
     private readonly configService: ConfigService,
+    private readonly fileService: FileService,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
     @InjectRepository(UserEntity)
     public readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserResponse)
     public readonly userResponseRepository: Repository<UserResponse>,
+    @InjectRepository(FileEntity)
+    public readonly fileRepository: Repository<FileEntity>,
   ) {
     this.frontendUrl = this.configService.get(
       'FRONTEND_URL',
@@ -226,11 +233,18 @@ export class UserService {
   /**
    * Удаляет пользователя
    * @async
-   * @param {string} id User Id
+   * @param {UserEntity} user User
    * @returns {DeleteResult} {DeleteResult} Результат
    */
-  async delete(id: string): Promise<DeleteResult> {
-    return this.userRepository.delete({ id });
+  async delete(user: UserEntity): Promise<DeleteResult> {
+    const files = await this.fileRepository.find({
+      where: { userId: user.id },
+    });
+    if (files.length > 0) {
+      const fileIds = files.map(({ id }) => id);
+      await this.fileService.delete(fileIds);
+    }
+    return this.userRepository.delete({ id: user.id });
   }
 
   /**

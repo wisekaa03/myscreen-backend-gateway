@@ -20,21 +20,19 @@ import { ClientProxy } from '@nestjs/microservices';
 import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { MailSendBidMessage } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { BidApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
 import { BidEntity } from './bid.entity';
-import { FileEntity } from './file.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
-import { PlaylistService } from './playlist.service';
 import { ActService } from './act.service';
 import { getFullName } from '@/utils/full-name';
 import { UserResponse } from './user-response.entity';
 import { WalletService } from './wallet.service';
+import { WsStatistics } from './ws.statistics';
 
 @Injectable()
 export class BidService {
@@ -43,23 +41,23 @@ export class BidService {
   public commissionPercent: number;
 
   constructor(
-    @Inject(MAIL_SERVICE)
-    private readonly mailService: ClientProxy,
+    readonly configService: ConfigService,
     private readonly actService: ActService,
+    private readonly walletService: WalletService,
     @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @Inject(forwardRef(() => EditorService))
     private readonly editorService: EditorService,
-    @Inject(forwardRef(() => WSGateway))
-    private readonly wsGateway: WSGateway,
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
-    @Inject(forwardRef(() => PlaylistService))
-    private readonly playlistService: PlaylistService,
-    private readonly walletService: WalletService,
+    @Inject(forwardRef(() => WsStatistics))
+    private readonly wsStatistics: WsStatistics,
     @InjectRepository(BidEntity)
     private readonly bidRepository: Repository<BidEntity>,
-    configService: ConfigService,
+    @InjectRepository(PlaylistEntity)
+    private readonly playlistRepository: Repository<PlaylistEntity>,
+    @Inject(MAIL_SERVICE)
+    private readonly mailService: ClientProxy,
   ) {
     this.commissionPercent = parseInt(
       configService.getOrThrow('COMMISSION_PERCENT'),
@@ -154,8 +152,6 @@ export class BidService {
   async websocketChange({
     playlist,
     playlistDelete,
-    files,
-    filesDelete = false,
     monitor,
     monitorDelete,
     bid,
@@ -163,35 +159,33 @@ export class BidService {
   }: {
     playlist?: PlaylistEntity;
     playlistDelete?: PlaylistEntity;
-    files?: FileEntity[];
-    filesDelete?: boolean;
     monitor?: MonitorEntity;
     monitorDelete?: MonitorEntity;
     bid?: BidEntity;
     bidDelete?: BidEntity;
   }) {
     if (playlist) {
-      const bids = await this.monitorRequests({
+      const bids = await this.monitorPlaylistToBids({
         playlistId: playlist.id,
       });
 
       const wsPromise = bids.map(async (_bid) =>
-        this.wsGateway.onChange({ bid: _bid }),
+        this.wsStatistics.onChange({ bid: _bid }),
       );
 
       await Promise.allSettled(wsPromise);
     }
 
     if (monitorDelete) {
-      await this.wsGateway.onChange({ monitorDelete });
+      await this.wsStatistics.onChange({ monitorDelete });
     }
 
     if (bid) {
-      await this.wsGateway.onChange({ bid });
+      await this.wsStatistics.onChange({ bid });
     }
 
     if (bidDelete) {
-      await this.wsGateway.onChange({ bidDelete });
+      await this.wsStatistics.onChange({ bidDelete });
     }
   }
 
@@ -204,7 +198,7 @@ export class BidService {
    * @return {*}
    * @memberof BidService
    */
-  async monitorRequests({
+  async monitorPlaylistToBids({
     monitorId,
     playlistId,
     dateLocal = new Date(),
@@ -474,11 +468,13 @@ export class BidService {
     if (role !== UserRoleEnum.Administrator) {
       where.userId = userId;
     }
-    const playlist = await this.playlistService.findOne({
+    const playlist = await this.playlistRepository.findOne({
       where,
     });
     if (!playlist) {
-      throw new NotFoundError(`Playlist '${playlistId}' not found`);
+      throw new NotFoundError('PLAYLIST_NOT_FOUND', {
+        args: { id: playlistId },
+      });
     }
 
     return this.bidRepository.manager.transaction(async (transact) => {
@@ -504,19 +500,22 @@ export class BidService {
             ? BidApprove.ALLOWED
             : BidApprove.NOTPROCESSED;
 
-        const sum = await this.precalculateSum({
-          user,
-          minWarranty: monitor.minWarranty,
-          price1s: monitor.price1s,
-          dateBefore,
-          dateWhen,
-          playlistId,
-        });
-
-        if (sum > totalBalance) {
-          throw new NotAcceptableError('BALANCE', {
-            args: { sum, totalBalance },
+        let sum = 0;
+        if (userId !== monitor.userId) {
+          sum = await this.precalculateSum({
+            user,
+            minWarranty: monitor.minWarranty,
+            price1s: monitor.price1s,
+            dateBefore,
+            dateWhen,
+            playlistId,
           });
+
+          if (sum > totalBalance) {
+            throw new NotAcceptableError('BALANCE', {
+              args: { sum, totalBalance },
+            });
+          }
         }
 
         const insert: DeepPartial<BidEntity> = {
@@ -562,7 +561,7 @@ export class BidService {
         }
 
         // Списываем средства со счета пользователя Рекламодателя
-        if (Number(sum) !== 0) {
+        if (sum !== 0) {
           await this.actService.create({
             user,
             sum,
@@ -590,16 +589,17 @@ export class BidService {
           }
         } else if (insert.approved === BidApprove.ALLOWED) {
           // Оплата поступает на пользователя - владельца монитора
-          const sumIncrement =
-            -(Number(sum) * (100 - this.commissionPercent)) / 100;
-          const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
-          if (sumIncrement !== 0) {
-            await this.actService.create({
-              user: actUserResponse,
-              sum: sumIncrement,
-              isSubscription: false,
-              description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
-            });
+          if (sum !== 0) {
+            const sumIncrement = -(sum * (100 - this.commissionPercent)) / 100;
+            const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
+            if (sumIncrement !== 0) {
+              await this.actService.create({
+                user: actUserResponse,
+                sum: sumIncrement,
+                isSubscription: false,
+                description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+              });
+            }
           }
 
           await this.bidPostCreate({ bid, entityManager: transact });
@@ -608,8 +608,8 @@ export class BidService {
         }
 
         await Promise.all([
-          this.walletService.wsMetrics(bid.seller),
-          this.walletService.wsMetrics(bid.buyer ? bid.buyer : monitor.user),
+          this.wsStatistics.onMetrics(bid.seller),
+          this.wsStatistics.onMetrics(bid.buyer ? bid.buyer : monitor.user),
         ]);
 
         return bid;
@@ -687,7 +687,7 @@ export class BidService {
     dateWhen: Date;
     playlistId: string;
   }): Promise<number> {
-    const playlist = await this.playlistService.findOne({
+    const playlist = await this.playlistRepository.findOne({
       where: { id: playlistId, userId: user.id },
       relations: ['files'],
       loadEagerRelations: false,

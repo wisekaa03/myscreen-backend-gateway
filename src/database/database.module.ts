@@ -1,11 +1,10 @@
-import { Module, Logger, OnModuleInit, forwardRef } from '@nestjs/common';
+import { Module, Logger, OnModuleInit, Global } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EntityManager, MoreThan } from 'typeorm';
 import { InjectEntityManager, TypeOrmModule } from '@nestjs/typeorm';
 
 import { MonitorStatus } from '@/enums/monitor-status.enum';
 import { TypeOrmOptionsClass } from '@/utils/typeorm.options';
-import { WSModule } from '@/websocket/ws.module';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorService } from './editor.service';
@@ -34,7 +33,9 @@ import { WalletService } from './wallet.service';
 import { ActService } from './act.service';
 import { ActEntity } from './act.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
+import { WsStatistics } from './ws.statistics';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -61,38 +62,37 @@ import { MonitorGroupEntity } from './monitor.group.entity';
       WalletEntity,
       ActEntity,
     ]),
-
-    forwardRef(() => WSModule),
   ],
 
   providers: [
     Logger,
+    ActService,
+    BidService,
     EditorService,
     FileService,
     FolderService,
-    FileService,
-    MonitorService,
     InvoiceService,
+    MonitorService,
     PlaylistService,
-    UserService,
     RefreshTokenService,
-    BidService,
+    UserService,
     WalletService,
-    ActService,
+    WsStatistics,
   ],
 
   exports: [
+    ActService,
+    BidService,
     EditorService,
     FileService,
     FolderService,
-    MonitorService,
-    ActService,
     InvoiceService,
+    MonitorService,
     PlaylistService,
-    UserService,
     RefreshTokenService,
-    BidService,
+    UserService,
     WalletService,
+    WsStatistics,
   ],
 })
 export class DatabaseModule implements OnModuleInit {

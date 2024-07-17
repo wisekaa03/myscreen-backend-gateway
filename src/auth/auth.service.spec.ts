@@ -12,6 +12,10 @@ import { UserEntity } from '@/database/user.entity';
 import { UserResponse } from '@/database/user-response.entity';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
+import { FileService } from '@/database/file.service';
+import { FileEntity } from '@/database/file.entity';
+import { FolderEntity } from '@/database/folder.entity';
+import { Observable } from 'rxjs';
 
 UserService.validateCredentials = () => true;
 
@@ -29,25 +33,30 @@ describe(AuthService.name, () => {
   const mockRepository = jest.fn(() => ({
     find: async () => Promise.resolve([]),
     findByEmail: async () => Promise.resolve({ ...user, password }),
+    findById: async () => Promise.resolve({ ...user, password }),
     findOne: async () => Promise.resolve(user),
     signAsync: async () => Promise.resolve(token),
     create: (value: any) => value,
     insert: async () => Promise.resolve([]),
     update: async () => Promise.resolve([]),
+    delete: async () => Promise.resolve([]),
     verify: () => true,
     get: (key: string, defaultValue?: string) => defaultValue,
     getOrThrow: (key: string, defaultValue?: string) => defaultValue,
     t: (value: unknown) => value,
+    emit: async (event: string, data: unknown) =>
+      new Observable((s) => s.next(data)),
+    send: async (id: unknown) => new Observable((s) => s.next(id)),
   }));
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
+        { provide: I18nService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
         { provide: JwtService, useClass: mockRepository },
         { provide: JwtStrategy, useClass: mockRepository },
-        { provide: RefreshTokenService, useClass: mockRepository },
-        { provide: I18nService, useClass: mockRepository },
+        { provide: FileService, useClass: mockRepository },
         { provide: MAIL_SERVICE, useClass: mockRepository },
         {
           provide: getRepositoryToken(UserEntity),
@@ -55,6 +64,15 @@ describe(AuthService.name, () => {
         },
         {
           provide: getRepositoryToken(UserResponse),
+          useClass: mockRepository,
+        },
+        { provide: RefreshTokenService, useClass: mockRepository },
+        {
+          provide: getRepositoryToken(FileEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(FolderEntity),
           useClass: mockRepository,
         },
         AuthService,

@@ -14,7 +14,7 @@ import { MonitorService } from './monitor.service';
 import { BidService } from './bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
 import { WalletService } from './wallet.service';
-import { WSGateway } from '@/websocket/ws.gateway';
+import { WsStatistics } from './ws.statistics';
 
 export const mockRepository = jest.fn(() => ({
   find: async (find: FindOneOptions<ObjectLiteral>) =>
@@ -60,9 +60,7 @@ describe(MonitorService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MonitorService,
-        { provide: WSGateway, useClass: mockRepository },
-        { provide: BidService, useClass: mockRepository },
-        { provide: WalletService, useClass: mockRepository },
+        { provide: WsStatistics, useClass: mockRepository },
         {
           provide: getRepositoryToken(MonitorEntity),
           useClass: mockRepository,
