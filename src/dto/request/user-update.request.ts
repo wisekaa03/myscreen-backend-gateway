@@ -38,7 +38,7 @@ export class UserUpdateRequest extends PartialType(
   @ApiProperty({
     description: 'Роль пользователя',
     enum: UserRoleEnum,
-    enumName: 'UserRoleEnum',
+    enumName: 'UserRole',
     example: UserRoleEnum.Advertiser,
     required: false,
   })

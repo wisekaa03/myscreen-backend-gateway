@@ -42,7 +42,7 @@ export class RegisterRequest extends PartialType(
   @ApiProperty({
     description: 'Роль пользователя',
     enum: UserRole,
-    enumName: 'UserRoleEnum',
+    enumName: 'UserRole',
     example: UserRoleEnum.Advertiser,
     required: true,
   })

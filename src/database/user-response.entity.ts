@@ -432,7 +432,7 @@ export class UserResponse implements UserEntity {
   @ApiProperty({
     description: 'Роль пользователя',
     enum: UserRoleEnum,
-    enumName: 'UserRoleEnum',
+    enumName: 'UserRole',
     example: UserRoleEnum.Advertiser,
     required: true,
   })
