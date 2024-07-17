@@ -13,7 +13,7 @@ import {
   IsNumber,
   IsDateString,
   IsOptional,
-  IsBoolean,
+  IsInt,
 } from 'class-validator';
 import locale from 'country-locale-map';
 import {
@@ -215,13 +215,13 @@ export class UserEntity {
   @ApiProperty({
     description: 'Роль пользователя',
     enum: UserRoleEnum,
-    enumName: 'UserRoleResponse',
+    enumName: 'UserRoleEnum',
     example: UserRoleEnum.Advertiser,
     required: true,
   })
   @IsDefined()
   @IsNotEmpty()
-  @IsEnum(UserRole)
+  @IsEnum(UserRole, { message: i18nValidationMessage('validation.IS_ENUM') })
   role!: UserRoleEnum;
 
   @Column({ type: 'varchar', nullable: true })
@@ -253,7 +253,9 @@ export class UserEntity {
   })
   @IsDefined()
   @IsNotEmpty()
-  @IsEnum(UserPlanEnum)
+  @IsEnum(UserPlanEnum, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
   plan?: UserPlanEnum;
 
   @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
@@ -265,7 +267,7 @@ export class UserEntity {
     example: 0,
   })
   @IsOptional()
-  @IsBoolean()
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   nonPayment!: number;
 
   @Column({ nullable: true })

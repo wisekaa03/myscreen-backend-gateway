@@ -14,8 +14,8 @@ export class FileRequest extends PartialType(
     format: 'uuid',
     required: true,
   })
-  @IsOptional()
-  @IsString({ message: i18nValidationMessage('INVALID_STRING') })
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
+  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   folderId?: string;
 
   @ApiProperty({
@@ -31,7 +31,7 @@ export class FileRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @IsDateString(
     { strict: false },
     { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
@@ -51,7 +51,7 @@ export class FileRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @IsDateString(
     { strict: false },
     { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },

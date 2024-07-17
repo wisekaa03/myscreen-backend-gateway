@@ -21,7 +21,7 @@ export class EditorRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @IsDateString(
     { strict: false },
     { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
@@ -41,7 +41,7 @@ export class EditorRequest extends PartialType(
     format: 'date-time',
     required: false,
   })
-  @IsOptional()
+  @IsOptional({ message: i18nValidationMessage('validation.IS_OPTIONAL') })
   @IsDateString(
     { strict: false },
     { each: true, message: i18nValidationMessage('validation.IS_DATE_RANGE') },
