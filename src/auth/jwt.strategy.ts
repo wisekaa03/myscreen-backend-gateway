@@ -10,7 +10,7 @@ import { UserResponse } from '@/database/user-response.entity';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    authService: AuthService,
+    readonly authService: AuthService,
     private readonly userService: UserService,
   ) {
     const secretOrKey = authService.secretAccessToken;

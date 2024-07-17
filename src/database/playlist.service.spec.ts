@@ -5,6 +5,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
 import { BidService } from './bid.service';
 import { WalletService } from './wallet.service';
+import { WsStatistics } from './ws.statistics';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -28,6 +29,7 @@ describe(PlaylistService.name, () => {
         PlaylistService,
         { provide: BidService, useClass: mockRepository },
         { provide: WalletService, useClass: mockRepository },
+        { provide: WsStatistics, useClass: mockRepository },
         {
           provide: getRepositoryToken(PlaylistEntity),
           useClass: mockRepository,

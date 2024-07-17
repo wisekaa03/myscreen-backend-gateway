@@ -14,23 +14,19 @@ import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorGroup } from '@/dto/request/monitor-group';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
-import { BidService } from '@/database/bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
-import { WalletService } from './wallet.service';
+import { WsStatistics } from './ws.statistics';
 
 @Injectable()
 export class MonitorService {
   private logger = new Logger(MonitorService.name);
 
   constructor(
-    private readonly bidService: BidService,
-    private readonly walletService: WalletService,
-    @Inject(forwardRef(() => WSGateway))
-    private readonly wsGateway: WSGateway,
+    @Inject(forwardRef(() => WsStatistics))
+    private readonly wsStatistics: WsStatistics,
     @InjectRepository(MonitorEntity)
     public readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(MonitorGroupEntity)
@@ -286,7 +282,7 @@ export class MonitorService {
         throw new NotFoundError(`Monitor with this '${id}' not found`);
       }
 
-      await this.bidService.websocketChange({ monitor });
+      await this.wsStatistics.onChange({ monitor });
 
       // а тут начинается полный трэш
       if (updateMultiple !== MonitorMultiple.SINGLE && multipleBool) {
@@ -306,7 +302,7 @@ export class MonitorService {
         // удаляем из таблицы связей мониторов мониторы
         if (monitorsDeleteId.length > 0) {
           const monitorsWSchangePromise = monitorsDeleteId.map(async (item) => {
-            this.bidService.websocketChange({ monitorDelete: item.monitor });
+            this.wsStatistics.onChange({ monitorDelete: item.monitor });
           });
           await Promise.all(monitorsWSchangePromise);
           await transact.delete(MonitorGroupEntity, {
@@ -482,7 +478,7 @@ export class MonitorService {
         await Promise.all(monitorMultiple);
       }
 
-      await this.walletService.wsMetrics(user);
+      await this.wsStatistics.onMetrics(user);
 
       return monitor;
     });
@@ -533,7 +529,10 @@ export class MonitorService {
                 { id: monitorGroup.id },
                 { status: MonitorStatus.Online },
               );
-              this.wsGateway.monitorStatus(monitorGroup, MonitorStatus.Online);
+              this.wsStatistics.monitorStatus(
+                monitorGroup,
+                MonitorStatus.Online,
+              );
             }
           } else {
             if (monitorGroup.status !== MonitorStatus.Offline) {
@@ -541,7 +540,10 @@ export class MonitorService {
                 { id: monitorGroup.id },
                 { status: MonitorStatus.Offline },
               );
-              this.wsGateway.monitorStatus(monitorGroup, MonitorStatus.Offline);
+              this.wsStatistics.monitorStatus(
+                monitorGroup,
+                MonitorStatus.Offline,
+              );
             }
           }
         }
@@ -549,7 +551,7 @@ export class MonitorService {
     }
 
     const updated = await this.monitorRepository.update(id, { status });
-    await this.wsGateway.monitorStatus(monitor, status, user);
+    await this.wsStatistics.monitorStatus(monitor, status, user);
 
     return updated;
   }
@@ -599,7 +601,7 @@ export class MonitorService {
   async delete(monitor: MonitorEntity): Promise<DeleteResult> {
     const monitorId = monitor.id;
 
-    await this.bidService.websocketChange({ monitorDelete: monitor });
+    await this.wsStatistics.onChange({ monitorDelete: monitor });
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
       return this.monitorRepository.manager.transaction(async (transact) => {
@@ -610,7 +612,7 @@ export class MonitorService {
         });
         if (monitorMultiple.length > 0) {
           const monitorIdsPromise = monitorMultiple.map(async (item) => {
-            await this.bidService.websocketChange({
+            await this.wsStatistics.onChange({
               monitorDelete: item.monitor,
             });
             return item.monitorId;

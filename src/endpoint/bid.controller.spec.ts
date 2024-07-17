@@ -5,10 +5,10 @@ import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { Roles } from '@/decorators/roles.decorator';
 import { UserRoleEnum } from '@/enums';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { BidService } from '@/database/bid.service';
 import { UserService } from '@/database/user.service';
 import { BidController } from './bid.controller';
+import { WsStatistics } from '@/database/ws.statistics';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -33,7 +33,7 @@ describe(BidController.name, () => {
       providers: [
         { provide: BidService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
-        { provide: WSGateway, useClass: mockRepository },
+        { provide: WsStatistics, useClass: mockRepository },
       ],
     }).compile();
 

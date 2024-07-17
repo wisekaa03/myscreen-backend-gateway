@@ -192,7 +192,7 @@ export class UserController {
       throw new NotFoundError('USER_NOT_EXISTS');
     }
 
-    const { affected } = await this.userService.delete(userId);
+    const { affected } = await this.userService.delete(user);
     if (!affected) {
       throw new NotFoundError('USER_NOT_EXISTS');
     }

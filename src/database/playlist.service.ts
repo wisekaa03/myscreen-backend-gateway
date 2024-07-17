@@ -14,14 +14,14 @@ import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
-import { WalletService } from './wallet.service';
+import { WsStatistics } from './ws.statistics';
 
 @Injectable()
 export class PlaylistService {
   constructor(
-    private readonly walletService: WalletService,
-    @Inject(forwardRef(() => BidService))
     private readonly bidService: BidService,
+    @Inject(forwardRef(() => WsStatistics))
+    private readonly wsStatistics: WsStatistics,
     @InjectRepository(PlaylistEntity)
     private readonly playlistRepository: Repository<PlaylistEntity>,
   ) {}
@@ -87,7 +87,7 @@ export class PlaylistService {
 
     await Promise.all([
       this.bidService.websocketChange({ playlist }),
-      this.walletService.wsMetrics(playlist.user),
+      this.wsStatistics.onMetrics(playlist.user),
     ]);
 
     return playlist;

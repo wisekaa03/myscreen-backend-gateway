@@ -6,11 +6,9 @@ import { MAIL_SERVICE } from '@/constants';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
-import { UserService } from './user.service';
-import { ActService } from './act.service';
-import { MonitorService } from './monitor.service';
 import { UserResponse } from './user-response.entity';
 import { UserEntity } from './user.entity';
+import { WsStatistics } from './ws.statistics';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -34,12 +32,10 @@ describe(InvoiceService.name, () => {
       imports: [],
       providers: [
         InvoiceService,
-        { provide: UserService, useClass: mockRepository },
-        { provide: WalletService, useClass: mockRepository },
-        { provide: MAIL_SERVICE, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
-        { provide: ActService, useClass: mockRepository },
-        { provide: MonitorService, useClass: mockRepository },
+        { provide: WalletService, useClass: mockRepository },
+        { provide: WsStatistics, useClass: mockRepository },
+        { provide: MAIL_SERVICE, useClass: mockRepository },
         {
           provide: getRepositoryToken(InvoiceEntity),
           useClass: mockRepository,

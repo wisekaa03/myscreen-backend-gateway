@@ -1,7 +1,6 @@
 import type { IncomingMessage } from 'http';
 import { isJWT } from 'class-validator';
-import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common';
-import { In, IsNull } from 'typeorm';
+import { Logger, UseFilters } from '@nestjs/common';
 import '@nestjs/platform-ws';
 import {
   SubscribeMessage,
@@ -17,34 +16,25 @@ import {
 import { type Server, type WebSocket } from 'ws';
 import { Observable, of } from 'rxjs';
 
-import {
-  MonitorMultiple,
-  MonitorStatus,
-  PlaylistStatusEnum,
-  UserRoleEnum,
-} from '@/enums';
+import { MonitorStatus, UserRoleEnum } from '@/enums';
 import { AuthService } from '@/auth/auth.service';
 import {
   WebSocketClient,
   WsMonitorEvent,
   WsAuthTokenEvent,
   WsMetricsData,
-  WsMetricsObject,
   WsWalletData,
-  WsWalletObject,
 } from './interface';
+import { wsClients } from '@/constants';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
-import { PlaylistService } from '@/database/playlist.service';
 import { BidEntity } from '@/database/bid.entity';
 import { BidService } from '@/database/bid.service';
-import { FileService } from '@/database/file.service';
 import { WsEvent } from '@/enums/ws-event.enum';
-import { UserEntity } from '@/database/user.entity';
-import { WalletService } from '@/database/wallet.service';
 import { UserService } from '@/database/user.service';
 import { UserResponse } from '@/database/user-response.entity';
+import { WsStatistics } from '@/database/ws.statistics';
 
 @WebSocketGateway({
   cors: {
@@ -57,25 +47,17 @@ export class WSGateway
   implements OnGatewayConnection<WebSocket>, OnGatewayDisconnect<WebSocket>
 {
   constructor(
-    @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
-    @Inject(forwardRef(() => BidService))
     private readonly bidService: BidService,
-    private readonly fileService: FileService,
-    private readonly playlistService: PlaylistService,
-    @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
-    private readonly walletService: WalletService,
-    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
+    private readonly wsStatistics: WsStatistics,
   ) {}
 
   @WebSocketServer()
   private server!: Server;
 
   private logger = new Logger(WSGateway.name);
-
-  private clients = new Map<WebSocket, WebSocketClient>();
 
   private async authorization(
     client: WebSocket,
@@ -97,7 +79,7 @@ export class WSGateway
     if (role === UserRoleEnum.Monitor && sub) {
       monitorId = sub;
       monitor = await this.monitorService.findOne({
-        find: { where: { id: monitorId } },
+        find: { where: { id: monitorId }, caseInsensitive: false },
       });
       if (!monitor) {
         throw new WsException('Not authorized');
@@ -130,7 +112,7 @@ export class WSGateway
       user,
       role,
     };
-    this.clients.set(client, valueUpdated);
+    wsClients.set(client, valueUpdated);
 
     return valueUpdated;
   }
@@ -151,14 +133,14 @@ export class WSGateway
         auth: false,
       };
       this.logger.debug(`WebSocket new connection: key='${value.key}'`);
-      this.clients.set(client, value);
+      wsClients.set(client, value);
       return;
     }
     client.close();
   }
 
   async handleDisconnect(client: WebSocket /* , ...req: any */): Promise<void> {
-    const value = this.clients.get(client);
+    const value = wsClients.get(client);
     if (value === undefined) {
       this.logger.debug('Disconnect: ???:???');
       return;
@@ -171,6 +153,7 @@ export class WSGateway
             where: { id: value.monitorId },
             loadEagerRelations: false,
             relations: { user: true },
+            caseInsensitive: false,
           },
         });
         if (monitor) {
@@ -184,7 +167,7 @@ export class WSGateway
         this.logger.error('monitorId is undefined ?');
       }
     }
-    this.clients.delete(client);
+    wsClients.delete(client);
   }
 
   @SubscribeMessage(WsEvent.AUTH)
@@ -200,7 +183,7 @@ export class WSGateway
       throw new WsException('Not authorized');
     }
     if (isJWT(body.token)) {
-      let value = this.clients.get(client);
+      let value = wsClients.get(client);
       if (value) {
         value = await this.authorization(client, value, body.token);
         if (value.role === UserRoleEnum.Monitor && value.monitorId) {
@@ -209,12 +192,13 @@ export class WSGateway
               where: { id: value.monitorId },
               loadEagerRelations: false,
               relations: { user: true },
+              caseInsensitive: false,
             },
           });
           let bids: BidEntity[] | null = null;
           if (monitor) {
             [bids] = await Promise.all([
-              this.bidService.monitorRequests({
+              this.bidService.monitorPlaylistToBids({
                 monitorId: monitor.id,
                 dateLocal: new Date(body.date),
               }),
@@ -231,8 +215,11 @@ export class WSGateway
           ]);
         } else if (value.user) {
           const { id: userId, storageSpace } = value.user;
-          const wallet = await this.preWallet(userId);
-          const metrics = await this.preMetrics(userId, storageSpace);
+          const wallet = await this.wsStatistics.preWallet(userId);
+          const metrics = await this.wsStatistics.preMetrics(
+            userId,
+            storageSpace,
+          );
           return of([
             { event: WsEvent.AUTH, data: 'authorized' },
             wallet,
@@ -254,7 +241,7 @@ export class WSGateway
     @ConnectedSocket() client: WebSocket,
     @MessageBody() body: string | WsMonitorEvent,
   ): Promise<Observable<WsResponse<string>[]>> {
-    const value = this.clients.get(client);
+    const value = wsClients.get(client);
     if (!value || !value.auth) {
       throw new WsException('Not authorized');
     }
@@ -266,6 +253,7 @@ export class WSGateway
       find: {
         where: { id: value.monitorId },
         relations: {},
+        caseInsensitive: false,
       },
     });
     if (!monitor) {
@@ -289,7 +277,7 @@ export class WSGateway
     });
 
     // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
-    this.clients.forEach((v, c) => {
+    wsClients.forEach((v, c) => {
       if (v.role === UserRoleEnum.Advertiser || v.monitorId === monitor?.id) {
         c.send(JSON.stringify([{ event: WsEvent.MONITOR, data: monitor }]));
       }
@@ -297,211 +285,5 @@ export class WSGateway
 
     // и возвращаем Ok
     return of([{ event: WsEvent.MONITOR, data: 'Ok' }]);
-  }
-
-  /**
-   * Отсылает всем подключенным клиентам (не мониторам) изменения статуса монитора
-   */
-  public async monitorStatus(
-    monitor: MonitorEntity,
-    status: MonitorStatus,
-    user?: UserEntity,
-  ): Promise<void> {
-    const { id } = monitor;
-    this.clients.forEach((client) => {
-      if (client.auth && client.userId) {
-        client.ws.send(
-          JSON.stringify([
-            {
-              event: WsEvent.MONITOR_STATUS,
-              data: [{ id, status }],
-            },
-          ]),
-        );
-      }
-    });
-
-    if (user) {
-      await this.onMetrics(user);
-    }
-  }
-
-  /**
-   * Вызывается из:
-   *  - Создание связки плэйлиста и монитора
-   *  - Удаление связки плэйлиста и монитора
-   *  - Изменение плэйлиста файлами
-   *  TODO: что-то еще
-   * @param bid BidEntity or null
-   * @param monitor MonitorEntity or null
-   */
-  async onChange({
-    bid,
-    bidDelete,
-    monitor,
-    monitorDelete,
-  }: {
-    bid?: BidEntity;
-    bidDelete?: BidEntity;
-    monitor?: MonitorEntity;
-    monitorDelete?: MonitorEntity;
-  }): Promise<void> {
-    if ((bid?.playlistId || bid?.playlist) && bid.monitorId) {
-      const playlistId = bid.playlistId ?? bid.playlist?.id;
-      await this.playlistService.update(playlistId, {
-        status: PlaylistStatusEnum.Broadcast,
-      });
-      const bidFind = {
-        ...bid,
-        playlist: {
-          ...bid.playlist,
-          files: await Promise.all(
-            bid.playlist.files.map(async (file) =>
-              this.fileService.signedUrl(file),
-            ),
-          ),
-        },
-      } as BidEntity;
-
-      this.clients.forEach((value, client) => {
-        if (value.monitorId === bid.monitorId) {
-          client.send(JSON.stringify([{ event: WsEvent.BID, data: bidFind }]));
-        }
-      });
-    }
-
-    if (monitor) {
-      this.clients.forEach((value, client) => {
-        if (value.monitorId === monitor.id) {
-          if (!(monitor.playlistId || monitor.playlist)) {
-            client.send(JSON.stringify([{ event: WsEvent.BID, data: null }]));
-          }
-        }
-      });
-    }
-
-    if (monitorDelete) {
-      this.clients.forEach((value, client) => {
-        if (value.monitorId === monitorDelete.id) {
-          client.send(
-            JSON.stringify([
-              {
-                event: WsEvent.MONITOR_DELETE,
-                data: { monitorId: monitorDelete.id },
-              },
-            ]),
-          );
-          this.clients.delete(client);
-        }
-      });
-    }
-  }
-
-  async preWallet(userId: string): Promise<WsWalletObject> {
-    return {
-      event: WsEvent.WALLET,
-      data: { total: await this.walletService.walletSum({ userId }) },
-    };
-  }
-
-  async onWallet(user: UserEntity): Promise<void> {
-    const { id: userId } = user;
-    this.clients.forEach(async (value, client) => {
-      if (value.userId === userId) {
-        const wallet = await this.preWallet(userId);
-        client.send(JSON.stringify([wallet]));
-      }
-    });
-  }
-
-  async preMetrics(
-    userId: string,
-    storageSpace?: number,
-  ): Promise<WsMetricsObject> {
-    const [
-      countMonitors,
-      onlineMonitors,
-      offlineMonitors,
-      emptyMonitors,
-      playlistAdded,
-      playlistBroadcast,
-      countUsedSpace,
-    ] = await Promise.all([
-      this.monitorService.countMonitors(userId),
-      this.monitorService.count({
-        where: {
-          userId,
-          status: MonitorStatus.Online,
-          multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
-        },
-        caseInsensitive: false,
-        loadEagerRelations: false,
-        relations: {},
-      }),
-      this.monitorService.count({
-        where: {
-          userId,
-          status: MonitorStatus.Offline,
-          multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
-        },
-        caseInsensitive: false,
-        loadEagerRelations: false,
-        relations: {},
-      }),
-      this.monitorService.count({
-        where: {
-          userId,
-          multiple: In([MonitorMultiple.SINGLE, MonitorMultiple.SUBORDINATE]),
-          bids: { id: IsNull() },
-        },
-        caseInsensitive: false,
-        loadEagerRelations: false,
-        relations: {},
-      }),
-      this.playlistService.count({
-        where: { userId },
-        loadEagerRelations: false,
-        relations: {},
-      }),
-      this.playlistService.count({
-        where: { userId, status: PlaylistStatusEnum.Broadcast },
-        loadEagerRelations: false,
-        relations: {},
-      }),
-      this.fileService.sum(userId),
-    ]);
-    return {
-      event: WsEvent.METRICS,
-      data: {
-        monitors: {
-          online: onlineMonitors,
-          offline: offlineMonitors,
-          empty: emptyMonitors,
-          user: countMonitors,
-        },
-        playlists: {
-          added: playlistAdded,
-          played: playlistBroadcast,
-        },
-        storageSpace: {
-          storage: countUsedSpace,
-          total: parseFloat(`${storageSpace}`),
-        },
-      },
-    };
-  }
-
-  async onMetrics(user: UserEntity): Promise<void> {
-    const { id: userId, storageSpace } = user;
-    this.clients.forEach(async (value, client) => {
-      if (value.userId === userId) {
-        const metrics = await this.preMetrics(userId, storageSpace);
-        client.send(JSON.stringify([metrics]));
-      }
-    });
-  }
-
-  countMonitors(): number {
-    return [...this.clients.values()].filter((value) => value.monitorId).length;
   }
 }

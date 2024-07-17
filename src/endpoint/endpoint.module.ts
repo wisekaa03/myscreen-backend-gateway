@@ -5,7 +5,6 @@ import { MulterModule } from '@nestjs/platform-express';
 import { MulterModuleOptionsClass } from '@/utils/multer-module-options-class';
 import { AuthModule } from '@/auth/auth.module';
 import { DatabaseModule } from '@/database/database.module';
-import { WSModule } from '@/websocket/ws.module';
 import { RedirectMiddleware } from '@/exception/redirect.middleware';
 import { AuthController } from './auth.controller';
 import { UserController } from './user.controller';
@@ -29,7 +28,6 @@ import { WalletController } from './wallet.controller';
     }),
     AuthModule,
     DatabaseModule,
-    WSModule,
   ],
 
   controllers: [

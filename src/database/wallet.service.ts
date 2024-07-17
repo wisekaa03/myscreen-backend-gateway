@@ -19,7 +19,6 @@ import {
 import { MAIL_SERVICE } from '@/constants';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { WSGateway } from '@/websocket/ws.gateway';
 import { ActService } from './act.service';
 import { UserEntity } from './user.entity';
 import { ActEntity } from './act.entity';
@@ -45,9 +44,8 @@ export class WalletService {
 
   constructor(
     private readonly configService: ConfigService,
+    @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
-    @Inject(forwardRef(() => WSGateway))
-    private readonly wsGateway: WSGateway,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
     @InjectRepository(WalletEntity)
@@ -143,9 +141,11 @@ export class WalletService {
   async acceptanceActCreate({
     user,
     transact,
+    balance,
   }: {
     user: UserResponse | UserEntity;
     transact: EntityManager;
+    balance?: number;
   }) {
     // сначала проверяем, что пользователь является владельцем монитора
     if (user.role !== UserRoleEnum.MonitorOwner) {
@@ -154,7 +154,9 @@ export class WalletService {
 
     // теперь получаем баланс пользователя
     const { id: userId } = user;
-    let balance = await this.walletSum({ userId, transact });
+    if (balance === undefined) {
+      balance = await this.walletSum({ userId, transact });
+    }
 
     // получаем количество актов за последний месяц
     const toDate = new Date();
@@ -176,60 +178,62 @@ export class WalletService {
       this.logger.warn(
         ` [ ] Skipping "${fullName}" because acceptance act was issued in the last month. Balance ₽${balance}`,
       );
-    } else if (balance > this.subscriptionFee) {
-      // теперь списание средств с баланса и создание акта
-      const sum = this.subscriptionFee;
-      this.logger.warn(
-        ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
-      );
-      if (Number(sum) !== 0) {
-        await this.actService.create({
-          user,
-          sum,
-          isSubscription: true,
-          description: this.subscriptionDescription,
-        });
-      }
-
-      // проверяем план пользователя
-      if (user.plan === UserPlanEnum.Demo) {
-        // если у пользователя был демо-план и он оплатил акт, то переводим его на полный план
-        await transact.update(UserEntity, user.id, {
-          plan: UserPlanEnum.Full,
-          storageSpace: UserStoreSpaceEnum.FULL,
-        });
-      }
-
-      // опять получаем баланс
-      balance = await this.walletSum({
-        userId: user.id,
-        transact,
-      });
-      this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
-
-      // и вывод информации на email
-      this.mailService.emit('balanceChanged', { user, sum, balance });
     } else {
-      this.logger.warn(
-        ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.subscriptionFee}`,
-      );
-
-      if (user.nonPayment > this.maxNonPayment) {
-        // проверяем план пользователя
-        if (user.plan !== UserPlanEnum.Demo) {
-          // если у пользователя был полный план и он не оплатил акт, то переводим его на демо-план
-          await transact.update(UserEntity, user.id, {
-            plan: UserPlanEnum.Demo,
-            storageSpace: UserStoreSpaceEnum.DEMO,
+      if (balance > this.subscriptionFee) {
+        // теперь списание средств с баланса и создание акта
+        const sum = this.subscriptionFee;
+        this.logger.warn(
+          ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
+        );
+        if (sum !== 0) {
+          await this.actService.create({
+            user,
+            sum,
+            isSubscription: true,
+            description: this.subscriptionDescription,
           });
         }
 
-        // и вывод информации на email
-        this.mailService.emit('balanceNotChanged', {
-          user,
-          sum: this.subscriptionFee,
-          balance,
+        // проверяем план пользователя
+        if (user.plan === UserPlanEnum.Demo) {
+          // если у пользователя был демо-план и он оплатил акт, то переводим его на полный план
+          await transact.update(UserEntity, user.id, {
+            plan: UserPlanEnum.Full,
+            storageSpace: UserStoreSpaceEnum.FULL,
+          });
+        }
+
+        // опять получаем баланс
+        balance = await this.walletSum({
+          userId: user.id,
+          transact,
         });
+        this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
+
+        // и вывод информации на email
+        this.mailService.emit('balanceChanged', { user, sum, balance });
+      } else {
+        this.logger.warn(
+          ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.subscriptionFee}`,
+        );
+
+        if (user.nonPayment > this.maxNonPayment) {
+          // проверяем план пользователя
+          if (user.plan !== UserPlanEnum.Demo) {
+            // если у пользователя был полный план и он не оплатил акт, то переводим его на демо-план
+            await transact.update(UserEntity, user.id, {
+              plan: UserPlanEnum.Demo,
+              storageSpace: UserStoreSpaceEnum.DEMO,
+            });
+          }
+
+          // и вывод информации на email
+          this.mailService.emit('balanceNotChanged', {
+            user,
+            sum: this.subscriptionFee,
+            balance,
+          });
+        }
       }
     }
   }
@@ -253,13 +257,5 @@ export class WalletService {
 
       await Promise.all(promiseUsers);
     });
-  }
-
-  async wsWallet(user: UserEntity): Promise<void> {
-    this.wsGateway.onWallet(user);
-  }
-
-  async wsMetrics(user: UserEntity): Promise<void> {
-    this.wsGateway.onMetrics(user);
   }
 }
