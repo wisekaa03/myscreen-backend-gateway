@@ -514,7 +514,9 @@ export class BidService {
         });
 
         if (sum > totalBalance) {
-          throw new NotAcceptableError('BALANCE');
+          throw new NotAcceptableError('BALANCE', {
+            args: { sum, totalBalance },
+          });
         }
 
         const insert: DeepPartial<BidEntity> = {
@@ -535,7 +537,7 @@ export class BidService {
           transact.create(BidEntity, insert),
         );
         if (!insertResult.identifiers[0]) {
-          throw new NotFoundError('Error when creating Bid');
+          throw new NotFoundError('BID_ERROR');
         }
         const { id } = insertResult.identifiers[0];
 
@@ -556,7 +558,7 @@ export class BidService {
           relations,
         });
         if (!bid) {
-          throw new NotFoundError('Bid not found');
+          throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
         }
 
         // Списываем средства со счета пользователя Рекламодателя
@@ -706,7 +708,7 @@ export class BidService {
     const seconds = (minWarranty * diffDays * 24 * 60 * 60) / playlistDuration;
 
     // сумма списания
-    const sum = price1s * seconds;
+    const sum = parseFloat(Number(price1s * seconds).toFixed(2));
 
     return sum;
   }
