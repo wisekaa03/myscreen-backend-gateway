@@ -161,11 +161,6 @@ export class InvoiceService {
             balance,
           });
 
-          await this.walletService.acceptanceActCreate({
-            user,
-            transact,
-          });
-
           break;
         }
 

@@ -1945,9 +1945,7 @@ describe('Backend API (e2e)', () => {
       expect(authorized.data).toBe('authorized');
       expect(wallet).toBeDefined();
       expect(wallet.event).toBe(WsEvent.WALLET);
-      expect(wallet.data?.total).toBe(
-        invoiceSum - configService.getOrThrow('SUBSCRIPTION_FEE'),
-      );
+      expect(wallet.data?.total).toBe(invoiceSum);
       expect(metrics).toBeDefined();
       expect(metrics.event).toBe(WsEvent.METRICS);
       expect(metrics.data).toBeDefined();

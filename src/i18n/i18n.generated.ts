@@ -30,6 +30,8 @@ export type I18nTranslations = {
         "FILE_MUST_EXISTS": string;
         "CONFLICT_ERROR": string;
         "PLAYLIST_NOT_FOUND": string;
+        "BID_NOT_FOUND": string;
+        "BID_ERROR": string;
     };
     "validation": {
         "IS_DEFINED": string;
