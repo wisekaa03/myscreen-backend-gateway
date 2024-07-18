@@ -28,26 +28,81 @@ export class WsStatistics {
    * Отсылает всем подключенным клиентам (не мониторам) изменения статуса монитора
    */
   public async monitorStatus(
+    user: UserEntity,
     monitor: MonitorEntity,
     status: MonitorStatus,
-    user?: UserEntity,
   ): Promise<void> {
-    const { id } = monitor;
+    const { id: userId } = user;
+    const { id: monitorId, user: monitorUser, userId: monitorUserId } = monitor;
     wsClients.forEach((client) => {
       if (client.auth && client.userId) {
         client.ws.send(
           JSON.stringify([
             {
               event: WsEvent.MONITOR_STATUS,
-              data: [{ id, status }],
+              data: [{ id: monitorId, status }],
             },
           ]),
         );
       }
     });
 
-    if (user) {
-      await this.onMetrics(user);
+    await this.onMetrics(user);
+    if (userId !== monitorUserId) {
+      await this.onMetrics(monitorUser);
+    }
+  }
+
+  /**
+   * Отсылает всем подключенным клиентам (мониторов) удаления монитора
+   */
+  async onChangeMonitorDelete(
+    user: UserEntity,
+    monitor: MonitorEntity,
+  ): Promise<void> {
+    const { id: userId } = user;
+    const { id: monitorId, user: monitorUser, userId: monitorUserId } = monitor;
+    wsClients.forEach((value, client) => {
+      if (value.monitorId === monitorId) {
+        client.send(
+          JSON.stringify([
+            {
+              event: WsEvent.MONITOR_DELETE,
+              data: { monitorId },
+            },
+          ]),
+        );
+        wsClients.delete(client);
+      }
+    });
+
+    await this.onMetrics(user);
+    if (userId !== monitorUserId) {
+      await this.onMetrics(monitorUser);
+    }
+  }
+
+  /**
+   * Отсылает всем подключенным клиентам (мониторов) изменения монитора
+   */
+  async onChangeMonitor(
+    user: UserEntity,
+    monitor: MonitorEntity,
+  ): Promise<void> {
+    const { id: userId } = user;
+    const { id: monitorId, user: monitorUser, userId: monitorUserId } = monitor;
+
+    wsClients.forEach((value, client) => {
+      if (value.monitorId === monitorId) {
+        if (!(monitor.playlistId || monitor.playlist)) {
+          client.send(JSON.stringify([{ event: WsEvent.BID, data: null }]));
+        }
+      }
+    });
+
+    await this.onMetrics(user);
+    if (userId !== monitorUserId) {
+      await this.onMetrics(monitorUser);
     }
   }
 
@@ -56,22 +111,16 @@ export class WsStatistics {
    *  - Создание связки плэйлиста и монитора
    *  - Удаление связки плэйлиста и монитора
    *  - Изменение плэйлиста файлами
-   *  TODO: что-то еще
    * @param bid BidEntity or null
-   * @param monitor MonitorEntity or null
    */
   async onChange({
     bid,
     bidDelete,
-    monitor,
-    monitorDelete,
     files,
     filesDelete,
   }: {
     bid?: BidEntity;
     bidDelete?: BidEntity;
-    monitor?: MonitorEntity;
-    monitorDelete?: MonitorEntity;
     files?: FileEntity[];
     filesDelete?: FileEntity[];
   }): Promise<void> {
@@ -95,32 +144,6 @@ export class WsStatistics {
       wsClients.forEach((value, client) => {
         if (value.monitorId === bid.monitorId) {
           client.send(JSON.stringify([{ event: WsEvent.BID, data: bidFind }]));
-        }
-      });
-    }
-
-    if (monitor) {
-      wsClients.forEach((value, client) => {
-        if (value.monitorId === monitor.id) {
-          if (!(monitor.playlistId || monitor.playlist)) {
-            client.send(JSON.stringify([{ event: WsEvent.BID, data: null }]));
-          }
-        }
-      });
-    }
-
-    if (monitorDelete) {
-      wsClients.forEach((value, client) => {
-        if (value.monitorId === monitorDelete.id) {
-          client.send(
-            JSON.stringify([
-              {
-                event: WsEvent.MONITOR_DELETE,
-                data: { monitorId: monitorDelete.id },
-              },
-            ]),
-          );
-          wsClients.delete(client);
         }
       });
     }

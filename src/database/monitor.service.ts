@@ -276,21 +276,21 @@ export class MonitorService {
       }
       const monitor = await transact.findOne(MonitorEntity, {
         where: { id },
-        relations: { groupMonitors: { monitor: true } },
+        relations: { user: true, groupMonitors: { monitor: true } },
       });
       if (!monitor) {
         throw new NotFoundError(`Monitor with this '${id}' not found`);
       }
 
-      await this.wsStatistics.onChange({ monitor });
+      await this.wsStatistics.onChangeMonitor(monitor.user, monitor);
 
       // а тут начинается полный трэш
       if (updateMultiple !== MonitorMultiple.SINGLE && multipleBool) {
         // получаем подчиненные мониторы
         const { groupMonitors } = monitor;
-        let monitorsDeleteId: MonitorGroupEntity[] = [];
+        let monitorsGroupDeleteId: MonitorGroupEntity[] = [];
         if (groupMonitors) {
-          monitorsDeleteId = groupMonitors.reduce(
+          monitorsGroupDeleteId = groupMonitors.reduce(
             (acc, item) =>
               groupIds.find(({ monitorId }) => monitorId === item.monitorId)
                 ? acc
@@ -300,20 +300,19 @@ export class MonitorService {
         }
 
         // удаляем из таблицы связей мониторов мониторы
-        if (monitorsDeleteId.length > 0) {
-          const monitorsWSchangePromise = monitorsDeleteId.map(async (item) => {
-            this.wsStatistics.onChange({ monitorDelete: item.monitor });
-          });
-          await Promise.all(monitorsWSchangePromise);
+        if (monitorsGroupDeleteId.length > 0) {
+          const monitorsDeleteId = monitorsGroupDeleteId.map(
+            (item) => item.monitorId,
+          );
           await transact.delete(MonitorGroupEntity, {
             parentMonitorId: originalMonitor.id,
-            monitorId: In(monitorsDeleteId.map((item) => item.monitorId)),
+            monitorId: In(monitorsDeleteId),
           });
           // и помечаем монитор как одиночный
           await transact.update(
             MonitorEntity,
-            { id: In(monitorsDeleteId.map((item) => item.monitorId)) },
-            { multiple: MonitorMultiple.SINGLE },
+            { id: In(monitorsDeleteId) },
+            { multiple: MonitorMultiple.SINGLE, groupOnlineMonitors: 0 },
           );
         }
 
@@ -530,6 +529,7 @@ export class MonitorService {
                 { status: MonitorStatus.Online },
               );
               this.wsStatistics.monitorStatus(
+                user,
                 monitorGroup,
                 MonitorStatus.Online,
               );
@@ -541,6 +541,7 @@ export class MonitorService {
                 { status: MonitorStatus.Offline },
               );
               this.wsStatistics.monitorStatus(
+                user,
                 monitorGroup,
                 MonitorStatus.Offline,
               );
@@ -551,7 +552,7 @@ export class MonitorService {
     }
 
     const updated = await this.monitorRepository.update(id, { status });
-    await this.wsStatistics.monitorStatus(monitor, status, user);
+    await this.wsStatistics.monitorStatus(user, monitor, status);
 
     return updated;
   }
@@ -599,9 +600,9 @@ export class MonitorService {
   }
 
   async delete(monitor: MonitorEntity): Promise<DeleteResult> {
-    const monitorId = monitor.id;
+    const { id: monitorId, user } = monitor;
 
-    await this.wsStatistics.onChange({ monitorDelete: monitor });
+    await this.wsStatistics.onChangeMonitorDelete(user, monitor);
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
       return this.monitorRepository.manager.transaction(async (transact) => {
@@ -611,13 +612,7 @@ export class MonitorService {
           },
         });
         if (monitorMultiple.length > 0) {
-          const monitorIdsPromise = monitorMultiple.map(async (item) => {
-            await this.wsStatistics.onChange({
-              monitorDelete: item.monitor,
-            });
-            return item.monitorId;
-          });
-          const monitorIds = await Promise.all(monitorIdsPromise);
+          const monitorIds = monitorMultiple.map((item) => item.monitorId);
           await Promise.all([
             transact.update(
               MonitorEntity,
