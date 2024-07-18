@@ -5,7 +5,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorMultiple, MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { WsEvent } from '@/enums/ws-event.enum';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { WsMetricsObject, WsWalletObject } from '@/websocket/interface';
+import { WsMetricsObject, WsWalletObject } from '@/interfaces';
 import { UserEntity } from '@/database/user.entity';
 import { In, IsNull } from 'typeorm';
 import { PlaylistService } from '@/database/playlist.service';
@@ -237,7 +237,7 @@ export class WsStatistics {
         },
         storageSpace: {
           storage: countUsedSpace,
-          total: parseFloat(`${storageSpace}`),
+          total: parseFloat(`${storageSpace ?? 0}`),
         },
       },
     };

@@ -1,6 +1,6 @@
 import { SpecificFormat } from '@/enums/specific-format.enum';
-import { type WebSocket } from 'ws';
-import { WebSocketClient } from '@/websocket/interface';
+import type { WebSocket } from 'ws';
+import { WebSocketClient } from '@/interfaces';
 
 export const MAIL_SERVICE = 'MAIL_SERVICE';
 export const FORM_SERVICE = 'FORM_SERVICE';

@@ -10,3 +10,10 @@ export * from './mail-welcome-message';
 export * from './print-report-device-status';
 export * from './print-invoice';
 export * from './interface';
+
+export * from './websocket-client';
+export * from './ws-auth-token.event';
+export * from './ws-auth.object';
+export * from './ws-metrics.object';
+export * from './ws-monitor.event';
+export * from './ws-wallet.object';

@@ -24,7 +24,7 @@ import {
   WsAuthTokenEvent,
   WsMetricsData,
   WsWalletData,
-} from './interface';
+} from '@/interfaces';
 import { wsClients } from '@/constants';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
