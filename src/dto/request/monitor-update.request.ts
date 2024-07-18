@@ -12,6 +12,7 @@ export class MonitorUpdateRequest extends PartialType(
     'monitorInfo',
     'favorite',
     'favorities',
+    'groupOnlineMonitors',
     'createdAt',
     'updatedAt',
   ]),

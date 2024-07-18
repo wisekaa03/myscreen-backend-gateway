@@ -42,6 +42,7 @@ import {
   WalletOperationsGetRequest,
   PlaylistCreateRequest,
   PlaylistGetResponse,
+  MonitorGetResponse,
 } from '@/dto';
 import {
   BidStatus,
@@ -64,6 +65,7 @@ import { WsAdapter } from '@/websocket/ws-adapter';
 import { UserResponse } from '@/database/user-response.entity';
 import { WsEvent } from '@/enums/ws-event.enum';
 import { HttpError } from '@/errors';
+import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
 
 type UserFileEntity = UserEntity & Partial<UserResponse>;
 
@@ -194,8 +196,11 @@ const updateUser: UserUpdateRequest = {
 const invoiceSum = 1000;
 
 let app: INestApplication;
-let ws1: WebSocket;
-let ws2: WebSocket;
+let wsAdvertiser: WebSocket;
+let wsMonitorOwner: WebSocket;
+let wsMonitorSingle: WebSocket;
+let wsMonitorMirror1: WebSocket;
+let wsMonitorMirror2: WebSocket;
 
 let configService: ConfigService;
 let port: number;
@@ -205,22 +210,48 @@ let request: TestAgent;
 let apiPath = '/api/v2';
 let logger: Logger;
 
-let userAdvertiser: UserFileEntity | null;
-let userMonitorOwner: UserFileEntity | null;
-let userAccountant: UserFileEntity | null;
+let advertiserUser: UserFileEntity | null;
+let monitorOwnerUser: UserFileEntity | null;
+let accountantUser: UserFileEntity | null;
 
-let tokenAdvertiser: string;
-let refreshTokenAdvertiser: string | undefined;
+let advertiserToken: string;
+let advertiserRefreshToken: string | undefined;
 
-let tokenMonitorOwner: string;
-let refreshTokenMonitorOwner: string | undefined;
+let monitorOwnerToken: string;
+let monitorOwnerRefreshToken: string | undefined;
 
-let tokenAccountant: string;
-let refreshTokenAccountant: string | undefined;
+let accountantToken: string;
+let accountantRefreshToken: string | undefined;
 
-let userIdAdvertiser: string;
-let userIdMonitorOwner: string;
-let userIdAccountant: string;
+let advertiserUserId: string;
+let monitorOwnerUserId: string;
+let accountantUserId: string;
+
+let monitorNameMirror1: string;
+let monitorCodeMirror1: string;
+let monitorMirror1Id: string;
+
+let monitorNameMirror2: string;
+let monitorCodeMirror2: string;
+let monitorMirror2Id: string;
+
+let monitorCodeSingle: string;
+let monitorSingleId: string;
+
+let monitorNameGroupMirror: string;
+let monitorCodeGroupMirror: string;
+let monitorGroupMirrorId: string;
+
+let monitorOwnerFolderBarId: string;
+let monitorOwnerFolderBazId: string;
+let monitorOwnerFolderFooId: string;
+
+let monitorOwnerImageId: string;
+let advertiserVideoId: string;
+
+let advertiserPlaylistId1: string;
+
+let monitorOwnerInvoiceId: string;
 
 describe('Backend API (e2e)', () => {
   beforeAll(async () => {
@@ -259,18 +290,6 @@ describe('Backend API (e2e)', () => {
     wsUrl = `ws://localhost:${port}/ws`;
   });
 
-  let parentFolderId: string;
-  let parentFolderId2: string;
-  let folderId1: string;
-  let folderId2: string;
-  let folderId3: string;
-  let mediaId1: string;
-  let videoIdAdvertiser: string;
-  let monitorName1: string;
-  let monitorCode1: string;
-  let invoiceId: string;
-  let playlistAdvertiserId1: string;
-
   /**
    *
    * Авторизация advertiser /auth
@@ -290,7 +309,7 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.data.id).toBeDefined();
           expect((body.data as any).password).toBeUndefined();
-          userIdAdvertiser = body.data.id;
+          advertiserUserId = body.data.id;
         });
     });
 
@@ -331,12 +350,12 @@ describe('Backend API (e2e)', () => {
      * Подтвердить email пользователя
      */
     test('POST /auth/email-verify (Подтвердить email пользователя)', async () => {
-      userAdvertiser = await userService.findById(userIdAdvertiser);
-      if (userAdvertiser) {
+      advertiserUser = await userService.findById(advertiserUserId);
+      if (advertiserUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
-            userAdvertiser.email,
-            userAdvertiser.emailConfirmKey ?? '-',
+            advertiserUser.email,
+            advertiserUser.emailConfirmKey ?? '-',
           ),
         };
 
@@ -404,33 +423,33 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(200);
       expect(body.payload?.type).toBe('bearer');
-      expect(body.data?.id).toBe(userIdAdvertiser);
+      expect(body.data?.id).toBe(advertiserUserId);
       expect(body.payload?.token).toBeDefined();
       expect(body.payload?.refreshToken).toBeDefined();
       expect((body.data as any).password).toBeUndefined();
 
-      tokenAdvertiser = body.payload.token;
-      refreshTokenAdvertiser = body.payload.refreshToken;
+      advertiserToken = body.payload.token;
+      advertiserRefreshToken = body.payload.refreshToken;
     });
 
     /**
      * WS авторизация пользователя
      */
     test("WebSocket 'auth/token' (Авторизация пользователя)", async () => {
-      ws1 = new WebSocket(wsUrl);
-      await new Promise((resolve) => ws1.on('open', resolve));
+      wsAdvertiser = new WebSocket(wsUrl);
+      await new Promise((resolve) => wsAdvertiser.on('open', resolve));
 
-      ws1.send(
+      wsAdvertiser.send(
         JSON.stringify({
           event: 'auth/token',
           data: {
-            token: tokenAdvertiser,
+            token: advertiserToken,
             date: new Date().toISOString(),
           },
         }),
       );
       const wsMessage = await new Promise<string>((resolve) => {
-        ws1.on('message', (dataBuffer: Buffer) => {
+        wsAdvertiser.on('message', (dataBuffer: Buffer) => {
           const data = dataBuffer.toString('utf8');
           resolve(data);
         });
@@ -451,6 +470,7 @@ describe('Backend API (e2e)', () => {
       expect(metrics).toBeDefined();
       expect(metrics.event).toBe(WsEvent.METRICS);
       expect(metrics.data).toBeDefined();
+      wsAdvertiser.close();
     });
   });
 
@@ -473,7 +493,7 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.data.id).toBeDefined();
           expect((body.data as any).password).toBeUndefined();
-          userIdMonitorOwner = body.data.id;
+          monitorOwnerUserId = body.data.id;
         });
     });
 
@@ -481,12 +501,12 @@ describe('Backend API (e2e)', () => {
      * Подтвердить email пользователя
      */
     test('POST /auth/email-verify (Подтвердить email пользователя)', async () => {
-      userMonitorOwner = await userService.findById(userIdMonitorOwner);
-      if (userMonitorOwner) {
+      monitorOwnerUser = await userService.findById(monitorOwnerUserId);
+      if (monitorOwnerUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
-            userMonitorOwner.email,
-            userMonitorOwner.emailConfirmKey ?? '-',
+            monitorOwnerUser.email,
+            monitorOwnerUser.emailConfirmKey ?? '-',
           ),
         };
 
@@ -515,13 +535,13 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(200);
       expect(body.payload?.type).toBe('bearer');
-      expect(body.data?.id).toBe(userIdMonitorOwner);
+      expect(body.data?.id).toBe(monitorOwnerUserId);
       expect(body.payload?.token).toBeDefined();
       expect(body.payload?.refreshToken).toBeDefined();
       expect((body.data as any).password).toBeUndefined();
 
-      tokenMonitorOwner = body.payload.token;
-      refreshTokenMonitorOwner = body.payload.refreshToken;
+      monitorOwnerToken = body.payload.token;
+      monitorOwnerRefreshToken = body.payload.refreshToken;
     });
   });
 
@@ -535,13 +555,13 @@ describe('Backend API (e2e)', () => {
     test('PATCH /auth (Изменение аккаунта пользователя)', async () => {
       const { body }: { body: UserGetResponse } = await request
         .patch(`${apiPath}/auth`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send(updateUser)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200);
       expect(body.status).toBe(Status.Success);
-      expect(body.data.id).toBe(userIdAdvertiser);
+      expect(body.data.id).toBe(advertiserUserId);
       expect(body.data.surname).toBe(updateUser.surname);
       expect(body.data.name).toBe(updateUser.name);
       expect(body.data.middleName).toBe(updateUser.middleName);
@@ -584,7 +604,7 @@ describe('Backend API (e2e)', () => {
     test('PATCH /auth (Изменение аккаунта пользователя: неудача)', async () => {
       await request
         .patch(`${apiPath}/auth`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send({ ...updateUser, password: 'Gruodis19771203!' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -597,13 +617,13 @@ describe('Backend API (e2e)', () => {
     test('GET /auth (Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию)', async () => {
       await request
         .get(`${apiPath}/auth`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data.id).toBe(userIdAdvertiser);
+          expect(body.data.id).toBe(advertiserUserId);
           expect(body.data.password).toBeUndefined();
           expect(body.data.surname).toBe(updateUser.surname);
           expect(body.data.name).toBe(updateUser.name);
@@ -671,7 +691,7 @@ describe('Backend API (e2e)', () => {
 
     test('POST /auth/refresh [success] (Обновление токена)', async () => {
       const verify: AuthRefreshRequest = {
-        refreshToken: refreshTokenAdvertiser ?? '',
+        refreshToken: advertiserRefreshToken ?? '',
       };
       const content = request.post(`${apiPath}/auth/refresh`).send(verify);
 
@@ -681,8 +701,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: AuthRefreshResponse }) => {
           expect(body.payload.token).toBeDefined();
-          tokenAdvertiser = body.payload.token ?? undefined;
-          refreshTokenAdvertiser = body.payload.refreshToken;
+          advertiserToken = body.payload.token ?? undefined;
+          advertiserRefreshToken = body.payload.refreshToken;
         });
     });
 
@@ -703,7 +723,7 @@ describe('Backend API (e2e)', () => {
      */
     test('POST /auth/reset-password [success] (Отправить на почту пользователю разрешение на смену пароля)', async () => {
       const verify: ResetPasswordInvitationRequest = {
-        email: userAdvertiser?.email ?? '',
+        email: advertiserUser?.email ?? '',
       };
 
       await request
@@ -736,7 +756,7 @@ describe('Backend API (e2e)', () => {
     test('PATCH /auth/disable [success] (Скрытие аккаунта пользователя)', async () => {
       await request
         .patch(`${apiPath}/auth/disable`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
@@ -749,12 +769,12 @@ describe('Backend API (e2e)', () => {
      * Изменение через базу disabled: false
      */
     test('Change user Disabled: False (database access)', async () => {
-      if (userAdvertiser) {
-        const userUpdate = await userService.update(userAdvertiser, {
+      if (advertiserUser) {
+        const userUpdate = await userService.update(advertiserUser, {
           disabled: false,
         });
         expect(userUpdate).toBeDefined();
-        expect(userUpdate?.id).toBe(userIdAdvertiser);
+        expect(userUpdate?.id).toBe(advertiserUserId);
       } else {
         expect(false).toEqual(true);
       }
@@ -795,104 +815,8 @@ describe('Backend API (e2e)', () => {
     test('POST /folder [ scope: { limit: 0 } }] (Получение списка папок)', async () => {
       await request
         .post(`${apiPath}/folder`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send({ where: {}, scope: { limit: 0 } })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(400);
-    });
-
-    /**
-     * Создание новой папки
-     */
-    test('PUT /folder [name: "bar"] (Создание новой папки)', async () => {
-      await request
-        .put(`${apiPath}/folder`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .send({ name: 'bar' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(201)
-        .then(({ body }: { body: FolderGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data.name).toBe('bar');
-          expect((body.data as any)?.user?.password).toBeUndefined();
-          parentFolderId = body.data.id;
-        });
-    });
-
-    test('PUT /folder [name: "baz"] (Создание новой папки)', async () => {
-      await request
-        .put(`${apiPath}/folder`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .send({ name: 'baz' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(201)
-        .then(({ body }: { body: FolderGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data.name).toBe('baz');
-          expect((body.data as any)?.user?.password).toBeUndefined();
-          parentFolderId2 = body.data.id;
-          folderId3 = body.data.id;
-        });
-    });
-
-    /**
-     * Создание новой под-папки
-     */
-    test('PUT /folder [name: "foo", parentFolderId] (Создание новой под-папки)', async () => {
-      await request
-        .put(`${apiPath}/folder`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .send({ name: 'foo', parentFolderId })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(201)
-        .then(({ body }: { body: FolderGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data.name).toBe('foo');
-          expect(body.data.parentFolderId).toBe(parentFolderId);
-          expect((body.data as any)?.user?.password).toBeUndefined();
-          folderId1 = body.data.id;
-        });
-    });
-
-    /**
-     * Создание новой под-папки
-     */
-    test('PUT /folder [name: "baz", parentFolderId] (Создание новой под-папки)', async () => {
-      await request
-        .put(`${apiPath}/folder`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .send({ name: 'baz', parentFolderId: parentFolderId2 })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(201)
-        .then(({ body }: { body: FolderGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data.name).toBe('baz');
-          expect(body.data.parentFolderId).toBe(parentFolderId2);
-          expect((body.data as any)?.user?.password).toBeUndefined();
-          folderId2 = body.data.id;
-        });
-    });
-
-    /**
-     * Получение списка папок [{ where: { id: '' }, scope: { limit: 0 } }]
-     */
-    test("POST /folder [{ where: { id: '' }, scope: { limit: 0 } }] (Получение списка папок)", async () => {
-      if (!tokenAdvertiser) {
-        expect(false).toEqual(true);
-      }
-
-      await request
-        .post(`${apiPath}/folder`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .send({
-          where: { id: '' },
-          scope: { limit: 0 },
-        })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(400);
@@ -902,13 +826,13 @@ describe('Backend API (e2e)', () => {
      * Получение списка папок
      */
     test('POST /folder [success] (Получение списка папок)', async () => {
-      if (!tokenAdvertiser) {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
       const content = request
         .post(`${apiPath}/folder`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send({ where: {}, scope: {} })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -920,93 +844,6 @@ describe('Backend API (e2e)', () => {
         expect((body.data as any)?.[0]?.userId).toBeDefined();
         expect((body.data as any)?.[0]?.user?.password).toBeUndefined();
       });
-    });
-
-    /**
-     * Изменение информации о папке
-     */
-    test('PATCH /folder/{folderId} [success] (Изменение информации о папке)', async () => {
-      if (!tokenAdvertiser || !folderId2) {
-        expect(false).toEqual(true);
-      }
-
-      const { body }: { body: FolderGetResponse } = await request
-        .patch(`${apiPath}/folder/${folderId2}`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .send({
-          name: 'bar2',
-        })
-        .expect('Content-Type', /json/)
-        .expect(200);
-
-      expect(body.status).toBe(Status.Success);
-      expect(body.data).toBeDefined();
-      expect(body.data.id).toBe(folderId2);
-      expect(body.data.name).toBe('bar2');
-      expect((body.data as any)?.user?.password).toBeUndefined();
-    });
-
-    /**
-     * Изменение информации о папке [неуспешно]
-     */
-    test('PATCH /folder/{folderId} [unsuccess] (Изменение информации о папке)', async () => {
-      if (!tokenAdvertiser || !folderId2) {
-        expect(false).toEqual(true);
-      }
-
-      await request
-        .patch(`${apiPath}/folder/${folderId2}`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .send({
-          name: 'bar2',
-          parentFolderId: '111',
-        })
-        .expect('Content-Type', /json/)
-        .expect(400);
-    });
-
-    /**
-     * Получение информации о папке [успешно]
-     */
-    test('GET /folder/{folderId} [success] (Получение информации о папке)', async () => {
-      if (!tokenAdvertiser || !folderId2) {
-        expect(false).toEqual(true);
-      }
-
-      await request
-        .get(`${apiPath}/folder/${folderId2}`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: FolderGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBe(folderId2);
-          expect(body.data.name).toBe('bar2');
-          expect((body.data as any)?.user?.password).toBeUndefined();
-        });
-    });
-
-    /**
-     * Удаление папки [успешно]
-     */
-    test('DELETE /folder/{folderId} [success] (Удаление папки)', async () => {
-      if (!tokenAdvertiser || !folderId2) {
-        expect(false).toEqual(true);
-      }
-
-      await request
-        .delete(`${apiPath}/folder/${folderId2}`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: SuccessResponse }) => {
-          expect(body.status).toBe(Status.Success);
-        });
     });
   });
 
@@ -1020,127 +857,19 @@ describe('Backend API (e2e)', () => {
      * Получение списка файлов (неуспешно)
      */
     test('POST /file [unsuccess] (Получение списка файлов)', async () => {
-      if (!tokenAdvertiser) {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
       await request
         .post(`${apiPath}/file`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send({
           where: { folderId: '111' },
         })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(400);
-    });
-
-    /**
-     * Получение списка файлов
-     */
-    test('POST /file (Получение списка файлов)', async () => {
-      if (!tokenAdvertiser || !folderId1) {
-        expect(false).toEqual(true);
-      }
-
-      const files: FilesGetRequest = {
-        where: { folderId: folderId1 },
-        scope: {},
-      };
-
-      await request
-        .post(`${apiPath}/file`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .send(files)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: FilesGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data[0]?.user?.password).toBeUndefined();
-        });
-    });
-
-    /**
-     * Загрузка файлов [success]
-     */
-    test('PUT /file [success] (Загрузка файлов)', async () => {
-      if (!tokenAdvertiser || !folderId1) {
-        expect(false).toEqual(true);
-      }
-
-      const field = {
-        param: `{ "folderId": "${folderId1}", "category": "media" }`,
-      };
-      const files = imageTestingDirname;
-
-      const { body }: { body: FilesUploadResponse } = await request
-        .put(`${apiPath}/file`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .field(field)
-        .attach('files', files)
-        .expect('Content-Type', /json/)
-        .expect(200);
-
-      expect(body.status).toBe(Status.Success);
-      expect(body.data).toBeDefined();
-      expect(body.data[0].id).toBeDefined();
-      mediaId1 = body.data[0].id;
-      expect(body.data[0]?.user?.password).toBeUndefined();
-    });
-
-    /**
-     * Скачивание медиа [success]
-     */
-    test('GET /file/download/{mediaId} [success] (Скачивание медиа)', async () => {
-      if (!tokenAdvertiser || !mediaId1) {
-        expect(false).toEqual(true);
-      }
-
-      const { body }: { body: unknown } = await request
-        .get(`${apiPath}/file/download/${mediaId1}`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      expect(body).toBeDefined();
-    });
-
-    /**
-     * Скачивание предпросмотра [success]
-     */
-    test('GET /file/preview/{mediaId} [success] (Скачивание предпросмотра)', async () => {
-      if (!tokenAdvertiser || !mediaId1) {
-        expect(false).toEqual(true);
-      }
-
-      const { body }: { body: unknown } = await request
-        .get(`${apiPath}/file/preview/${mediaId1}`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      expect(body).toBeDefined();
-    });
-
-    /**
-     * Удаление файлов [success]
-     */
-    test('DELETE /file/{mediaId} [success] (Удаление файлов)', async () => {
-      if (!tokenAdvertiser || !mediaId1) {
-        expect(false).toEqual(true);
-      }
-
-      const { body }: { body: SuccessResponse } = await request
-        .delete(`${apiPath}/file/${mediaId1}`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200);
-
-      expect(body.status).toBe(Status.Success);
     });
   });
 
@@ -1154,7 +883,7 @@ describe('Backend API (e2e)', () => {
      * Получение списка мониторов (неуспешно)
      */
     test('POST /monitor [unsuccess] (Получение списка мониторов)', async () => {
-      if (!tokenAdvertiser) {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
@@ -1165,7 +894,7 @@ describe('Backend API (e2e)', () => {
 
       await request
         .post(`${apiPath}/monitor`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send(monitors)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -1173,10 +902,10 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Получение списка мониторов
+     * Получение списка мониторов advertiser
      */
-    test('POST /monitor (Получение списка мониторов)', async () => {
-      if (!tokenAdvertiser) {
+    test('POST /monitor (Получение списка мониторов advertiser)', async () => {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
@@ -1197,88 +926,8 @@ describe('Backend API (e2e)', () => {
 
       await request
         .post(`${apiPath}/monitor`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send(monitors)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: MonitorsGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data[0]?.user?.password).toBeUndefined();
-        });
-    });
-
-    /**
-     * Регистрация монитора
-     */
-    test('PUT /monitor (Регистрация монитора)', async () => {
-      if (!tokenMonitorOwner) {
-        expect(false).toEqual(true);
-      }
-      monitorName1 = '% test monitor % ' + jabber.createWord(5);
-      monitorCode1 = generateCode();
-
-      const monitor: MonitorCreateRequest = {
-        name: monitorName1,
-        code: monitorCode1,
-        price1s: 1,
-        minWarranty: 10,
-        maxDuration: 10000,
-        width: 1920,
-        height: 1080,
-        address: {},
-        category: MonitorCategoryEnum.ATM,
-        orientation: MonitorOrientation.Horizontal,
-        multiple: MonitorMultiple.SINGLE,
-        sound: true,
-        angle: 0,
-        brightness: 0,
-      };
-
-      await request
-        .put(`${apiPath}/monitor`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
-        .send(monitor)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: MonitorsGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data[0]?.user?.password).toBeUndefined();
-        });
-    });
-
-    /**
-     * Регистрация монитора (немного измененные параметры)
-     */
-    test('PUT /monitor (Регистрация монитора немного измененные параметры)', async () => {
-      if (!tokenMonitorOwner) {
-        expect(false).toEqual(true);
-      }
-
-      const monitor = {
-        name: '% test monitor % ' + jabber.createWord(5),
-        code: generateCode(),
-        price1s: '1.00005',
-        minWarranty: 10,
-        maxDuration: 10000,
-        width: 1920,
-        height: 1080,
-        address: {},
-        category: MonitorCategoryEnum.ATM,
-        orientation: MonitorOrientation.Horizontal,
-        multiple: MonitorMultiple.SINGLE,
-        sound: true,
-        angle: 0,
-        brightness: 0,
-      };
-
-      await request
-        .put(`${apiPath}/monitor`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
-        .send(monitor)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
@@ -1300,7 +949,7 @@ describe('Backend API (e2e)', () => {
      * Получение списка заявок (неуспешно)
      */
     test('POST /bid [unsuccess] (Получение списка заявок)', async () => {
-      if (!tokenAdvertiser) {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
@@ -1311,7 +960,7 @@ describe('Backend API (e2e)', () => {
 
       await request
         .post(`${apiPath}/bid`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send(bids)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -1322,7 +971,7 @@ describe('Backend API (e2e)', () => {
      * Получение списка заявок
      */
     test('POST /bid (Получение списка заявок)', async () => {
-      if (!tokenAdvertiser) {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
@@ -1334,7 +983,7 @@ describe('Backend API (e2e)', () => {
 
       await request
         .post(`${apiPath}/bid`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send(bids)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -1357,7 +1006,7 @@ describe('Backend API (e2e)', () => {
      * Получение списка счетов (неуспешно)
      */
     test('POST /invoice [unsuccess] (Получение списка счетов)', async () => {
-      if (!tokenAdvertiser) {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
@@ -1368,7 +1017,7 @@ describe('Backend API (e2e)', () => {
 
       await request
         .post(`${apiPath}/invoice`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send(invoices)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -1379,7 +1028,7 @@ describe('Backend API (e2e)', () => {
      * Получение списка счетов
      */
     test('POST /invoice (Получение списка счетов)', async () => {
-      if (!tokenAdvertiser) {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
@@ -1390,7 +1039,7 @@ describe('Backend API (e2e)', () => {
 
       await request
         .post(`${apiPath}/invoice`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send(invoices)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -1401,53 +1050,6 @@ describe('Backend API (e2e)', () => {
           expect(body.data[0]?.user?.password).toBeUndefined();
         });
     });
-
-    /**
-     * Выставление счета
-     */
-    test('PUT /invoice (Выставление счета)', async () => {
-      if (!tokenAdvertiser) {
-        expect(false).toEqual(true);
-      }
-
-      const invoice: InvoiceCreateRequest = {
-        sum: 1000,
-        description: 'тестовый запуск',
-      };
-
-      await request
-        .put(`${apiPath}/invoice`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
-        .send(invoice)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: InvoiceGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data?.user?.password).toBeUndefined();
-          invoiceId = body.data.id;
-        });
-    });
-
-    // /**
-    //  * Скачивание счета
-    //  */
-    // test('GET /invoice/download/:invoiceId/:format (Скачивание счета)', async () => {
-    //   if (!tokenAdvertiser) {
-    //     expect(false).toEqual(true);
-    //   }
-    //   if (!invoiceId) {
-    //     expect(false).toEqual(true);
-    //   }
-
-    //   await request
-    //     .get(`${apiPath}/invoice/download/${invoiceId}/xlsx`)
-    //     .auth(tokenAdvertiser, { type: 'bearer' })
-    //     .set('Accept', 'application/json')
-    //     .expect('Content-Type', /application\/vnd.ms-excel/)
-    //     .expect(200);
-    // });
   });
 
   /**
@@ -1460,15 +1062,15 @@ describe('Backend API (e2e)', () => {
      * Administrator
      */
     test('Change user Role: Administrator (database access)', async () => {
-      if (userAdvertiser) {
-        const userUpdate = await userService.update(userAdvertiser, {
+      if (advertiserUser) {
+        const userUpdate = await userService.update(advertiserUser, {
           role: UserRoleEnum.Administrator,
         });
         expect(userUpdate).toBeDefined();
         if (!userUpdate) {
           return;
         }
-        expect(userUpdate.id).toBe(userIdAdvertiser);
+        expect(userUpdate.id).toBe(advertiserUserId);
         expect(userUpdate.role).toBe(UserRoleEnum.Administrator);
       } else {
         expect(false).toEqual(true);
@@ -1484,27 +1086,27 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: AuthResponse }) => {
           expect(body.payload?.type).toBe('bearer');
-          expect(body.data?.id).toBe(userIdAdvertiser);
+          expect(body.data?.id).toBe(advertiserUserId);
           expect(body.payload?.token).toBeDefined();
           expect(body.payload?.refreshToken).toBeDefined();
           expect((body.data as any).password).toBeUndefined();
-          tokenAdvertiser = body.payload?.token ?? '';
-          refreshTokenAdvertiser = body.payload?.refreshToken ?? '';
+          advertiserToken = body.payload?.token ?? '';
+          advertiserRefreshToken = body.payload?.refreshToken ?? '';
         });
     });
 
     /**
      * Удаление аккаунта пользователя monitor-owner (только администратор)
      */
-    test('/user/{userIdMonitorOwner} (Удаление аккаунта пользователя monitor-owner, только администратор)', async () => {
-      if (!tokenMonitorOwner || !userIdMonitorOwner) {
+    test('/user/{monitorOwnerUserId} (Удаление аккаунта пользователя monitor-owner, только администратор)', async () => {
+      if (!monitorOwnerToken || !monitorOwnerUserId) {
         expect(false).toBe(true);
       }
 
-      const url = `${apiPath}/user/${userIdMonitorOwner}`;
+      const url = `${apiPath}/user/${monitorOwnerUserId}`;
       await request
         .delete(url)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
@@ -1514,15 +1116,15 @@ describe('Backend API (e2e)', () => {
     /**
      * Удаление аккаунта пользователя advertiser (только администратор)
      */
-    test('/user/{userIdAdvertiser} (Удаление аккаунта пользователя advertiser, только администратор)', async () => {
-      if (!tokenAdvertiser || !userIdAdvertiser) {
+    test('/user/{advertiserUserId} (Удаление аккаунта пользователя advertiser, только администратор)', async () => {
+      if (!advertiserToken || !advertiserUserId) {
         expect(false).toBe(true);
       }
 
-      const url = `${apiPath}/user/${userIdAdvertiser}`;
+      const url = `${apiPath}/user/${advertiserUserId}`;
       await request
         .delete(url)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
@@ -1553,20 +1155,19 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.data.id).toBeDefined();
           expect((body.data as any).password).toBeUndefined();
-          userIdMonitorOwner = body.data.id;
-          // попадает в демо-режим ?
+          monitorOwnerUserId = body.data.id;
         });
     });
     /**
      * Подтвердить email пользователя MonitorOwner
      */
     test('POST /auth/email-verify (MonitorOwner)', async () => {
-      userMonitorOwner = await userService.findById(userIdMonitorOwner);
-      if (userMonitorOwner) {
+      monitorOwnerUser = await userService.findById(monitorOwnerUserId);
+      if (monitorOwnerUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
-            userMonitorOwner.email,
-            userMonitorOwner.emailConfirmKey ?? '-',
+            monitorOwnerUser.email,
+            monitorOwnerUser.emailConfirmKey ?? '-',
           ),
         };
 
@@ -1594,7 +1195,7 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(200);
       expect(body.payload.type).toBe('bearer');
-      expect(body.data.id).toBe(userIdMonitorOwner);
+      expect(body.data.id).toBe(monitorOwnerUserId);
       expect(body.data.role).toBe(UserRoleEnum.MonitorOwner);
       expect(body.data.planValidityPeriod).toBe(13);
       expect(body.data.surname).toBe(registerRequestMonitorOwner.surname);
@@ -1605,8 +1206,8 @@ describe('Backend API (e2e)', () => {
       expect(body.payload?.refreshToken).toBeDefined();
       expect((body.data as any).password).toBeUndefined();
 
-      tokenMonitorOwner = body.payload.token;
-      refreshTokenMonitorOwner = body.payload.refreshToken;
+      monitorOwnerToken = body.payload.token;
+      monitorOwnerRefreshToken = body.payload.refreshToken;
     });
 
     /**
@@ -1622,7 +1223,7 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.data.id).toBeDefined();
           expect((body.data as any).password).toBeUndefined();
-          userIdAdvertiser = body.data.id;
+          advertiserUserId = body.data.id;
           // попадает в демо-режим ?
         });
     });
@@ -1630,12 +1231,12 @@ describe('Backend API (e2e)', () => {
      * Подтвердить email пользователя Advertiser
      */
     test('POST /auth/email-verify (Advertiser)', async () => {
-      userAdvertiser = await userService.findById(userIdAdvertiser);
-      if (userAdvertiser) {
+      advertiserUser = await userService.findById(advertiserUserId);
+      if (advertiserUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
-            userAdvertiser.email,
-            userAdvertiser.emailConfirmKey ?? '-',
+            advertiserUser.email,
+            advertiserUser.emailConfirmKey ?? '-',
           ),
         };
 
@@ -1663,7 +1264,7 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(200);
       expect(body.payload?.type).toBe('bearer');
-      expect(body.data?.id).toBe(userIdAdvertiser);
+      expect(body.data?.id).toBe(advertiserUserId);
       expect(body.data.role).toBe(UserRoleEnum.Advertiser);
       expect(body.data.planValidityPeriod).toBe(0);
       expect(body.data.surname).toBe(registerRequestAdvertiser.surname);
@@ -1674,8 +1275,8 @@ describe('Backend API (e2e)', () => {
       expect(body.payload?.refreshToken).toBeDefined();
       expect((body.data as any).password).toBeUndefined();
 
-      tokenAdvertiser = body.payload.token;
-      refreshTokenAdvertiser = body.payload.refreshToken;
+      advertiserToken = body.payload.token;
+      advertiserRefreshToken = body.payload.refreshToken;
     });
 
     /**
@@ -1691,20 +1292,19 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: UserGetResponse }) => {
           expect(body.data.id).toBeDefined();
           expect((body.data as any).password).toBeUndefined();
-          userIdAccountant = body.data.id;
-          // попадает в демо-режим ?
+          accountantUserId = body.data.id;
         });
     });
     /**
      * Подтвердить email пользователя Accountant
      */
     test('POST /auth/email-verify (Accountant)', async () => {
-      userAccountant = await userService.findById(userIdAccountant);
-      if (userAccountant) {
+      accountantUser = await userService.findById(accountantUserId);
+      if (accountantUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
-            userAccountant.email,
-            userAccountant.emailConfirmKey ?? '-',
+            accountantUser.email,
+            accountantUser.emailConfirmKey ?? '-',
           ),
         };
 
@@ -1718,11 +1318,11 @@ describe('Backend API (e2e)', () => {
             expect(body.status).toBe(Status.Success);
           });
 
-        userAccountant = await userService.update(userAccountant, {
+        accountantUser = await userService.update(accountantUser, {
           role: UserRoleEnum.Accountant,
           plan: UserPlanEnum.VIP,
         });
-        expect(userAccountant?.role).toBe(UserRoleEnum.Accountant);
+        expect(accountantUser?.role).toBe(UserRoleEnum.Accountant);
       } else {
         expect(false).toEqual(true);
       }
@@ -1738,7 +1338,7 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(200);
       expect(body.payload?.type).toBe('bearer');
-      expect(body.data?.id).toBe(userIdAccountant);
+      expect(body.data?.id).toBe(accountantUserId);
       expect(body.data.role).toBe(UserRoleEnum.Accountant);
       expect(body.data.planValidityPeriod).toBe(0);
       expect(body.data.surname).toBe(registerRequestAccountant.surname);
@@ -1749,8 +1349,8 @@ describe('Backend API (e2e)', () => {
       expect(body.payload?.refreshToken).toBeDefined();
       expect((body.data as any).password).toBeUndefined();
 
-      tokenAccountant = body.payload.token;
-      refreshTokenAccountant = body.payload.refreshToken;
+      accountantToken = body.payload.token;
+      accountantRefreshToken = body.payload.refreshToken;
     });
 
     /**
@@ -1759,13 +1359,13 @@ describe('Backend API (e2e)', () => {
     test('PATCH /auth (Изменение пользователя: monitor-owner)', async () => {
       const { body }: { body: UserGetResponse } = await request
         .patch(`${apiPath}/auth`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .auth(monitorOwnerToken, { type: 'bearer' })
         .send(updateUser)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200);
       expect(body.status).toBe(Status.Success);
-      expect(body.data.id).toBe(userIdMonitorOwner);
+      expect(body.data.id).toBe(monitorOwnerUserId);
       expect(body.data.role).toBe(UserRoleEnum.MonitorOwner);
       expect(body.data.surname).toBe(updateUser.surname);
       expect(body.data.name).toBe(updateUser.name);
@@ -1807,7 +1407,7 @@ describe('Backend API (e2e)', () => {
      * Выставление счета monitor-owner
      */
     test('PUT /invoice (Выставление счета monitor-owner)', async () => {
-      if (!tokenMonitorOwner) {
+      if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
 
@@ -1818,7 +1418,7 @@ describe('Backend API (e2e)', () => {
 
       await request
         .put(`${apiPath}/invoice`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .auth(monitorOwnerToken, { type: 'bearer' })
         .send(invoice)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -1828,57 +1428,55 @@ describe('Backend API (e2e)', () => {
           expect(body.data).toBeDefined();
           expect(body.data.id).toBeDefined();
           expect(body.data?.user?.password).toBeUndefined();
-          invoiceId = body.data.id;
+          monitorOwnerInvoiceId = body.data.id;
         });
     });
 
     /**
      * Подтверждение счета accountant
      */
-    test(`GET /invoice/confirmed/{invoiceId} (Подтверждение счета пользователем Accountant)`, async () => {
-      if (!tokenAccountant) {
+    test(`GET /invoice/confirmed/{monitorOwnerInvoiceId} (Подтверждение счета пользователем Accountant)`, async () => {
+      if (!accountantToken) {
         expect(false).toEqual(true);
       }
 
       await request
-        .get(`${apiPath}/invoice/confirmed/${invoiceId}`)
-        .auth(tokenAccountant, { type: 'bearer' })
+        .get(`${apiPath}/invoice/confirmed/${monitorOwnerInvoiceId}`)
+        .auth(accountantToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
-          expect(body.data.id).toBe(invoiceId);
+          expect(body.data.id).toBe(monitorOwnerInvoiceId);
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
           );
           expect(body.data?.user?.password).toBeUndefined();
-          invoiceId = body.data.id;
         });
     });
 
     /**
      * Оплата счета accountant
      */
-    test(`GET /invoice/payed/{invoiceId} (Оплата счета пользователем Accountant)`, async () => {
-      if (!tokenAccountant) {
+    test(`GET /invoice/payed/{monitorOwnerInvoiceId} (Оплата счета пользователем Accountant)`, async () => {
+      if (!accountantToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
       }
 
       await request
-        .get(`${apiPath}/invoice/payed/${invoiceId}`)
-        .auth(tokenAccountant, { type: 'bearer' })
+        .get(`${apiPath}/invoice/payed/${monitorOwnerInvoiceId}`)
+        .auth(accountantToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
-          expect(body.data.id).toBe(invoiceId);
+          expect(body.data.id).toBe(monitorOwnerInvoiceId);
           expect(body.data.status).toBe(InvoiceStatus.PAID);
           expect(body.data?.user?.password).toBeUndefined();
-          invoiceId = body.data.id;
         });
     });
 
@@ -1886,7 +1484,7 @@ describe('Backend API (e2e)', () => {
      * История операций monitor-owner
      */
     test('POST /wallet (История операций monitor-owner)', async () => {
-      if (!tokenMonitorOwner) {
+      if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
 
@@ -1897,7 +1495,7 @@ describe('Backend API (e2e)', () => {
 
       await request
         .post(`${apiPath}/wallet`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .auth(monitorOwnerToken, { type: 'bearer' })
         .send(wallet)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -1915,21 +1513,21 @@ describe('Backend API (e2e)', () => {
     /**
      * WebSocket авторизация пользователя monitor-owner и проверка wallet
      */
-    test("WebSocket 'auth/token' (Авторизация пользователя monitor-wallet)", async () => {
-      ws2 = new WebSocket(wsUrl);
-      await new Promise((resolve) => ws2.on('open', resolve));
+    test("WebSocket 'auth/token' (Авторизация пользователя monitor-owner)", async () => {
+      wsMonitorOwner = new WebSocket(wsUrl);
+      await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
-      ws2.send(
+      wsMonitorOwner.send(
         JSON.stringify({
           event: 'auth/token',
           data: {
-            token: tokenMonitorOwner,
+            token: monitorOwnerToken,
             date: new Date().toISOString(),
           },
         }),
       );
       const wsMessage = await new Promise<string>((resolve) => {
-        ws2.on('message', (dataBuffer: Buffer) => {
+        wsMonitorOwner.on('message', (dataBuffer: Buffer) => {
           resolve(dataBuffer.toString('utf8'));
         });
       });
@@ -1951,6 +1549,229 @@ describe('Backend API (e2e)', () => {
       expect(metrics).toBeDefined();
       expect(metrics.event).toBe(WsEvent.METRICS);
       expect(metrics.data).toBeDefined();
+      wsMonitorOwner.close();
+    });
+
+    /**
+     * Регистрация монитора, тот что станет Mirror - 1
+     */
+    test('PUT /monitor (Регистрация монитора: тот, что станет Mirror - 1)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+      monitorNameMirror1 = '% test monitor % ' + jabber.createWord(5);
+      monitorCodeMirror1 = generateCode();
+
+      const monitor: MonitorCreateRequest = {
+        name: monitorNameMirror1,
+        code: monitorCodeMirror1,
+        price1s: 1,
+        minWarranty: 10,
+        maxDuration: 10000,
+        width: 1920,
+        height: 1080,
+        address: {},
+        category: MonitorCategoryEnum.ATM,
+        orientation: MonitorOrientation.Horizontal,
+        multiple: MonitorMultiple.SINGLE,
+        sound: true,
+        angle: 0,
+        brightness: 0,
+      };
+
+      await request
+        .put(`${apiPath}/monitor`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(monitor)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBeDefined();
+          expect(body.data.user?.password).toBeUndefined();
+          monitorMirror1Id = body.data.id;
+        });
+    });
+
+    /**
+     * Регистрация монитора, тот что станет Mirror - 2
+     */
+    test('PUT /monitor (Регистрация монитора: тот, что станет Mirror - 2)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+      monitorNameMirror2 = '% test monitor % ' + jabber.createWord(5);
+      monitorCodeMirror2 = generateCode();
+
+      const monitor: MonitorCreateRequest = {
+        name: monitorNameMirror2,
+        code: monitorCodeMirror2,
+        price1s: 1,
+        minWarranty: 10,
+        maxDuration: 10000,
+        width: 1920,
+        height: 1080,
+        address: {},
+        category: MonitorCategoryEnum.ATM,
+        orientation: MonitorOrientation.Horizontal,
+        multiple: MonitorMultiple.SINGLE,
+        sound: true,
+        angle: 0,
+        brightness: 0,
+      };
+
+      await request
+        .put(`${apiPath}/monitor`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(monitor)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBeDefined();
+          expect(body.data.user?.password).toBeUndefined();
+          monitorMirror2Id = body.data.id;
+        });
+    });
+
+    /**
+     * Регистрация группового монитора Mirror
+     */
+    test('PUT /monitor (Регистрация группового монитора Mirror)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+      monitorNameGroupMirror = '% test monitor % ' + jabber.createWord(5);
+      monitorCodeGroupMirror = generateCode();
+
+      const monitor: MonitorCreateRequest = {
+        name: monitorNameGroupMirror,
+        code: monitorCodeGroupMirror,
+        price1s: 10000,
+        minWarranty: 10,
+        maxDuration: 10000,
+        width: 1920,
+        height: 1080,
+        address: {},
+        category: MonitorCategoryEnum.ATM,
+        orientation: MonitorOrientation.Horizontal,
+        multiple: MonitorMultiple.MIRROR,
+        sound: true,
+        angle: 0,
+        brightness: 0,
+        groupIds: [
+          { monitorId: monitorMirror1Id, row: 0, col: 0 },
+          { monitorId: monitorMirror2Id, row: 0, col: 1 },
+        ],
+      };
+
+      await request
+        .put(`${apiPath}/monitor`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(monitor)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBeDefined();
+          expect(body.data.user?.password).toBeUndefined();
+          monitorGroupMirrorId = body.data.id;
+        });
+    });
+
+    /**
+     * Регистрация монитора Single
+     */
+    test('PUT /monitor (Регистрация монитора: Single)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+
+      monitorCodeSingle = generateCode();
+
+      const monitor = {
+        name: '% test monitor % ' + jabber.createWord(5),
+        code: monitorCodeSingle,
+        price1s: '1.00005',
+        minWarranty: 10,
+        maxDuration: 10000,
+        width: 1920,
+        height: 1080,
+        address: {},
+        category: MonitorCategoryEnum.ATM,
+        orientation: MonitorOrientation.Horizontal,
+        multiple: MonitorMultiple.SINGLE,
+        sound: true,
+        angle: 0,
+        brightness: 0,
+      };
+
+      await request
+        .put(`${apiPath}/monitor`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(monitor)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.user?.password).toBeUndefined();
+          monitorSingleId = body.data.id;
+        });
+    });
+
+    /**
+     * WebSocket авторизация пользователя monitor-owner и проверка metrics
+     */
+    test('WebSocket monitor-owner (проверка metrics)', async () => {
+      wsMonitorOwner = new WebSocket(wsUrl);
+      await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
+
+      wsMonitorOwner.send(
+        JSON.stringify({
+          event: 'auth/token',
+          data: {
+            token: monitorOwnerToken,
+            date: new Date().toISOString(),
+          },
+        }),
+      );
+      const wsMessage = await new Promise<string>((resolve) => {
+        wsMonitorOwner.on('message', (dataBuffer: Buffer) => {
+          resolve(dataBuffer.toString('utf8'));
+        });
+      });
+
+      expect(wsMessage).toBeDefined();
+      const dataJson = JSON.parse(wsMessage);
+      expect(dataJson).toBeDefined();
+      const authorized = dataJson[0] as WsAuthObject;
+      const wallet = dataJson[1] as WsWalletObject;
+      const metrics = dataJson[2] as WsMetricsObject;
+      expect(authorized).toBeDefined();
+      expect(authorized.event).toBe(WsEvent.AUTH);
+      expect(authorized.data).toBe('authorized');
+      expect(wallet).toBeDefined();
+      expect(wallet.event).toBe(WsEvent.WALLET);
+      expect(wallet.data?.total).toBe(
+        invoiceSum - configService.getOrThrow('SUBSCRIPTION_FEE'),
+      );
+      expect(metrics).toBeDefined();
+      expect(metrics.event).toBe(WsEvent.METRICS);
+      expect(metrics.data).toBeDefined();
+      expect(metrics.data.monitors).toBeDefined();
+      expect(metrics.data.monitors.user).toBe(3);
+      expect(metrics.data.monitors.online).toBe(0);
+      expect(metrics.data.monitors.offline).toBe(3);
+      expect(metrics.data.monitors.empty).toBe(3);
+      wsMonitorOwner.close();
     });
 
     /**
@@ -1959,33 +1780,76 @@ describe('Backend API (e2e)', () => {
     test('PUT /folder [name: "bar"] (Создание новой папки monitor-owner)', async () => {
       await request
         .put(`${apiPath}/folder`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .auth(monitorOwnerToken, { type: 'bearer' })
         .send({ name: 'bar' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
+          expect(body.data.id).toBeDefined();
           expect(body.data.name).toBe('bar');
           expect((body.data as any)?.user?.password).toBeUndefined();
-          parentFolderId = body.data.id;
+          monitorOwnerFolderBarId = body.data.id;
         });
     });
 
     test('PUT /folder [name: "baz"] (Создание новой папки monitor-owner)', async () => {
       await request
         .put(`${apiPath}/folder`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .auth(monitorOwnerToken, { type: 'bearer' })
         .send({ name: 'baz' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
+          expect(body.data.id).toBeDefined();
           expect(body.data.name).toBe('baz');
           expect((body.data as any)?.user?.password).toBeUndefined();
-          parentFolderId2 = body.data.id;
-          folderId3 = body.data.id;
+          monitorOwnerFolderBazId = body.data.id;
+        });
+    });
+
+    /**
+     * Получение информации о папке [успешно]
+     */
+    test('GET /folder/{monitorOwnerFolderBarId} (Получение информации о папке)', async () => {
+      if (!monitorOwnerToken || !monitorOwnerFolderBarId) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .get(`${apiPath}/folder/${monitorOwnerFolderBarId}`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: FolderGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(monitorOwnerFolderBarId);
+          expect(body.data.name).toBe('bar');
+          expect((body.data as any)?.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
+     * Удаление папки [успешно]
+     */
+    test('DELETE /folder/{monitorOwnerFolderBazId} [success] (Удаление папки)', async () => {
+      if (!monitorOwnerToken || !monitorOwnerFolderBazId) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .delete(`${apiPath}/folder/${monitorOwnerFolderBazId}`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: SuccessResponse }) => {
+          expect(body.status).toBe(Status.Success);
         });
     });
 
@@ -1995,17 +1859,18 @@ describe('Backend API (e2e)', () => {
     test('PUT /folder [name: "foo", parentFolderId] (Создание новой под-папки monitor-owner)', async () => {
       await request
         .put(`${apiPath}/folder`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
-        .send({ name: 'foo', parentFolderId })
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send({ name: 'foo', parentFolderId: monitorOwnerFolderBarId })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
+          expect(body.data.id).toBeDefined();
           expect(body.data.name).toBe('foo');
-          expect(body.data.parentFolderId).toBe(parentFolderId);
+          expect(body.data.parentFolderId).toBe(monitorOwnerFolderBarId);
           expect((body.data as any)?.user?.password).toBeUndefined();
-          folderId1 = body.data.id;
+          monitorOwnerFolderFooId = body.data.id;
         });
     });
 
@@ -2015,36 +1880,37 @@ describe('Backend API (e2e)', () => {
     test('PUT /folder [name: "baz", parentFolderId] (Создание новой под-папки monitor-owner)', async () => {
       await request
         .put(`${apiPath}/folder`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
-        .send({ name: 'baz', parentFolderId: parentFolderId2 })
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send({ name: 'baz', parentFolderId: monitorOwnerFolderBarId })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
+          expect(body.data.id).toBeDefined();
           expect(body.data.name).toBe('baz');
-          expect(body.data.parentFolderId).toBe(parentFolderId2);
+          expect(body.data.parentFolderId).toBe(monitorOwnerFolderBarId);
           expect((body.data as any)?.user?.password).toBeUndefined();
-          folderId2 = body.data.id;
+          monitorOwnerFolderFooId = body.data.id;
         });
     });
 
     /**
-     * Загрузка файлов monitor-owner [success]
+     * Загрузка файлов monitor-owner
      */
-    test('PUT /file [success] (Загрузка файлов monitor-owner)', async () => {
-      if (!tokenMonitorOwner || !folderId1) {
+    test('PUT /file (Загрузка файлов monitor-owner)', async () => {
+      if (!monitorOwnerToken || !monitorOwnerFolderFooId) {
         expect(false).toEqual(true);
       }
 
       const field = {
-        param: `{ "folderId": "${folderId1}", "category": "media" }`,
+        param: `{ "folderId": "${monitorOwnerFolderFooId}", "category": "media" }`,
       };
       const files = imageTestingDirname;
 
       const { body }: { body: FilesUploadResponse } = await request
         .put(`${apiPath}/file`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .auth(monitorOwnerToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .field(field)
         .attach('files', files)
@@ -2054,21 +1920,21 @@ describe('Backend API (e2e)', () => {
       expect(body.status).toBe(Status.Success);
       expect(body.data).toBeDefined();
       expect(body.data[0].id).toBeDefined();
-      mediaId1 = body.data[0].id;
+      monitorOwnerImageId = body.data[0].id;
       expect(body.data[0]?.user?.password).toBeUndefined();
     });
 
     /**
      * Скачивание медиа monitor-owner [success]
      */
-    test('GET /file/download/{mediaId} [success] (Скачивание медиа monitor-owner)', async () => {
-      if (!tokenMonitorOwner || !mediaId1) {
+    test('GET /file/download/{monitorOwnerImageId} (Скачивание картинки monitor-owner)', async () => {
+      if (!monitorOwnerToken || !monitorOwnerImageId) {
         expect(false).toEqual(true);
       }
 
       const { body }: { body: HttpError | string } = await request
-        .get(`${apiPath}/file/download/${mediaId1}`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .get(`${apiPath}/file/download/${monitorOwnerImageId}`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect(200);
 
@@ -2077,16 +1943,16 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Скачивание предпросмотра monitor-owner [success]
+     * Скачивание предпросмотра monitor-owner
      */
-    test('GET /file/preview/{mediaId} [success] (Скачивание предпросмотра monitor-owner)', async () => {
-      if (!tokenMonitorOwner || !mediaId1) {
+    test('GET /file/preview/{monitorOwnerImageId} (Скачивание предпросмотра monitor-owner)', async () => {
+      if (!monitorOwnerToken || !monitorOwnerImageId) {
         expect(false).toEqual(true);
       }
 
       const { body }: { body: HttpError | string } = await request
-        .get(`${apiPath}/file/preview/${mediaId1}`)
-        .auth(tokenMonitorOwner, { type: 'bearer' })
+        .get(`${apiPath}/file/preview/${monitorOwnerImageId}`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect(200);
 
@@ -2095,10 +1961,10 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Загрузка файлов advertiser [success]
+     * Загрузка файлов advertiser
      */
-    test('PUT /file [success] (Загрузка файлов advertiser)', async () => {
-      if (!tokenAdvertiser) {
+    test('PUT /file (Загрузка файлов advertiser)', async () => {
+      if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
@@ -2109,7 +1975,7 @@ describe('Backend API (e2e)', () => {
 
       const { body }: { body: FilesUploadResponse } = await request
         .put(`${apiPath}/file`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .field(field)
         .attach('files', files)
@@ -2119,7 +1985,7 @@ describe('Backend API (e2e)', () => {
       expect(body.status).toBe(Status.Success);
       expect(body.data).toBeDefined();
       expect(body.data[0].id).toBeDefined();
-      videoIdAdvertiser = body.data[0].id;
+      advertiserVideoId = body.data[0].id;
       expect(body.data[0]?.user?.password).toBeUndefined();
     });
 
@@ -2127,19 +1993,19 @@ describe('Backend API (e2e)', () => {
      * Создаем плэйлист из видео advertiser
      */
     test('PUT /playlist', async () => {
-      if (!tokenAdvertiser || !videoIdAdvertiser) {
+      if (!advertiserToken || !advertiserVideoId) {
         expect(false).toEqual(true);
       }
 
       const playlistCreate: PlaylistCreateRequest = {
-        name: 'Testing 1',
+        name: 'Testing from e2e',
         description: 'testing from e2e',
-        files: [videoIdAdvertiser],
+        files: [advertiserVideoId],
       };
 
       await request
         .put(`${apiPath}/playlist`)
-        .auth(tokenAdvertiser, { type: 'bearer' })
+        .auth(advertiserToken, { type: 'bearer' })
         .send(playlistCreate)
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -2149,7 +2015,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data).toBeDefined();
           expect(body.data.id).toBeDefined();
           expect(body.data?.user?.password).toBeUndefined();
-          playlistAdvertiserId1 = body.data.id;
+          advertiserPlaylistId1 = body.data.id;
         });
     });
 
@@ -2163,15 +2029,15 @@ describe('Backend API (e2e)', () => {
        * Administrator
        */
       test('Change user Role: Administrator (database access)', async () => {
-        if (userAdvertiser) {
-          const userUpdate = await userService.update(userAdvertiser, {
+        if (advertiserUser) {
+          const userUpdate = await userService.update(advertiserUser, {
             role: UserRoleEnum.Administrator,
           });
           expect(userUpdate).toBeDefined();
           if (!userUpdate) {
             return;
           }
-          expect(userUpdate.id).toBe(userIdAdvertiser);
+          expect(userUpdate.id).toBe(advertiserUserId);
           expect(userUpdate.role).toBe(UserRoleEnum.Administrator);
         } else {
           expect(false).toEqual(true);
@@ -2187,27 +2053,27 @@ describe('Backend API (e2e)', () => {
           .expect(200)
           .then(({ body }: { body: AuthResponse }) => {
             expect(body.payload?.type).toBe('bearer');
-            expect(body.data?.id).toBe(userIdAdvertiser);
+            expect(body.data?.id).toBe(advertiserUserId);
             expect(body.data?.role).toBe(UserRoleEnum.Administrator);
             expect(body.payload?.token).toBeDefined();
             expect(body.payload?.refreshToken).toBeDefined();
             expect((body.data as any).password).toBeUndefined();
-            tokenAdvertiser = body.payload?.token ?? '';
-            refreshTokenAdvertiser = body.payload?.refreshToken ?? '';
+            advertiserToken = body.payload?.token ?? '';
+            advertiserRefreshToken = body.payload?.refreshToken ?? '';
           });
       });
 
       /**
        * Удаление файлов monitor-owner
        */
-      test('DELETE /file/{mediaId} (Удаление файлов)', async () => {
-        if (!tokenAdvertiser || !mediaId1) {
+      test('DELETE /file/{monitorOwnerImageId} (Удаление файлов)', async () => {
+        if (!monitorOwnerToken || !monitorOwnerImageId) {
           expect(false).toEqual(true);
         }
 
         const { body }: { body: SuccessResponse } = await request
-          .delete(`${apiPath}/file/${mediaId1}`)
-          .auth(tokenAdvertiser, { type: 'bearer' })
+          .delete(`${apiPath}/file/${monitorOwnerImageId}`)
+          .auth(monitorOwnerToken, { type: 'bearer' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200);
@@ -2217,15 +2083,15 @@ describe('Backend API (e2e)', () => {
       /**
        * Удаление аккаунта пользователя monitor-owner (только администратор)
        */
-      test(`/user/{userIdMonitorOwner} (Удаление пользователя monitor-owner)`, async () => {
-        if (!tokenMonitorOwner || !userIdMonitorOwner) {
+      test(`/user/{monitorOwnerUserId} (Удаление пользователя monitor-owner)`, async () => {
+        if (!monitorOwnerToken || !monitorOwnerUserId || !advertiserToken) {
           expect(false).toBe(true);
         }
 
-        const url = `${apiPath}/user/${userIdMonitorOwner}`;
+        const url = `${apiPath}/user/${monitorOwnerUserId}`;
         await request
           .delete(url)
-          .auth(tokenAdvertiser, { type: 'bearer' })
+          .auth(advertiserToken, { type: 'bearer' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200)
@@ -2235,15 +2101,15 @@ describe('Backend API (e2e)', () => {
       /**
        * Удаление аккаунта пользователя accountant (только администратор)
        */
-      test(`/user/{userIdAccountant} (Удаление пользователя accountant)`, async () => {
-        if (!tokenAccountant || !userIdAccountant) {
+      test(`/user/{accountantUserId} (Удаление пользователя accountant)`, async () => {
+        if (!accountantToken || !accountantUserId) {
           expect(false).toBe(true);
         }
 
-        const url = `${apiPath}/user/${userIdAccountant}`;
+        const url = `${apiPath}/user/${accountantUserId}`;
         await request
           .delete(url)
-          .auth(tokenAdvertiser, { type: 'bearer' })
+          .auth(advertiserToken, { type: 'bearer' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200)
@@ -2253,14 +2119,14 @@ describe('Backend API (e2e)', () => {
       /**
        * Удаление плэйлиста advertiser
        */
-      test('DELETE /playlist/{playlistAdvertiserId1} (Удаление плэйлиста)', async () => {
-        if (!tokenAdvertiser || !playlistAdvertiserId1) {
+      test('DELETE /playlist/{advertiserPlaylistId1} (Удаление плэйлиста)', async () => {
+        if (!advertiserToken || !advertiserPlaylistId1) {
           expect(false).toEqual(true);
         }
 
         const { body }: { body: SuccessResponse } = await request
-          .delete(`${apiPath}/playlist/${playlistAdvertiserId1}`)
-          .auth(tokenAdvertiser, { type: 'bearer' })
+          .delete(`${apiPath}/playlist/${advertiserPlaylistId1}`)
+          .auth(advertiserToken, { type: 'bearer' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200);
@@ -2270,14 +2136,14 @@ describe('Backend API (e2e)', () => {
       /**
        * Удаление файлов advertiser
        */
-      test('DELETE /file/{videIdAdvertiser} (Удаление файлов)', async () => {
-        if (!tokenAdvertiser || !videoIdAdvertiser) {
+      test('DELETE /file/{advertiserVideoId} (Удаление файлов)', async () => {
+        if (!advertiserToken || !advertiserVideoId) {
           expect(false).toEqual(true);
         }
 
         const { body }: { body: SuccessResponse } = await request
-          .delete(`${apiPath}/file/${videoIdAdvertiser}`)
-          .auth(tokenAdvertiser, { type: 'bearer' })
+          .delete(`${apiPath}/file/${advertiserVideoId}`)
+          .auth(advertiserToken, { type: 'bearer' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200);
@@ -2287,15 +2153,15 @@ describe('Backend API (e2e)', () => {
       /**
        * Удаление пользователя advertiser
        */
-      test(`/user/{userIdAdvertiser} (Удаление пользователя advertiser)`, async () => {
-        if (!tokenAdvertiser || !userIdAdvertiser) {
+      test(`/user/{advertiserUserId} (Удаление пользователя advertiser)`, async () => {
+        if (!advertiserToken || !advertiserUserId) {
           expect(false).toBe(true);
         }
 
-        const url = `${apiPath}/user/${userIdAdvertiser}`;
+        const url = `${apiPath}/user/${advertiserUserId}`;
         await request
           .delete(url)
-          .auth(tokenAdvertiser, { type: 'bearer' })
+          .auth(advertiserToken, { type: 'bearer' })
           .set('Accept', 'application/json')
           .expect('Content-Type', /json/)
           .expect(200)
@@ -2305,8 +2171,8 @@ describe('Backend API (e2e)', () => {
   });
 
   afterAll(() => {
-    ws1?.close();
-    ws2?.close();
+    wsAdvertiser?.close();
+    wsMonitorOwner?.close();
     app?.close();
   });
 });

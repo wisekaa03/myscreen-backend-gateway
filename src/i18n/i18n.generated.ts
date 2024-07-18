@@ -51,6 +51,7 @@ export type I18nTranslations = {
         "IS_URL": string;
         "IS_JSON": string;
         "IS_POSITIVE": string;
+        "IS_OPTIONAL": string;
         "PASSWORD_MIN_LENGTH": string;
         "PASSWORD_MAX_LENGTH": string;
         "PASSWORD_TOO_WEAK": string;

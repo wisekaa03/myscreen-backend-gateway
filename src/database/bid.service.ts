@@ -152,15 +152,11 @@ export class BidService {
   async websocketChange({
     playlist,
     playlistDelete,
-    monitor,
-    monitorDelete,
     bid,
     bidDelete,
   }: {
     playlist?: PlaylistEntity;
     playlistDelete?: PlaylistEntity;
-    monitor?: MonitorEntity;
-    monitorDelete?: MonitorEntity;
     bid?: BidEntity;
     bidDelete?: BidEntity;
   }) {
@@ -174,10 +170,6 @@ export class BidService {
       );
 
       await Promise.allSettled(wsPromise);
-    }
-
-    if (monitorDelete) {
-      await this.wsStatistics.onChange({ monitorDelete });
     }
 
     if (bid) {

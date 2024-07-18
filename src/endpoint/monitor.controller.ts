@@ -622,9 +622,9 @@ export class MonitorController {
     const monitor = await this.monitorService.findOne({
       find: {
         where,
-        select: ['id', 'name', 'multiple', 'groupMonitors'],
+        select: ['id', 'name', 'multiple', 'groupMonitors', 'userId', 'user'],
         loadEagerRelations: false,
-        relations: { groupMonitors: true },
+        relations: { groupMonitors: true, user: true },
       },
     });
     if (!monitor) {
