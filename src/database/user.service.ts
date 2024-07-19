@@ -239,6 +239,7 @@ export class UserService {
   async delete(user: UserEntity): Promise<DeleteResult> {
     const files = await this.fileRepository.find({
       where: { userId: user.id },
+      select: ['id'],
       loadEagerRelations: false,
       relations: {},
     });
