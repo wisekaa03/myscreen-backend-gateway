@@ -124,11 +124,39 @@ export class InvoiceService {
     });
   }
 
+  async upload(invoice: InvoiceEntity, file: Express.Multer.File) {
+    const { id, user: invoiceUser } = invoice;
+
+    return this.invoiceRepository.manager.transaction(async (transact) => {
+      if (!file) {
+        throw new BadRequestError('INVOICE_FILE');
+      }
+      const { id: folderId } =
+        await this.folderService.invoiceFolder(invoiceUser);
+      const downloadFile = await this.fileService.upload(
+        invoiceUser,
+        { folderId },
+        [file],
+      );
+      await transact.update(InvoiceEntity, id, {
+        file: downloadFile[0],
+      });
+
+      const invoiceFind = await transact.findOne(InvoiceEntity, {
+        where: { id },
+        loadEagerRelations: false,
+        relations: { file: true },
+      });
+      if (!invoiceFind) {
+        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+      }
+      return invoiceFind;
+    });
+  }
+
   async statusChange(
-    user: UserEntity,
     invoice: InvoiceEntity,
     status: InvoiceStatus,
-    file?: Express.Multer.File,
   ): Promise<InvoiceEntity> {
     const { id } = invoice;
 
@@ -206,27 +234,6 @@ export class InvoiceService {
 
         // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
         case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
-          if (!file) {
-            throw new BadRequestError('INVOICE_FILE');
-          }
-          const folder = await this.folderService.invoiceFolder(invoiceUser);
-          const downloadFile = await this.fileService.upload(
-            invoiceUser,
-            { folderId: folder.id },
-            [file],
-          );
-          await transact.update(InvoiceEntity, id, {
-            file: downloadFile[0],
-          });
-          invoiceFind = await transact.findOne(InvoiceEntity, {
-            where: { id },
-            loadEagerRelations: false,
-            relations: { user: true, file: true },
-          });
-          if (!invoiceFind) {
-            throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
-          }
-
           this.mailService.emit('invoiceConfirmed', {
             user: invoiceUser,
             invoice: invoiceFind,

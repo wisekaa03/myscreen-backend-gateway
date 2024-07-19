@@ -133,7 +133,6 @@ export class InvoiceController {
     }
 
     await this.invoiceService.statusChange(
-      user,
       invoice,
       InvoiceStatus.AWAITING_CONFIRMATION,
     );
@@ -144,11 +143,11 @@ export class InvoiceController {
     };
   }
 
-  @Post('confirmed/:invoiceId')
+  @Post('upload/:invoiceId')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'invoice-confirmed',
-    summary: 'Подтверждение счёта (только бухгалтер)',
+    operationId: 'invoice-upload',
+    summary: 'Загрузка счёта (только бухгалтер)',
   })
   @ApiResponse({
     status: 200,
@@ -173,10 +172,45 @@ export class InvoiceController {
   @Roles([UserRoleEnum.Administrator, UserRoleEnum.Accountant])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Crud(CRUD.UPDATE)
-  async confirmed(
-    @Req() { user }: ExpressRequest,
+  async upload(
     @Param('invoiceId', ParseUUIDPipe) id: string,
     @UploadedFile() file: Express.Multer.File,
+  ): Promise<InvoiceGetResponse> {
+    const invoice = await this.invoiceService.findOne({
+      where: { id },
+      relations: { user: true, file: true },
+    });
+    if (!invoice) {
+      throw new NotFoundError();
+    }
+    if (invoice.status === InvoiceStatus.PAID) {
+      throw new NotAcceptableError('Invoice is paid');
+    }
+
+    const data = await this.invoiceService.upload(invoice, file);
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Get('confirmed/:invoiceId')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'invoice-confirmed',
+    summary: 'Подтверждение счёта (только бухгалтер)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: InvoiceGetResponse,
+  })
+  @Roles([UserRoleEnum.Administrator, UserRoleEnum.Accountant])
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Crud(CRUD.UPDATE)
+  async confirmed(
+    @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
     const invoice = await this.invoiceService.findOne({
       where: { id },
@@ -195,10 +229,8 @@ export class InvoiceController {
     }
 
     const data = await this.invoiceService.statusChange(
-      user,
       invoice,
       InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
-      file,
     );
 
     return {
@@ -236,7 +268,6 @@ export class InvoiceController {
     }
 
     const data = await this.invoiceService.statusChange(
-      user,
       invoice,
       InvoiceStatus.PAID,
     );
