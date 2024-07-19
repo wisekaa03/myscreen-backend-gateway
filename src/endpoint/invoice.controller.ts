@@ -185,7 +185,12 @@ export class InvoiceController {
     if (!invoice) {
       throw new NotFoundError();
     }
-    if (invoice.status !== InvoiceStatus.AWAITING_CONFIRMATION) {
+    if (
+      !(
+        invoice.status === InvoiceStatus.AWAITING_CONFIRMATION ||
+        invoice.status === InvoiceStatus.CONFIRMED_PENDING_PAYMENT
+      )
+    ) {
       throw new NotAcceptableError('Invoice is not awaiting confirmation');
     }
 
