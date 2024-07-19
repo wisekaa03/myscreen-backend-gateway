@@ -406,7 +406,7 @@ export class BidService {
           -(Number(bid.sum) * (100 - this.commissionPercent)) / 100;
         if (sumIncrement !== 0) {
           await this.actService.create({
-            user: bid.monitor.user,
+            userId: bid.monitor.user.id,
             sum: sumIncrement,
             isSubscription: false,
             description: `Оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
@@ -418,7 +418,7 @@ export class BidService {
         // Снята оплата на пользователя - рекламодателя
         if (Number(bid.sum) !== 0) {
           await this.actService.create({
-            user: bid.seller,
+            userId: bid.seller.id,
             sum: bid.sum,
             isSubscription: false,
             description: `Снята оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
@@ -555,7 +555,7 @@ export class BidService {
         // Списываем средства со счета пользователя Рекламодателя
         if (sum !== 0) {
           await this.actService.create({
-            user,
+            userId,
             sum,
             isSubscription: false,
             description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
@@ -586,7 +586,7 @@ export class BidService {
             const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
             if (sumIncrement !== 0) {
               await this.actService.create({
-                user: actUserResponse,
+                userId: actUserResponse.id,
                 sum: sumIncrement,
                 isSubscription: false,
                 description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,

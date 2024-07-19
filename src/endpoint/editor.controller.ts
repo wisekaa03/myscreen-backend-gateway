@@ -40,7 +40,7 @@ import {
   EditorExportRequest,
 } from '@/dto';
 import { Crud, ApiComplexDecorators } from '@/decorators';
-import { VideoType, Status, UserRoleEnum, CRUD } from '@/enums';
+import { FileType, Status, UserRoleEnum, CRUD } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQuery } from '@/utils/pagination-query';
 import { EditorService } from '@/database/editor.service';
@@ -297,9 +297,12 @@ export class EditorController {
       ...body,
       file,
     };
-    if (file.videoType === VideoType.Audio) {
+    if (file.videoType === FileType.AUDIO) {
       create.audio = [editor];
-    } else {
+    } else if (
+      file.videoType === FileType.IMAGE ||
+      file.videoType === FileType.VIDEO
+    ) {
       create.video = [editor];
     }
 

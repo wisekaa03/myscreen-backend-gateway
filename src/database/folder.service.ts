@@ -108,6 +108,28 @@ export class FolderService {
     return folder;
   }
 
+  async invoiceFolder(user: UserEntity): Promise<FolderEntity> {
+    const rootFolder = await this.rootFolder(user);
+
+    const folder = await this.findOne({
+      where: {
+        name: '<Счета>',
+        parentFolderId: rootFolder.id,
+        userId: user.id,
+      },
+    });
+
+    if (!folder) {
+      return this.create({
+        name: '<Счета>',
+        parentFolderId: rootFolder.id,
+        userId: user.id,
+      });
+    }
+
+    return folder;
+  }
+
   async administratorFolder(user: UserResponse): Promise<FolderEntity> {
     const parentFolder = await this.rootFolder(user);
 

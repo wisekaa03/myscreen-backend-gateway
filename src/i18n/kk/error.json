@@ -24,5 +24,6 @@
   "CONFLICT_ERROR": "Video/audio editors, playlists do not allow to delete this file",
   "PLAYLIST_NOT_FOUND": "Playlist not found: '{id}'",
   "BID_NOT_FOUND": "Bid not found: '{id}'",
-  "BID_ERROR": "Error when creating Bid"
+  "BID_ERROR": "Error when creating Bid",
+  "INVOICE_FILE": "Confirmed waiting payment must expect file"
 }

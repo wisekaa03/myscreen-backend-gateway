@@ -47,7 +47,7 @@ import {
   FilesUpdateRequest,
   FilesCopyRequest,
 } from '@/dto';
-import { UserRoleEnum, VideoType, Status, CRUD } from '@/enums';
+import { UserRoleEnum, FileType, Status, CRUD } from '@/enums';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQuery } from '@/utils/pagination-query';
@@ -328,7 +328,7 @@ export class FileController {
       res.setHeader('Content-Length', buffer.length);
       res.setHeader('Cache-Control', 'private, max-age=315360');
       const fileParse = pathParse(file.name);
-      if (file.videoType === VideoType.Video) {
+      if (file.videoType === FileType.VIDEO) {
         res.setHeader('Content-Type', 'video/webm');
         res.setHeader(
           'Content-Disposition',
@@ -336,7 +336,7 @@ export class FileController {
             `${fileParse.name}-preview.webm`,
           )};`,
         );
-      } else if (file.videoType === VideoType.Image) {
+      } else if (file.videoType === FileType.IMAGE) {
         res.setHeader('Content-Type', 'image/jpeg');
         res.setHeader(
           'Content-Disposition',
@@ -345,16 +345,16 @@ export class FileController {
           )};`,
         );
       } else {
-        res.setHeader('Content-Type', 'application/octet-stream');
+        res.setHeader('Content-Type', 'image/jpeg');
         res.setHeader(
           'Content-Disposition',
           `attachment;filename=${encodeURIComponent(
-            `${fileParse.name}-preview${fileParse.ext}`,
+            `${fileParse.name}-preview.svg`,
           )};`,
         );
       }
 
-      this.logger.debug(`The preview file '${file?.name}' has been downloaded`);
+      this.logger.debug(`The preview file '${file.name}' has been downloaded`);
 
       res.write(buffer);
       res.end();

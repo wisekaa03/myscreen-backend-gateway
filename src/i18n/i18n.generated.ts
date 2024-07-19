@@ -32,6 +32,7 @@ export type I18nTranslations = {
         "PLAYLIST_NOT_FOUND": string;
         "BID_NOT_FOUND": string;
         "BID_ERROR": string;
+        "INVOICE_FILE": string;
     };
     "validation": {
         "IS_DEFINED": string;

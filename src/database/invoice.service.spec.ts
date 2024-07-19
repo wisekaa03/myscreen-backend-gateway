@@ -9,6 +9,8 @@ import { WalletService } from './wallet.service';
 import { UserResponse } from './user-response.entity';
 import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
+import { FileService } from './file.service';
+import { FolderService } from './folder.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -35,6 +37,8 @@ describe(InvoiceService.name, () => {
         { provide: ConfigService, useClass: mockRepository },
         { provide: WalletService, useClass: mockRepository },
         { provide: WsStatistics, useClass: mockRepository },
+        { provide: FileService, useClass: mockRepository },
+        { provide: FolderService, useClass: mockRepository },
         { provide: MAIL_SERVICE, useClass: mockRepository },
         {
           provide: getRepositoryToken(InvoiceEntity),

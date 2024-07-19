@@ -6,7 +6,7 @@ import { FileEntity } from '@/database/file.entity';
 import { MSRange } from '@/interfaces';
 
 export class FileRequest extends PartialType(
-  PickType(FileEntity, ['id', 'folderId', 'category', 'videoType']),
+  PickType(FileEntity, ['id', 'folderId', 'videoType']),
 ) {
   @ApiProperty({
     description: 'Идентификатор папки',

@@ -14,9 +14,16 @@ import {
   Put,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { FindOptionsWhere } from 'typeorm';
 
 import {
@@ -45,6 +52,7 @@ import { paginationQuery } from '@/utils/pagination-query';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { InvoiceService } from '@/database/invoice.service';
 import { InvoiceEntity } from '@/database/invoice.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiComplexDecorators({
   path: ['invoice'],
@@ -125,6 +133,7 @@ export class InvoiceController {
     }
 
     await this.invoiceService.statusChange(
+      user,
       invoice,
       InvoiceStatus.AWAITING_CONFIRMATION,
     );
@@ -135,26 +144,43 @@ export class InvoiceController {
     };
   }
 
-  @Get('confirmed/:invoiceId')
+  @Post('confirmed/:invoiceId')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'invoice-confirmed',
-    summary: 'Подтверждение/отклонение счёта (только бухгалтер)',
+    summary: 'Подтверждение счёта (только бухгалтер)',
   })
   @ApiResponse({
     status: 200,
     description: 'Успешный ответ',
     type: InvoiceGetResponse,
   })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['file'],
+      properties: {
+        file: {
+          type: 'string',
+          description: 'Файл',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
   @Roles([UserRoleEnum.Administrator, UserRoleEnum.Accountant])
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Crud(CRUD.UPDATE)
   async confirmed(
+    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<InvoiceGetResponse> {
     const invoice = await this.invoiceService.findOne({
       where: { id },
-      relations: ['user'],
+      relations: { user: true, file: true },
     });
     if (!invoice) {
       throw new NotFoundError();
@@ -164,8 +190,10 @@ export class InvoiceController {
     }
 
     const data = await this.invoiceService.statusChange(
+      user,
       invoice,
       InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
+      file,
     );
 
     return {
@@ -188,11 +216,12 @@ export class InvoiceController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Crud(CRUD.UPDATE)
   async payed(
+    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
     const invoice = await this.invoiceService.findOne({
       where: { id },
-      relations: ['user'],
+      relations: { user: true, file: true },
     });
     if (!invoice) {
       throw new NotFoundError();
@@ -202,6 +231,7 @@ export class InvoiceController {
     }
 
     const data = await this.invoiceService.statusChange(
+      user,
       invoice,
       InvoiceStatus.PAID,
     );
@@ -254,7 +284,7 @@ export class InvoiceController {
     }
     const invoice = await this.invoiceService.findOne({
       where,
-      relations: ['user'],
+      relations: { user: true, file: true },
     });
     if (!invoice) {
       throw new NotFoundError();
