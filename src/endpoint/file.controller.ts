@@ -345,7 +345,7 @@ export class FileController {
           )};`,
         );
       } else {
-        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader('Content-Type', 'image/svg+xml');
         res.setHeader(
           'Content-Disposition',
           `attachment;filename=${encodeURIComponent(
