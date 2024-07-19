@@ -72,7 +72,7 @@ export class FolderController {
     const { id: userId } = user;
     let count = 0;
     let data: FolderResponse[] = [];
-    await this.folderService.rootFolder(user);
+    await this.folderService.rootFolder(userId);
     [data, count] = await this.folderService.findAndCount({
       ...paginationQuery(scope),
       select,
@@ -107,7 +107,7 @@ export class FolderController {
       ? await this.folderService.findOne({
           where: { userId, id: parentFolderId },
         })
-      : await this.folderService.rootFolder(user);
+      : await this.folderService.rootFolder(userId);
     if (!parentFolder) {
       throw new BadRequestError(`Folder '${parentFolderId}' is not exists`);
     }
@@ -250,10 +250,10 @@ export class FolderController {
   })
   @Crud(CRUD.DELETE)
   async delete(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { foldersId }: FoldersDeleteRequest,
   ): Promise<SuccessResponse> {
-    const rootFolder = await this.folderService.rootFolder(user);
+    const rootFolder = await this.folderService.rootFolder(userId);
     if (foldersId.includes(rootFolder.id)) {
       throw new BadRequestError('This is a root folder in a list');
     }
@@ -352,10 +352,10 @@ export class FolderController {
   })
   @Crud(CRUD.DELETE)
   async deleteFolder(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('folderId', ParseUUIDPipe) folderId: string,
   ): Promise<SuccessResponse> {
-    const rootFolder = await this.folderService.rootFolder(user);
+    const rootFolder = await this.folderService.rootFolder(userId);
     if (folderId === rootFolder.id) {
       throw new BadRequestError('This is a root folder in a list');
     }

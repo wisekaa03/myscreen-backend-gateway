@@ -236,9 +236,7 @@ export class FileService {
     return find;
   }
 
-  async rootFolder(user: UserEntity): Promise<FolderEntity> {
-    const { id: userId } = user;
-
+  async rootFolder(userId: string): Promise<FolderEntity> {
     let folder = await this.folderRepository.findOne({
       where: { name: '<Корень>', userId },
     });
@@ -324,7 +322,7 @@ export class FileService {
       let folder: FolderEntity | null = null;
       const { id: userId } = user;
       if (!folderIdOrig) {
-        folder = await this.rootFolder(user);
+        folder = await this.rootFolder(userId);
       } else {
         folder = await this.folderRepository.findOne({
           where: { userId, id: folderIdOrig },
@@ -333,7 +331,7 @@ export class FileService {
           throw new NotFoundError(`Folder '${folderIdOrig}' not found`);
         }
       }
-      const folderId = folder.id;
+      const { id: folderId } = folder;
 
       const filesPromises = files.map(async (file) => {
         const {
@@ -362,7 +360,7 @@ export class FileService {
 
         const fileToSave: DeepPartial<FileEntity> = {
           userId,
-          folder: folder ?? undefined,
+          folderId: folderId ?? undefined,
           name: originalname,
           filesize,
           duration,

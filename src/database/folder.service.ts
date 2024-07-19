@@ -68,9 +68,7 @@ export class FolderService {
         );
   }
 
-  async rootFolder(user: UserEntity): Promise<FolderEntity> {
-    const { id: userId } = user;
-
+  async rootFolder(userId: string): Promise<FolderEntity> {
     let folder = await this.folderRepository.findOne({
       where: { name: '<Корень>', userId },
     });
@@ -78,7 +76,6 @@ export class FolderService {
     if (!folder) {
       folder = await this.create({
         name: '<Корень>',
-        parentFolderId: null,
         userId,
       });
     }
@@ -86,52 +83,52 @@ export class FolderService {
     return folder;
   }
 
-  async exportFolder(user: UserEntity): Promise<FolderEntity> {
-    const rootFolder = await this.rootFolder(user);
+  async exportFolder(userId: string): Promise<FolderEntity> {
+    const { id: parentFolderId } = await this.rootFolder(userId);
 
     const folder = await this.findOne({
       where: {
         name: '<Исполненные>',
-        parentFolderId: rootFolder.id,
-        userId: user.id,
+        parentFolderId,
+        userId,
       },
     });
 
     if (!folder) {
       return this.create({
         name: '<Исполненные>',
-        parentFolderId: rootFolder.id,
-        userId: user.id,
+        parentFolderId,
+        userId,
       });
     }
 
     return folder;
   }
 
-  async invoiceFolder(user: UserEntity): Promise<FolderEntity> {
-    const rootFolder = await this.rootFolder(user);
+  async invoiceFolder(userId: string): Promise<FolderEntity> {
+    const { id: parentFolderId } = await this.rootFolder(userId);
 
     const folder = await this.findOne({
       where: {
         name: '<Счета>',
-        parentFolderId: rootFolder.id,
-        userId: user.id,
+        parentFolderId,
+        userId,
       },
     });
 
     if (!folder) {
       return this.create({
         name: '<Счета>',
-        parentFolderId: rootFolder.id,
-        userId: user.id,
+        parentFolderId,
+        userId,
       });
     }
 
     return folder;
   }
 
-  async administratorFolder(user: UserResponse): Promise<FolderEntity> {
-    const parentFolder = await this.rootFolder(user);
+  async administratorFolder(userId: string): Promise<FolderEntity> {
+    const parentFolder = await this.rootFolder(userId);
 
     return {
       id: administratorFolderId,

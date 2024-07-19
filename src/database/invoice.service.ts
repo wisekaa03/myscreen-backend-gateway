@@ -125,14 +125,14 @@ export class InvoiceService {
   }
 
   async upload(invoice: InvoiceEntity, file: Express.Multer.File) {
-    const { id, user: invoiceUser } = invoice;
+    const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
 
     return this.invoiceRepository.manager.transaction(async (transact) => {
       if (!file) {
         throw new BadRequestError('INVOICE_FILE');
       }
       const { id: folderId } =
-        await this.folderService.invoiceFolder(invoiceUser);
+        await this.folderService.invoiceFolder(invoiceUserId);
       const downloadFile = await this.fileService.upload(
         invoiceUser,
         { folderId },

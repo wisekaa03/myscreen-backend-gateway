@@ -727,7 +727,9 @@ export class EditorService {
         }
 
         const { size } = await fs.stat(outPath);
-        const exportFolder = await this.folderService.exportFolder(user);
+        const { id: exportFolderId } = await this.folderService.exportFolder(
+          user.id,
+        );
         const media = await ffprobe(outPath, {
           showFormat: true,
           showStreams: true,
@@ -753,7 +755,7 @@ export class EditorService {
           buffer: null as unknown as Buffer,
         };
         const renderedFiles = await this.fileService
-          .upload(user, { folderId: exportFolder.id }, [files])
+          .upload(user, { folderId: exportFolderId }, [files])
           .then((renderedFile) => {
             if (renderedFile[0]) {
               this.editorRepository.update(renderEditor.id, {
