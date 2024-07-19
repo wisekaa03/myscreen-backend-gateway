@@ -6,6 +6,7 @@ import {
   Generated,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -23,6 +24,7 @@ import {
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { InvoiceStatus } from '@/enums/invoice-status.enum';
+import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('invoice', { comment: 'Счета' })
@@ -79,6 +81,15 @@ export class InvoiceEntity extends BaseEntity {
   @IsNumber({}, { message: i18nValidationMessage('validation.IS_NUMBER') })
   @Min(0, { message: i18nValidationMessage('validation.IS_MIN') })
   sum!: number;
+
+  @OneToOne(() => FileEntity, (file) => file.id, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    eager: true,
+  })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_invoice_file' })
+  file!: FileEntity;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onUpdate: 'CASCADE',

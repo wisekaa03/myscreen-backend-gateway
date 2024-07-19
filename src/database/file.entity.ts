@@ -28,7 +28,7 @@ import {
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
-import { FileCategory, VideoType } from '@/enums';
+import { FileType } from '@/enums';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from '@/database/folder.entity';
@@ -94,33 +94,19 @@ export class FileEntity extends BaseEntity {
   // @IsHash()
   hash!: string;
 
-  @Column({ type: 'enum', enum: VideoType })
+  @Column({ type: 'enum', enum: FileType })
   @ApiProperty({
     description: 'Тип файла',
-    enum: VideoType,
-    enumName: 'VideoType',
-    example: VideoType.Video,
-    required: true,
+    deprecated: true,
+    enum: FileType,
+    enumName: 'FileType',
+    example: FileType.VIDEO,
+    required: false,
   })
-  @IsEnum(VideoType, {
+  @IsEnum(FileType, {
     message: i18nValidationMessage('validation.IS_ENUM'),
   })
-  videoType!: VideoType;
-
-  @Column({ type: 'enum', enum: FileCategory })
-  @ApiProperty({
-    description: 'В какую категорию относить файл',
-    enum: FileCategory,
-    enumName: 'FileCategory',
-    example: FileCategory.Media,
-    required: true,
-  })
-  @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
-  @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
-  @IsEnum(FileCategory, {
-    message: i18nValidationMessage('validation.IS_ENUM'),
-  })
-  category?: FileCategory;
+  videoType!: FileType;
 
   @Column({ type: 'integer' })
   @ApiProperty({

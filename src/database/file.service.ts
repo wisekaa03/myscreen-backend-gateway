@@ -23,13 +23,19 @@ import {
 } from 'typeorm';
 
 import {
-  BadRequestError,
   ConflictData,
   ConflictError,
   InternalServerError,
   NotFoundError,
 } from '@/errors';
-import { FileCategory, VideoType } from '@/enums';
+import { FileType } from '@/enums';
+import {
+  filePreviewAudio,
+  filePreviewDOC,
+  filePreviewOther,
+  filePreviewPDF,
+  filePreviewXLS,
+} from '@/constants';
 import { FileUploadRequest } from '@/dto';
 import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
@@ -41,6 +47,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
 import { UserEntity } from './user.entity';
+import { InvoiceEntity } from './invoice.entity';
 import { WsStatistics } from './ws.statistics';
 
 @Injectable()
@@ -71,8 +78,6 @@ export class FileService {
     private readonly editorRepository: Repository<EditorEntity>,
     @InjectRepository(PlaylistEntity)
     private readonly playlistRepository: Repository<PlaylistEntity>,
-    @InjectRepository(MonitorEntity)
-    private readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(FilePreviewEntity)
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
   ) {
@@ -231,9 +236,7 @@ export class FileService {
     return find;
   }
 
-  async rootFolder(user: UserEntity): Promise<FolderEntity> {
-    const { id: userId } = user;
-
+  async rootFolder(userId: string): Promise<FolderEntity> {
     let folder = await this.folderRepository.findOne({
       where: { name: '<Корень>', userId },
     });
@@ -312,18 +315,14 @@ export class FileService {
    */
   async upload(
     user: UserEntity,
-    {
-      folderId: folderIdOrig = undefined,
-      category = FileCategory.Media,
-      monitorId = undefined,
-    }: FileUploadRequest,
+    { folderId: folderIdOrig = undefined }: FileUploadRequest,
     files: Express.Multer.File[],
   ): Promise<FileEntity[]> {
     return this.fileRepository.manager.transaction(async (transact) => {
       let folder: FolderEntity | null = null;
       const { id: userId } = user;
       if (!folderIdOrig) {
-        folder = await this.rootFolder(user);
+        folder = await this.rootFolder(userId);
       } else {
         folder = await this.folderRepository.findOne({
           where: { userId, id: folderIdOrig },
@@ -332,47 +331,9 @@ export class FileService {
           throw new NotFoundError(`Folder '${folderIdOrig}' not found`);
         }
       }
-      const folderId = folder.id;
-
-      let monitor: MonitorEntity | null = null;
-      if (!monitorId && category !== FileCategory.Media) {
-        throw new NotFoundError('monitorId is expected');
-      }
-      if (monitorId && category === FileCategory.Media) {
-        throw new NotFoundError("Found category: 'media' and monitorId");
-      }
-      if (monitorId) {
-        monitor = await this.monitorRepository.findOne({
-          where: { id: monitorId },
-          loadEagerRelations: false,
-          relations: {},
-        });
-        if (!monitor) {
-          throw new NotFoundError(`Monitor '${monitorId}' not found`);
-        }
-      }
-      if (!monitor && category !== FileCategory.Media) {
-        throw new BadRequestError('monitorId is expected');
-      }
-      if (monitor && category === FileCategory.Media) {
-        throw new BadRequestError("Found category: 'media' and monitorId");
-      }
-      if (category === FileCategory.Media) {
-        files.forEach((file) => {
-          if (!file.media) {
-            throw new BadRequestError(
-              `'${file.originalname}' has no data in Ffprobe, but the category specified 'media'`,
-            );
-          }
-        });
-      }
+      const { id: folderId } = folder;
 
       const filesPromises = files.map(async (file) => {
-        if (!file.media) {
-          throw new BadRequestError(
-            `'${file.originalname}' has no data in Ffprobe`,
-          );
-        }
         const {
           mimetype,
           originalname,
@@ -384,29 +345,32 @@ export class FileService {
 
         const [mime] = mimetype.split('/');
         const extension = pathParse(originalname).ext.slice(1);
-        const videoType =
-          Object.values(VideoType).find((t) => t === mime) ?? VideoType.Other;
+        const fileType =
+          Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
 
-        const stream = info.streams?.[0];
-        const duration = parseFloat(stream?.duration ?? '0');
-        const width = Number(stream?.width ?? 0);
-        const height = Number(stream?.height ?? 0);
+        const stream = info?.streams?.[0];
+        let duration = 0;
+        let width = 0;
+        let height = 0;
+        if (stream) {
+          duration = Number(stream.duration ?? 0);
+          width = Number(stream.width ?? 0);
+          height = Number(stream.height ?? 0);
+        }
 
         const fileToSave: DeepPartial<FileEntity> = {
           userId,
-          folder: folder ?? undefined,
+          folderId: folderId ?? undefined,
           name: originalname,
           filesize,
           duration,
           width,
           height,
           info,
-          videoType,
-          category,
+          videoType: fileType,
           extension,
           hash,
           preview: undefined,
-          monitors: monitorId ? [{ id: monitorId }] : undefined,
         };
 
         const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
@@ -435,10 +399,10 @@ export class FileService {
           transact.create(FileEntity, fileToSave),
         );
 
-        await this.wsStatistics.onMetrics(user);
-
         return fileUpdated;
       });
+
+      await this.wsStatistics.onMetrics(user);
 
       return Promise.all(filesPromises);
     });
@@ -489,8 +453,8 @@ export class FileService {
         Key: getS3FullName(file),
       })
       .then((value) => {
-        this.logger.debug(
-          `S3: "${file.name}" has been deleted: ${value.DeleteMarker ?? true}`,
+        this.logger.warn(
+          `S3: "${file.name}" has been deleted: ${JSON.stringify(value) ?? true}`,
         );
         return value;
       });
@@ -665,7 +629,7 @@ export class FileService {
     await this.wsStatistics.onChange({ filesDelete: files });
 
     const filesS3DeletePromise = files.map(async (file) => {
-      this.deleteS3Object(file).catch((error) => {
+      this.deleteS3Object(file).catch((error: unknown) => {
         this.logger.error(`S3 Error deleteObject: ${JSON.stringify(error)}`);
       });
     });
@@ -687,11 +651,25 @@ export class FileService {
   async downloadPreviewFile(file: FileEntity): Promise<Buffer> {
     await fs.mkdir(this.downloadDir, { recursive: true });
     const filename = pathJoin(this.downloadDir, file.name);
-    let outPath = pathJoin(
-      this.downloadDir,
-      `${pathParse(file.name).name}-preview`,
-    );
-    outPath += file.videoType === VideoType.Video ? '.webm' : '.jpg';
+    const filenameParsed = pathParse(filename);
+    const { name, ext } = filenameParsed;
+    let outPath = pathJoin(this.downloadDir, `${name}-preview`);
+    if (file.videoType === FileType.VIDEO) {
+      outPath += '.webm';
+    } else if (file.videoType === FileType.IMAGE) {
+      outPath += '.jpg';
+    } else if (file.videoType === FileType.AUDIO) {
+      return Buffer.from(filePreviewAudio);
+    } else if (file.videoType === FileType.OTHER) {
+      if (ext === '.xlsx' || ext === '.xls' || ext === '.ods') {
+        return Buffer.from(filePreviewXLS);
+      } else if (ext === '.docx' || ext === '.doc' || ext === '.odt') {
+        return Buffer.from(filePreviewDOC);
+      } else if (ext === '.pdf') {
+        return Buffer.from(filePreviewPDF);
+      }
+      return Buffer.from(filePreviewOther);
+    }
 
     if (await fs.access(outPath).catch(() => true)) {
       const outputStream = createWriteStream(filename);

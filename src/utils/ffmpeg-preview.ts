@@ -4,13 +4,13 @@ import path from 'node:path';
 import { Logger } from '@nestjs/common';
 import type { FfprobeData } from 'media-probe';
 
-import { VideoType } from '@/enums/video-type.enum';
+import { FileType } from '@/enums/file-type.enum';
 import { fileExist } from './fs';
 
 const exec = util.promisify(child.exec);
 
 export async function FfMpegPreview(
-  type: VideoType,
+  type: FileType,
   info: FfprobeData,
   filename: string,
   outPath: string,
@@ -21,7 +21,7 @@ export async function FfMpegPreview(
     ? 'node_modules/ffmpeg-static/ffmpeg'
     : 'ffmpeg';
 
-  if (type === VideoType.Image) {
+  if (type === FileType.IMAGE) {
     await exec(
       `${ffmpeg} -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ` -vf scale="100:74" -y "${outPath}"`,
@@ -31,7 +31,7 @@ export async function FfMpegPreview(
     });
   }
 
-  if (type === VideoType.Video) {
+  if (type === FileType.VIDEO) {
     const duration = Math.floor(info.format?.duration || 0);
     const frameInterval = Math.floor(duration / 6) || 1; // 6 - Number of frames
     const filenameParsed = path.parse(filename);

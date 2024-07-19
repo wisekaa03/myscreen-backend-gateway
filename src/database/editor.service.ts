@@ -24,12 +24,11 @@ import Editly from 'editly';
 
 import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import {
-  FileCategory,
   MonitorMultiple,
   MonitorOrientation,
   RenderingStatus,
   BidStatus,
-  VideoType,
+  FileType,
 } from '@/enums';
 import { MonitorGroupWithPlaylist } from '@/interfaces';
 import { fileExist } from '@/utils/fs';
@@ -320,7 +319,7 @@ export class EditorService {
 
     const clips = layers.map((layer) => {
       const duration = this.calcDuration(layer);
-      if (layer.file.videoType === VideoType.Image) {
+      if (layer.file.videoType === FileType.IMAGE) {
         return {
           duration,
           layers: [
@@ -728,7 +727,9 @@ export class EditorService {
         }
 
         const { size } = await fs.stat(outPath);
-        const exportFolder = await this.folderService.exportFolder(user);
+        const { id: exportFolderId } = await this.folderService.exportFolder(
+          user.id,
+        );
         const media = await ffprobe(outPath, {
           showFormat: true,
           showStreams: true,
@@ -754,11 +755,7 @@ export class EditorService {
           buffer: null as unknown as Buffer,
         };
         const renderedFiles = await this.fileService
-          .upload(
-            user,
-            { folderId: exportFolder.id, category: FileCategory.Media },
-            [files],
-          )
+          .upload(user, { folderId: exportFolderId }, [files])
           .then((renderedFile) => {
             if (renderedFile[0]) {
               this.editorRepository.update(renderEditor.id, {

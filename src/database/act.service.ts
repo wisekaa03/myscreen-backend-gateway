@@ -62,12 +62,12 @@ export class ActService {
   }
 
   async create({
-    user,
+    userId,
     sum,
     isSubscription = false,
     description,
   }: {
-    user: UserResponse | UserEntity;
+    userId: string;
     sum: number;
     isSubscription: boolean;
     description?: string;
@@ -78,7 +78,7 @@ export class ActService {
         description: description ?? this.walletService.subscriptionDescription,
         isSubscription,
         status: ActStatus.COMPLETE,
-        userId: user.id,
+        userId,
       };
 
       const actCreate = await transact.save(
@@ -88,10 +88,10 @@ export class ActService {
 
       await transact.save(
         WalletEntity,
-        this.walletService.create({ user, act: actCreate }),
+        this.walletService.create({ userId, act: actCreate }),
       );
 
-      await this.wsStatistics.onWallet(user);
+      await this.wsStatistics.onWallet(userId);
 
       return actCreate;
     });

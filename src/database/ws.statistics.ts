@@ -156,8 +156,7 @@ export class WsStatistics {
     };
   }
 
-  async onWallet(user: UserEntity): Promise<void> {
-    const { id: userId } = user;
+  async onWallet(userId: string): Promise<void> {
     wsClients.forEach(async (value, client) => {
       if (value.userId === userId) {
         const wallet = await this.preWallet(userId);

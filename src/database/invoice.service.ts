@@ -1,3 +1,4 @@
+import internal from 'node:stream';
 import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,6 +25,8 @@ import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
 import { WsStatistics } from './ws.statistics';
 import { WalletService } from './wallet.service';
+import { FileService } from './file.service';
+import { FolderService } from './folder.service';
 
 @Injectable()
 export class InvoiceService {
@@ -34,6 +37,8 @@ export class InvoiceService {
   constructor(
     private readonly configService: ConfigService,
     private readonly walletService: WalletService,
+    private readonly folderService: FolderService,
+    private readonly fileService: FileService,
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
     @Inject(MAIL_SERVICE)
@@ -82,6 +87,8 @@ export class InvoiceService {
           { userId, status: InvoiceStatus.AWAITING_CONFIRMATION },
           { userId, status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT },
         ],
+        loadEagerRelations: false,
+        relations: {},
       });
       if (invoices.length > 0) {
         const invoicesPromise = Object.values(invoices)?.map((invoice) =>
@@ -108,12 +115,42 @@ export class InvoiceService {
       const invoiceUpdated = await transact.findOne(InvoiceEntity, {
         where: { id },
         loadEagerRelations: true,
-        relations: { user: true },
+        relations: { file: true },
       });
 
-      await this.wsStatistics.onWallet(user);
+      await this.wsStatistics.onWallet(userId);
 
       return invoiceUpdated;
+    });
+  }
+
+  async upload(invoice: InvoiceEntity, file: Express.Multer.File) {
+    const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
+
+    return this.invoiceRepository.manager.transaction(async (transact) => {
+      if (!file) {
+        throw new BadRequestError('INVOICE_FILE');
+      }
+      const { id: folderId } =
+        await this.folderService.invoiceFolder(invoiceUserId);
+      const downloadFile = await this.fileService.upload(
+        invoiceUser,
+        { folderId },
+        [file],
+      );
+      await transact.update(InvoiceEntity, id, {
+        file: downloadFile[0],
+      });
+
+      const invoiceFind = await transact.findOne(InvoiceEntity, {
+        where: { id },
+        loadEagerRelations: false,
+        relations: { file: true },
+      });
+      if (!invoiceFind) {
+        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+      }
+      return invoiceFind;
     });
   }
 
@@ -122,22 +159,23 @@ export class InvoiceService {
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
     const { id } = invoice;
+
     return this.invoiceRepository.manager.transaction(async (transact) => {
       const invoiceUpdated = await transact.update(InvoiceEntity, id, {
         status,
       });
       if (!invoiceUpdated.affected) {
-        throw new NotFoundError('Invoice not found');
+        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
       }
-      const invoiceFind = await transact.findOne(InvoiceEntity, {
+      let invoiceFind = await transact.findOne(InvoiceEntity, {
         where: { id },
         loadEagerRelations: true,
-        relations: { user: true },
+        relations: { user: true, file: true },
       });
       if (!invoiceFind) {
-        throw new NotFoundError('Invoice not found');
+        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
       }
-      const { user, userId } = invoiceFind;
+      const { user: invoiceUser, userId: invoiceUserId } = invoiceFind;
 
       switch (status) {
         // Если статус счета "Оплачен", то нужно записать в базу
@@ -147,28 +185,30 @@ export class InvoiceService {
           await transact.save(
             WalletEntity,
             this.walletService.create({
-              user,
+              userId: invoiceUserId,
               invoice: invoiceFind,
             }),
           );
 
           const balance = await this.walletService.walletSum({
-            userId,
+            userId: invoiceUserId,
             transact,
           });
 
           // и выводится письмо о том, что счет оплачен
           this.mailService.emit('invoicePayed', {
             invoice: invoiceFind,
-            user,
+            user: invoiceUser,
             balance,
           });
 
           await this.walletService.acceptanceActCreate({
-            user,
+            user: invoiceUser,
             transact,
             balance,
           });
+
+          await this.wsStatistics.onWallet(invoiceUserId);
 
           break;
         }
@@ -195,7 +235,7 @@ export class InvoiceService {
         // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
         case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
           this.mailService.emit('invoiceConfirmed', {
-            user,
+            user: invoiceUser,
             invoice: invoiceFind,
           });
 
@@ -206,6 +246,14 @@ export class InvoiceService {
           break;
       }
 
+      invoiceFind = await transact.findOne(InvoiceEntity, {
+        where: { id },
+        loadEagerRelations: false,
+        relations: { file: true },
+      });
+      if (!invoiceFind) {
+        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+      }
       return invoiceFind;
     });
   }
@@ -228,48 +276,35 @@ export class InvoiceService {
       throw new NotFoundError('Invoice: user not found');
     }
 
-    const language =
-      invoice.user.preferredLanguage ??
-      this.configService.getOrThrow('LANGUAGE_DEFAULT');
-
-    // TODO: сделать через form_service
-    let response;
-    try {
-      const emailInvoice = this.mailService.send<
-        Record<string, unknown>,
-        PrintInvoice
-      >('invoice', {
-        format,
-        invoice,
-        language,
+    const { file } = invoice;
+    const data = await this.fileService
+      .getS3Object(file)
+      .catch((error: unknown) => {
+        throw new NotFoundError(`File '${file.id}' is not exists: ${error}`);
       });
+    if (data.Body instanceof internal.Readable) {
+      const specificFormat = formatToContentType[format]
+        ? format
+        : SpecificFormat.XLSX;
 
-      response = await lastValueFrom(emailInvoice, { defaultValue: {} }).catch(
-        (error) => {
-          throw new ServiceUnavailableError(error);
-        },
+      const createdAt = dayjs(invoice.createdAt || new Date())
+        .locale('ru')
+        .format('DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm');
+      const invoiceFilename = encodeURI(
+        `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
       );
-    } catch (error: unknown) {
-      throw new ServiceUnavailableError(error);
+      res.statusCode = 200;
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${invoiceFilename}"`,
+      );
+      res.setHeader('Content-Type', formatToContentType[format]);
+
+      this.logger.debug(`The invoice file '${file.name}' has been downloaded`);
+
+      data.Body.pipe(res);
+    } else {
+      throw new ServiceUnavailableError();
     }
-
-    const specificFormat = formatToContentType[format]
-      ? format
-      : SpecificFormat.XLSX;
-
-    const createdAt = dayjs(invoice.createdAt || new Date())
-      .locale('ru')
-      .format('DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm');
-    const invoiceFilename = encodeURI(
-      `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
-    );
-    res.statusCode = 200;
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="${invoiceFilename}"`,
-    );
-    res.setHeader('Content-Type', formatToContentType[format]);
-
-    res.end(response, 'binary');
   }
 }

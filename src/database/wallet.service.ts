@@ -78,11 +78,11 @@ export class WalletService {
   }
 
   create({
-    user,
+    userId,
     invoice,
     act,
   }: {
-    user: UserResponse | UserEntity;
+    userId: string;
     invoice?: InvoiceEntity;
     act?: ActEntity;
   }): WalletEntity {
@@ -95,7 +95,7 @@ export class WalletService {
       invoice: invoice ?? null,
       type,
       act: act ?? null,
-      user,
+      userId,
     });
   }
 
@@ -187,7 +187,7 @@ export class WalletService {
         );
         if (sum !== 0) {
           await this.actService.create({
-            user,
+            userId,
             sum,
             isSubscription: true,
             description: this.subscriptionDescription,

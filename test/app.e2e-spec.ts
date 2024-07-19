@@ -69,11 +69,15 @@ import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
 
 type UserFileEntity = UserEntity & Partial<UserResponse>;
 
+const fileXLS = `${__dirname}/testing.xlsx`;
+const fileXLSfilesize = fs.statSync(fileXLS).size;
 const imageTestingDirname = `${__dirname}/testing.png`;
+const imageTestingDirnameFilesize = fs.statSync(imageTestingDirname).size;
 // const imageTestingBuffer = fs.readFileSync(imageTestingDirname);
 // const imageTestingBinary = imageTestingBuffer.toString('binary');
 const videoTestingDirname = `${__dirname}/testing.mp4`;
 // const videoTestingBuffer = fs.readFileSync(videoTestingDirname);
+const videoTestingDirnameFilesize = fs.statSync(videoTestingDirname).size;
 
 const generatePassword = (
   length = 20,
@@ -1143,9 +1147,9 @@ describe('Backend API (e2e)', () => {
    */
   describe('Пользовательский путь: MonitorOwner, Advertiser, Accountant', () => {
     /**
-     * Регистрация пользователя: MonitorOwner
+     * MonitorOwner: Регистрация пользователя
      */
-    test('POST /auth/register (MonitorOwner)', async () => {
+    test('MonitorOwner: POST /auth/register', async () => {
       await request
         .post(`${apiPath}/auth/register`)
         .send(registerRequestMonitorOwner)
@@ -1159,9 +1163,9 @@ describe('Backend API (e2e)', () => {
         });
     });
     /**
-     * Подтвердить email пользователя MonitorOwner
+     * MonitorOwner: Подтвердить email пользователя
      */
-    test('POST /auth/email-verify (MonitorOwner)', async () => {
+    test('MonitorOwner: POST /auth/email-verify', async () => {
       monitorOwnerUser = await userService.findById(monitorOwnerUserId);
       if (monitorOwnerUser) {
         const verify: VerifyEmailRequest = {
@@ -1185,9 +1189,9 @@ describe('Backend API (e2e)', () => {
       }
     });
     /**
-     * Авторизация пользователя MonitorOwner
+     * MonitorOwner: Авторизация пользователя
      */
-    test('POST /auth/login (MonitorOwner)', async () => {
+    test('MonitorOwner: POST /auth/login', async () => {
       const { body }: { body: AuthResponse } = await request
         .post(`${apiPath}/auth/login`)
         .send(loginRequestMonitorOwner)
@@ -1211,9 +1215,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Регистрация пользователя: Advertiser
+     * Advertiser: Регистрация пользователя
      */
-    test('POST /auth/register (Advertiser)', async () => {
+    test('Advertiser: POST /auth/register', async () => {
       await request
         .post(`${apiPath}/auth/register`)
         .send(registerRequestAdvertiser)
@@ -1228,9 +1232,9 @@ describe('Backend API (e2e)', () => {
         });
     });
     /**
-     * Подтвердить email пользователя Advertiser
+     * Advertiser: Подтвердить email пользователя
      */
-    test('POST /auth/email-verify (Advertiser)', async () => {
+    test('Advertiser: POST /auth/email-verify', async () => {
       advertiserUser = await userService.findById(advertiserUserId);
       if (advertiserUser) {
         const verify: VerifyEmailRequest = {
@@ -1254,9 +1258,9 @@ describe('Backend API (e2e)', () => {
       }
     });
     /**
-     * Авторизация пользователя Advertiser
+     * Advertiser: Авторизация пользователя
      */
-    test('POST /auth/login (Advertiser)', async () => {
+    test('Advertiser: POST /auth/login', async () => {
       const { body }: { body: AuthResponse } = await request
         .post(`${apiPath}/auth/login`)
         .send(loginRequestAdvertiser)
@@ -1280,9 +1284,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Регистрация пользователя: Accountant
+     * Accountant: Регистрация пользователя
      */
-    test('POST /auth/register (Accountant)', async () => {
+    test('Accountant: POST /auth/register', async () => {
       await request
         .post(`${apiPath}/auth/register`)
         .send(registerRequestAccountant)
@@ -1296,9 +1300,9 @@ describe('Backend API (e2e)', () => {
         });
     });
     /**
-     * Подтвердить email пользователя Accountant
+     * Accountant: Подтвердить email пользователя
      */
-    test('POST /auth/email-verify (Accountant)', async () => {
+    test('Accountant: POST /auth/email-verify', async () => {
       accountantUser = await userService.findById(accountantUserId);
       if (accountantUser) {
         const verify: VerifyEmailRequest = {
@@ -1328,9 +1332,9 @@ describe('Backend API (e2e)', () => {
       }
     });
     /**
-     * Авторизация пользователя Accountant
+     * Accountant: Авторизация пользователя
      */
-    test('POST /auth/login (Accountant)', async () => {
+    test('Accountant: POST /auth/login', async () => {
       const { body }: { body: AuthResponse } = await request
         .post(`${apiPath}/auth/login`)
         .send(loginRequestAccountant)
@@ -1354,9 +1358,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Изменение аккаунта пользователя
+     * MonitorOwner: Изменение аккаунта пользователя
      */
-    test('PATCH /auth (Изменение пользователя: monitor-owner)', async () => {
+    test('MonitorOwner: PATCH /auth (Изменение пользователя)', async () => {
       const { body }: { body: UserGetResponse } = await request
         .patch(`${apiPath}/auth`)
         .auth(monitorOwnerToken, { type: 'bearer' })
@@ -1401,12 +1405,14 @@ describe('Backend API (e2e)', () => {
       );
       expect(body.data.company).toBe(updateUser.company);
       expect(body.data.password).toBeUndefined();
+      expect(body.data.emailConfirmKey).toBeUndefined();
+      expect(body.data.forgotConfirmKey).toBeUndefined();
     });
 
     /**
-     * Выставление счета monitor-owner
+     * MonitorOwner: Выставление счета
      */
-    test('PUT /invoice (Выставление счета monitor-owner)', async () => {
+    test('MonitorOwner: PUT /invoice (Выставление счета)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
@@ -1433,15 +1439,16 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Подтверждение счета accountant
+     * Accountant: Подтверждение счета
      */
-    test(`GET /invoice/confirmed/{monitorOwnerInvoiceId} (Подтверждение счета пользователем Accountant)`, async () => {
+    test(`Accountant: GET /invoice/confirmed/{monitorOwnerInvoiceId} (Подтверждение счета)`, async () => {
       if (!accountantToken) {
         expect(false).toEqual(true);
       }
 
       await request
-        .get(`${apiPath}/invoice/confirmed/${monitorOwnerInvoiceId}`)
+        .post(`${apiPath}/invoice/confirmed/${monitorOwnerInvoiceId}`)
+        .attach('file', fileXLS)
         .auth(accountantToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
@@ -1458,9 +1465,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Оплата счета accountant
+     * Accountant: Оплата счета
      */
-    test(`GET /invoice/payed/{monitorOwnerInvoiceId} (Оплата счета пользователем Accountant)`, async () => {
+    test(`Accountant: GET /invoice/payed/{monitorOwnerInvoiceId} (Оплата счета)`, async () => {
       if (!accountantToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
       }
@@ -1481,9 +1488,28 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * История операций monitor-owner
+     * MonitorOwner: Скачивание счета
      */
-    test('POST /wallet (История операций monitor-owner)', async () => {
+    test('MonitorOwner: GET /invoice/download/{monitorOwnerInvoiceId}/xlsx (Скачивание счета)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .get(`${apiPath}/invoice/download/${monitorOwnerInvoiceId}/xlsx`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect(200)
+        .then(({ body }: { body: unknown }) => {
+          expect(body).toBeDefined();
+          expect((body as any)?.status).toBeUndefined();
+        });
+    });
+
+    /**
+     * MonitorOwner: История операций
+     */
+    test('MonitorOwner: POST /wallet (История операций)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
@@ -1511,9 +1537,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * WebSocket авторизация пользователя monitor-owner и проверка wallet
+     * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
-    test("WebSocket 'auth/token' (Авторизация пользователя monitor-owner)", async () => {
+    test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
       wsMonitorOwner = new WebSocket(wsUrl);
       await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
@@ -1535,27 +1561,34 @@ describe('Backend API (e2e)', () => {
       expect(wsMessage).toBeDefined();
       const dataJson = JSON.parse(wsMessage);
       expect(dataJson).toBeDefined();
-      const authorized = dataJson[0];
-      const wallet = dataJson[1];
-      const metrics = dataJson[2];
+      const authorized = dataJson[0] as WsAuthObject;
+      const wallet = dataJson[1] as WsWalletObject;
+      const metrics = dataJson[2] as WsMetricsObject;
       expect(authorized).toBeDefined();
       expect(authorized.event).toBe(WsEvent.AUTH);
       expect(authorized.data).toBe('authorized');
       expect(wallet).toBeDefined();
       expect(wallet.event).toBe(WsEvent.WALLET);
-      expect(wallet.data?.total).toBe(
+      expect(wallet.data.total).toBe(
         invoiceSum - configService.getOrThrow('SUBSCRIPTION_FEE'),
       );
       expect(metrics).toBeDefined();
       expect(metrics.event).toBe(WsEvent.METRICS);
       expect(metrics.data).toBeDefined();
+      expect(metrics.data.storageSpace.storage).toBe(fileXLSfilesize);
+      expect(metrics.data.monitors.user).toBe(0);
+      expect(metrics.data.monitors.empty).toBe(0);
+      expect(metrics.data.monitors.online).toBe(0);
+      expect(metrics.data.monitors.offline).toBe(0);
+      expect(metrics.data.playlists.added).toBe(0);
+      expect(metrics.data.playlists.played).toBe(0);
       wsMonitorOwner.close();
     });
 
     /**
-     * Регистрация монитора, тот что станет Mirror - 1
+     * MonitorOwner: Регистрация монитора, тот что станет Mirror - 1
      */
-    test('PUT /monitor (Регистрация монитора: тот, что станет Mirror - 1)', async () => {
+    test('MonitorOwner: PUT /monitor (Регистрация монитора: тот, что станет Mirror - 1)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
@@ -1596,9 +1629,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Регистрация монитора, тот что станет Mirror - 2
+     * MonitorOwner: Регистрация монитора, тот что станет Mirror - 2
      */
-    test('PUT /monitor (Регистрация монитора: тот, что станет Mirror - 2)', async () => {
+    test('MonitorOwner: PUT /monitor (Регистрация монитора: тот, что станет Mirror - 2)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
@@ -1639,9 +1672,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Регистрация группового монитора Mirror
+     * MonitorOwner: Регистрация группового монитора Mirror
      */
-    test('PUT /monitor (Регистрация группового монитора Mirror)', async () => {
+    test('MonitorOwner: PUT /monitor (Регистрация группового монитора Mirror)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
@@ -1686,9 +1719,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Регистрация монитора Single
+     * MonitorOwner: Регистрация монитора Single
      */
-    test('PUT /monitor (Регистрация монитора: Single)', async () => {
+    test('MonitorOwner: PUT /monitor (Регистрация монитора: Single)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
@@ -1728,9 +1761,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * WebSocket авторизация пользователя monitor-owner и проверка metrics
+     * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
-    test('WebSocket monitor-owner (проверка metrics)', async () => {
+    test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
       wsMonitorOwner = new WebSocket(wsUrl);
       await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
@@ -1760,7 +1793,7 @@ describe('Backend API (e2e)', () => {
       expect(authorized.data).toBe('authorized');
       expect(wallet).toBeDefined();
       expect(wallet.event).toBe(WsEvent.WALLET);
-      expect(wallet.data?.total).toBe(
+      expect(wallet.data.total).toBe(
         invoiceSum - configService.getOrThrow('SUBSCRIPTION_FEE'),
       );
       expect(metrics).toBeDefined();
@@ -1771,13 +1804,16 @@ describe('Backend API (e2e)', () => {
       expect(metrics.data.monitors.online).toBe(0);
       expect(metrics.data.monitors.offline).toBe(3);
       expect(metrics.data.monitors.empty).toBe(3);
+      expect(metrics.data.storageSpace.storage).toBe(fileXLSfilesize);
+      expect(metrics.data.playlists.added).toBe(0);
+      expect(metrics.data.playlists.played).toBe(0);
       wsMonitorOwner.close();
     });
 
     /**
-     * Создание новой папки monitor-owner
+     * MonitorOwner: Создание новой папки
      */
-    test('PUT /folder [name: "bar"] (Создание новой папки monitor-owner)', async () => {
+    test('MonitorOwner: PUT /folder [name: "bar"] (Создание новой папки)', async () => {
       await request
         .put(`${apiPath}/folder`)
         .auth(monitorOwnerToken, { type: 'bearer' })
@@ -1794,7 +1830,7 @@ describe('Backend API (e2e)', () => {
         });
     });
 
-    test('PUT /folder [name: "baz"] (Создание новой папки monitor-owner)', async () => {
+    test('MonitorOwner: PUT /folder [name: "baz"] (Создание новой папки)', async () => {
       await request
         .put(`${apiPath}/folder`)
         .auth(monitorOwnerToken, { type: 'bearer' })
@@ -1812,9 +1848,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Получение информации о папке [успешно]
+     * MonitorOwner: Получение информации о папке
      */
-    test('GET /folder/{monitorOwnerFolderBarId} (Получение информации о папке)', async () => {
+    test('MonitorOwner: GET /folder/{monitorOwnerFolderBarId} (Получение информации о папке)', async () => {
       if (!monitorOwnerToken || !monitorOwnerFolderBarId) {
         expect(false).toEqual(true);
       }
@@ -1835,9 +1871,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Удаление папки [успешно]
+     * MonitorOwner: Удаление папки
      */
-    test('DELETE /folder/{monitorOwnerFolderBazId} [success] (Удаление папки)', async () => {
+    test('MonitorOwner: DELETE /folder/{monitorOwnerFolderBazId} (Удаление папки)', async () => {
       if (!monitorOwnerToken || !monitorOwnerFolderBazId) {
         expect(false).toEqual(true);
       }
@@ -1854,9 +1890,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Создание новой под-папки monitor-owner
+     * MonitorOwner: Создание новой под-папки
      */
-    test('PUT /folder [name: "foo", parentFolderId] (Создание новой под-папки monitor-owner)', async () => {
+    test('MonitorOwner: PUT /folder [name: "foo", monitorOwnerFolderBarId] (Создание новой под-папки)', async () => {
       await request
         .put(`${apiPath}/folder`)
         .auth(monitorOwnerToken, { type: 'bearer' })
@@ -1875,9 +1911,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Создание новой под-папки monitor-owner
+     * MonitorOwner: Создание новой под-папки
      */
-    test('PUT /folder [name: "baz", parentFolderId] (Создание новой под-папки monitor-owner)', async () => {
+    test('MonitorOwner: PUT /folder [name: "baz", monitorOwnerFolderBarId] (Создание новой под-папки)', async () => {
       await request
         .put(`${apiPath}/folder`)
         .auth(monitorOwnerToken, { type: 'bearer' })
@@ -1896,9 +1932,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Загрузка файлов monitor-owner
+     * MonitorOwner: Загрузка файлов
      */
-    test('PUT /file (Загрузка файлов monitor-owner)', async () => {
+    test('MonitorOwner: PUT /file (Загрузка файлов)', async () => {
       if (!monitorOwnerToken || !monitorOwnerFolderFooId) {
         expect(false).toEqual(true);
       }
@@ -1925,9 +1961,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Скачивание медиа monitor-owner [success]
+     * MonitorOwner: Скачивание медиа
      */
-    test('GET /file/download/{monitorOwnerImageId} (Скачивание картинки monitor-owner)', async () => {
+    test('MonitorOwner: GET /file/download/{monitorOwnerImageId} (Скачивание картинки)', async () => {
       if (!monitorOwnerToken || !monitorOwnerImageId) {
         expect(false).toEqual(true);
       }
@@ -1943,9 +1979,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Скачивание предпросмотра monitor-owner
+     * MonitorOwner: Скачивание предпросмотра
      */
-    test('GET /file/preview/{monitorOwnerImageId} (Скачивание предпросмотра monitor-owner)', async () => {
+    test('MonitorOwner: GET /file/preview/{monitorOwnerImageId} (Скачивание предпросмотра)', async () => {
       if (!monitorOwnerToken || !monitorOwnerImageId) {
         expect(false).toEqual(true);
       }
@@ -1961,15 +1997,15 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Загрузка файлов advertiser
+     * Advertiser: Загрузка файлов
      */
-    test('PUT /file (Загрузка файлов advertiser)', async () => {
+    test('Advertiser: PUT /file (Загрузка файлов)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
       }
 
       const field = {
-        param: `{ "category": "media" }`,
+        param: `{}`,
       };
       const files = videoTestingDirname;
 
@@ -1990,9 +2026,9 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * Создаем плэйлист из видео advertiser
+     * Advertiser: Создаем плэйлист из видео
      */
-    test('PUT /playlist', async () => {
+    test('Advertiser: PUT /playlist', async () => {
       if (!advertiserToken || !advertiserVideoId) {
         expect(false).toEqual(true);
       }
@@ -2014,9 +2050,112 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBeDefined();
-          expect(body.data?.user?.password).toBeUndefined();
+          expect(body.data?.files?.[0]?.id).toBe(advertiserVideoId);
+          expect(body.data.user?.password).toBeUndefined();
           advertiserPlaylistId1 = body.data.id;
         });
+    });
+
+    /**
+     * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
+     */
+    test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
+      wsMonitorOwner = new WebSocket(wsUrl);
+      await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
+
+      wsMonitorOwner.send(
+        JSON.stringify({
+          event: 'auth/token',
+          data: {
+            token: monitorOwnerToken,
+            date: new Date().toISOString(),
+          },
+        }),
+      );
+      const wsMessage = await new Promise<string>((resolve) => {
+        wsMonitorOwner.on('message', (dataBuffer: Buffer) => {
+          resolve(dataBuffer.toString('utf8'));
+        });
+      });
+
+      expect(wsMessage).toBeDefined();
+      const dataJson = JSON.parse(wsMessage);
+      expect(dataJson).toBeDefined();
+      const authorized = dataJson[0] as WsAuthObject;
+      const wallet = dataJson[1] as WsWalletObject;
+      const metrics = dataJson[2] as WsMetricsObject;
+      expect(authorized).toBeDefined();
+      expect(authorized.event).toBe(WsEvent.AUTH);
+      expect(authorized.data).toBe('authorized');
+      expect(wallet).toBeDefined();
+      expect(wallet.event).toBe(WsEvent.WALLET);
+      expect(wallet.data.total).toBe(
+        invoiceSum - configService.getOrThrow('SUBSCRIPTION_FEE'),
+      );
+      expect(metrics).toBeDefined();
+      expect(metrics.event).toBe(WsEvent.METRICS);
+      expect(metrics.data).toBeDefined();
+      expect(metrics.data.monitors).toBeDefined();
+      expect(metrics.data.monitors.user).toBe(3);
+      expect(metrics.data.monitors.online).toBe(0);
+      expect(metrics.data.monitors.offline).toBe(3);
+      expect(metrics.data.monitors.empty).toBe(3);
+      expect(metrics.data.storageSpace.storage).toBe(
+        fileXLSfilesize + imageTestingDirnameFilesize,
+      );
+      expect(metrics.data.playlists.added).toBe(0);
+      expect(metrics.data.playlists.played).toBe(0);
+      wsMonitorOwner.close();
+    });
+
+    /**
+     * WebSocket Advertiser: авторизация пользователя и проверка metrics и wallet
+     */
+    test("WebSocket Advertiser: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
+      wsAdvertiser = new WebSocket(wsUrl);
+      await new Promise((resolve) => wsAdvertiser.on('open', resolve));
+
+      wsAdvertiser.send(
+        JSON.stringify({
+          event: 'auth/token',
+          data: {
+            token: advertiserToken,
+            date: new Date().toISOString(),
+          },
+        }),
+      );
+      const wsMessage = await new Promise<string>((resolve) => {
+        wsAdvertiser.on('message', (dataBuffer: Buffer) => {
+          resolve(dataBuffer.toString('utf8'));
+        });
+      });
+
+      expect(wsMessage).toBeDefined();
+      const dataJson = JSON.parse(wsMessage);
+      expect(dataJson).toBeDefined();
+      const authorized = dataJson[0] as WsAuthObject;
+      const wallet = dataJson[1] as WsWalletObject;
+      const metrics = dataJson[2] as WsMetricsObject;
+      expect(authorized).toBeDefined();
+      expect(authorized.event).toBe(WsEvent.AUTH);
+      expect(authorized.data).toBe('authorized');
+      expect(wallet).toBeDefined();
+      expect(wallet.event).toBe(WsEvent.WALLET);
+      expect(wallet.data.total).toBe(0);
+      expect(metrics).toBeDefined();
+      expect(metrics.event).toBe(WsEvent.METRICS);
+      expect(metrics.data).toBeDefined();
+      expect(metrics.data.monitors).toBeDefined();
+      expect(metrics.data.monitors.user).toBe(0);
+      expect(metrics.data.monitors.online).toBe(0);
+      expect(metrics.data.monitors.offline).toBe(0);
+      expect(metrics.data.monitors.empty).toBe(0);
+      expect(metrics.data.storageSpace.storage).toBe(
+        videoTestingDirnameFilesize,
+      );
+      expect(metrics.data.playlists.added).toBe(1);
+      expect(metrics.data.playlists.played).toBe(0);
+      wsAdvertiser.close();
     });
 
     /**

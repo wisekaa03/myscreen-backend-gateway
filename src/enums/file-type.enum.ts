@@ -1,5 +1,6 @@
-export enum FileCategory {
-  MonitorOwnership = 'ownership',
-  MonitorPhoto = 'photo',
-  Media = 'media',
+export enum FileType {
+  VIDEO = 'video',
+  IMAGE = 'image',
+  AUDIO = 'audio',
+  OTHER = 'other',
 }
