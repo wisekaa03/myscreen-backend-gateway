@@ -89,7 +89,7 @@ export class InvoiceController {
       user.role === UserRoleEnum.Accountant
         ? undefined
         : user.id;
-    const [data, count] = await this.invoiceService.find({
+    const [data, count] = await this.invoiceService.findAndCount({
       ...paginationQuery(scope),
       select,
       where: { ...TypeOrmFind.where(InvoiceEntity, where), userId: whenUserId },

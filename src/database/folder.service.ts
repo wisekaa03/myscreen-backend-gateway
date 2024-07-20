@@ -8,12 +8,10 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderFileNumberEntity } from './folder.view.entity';
-import { UserEntity } from './user.entity';
 import {
   FindManyOptionsCaseInsensitive,
   FindOneOptionsCaseInsensitive,
 } from '@/interfaces';
-import { UserResponse } from './user-response.entity';
 import { FileEntity } from './file.entity';
 
 @Injectable()
@@ -119,6 +117,28 @@ export class FolderService {
     if (!folder) {
       return this.create({
         name: '<Счета>',
+        parentFolderId,
+        userId,
+      });
+    }
+
+    return folder;
+  }
+
+  async monitorFolder(userId: string): Promise<FolderEntity> {
+    const { id: parentFolderId } = await this.rootFolder(userId);
+
+    const folder = await this.findOne({
+      where: {
+        name: '<Мониторы>',
+        parentFolderId,
+        userId,
+      },
+    });
+
+    if (!folder) {
+      return this.create({
+        name: '<Мониторы>',
         parentFolderId,
         userId,
       });

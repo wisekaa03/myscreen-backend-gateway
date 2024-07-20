@@ -9,7 +9,8 @@ import { FileResponse } from './file.response';
 
 export class MonitorResponse extends OmitType(MonitorEntity, [
   'playlist',
-  'files',
+  'photos',
+  'documents',
   'favorities',
   'code',
 ]) {

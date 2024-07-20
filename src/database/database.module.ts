@@ -120,6 +120,8 @@ export class DatabaseModule implements OnModuleInit {
           groupOnlineMonitors: 0,
         });
       }
+
+      await manager.query('DROP TABLE IF EXISTS monitor_files_file');
     });
   }
 }

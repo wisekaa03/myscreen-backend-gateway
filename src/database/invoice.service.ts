@@ -54,20 +54,37 @@ export class InvoiceService {
     );
   }
 
-  async find(
+  async findAndCount(
     find: FindManyOptions<InvoiceEntity>,
   ): Promise<[InvoiceEntity[], number]> {
-    return this.invoiceRepository.findAndCount(
+    let invoices: InvoiceEntity[];
+    let count = 0;
+    [invoices, count] = await this.invoiceRepository.findAndCount(
       TypeOrmFind.findParams(InvoiceEntity, find),
     );
+
+    const invoicePromise = invoices.map(async (value) => {
+      const invoice = value;
+      if (invoice.file) {
+        invoice.file = await this.fileService.signedUrl(invoice.file);
+      }
+      return invoice;
+    });
+    invoices = await Promise.all(invoicePromise);
+
+    return [invoices, count];
   }
 
   async findOne(
     find: FindManyOptions<InvoiceEntity>,
   ): Promise<InvoiceEntity | null> {
-    return this.invoiceRepository.findOne(
+    const invoice = await this.invoiceRepository.findOne(
       TypeOrmFind.findParams(InvoiceEntity, find),
     );
+    if (invoice?.file) {
+      invoice.file = await this.fileService.signedUrl(invoice.file);
+    }
+    return invoice;
   }
 
   async create(
@@ -142,7 +159,7 @@ export class InvoiceService {
         file: downloadFile[0],
       });
 
-      const invoiceFind = await transact.findOne(InvoiceEntity, {
+      const invoiceFind = await this.findOne({
         where: { id },
         loadEagerRelations: false,
         relations: { file: true },

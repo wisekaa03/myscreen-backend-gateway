@@ -19,12 +19,17 @@ import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
 import { WsStatistics } from './ws.statistics';
+import { FileService } from './file.service';
+import { FolderService } from './folder.service';
 
 @Injectable()
 export class MonitorService {
   private logger = new Logger(MonitorService.name);
 
   constructor(
+    private readonly folderService: FolderService,
+    @Inject(forwardRef(() => FileService))
+    private readonly fileService: FileService,
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
     @InjectRepository(MonitorEntity)
@@ -53,7 +58,12 @@ export class MonitorService {
       };
     } else {
       monitorWhere = {
-        relations: { files: true, playlist: true, favorities: true },
+        relations: {
+          photos: true,
+          documents: true,
+          playlist: true,
+          favorities: true,
+        },
         ...TypeOrmFind.findParams(MonitorEntity, find),
       };
     }
@@ -113,7 +123,8 @@ export class MonitorService {
     } else {
       monitorWhere = {
         relations: {
-          files: true,
+          photos: true,
+          documents: true,
           playlist: true,
           favorities: true,
           groupMonitors: true,
@@ -145,9 +156,12 @@ export class MonitorService {
         });
       }
 
-      monitors = monitors.map((monitor: MonitorEntity) => {
+      const monitorsPromise = monitors.map(async (monitor: MonitorEntity) => {
         const value = monitor;
-        if (value.groupMonitors) {
+        if (
+          Array.isArray(value.groupMonitors) &&
+          value.groupMonitors.length > 0
+        ) {
           value.groupIds = value.groupMonitors.map(
             (group: MonitorGroupEntity) => ({
               monitorId: group.monitorId,
@@ -157,8 +171,21 @@ export class MonitorService {
           );
           delete value.groupMonitors;
         }
+        if (Array.isArray(value.photos) && value.photos.length > 0) {
+          const photosPromise = value.photos.map((photo) =>
+            this.fileService.signedUrl(photo),
+          );
+          value.photos = await Promise.all(photosPromise);
+        }
+        if (Array.isArray(value.documents) && value.documents.length > 0) {
+          const docPromise = value.documents.map((doc) =>
+            this.fileService.signedUrl(doc),
+          );
+          value.documents = await Promise.all(docPromise);
+        }
         return value;
       });
+      monitors = await Promise.all(monitorsPromise);
     }
 
     return [monitors, count];
@@ -181,7 +208,8 @@ export class MonitorService {
     } else {
       monitorWhere = {
         relations: {
-          files: true,
+          photos: true,
+          documents: true,
           playlist: true,
           favorities: true,
           groupMonitors: true,
@@ -210,6 +238,18 @@ export class MonitorService {
           col: item.col,
         }));
         delete monitor.groupMonitors;
+      }
+      if (Array.isArray(monitor.photos) && monitor.photos.length > 0) {
+        const photosPromise = monitor.photos.map((photo) =>
+          this.fileService.signedUrl(photo),
+        );
+        monitor.photos = await Promise.all(photosPromise);
+      }
+      if (Array.isArray(monitor.documents) && monitor.documents.length > 0) {
+        const docPromise = monitor.documents.map((doc) =>
+          this.fileService.signedUrl(doc),
+        );
+        monitor.documents = await Promise.all(docPromise);
       }
     }
 
@@ -632,5 +672,39 @@ export class MonitorService {
     return this.monitorRepository.delete({
       id: monitorId,
     });
+  }
+
+  async upload(
+    user: UserEntity,
+    monitor: MonitorEntity,
+    {
+      photos,
+      documents,
+    }: { photos?: Express.Multer.File[]; documents?: Express.Multer.File[] },
+  ): Promise<MonitorEntity> {
+    const { id: userId } = user;
+    const { id: monitorFolderId } =
+      await this.folderService.monitorFolder(userId);
+    let photosFile, documentsFile;
+    if (photos) {
+      photosFile = await this.fileService.upload(
+        user,
+        { folderId: monitorFolderId },
+        photos,
+      );
+    }
+    if (documents) {
+      documentsFile = await this.fileService.upload(
+        user,
+        { folderId: monitorFolderId },
+        documents,
+      );
+    }
+    return this.monitorRepository.save(
+      this.monitorRepository.merge(monitor, {
+        photos: photosFile,
+        documents: documentsFile,
+      }),
+    );
   }
 }

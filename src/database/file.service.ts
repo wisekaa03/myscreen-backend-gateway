@@ -114,7 +114,7 @@ export class FileService {
   }): Promise<FileEntity[]> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
-      conditional.relations = { monitors: true, playlists: true };
+      conditional.relations = {};
     }
 
     const files = caseInsensitive
@@ -148,7 +148,7 @@ export class FileService {
   }): Promise<[FileEntity[], number]> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
-      conditional.relations = { monitors: true, playlists: true };
+      conditional.relations = {};
     }
     const files = caseInsensitive
       ? await TypeOrmFind.findAndCountCI(this.fileRepository, conditional)
@@ -184,7 +184,7 @@ export class FileService {
   }): Promise<FileEntity | null> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
-      conditional.relations = { monitors: true, playlists: true };
+      conditional.relations = {};
     }
 
     const file = caseInsensitive
