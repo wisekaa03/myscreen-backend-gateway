@@ -1,4 +1,5 @@
 import internal from 'node:stream';
+import { buffer } from 'node:stream/consumers';
 import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,8 +26,7 @@ import { WsStatistics } from './ws.statistics';
 import { WalletService } from './wallet.service';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
-import { has } from 'lodash';
-import { error } from 'node:console';
+import { MailInvoiceConfirmed } from '@/interfaces';
 
 @Injectable()
 export class InvoiceService {
@@ -235,10 +235,30 @@ export class InvoiceService {
 
         // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
         case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
-          this.mailService.emit('invoiceConfirmed', {
-            user: invoiceUser,
-            invoice: invoiceFind,
-          });
+          const { file } = invoice;
+          if (!file) {
+            throw new NotFoundError();
+          }
+          const data = await this.fileService
+            .getS3Object(file)
+            .catch((error: unknown) => {
+              throw new NotFoundError(
+                `File '${file.id}' is not exists: ${error}`,
+              );
+            });
+          if (data.Body instanceof internal.Readable) {
+            const invoiceFile = await buffer(data.Body);
+            this.mailService.emit<any, MailInvoiceConfirmed>(
+              'invoiceConfirmed',
+              {
+                user: invoiceUser,
+                invoice,
+                invoiceFile,
+              },
+            );
+          } else {
+            throw new NotFoundError();
+          }
 
           break;
         }
@@ -278,32 +298,38 @@ export class InvoiceService {
     }
 
     const { file } = invoice;
-    const data = await this.fileService
-      .getS3Object(file)
-      .catch((error: unknown) => {
-        throw new NotFoundError(`File '${file.id}' is not exists: ${error}`);
-      });
-    if (data.Body instanceof internal.Readable) {
-      const specificFormat = formatToContentType[format]
-        ? format
-        : SpecificFormat.XLSX;
+    if (file) {
+      const data = await this.fileService
+        .getS3Object(file)
+        .catch((error: unknown) => {
+          throw new NotFoundError(`File '${file.id}' is not exists: ${error}`);
+        });
+      if (data.Body instanceof internal.Readable) {
+        const specificFormat = formatToContentType[format]
+          ? format
+          : SpecificFormat.XLSX;
 
-      const createdAt = dayjs(invoice.createdAt || new Date())
-        .locale('ru')
-        .format('DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm');
-      const invoiceFilename = encodeURI(
-        `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
-      );
-      res.statusCode = 200;
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="${invoiceFilename}"`,
-      );
-      res.setHeader('Content-Type', formatToContentType[format]);
+        const createdAt = dayjs(invoice.createdAt || new Date())
+          .locale('ru')
+          .format('DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm');
+        const invoiceFilename = encodeURI(
+          `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
+        );
+        res.statusCode = 200;
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${invoiceFilename}"`,
+        );
+        res.setHeader('Content-Type', formatToContentType[format]);
 
-      this.logger.debug(`The invoice file '${file.name}' has been downloaded`);
+        this.logger.debug(
+          `The invoice file '${file.name}' has been downloaded`,
+        );
 
-      data.Body.pipe(res);
+        data.Body.pipe(res);
+      } else {
+        throw new ServiceUnavailableError();
+      }
     } else {
       throw new ServiceUnavailableError();
     }

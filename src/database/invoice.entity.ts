@@ -87,9 +87,10 @@ export class InvoiceEntity extends BaseEntity {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     eager: true,
+    nullable: true,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_invoice_file' })
-  file!: FileEntity;
+  file!: FileEntity | null;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onUpdate: 'CASCADE',

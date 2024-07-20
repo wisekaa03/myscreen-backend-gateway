@@ -222,6 +222,9 @@ export class InvoiceController {
     if (invoice.status !== InvoiceStatus.AWAITING_CONFIRMATION) {
       throw new NotAcceptableError('Invoice is not awaiting confirmation');
     }
+    if (invoice.file === null) {
+      throw new NotAcceptableError('Invoice file is not uploaded');
+    }
 
     const data = await this.invoiceService.statusChange(
       invoice,

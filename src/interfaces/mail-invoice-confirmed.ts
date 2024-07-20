@@ -4,4 +4,5 @@ import { InvoiceEntity } from '@/database/invoice.entity';
 export interface MailInvoiceConfirmed {
   user: UserEntity;
   invoice: InvoiceEntity;
+  invoiceFile: Buffer;
 }
