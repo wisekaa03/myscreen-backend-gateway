@@ -184,7 +184,7 @@ export class InvoiceService {
       if (!invoiceUpdated.affected) {
         throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
       }
-      let invoiceFind = await transact.findOne(InvoiceEntity, {
+      let invoiceFind = await this.findOne({
         where: { id },
         loadEagerRelations: true,
         relations: { user: true, file: true },
@@ -284,7 +284,7 @@ export class InvoiceService {
           break;
       }
 
-      invoiceFind = await transact.findOne(InvoiceEntity, {
+      invoiceFind = await this.findOne({
         where: { id },
         loadEagerRelations: false,
         relations: { file: true },

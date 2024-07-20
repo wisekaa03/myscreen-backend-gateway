@@ -1529,6 +1529,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
           expect(body.data.file).toBeDefined();
           expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data?.user?.password).toBeUndefined();
         });
     });
@@ -1555,6 +1556,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
           expect(body.data.file).toBeDefined();
           expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data?.user?.password).toBeUndefined();
         });
     });
@@ -1577,6 +1579,9 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBe(monitorOwnerInvoiceId);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
           );
@@ -1602,6 +1607,9 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBe(advertiserInvoiceId);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
           );
@@ -1627,6 +1635,9 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBe(monitorOwnerInvoiceId);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.status).toBe(InvoiceStatus.PAID);
           expect(body.data?.user?.password).toBeUndefined();
         });
@@ -1650,6 +1661,9 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBe(advertiserInvoiceId);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.status).toBe(InvoiceStatus.PAID);
           expect(body.data?.user?.password).toBeUndefined();
         });
