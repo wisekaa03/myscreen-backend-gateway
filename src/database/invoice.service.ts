@@ -159,7 +159,7 @@ export class InvoiceService {
         file: downloadFile[0],
       });
 
-      const invoiceFind = await this.findOne({
+      const invoiceFind = await transact.findOne(InvoiceEntity, {
         where: { id },
         loadEagerRelations: false,
         relations: { file: true },
@@ -167,6 +167,9 @@ export class InvoiceService {
       if (!invoiceFind) {
         throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
       }
+      invoiceFind.file = invoiceFind.file
+        ? await this.fileService.signedUrl(invoiceFind.file)
+        : null;
       return invoiceFind;
     });
   }
@@ -178,13 +181,13 @@ export class InvoiceService {
     const { id } = invoice;
 
     return this.invoiceRepository.manager.transaction(async (transact) => {
-      const invoiceUpdated = await transact.update(InvoiceEntity, id, {
+      const { affected } = await transact.update(InvoiceEntity, id, {
         status,
       });
-      if (!invoiceUpdated.affected) {
+      if (!affected) {
         throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
       }
-      let invoiceFind = await this.findOne({
+      let invoiceFind = await transact.findOne(InvoiceEntity, {
         where: { id },
         loadEagerRelations: true,
         relations: { user: true, file: true },
@@ -284,7 +287,7 @@ export class InvoiceService {
           break;
       }
 
-      invoiceFind = await this.findOne({
+      invoiceFind = await transact.findOne(InvoiceEntity, {
         where: { id },
         loadEagerRelations: false,
         relations: { file: true },
@@ -292,6 +295,9 @@ export class InvoiceService {
       if (!invoiceFind) {
         throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
       }
+      invoiceFind.file = invoiceFind.file
+        ? await this.fileService.signedUrl(invoiceFind.file)
+        : null;
       return invoiceFind;
     });
   }
