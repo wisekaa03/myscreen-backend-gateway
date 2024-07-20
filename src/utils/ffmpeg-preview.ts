@@ -24,7 +24,7 @@ export async function FfMpegPreview(
   if (type === FileType.IMAGE) {
     await exec(
       `${ffmpeg} -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
-        ` -vf scale="100:-1:force_original_aspect_ratio=dicrease" -y "${outPath}"`,
+        ` -vf scale="100:-1" -y "${outPath}"`,
     ).catch((error: unknown) => {
       logger.error('FfMpeg error', error);
       throw error;
@@ -43,7 +43,7 @@ export async function FfMpegPreview(
     await exec(
       `${ffmpeg} -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ' -an' +
-        ` -vf scale="100:-1:force_original_aspect_ratio=dicrease",fps="1/${frameInterval}"` +
+        ` -vf scale="100:-1",fps="1/${frameInterval}"` +
         ` -y "${outPattern}"`,
     ).catch((error: unknown) => {
       logger.error('FfMpeg error', error);
