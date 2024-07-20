@@ -6,7 +6,6 @@ import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { ClientProxy } from '@nestjs/microservices';
-import { lastValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 
 import {
@@ -14,7 +13,6 @@ import {
   NotFoundError,
   ServiceUnavailableError,
 } from '@/errors';
-import { PrintInvoice } from '@/interfaces';
 import { MAIL_SERVICE, formatToContentType } from '@/constants';
 import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -27,6 +25,8 @@ import { WsStatistics } from './ws.statistics';
 import { WalletService } from './wallet.service';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
+import { has } from 'lodash';
+import { error } from 'node:console';
 
 @Injectable()
 export class InvoiceService {
@@ -73,7 +73,7 @@ export class InvoiceService {
   async create(
     user: UserEntity,
     sum: number,
-    description?: string,
+    description: string,
   ): Promise<InvoiceEntity | null> {
     if (sum < this.minInvoiceSum) {
       throw new BadRequestError('INVOICE_MINIMUM_SUM');
@@ -187,6 +187,7 @@ export class InvoiceService {
             this.walletService.create({
               userId: invoiceUserId,
               invoice: invoiceFind,
+              description: `Счет на оплату №${invoice.seqNo} от ${dayjs(invoice.createdAt).locale('ru').format('DD[ ]MMMM[ ]YYYY[ г.]')}`,
             }),
           );
 

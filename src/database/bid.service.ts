@@ -558,7 +558,7 @@ export class BidService {
             userId,
             sum,
             isSubscription: false,
-            description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+            description: `Заявка №${bid.seqNo}. Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
           });
         }
 

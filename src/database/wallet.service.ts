@@ -81,8 +81,10 @@ export class WalletService {
     userId,
     invoice,
     act,
+    description,
   }: {
     userId: string;
+    description: string;
     invoice?: InvoiceEntity;
     act?: ActEntity;
   }): WalletEntity {
@@ -96,6 +98,7 @@ export class WalletService {
       type,
       act: act ?? null,
       userId,
+      description,
     });
   }
 

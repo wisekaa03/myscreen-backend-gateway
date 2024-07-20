@@ -70,12 +70,12 @@ export class ActService {
     userId: string;
     sum: number;
     isSubscription: boolean;
-    description?: string;
+    description: string;
   }): Promise<ActEntity> {
     return this.actRepository.manager.transaction(async (transact) => {
       const actCreated: DeepPartial<ActEntity> = {
         sum,
-        description: description ?? this.walletService.subscriptionDescription,
+        description,
         isSubscription,
         status: ActStatus.COMPLETE,
         userId,
@@ -88,7 +88,7 @@ export class ActService {
 
       await transact.save(
         WalletEntity,
-        this.walletService.create({ userId, act: actCreate }),
+        this.walletService.create({ userId, act: actCreate, description }),
       );
 
       await this.wsStatistics.onWallet(userId);
