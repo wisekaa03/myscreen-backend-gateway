@@ -171,13 +171,13 @@ export class MonitorService {
           );
           delete value.groupMonitors;
         }
-        if (Array.isArray(value.photos) && value.photos.length > 0) {
+        if (value.photos?.length > 0) {
           const photosPromise = value.photos.map((photo) =>
             this.fileService.signedUrl(photo),
           );
           value.photos = await Promise.all(photosPromise);
         }
-        if (Array.isArray(value.documents) && value.documents.length > 0) {
+        if (value.documents?.length > 0) {
           const docPromise = value.documents.map((doc) =>
             this.fileService.signedUrl(doc),
           );
@@ -239,13 +239,13 @@ export class MonitorService {
         }));
         delete monitor.groupMonitors;
       }
-      if (Array.isArray(monitor.photos) && monitor.photos.length > 0) {
+      if (monitor.photos?.length > 0) {
         const photosPromise = monitor.photos.map((photo) =>
           this.fileService.signedUrl(photo),
         );
         monitor.photos = await Promise.all(photosPromise);
       }
-      if (Array.isArray(monitor.documents) && monitor.documents.length > 0) {
+      if (monitor.documents?.length > 0) {
         const docPromise = monitor.documents.map((doc) =>
           this.fileService.signedUrl(doc),
         );
