@@ -21,6 +21,7 @@ import { MonitorGroupEntity } from './monitor.group.entity';
 import { WsStatistics } from './ws.statistics';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
+import { FileEntity } from './file.entity';
 
 @Injectable()
 export class MonitorService {
@@ -678,33 +679,23 @@ export class MonitorService {
     user: UserEntity,
     monitor: MonitorEntity,
     {
-      photos,
-      documents,
+      photos: _photos,
+      documents: _docs,
     }: { photos?: Express.Multer.File[]; documents?: Express.Multer.File[] },
   ): Promise<MonitorEntity> {
     const { id: userId } = user;
     const { id: monitorFolderId } =
       await this.folderService.monitorFolder(userId);
-    let photosFile, documentsFile;
-    if (photos) {
-      photosFile = await this.fileService.upload(
-        user,
-        { folderId: monitorFolderId },
-        photos,
-      );
+    let photos: FileEntity[] | undefined;
+    let documents: FileEntity[] | undefined;
+    if (_photos) {
+      photos = await this.fileService.upload(user, _photos, monitorFolderId);
     }
-    if (documents) {
-      documentsFile = await this.fileService.upload(
-        user,
-        { folderId: monitorFolderId },
-        documents,
-      );
+    if (_docs) {
+      documents = await this.fileService.upload(user, _docs, monitorFolderId);
     }
     return this.monitorRepository.save(
-      this.monitorRepository.merge(monitor, {
-        photos: photosFile,
-        documents: documentsFile,
-      }),
+      this.monitorRepository.merge(monitor, { photos, documents }),
     );
   }
 }

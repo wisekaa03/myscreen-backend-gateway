@@ -37,7 +37,6 @@ import {
   filePreviewPDF,
   filePreviewXLS,
 } from '@/constants';
-import { FileUploadRequest } from '@/dto';
 import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -45,11 +44,10 @@ import { FileEntity } from '@/database/file.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { EditorEntity } from './editor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
 import { UserEntity } from './user.entity';
-import { InvoiceEntity } from './invoice.entity';
 import { WsStatistics } from './ws.statistics';
+import { FfprobeData } from 'media-probe';
 
 @Injectable()
 export class FileService {
@@ -316,24 +314,43 @@ export class FileService {
    */
   async upload(
     user: UserEntity,
-    { folderId: folderIdOrig = undefined }: FileUploadRequest,
-    files: Express.Multer.File[],
+    _files: Express.Multer.File[] | Express.Multer.File | Buffer,
+    _folderId?: string,
+    _originalname = 'file.mp4',
+    _mimetype = 'video/mp4',
+    _info?: FfprobeData,
   ): Promise<FileEntity[]> {
-    return this.fileRepository.manager.transaction(async (transact) => {
-      let folder: FolderEntity | null = null;
-      const { id: userId } = user;
-      if (!folderIdOrig) {
-        folder = await this.rootFolder(userId);
-      } else {
-        folder = await this.folderRepository.findOne({
-          where: { userId, id: folderIdOrig },
-        });
-        if (!folder) {
-          throw new NotFoundError(`Folder '${folderIdOrig}' not found`);
-        }
+    let files: Express.Multer.File[];
+    if (Array.isArray(_files)) {
+      files = _files;
+    } else if (Buffer.isBuffer(_files)) {
+      files = [
+        {
+          originalname: _originalname,
+          size: _files.length,
+          media: _info,
+          mimetype: _mimetype,
+          buffer: _files,
+        } as Express.Multer.File,
+      ];
+    } else {
+      files = [_files];
+    }
+    const { id: userId } = user;
+    let folder: FolderEntity | null = null;
+    if (!_folderId) {
+      folder = await this.rootFolder(userId);
+    } else {
+      folder = await this.folderRepository.findOne({
+        where: { userId, id: _folderId },
+      });
+      if (!folder) {
+        throw new NotFoundError(`Folder '${_folderId}' not found`);
       }
-      const { id: folderId } = folder;
+    }
+    const { id: folderId } = folder;
 
+    return this.fileRepository.manager.transaction(async (transact) => {
       const filesPromises = files.map(async (file) => {
         const {
           mimetype,
@@ -342,7 +359,14 @@ export class FileService {
           path,
           media: info,
           size: filesize,
+          buffer,
         } = file;
+        let filesBuffer;
+        if (Buffer.isBuffer(buffer)) {
+          filesBuffer = buffer;
+        } else {
+          filesBuffer = createReadStream(path);
+        }
 
         const [mime] = mimetype.split('/');
         const extension = pathParse(originalname).ext.slice(1);
@@ -361,7 +385,7 @@ export class FileService {
 
         const fileToSave: DeepPartial<FileEntity> = {
           userId,
-          folderId: folderId ?? undefined,
+          folderId,
           name: originalname,
           filesize,
           duration,
@@ -376,22 +400,20 @@ export class FileService {
 
         const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
         try {
-          const fileUploaded = await this.s3Service.putObject({
+          const uploaded = await this.s3Service.putObject({
             Bucket: this.bucket,
             Key,
             ContentType: mimetype,
-            Body: createReadStream(path),
+            Body: filesBuffer,
           });
-          if (!fileUploaded) {
-            throw new Error('Failed to upload');
-          }
-          this.logger.debug(
-            `S3: the file "${path}" uploaded to "${Key}": ${JSON.stringify(
-              fileUploaded,
-            )}`,
+          this.logger.warn(
+            `S3: the file "${originalname}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
           );
         } catch (error: unknown) {
-          this.logger.error(`S3 upload error: "${error?.toString()}"`, error);
+          this.logger.error(
+            `S3 upload error: "${JSON.stringify(error)}"`,
+            error,
+          );
           throw new InternalServerError(error);
         }
 
@@ -403,9 +425,11 @@ export class FileService {
         return fileUpdated;
       });
 
+      const filesDatabase = await Promise.all(filesPromises);
+
       await this.wsStatistics.onMetrics(user);
 
-      return Promise.all(filesPromises);
+      return filesDatabase;
     });
   }
 

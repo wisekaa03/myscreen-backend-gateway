@@ -8,12 +8,14 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { ClientProxy } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
+import { lastValueFrom } from 'rxjs';
 
 import {
   BadRequestError,
   NotFoundError,
   ServiceUnavailableError,
 } from '@/errors';
+import { MailInvoiceConfirmed, PrintInvoice } from '@/interfaces';
 import { MAIL_SERVICE, formatToContentType } from '@/constants';
 import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -26,7 +28,6 @@ import { WsStatistics } from './ws.statistics';
 import { WalletService } from './wallet.service';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
-import { MailInvoiceConfirmed } from '@/interfaces';
 
 @Injectable()
 export class InvoiceService {
@@ -117,7 +118,7 @@ export class InvoiceService {
         await Promise.all(invoicesPromise);
       }
 
-      const invoiceChanged: DeepPartial<InvoiceEntity> = {
+      const invoiceData: DeepPartial<InvoiceEntity> = {
         sum,
         description,
         userId,
@@ -126,10 +127,10 @@ export class InvoiceService {
 
       const { id } = await transact.save(
         InvoiceEntity,
-        transact.create(InvoiceEntity, invoiceChanged),
+        transact.create(InvoiceEntity, invoiceData),
       );
 
-      const invoiceUpdated = await transact.findOne(InvoiceEntity, {
+      const invoice = await transact.findOne(InvoiceEntity, {
         where: { id },
         loadEagerRelations: true,
         relations: { file: true },
@@ -137,26 +138,26 @@ export class InvoiceService {
 
       await this.wsStatistics.onWallet(userId);
 
-      return invoiceUpdated;
+      return invoice;
     });
   }
 
   async upload(invoice: InvoiceEntity, file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestError('INVOICE_FILE');
+    }
     const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
+    const { id: folderId } =
+      await this.folderService.invoiceFolder(invoiceUserId);
 
     return this.invoiceRepository.manager.transaction(async (transact) => {
-      if (!file) {
-        throw new BadRequestError('INVOICE_FILE');
-      }
-      const { id: folderId } =
-        await this.folderService.invoiceFolder(invoiceUserId);
-      const downloadFile = await this.fileService.upload(
+      const [downloadFile] = await this.fileService.upload(
         invoiceUser,
-        { folderId },
-        [file],
+        file,
+        folderId,
       );
       await transact.update(InvoiceEntity, id, {
-        file: downloadFile[0],
+        file: downloadFile,
       });
 
       const invoiceFind = await transact.findOne(InvoiceEntity, {
@@ -255,10 +256,40 @@ export class InvoiceService {
 
         // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
         case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
-          const { file } = invoice;
+          let { file } = invoice;
           if (!file) {
-            throw new NotFoundError();
+            const language =
+              invoiceUser.preferredLanguage ??
+              this.configService.getOrThrow('DEFAULT_LANGUAGE');
+            const invoiceFile = this.mailService.send<Buffer, PrintInvoice>(
+              'invoice',
+              {
+                format: SpecificFormat.XLSX,
+                invoice: invoiceFind,
+                language,
+              },
+            );
+            const { id: invoiceFolderId } =
+              await this.folderService.invoiceFolder(invoiceUserId);
+            const fileBuffer = await lastValueFrom(invoiceFile);
+
+            [file] = await this.fileService.upload(
+              invoiceUser,
+              fileBuffer,
+              invoiceFolderId,
+              'file.xlsx',
+              'application/vnd.ms-excel',
+            );
+            if (!file) {
+              throw new BadRequestError();
+            }
+
+            await transact.save(
+              InvoiceEntity,
+              transact.create(InvoiceEntity, { id, file }),
+            );
           }
+
           const data = await this.fileService
             .getS3Object(file)
             .catch((error: unknown) => {

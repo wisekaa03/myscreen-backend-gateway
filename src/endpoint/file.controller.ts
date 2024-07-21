@@ -25,10 +25,8 @@ import {
 import {
   ApiBody,
   ApiConsumes,
-  ApiExtraModels,
   ApiOperation,
   ApiResponse,
-  getSchemaPath,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { isUUID } from 'class-validator';
@@ -40,8 +38,6 @@ import {
   FilesGetResponse,
   FilesUploadResponse,
   FileGetResponse,
-  FileUploadRequest,
-  FileUploadRequestBody,
   FileUpdateRequest,
   FilesDeleteRequest,
   FilesUpdateRequest,
@@ -57,7 +53,6 @@ import { FileEntity } from '@/database/file.entity';
 import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
 
-@ApiExtraModels(FileUploadRequest)
 @ApiComplexDecorators({
   path: ['file'],
   roles: [
@@ -131,17 +126,18 @@ export class FileController {
   @ApiBody({
     schema: {
       type: 'object',
-      required: ['files', 'param'],
+      required: ['files'],
       properties: {
         files: {
           type: 'array',
           description: 'Файл(ы)',
           items: { type: 'string', format: 'binary' },
         },
-        param: {
-          type: 'object',
-          description: 'Параметры загрузки файла',
-          $ref: getSchemaPath(FileUploadRequest),
+        folderId: {
+          type: 'string',
+          format: 'uuid',
+          description: 'Папка куда загружать',
+          nullable: true,
         },
       },
     },
@@ -150,20 +146,14 @@ export class FileController {
   @Crud(CRUD.CREATE)
   async uploadFiles(
     @Req() { user }: ExpressRequest,
-    @Body() body: FileUploadRequestBody,
+    @Body() { folderId }: { folderId: string },
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<FilesUploadResponse> {
     if (files.length < 1) {
       throw new BadRequestError('Files expected');
     }
 
-    let param: FileUploadRequest;
-    try {
-      param = JSON.parse(body.param);
-    } catch (err) {
-      throw new BadRequestError('The param must be a string');
-    }
-    const data = await this.fileService.upload(user, param, files);
+    const data = await this.fileService.upload(user, files, folderId);
 
     return {
       status: Status.Success,

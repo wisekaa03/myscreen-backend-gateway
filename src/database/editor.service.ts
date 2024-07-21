@@ -628,6 +628,7 @@ export class EditorService {
     if (!editor) {
       throw new NotFoundError('Editor not found');
     }
+    const { id: editorId } = editor;
     if (!rerender) {
       if (
         editor.renderingStatus !== RenderingStatus.Initial &&
@@ -639,7 +640,7 @@ export class EditorService {
     }
 
     try {
-      await this.editorRepository.update(editor.id, {
+      await this.editorRepository.update(editorId, {
         totalDuration: this.calcTotalDuration(editor.videoLayers),
         renderingStatus: RenderingStatus.Pending,
         renderingError: null,
@@ -653,7 +654,7 @@ export class EditorService {
             this.logger.error(`Delete from editor failed: ${reason}`);
             throw reason;
           });
-        await this.editorRepository.update(editor.id, {
+        await this.editorRepository.update(editorId, {
           renderedFile: null,
         });
       }
@@ -675,7 +676,7 @@ export class EditorService {
 
       (async (renderEditor: EditorEntity) => {
         const editlyJSON = JSON.stringify(editlyConfig);
-        const editlyPath = path.join(mkdirPath, editor.id, 'editly.json');
+        const editlyPath = path.join(mkdirPath, editorId, 'editly.json');
         await fs.writeFile(editlyPath, editlyJSON).catch((reason) => {
           this.logger.error(`Write to ${editlyPath} failed: ${reason}`);
           throw reason;
@@ -740,7 +741,7 @@ export class EditorService {
           countPackets: false,
         });
         const fileOutParse = path.parse(outPath);
-        const files: Express.Multer.File = {
+        const file: Express.Multer.File = {
           originalname: fileOutParse.base,
           encoding: 'utf8',
           mimetype: 'video/mp4',
@@ -755,7 +756,7 @@ export class EditorService {
           buffer: null as unknown as Buffer,
         };
         const renderedFiles = await this.fileService
-          .upload(user, { folderId: exportFolderId }, [files])
+          .upload(user, file, exportFolderId)
           .then((renderedFile) => {
             if (renderedFile[0]) {
               this.editorRepository.update(renderEditor.id, {
@@ -769,15 +770,17 @@ export class EditorService {
             }
 
             throw new NotFoundError(
-              `Upload file not found: '${JSON.stringify(files)}'`,
+              `Upload file not found: '${JSON.stringify(file)}'`,
             );
           })
-          .catch((reason) => {
-            this.logger.error(`Can't write to out file: ${reason}`);
+          .catch((reason: unknown) => {
+            this.logger.error(
+              `Can't write to out file: ${JSON.stringify(reason)}`,
+            );
             throw reason;
           });
 
-        this.logger.log(`Writed out file: ${JSON.stringify(files)}`);
+        this.logger.log(`Writed out file: ${JSON.stringify(file)}`);
 
         // Для SCALING, но может быть еще для чего-то
         if (editor.playlistId) {
@@ -807,7 +810,7 @@ export class EditorService {
               }
             } else {
               this.logger.error(
-                `Editors not found: editorId="${editor.id}" / playlistId="${playlist.id}"`,
+                `Editors not found: editorId="${editorId}" / playlistId="${playlist.id}"`,
               );
             }
           } else {
@@ -818,7 +821,7 @@ export class EditorService {
         }
       })(editor).catch((error: any) => {
         this.logger.error(error?.message, error?.stack, 'Editly');
-        this.editorRepository.update(editor.id, {
+        this.editorRepository.update(editorId, {
           renderingError: error?.message || error,
           renderingStatus: RenderingStatus.Error,
           renderingPercent: null,
@@ -834,7 +837,7 @@ export class EditorService {
       } else {
         renderingError = error as string;
       }
-      this.editorRepository.update(editor.id, {
+      this.editorRepository.update(editorId, {
         renderingStatus: RenderingStatus.Error,
         renderingError,
         renderingPercent: 0,
