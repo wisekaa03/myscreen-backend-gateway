@@ -214,7 +214,7 @@ export class FolderService {
         });
         const folderCopy = await transact.save(FolderEntity, folderCopyCreate);
 
-        await this.fileService.copy(userId, folderCopy, folder.files);
+        await this.fileService.copy(userId, folderCopy, folder.files, transact);
 
         return folderCopy;
       });

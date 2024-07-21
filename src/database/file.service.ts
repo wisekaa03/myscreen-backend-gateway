@@ -20,6 +20,7 @@ import {
   DeepPartial,
   DeleteResult,
   In,
+  EntityManager,
 } from 'typeorm';
 
 import {
@@ -490,8 +491,9 @@ export class FileService {
     userId: string,
     toFolder: FolderEntity,
     originalFiles: FileEntity[],
+    transact?: EntityManager,
   ): Promise<FileEntity[]> {
-    return this.fileRepository.manager.transaction(async (transact) => {
+    const copyFiles = (transact: EntityManager) => {
       const filePromises = originalFiles.map(async (file) => {
         await this.copyS3Object(toFolder, file);
 
@@ -511,7 +513,15 @@ export class FileService {
       });
 
       return Promise.all(filePromises);
-    });
+    };
+
+    if (transact) {
+      return copyFiles(transact);
+    }
+
+    return this.fileRepository.manager.transaction(async (transact) =>
+      copyFiles(transact),
+    );
   }
 
   async deletePrep(filesId: string[]): Promise<void> {
