@@ -212,7 +212,7 @@ const updateUser: UserUpdateRequest = {
 };
 
 const monitorOwnerInvoiceSum = 1000;
-const advertiserInvoiceSum = 200000;
+const advertiserInvoiceSum = 5000000000;
 
 let app: INestApplication;
 let wsAdvertiser: WebSocket;
@@ -2831,6 +2831,7 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.user?.password).toBeUndefined();
+          expect(body.data.id).toBe(monitorGroupMirrorId);
           expect(body.data.favorite).toBe(true);
         });
     });
@@ -2853,6 +2854,7 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.user?.password).toBeUndefined();
+          expect(body.data.id).toBe(monitorGroupMirrorId);
           expect(body.data.favorite).toBe(false);
         });
     });
@@ -2902,16 +2904,84 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * MonitorOwner: Отправка плэйлиста на монитор
+     * MonitorOwner: Отправка плэйлиста на монитор Single
      */
-    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор)', async () => {
-      if (!advertiserToken || !advertiserPlaylistId1) {
+    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Single)', async () => {
+      if (!advertiserToken || !advertiserPlaylistId1 || !monitorSingleId) {
         expect(false).toEqual(true);
       }
 
       const playlistToMonitor: MonitorsPlaylistAttachRequest = {
         playlistId: advertiserPlaylistId1,
         monitorIds: [monitorSingleId],
+        bid: {
+          dateBefore: dayjs().subtract(1).toDate(),
+          dateWhen: dayjs().add(1).toDate(),
+          playlistChange: true,
+        },
+      };
+
+      await request
+        .patch(`${apiPath}/monitor/playlist`)
+        .auth(advertiserToken, { type: 'bearer' })
+        .send(playlistToMonitor)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.count).toBe(1);
+        });
+    });
+
+    /**
+     * MonitorOwner: Отправка плэйлиста на монитор Mirror
+     */
+    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Mirror)', async () => {
+      if (!advertiserToken || !advertiserPlaylistId1 || !monitorGroupMirrorId) {
+        expect(false).toEqual(true);
+      }
+
+      const playlistToMonitor: MonitorsPlaylistAttachRequest = {
+        playlistId: advertiserPlaylistId1,
+        monitorIds: [monitorGroupMirrorId],
+        bid: {
+          dateBefore: dayjs().subtract(1).toDate(),
+          dateWhen: dayjs().add(1).toDate(),
+          playlistChange: true,
+        },
+      };
+
+      await request
+        .patch(`${apiPath}/monitor/playlist`)
+        .auth(advertiserToken, { type: 'bearer' })
+        .send(playlistToMonitor)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.count).toBe(1);
+        });
+    });
+
+    /**
+     * MonitorOwner: Отправка плэйлиста на монитор Scaling
+     */
+    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Scaling)', async () => {
+      if (
+        !advertiserToken ||
+        !advertiserPlaylistId1 ||
+        !monitorGroupScalingId
+      ) {
+        expect(false).toEqual(true);
+      }
+
+      const playlistToMonitor: MonitorsPlaylistAttachRequest = {
+        playlistId: advertiserPlaylistId1,
+        monitorIds: [monitorGroupScalingId],
         bid: {
           dateBefore: dayjs().subtract(1).toDate(),
           dateWhen: dayjs().add(1).toDate(),
