@@ -384,9 +384,7 @@ export class FileService {
 
     const { id: userId } = user;
     let folderId: string;
-    if (!_folderId) {
-      ({ id: folderId } = await this.rootFolder(userId, transact));
-    } else {
+    if (_folderId) {
       const folder = await transactFolder.findOne({
         where: { userId, id: _folderId },
         select: ['id'],
@@ -394,7 +392,9 @@ export class FileService {
       if (!folder) {
         throw new NotFoundError(`Folder '${_folderId}' not found`);
       }
-      ({ id: folderId } = folder);
+      folderId = folder.id;
+    } else {
+      folderId = (await this.rootFolder(userId, transact)).id;
     }
 
     return transactFile.manager.transaction(

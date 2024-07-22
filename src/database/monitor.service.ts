@@ -162,7 +162,7 @@ export class MonitorService {
         const value = monitor;
         if (
           Array.isArray(value.groupMonitors) &&
-          value.groupMonitors?.length > 0
+          value.groupMonitors.length > 0
         ) {
           value.groupIds = value.groupMonitors.map(
             (group: MonitorGroupEntity) => ({
@@ -171,8 +171,8 @@ export class MonitorService {
               col: group.col,
             }),
           );
-          delete value.groupMonitors;
         }
+        delete value.groupMonitors;
         if (value.photos?.length > 0) {
           const photosPromise = value.photos.map((photo) =>
             this.fileService.signedUrl(photo),
