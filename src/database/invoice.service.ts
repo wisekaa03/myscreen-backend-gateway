@@ -195,8 +195,7 @@ export class InvoiceService {
     invoice: InvoiceEntity,
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
-    const { id } = invoice;
-    const { id: invoiceId, user: invoiceUser, userId: invoiceUserId } = invoice;
+    const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
 
     await this.invoiceRepository.manager.transaction(
       'REPEATABLE READ',
@@ -221,7 +220,7 @@ export class InvoiceService {
                 userId: invoiceUserId,
                 description: `Счет на оплату №${invoice.seqNo} от ${dayjs(invoice.createdAt).locale('ru').format('DD[ ]MMMM[ ]YYYY[ г.]')}`,
                 sum: invoice.sum,
-                invoiceId,
+                invoiceId: id,
               }),
             );
 
