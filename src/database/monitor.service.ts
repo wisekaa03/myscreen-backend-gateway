@@ -455,7 +455,7 @@ export class MonitorService {
         }
 
         const multipleMonitorIds = groupIds.map((item) => item.monitorId);
-        groupMonitors = await this.monitorRepository.find({
+        groupMonitors = await transact.find(MonitorEntity, {
           where: {
             id: In(multipleMonitorIds),
             multiple: MonitorMultiple.SINGLE,

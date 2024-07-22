@@ -20,6 +20,7 @@ import {
   IsString,
   IsDateString,
   IsOptional,
+  MaxLength,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
@@ -38,15 +39,19 @@ export class FolderEntity extends BaseEntity {
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
+  @Index({})
   @ApiProperty({
     description: 'Наименование папки',
     example: 'bar',
+    minLength: 1,
+    maxLength: 100,
   })
   @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
   @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
   @MinLength(1)
+  @MaxLength(100)
   name!: string;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {

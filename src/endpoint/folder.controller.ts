@@ -67,16 +67,19 @@ export class FolderController {
   @Crud(CRUD.READ)
   async getMany(
     @Req() { user }: ExpressRequest,
-    @Body() { scope, select, where: origWhere }: FoldersGetRequest,
+    @Body() { scope, select, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
     const { id: userId } = user;
     let count = 0;
     let data: FolderResponse[] = [];
-    await this.folderService.rootFolder(userId);
+    const whereLocal = {
+      parentFolderId: await this.folderService.rootFolder(userId),
+      ...where,
+    };
     [data, count] = await this.folderService.findAndCount({
       ...paginationQuery(scope),
       select,
-      where: { ...TypeOrmFind.where(FolderEntity, origWhere), userId },
+      where: { ...TypeOrmFind.where(FolderEntity, whereLocal), userId },
     });
 
     return {

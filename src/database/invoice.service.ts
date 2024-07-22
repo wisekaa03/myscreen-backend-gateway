@@ -270,7 +270,7 @@ export class InvoiceService {
               },
             );
             const { id: invoiceFolderId } =
-              await this.folderService.invoiceFolder(invoiceUserId);
+              await this.folderService.invoiceFolder(invoiceUserId, transact);
             const fileBuffer = await lastValueFrom(invoiceFile);
 
             [file] = await this.fileService.upload(

@@ -473,6 +473,9 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<MonitorGetResponse> {
+    if (!files || !Array.isArray(files) || files.length < 1) {
+      throw new BadRequestError();
+    }
     const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {
       where: {
@@ -531,6 +534,9 @@ export class MonitorController {
     @Param('monitorId', ParseUUIDPipe) id: string,
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<MonitorGetResponse> {
+    if (!files || !Array.isArray(files) || files.length < 1) {
+      throw new BadRequestError();
+    }
     const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {
       where: {

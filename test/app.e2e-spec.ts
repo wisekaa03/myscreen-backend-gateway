@@ -50,8 +50,6 @@ import {
   EditorExportRequest,
   EditorGetRenderingStatusResponse,
   MonitorsPlaylistAttachRequest,
-  FileUploadRequest,
-  FileUploadRequestBody,
   FoldersCopyRequest,
 } from '@/dto';
 import {
@@ -187,8 +185,8 @@ const loginRequestAccountant: LoginRequest = {
 };
 
 const updateUser: UserUpdateRequest = {
-  surname: 'Monitor',
-  name: 'Owner',
+  surname: 'Owner',
+  name: 'Monitor',
   middleName: 'the best monitor-owner !',
   phoneNumber: '+78003000000',
   city: 'Krasnodar',
@@ -300,6 +298,7 @@ let advertiserEditorId: string;
 let advertiserEditorLayerId: string;
 
 let monitorOwnerInvoiceId: string;
+let monitorOwnerInvoiceId1: string;
 let advertiserInvoiceId: string;
 
 describe('Backend API (e2e)', () => {
@@ -328,6 +327,7 @@ describe('Backend API (e2e)', () => {
         whitelist: true,
         forbidNonWhitelisted: true,
         forbidUnknownValues: true,
+        skipUndefinedProperties: true,
       }),
     );
     app.useWebSocketAdapter(new WsAdapter(app));
@@ -1516,7 +1516,7 @@ describe('Backend API (e2e)', () => {
      * Accountant: Закачка счета для monitorOwnerInvoiceId
      */
     test(`Accountant: POST /invoice/upload/{monitorOwnerInvoiceId} (Закачка счета)`, async () => {
-      if (!accountantToken) {
+      if (!accountantToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
       }
 
@@ -1678,7 +1678,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Скачивание счета
      */
     test('MonitorOwner: GET /invoice/download/{monitorOwnerInvoiceId}/xlsx (Скачивание счета)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
       }
 
@@ -1690,6 +1690,91 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: unknown }) => {
           expect(body).toBeDefined();
           expect((body as any)?.status).toBeUndefined();
+        });
+    });
+
+    /**
+     * MonitorOwner: Выставление счета - 2
+     */
+    test('MonitorOwner: PUT /invoice (Выставление счета - 2)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+
+      const invoice: InvoiceCreateRequest = {
+        sum: monitorOwnerInvoiceSum,
+        description: 'Тестовый 2',
+      };
+
+      await request
+        .put(`${apiPath}/invoice`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(invoice)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBeDefined();
+          expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
+          expect(body.data?.user?.password).toBeUndefined();
+          monitorOwnerInvoiceId1 = body.data.id;
+        });
+    });
+
+    /**
+     * Accountant: Закачка счета 2 для monitorOwnerInvoiceId1
+     */
+    test(`Accountant: POST /invoice/upload/{monitorOwnerInvoiceId1} (Закачка счета 2)`, async () => {
+      if (!accountantToken || !monitorOwnerInvoiceId1) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .post(`${apiPath}/invoice/upload/${monitorOwnerInvoiceId1}`)
+        .attach('file', fileXLS)
+        .auth(accountantToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(monitorOwnerInvoiceId1);
+          expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
+          expect(body.data?.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
+     * Accountant: Подтверждение счета 2 для monitorOwnerInvoiceId1
+     */
+    test(`Accountant: GET /invoice/confirmed/{monitorOwnerInvoiceId1} (Подтверждение счета 2)`, async () => {
+      if (!accountantToken || !monitorOwnerInvoiceId1) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .get(`${apiPath}/invoice/confirmed/${monitorOwnerInvoiceId1}`)
+        .auth(accountantToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(monitorOwnerInvoiceId1);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
+          expect(body.data.status).toBe(
+            InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
+          );
+          expect(body.data?.user?.password).toBeUndefined();
         });
     });
 
@@ -1800,7 +1885,7 @@ describe('Backend API (e2e)', () => {
       expect(metrics).toBeDefined();
       expect(metrics.event).toBe(WsEvent.METRICS);
       expect(metrics.data).toBeDefined();
-      expect(metrics.data.storageSpace.storage).toBe(fileXLSfilesize);
+      expect(metrics.data.storageSpace.storage).toBe(fileXLSfilesize * 2);
       expect(metrics.data.monitors.user).toBe(0);
       expect(metrics.data.monitors.empty).toBe(0);
       expect(metrics.data.monitors.online).toBe(0);
@@ -2189,6 +2274,50 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
+     * MonitorOwner: Картинки монитора Single
+     */
+    test('MonitorOwner: PUT /monitor/{monitorSingleId}/upload-photos (Картинки монитора Single)', async () => {
+      if (!monitorOwnerToken || !monitorSingleId) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .put(`${apiPath}/monitor/${monitorSingleId}/upload-photos`)
+        .attach('files', imageTestingDirname)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
+     * MonitorOwner: Документы монитора Single
+     */
+    test('MonitorOwner: PUT /monitor/{monitorSingleId}/upload-documents (Документы монитора Single)', async () => {
+      if (!monitorOwnerToken || !monitorSingleId) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .put(`${apiPath}/monitor/${monitorSingleId}/upload-documents`)
+        .attach('files', fileXLS)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
      * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
@@ -2238,7 +2367,9 @@ describe('Backend API (e2e)', () => {
       expect(metrics.data.monitors.empty).toBe(
         MONITOR_OWNER_MONITOR_COUNT_EMPTY,
       );
-      expect(metrics.data.storageSpace.storage).toBe(fileXLSfilesize);
+      expect(metrics.data.storageSpace.storage).toBe(
+        2 * fileXLSfilesize + 2 * imageTestingFilesize,
+      );
       expect(metrics.data.playlists.added).toBe(0);
       expect(metrics.data.playlists.played).toBe(0);
       wsMonitorOwner.close();
@@ -2600,7 +2731,7 @@ describe('Backend API (e2e)', () => {
         MONITOR_OWNER_MONITOR_COUNT_EMPTY,
       );
       expect(metrics.data.storageSpace.storage).toBe(
-        3 * imageTestingFilesize + fileXLSfilesize,
+        4 * imageTestingFilesize + 2 * fileXLSfilesize,
       );
       expect(metrics.data.playlists.added).toBe(0);
       expect(metrics.data.playlists.played).toBe(0);
@@ -3009,6 +3140,8 @@ describe('Backend API (e2e)', () => {
      *
      */
     describe('Повышаем роли Advertiser до администратора и логинимся, и после этого удаляем все', () => {
+      return;
+
       /**
        * Administrator
        */

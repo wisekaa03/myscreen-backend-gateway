@@ -1,4 +1,4 @@
-import { FindManyOptions, FindOneOptions } from 'typeorm';
+import { EntityManager, FindManyOptions, FindOneOptions } from 'typeorm';
 
 import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
@@ -25,9 +25,11 @@ export interface MonitorGroupWithPlaylist
 export interface FindManyOptionsCaseInsensitive<T> extends FindManyOptions<T> {
   caseInsensitive?: boolean;
   fromView?: boolean;
+  transact?: EntityManager;
 }
 
 export interface FindOneOptionsCaseInsensitive<T> extends FindOneOptions<T> {
   caseInsensitive?: boolean;
   fromView?: boolean;
+  transact?: EntityManager;
 }

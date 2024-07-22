@@ -21,6 +21,7 @@ import {
   DeleteResult,
   In,
   EntityManager,
+  IsNull,
 } from 'typeorm';
 
 import {
@@ -219,25 +220,17 @@ export class FileService {
   }
 
   async createFolder(folder: Partial<FolderEntity>): Promise<FolderEntity> {
-    const inserted = await this.folderRepository.insert(
-      this.folderRepository.create(folder),
-    );
-    if (!inserted.identifiers[0]) {
-      throw new NotFoundError('Error when creating folder');
-    }
-    const { id } = inserted.identifiers[0];
-
-    const find = await this.folderRepository.findOne({ where: { id } });
-    if (!find) {
+    const created = await this.folderRepository.save(folder);
+    if (!created) {
       throw new NotFoundError('Error when creating folder');
     }
 
-    return find;
+    return created;
   }
 
   async rootFolder(userId: string): Promise<FolderEntity> {
     let folder = await this.folderRepository.findOne({
-      where: { name: '<Корень>', userId },
+      where: { parentFolder: IsNull(), userId },
     });
 
     if (!folder) {
@@ -337,18 +330,19 @@ export class FileService {
       files = [_files];
     }
     const { id: userId } = user;
-    let folder: FolderEntity | null = null;
+    let folderId: string;
     if (!_folderId) {
-      folder = await this.rootFolder(userId);
+      ({ id: folderId } = await this.rootFolder(userId));
     } else {
-      folder = await this.folderRepository.findOne({
+      const folder = await this.folderRepository.findOne({
         where: { userId, id: _folderId },
+        select: ['id'],
       });
       if (!folder) {
         throw new NotFoundError(`Folder '${_folderId}' not found`);
       }
+      ({ id: folderId } = folder);
     }
-    const { id: folderId } = folder;
 
     return this.fileRepository.manager.transaction(async (transact) => {
       const filesPromises = files.map(async (file) => {
