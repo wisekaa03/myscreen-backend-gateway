@@ -424,7 +424,7 @@ export class BidService {
               userId: bid.seller.id,
               sum: bid.sum,
               isSubscription: false,
-              description: `Возврат средств оплаты заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
+              description: `Возврат средств после отмены заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
               transact,
             });
           }
