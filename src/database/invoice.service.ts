@@ -403,7 +403,7 @@ export class InvoiceService {
         throw new ServiceUnavailableError();
       }
     } else {
-      throw new ServiceUnavailableError();
+      throw new NotFoundError('FILE_MUST_EXISTS');
     }
   }
 }
