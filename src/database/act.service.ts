@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, Repository } from 'typeorm';
+import { DeepPartial, EntityManager, Repository } from 'typeorm';
 
 import { ActStatus } from '@/enums';
 import {
@@ -11,8 +11,6 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { WalletEntity } from './wallet.entity';
 import { ActEntity } from './act.entity';
 import { WalletService } from '@/database/wallet.service';
-import { UserResponse } from './user-response.entity';
-import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
 
 @Injectable()
@@ -66,34 +64,50 @@ export class ActService {
     sum,
     isSubscription = false,
     description,
+    transact: _transact,
   }: {
     userId: string;
     sum: number;
     isSubscription: boolean;
-    description?: string;
+    description: string;
+    transact?: EntityManager;
   }): Promise<ActEntity> {
-    return this.actRepository.manager.transaction(async (transact) => {
-      const actCreated: DeepPartial<ActEntity> = {
-        sum,
-        description: description ?? this.walletService.subscriptionDescription,
-        isSubscription,
-        status: ActStatus.COMPLETE,
-        userId,
-      };
+    const transact = _transact
+      ? _transact.withRepository(this.actRepository)
+      : this.actRepository;
 
-      const actCreate = await transact.save(
-        ActEntity,
-        transact.create(ActEntity, actCreated),
-      );
+    const created = await transact.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const actCreated: DeepPartial<ActEntity> = {
+          sum,
+          description,
+          isSubscription,
+          status: ActStatus.COMPLETE,
+          userId,
+        };
 
-      await transact.save(
-        WalletEntity,
-        this.walletService.create({ userId, act: actCreate }),
-      );
+        const actCreate = await transact.save(
+          ActEntity,
+          transact.create(ActEntity, actCreated),
+        );
 
-      await this.wsStatistics.onWallet(userId);
+        await transact.save(
+          WalletEntity,
+          this.walletService.create({
+            userId,
+            sum: -sum,
+            description,
+            actId: actCreate.id,
+          }),
+        );
 
-      return actCreate;
-    });
+        return actCreate;
+      },
+    );
+
+    await this.wsStatistics.onWallet(userId);
+
+    return created;
   }
 }

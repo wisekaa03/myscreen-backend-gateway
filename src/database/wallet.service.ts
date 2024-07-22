@@ -79,23 +79,32 @@ export class WalletService {
 
   create({
     userId,
-    invoice,
-    act,
+    description,
+    sum,
+    invoiceId,
+    actId,
+    transact,
   }: {
     userId: string;
-    invoice?: InvoiceEntity;
-    act?: ActEntity;
+    description: string;
+    sum: number;
+    invoiceId?: string;
+    actId?: string;
+    transact?: EntityManager;
   }): WalletEntity {
-    const sum = Number(invoice?.sum ?? '0') - Number(act?.sum ?? '0');
-    const type = invoice
+    const transactWallet = transact
+      ? transact.withRepository(this.walletRepository)
+      : this.walletRepository;
+    const type = invoiceId
       ? WalletTransactionType.DEBIT
       : WalletTransactionType.CREDIT;
-    return this.walletRepository.create({
+    return transactWallet.create({
       sum,
-      invoice: invoice ?? null,
+      invoiceId,
       type,
-      act: act ?? null,
+      actId,
       userId,
+      description,
     });
   }
 
@@ -112,23 +121,17 @@ export class WalletService {
     actId?: FindOperator<string> | string;
     invoiceId?: FindOperator<string> | string;
   }): Promise<number> {
-    return transact
-      ? transact
-          .sum(WalletEntity, 'sum', {
-            userId,
-            invoiceId,
-            actId,
-            createdAt: dates && Between(dates[0], dates[1]),
-          })
-          .then((sum) => sum ?? 0)
-      : this.walletRepository
-          .sum('sum', {
-            userId,
-            invoiceId,
-            actId,
-            createdAt: dates && Between(dates[0], dates[1]),
-          })
-          .then((sum) => sum ?? 0);
+    const transactWallet = transact
+      ? transact.withRepository(this.walletRepository)
+      : this.walletRepository;
+    return transactWallet
+      .sum('sum', {
+        userId,
+        invoiceId,
+        actId,
+        createdAt: dates && Between(dates[0], dates[1]),
+      })
+      .then((sum) => sum ?? 0);
   }
 
   /**
@@ -241,21 +244,28 @@ export class WalletService {
   async calculateBalance(): Promise<void> {
     this.logger.warn('Wallet service is calculating balance:');
 
-    this.walletRepository.manager.transaction(async (transact) => {
-      const users = await transact.find(UserResponse, {
-        where: [
-          { verified: true, disabled: false, role: UserRoleEnum.MonitorOwner },
-        ],
-      });
+    this.walletRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const users = await transact.find(UserResponse, {
+          where: [
+            {
+              verified: true,
+              disabled: false,
+              role: UserRoleEnum.MonitorOwner,
+            },
+          ],
+        });
 
-      const promiseUsers = users.map(async (user) =>
-        this.acceptanceActCreate({
-          user,
-          transact,
-        }),
-      );
+        const promiseUsers = users.map(async (user) =>
+          this.acceptanceActCreate({
+            user,
+            transact,
+          }),
+        );
 
-      await Promise.all(promiseUsers);
-    });
+        await Promise.all(promiseUsers);
+      },
+    );
   }
 }

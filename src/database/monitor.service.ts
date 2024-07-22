@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeleteResult,
+  EntityManager,
   FindManyOptions,
   In,
   Not,
@@ -19,12 +20,18 @@ import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { UserEntity } from './user.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
 import { WsStatistics } from './ws.statistics';
+import { FileService } from './file.service';
+import { FolderService } from './folder.service';
+import { FileEntity } from './file.entity';
 
 @Injectable()
 export class MonitorService {
   private logger = new Logger(MonitorService.name);
 
   constructor(
+    private readonly folderService: FolderService,
+    @Inject(forwardRef(() => FileService))
+    private readonly fileService: FileService,
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
     @InjectRepository(MonitorEntity)
@@ -53,7 +60,12 @@ export class MonitorService {
       };
     } else {
       monitorWhere = {
-        relations: { files: true, playlist: true, favorities: true },
+        relations: {
+          photos: true,
+          documents: true,
+          playlist: true,
+          favorities: true,
+        },
         ...TypeOrmFind.findParams(MonitorEntity, find),
       };
     }
@@ -113,7 +125,8 @@ export class MonitorService {
     } else {
       monitorWhere = {
         relations: {
-          files: true,
+          photos: true,
+          documents: true,
           playlist: true,
           favorities: true,
           groupMonitors: true,
@@ -145,9 +158,12 @@ export class MonitorService {
         });
       }
 
-      monitors = monitors.map((monitor: MonitorEntity) => {
+      const monitorsPromise = monitors.map(async (monitor: MonitorEntity) => {
         const value = monitor;
-        if (value.groupMonitors) {
+        if (
+          Array.isArray(value.groupMonitors) &&
+          value.groupMonitors.length > 0
+        ) {
           value.groupIds = value.groupMonitors.map(
             (group: MonitorGroupEntity) => ({
               monitorId: group.monitorId,
@@ -155,10 +171,23 @@ export class MonitorService {
               col: group.col,
             }),
           );
-          delete value.groupMonitors;
+        }
+        delete value.groupMonitors;
+        if (value.photos?.length > 0) {
+          const photosPromise = value.photos.map((photo) =>
+            this.fileService.signedUrl(photo),
+          );
+          value.photos = await Promise.all(photosPromise);
+        }
+        if (value.documents?.length > 0) {
+          const docPromise = value.documents.map((doc) =>
+            this.fileService.signedUrl(doc),
+          );
+          value.documents = await Promise.all(docPromise);
         }
         return value;
       });
+      monitors = await Promise.all(monitorsPromise);
     }
 
     return [monitors, count];
@@ -181,7 +210,8 @@ export class MonitorService {
     } else {
       monitorWhere = {
         relations: {
-          files: true,
+          photos: true,
+          documents: true,
           playlist: true,
           favorities: true,
           groupMonitors: true,
@@ -211,6 +241,18 @@ export class MonitorService {
         }));
         delete monitor.groupMonitors;
       }
+      if (monitor.photos?.length > 0) {
+        const photosPromise = monitor.photos.map((photo) =>
+          this.fileService.signedUrl(photo),
+        );
+        monitor.photos = await Promise.all(photosPromise);
+      }
+      if (monitor.documents?.length > 0) {
+        const docPromise = monitor.documents.map((doc) =>
+          this.fileService.signedUrl(doc),
+        );
+        monitor.documents = await Promise.all(docPromise);
+      }
     }
 
     return monitor;
@@ -220,6 +262,7 @@ export class MonitorService {
     id: string,
     update: Partial<MonitorEntity>,
     groupIds?: MonitorGroup[],
+    transact?: EntityManager,
   ): Promise<MonitorEntity> {
     const multipleBool = Array.isArray(groupIds);
 
@@ -228,6 +271,7 @@ export class MonitorService {
         where: { id },
         relations: multipleBool ? { groupMonitors: { monitor: true } } : {},
         loadEagerRelations: false,
+        transact,
       },
     });
     if (!originalMonitor) {
@@ -268,8 +312,11 @@ export class MonitorService {
         );
       }
     }
+    const _transact = transact
+      ? transact.withRepository(this.monitorRepository)
+      : this.monitorRepository;
 
-    await this.monitorRepository.manager.transaction(async (transact) => {
+    await _transact.manager.transaction('REPEATABLE READ', async (transact) => {
       const updated = await transact.update(MonitorEntity, id, update);
       if (!updated.affected) {
         throw new NotAcceptableError(`Monitor with this '${id}' not found`);
@@ -390,97 +437,100 @@ export class MonitorService {
       userId,
     };
 
-    return this.monitorRepository.manager.transaction(async (transact) => {
-      const monitorInserted = await transact.insert(
-        MonitorEntity,
-        transact.create(MonitorEntity, prepareMonitor),
-      );
-      const monitorInsertedId = monitorInserted.identifiers[0]?.id;
-      if (!monitorInsertedId) {
-        throw new NotAcceptableError('Monitor not created');
-      }
-      const monitor = await transact.findOne(MonitorEntity, {
-        where: { id: monitorInsertedId },
-      });
-      if (!monitor) {
-        throw new NotAcceptableError('Monitor not created');
-      }
-
-      let groupMonitors: MonitorEntity[] = [];
-      const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
-      if (multiple !== MonitorMultiple.SINGLE) {
-        if (!groupIds || groupIds.length === 0) {
-          throw new BadRequestError('Group monitors ID is empty');
+    return this.monitorRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const monitorInserted = await transact.insert(
+          MonitorEntity,
+          transact.create(MonitorEntity, prepareMonitor),
+        );
+        const monitorInsertedId = monitorInserted.identifiers[0]?.id;
+        if (!monitorInsertedId) {
+          throw new NotAcceptableError('Monitor not created');
         }
-
-        const multipleMonitorIds = groupIds.map((item) => item.monitorId);
-        groupMonitors = await this.monitorRepository.find({
-          where: {
-            id: In(multipleMonitorIds),
-            multiple: MonitorMultiple.SINGLE,
-          },
-          select: ['id'],
+        const monitor = await transact.findOne(MonitorEntity, {
+          where: { id: monitorInsertedId },
         });
-        if (
-          Array.isArray(groupMonitors) &&
-          groupMonitors.length !== groupIds.length
-        ) {
-          throw new BadRequestError('Not found ID of some monitors');
+        if (!monitor) {
+          throw new NotAcceptableError('Monitor not created');
         }
-        if (multiple === MonitorMultiple.SCALING) {
-          const multipleRows = new Set<number>();
-          const multipleCols = new Set<number>();
-          groupIds.forEach((item, i, arr) => {
-            if (i && item.row > arr[i - 1]?.row) {
-              multipleCols.clear();
-            }
-            if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
-              throw new BadRequestError(
-                `Monitor multiple '${item.monitorId}': row '${item.row}' with col '${item.col}' is already occupied`,
-              );
-            }
-            multipleRows.add(item.row);
-            multipleCols.add(item.col);
-          });
-        }
-      } else if (multipleBool) {
-        throw new BadRequestError('Group monitors ID is not empty');
-      }
 
-      if (multipleBool) {
-        const monitorMultiple = groupMonitors.map(async (groupMonitor) => {
-          const groupMonitorId = groupMonitor.id;
-          const item = groupIds.find((i) => i.monitorId === groupMonitorId);
-          if (!item) {
-            throw new BadRequestError('Not found ID of some monitors');
+        let groupMonitors: MonitorEntity[] = [];
+        const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
+        if (multiple !== MonitorMultiple.SINGLE) {
+          if (!groupIds || groupIds.length === 0) {
+            throw new BadRequestError('Group monitors ID is empty');
           }
 
-          // добавляем в таблицу связей мониторов монитор
-          await transact.insert(MonitorGroupEntity, {
-            userId,
-            parentMonitorId: monitor.id,
-            monitorId: groupMonitorId,
-            row: item.row,
-            col: item.col,
+          const multipleMonitorIds = groupIds.map((item) => item.monitorId);
+          groupMonitors = await transact.find(MonitorEntity, {
+            where: {
+              id: In(multipleMonitorIds),
+              multiple: MonitorMultiple.SINGLE,
+            },
+            select: ['id'],
+          });
+          if (
+            Array.isArray(groupMonitors) &&
+            groupMonitors.length !== groupIds.length
+          ) {
+            throw new BadRequestError('Not found ID of some monitors');
+          }
+          if (multiple === MonitorMultiple.SCALING) {
+            const multipleRows = new Set<number>();
+            const multipleCols = new Set<number>();
+            groupIds.forEach((item, i, arr) => {
+              if (i && item.row > arr[i - 1]?.row) {
+                multipleCols.clear();
+              }
+              if (multipleRows.has(item.row) && multipleCols.has(item.col)) {
+                throw new BadRequestError(
+                  `Monitor multiple '${item.monitorId}': row '${item.row}' with col '${item.col}' is already occupied`,
+                );
+              }
+              multipleRows.add(item.row);
+              multipleCols.add(item.col);
+            });
+          }
+        } else if (multipleBool) {
+          throw new BadRequestError('Group monitors ID is not empty');
+        }
+
+        if (multipleBool) {
+          const monitorMultiple = groupMonitors.map(async (groupMonitor) => {
+            const groupMonitorId = groupMonitor.id;
+            const item = groupIds.find((i) => i.monitorId === groupMonitorId);
+            if (!item) {
+              throw new BadRequestError('Not found ID of some monitors');
+            }
+
+            // добавляем в таблицу связей мониторов монитор
+            await transact.insert(MonitorGroupEntity, {
+              userId,
+              parentMonitorId: monitor.id,
+              monitorId: groupMonitorId,
+              row: item.row,
+              col: item.col,
+            });
+
+            // и помечаем монитор как подчиненный
+            await transact.update(
+              MonitorEntity,
+              { id: groupMonitorId },
+              {
+                multiple: MonitorMultiple.SUBORDINATE,
+              },
+            );
           });
 
-          // и помечаем монитор как подчиненный
-          await transact.update(
-            MonitorEntity,
-            { id: groupMonitorId },
-            {
-              multiple: MonitorMultiple.SUBORDINATE,
-            },
-          );
-        });
+          await Promise.all(monitorMultiple);
+        }
 
-        await Promise.all(monitorMultiple);
-      }
+        await this.wsStatistics.onMetrics(user);
 
-      await this.wsStatistics.onMetrics(user);
-
-      return monitor;
-    });
+        return monitor;
+      },
+    );
   }
 
   async attached(attached = true): Promise<void> {
@@ -605,32 +655,66 @@ export class MonitorService {
     await this.wsStatistics.onChangeMonitorDelete(user, monitor);
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
-      return this.monitorRepository.manager.transaction(async (transact) => {
-        const monitorMultiple = await transact.find(MonitorGroupEntity, {
-          where: {
-            parentMonitorId: monitorId,
-          },
-        });
-        if (monitorMultiple.length > 0) {
-          const monitorIds = monitorMultiple.map((item) => item.monitorId);
-          await Promise.all([
-            transact.update(
-              MonitorEntity,
-              { id: In(monitorIds) },
-              { multiple: MonitorMultiple.SINGLE },
-            ),
-            transact.delete(MonitorGroupEntity, {
+      return this.monitorRepository.manager.transaction(
+        'REPEATABLE READ',
+        async (transact) => {
+          const monitorMultiple = await transact.find(MonitorGroupEntity, {
+            where: {
               parentMonitorId: monitorId,
-            }),
-          ]);
-        }
+            },
+          });
+          if (monitorMultiple.length > 0) {
+            const monitorIds = monitorMultiple.map((item) => item.monitorId);
+            await Promise.all([
+              transact.update(
+                MonitorEntity,
+                { id: In(monitorIds) },
+                { multiple: MonitorMultiple.SINGLE },
+              ),
+              transact.delete(MonitorGroupEntity, {
+                parentMonitorId: monitorId,
+              }),
+            ]);
+          }
 
-        return transact.delete(MonitorEntity, { id: monitorId });
-      });
+          return transact.delete(MonitorEntity, { id: monitorId });
+        },
+      );
     }
 
     return this.monitorRepository.delete({
       id: monitorId,
     });
+  }
+
+  async upload(
+    user: UserEntity,
+    monitor: MonitorEntity,
+    {
+      photos: _photos,
+      documents: _docs,
+    }: { photos?: Express.Multer.File[]; documents?: Express.Multer.File[] },
+  ): Promise<MonitorEntity> {
+    const { id: userId } = user;
+    const { id: folderId } = await this.folderService.monitorFolder(userId);
+    let photos: FileEntity[] | undefined;
+    let documents: FileEntity[] | undefined;
+    if (_photos) {
+      photos = await this.fileService.upload({
+        user,
+        files: _photos,
+        folderId,
+      });
+    }
+    if (_docs) {
+      documents = await this.fileService.upload({
+        user,
+        files: _docs,
+        folderId,
+      });
+    }
+    return this.monitorRepository.save(
+      this.monitorRepository.merge(monitor, { photos, documents }),
+    );
   }
 }

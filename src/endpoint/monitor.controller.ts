@@ -19,9 +19,16 @@ import {
   Post,
   Put,
   Req,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { isDateString } from 'class-validator';
 
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/errors';
@@ -53,6 +60,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { BidService } from '@/database/bid.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 @ApiComplexDecorators({
   path: ['monitor'],
@@ -99,7 +107,12 @@ export class MonitorController {
     const find: FindManyOptions<MonitorEntity> = {
       ...paginationQuery(scope),
       select,
-      relations: { favorities: true, groupMonitors: true },
+      relations: {
+        photos: true,
+        documents: true,
+        favorities: true,
+        groupMonitors: true,
+      },
     };
     if (role === UserRoleEnum.Monitor) {
       // добавляем то, что содержится у нас в userId: monitorId.
@@ -419,6 +432,128 @@ export class MonitorController {
     if (!data) {
       throw new NotFoundError(`Monitor '${id}' not found`);
     }
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Put(':monitorId/upload-photos')
+  @Roles([UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner])
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'monitor-upload-photos',
+    summary: 'Загрузка файлов картинок монитора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MonitorGetResponse,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['files'],
+      properties: {
+        files: {
+          type: 'array',
+          description: 'Файл(ы)',
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+    },
+  })
+  @UseInterceptors(FilesInterceptor('files'))
+  @Crud(CRUD.UPDATE)
+  async uploadPhotosMonitor(
+    @Req() { user }: ExpressRequest,
+    @Param('monitorId', ParseUUIDPipe) id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<MonitorGetResponse> {
+    if (!files || !Array.isArray(files) || files.length < 1) {
+      throw new BadRequestError();
+    }
+    const { id: userId, role } = user;
+    const find: FindManyOptions<MonitorEntity> = {
+      where: {
+        id,
+        userId: role !== UserRoleEnum.Administrator ? userId : undefined,
+      },
+    };
+    const monitor = await this.monitorService.findOne({
+      userId,
+      find,
+    });
+    if (!monitor) {
+      throw new NotFoundError(`Monitor '${id}' not found`);
+    }
+    const data = await this.monitorService.upload(user, monitor, {
+      photos: files,
+    });
+
+    return {
+      status: Status.Success,
+      data,
+    };
+  }
+
+  @Put(':monitorId/upload-documents')
+  @Roles([UserRoleEnum.Administrator, UserRoleEnum.MonitorOwner])
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'monitor-upload-documents',
+    summary: 'Загрузка документов монитора',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Успешный ответ',
+    type: MonitorGetResponse,
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['files'],
+      properties: {
+        files: {
+          type: 'array',
+          description: 'Файл(ы)',
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+    },
+  })
+  @UseInterceptors(FilesInterceptor('files'))
+  @Crud(CRUD.UPDATE)
+  async uploadDocumentsMonitor(
+    @Req() { user }: ExpressRequest,
+    @Param('monitorId', ParseUUIDPipe) id: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<MonitorGetResponse> {
+    if (!files || !Array.isArray(files) || files.length < 1) {
+      throw new BadRequestError();
+    }
+    const { id: userId, role } = user;
+    const find: FindManyOptions<MonitorEntity> = {
+      where: {
+        id,
+        userId: role !== UserRoleEnum.Administrator ? userId : undefined,
+      },
+    };
+    const monitor = await this.monitorService.findOne({
+      userId,
+      find,
+    });
+    if (!monitor) {
+      throw new NotFoundError(`Monitor '${id}' not found`);
+    }
+    const data = await this.monitorService.upload(user, monitor, {
+      documents: files,
+    });
 
     return {
       status: Status.Success,

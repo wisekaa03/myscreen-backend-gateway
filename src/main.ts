@@ -62,6 +62,7 @@ async function bootstrap() {
         whitelist: true,
         forbidNonWhitelisted: true,
         forbidUnknownValues: true,
+        skipUndefinedProperties: true,
       }),
     )
     .useGlobalInterceptors(new LoggerErrorInterceptor())

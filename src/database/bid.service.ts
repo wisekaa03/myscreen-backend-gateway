@@ -271,18 +271,18 @@ export class BidService {
 
   private async bidPostCreate({
     bid,
-    entityManager,
+    transact,
   }: {
     bid: BidEntity;
-    entityManager?: EntityManager;
+    transact?: EntityManager;
   }): Promise<void> {
     const { multiple } = bid.monitor;
     const { id, seqNo, createdAt, updatedAt, ...insert } = bid;
     if (multiple === MonitorMultiple.SINGLE) {
       await this.websocketChange({ bid });
     } else {
-      const manager = entityManager ?? this.bidRepository.manager;
-      await manager.transaction(async (transact) => {
+      const manager = transact ?? this.bidRepository.manager;
+      await manager.transaction('REPEATABLE READ', async (transact) => {
         const groupMonitors = await this.editorService.partitionMonitors({
           bid,
         });
@@ -312,19 +312,19 @@ export class BidService {
 
   private async bidPreDelete({
     bid,
-    entityManager,
+    transact,
     delete: deleteLocal = false,
   }: {
     bid: BidEntity;
-    entityManager?: EntityManager;
+    transact?: EntityManager;
     delete?: boolean;
   }): Promise<void> {
     const { multiple } = bid.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
       await this.websocketChange({ bidDelete: bid });
     } else {
-      const manager = entityManager ?? this.bidRepository.manager;
-      await manager.transaction(async (transact) => {
+      const manager = transact ?? this.bidRepository.manager;
+      await manager.transaction('REPEATABLE READ', async (transact) => {
         const groupApplication = await transact.find(BidEntity, {
           where: {
             parentRequestId: bid.id,
@@ -355,81 +355,86 @@ export class BidService {
    * @returns
    */
   async update(id: string, update: Partial<BidEntity>): Promise<BidEntity> {
-    return this.bidRepository.manager.transaction(async (transact) => {
-      const updateResult = await transact.update(
-        BidEntity,
-        id,
-        transact.create(BidEntity, update),
-      );
-      if (!updateResult.affected) {
-        throw new NotFoundError('Application not found');
-      }
+    return this.bidRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const updateResult = await transact.update(
+          BidEntity,
+          id,
+          transact.create(BidEntity, update),
+        );
+        if (!updateResult.affected) {
+          throw new NotFoundError('Application not found');
+        }
 
-      let relations: FindOneOptions<BidEntity>['relations'];
-      if (update.approved !== BidApprove.NOTPROCESSED) {
-        relations = {
-          buyer: true,
-          seller: true,
-          monitor: { groupMonitors: true, user: true },
-          playlist: { files: true },
-          user: true,
-        };
-      } else {
-        relations = { seller: true };
-      }
-      const bid = await transact.findOne(BidEntity, {
-        where: { id },
-        relations,
-      });
-      if (!bid) {
-        throw new NotFoundError('Application not found');
-      }
-
-      if (update.approved === BidApprove.NOTPROCESSED) {
-        const sellerEmail = bid.seller?.email;
-        const language = bid.seller?.preferredLanguage;
-        if (sellerEmail) {
-          this.mailService.emit<unknown, MailSendBidMessage>(
-            'sendBidWarningMessage',
-            {
-              email: sellerEmail,
-              bidUrl: `${this.fileService.frontEndUrl}/bids`,
-              language,
-            },
-          );
+        let relations: FindOneOptions<BidEntity>['relations'];
+        if (update.approved !== BidApprove.NOTPROCESSED) {
+          relations = {
+            buyer: true,
+            seller: true,
+            monitor: { groupMonitors: true, user: true },
+            playlist: { files: true },
+            user: true,
+          };
         } else {
-          this.logger.error(`BidService seller email='${sellerEmail}'`);
+          relations = { seller: true };
         }
-      } else if (update.approved === BidApprove.ALLOWED) {
-        // Оплата поступает на пользователя - владельца монитора
-        const sumIncrement =
-          -(Number(bid.sum) * (100 - this.commissionPercent)) / 100;
-        if (sumIncrement !== 0) {
-          await this.actService.create({
-            userId: bid.monitor.user.id,
-            sum: sumIncrement,
-            isSubscription: false,
-            description: `Оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
-          });
+        const bid = await transact.findOne(BidEntity, {
+          where: { id },
+          relations,
+        });
+        if (!bid) {
+          throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
         }
 
-        await this.bidPostCreate({ bid, entityManager: transact });
-      } else if (update.approved === BidApprove.DENIED) {
-        // Снята оплата на пользователя - рекламодателя
-        if (Number(bid.sum) !== 0) {
-          await this.actService.create({
-            userId: bid.seller.id,
-            sum: bid.sum,
-            isSubscription: false,
-            description: `Снята оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
-          });
+        if (update.approved === BidApprove.NOTPROCESSED) {
+          const sellerEmail = bid.seller?.email;
+          const language = bid.seller?.preferredLanguage;
+          if (sellerEmail) {
+            this.mailService.emit<unknown, MailSendBidMessage>(
+              'sendBidWarningMessage',
+              {
+                email: sellerEmail,
+                bidUrl: `${this.fileService.frontEndUrl}/bids`,
+                language,
+              },
+            );
+          } else {
+            this.logger.error(`BidService seller email='${sellerEmail}'`);
+          }
+        } else if (update.approved === BidApprove.ALLOWED) {
+          // Оплата поступает на пользователя - владельца монитора
+          const sumIncrement =
+            -(Number(bid.sum) * (100 - this.commissionPercent)) / 100;
+          if (sumIncrement !== 0) {
+            await this.actService.create({
+              userId: bid.monitor.user.id,
+              sum: sumIncrement,
+              isSubscription: false,
+              description: `Оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
+              transact,
+            });
+          }
+
+          await this.bidPostCreate({ bid, transact });
+        } else if (update.approved === BidApprove.DENIED) {
+          // Снята оплата на пользователя - рекламодателя
+          if (Number(bid.sum) !== 0) {
+            await this.actService.create({
+              userId: bid.seller.id,
+              sum: bid.sum,
+              isSubscription: false,
+              description: `Возврат средств после отмены заявки №${bid.seqNo}}`,
+              transact,
+            });
+          }
+
+          await this.bidPreDelete({ bid, transact });
         }
 
-        await this.bidPreDelete({ bid, entityManager: transact });
-      }
-
-      return bid;
-    });
+        return bid;
+      },
+    );
   }
 
   async create({
@@ -469,146 +474,158 @@ export class BidService {
       });
     }
 
-    return this.bidRepository.manager.transaction(async (transact) => {
-      const bidsPromise = monitorIds.map(async (monitorId) => {
-        // Проверяем наличие мониторов
-        let monitor = await this.monitorService.findOne({
-          find: {
-            where: { id: monitorId },
-            loadEagerRelations: false,
-            relations: {},
-          },
-        });
-        if (!monitor) {
-          throw new NotFoundError(`Monitor '${monitorIds}' not found`);
-        }
-
-        monitor = await this.monitorService.update(monitorId, {
-          playlist,
-        });
-
-        const approved =
-          monitor.userId === userId
-            ? BidApprove.ALLOWED
-            : BidApprove.NOTPROCESSED;
-
-        let sum = 0;
-        if (userId !== monitor.userId) {
-          sum = await this.precalculateSum({
-            user,
-            minWarranty: monitor.minWarranty,
-            price1s: monitor.price1s,
-            dateBefore,
-            dateWhen,
-            playlistId,
+    return this.bidRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const bidsPromise = monitorIds.map(async (monitorId) => {
+          // Проверяем наличие мониторов
+          let monitor = await this.monitorService.findOne({
+            find: {
+              where: { id: monitorId },
+              loadEagerRelations: false,
+              relations: {},
+              transact,
+            },
           });
+          if (!monitor) {
+            throw new NotFoundError(`Monitor '${monitorIds}' not found`);
+          }
 
-          if (sum > totalBalance) {
-            throw new NotAcceptableError('BALANCE', {
-              args: { sum, totalBalance },
+          monitor = await this.monitorService.update(
+            monitorId,
+            {
+              playlist,
+            },
+            undefined,
+            transact,
+          );
+
+          const approved =
+            monitor.userId === userId
+              ? BidApprove.ALLOWED
+              : BidApprove.NOTPROCESSED;
+
+          let sum = 0;
+          if (userId !== monitor.userId) {
+            sum = await this.precalculateSum({
+              user,
+              minWarranty: monitor.minWarranty,
+              price1s: monitor.price1s,
+              dateBefore,
+              dateWhen,
+              playlistId,
             });
-          }
-        }
 
-        const insert: DeepPartial<BidEntity> = {
-          sellerId: monitor.userId,
-          buyerId: userId,
-          monitor,
-          playlist,
-          approved,
-          userId,
-          dateBefore,
-          dateWhen,
-          playlistChange,
-          sum,
-        };
-
-        const insertResult = await transact.insert(
-          BidEntity,
-          transact.create(BidEntity, insert),
-        );
-        if (!insertResult.identifiers[0]) {
-          throw new NotFoundError('BID_ERROR');
-        }
-        const { id } = insertResult.identifiers[0];
-
-        let relations: FindOneOptions<BidEntity>['relations'];
-        if (!(insert.approved === BidApprove.NOTPROCESSED || !insert.hide)) {
-          relations = { buyer: true, seller: true, user: true };
-        } else {
-          relations = {
-            buyer: true,
-            seller: true,
-            monitor: { groupMonitors: true, user: true },
-            playlist: { files: true },
-            user: true,
-          };
-        }
-        const bid = await transact.findOne(BidEntity, {
-          where: { id },
-          relations,
-        });
-        if (!bid) {
-          throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
-        }
-
-        // Списываем средства со счета пользователя Рекламодателя
-        if (sum !== 0) {
-          await this.actService.create({
-            userId,
-            sum,
-            isSubscription: false,
-            description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
-          });
-        }
-
-        // Отправляем письмо продавцу
-        if (insert.approved === BidApprove.NOTPROCESSED) {
-          const sellerEmail = bid.seller?.email;
-          const language =
-            bid.seller.preferredLanguage ?? user.preferredLanguage;
-          if (sellerEmail) {
-            this.mailService.emit<unknown, MailSendBidMessage>(
-              'sendBidWarningMessage',
-              {
-                email: sellerEmail,
-                bidUrl: `${this.fileService.frontEndUrl}/bids`,
-                language,
-              },
-            );
-          } else {
-            this.logger.error(`BidService seller email='${sellerEmail}'`);
-          }
-        } else if (insert.approved === BidApprove.ALLOWED) {
-          // Оплата поступает на пользователя - владельца монитора
-          if (sum !== 0) {
-            const sumIncrement = -(sum * (100 - this.commissionPercent)) / 100;
-            const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
-            if (sumIncrement !== 0) {
-              await this.actService.create({
-                userId: actUserResponse.id,
-                sum: sumIncrement,
-                isSubscription: false,
-                description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+            if (sum > totalBalance) {
+              throw new NotAcceptableError('BALANCE', {
+                args: { sum, totalBalance },
               });
             }
           }
 
-          await this.bidPostCreate({ bid, entityManager: transact });
-        } else if (insert.approved === BidApprove.DENIED) {
-          await this.bidPreDelete({ bid, entityManager: transact });
-        }
+          const insert: DeepPartial<BidEntity> = {
+            sellerId: monitor.userId,
+            buyerId: userId,
+            monitor,
+            playlist,
+            approved,
+            userId,
+            dateBefore,
+            dateWhen,
+            playlistChange,
+            sum,
+          };
 
-        await Promise.all([
-          this.wsStatistics.onMetrics(bid.seller),
-          this.wsStatistics.onMetrics(bid.buyer ? bid.buyer : monitor.user),
-        ]);
+          const insertResult = await transact.insert(
+            BidEntity,
+            transact.create(BidEntity, insert),
+          );
+          if (!insertResult.identifiers[0]) {
+            throw new NotFoundError('BID_ERROR');
+          }
+          const { id } = insertResult.identifiers[0];
 
-        return bid;
-      });
+          let relations: FindOneOptions<BidEntity>['relations'];
+          if (!(insert.approved === BidApprove.NOTPROCESSED || !insert.hide)) {
+            relations = { buyer: true, seller: true, user: true };
+          } else {
+            relations = {
+              buyer: true,
+              seller: true,
+              monitor: { groupMonitors: true, user: true },
+              playlist: { files: true },
+              user: true,
+            };
+          }
+          const bid = await transact.findOne(BidEntity, {
+            where: { id },
+            relations,
+          });
+          if (!bid) {
+            throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
+          }
 
-      return Promise.all(bidsPromise);
-    });
+          // Списываем средства со счета пользователя Рекламодателя
+          if (sum !== 0) {
+            await this.actService.create({
+              userId,
+              sum,
+              isSubscription: false,
+              description: `Оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
+              transact,
+            });
+          }
+
+          // Отправляем письмо продавцу
+          if (insert.approved === BidApprove.NOTPROCESSED) {
+            const sellerEmail = bid.seller?.email;
+            const language =
+              bid.seller.preferredLanguage ?? user.preferredLanguage;
+            if (sellerEmail) {
+              this.mailService.emit<unknown, MailSendBidMessage>(
+                'sendBidWarningMessage',
+                {
+                  email: sellerEmail,
+                  bidUrl: `${this.fileService.frontEndUrl}/bids`,
+                  language,
+                },
+              );
+            } else {
+              this.logger.error(`BidService seller email='${sellerEmail}'`);
+            }
+          } else if (insert.approved === BidApprove.ALLOWED) {
+            // Оплата поступает на пользователя - владельца монитора
+            if (sum !== 0) {
+              const sumIncrement =
+                -(sum * (100 - this.commissionPercent)) / 100;
+              const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
+              if (sumIncrement !== 0) {
+                await this.actService.create({
+                  userId: actUserResponse.id,
+                  sum: sumIncrement,
+                  isSubscription: false,
+                  description: `Оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
+                  transact,
+                });
+              }
+            }
+
+            await this.bidPostCreate({ bid, transact });
+          } else if (insert.approved === BidApprove.DENIED) {
+            await this.bidPreDelete({ bid, transact });
+          }
+
+          await Promise.all([
+            this.wsStatistics.onMetrics(bid.seller),
+            this.wsStatistics.onMetrics(bid.buyer ? bid.buyer : monitor.user),
+          ]);
+
+          return bid;
+        });
+
+        return Promise.all(bidsPromise);
+      },
+    );
   }
 
   async delete(bid: BidEntity): Promise<DeleteResult> {

@@ -537,13 +537,21 @@ export class MonitorEntity extends BaseEntity {
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   playlistId?: string | null;
 
-  @ManyToMany(() => FileEntity, (file) => file.monitors, {
+  @ManyToMany(() => FileEntity, {
     cascade: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
   @JoinTable()
-  files?: FileEntity[];
+  photos!: FileEntity[];
+
+  @ManyToMany(() => FileEntity, {
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinTable()
+  documents!: FileEntity[];
 
   @OneToMany(() => BidEntity, (bid) => bid.monitor, {
     eager: false,

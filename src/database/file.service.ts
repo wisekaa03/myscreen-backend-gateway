@@ -1,4 +1,10 @@
-import { createReadStream, promises as fs, createWriteStream } from 'node:fs';
+import { createHash } from 'node:crypto';
+import {
+  createReadStream,
+  promises as fs,
+  createWriteStream,
+  ReadStream,
+} from 'node:fs';
 import internal from 'node:stream';
 import StreamPromises from 'node:stream/promises';
 import { join as pathJoin, parse as pathParse } from 'node:path';
@@ -20,6 +26,8 @@ import {
   DeepPartial,
   DeleteResult,
   In,
+  EntityManager,
+  IsNull,
 } from 'typeorm';
 
 import {
@@ -36,7 +44,6 @@ import {
   filePreviewPDF,
   filePreviewXLS,
 } from '@/constants';
-import { FileUploadRequest } from '@/dto';
 import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -44,11 +51,10 @@ import { FileEntity } from '@/database/file.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { EditorEntity } from './editor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { MonitorEntity } from './monitor.entity';
 import { FolderEntity } from './folder.entity';
 import { UserEntity } from './user.entity';
-import { InvoiceEntity } from './invoice.entity';
 import { WsStatistics } from './ws.statistics';
+import { FfprobeData } from 'media-probe';
 
 @Injectable()
 export class FileService {
@@ -114,7 +120,7 @@ export class FileService {
   }): Promise<FileEntity[]> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
-      conditional.relations = { monitors: true, playlists: true };
+      conditional.relations = {};
     }
 
     const files = caseInsensitive
@@ -148,7 +154,7 @@ export class FileService {
   }): Promise<[FileEntity[], number]> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
-      conditional.relations = { monitors: true, playlists: true };
+      conditional.relations = {};
     }
     const files = caseInsensitive
       ? await TypeOrmFind.findAndCountCI(this.fileRepository, conditional)
@@ -184,7 +190,7 @@ export class FileService {
   }): Promise<FileEntity | null> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
-      conditional.relations = { monitors: true, playlists: true };
+      conditional.relations = {};
     }
 
     const file = caseInsensitive
@@ -219,34 +225,43 @@ export class FileService {
     } as FileEntity;
   }
 
-  async createFolder(folder: Partial<FolderEntity>): Promise<FolderEntity> {
-    const inserted = await this.folderRepository.insert(
-      this.folderRepository.create(folder),
-    );
-    if (!inserted.identifiers[0]) {
+  async createFolder(
+    folder: Partial<FolderEntity>,
+    _transact?: EntityManager,
+  ): Promise<FolderEntity> {
+    const transact = _transact
+      ? _transact.withRepository(this.folderRepository)
+      : this.folderRepository;
+
+    const created = await transact.save(folder);
+    if (!created) {
       throw new NotFoundError('Error when creating folder');
     }
-    const { id } = inserted.identifiers[0];
 
-    const find = await this.folderRepository.findOne({ where: { id } });
-    if (!find) {
-      throw new NotFoundError('Error when creating folder');
-    }
-
-    return find;
+    return created;
   }
 
-  async rootFolder(userId: string): Promise<FolderEntity> {
-    let folder = await this.folderRepository.findOne({
-      where: { name: '<Корень>', userId },
+  async rootFolder(
+    userId: string,
+    _transact?: EntityManager,
+  ): Promise<FolderEntity> {
+    const transact = _transact
+      ? _transact.withRepository(this.folderRepository)
+      : this.folderRepository;
+
+    let folder = await transact.findOne({
+      where: { parentFolder: IsNull(), userId },
     });
 
     if (!folder) {
-      folder = await this.createFolder({
-        name: '<Корень>',
-        parentFolderId: null,
-        userId,
-      });
+      folder = await this.createFolder(
+        {
+          name: '<Корень>',
+          parentFolderId: null,
+          userId,
+        },
+        _transact,
+      );
     }
 
     return folder;
@@ -264,148 +279,208 @@ export class FileService {
     file: FileEntity,
     update: Partial<FileEntity>,
   ): Promise<FileEntity> {
-    return this.fileRepository.manager.transaction(async (transact) => {
-      const s3Name = getS3Name(file.name);
-      const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
-      let Key = `${file.folderId}/${file.hash}-${s3Name}`;
-      if (update.folderId !== undefined && update.folderId !== file.folderId) {
-        if (update.name !== undefined && update.name !== file.name) {
+    return this.fileRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const s3Name = getS3Name(file.name);
+        const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
+        let Key = `${file.folderId}/${file.hash}-${s3Name}`;
+        if (
+          update.folderId !== undefined &&
+          update.folderId !== file.folderId
+        ) {
+          if (update.name !== undefined && update.name !== file.name) {
+            const s3NameUpdated = getS3Name(update.name);
+            Key = `${update.folderId}/${file.hash}-${s3NameUpdated}`;
+          } else {
+            Key = `${update.folderId}/${file.hash}-${s3Name}`;
+          }
+        } else if (update.name !== undefined && update.name !== file.name) {
           const s3NameUpdated = getS3Name(update.name);
-          Key = `${update.folderId}/${file.hash}-${s3NameUpdated}`;
-        } else {
-          Key = `${update.folderId}/${file.hash}-${s3Name}`;
+          Key = `${file.folderId}/${file.hash}-${s3NameUpdated}`;
         }
-      } else if (update.name !== undefined && update.name !== file.name) {
-        const s3NameUpdated = getS3Name(update.name);
-        Key = `${file.folderId}/${file.hash}-${s3NameUpdated}`;
-      }
 
-      await this.s3Service
-        .copyObject({
-          Bucket: this.bucket,
-          Key,
-          CopySource: `${this.bucket}/${CopySource}`,
-          MetadataDirective: 'REPLACE',
-        })
-        .then(() =>
-          this.s3Service.deleteObject({
+        await this.s3Service
+          .copyObject({
             Bucket: this.bucket,
-            Key: CopySource,
-          }),
-        );
+            Key,
+            CopySource: `${this.bucket}/${CopySource}`,
+            MetadataDirective: 'REPLACE',
+          })
+          .then(() =>
+            this.s3Service.deleteObject({
+              Bucket: this.bucket,
+              Key: CopySource,
+            }),
+          );
 
-      await transact.update(FileEntity, file.id, {
-        folderId: update?.folderId,
-        name: update?.name,
-      });
-      const data = await transact.findOneByOrFail(FileEntity, { id: file.id });
+        await transact.update(FileEntity, file.id, {
+          folderId: update?.folderId,
+          name: update?.name,
+        });
+        const data = await transact.findOneByOrFail(FileEntity, {
+          id: file.id,
+        });
 
-      await this.wsStatistics.onChange({ files: [data] });
+        await this.wsStatistics.onChange({ files: [data] });
 
-      return data;
-    });
+        return data;
+      },
+    );
   }
 
   /**
    * Upload files
    * @async
    * @param {UserEntity} user User ID
-   * @param {FileUploadRequest} {FileUploadRequest} File upload request
-   * @param {Array<Express.Multer.File>} {Array<Express.Multer.File>} files The Express files
+   * @param {Express.Multer.File[] | Express.Multer.File | Buffer} files File upload request
+   * @param {string} folderId Folder ID
+   * @param {string} originalname Original name of the file
    */
-  async upload(
-    user: UserEntity,
-    { folderId: folderIdOrig = undefined }: FileUploadRequest,
-    files: Express.Multer.File[],
-  ): Promise<FileEntity[]> {
-    return this.fileRepository.manager.transaction(async (transact) => {
-      let folder: FolderEntity | null = null;
-      const { id: userId } = user;
-      if (!folderIdOrig) {
-        folder = await this.rootFolder(userId);
-      } else {
-        folder = await this.folderRepository.findOne({
-          where: { userId, id: folderIdOrig },
-        });
-        if (!folder) {
-          throw new NotFoundError(`Folder '${folderIdOrig}' not found`);
-        }
-      }
-      const { id: folderId } = folder;
+  async upload(param: {
+    user: UserEntity;
+    files: Express.Multer.File[] | Express.Multer.File | Buffer;
+    folderId?: string;
+    originalname?: string;
+    mimetype?: string;
+    info?: FfprobeData;
+    transact?: EntityManager;
+  }): Promise<FileEntity[]> {
+    const {
+      user,
+      files: _files,
+      folderId: _folderId,
+      originalname: _originalname,
+      mimetype: _mimetype,
+      info: _info,
+      transact,
+    } = param;
+    let files: Express.Multer.File[];
+    if (Array.isArray(_files)) {
+      files = _files;
+    } else if (Buffer.isBuffer(_files)) {
+      const hashFunc = createHash('md5');
+      hashFunc.update(_files);
+      const _hash = hashFunc.digest('hex');
+      files = [
+        {
+          originalname: _originalname,
+          size: _files.length,
+          media: _info,
+          mimetype: _mimetype,
+          buffer: _files,
+          hash: _hash,
+        } as Express.Multer.File,
+      ];
+    } else {
+      files = [_files];
+    }
+    const transactFolder = transact
+      ? transact.withRepository(this.folderRepository)
+      : this.folderRepository;
+    const transactFile = transact
+      ? transact.withRepository(this.fileRepository)
+      : this.fileRepository;
 
-      const filesPromises = files.map(async (file) => {
-        const {
-          mimetype,
-          originalname,
-          hash,
-          path,
-          media: info,
-          size: filesize,
-        } = file;
-
-        const [mime] = mimetype.split('/');
-        const extension = pathParse(originalname).ext.slice(1);
-        const fileType =
-          Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
-
-        const stream = info?.streams?.[0];
-        let duration = 0;
-        let width = 0;
-        let height = 0;
-        if (stream) {
-          duration = Number(stream.duration ?? 0);
-          width = Number(stream.width ?? 0);
-          height = Number(stream.height ?? 0);
-        }
-
-        const fileToSave: DeepPartial<FileEntity> = {
-          userId,
-          folderId: folderId ?? undefined,
-          name: originalname,
-          filesize,
-          duration,
-          width,
-          height,
-          info,
-          videoType: fileType,
-          extension,
-          hash,
-          preview: undefined,
-        };
-
-        const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
-        try {
-          const fileUploaded = await this.s3Service.putObject({
-            Bucket: this.bucket,
-            Key,
-            ContentType: mimetype,
-            Body: createReadStream(path),
-          });
-          if (!fileUploaded) {
-            throw new Error('Failed to upload');
-          }
-          this.logger.debug(
-            `S3: the file "${path}" uploaded to "${Key}": ${JSON.stringify(
-              fileUploaded,
-            )}`,
-          );
-        } catch (error: unknown) {
-          this.logger.error(`S3 upload error: "${error?.toString()}"`, error);
-          throw new InternalServerError(error);
-        }
-
-        const fileUpdated = await transact.save(
-          FileEntity,
-          transact.create(FileEntity, fileToSave),
-        );
-
-        return fileUpdated;
+    const { id: userId } = user;
+    let folderId: string;
+    if (_folderId) {
+      const folder = await transactFolder.findOne({
+        where: { userId, id: _folderId },
+        select: ['id'],
       });
+      if (!folder) {
+        throw new NotFoundError(`Folder '${_folderId}' not found`);
+      }
+      folderId = folder.id;
+    } else {
+      folderId = (await this.rootFolder(userId, transact)).id;
+    }
 
-      await this.wsStatistics.onMetrics(user);
+    return transactFile.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const filesPromises = files.map(async (file) => {
+          const {
+            mimetype,
+            originalname,
+            path,
+            media: info,
+            size: filesize,
+            buffer,
+          } = file;
+          const { hash } = file;
+          let filesBuffer: ReadStream | Buffer;
+          if (Buffer.isBuffer(buffer)) {
+            filesBuffer = buffer;
+          } else {
+            filesBuffer = createReadStream(path);
+          }
 
-      return Promise.all(filesPromises);
-    });
+          const [mime] = mimetype.split('/');
+          const extension = pathParse(originalname).ext.slice(1);
+          const fileType =
+            Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
+
+          const stream = info?.streams?.[0];
+          let duration = 0;
+          let width = 0;
+          let height = 0;
+          if (stream) {
+            duration = Number(stream.duration ?? 0);
+            width = Number(stream.width ?? 0);
+            height = Number(stream.height ?? 0);
+          }
+
+          const fileToSave: DeepPartial<FileEntity> = {
+            userId,
+            folderId,
+            name: originalname,
+            filesize,
+            duration,
+            width,
+            height,
+            info,
+            videoType: fileType,
+            extension,
+            hash,
+            preview: undefined,
+          };
+
+          const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
+          try {
+            const uploaded = await this.s3Service.putObject({
+              Bucket: this.bucket,
+              Key,
+              ContentType: mimetype,
+              Body: filesBuffer,
+            });
+            this.logger.warn(
+              `S3: the file "${originalname}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
+            );
+          } catch (error: unknown) {
+            this.logger.error(
+              `S3 upload error: "${JSON.stringify(error)}"`,
+              error,
+            );
+            throw new InternalServerError(error);
+          }
+
+          const fileUpdated = await transact.save(
+            FileEntity,
+            transact.create(FileEntity, fileToSave),
+          );
+
+          return fileUpdated;
+        });
+
+        const filesDatabase = await Promise.all(filesPromises);
+
+        await this.wsStatistics.onMetrics(user);
+
+        return filesDatabase;
+      },
+    );
   }
 
   /**
@@ -490,8 +565,9 @@ export class FileService {
     userId: string,
     toFolder: FolderEntity,
     originalFiles: FileEntity[],
+    transact?: EntityManager,
   ): Promise<FileEntity[]> {
-    return this.fileRepository.manager.transaction(async (transact) => {
+    const copyFiles = (transact: EntityManager) => {
       const filePromises = originalFiles.map(async (file) => {
         await this.copyS3Object(toFolder, file);
 
@@ -511,7 +587,16 @@ export class FileService {
       });
 
       return Promise.all(filePromises);
-    });
+    };
+
+    if (transact) {
+      return copyFiles(transact);
+    }
+
+    return this.fileRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => copyFiles(transact),
+    );
   }
 
   async deletePrep(filesId: string[]): Promise<void> {

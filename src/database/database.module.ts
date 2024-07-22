@@ -102,7 +102,7 @@ export class DatabaseModule implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    await this.manager.transaction(async (manager) => {
+    await this.manager.transaction('REPEATABLE READ', async (manager) => {
       const monitors = await manager.find(MonitorEntity, {
         where: [
           {
@@ -120,6 +120,8 @@ export class DatabaseModule implements OnModuleInit {
           groupOnlineMonitors: 0,
         });
       }
+
+      await manager.query('DROP TABLE IF EXISTS monitor_files_file');
     });
   }
 }

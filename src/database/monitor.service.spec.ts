@@ -11,10 +11,10 @@ import {
 import { MonitorEntity } from './monitor.entity';
 import { MonitorFavoriteEntity } from './monitor.favorite.entity';
 import { MonitorService } from './monitor.service';
-import { BidService } from './bid.service';
 import { MonitorGroupEntity } from './monitor.group.entity';
-import { WalletService } from './wallet.service';
 import { WsStatistics } from './ws.statistics';
+import { FolderService } from './folder.service';
+import { FileService } from './file.service';
 
 export const mockRepository = jest.fn(() => ({
   find: async (find: FindOneOptions<ObjectLiteral>) =>
@@ -60,6 +60,8 @@ describe(MonitorService.name, () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         MonitorService,
+        { provide: FolderService, useClass: mockRepository },
+        { provide: FileService, useClass: mockRepository },
         { provide: WsStatistics, useClass: mockRepository },
         {
           provide: getRepositoryToken(MonitorEntity),

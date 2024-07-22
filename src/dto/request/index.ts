@@ -20,7 +20,6 @@ export * from './folders-update.request';
 export * from './folder-create.request';
 export * from './folder-id-update.request';
 export * from './file.request';
-export * from './file-upload.request';
 export * from './file-update.request';
 export * from './file-id.request';
 export * from './files-update.request';

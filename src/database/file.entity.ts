@@ -184,6 +184,7 @@ export class FileEntity extends BaseEntity {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
     nullable: true,
+    eager: false,
   })
   @ApiProperty({
     description: 'Мониторы',
@@ -193,20 +194,6 @@ export class FileEntity extends BaseEntity {
     isArray: true,
   })
   playlists?: PlaylistEntity[];
-
-  @ManyToMany(() => MonitorEntity, (monitor) => monitor.files, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    nullable: true,
-  })
-  @ApiProperty({
-    description: 'Мониторы',
-    required: false,
-    type: 'string',
-    allOf: [{ $ref: '#/components/schemas/MonitorResponse' }],
-    isArray: true,
-  })
-  monitors?: MonitorEntity[];
 
   @CreateDateColumn()
   @ApiProperty({
@@ -251,7 +238,7 @@ export class FileEntity extends BaseEntity {
     required: false,
   })
   @IsUrl({}, { message: i18nValidationMessage('validation.IS_URL') })
-  signedUrl?: string;
+  signedUrl!: string;
 
   @AfterLoad()
   @AfterUpdate()

@@ -11,6 +11,7 @@ import Jabber from 'jabber';
 import WebSocket from 'ws';
 import { Logger } from 'nestjs-pino';
 import { I18nValidationPipe } from 'nestjs-i18n';
+import dayjs from 'dayjs';
 
 import {
   AuthResponse,
@@ -50,6 +51,7 @@ import {
   EditorExportRequest,
   EditorGetRenderingStatusResponse,
   MonitorsPlaylistAttachRequest,
+  FoldersCopyRequest,
 } from '@/dto';
 import {
   BidStatus,
@@ -74,7 +76,6 @@ import { UserResponse } from '@/database/user-response.entity';
 import { WsEvent } from '@/enums/ws-event.enum';
 import { HttpError } from '@/errors';
 import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
-import dayjs from 'dayjs';
 
 const delay = (ms: number) => () => new Promise((res) => setTimeout(res, ms));
 
@@ -184,8 +185,8 @@ const loginRequestAccountant: LoginRequest = {
 };
 
 const updateUser: UserUpdateRequest = {
-  surname: 'Monitor',
-  name: 'Owner',
+  surname: 'Owner',
+  name: 'Monitor',
   middleName: 'the best monitor-owner !',
   phoneNumber: '+78003000000',
   city: 'Krasnodar',
@@ -209,7 +210,7 @@ const updateUser: UserUpdateRequest = {
 };
 
 const monitorOwnerInvoiceSum = 1000;
-const advertiserInvoiceSum = 200000;
+const advertiserInvoiceSum = 5000000000;
 
 let app: INestApplication;
 let wsAdvertiser: WebSocket;
@@ -283,11 +284,13 @@ const MONITOR_OWNER_MONITOR_COUNT_OFFLINE = 7;
 const MONITOR_OWNER_MONITOR_COUNT_ONLINE = 0;
 const MONITOR_OWNER_MONITOR_COUNT_EMPTY = 7;
 
+let monitorOwnerRootFolderId: string | null;
 let monitorOwnerFolderBarId: string;
 let monitorOwnerFolderBazId: string;
 let monitorOwnerFolderFooId: string;
 
 let monitorOwnerImageId: string;
+let monitorOwnerImageId1: string;
 let advertiserVideoId: string;
 
 let advertiserPlaylistId1: string;
@@ -295,6 +298,8 @@ let advertiserEditorId: string;
 let advertiserEditorLayerId: string;
 
 let monitorOwnerInvoiceId: string;
+let monitorOwnerInvoiceId2: string;
+let monitorOwnerInvoiceFilesize2: number;
 let advertiserInvoiceId: string;
 
 describe('Backend API (e2e)', () => {
@@ -323,6 +328,7 @@ describe('Backend API (e2e)', () => {
         whitelist: true,
         forbidNonWhitelisted: true,
         forbidUnknownValues: true,
+        skipUndefinedProperties: true,
       }),
     );
     app.useWebSocketAdapter(new WsAdapter(app));
@@ -1511,7 +1517,7 @@ describe('Backend API (e2e)', () => {
      * Accountant: Закачка счета для monitorOwnerInvoiceId
      */
     test(`Accountant: POST /invoice/upload/{monitorOwnerInvoiceId} (Закачка счета)`, async () => {
-      if (!accountantToken) {
+      if (!accountantToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
       }
 
@@ -1528,7 +1534,8 @@ describe('Backend API (e2e)', () => {
           expect(body.data.id).toBe(monitorOwnerInvoiceId);
           expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
           expect(body.data.file).toBeDefined();
-          expect(body.data.file.id).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data?.user?.password).toBeUndefined();
         });
     });
@@ -1554,7 +1561,8 @@ describe('Backend API (e2e)', () => {
           expect(body.data.id).toBe(advertiserInvoiceId);
           expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
           expect(body.data.file).toBeDefined();
-          expect(body.data.file.id).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data?.user?.password).toBeUndefined();
         });
     });
@@ -1577,6 +1585,9 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBe(monitorOwnerInvoiceId);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
           );
@@ -1602,6 +1613,9 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBe(advertiserInvoiceId);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
           );
@@ -1627,6 +1641,9 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBe(monitorOwnerInvoiceId);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.status).toBe(InvoiceStatus.PAID);
           expect(body.data?.user?.password).toBeUndefined();
         });
@@ -1650,6 +1667,9 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.id).toBe(advertiserInvoiceId);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.status).toBe(InvoiceStatus.PAID);
           expect(body.data?.user?.password).toBeUndefined();
         });
@@ -1659,7 +1679,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Скачивание счета
      */
     test('MonitorOwner: GET /invoice/download/{monitorOwnerInvoiceId}/xlsx (Скачивание счета)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
       }
 
@@ -1675,9 +1695,69 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
+     * MonitorOwner: Выставление счета - 2
+     */
+    test('MonitorOwner: PUT /invoice (Выставление счета - 2)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+
+      const invoice: InvoiceCreateRequest = {
+        sum: monitorOwnerInvoiceSum,
+        description: 'Тестовый 2',
+      };
+
+      await request
+        .put(`${apiPath}/invoice`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(invoice)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBeDefined();
+          expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
+          expect(body.data?.user?.password).toBeUndefined();
+          monitorOwnerInvoiceId2 = body.data.id;
+        });
+    });
+
+    /**
+     * Accountant: Подтверждение счета 2 для monitorOwnerInvoiceId2
+     */
+    test(`Accountant: GET /invoice/confirmed/{monitorOwnerInvoiceId2} (Подтверждение счета 2)`, async () => {
+      if (!accountantToken || !monitorOwnerInvoiceId2) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .get(`${apiPath}/invoice/confirmed/${monitorOwnerInvoiceId2}`)
+        .auth(accountantToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: InvoiceGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(monitorOwnerInvoiceId2);
+          expect(body.data.file).toBeDefined();
+          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file?.signedUrl).toBeDefined();
+          expect(body.data.file?.filesize).toBeDefined();
+          monitorOwnerInvoiceFilesize2 = Number(body.data.file?.filesize ?? 0);
+          expect(body.data.status).toBe(
+            InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
+          );
+          expect(body.data?.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
      * MonitorOwner: История операций
      */
-    test('MonitorOwner: POST /wallet (История операций)', async () => {
+    test('MonitorOwner: POST /wallet (История операций DEBIT)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
       }
@@ -1699,7 +1779,45 @@ describe('Backend API (e2e)', () => {
           expect(body.data).toBeDefined();
           expect(body.count).toBe(1);
           expect(Number(body.data[0].sum)).toBe(monitorOwnerInvoiceSum);
-          expect(body.data[0].invoiceId).toBeDefined();
+          expect(body.data[0].invoiceId).toBe(monitorOwnerInvoiceId);
+          expect(body.data[0].actId).toBeNull();
+          expect(body.data[0].description).toBeDefined();
+          expect(body.data[0]?.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
+     * MonitorOwner: История операций
+     */
+    test('MonitorOwner: POST /wallet (История операций CREDIT)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+
+      const wallet: WalletOperationsGetRequest = {
+        where: { type: WalletTransactionType.CREDIT },
+        scope: {},
+      };
+
+      await request
+        .post(`${apiPath}/wallet`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(wallet)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: WalletOperationsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.count).toBe(1);
+          expect(Number(body.data[0].sum)).toBe(
+            0 - configService.getOrThrow('SUBSCRIPTION_FEE'),
+          );
+          expect(body.data[0].actId).toBeDefined();
+          expect(body.data[0].invoiceId).toBeNull();
+          expect(body.data[0].description).toBe(
+            configService.getOrThrow('SUBSCRIPTION_DESCRIPTION'),
+          );
           expect(body.data[0]?.user?.password).toBeUndefined();
         });
     });
@@ -1743,7 +1861,9 @@ describe('Backend API (e2e)', () => {
       expect(metrics).toBeDefined();
       expect(metrics.event).toBe(WsEvent.METRICS);
       expect(metrics.data).toBeDefined();
-      expect(metrics.data.storageSpace.storage).toBe(fileXLSfilesize);
+      expect(metrics.data.storageSpace.storage).toBe(
+        fileXLSfilesize + monitorOwnerInvoiceFilesize2,
+      );
       expect(metrics.data.monitors.user).toBe(0);
       expect(metrics.data.monitors.empty).toBe(0);
       expect(metrics.data.monitors.online).toBe(0);
@@ -2132,6 +2252,50 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
+     * MonitorOwner: Картинки монитора Single
+     */
+    test('MonitorOwner: PUT /monitor/{monitorSingleId}/upload-photos (Картинки монитора Single)', async () => {
+      if (!monitorOwnerToken || !monitorSingleId) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .put(`${apiPath}/monitor/${monitorSingleId}/upload-photos`)
+        .attach('files', imageTestingDirname)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
+     * MonitorOwner: Документы монитора Single
+     */
+    test('MonitorOwner: PUT /monitor/{monitorSingleId}/upload-documents (Документы монитора Single)', async () => {
+      if (!monitorOwnerToken || !monitorSingleId) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .put(`${apiPath}/monitor/${monitorSingleId}/upload-documents`)
+        .attach('files', fileXLS)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: MonitorGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.user?.password).toBeUndefined();
+        });
+    });
+
+    /**
      * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
@@ -2181,7 +2345,11 @@ describe('Backend API (e2e)', () => {
       expect(metrics.data.monitors.empty).toBe(
         MONITOR_OWNER_MONITOR_COUNT_EMPTY,
       );
-      expect(metrics.data.storageSpace.storage).toBe(fileXLSfilesize);
+      expect(metrics.data.storageSpace.storage).toBe(
+        2 * fileXLSfilesize +
+          imageTestingFilesize +
+          monitorOwnerInvoiceFilesize2,
+      );
       expect(metrics.data.playlists.added).toBe(0);
       expect(metrics.data.playlists.played).toBe(0);
       wsMonitorOwner.close();
@@ -2201,9 +2369,11 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data.id).toBeDefined();
+          expect(body.data.parentFolderId).toBeDefined();
           expect(body.data.name).toBe('bar');
           expect((body.data as any)?.user?.password).toBeUndefined();
           monitorOwnerFolderBarId = body.data.id;
+          monitorOwnerRootFolderId = body.data.parentFolderId;
         });
     });
 
@@ -2269,7 +2439,7 @@ describe('Backend API (e2e)', () => {
     /**
      * MonitorOwner: Создание новой под-папки
      */
-    test('MonitorOwner: PUT /folder [name: "foo", monitorOwnerFolderBarId] (Создание новой под-папки)', async () => {
+    test('MonitorOwner: PUT /folder (Создание новой под-папки: /bar/foo)', async () => {
       await request
         .put(`${apiPath}/folder`)
         .auth(monitorOwnerToken, { type: 'bearer' })
@@ -2290,7 +2460,7 @@ describe('Backend API (e2e)', () => {
     /**
      * MonitorOwner: Создание новой под-папки
      */
-    test('MonitorOwner: PUT /folder [name: "baz", monitorOwnerFolderBarId] (Создание новой под-папки)', async () => {
+    test('MonitorOwner: PUT /folder (Создание новой под-папки: /bar/baz)', async () => {
       await request
         .put(`${apiPath}/folder`)
         .auth(monitorOwnerToken, { type: 'bearer' })
@@ -2304,20 +2474,20 @@ describe('Backend API (e2e)', () => {
           expect(body.data.name).toBe('baz');
           expect(body.data.parentFolderId).toBe(monitorOwnerFolderBarId);
           expect((body.data as any)?.user?.password).toBeUndefined();
-          monitorOwnerFolderFooId = body.data.id;
+          monitorOwnerFolderBazId = body.data.id;
         });
     });
 
     /**
-     * MonitorOwner: Загрузка файлов
+     * MonitorOwner: Загрузка файлов в папку /bar/foo
      */
-    test('MonitorOwner: PUT /file (Загрузка файлов)', async () => {
+    test('MonitorOwner: PUT /file (Загрузка файлов в папку /bar/foo)', async () => {
       if (!monitorOwnerToken || !monitorOwnerFolderFooId) {
         expect(false).toEqual(true);
       }
 
       const field = {
-        param: `{ "folderId": "${monitorOwnerFolderFooId}", "category": "media" }`,
+        param: `{ "folderId": "${monitorOwnerFolderFooId}" }`,
       };
       const files = imageTestingDirname;
 
@@ -2371,6 +2541,63 @@ describe('Backend API (e2e)', () => {
 
       expect(body).toBeDefined();
       expect((body as HttpError)?.status).toBeUndefined();
+    });
+
+    /**
+     * MonitorOwner: Загрузка файлов в папку /bar/baz
+     */
+    test('MonitorOwner: PUT /file (Загрузка файлов в папку /bar/baz)', async () => {
+      if (!monitorOwnerToken || !monitorOwnerFolderBazId) {
+        expect(false).toEqual(true);
+      }
+
+      const field = {
+        param: `{ "folderId": "${monitorOwnerFolderBazId}" }`,
+      };
+      const files = imageTestingDirname;
+
+      const { body }: { body: FilesUploadResponse } = await request
+        .put(`${apiPath}/file`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .field(field)
+        .attach('files', files)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(body.status).toBe(Status.Success);
+      expect(body.data).toBeDefined();
+      expect(body.data[0].id).toBeDefined();
+      monitorOwnerImageId1 = body.data[0].id;
+      expect(body.data[0]?.user?.password).toBeUndefined();
+    });
+
+    /**
+     * MonitorOwner: Копирование папок
+     */
+    test('MonitorOwner: PATCH /folder/copy (Копирование папок)', async () => {
+      if (
+        !monitorOwnerToken ||
+        !monitorOwnerRootFolderId ||
+        !monitorOwnerFolderBazId
+      ) {
+        expect(false).toEqual(true);
+      } else {
+        const folderCopy: FoldersCopyRequest = {
+          toFolder: monitorOwnerRootFolderId,
+          folders: [{ id: monitorOwnerFolderBazId }],
+        };
+
+        const { body }: { body: HttpError | FoldersGetResponse } = await request
+          .patch(`${apiPath}/folder/copy`)
+          .send(folderCopy)
+          .auth(monitorOwnerToken, { type: 'bearer' })
+          .set('Accept', 'application/json')
+          .expect(200);
+
+        expect(body).toBeDefined();
+        expect(body.status).toBe(Status.Success);
+      }
     });
 
     /**
@@ -2484,7 +2711,9 @@ describe('Backend API (e2e)', () => {
         MONITOR_OWNER_MONITOR_COUNT_EMPTY,
       );
       expect(metrics.data.storageSpace.storage).toBe(
-        imageTestingFilesize + fileXLSfilesize,
+        3 * imageTestingFilesize +
+          2 * fileXLSfilesize +
+          monitorOwnerInvoiceFilesize2,
       );
       expect(metrics.data.playlists.added).toBe(0);
       expect(metrics.data.playlists.played).toBe(0);
@@ -2715,6 +2944,7 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.user?.password).toBeUndefined();
+          expect(body.data.id).toBe(monitorGroupMirrorId);
           expect(body.data.favorite).toBe(true);
         });
     });
@@ -2737,6 +2967,7 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.data.user?.password).toBeUndefined();
+          expect(body.data.id).toBe(monitorGroupMirrorId);
           expect(body.data.favorite).toBe(false);
         });
     });
@@ -2786,10 +3017,10 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * MonitorOwner: Отправка плэйлиста на монитор
+     * MonitorOwner: Отправка плэйлиста на монитор Single
      */
-    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор)', async () => {
-      if (!advertiserToken || !advertiserPlaylistId1) {
+    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Single)', async () => {
+      if (!advertiserToken || !advertiserPlaylistId1 || !monitorSingleId) {
         expect(false).toEqual(true);
       }
 
@@ -2818,11 +3049,81 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
+     * MonitorOwner: Отправка плэйлиста на монитор Mirror
+     */
+    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Mirror)', async () => {
+      if (!advertiserToken || !advertiserPlaylistId1 || !monitorGroupMirrorId) {
+        expect(false).toEqual(true);
+      }
+
+      const playlistToMonitor: MonitorsPlaylistAttachRequest = {
+        playlistId: advertiserPlaylistId1,
+        monitorIds: [monitorGroupMirrorId],
+        bid: {
+          dateBefore: dayjs().subtract(1).toDate(),
+          dateWhen: dayjs().add(1).toDate(),
+          playlistChange: true,
+        },
+      };
+
+      await request
+        .patch(`${apiPath}/monitor/playlist`)
+        .auth(advertiserToken, { type: 'bearer' })
+        .send(playlistToMonitor)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.count).toBe(1);
+        });
+    });
+
+    /**
+     * MonitorOwner: Отправка плэйлиста на монитор Scaling
+     */
+    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Scaling)', async () => {
+      if (
+        !advertiserToken ||
+        !advertiserPlaylistId1 ||
+        !monitorGroupScalingId
+      ) {
+        expect(false).toEqual(true);
+      }
+
+      const playlistToMonitor: MonitorsPlaylistAttachRequest = {
+        playlistId: advertiserPlaylistId1,
+        monitorIds: [monitorGroupScalingId],
+        bid: {
+          dateBefore: dayjs().subtract(1).toDate(),
+          dateWhen: dayjs().add(1).toDate(),
+          playlistChange: true,
+        },
+      };
+
+      await request
+        .patch(`${apiPath}/monitor/playlist`)
+        .auth(advertiserToken, { type: 'bearer' })
+        .send(playlistToMonitor)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.count).toBe(1);
+        });
+    });
+
+    /**
      *
      * Повышаем роли Advertiser до администратора и логинимся, и после этого удаляем все
      *
      */
     describe('Повышаем роли Advertiser до администратора и логинимся, и после этого удаляем все', () => {
+      // return;
+
       /**
        * Administrator
        */
