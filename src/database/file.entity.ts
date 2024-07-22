@@ -94,7 +94,7 @@ export class FileEntity extends BaseEntity {
   // @IsHash()
   hash!: string;
 
-  @Column({ type: 'enum', enum: FileType })
+  @Column({ type: 'enum', enum: FileType, default: FileType.OTHER })
   @ApiProperty({
     description: 'Тип файла',
     deprecated: true,

@@ -443,6 +443,7 @@ export class FileService {
             width,
             height,
             info,
+            videoType: fileType,
             type: fileType,
             extension,
             hash,
