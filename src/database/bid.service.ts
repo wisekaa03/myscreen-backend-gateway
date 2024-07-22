@@ -384,7 +384,7 @@ export class BidService {
           relations,
         });
         if (!bid) {
-          throw new NotFoundError('Application not found');
+          throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
         }
 
         if (update.approved === BidApprove.NOTPROCESSED) {
@@ -411,7 +411,7 @@ export class BidService {
               userId: bid.monitor.user.id,
               sum: sumIncrement,
               isSubscription: false,
-              description: `Оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
+              description: `Оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
               transact,
             });
           }
@@ -424,7 +424,7 @@ export class BidService {
               userId: bid.seller.id,
               sum: bid.sum,
               isSubscription: false,
-              description: `Снята оплата за монитор "${bid.monitor.name}" рекламодателем "${getFullName(bid.user)}"`,
+              description: `Снята оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
               transact,
             });
           }
@@ -571,7 +571,7 @@ export class BidService {
               userId,
               sum,
               isSubscription: false,
-              description: `Заявка №${bid.seqNo}. Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+              description: `Оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
               transact,
             });
           }
@@ -604,7 +604,7 @@ export class BidService {
                   userId: actUserResponse.id,
                   sum: sumIncrement,
                   isSubscription: false,
-                  description: `Оплата за монитор "${monitor.name}" рекламодателем "${getFullName(user)}"`,
+                  description: `Оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
                   transact,
                 });
               }
