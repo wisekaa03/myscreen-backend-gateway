@@ -241,7 +241,7 @@ export class FileEntity extends BaseEntity {
     description: 'Подписанный URL на файл',
     example: 'https://storage.yandex.ru/file.mp4',
     type: 'string',
-    required: false,
+    required: true,
   })
   @IsUrl({}, { message: i18nValidationMessage('validation.IS_URL') })
   signedUrl!: string;
