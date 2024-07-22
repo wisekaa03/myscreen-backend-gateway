@@ -296,7 +296,7 @@ export class FileController {
           'userId',
           'hash',
           'info',
-          'videoType',
+          'type',
           'name',
           'duration',
           'width',
@@ -318,7 +318,7 @@ export class FileController {
       res.setHeader('Content-Length', buffer.length);
       res.setHeader('Cache-Control', 'private, max-age=315360');
       const fileParse = pathParse(file.name);
-      if (file.videoType === FileType.VIDEO) {
+      if (file.type === FileType.VIDEO) {
         res.setHeader('Content-Type', 'video/webm');
         res.setHeader(
           'Content-Disposition',
@@ -326,7 +326,7 @@ export class FileController {
             `${fileParse.name}-preview.webm`,
           )};`,
         );
-      } else if (file.videoType === FileType.IMAGE) {
+      } else if (file.type === FileType.IMAGE) {
         res.setHeader('Content-Type', 'image/jpeg');
         res.setHeader(
           'Content-Disposition',

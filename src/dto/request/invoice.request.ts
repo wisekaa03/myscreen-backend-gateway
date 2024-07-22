@@ -1,7 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import {
   IsDateString,
-  IsDefined,
   IsEnum,
   IsNumber,
   IsOptional,
@@ -14,7 +13,7 @@ import { MSRange, MSRangeEnum } from '@/interfaces';
 import { InvoiceStatus } from '@/enums';
 
 export class InvoiceRequest extends PartialType(
-  OmitType(InvoiceEntity, ['sum', 'status', 'createdAt', 'updatedAt']),
+  OmitType(InvoiceEntity, ['sum', 'status', 'file', 'createdAt', 'updatedAt']),
 ) {
   @ApiProperty({
     description: 'Сумма счета',

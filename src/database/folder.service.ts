@@ -3,7 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DeleteResult, In, EntityManager, IsNull } from 'typeorm';
 
 import { NotFoundError } from '@/errors';
-import { administratorFolderId, administratorFolderName } from '@/constants';
+import {
+  administratorFolderId,
+  administratorFolderName,
+  exportFolderName,
+  invoiceFolderName,
+  monitorFolderName,
+  rootFolderName,
+} from '@/constants';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
@@ -91,9 +98,10 @@ export class FolderService {
     if (!folder) {
       folder = await this.create(
         {
-          name: '<Корень>',
+          name: rootFolderName,
           parentFolder: null,
           userId,
+          system: true,
         },
         _transact,
       );
@@ -110,8 +118,9 @@ export class FolderService {
 
     const folder = await this.findOne({
       where: {
-        name: '<Исполненные>',
+        name: exportFolderName,
         parentFolderId,
+        system: true,
         userId,
       },
       caseInsensitive: false,
@@ -121,8 +130,9 @@ export class FolderService {
     if (!folder) {
       return this.create(
         {
-          name: '<Исполненные>',
+          name: exportFolderName,
           parentFolderId,
+          system: true,
           userId,
         },
         _transact,
@@ -140,8 +150,9 @@ export class FolderService {
 
     const folder = await this.findOne({
       where: {
-        name: '<Счета>',
+        name: invoiceFolderName,
         parentFolderId,
+        system: true,
         userId,
       },
       caseInsensitive: false,
@@ -151,9 +162,10 @@ export class FolderService {
     if (!folder) {
       return this.create(
         {
-          name: '<Счета>',
+          name: invoiceFolderName,
           parentFolderId,
           userId,
+          system: true,
         },
         transact,
       );
@@ -170,9 +182,10 @@ export class FolderService {
 
     const folder = await this.findOne({
       where: {
-        name: '<Мониторы>',
+        name: monitorFolderName,
         parentFolderId,
         userId,
+        system: true,
       },
       caseInsensitive: false,
       transact: _transact,
@@ -181,9 +194,10 @@ export class FolderService {
     if (!folder) {
       return this.create(
         {
-          name: '<Мониторы>',
+          name: monitorFolderName,
           parentFolderId,
           userId,
+          system: true,
         },
         _transact,
       );
@@ -202,6 +216,7 @@ export class FolderService {
       id: administratorFolderId,
       name: administratorFolderName,
       parentFolderId: parentFolder.id,
+      system: true,
     } as FolderEntity;
   }
 

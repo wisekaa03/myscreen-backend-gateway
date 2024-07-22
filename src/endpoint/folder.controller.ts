@@ -69,11 +69,12 @@ export class FolderController {
     @Req() { user }: ExpressRequest,
     @Body() { scope, select, where }: FoldersGetRequest,
   ): Promise<FoldersGetResponse> {
-    const { id: userId } = user;
+    const { id: userId, role } = user;
     let count = 0;
     let data: FolderResponse[] = [];
+    const { id: rootFolderId } = await this.folderService.rootFolder(userId);
     const whereLocal = {
-      parentFolderId: await this.folderService.rootFolder(userId),
+      parentFolderId: rootFolderId,
       ...where,
     };
     [data, count] = await this.folderService.findAndCount({
@@ -145,6 +146,16 @@ export class FolderController {
   ): Promise<FoldersGetResponse> {
     const { id: userId } = user;
     const parentFoldersId = folders.map((folder) => folder.id);
+
+    const foldersCheck = await this.folderService.find({
+      where: { id: In(parentFoldersId) },
+      select: ['id', 'system'],
+      caseInsensitive: false,
+    });
+    if (foldersCheck.some((folder) => folder.system)) {
+      throw new BadRequestError('This is a system folder in a list');
+    }
+
     let parentFolders: FolderEntity[] | undefined;
     if (parentFoldersId) {
       parentFolders = await this.folderService.find({
@@ -256,9 +267,17 @@ export class FolderController {
     @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { foldersId }: FoldersDeleteRequest,
   ): Promise<SuccessResponse> {
-    const rootFolder = await this.folderService.rootFolder(userId);
-    if (foldersId.includes(rootFolder.id)) {
+    const { id: rootFolderId } = await this.folderService.rootFolder(userId);
+    if (foldersId.includes(rootFolderId)) {
       throw new BadRequestError('This is a root folder in a list');
+    }
+    const folders = await this.folderService.find({
+      where: { id: In(foldersId) },
+      select: ['id', 'system'],
+      caseInsensitive: false,
+    });
+    if (folders.some((folder) => folder.system)) {
+      throw new BadRequestError('This is a system folder in a list');
     }
 
     const { affected } = await this.folderService.delete(foldersId);

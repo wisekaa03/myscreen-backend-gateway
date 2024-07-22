@@ -7,6 +7,7 @@ export class FolderResponse extends PickType(FolderFileNumberEntity, [
   'name',
   'parentFolderId',
   'empty',
+  'system',
   'createdAt',
   'updatedAt',
 ]) {}

@@ -88,6 +88,13 @@ export class LimitOrderRequest<T = Record<string, 'DESC' | 'ASC'>> {
     enumName: 'Order',
     required: false,
   })
+  type?: Order;
+
+  @ApiProperty({
+    enum: Order,
+    enumName: 'Order',
+    required: false,
+  })
   filesize?: Order;
 
   @ApiProperty({

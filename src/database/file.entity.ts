@@ -101,12 +101,25 @@ export class FileEntity extends BaseEntity {
     enum: FileType,
     enumName: 'FileType',
     example: FileType.VIDEO,
-    required: false,
+    required: true,
   })
   @IsEnum(FileType, {
     message: i18nValidationMessage('validation.IS_ENUM'),
   })
   videoType!: FileType;
+
+  @Column({ type: 'enum', enum: FileType, default: FileType.OTHER })
+  @ApiProperty({
+    description: 'Тип файла',
+    enum: FileType,
+    enumName: 'FileType',
+    example: FileType.VIDEO,
+    required: true,
+  })
+  @IsEnum(FileType, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
+  type!: FileType;
 
   @Column({ type: 'integer' })
   @ApiProperty({
@@ -185,13 +198,6 @@ export class FileEntity extends BaseEntity {
     onUpdate: 'CASCADE',
     nullable: true,
     eager: false,
-  })
-  @ApiProperty({
-    description: 'Мониторы',
-    required: false,
-    type: 'string',
-    allOf: [{ $ref: '#/components/schemas/PlaylistResponse' }],
-    isArray: true,
   })
   playlists?: PlaylistEntity[];
 
