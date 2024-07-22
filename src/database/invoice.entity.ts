@@ -90,6 +90,10 @@ export class InvoiceEntity extends BaseEntity {
     nullable: true,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_invoice_file' })
+  @ApiProperty({
+    type: () => FileEntity,
+    description: 'Файл',
+  })
   file!: FileEntity | null;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {

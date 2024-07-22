@@ -101,7 +101,7 @@ export class FileEntity extends BaseEntity {
     enum: FileType,
     enumName: 'FileType',
     example: FileType.VIDEO,
-    required: false,
+    required: true,
   })
   @IsEnum(FileType, {
     message: i18nValidationMessage('validation.IS_ENUM'),
@@ -235,7 +235,7 @@ export class FileEntity extends BaseEntity {
     description: 'Подписанный URL на файл',
     example: 'https://storage.yandex.ru/file.mp4',
     type: 'string',
-    required: false,
+    required: true,
   })
   @IsUrl({}, { message: i18nValidationMessage('validation.IS_URL') })
   signedUrl!: string;
