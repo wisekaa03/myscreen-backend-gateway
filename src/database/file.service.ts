@@ -43,6 +43,7 @@ import {
   filePreviewOther,
   filePreviewPDF,
   filePreviewXLS,
+  rootFolderName,
 } from '@/constants';
 import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
@@ -256,9 +257,10 @@ export class FileService {
     if (!folder) {
       folder = await this.createFolder(
         {
-          name: '<Корень>',
+          name: rootFolderName,
           parentFolderId: null,
           userId,
+          system: true,
         },
         _transact,
       );
@@ -442,6 +444,7 @@ export class FileService {
             height,
             info,
             videoType: fileType,
+            type: fileType,
             extension,
             hash,
             preview: undefined,
@@ -739,13 +742,13 @@ export class FileService {
     const filenameParsed = pathParse(filename);
     const { name, ext } = filenameParsed;
     let outPath = pathJoin(this.downloadDir, `${name}-preview`);
-    if (file.videoType === FileType.VIDEO) {
+    if (file.type === FileType.VIDEO) {
       outPath += '.webm';
-    } else if (file.videoType === FileType.IMAGE) {
+    } else if (file.type === FileType.IMAGE) {
       outPath += '.jpg';
-    } else if (file.videoType === FileType.AUDIO) {
+    } else if (file.type === FileType.AUDIO) {
       return Buffer.from(filePreviewAudio);
-    } else if (file.videoType === FileType.OTHER) {
+    } else if (file.type === FileType.OTHER) {
       if (ext === '.xlsx' || ext === '.xls' || ext === '.ods') {
         return Buffer.from(filePreviewXLS);
       } else if (ext === '.docx' || ext === '.doc' || ext === '.odt') {
@@ -771,7 +774,7 @@ export class FileService {
         await StreamPromises.pipeline(data.Body, outputStream);
         this.logger.debug(`The file "${file.name}" has been downloaded`);
         await FfMpegPreview(
-          file.videoType,
+          file.type,
           file.info || {},
           filename,
           outPath,

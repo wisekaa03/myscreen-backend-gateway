@@ -35,6 +35,7 @@ import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { EditorEntity } from '@/database/editor.entity';
+import { FileResponse } from '@/dto';
 
 @Entity('playlist', { comment: 'Плейлисты' })
 @Unique('IDX_userId_name', ['userId', 'name'])
@@ -120,7 +121,8 @@ export class PlaylistEntity extends BaseEntity {
   @JoinTable()
   @ApiProperty({
     description: 'Файлы',
-    type: FileEntity,
+    items: { $ref: '#/components/schemas/FileResponse' },
+    isArray: true,
   })
   @IsUUID('all', {
     each: true,

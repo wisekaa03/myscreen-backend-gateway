@@ -78,8 +78,7 @@ export class TypeOrmLogger implements ITypeOrmLogger {
   /**
    * Logs events from the schema build process.
    */
-  logSchemaBuild = (message: string, queryRunner?: QueryRunner): void =>
-    this.logger.verbose(message, queryRunner);
+  logSchemaBuild = (message: string): void => this.logger.verbose(message);
 
   /**
    * Logs events from the migrations run process.
@@ -99,6 +98,6 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     level === 'log'
       ? this.logger.log(message, queryRunner)
       : level === 'info'
-        ? this.logger.verbose(message, queryRunner)
-        : this.logger.warn(message, queryRunner);
+        ? this.logger.verbose(JSON.stringify(message), queryRunner)
+        : this.logger.warn(JSON.stringify(message), queryRunner);
 }

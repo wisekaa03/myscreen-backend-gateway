@@ -297,12 +297,9 @@ export class EditorController {
       ...body,
       file,
     };
-    if (file.videoType === FileType.AUDIO) {
+    if (file.type === FileType.AUDIO) {
       create.audio = [editor];
-    } else if (
-      file.videoType === FileType.IMAGE ||
-      file.videoType === FileType.VIDEO
-    ) {
+    } else if (file.type === FileType.IMAGE || file.type === FileType.VIDEO) {
       create.video = [editor];
     }
 

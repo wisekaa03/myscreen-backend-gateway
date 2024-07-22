@@ -319,7 +319,7 @@ export class EditorService {
 
     const clips = layers.map((layer) => {
       const duration = this.calcDuration(layer);
-      if (layer.file.videoType === FileType.IMAGE) {
+      if (layer.file.type === FileType.IMAGE) {
         return {
           duration,
           layers: [

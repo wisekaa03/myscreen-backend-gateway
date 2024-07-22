@@ -91,8 +91,10 @@ export class InvoiceEntity extends BaseEntity {
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_invoice_file' })
   @ApiProperty({
-    type: () => FileEntity,
     description: 'Файл',
+    nullable: true,
+    allOf: [{ $ref: '#/components/schemas/FileResponse' }],
+    required: true,
   })
   file!: FileEntity | null;
 

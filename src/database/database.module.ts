@@ -122,6 +122,9 @@ export class DatabaseModule implements OnModuleInit {
       }
 
       await manager.query('DROP TABLE IF EXISTS monitor_files_file');
+      await manager.query(
+        'UPDATE "file" SET "type" = ("videoType"::text)::file_type_enum',
+      );
     });
   }
 }

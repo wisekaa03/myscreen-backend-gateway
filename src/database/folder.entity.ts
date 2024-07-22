@@ -21,6 +21,7 @@ import {
   IsDateString,
   IsOptional,
   MaxLength,
+  IsBoolean,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
@@ -134,4 +135,12 @@ export class FolderEntity extends BaseEntity {
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
   updatedAt?: Date;
+
+  @Column({ type: 'boolean', default: false, nullable: true })
+  @ApiProperty({
+    description: 'Системная папка',
+    required: true,
+  })
+  @IsBoolean()
+  system!: boolean;
 }

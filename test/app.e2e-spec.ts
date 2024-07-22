@@ -899,32 +899,6 @@ describe('Backend API (e2e)', () => {
 
   /**
    *
-   * Файлы
-   *
-   */
-  describe('Файлы /file', () => {
-    /**
-     * Получение списка файлов (неуспешно)
-     */
-    test('POST /file [unsuccess] (Получение списка файлов)', async () => {
-      if (!advertiserToken) {
-        expect(false).toEqual(true);
-      }
-
-      await request
-        .post(`${apiPath}/file`)
-        .auth(advertiserToken, { type: 'bearer' })
-        .send({
-          where: { folderId: '111' },
-        })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(400);
-    });
-  });
-
-  /**
-   *
    * Мониторы
    *
    */
@@ -1746,7 +1720,7 @@ describe('Backend API (e2e)', () => {
           expect(body.data.file?.id).toBeDefined();
           expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data.file?.filesize).toBeDefined();
-          monitorOwnerInvoiceFilesize2 = Number(body.data.file?.filesize ?? 0);
+          monitorOwnerInvoiceFilesize2 = Number(body.data.file?.filesize || 0);
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
           );
@@ -2486,16 +2460,14 @@ describe('Backend API (e2e)', () => {
         expect(false).toEqual(true);
       }
 
-      const field = {
-        param: `{ "folderId": "${monitorOwnerFolderFooId}" }`,
-      };
+      const folderId = monitorOwnerFolderFooId;
       const files = imageTestingDirname;
 
       const { body }: { body: FilesUploadResponse } = await request
         .put(`${apiPath}/file`)
         .auth(monitorOwnerToken, { type: 'bearer' })
         .set('Accept', 'application/json')
-        .field(field)
+        .field({ folderId })
         .attach('files', files)
         .expect('Content-Type', /json/)
         .expect(200);
@@ -2505,6 +2477,25 @@ describe('Backend API (e2e)', () => {
       expect(body.data[0].id).toBeDefined();
       monitorOwnerImageId = body.data[0].id;
       expect(body.data[0]?.user?.password).toBeUndefined();
+    });
+
+    /**
+     * MonitorOwner: Получение списка файлов (неуспешно)
+     */
+    test('MonitorOwner: POST /file (Получение списка файлов, неуспешно)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .post(`${apiPath}/file`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send({
+          where: { folderId: '111' },
+        })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(400);
     });
 
     /**
@@ -2551,16 +2542,14 @@ describe('Backend API (e2e)', () => {
         expect(false).toEqual(true);
       }
 
-      const field = {
-        param: `{ "folderId": "${monitorOwnerFolderBazId}" }`,
-      };
+      const folderId = monitorOwnerFolderBazId;
       const files = imageTestingDirname;
 
       const { body }: { body: FilesUploadResponse } = await request
         .put(`${apiPath}/file`)
         .auth(monitorOwnerToken, { type: 'bearer' })
         .set('Accept', 'application/json')
-        .field(field)
+        .field({ folderId })
         .attach('files', files)
         .expect('Content-Type', /json/)
         .expect(200);
@@ -2608,16 +2597,12 @@ describe('Backend API (e2e)', () => {
         expect(false).toEqual(true);
       }
 
-      const field = {
-        param: `{}`,
-      };
       const files = videoTestingDirname;
 
       const { body }: { body: FilesUploadResponse } = await request
         .put(`${apiPath}/file`)
         .auth(advertiserToken, { type: 'bearer' })
         .set('Accept', 'application/json')
-        .field(field)
         .attach('files', files)
         .expect('Content-Type', /json/)
         .expect(200);
@@ -2711,7 +2696,7 @@ describe('Backend API (e2e)', () => {
         MONITOR_OWNER_MONITOR_COUNT_EMPTY,
       );
       expect(metrics.data.storageSpace.storage).toBe(
-        3 * imageTestingFilesize +
+        4 * imageTestingFilesize +
           2 * fileXLSfilesize +
           monitorOwnerInvoiceFilesize2,
       );
