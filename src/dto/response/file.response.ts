@@ -6,6 +6,7 @@ import { FolderResponse } from './folder.response';
 
 export class FileResponse extends OmitType(FileEntity, [
   'preview',
+  'videoType',
   'folder',
   'folderId',
 ]) {
