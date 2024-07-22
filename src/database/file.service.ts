@@ -1,4 +1,10 @@
-import { createReadStream, promises as fs, createWriteStream } from 'node:fs';
+import { createHash } from 'node:crypto';
+import {
+  createReadStream,
+  promises as fs,
+  createWriteStream,
+  ReadStream,
+} from 'node:fs';
 import internal from 'node:stream';
 import StreamPromises from 'node:stream/promises';
 import { join as pathJoin, parse as pathParse } from 'node:path';
@@ -219,8 +225,15 @@ export class FileService {
     } as FileEntity;
   }
 
-  async createFolder(folder: Partial<FolderEntity>): Promise<FolderEntity> {
-    const created = await this.folderRepository.save(folder);
+  async createFolder(
+    folder: Partial<FolderEntity>,
+    _transact?: EntityManager,
+  ): Promise<FolderEntity> {
+    const transact = _transact
+      ? _transact.withRepository(this.folderRepository)
+      : this.folderRepository;
+
+    const created = await transact.save(folder);
     if (!created) {
       throw new NotFoundError('Error when creating folder');
     }
@@ -228,17 +241,27 @@ export class FileService {
     return created;
   }
 
-  async rootFolder(userId: string): Promise<FolderEntity> {
-    let folder = await this.folderRepository.findOne({
+  async rootFolder(
+    userId: string,
+    _transact?: EntityManager,
+  ): Promise<FolderEntity> {
+    const transact = _transact
+      ? _transact.withRepository(this.folderRepository)
+      : this.folderRepository;
+
+    let folder = await transact.findOne({
       where: { parentFolder: IsNull(), userId },
     });
 
     if (!folder) {
-      folder = await this.createFolder({
-        name: '<Корень>',
-        parentFolderId: null,
-        userId,
-      });
+      folder = await this.createFolder(
+        {
+          name: '<Корень>',
+          parentFolderId: null,
+          userId,
+        },
+        _transact,
+      );
     }
 
     return folder;
@@ -256,67 +279,89 @@ export class FileService {
     file: FileEntity,
     update: Partial<FileEntity>,
   ): Promise<FileEntity> {
-    return this.fileRepository.manager.transaction(async (transact) => {
-      const s3Name = getS3Name(file.name);
-      const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
-      let Key = `${file.folderId}/${file.hash}-${s3Name}`;
-      if (update.folderId !== undefined && update.folderId !== file.folderId) {
-        if (update.name !== undefined && update.name !== file.name) {
+    return this.fileRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const s3Name = getS3Name(file.name);
+        const CopySource = `${file.folderId}/${file.hash}-${s3Name}`;
+        let Key = `${file.folderId}/${file.hash}-${s3Name}`;
+        if (
+          update.folderId !== undefined &&
+          update.folderId !== file.folderId
+        ) {
+          if (update.name !== undefined && update.name !== file.name) {
+            const s3NameUpdated = getS3Name(update.name);
+            Key = `${update.folderId}/${file.hash}-${s3NameUpdated}`;
+          } else {
+            Key = `${update.folderId}/${file.hash}-${s3Name}`;
+          }
+        } else if (update.name !== undefined && update.name !== file.name) {
           const s3NameUpdated = getS3Name(update.name);
-          Key = `${update.folderId}/${file.hash}-${s3NameUpdated}`;
-        } else {
-          Key = `${update.folderId}/${file.hash}-${s3Name}`;
+          Key = `${file.folderId}/${file.hash}-${s3NameUpdated}`;
         }
-      } else if (update.name !== undefined && update.name !== file.name) {
-        const s3NameUpdated = getS3Name(update.name);
-        Key = `${file.folderId}/${file.hash}-${s3NameUpdated}`;
-      }
 
-      await this.s3Service
-        .copyObject({
-          Bucket: this.bucket,
-          Key,
-          CopySource: `${this.bucket}/${CopySource}`,
-          MetadataDirective: 'REPLACE',
-        })
-        .then(() =>
-          this.s3Service.deleteObject({
+        await this.s3Service
+          .copyObject({
             Bucket: this.bucket,
-            Key: CopySource,
-          }),
-        );
+            Key,
+            CopySource: `${this.bucket}/${CopySource}`,
+            MetadataDirective: 'REPLACE',
+          })
+          .then(() =>
+            this.s3Service.deleteObject({
+              Bucket: this.bucket,
+              Key: CopySource,
+            }),
+          );
 
-      await transact.update(FileEntity, file.id, {
-        folderId: update?.folderId,
-        name: update?.name,
-      });
-      const data = await transact.findOneByOrFail(FileEntity, { id: file.id });
+        await transact.update(FileEntity, file.id, {
+          folderId: update?.folderId,
+          name: update?.name,
+        });
+        const data = await transact.findOneByOrFail(FileEntity, {
+          id: file.id,
+        });
 
-      await this.wsStatistics.onChange({ files: [data] });
+        await this.wsStatistics.onChange({ files: [data] });
 
-      return data;
-    });
+        return data;
+      },
+    );
   }
 
   /**
    * Upload files
    * @async
    * @param {UserEntity} user User ID
-   * @param {FileUploadRequest} {FileUploadRequest} File upload request
-   * @param {Array<Express.Multer.File>} {Array<Express.Multer.File>} files The Express files
+   * @param {Express.Multer.File[] | Express.Multer.File | Buffer} files File upload request
+   * @param {string} folderId Folder ID
+   * @param {string} originalname Original name of the file
    */
-  async upload(
-    user: UserEntity,
-    _files: Express.Multer.File[] | Express.Multer.File | Buffer,
-    _folderId?: string,
-    _originalname = 'file.mp4',
-    _mimetype = 'video/mp4',
-    _info?: FfprobeData,
-  ): Promise<FileEntity[]> {
+  async upload(param: {
+    user: UserEntity;
+    files: Express.Multer.File[] | Express.Multer.File | Buffer;
+    folderId?: string;
+    originalname?: string;
+    mimetype?: string;
+    info?: FfprobeData;
+    transact?: EntityManager;
+  }): Promise<FileEntity[]> {
+    const {
+      user,
+      files: _files,
+      folderId: _folderId,
+      originalname: _originalname,
+      mimetype: _mimetype,
+      info: _info,
+      transact,
+    } = param;
     let files: Express.Multer.File[];
     if (Array.isArray(_files)) {
       files = _files;
     } else if (Buffer.isBuffer(_files)) {
+      const hashFunc = createHash('md5');
+      hashFunc.update(_files);
+      const _hash = hashFunc.digest('hex');
       files = [
         {
           originalname: _originalname,
@@ -324,17 +369,25 @@ export class FileService {
           media: _info,
           mimetype: _mimetype,
           buffer: _files,
+          hash: _hash,
         } as Express.Multer.File,
       ];
     } else {
       files = [_files];
     }
+    const transactFolder = transact
+      ? transact.withRepository(this.folderRepository)
+      : this.folderRepository;
+    const transactFile = transact
+      ? transact.withRepository(this.fileRepository)
+      : this.fileRepository;
+
     const { id: userId } = user;
     let folderId: string;
     if (!_folderId) {
-      ({ id: folderId } = await this.rootFolder(userId));
+      ({ id: folderId } = await this.rootFolder(userId, transact));
     } else {
-      const folder = await this.folderRepository.findOne({
+      const folder = await transactFolder.findOne({
         where: { userId, id: _folderId },
         select: ['id'],
       });
@@ -344,87 +397,90 @@ export class FileService {
       ({ id: folderId } = folder);
     }
 
-    return this.fileRepository.manager.transaction(async (transact) => {
-      const filesPromises = files.map(async (file) => {
-        const {
-          mimetype,
-          originalname,
-          hash,
-          path,
-          media: info,
-          size: filesize,
-          buffer,
-        } = file;
-        let filesBuffer;
-        if (Buffer.isBuffer(buffer)) {
-          filesBuffer = buffer;
-        } else {
-          filesBuffer = createReadStream(path);
-        }
+    return transactFile.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const filesPromises = files.map(async (file) => {
+          const {
+            mimetype,
+            originalname,
+            path,
+            media: info,
+            size: filesize,
+            buffer,
+          } = file;
+          const { hash } = file;
+          let filesBuffer: ReadStream | Buffer;
+          if (Buffer.isBuffer(buffer)) {
+            filesBuffer = buffer;
+          } else {
+            filesBuffer = createReadStream(path);
+          }
 
-        const [mime] = mimetype.split('/');
-        const extension = pathParse(originalname).ext.slice(1);
-        const fileType =
-          Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
+          const [mime] = mimetype.split('/');
+          const extension = pathParse(originalname).ext.slice(1);
+          const fileType =
+            Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
 
-        const stream = info?.streams?.[0];
-        let duration = 0;
-        let width = 0;
-        let height = 0;
-        if (stream) {
-          duration = Number(stream.duration ?? 0);
-          width = Number(stream.width ?? 0);
-          height = Number(stream.height ?? 0);
-        }
+          const stream = info?.streams?.[0];
+          let duration = 0;
+          let width = 0;
+          let height = 0;
+          if (stream) {
+            duration = Number(stream.duration ?? 0);
+            width = Number(stream.width ?? 0);
+            height = Number(stream.height ?? 0);
+          }
 
-        const fileToSave: DeepPartial<FileEntity> = {
-          userId,
-          folderId,
-          name: originalname,
-          filesize,
-          duration,
-          width,
-          height,
-          info,
-          videoType: fileType,
-          extension,
-          hash,
-          preview: undefined,
-        };
+          const fileToSave: DeepPartial<FileEntity> = {
+            userId,
+            folderId,
+            name: originalname,
+            filesize,
+            duration,
+            width,
+            height,
+            info,
+            videoType: fileType,
+            extension,
+            hash,
+            preview: undefined,
+          };
 
-        const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
-        try {
-          const uploaded = await this.s3Service.putObject({
-            Bucket: this.bucket,
-            Key,
-            ContentType: mimetype,
-            Body: filesBuffer,
-          });
-          this.logger.warn(
-            `S3: the file "${originalname}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
+          const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
+          try {
+            const uploaded = await this.s3Service.putObject({
+              Bucket: this.bucket,
+              Key,
+              ContentType: mimetype,
+              Body: filesBuffer,
+            });
+            this.logger.warn(
+              `S3: the file "${originalname}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
+            );
+          } catch (error: unknown) {
+            this.logger.error(
+              `S3 upload error: "${JSON.stringify(error)}"`,
+              error,
+            );
+            throw new InternalServerError(error);
+          }
+
+          const fileUpdated = await transact.save(
+            FileEntity,
+            transact.create(FileEntity, fileToSave),
           );
-        } catch (error: unknown) {
-          this.logger.error(
-            `S3 upload error: "${JSON.stringify(error)}"`,
-            error,
-          );
-          throw new InternalServerError(error);
-        }
 
-        const fileUpdated = await transact.save(
-          FileEntity,
-          transact.create(FileEntity, fileToSave),
-        );
+          return fileUpdated;
+        });
 
-        return fileUpdated;
-      });
+        const filesDatabase = await Promise.all(filesPromises);
 
-      const filesDatabase = await Promise.all(filesPromises);
+        await this.wsStatistics.onMetrics(user);
 
-      await this.wsStatistics.onMetrics(user);
-
-      return filesDatabase;
-    });
+        return filesDatabase;
+      },
+    );
   }
 
   /**
@@ -537,8 +593,9 @@ export class FileService {
       return copyFiles(transact);
     }
 
-    return this.fileRepository.manager.transaction(async (transact) =>
-      copyFiles(transact),
+    return this.fileRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => copyFiles(transact),
     );
   }
 

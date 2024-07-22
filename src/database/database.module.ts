@@ -102,7 +102,7 @@ export class DatabaseModule implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    await this.manager.transaction(async (manager) => {
+    await this.manager.transaction('REPEATABLE READ', async (manager) => {
       const monitors = await manager.find(MonitorEntity, {
         where: [
           {

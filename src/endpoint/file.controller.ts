@@ -153,7 +153,7 @@ export class FileController {
       throw new BadRequestError('Files expected');
     }
 
-    const data = await this.fileService.upload(user, files, folderId);
+    const data = await this.fileService.upload({ user, files, folderId });
 
     return {
       status: Status.Success,

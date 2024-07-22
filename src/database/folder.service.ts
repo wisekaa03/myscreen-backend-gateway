@@ -134,9 +134,9 @@ export class FolderService {
 
   async invoiceFolder(
     userId: string,
-    _transact?: EntityManager,
+    transact?: EntityManager,
   ): Promise<FolderEntity> {
-    const { id: parentFolderId } = await this.rootFolder(userId, _transact);
+    const { id: parentFolderId } = await this.rootFolder(userId, transact);
 
     const folder = await this.findOne({
       where: {
@@ -145,7 +145,7 @@ export class FolderService {
         userId,
       },
       caseInsensitive: false,
-      transact: _transact,
+      transact,
     });
 
     if (!folder) {
@@ -155,7 +155,7 @@ export class FolderService {
           parentFolderId,
           userId,
         },
-        _transact,
+        transact,
       );
     }
 
@@ -246,56 +246,70 @@ export class FolderService {
     toFolder: FolderEntity,
     originalFolders: FolderEntity[],
   ): Promise<FolderEntity[]> {
-    return this.folderRepository.manager.transaction(async (transact) => {
-      const foldersPromise = originalFolders.map(async (folder) => {
-        const folderCopyCreate = transact.create(FolderEntity, {
-          ...folder,
-          userId,
-          parentFolder: toFolder,
-          parentFolderId: toFolder.id,
-          id: undefined,
-          user: undefined,
-          files: undefined,
-          createdAt: undefined,
-          updatedAt: undefined,
+    return this.folderRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const foldersPromise = originalFolders.map(async (folder) => {
+          const folderCopyCreate = transact.create(FolderEntity, {
+            ...folder,
+            userId,
+            parentFolder: toFolder,
+            parentFolderId: toFolder.id,
+            id: undefined,
+            user: undefined,
+            files: undefined,
+            createdAt: undefined,
+            updatedAt: undefined,
+          });
+          const folderCopy = await transact.save(
+            FolderEntity,
+            folderCopyCreate,
+          );
+
+          await this.fileService.copy(
+            userId,
+            folderCopy,
+            folder.files,
+            transact,
+          );
+
+          return folderCopy;
         });
-        const folderCopy = await transact.save(FolderEntity, folderCopyCreate);
 
-        await this.fileService.copy(userId, folderCopy, folder.files, transact);
-
-        return folderCopy;
-      });
-
-      return Promise.all(foldersPromise);
-    });
+        return Promise.all(foldersPromise);
+      },
+    );
   }
 
   async delete(foldersId: string[]): Promise<DeleteResult> {
-    return this.folderRepository.manager.transaction(async (transact) => {
-      const folderSubId = await transact
-        .find(FolderEntity, {
-          where: { parentFolderId: In(foldersId) },
-          relations: [],
-          loadEagerRelations: false,
-          select: ['id'],
-        })
-        .then((folders) => folders.map((folder) => folder.id));
+    return this.folderRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const folderSubId = await transact
+          .find(FolderEntity, {
+            where: { parentFolderId: In(foldersId) },
+            relations: [],
+            loadEagerRelations: false,
+            select: ['id'],
+          })
+          .then((folders) => folders.map((folder) => folder.id));
 
-      const fullFolders = [...foldersId, ...folderSubId];
-      const filesId = await this.fileRepository
-        .find({
-          where: { folderId: In(fullFolders) },
-          relations: {},
-          loadEagerRelations: false,
-          select: ['id', 'folderId', 'name', 'hash'],
-        })
-        .then((files) => files.map((file) => file.id));
-      await this.fileService.deletePrep(filesId);
-      await this.fileService.delete(filesId);
+        const fullFolders = [...foldersId, ...folderSubId];
+        const filesId = await this.fileRepository
+          .find({
+            where: { folderId: In(fullFolders) },
+            relations: {},
+            loadEagerRelations: false,
+            select: ['id', 'folderId', 'name', 'hash'],
+          })
+          .then((files) => files.map((file) => file.id));
+        await this.fileService.deletePrep(filesId);
+        await this.fileService.delete(filesId);
 
-      return transact.delete(FolderEntity, {
-        id: In(fullFolders),
-      });
-    });
+        return transact.delete(FolderEntity, {
+          id: In(fullFolders),
+        });
+      },
+    );
   }
 }

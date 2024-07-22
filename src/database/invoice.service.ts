@@ -97,49 +97,61 @@ export class InvoiceService {
       throw new BadRequestError('INVOICE_MINIMUM_SUM');
     }
     const { id: userId } = user;
-    return this.invoiceRepository.manager.transaction(async (transact) => {
-      // Если у пользователя есть счет со статусом "Ожидает подтверждения",
-      // "Подтвержден, ожидает оплаты", то нужно присвоить ему статус "Аннулирован".
-      const invoices = await transact.find(InvoiceEntity, {
-        where: [
-          { userId, status: InvoiceStatus.AWAITING_CONFIRMATION },
-          { userId, status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT },
-        ],
-        loadEagerRelations: false,
-        relations: {},
-      });
-      if (invoices.length > 0) {
-        const invoicesPromise = Object.values(invoices)?.map((invoice) =>
-          transact.save(InvoiceEntity, {
-            ...invoice,
-            status: InvoiceStatus.CANCELLED,
-          }),
+
+    const invoice = await this.invoiceRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        // Если у пользователя есть счет со статусом "Ожидает подтверждения",
+        // "Подтвержден, ожидает оплаты", то нужно присвоить ему статус "Аннулирован".
+        const invoices = await transact.find(InvoiceEntity, {
+          where: [
+            { userId, status: InvoiceStatus.AWAITING_CONFIRMATION },
+            { userId, status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT },
+          ],
+          loadEagerRelations: false,
+          relations: {},
+        });
+        if (invoices.length > 0) {
+          const invoicesPromise = Object.values(invoices)?.map((invoice) =>
+            transact.save(InvoiceEntity, {
+              ...invoice,
+              status: InvoiceStatus.CANCELLED,
+            }),
+          );
+          await Promise.all(invoicesPromise);
+        }
+
+        const invoiceData: DeepPartial<InvoiceEntity> = {
+          sum,
+          description,
+          userId,
+          status: InvoiceStatus.AWAITING_CONFIRMATION,
+        };
+
+        const { id } = await transact.save(
+          InvoiceEntity,
+          transact.create(InvoiceEntity, invoiceData),
         );
-        await Promise.all(invoicesPromise);
-      }
 
-      const invoiceData: DeepPartial<InvoiceEntity> = {
-        sum,
-        description,
-        userId,
-        status: InvoiceStatus.AWAITING_CONFIRMATION,
-      };
+        const invoice = await transact.findOne(InvoiceEntity, {
+          where: { id },
+          loadEagerRelations: true,
+          relations: { user: true, file: true },
+        });
+        if (!invoice) {
+          throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+        }
 
-      const { id } = await transact.save(
-        InvoiceEntity,
-        transact.create(InvoiceEntity, invoiceData),
-      );
+        return invoice;
+      },
+    );
 
-      const invoice = await transact.findOne(InvoiceEntity, {
-        where: { id },
-        loadEagerRelations: true,
-        relations: { file: true },
-      });
+    const invoiceChanged = await this.statusChange(
+      invoice,
+      InvoiceStatus.AWAITING_CONFIRMATION,
+    );
 
-      await this.wsStatistics.onWallet(userId);
-
-      return invoice;
-    });
+    return invoiceChanged;
   }
 
   async upload(invoice: InvoiceEntity, file: Express.Multer.File) {
@@ -150,29 +162,33 @@ export class InvoiceService {
     const { id: folderId } =
       await this.folderService.invoiceFolder(invoiceUserId);
 
-    return this.invoiceRepository.manager.transaction(async (transact) => {
-      const [downloadFile] = await this.fileService.upload(
-        invoiceUser,
-        file,
-        folderId,
-      );
-      await transact.update(InvoiceEntity, id, {
-        file: downloadFile,
-      });
+    await this.invoiceRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        const [downloadFile] = await this.fileService.upload({
+          user: invoiceUser,
+          files: file,
+          folderId,
+          transact,
+        });
+        await transact.update(InvoiceEntity, id, {
+          file: downloadFile,
+        });
+      },
+    );
 
-      const invoiceFind = await transact.findOne(InvoiceEntity, {
-        where: { id },
-        loadEagerRelations: false,
-        relations: { file: true },
-      });
-      if (!invoiceFind) {
-        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
-      }
-      invoiceFind.file = invoiceFind.file
-        ? await this.fileService.signedUrl(invoiceFind.file)
-        : null;
-      return invoiceFind;
+    const invoiceFind = await this.invoiceRepository.findOne({
+      where: { id },
+      loadEagerRelations: false,
+      relations: { file: true },
     });
+    if (!invoiceFind) {
+      throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+    }
+    if (invoiceFind.file) {
+      invoiceFind.file = await this.fileService.signedUrl(invoiceFind.file);
+    }
+    return invoiceFind;
   }
 
   async statusChange(
@@ -180,157 +196,160 @@ export class InvoiceService {
     status: InvoiceStatus,
   ): Promise<InvoiceEntity> {
     const { id } = invoice;
+    const { id: invoiceId, user: invoiceUser, userId: invoiceUserId } = invoice;
 
-    return this.invoiceRepository.manager.transaction(async (transact) => {
-      const { affected } = await transact.update(InvoiceEntity, id, {
-        status,
-      });
-      if (!affected) {
-        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
-      }
-      let invoiceFind = await transact.findOne(InvoiceEntity, {
-        where: { id },
-        loadEagerRelations: true,
-        relations: { user: true, file: true },
-      });
-      if (!invoiceFind) {
-        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
-      }
-      const { user: invoiceUser, userId: invoiceUserId } = invoiceFind;
+    await this.invoiceRepository.manager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        if (invoice.status !== status) {
+          const update = await transact.update(InvoiceEntity, id, {
+            status,
+          });
+          if (!update.affected) {
+            throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+          }
+        }
 
-      switch (status) {
-        // Если статус счета "Оплачен", то нужно записать в базу
-        // сумму баланса и отправить письмо пользователю
-        case InvoiceStatus.PAID: {
-          // здесь записывается в базу сумма баланса
-          await transact.save(
-            WalletEntity,
-            this.walletService.create({
+        switch (status) {
+          // Если статус счета "Оплачен", то нужно записать в базу
+          // сумму баланса и отправить письмо пользователю
+          case InvoiceStatus.PAID: {
+            // здесь записывается в базу сумма баланса
+            await transact.save(
+              WalletEntity,
+              this.walletService.create({
+                userId: invoiceUserId,
+                description: `Счет на оплату №${invoice.seqNo} от ${dayjs(invoice.createdAt).locale('ru').format('DD[ ]MMMM[ ]YYYY[ г.]')}`,
+                sum: invoice.sum,
+                invoiceId,
+              }),
+            );
+
+            const balance = await this.walletService.walletSum({
               userId: invoiceUserId,
-              invoice: invoiceFind,
-              description: `Счет на оплату №${invoice.seqNo} от ${dayjs(invoice.createdAt).locale('ru').format('DD[ ]MMMM[ ]YYYY[ г.]')}`,
-            }),
-          );
+              transact,
+            });
 
-          const balance = await this.walletService.walletSum({
-            userId: invoiceUserId,
-            transact,
-          });
+            // и выводится письмо о том, что счет оплачен
+            this.mailService.emit('invoicePayed', {
+              invoice,
+              user: invoiceUser,
+              balance,
+            });
 
-          // и выводится письмо о том, что счет оплачен
-          this.mailService.emit('invoicePayed', {
-            invoice: invoiceFind,
-            user: invoiceUser,
-            balance,
-          });
+            await this.walletService.acceptanceActCreate({
+              user: invoiceUser,
+              balance,
+              transact,
+            });
 
-          await this.walletService.acceptanceActCreate({
-            user: invoiceUser,
-            transact,
-            balance,
-          });
+            break;
+          }
 
-          await this.wsStatistics.onWallet(invoiceUserId);
-
-          break;
-        }
-
-        // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
-        case InvoiceStatus.AWAITING_CONFIRMATION: {
-          const accountantUsers = await this.userRepository.find({
-            where: {
-              role: UserRoleEnum.Accountant,
-              disabled: false,
-              verified: true,
-            },
-          });
-
-          // Вызов сервиса отправки писем
-          this.mailService.emit('invoiceAwaitingConfirmation', {
-            accountantUsers,
-            invoice: invoiceFind,
-          });
-
-          break;
-        }
-
-        // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
-        case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
-          let { file } = invoice;
-          if (!file) {
-            const language =
-              invoiceUser.preferredLanguage ??
-              this.configService.getOrThrow('DEFAULT_LANGUAGE');
-            const invoiceFile = this.mailService.send<Buffer, PrintInvoice>(
-              'invoice',
-              {
-                format: SpecificFormat.XLSX,
-                invoice: invoiceFind,
-                language,
+          // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
+          case InvoiceStatus.AWAITING_CONFIRMATION: {
+            const accountantUsers = await this.userRepository.find({
+              where: {
+                role: UserRoleEnum.Accountant,
+                disabled: false,
+                verified: true,
               },
-            );
-            const { id: invoiceFolderId } =
-              await this.folderService.invoiceFolder(invoiceUserId, transact);
-            const fileBuffer = await lastValueFrom(invoiceFile);
+            });
 
-            [file] = await this.fileService.upload(
-              invoiceUser,
-              fileBuffer,
-              invoiceFolderId,
-              'file.xlsx',
-              'application/vnd.ms-excel',
-            );
+            // Вызов сервиса отправки писем
+            this.mailService.emit('invoiceAwaitingConfirmation', {
+              accountantUsers,
+              invoice,
+            });
+
+            break;
+          }
+
+          // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
+          case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
+            let { file } = invoice;
             if (!file) {
-              throw new BadRequestError();
+              const language =
+                invoiceUser.preferredLanguage ??
+                this.configService.getOrThrow('DEFAULT_LANGUAGE');
+              const invoiceFile = this.mailService.send<Buffer, PrintInvoice>(
+                'invoice',
+                {
+                  format: SpecificFormat.XLSX,
+                  invoice,
+                  language,
+                },
+              );
+              const { id: invoiceFolderId } =
+                await this.folderService.invoiceFolder(invoiceUserId, transact);
+              const fileBuffer = await lastValueFrom(invoiceFile);
+
+              [file] = await this.fileService.upload({
+                user: invoiceUser,
+                files: fileBuffer,
+                folderId: invoiceFolderId,
+                originalname: `Invoice_${dayjs(invoice.createdAt).format('YYYYDDMM_HHmmss')}.xlsx`,
+                mimetype: 'application/vnd.ms-excel',
+                transact,
+              });
+              if (!file) {
+                throw new BadRequestError();
+              }
+
+              await transact.save(
+                InvoiceEntity,
+                transact.create(InvoiceEntity, { id, file }),
+              );
             }
 
-            await transact.save(
-              InvoiceEntity,
-              transact.create(InvoiceEntity, { id, file }),
-            );
-          }
-
-          const data = await this.fileService
-            .getS3Object(file)
-            .catch((error: unknown) => {
-              throw new NotFoundError(
-                `File '${file.id}' is not exists: ${error}`,
+            const data = await this.fileService
+              .getS3Object(file)
+              .catch((error: unknown) => {
+                throw new NotFoundError(
+                  `File '${file.id}' is not exists: ${JSON.stringify(error)}`,
+                );
+              });
+            if (data.Body instanceof internal.Readable) {
+              const invoiceFile = await buffer(data.Body);
+              this.mailService.emit<any, MailInvoiceConfirmed>(
+                'invoiceConfirmed',
+                {
+                  user: invoiceUser,
+                  invoice,
+                  invoiceFile,
+                },
               );
-            });
-          if (data.Body instanceof internal.Readable) {
-            const invoiceFile = await buffer(data.Body);
-            this.mailService.emit<any, MailInvoiceConfirmed>(
-              'invoiceConfirmed',
-              {
-                user: invoiceUser,
-                invoice,
-                invoiceFile,
-              },
-            );
-          } else {
-            throw new NotFoundError();
+            } else {
+              throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+            }
+
+            break;
           }
 
-          break;
+          default:
+            break;
         }
+      },
+    );
 
-        default:
-          break;
-      }
-
-      invoiceFind = await transact.findOne(InvoiceEntity, {
-        where: { id },
-        loadEagerRelations: false,
-        relations: { file: true },
-      });
-      if (!invoiceFind) {
-        throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
-      }
-      invoiceFind.file = invoiceFind.file
-        ? await this.fileService.signedUrl(invoiceFind.file)
-        : null;
-      return invoiceFind;
+    if (status === InvoiceStatus.PAID) {
+      await this.wsStatistics.onWallet(invoiceUserId);
+    }
+    const invoiceChanged = await this.invoiceRepository.findOne({
+      where: { id },
+      loadEagerRelations: false,
+      relations: { file: true },
     });
+    if (!invoiceChanged) {
+      throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+    }
+    if (invoiceChanged.file) {
+      invoiceChanged.file = await this.fileService.signedUrl(
+        invoiceChanged.file,
+      );
+    }
+
+    return invoiceChanged;
   }
 
   /**

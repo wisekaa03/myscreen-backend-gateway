@@ -756,7 +756,7 @@ export class EditorService {
           buffer: null as unknown as Buffer,
         };
         const renderedFiles = await this.fileService
-          .upload(user, file, exportFolderId)
+          .upload({ user, files: file, folderId: exportFolderId })
           .then((renderedFile) => {
             if (renderedFile[0]) {
               this.editorRepository.update(renderEditor.id, {
