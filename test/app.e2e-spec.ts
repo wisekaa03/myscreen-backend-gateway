@@ -3122,7 +3122,7 @@ describe('Backend API (e2e)', () => {
      *
      */
     describe('Повышаем роли Advertiser до администратора и логинимся, и после этого удаляем все', () => {
-      return;
+      // return;
 
       /**
        * Administrator
