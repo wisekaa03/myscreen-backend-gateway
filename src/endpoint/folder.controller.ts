@@ -1,5 +1,5 @@
 import type { Request as ExpressRequest } from 'express';
-import { In } from 'typeorm';
+import { FindOptionsWhere, In } from 'typeorm';
 import {
   Logger,
   Body,
@@ -27,7 +27,9 @@ import {
   FoldersUpdateRequest,
   FoldersCopyRequest,
   FolderIdUpdateRequest,
+  FolderRequest,
 } from '@/dto';
+import { administratorFolderId, otherFolderId } from '@/constants';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { paginationQuery } from '@/utils/pagination-query';
@@ -73,15 +75,41 @@ export class FolderController {
     let count = 0;
     let data: FolderResponse[] = [];
     const { id: rootFolderId } = await this.folderService.rootFolder(userId);
-    const whereLocal = {
+    const whereLocal: FindOptionsWhere<FolderEntity> = {
       parentFolderId: rootFolderId,
-      ...where,
+      ...TypeOrmFind.where<FolderRequest, FolderEntity>(FolderRequest, where),
     };
     [data, count] = await this.folderService.findAndCount({
       ...paginationQuery(scope),
       select,
-      where: { ...TypeOrmFind.where(FolderEntity, whereLocal), userId },
+      where: { ...whereLocal, userId },
     });
+    if (where && role === UserRoleEnum.Administrator) {
+      if (
+        where.parentFolderId === null ||
+        where.parentFolderId === rootFolderId
+      ) {
+        const adminFolder =
+          await this.folderService.administratorFolder(userId);
+        data = [...data, adminFolder];
+        count += 1;
+      } else if (where.parentFolderId === administratorFolderId) {
+        const otherUserFoldersName =
+          await this.folderService.otherUserFoldersName(user);
+        data = [...data, ...otherUserFoldersName];
+        count += otherUserFoldersName.length;
+      } else if (
+        (where.parentFolderId as string)?.slice(0, 7) ===
+          otherFolderId.slice(0, 7) &&
+        typeof where.userId === 'string'
+      ) {
+        const otherUserFolders = await this.folderService.otherUserFolders(
+          where.userId,
+        );
+        data = [...data, ...otherUserFolders];
+        count += otherUserFolders.length;
+      }
+    }
 
     return {
       status: Status.Success,
