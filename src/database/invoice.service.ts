@@ -199,6 +199,7 @@ export class InvoiceService {
 
   async generateInvoiceFile(
     invoice: InvoiceEntity,
+    format: SpecificFormat,
     transact?: EntityManager,
   ): Promise<FileEntity> {
     const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
@@ -210,7 +211,7 @@ export class InvoiceService {
       invoiceUser.preferredLanguage ??
       this.configService.getOrThrow('DEFAULT_LANGUAGE');
     const invoiceFile = this.mailService.send<Buffer, PrintInvoice>('invoice', {
-      format: SpecificFormat.XLSX,
+      format,
       invoice,
       language,
     });
@@ -314,7 +315,11 @@ export class InvoiceService {
           case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
             let { file } = invoice;
             if (!file) {
-              file = await this.generateInvoiceFile(invoice, transact);
+              file = await this.generateInvoiceFile(
+                invoice,
+                SpecificFormat.XLSX,
+                transact,
+              );
             }
 
             const data = await this.fileService
@@ -385,7 +390,7 @@ export class InvoiceService {
 
     let { file } = invoice;
     if (!file) {
-      file = await this.generateInvoiceFile(invoice);
+      file = await this.generateInvoiceFile(invoice, format);
     }
 
     const data = await this.fileService

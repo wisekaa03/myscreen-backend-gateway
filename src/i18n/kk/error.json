@@ -25,5 +25,6 @@
   "PLAYLIST_NOT_FOUND": "Playlist not found: '{id}'",
   "BID_NOT_FOUND": "Bid not found: '{id}'",
   "BID_ERROR": "Error when creating Bid",
-  "INVOICE_FILE": "Confirmed waiting payment must expect file"
+  "INVOICE_FILE": "Confirmed waiting payment must expect file",
+  "EDITOR_NOT_FOUND": "Editor not found: '{id}'"
 }

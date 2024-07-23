@@ -627,7 +627,7 @@ export class EditorService {
       },
     });
     if (!editor) {
-      throw new NotFoundError('Editor not found');
+      throw new NotFoundError('EDITOR_NOT_FOUND', { args: { id } });
     }
     const { id: editorId } = editor;
     if (!rerender) {
