@@ -336,8 +336,6 @@ export class FileController {
         );
       }
 
-      this.logger.debug(`The preview file '${file.name}' has been downloaded`);
-
       res.write(buffer);
       res.end();
     } catch (error: unknown) {

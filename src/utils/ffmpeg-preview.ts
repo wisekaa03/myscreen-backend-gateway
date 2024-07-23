@@ -5,7 +5,7 @@ import { Logger } from '@nestjs/common';
 import type { FfprobeData } from 'media-probe';
 
 import { FileType } from '@/enums/file-type.enum';
-import { fileExist } from './fs';
+import { fileExist } from './file-exist';
 
 const exec = util.promisify(child.exec);
 
@@ -17,7 +17,7 @@ export async function FfMpegPreview(
 ): Promise<void> {
   const logger = new Logger('FfMpeg');
 
-  const ffmpeg = (await fileExist('node_modules/ffmpeg-static/ffmpeg'))
+  const ffmpeg = fileExist('node_modules/ffmpeg-static/ffmpeg')
     ? 'node_modules/ffmpeg-static/ffmpeg'
     : 'ffmpeg';
 

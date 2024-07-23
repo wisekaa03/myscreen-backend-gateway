@@ -22,9 +22,8 @@ import { FindOptionsWhere } from 'typeorm';
 
 import {
   BadRequestError,
-  InternalServerError,
-  NotAcceptableError,
   NotFoundError,
+  ServiceUnavailableError,
 } from '@/errors';
 import {
   EditorUpdateRequest,
@@ -40,7 +39,7 @@ import {
   EditorExportRequest,
 } from '@/dto';
 import { Crud, ApiComplexDecorators } from '@/decorators';
-import { FileType, Status, UserRoleEnum, CRUD } from '@/enums';
+import { FileType, Status, UserRoleEnum, CRUD, RenderingStatus } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQuery } from '@/utils/pagination-query';
 import { EditorService } from '@/database/editor.service';
@@ -550,20 +549,24 @@ export class EditorController {
   })
   @Crud(CRUD.READ)
   async getEditorExportStatus(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
   ): Promise<EditorGetRenderingStatusResponse> {
     const data = await this.editorService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id,
       },
     });
     if (!data) {
       throw new NotFoundError('Editor not found');
     }
-    if (data.renderingError) {
-      throw new NotAcceptableError(data.renderingError);
+    if (data.renderingStatus === RenderingStatus.Error) {
+      await this.editorService.update(id, {
+        renderingError: null,
+        renderingStatus: RenderingStatus.Initial,
+      });
+      throw new ServiceUnavailableError(data.renderingError);
     }
 
     return {
@@ -594,9 +597,6 @@ export class EditorController {
       id,
       rerender: body?.rerender,
     });
-    if (!data) {
-      throw new InternalServerError();
-    }
 
     return {
       status: Status.Success,

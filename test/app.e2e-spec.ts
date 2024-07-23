@@ -3007,7 +3007,7 @@ describe('Backend API (e2e)', () => {
         playlistId: advertiserPlaylistId1,
         monitorIds: [monitorSingleId],
         bid: {
-          dateBefore: dayjs().subtract(1).toDate(),
+          dateBefore: dayjs().subtract(1, 'day').toDate(),
           dateWhen: dayjs().add(1).toDate(),
           playlistChange: true,
         },
@@ -3039,7 +3039,7 @@ describe('Backend API (e2e)', () => {
         playlistId: advertiserPlaylistId1,
         monitorIds: [monitorGroupMirrorId],
         bid: {
-          dateBefore: dayjs().subtract(1).toDate(),
+          dateBefore: dayjs().subtract(1, 'day').toDate(),
           dateWhen: dayjs().add(1).toDate(),
           playlistChange: true,
         },
@@ -3075,7 +3075,7 @@ describe('Backend API (e2e)', () => {
         playlistId: advertiserPlaylistId1,
         monitorIds: [monitorGroupScalingId],
         bid: {
-          dateBefore: dayjs().subtract(1).toDate(),
+          dateBefore: dayjs().subtract(1, 'day').toDate(),
           dateWhen: dayjs().add(1).toDate(),
           playlistChange: true,
         },

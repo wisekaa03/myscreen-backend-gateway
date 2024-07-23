@@ -128,7 +128,7 @@ describe(UserService.name, () => {
       ...testUser,
       role: UserRoleEnum.MonitorOwner,
       plan: UserPlanEnum.Demo,
-      createdAt: dayjs().subtract(100).toDate(),
+      createdAt: dayjs().subtract(100, 'days').toDate(),
     };
   });
 
@@ -255,7 +255,7 @@ describe(UserService.name, () => {
     });
 
     test('Access to create monitors: 14 days', async () => {
-      const createdAt = dayjs().subtract(14).toDate();
+      const createdAt = dayjs().subtract(14, 'days').toDate();
       // Доступ к управлению мониторами: 14 дней
       const verifyMonitorCreate = service.verify(
         {
@@ -279,13 +279,13 @@ describe(UserService.name, () => {
         {
           ...monitorTestDemo,
           countMonitors: '4',
-          createdAt: dayjs().subtract(15).toDate(),
+          createdAt: dayjs().subtract(16, 'days').toDate(),
         } as UserResponse,
         'monitor',
         'create',
         CRUD.CREATE,
       );
-      await expect(verifyMonitorCreate15).resolves.toBe(true);
+      await expect(verifyMonitorCreate15).rejects.toThrow();
     });
 
     test('Access to create files: 28 days', async () => {
@@ -293,7 +293,7 @@ describe(UserService.name, () => {
       const verifyFileCreate = service.verify(
         {
           ...monitorTestDemo,
-          createdAt: dayjs().subtract(28).toDate(),
+          createdAt: dayjs().subtract(28, 'days').toDate(),
         } as UserResponse,
         'file',
         'create',
@@ -306,13 +306,13 @@ describe(UserService.name, () => {
       const verifyFileCreate29 = service.verify(
         {
           ...monitorTestDemo,
-          createdAt: dayjs().subtract(29).toDate(),
+          createdAt: dayjs().subtract(30, 'days').toDate(),
         } as UserResponse,
         'file',
         'create',
         CRUD.CREATE,
       );
-      await expect(verifyFileCreate29).resolves.toBe(true);
+      await expect(verifyFileCreate29).rejects.toThrow();
     });
   });
 

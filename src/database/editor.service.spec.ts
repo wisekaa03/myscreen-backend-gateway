@@ -9,6 +9,7 @@ import { FolderService } from './folder.service';
 import { PlaylistService } from './playlist.service';
 import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
+import { PlaylistEntity } from './playlist.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -49,6 +50,10 @@ describe(EditorService.name, () => {
         },
         {
           provide: getRepositoryToken(MonitorEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(PlaylistEntity),
           useClass: mockRepository,
         },
       ],
