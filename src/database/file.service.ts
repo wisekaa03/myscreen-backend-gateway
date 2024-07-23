@@ -28,6 +28,7 @@ import {
   EntityManager,
   IsNull,
 } from 'typeorm';
+import type { FfprobeData } from 'media-probe';
 
 import {
   ConflictData,
@@ -48,6 +49,7 @@ import {
 import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
 import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 import { TypeOrmFind } from '@/utils/typeorm.find';
+import { fileExist } from '@/utils/file-exist';
 import { FileEntity } from '@/database/file.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { EditorEntity } from './editor.entity';
@@ -55,7 +57,6 @@ import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from './folder.entity';
 import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
-import { FfprobeData } from 'media-probe';
 
 @Injectable()
 export class FileService {
@@ -747,7 +748,12 @@ export class FileService {
       return Buffer.from(filePreviewOther);
     }
 
-    if (await fs.access(outPath).catch(() => true)) {
+    let preview: Buffer;
+    if (fileExist(outPath)) {
+      this.logger.debug(`Preview file "${file.name}" has cached`);
+
+      preview = await fs.readFile(outPath);
+    } else {
       const outputStream = createWriteStream(filename);
       const data: GetObjectCommandOutput = await this.getS3Object(file).catch(
         (error: unknown) => {
@@ -772,17 +778,15 @@ export class FileService {
       } else {
         throw new InternalServerError('S3 data is not readable');
       }
-    } else {
-      this.logger.debug(`Preview file "${file.name}" has cached`);
-    }
 
-    const preview = await fs.readFile(outPath);
+      preview = await fs.readFile(outPath);
 
-    const id = file.preview?.id;
-    if (id) {
-      await this.filePreviewRepository.update(id, { preview });
-    } else {
-      await this.filePreviewRepository.insert({ fileId: file.id, preview });
+      const id = file.preview?.id;
+      if (id) {
+        await this.filePreviewRepository.update(id, { preview });
+      } else {
+        await this.filePreviewRepository.insert({ fileId: file.id, preview });
+      }
     }
 
     return preview;
