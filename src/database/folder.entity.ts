@@ -66,6 +66,11 @@ export class FolderEntity extends BaseEntity {
 
   @Column({ type: 'uuid' })
   @RelationId((folder: FolderEntity) => folder.user)
+  @ApiProperty({
+    type: 'string',
+    format: 'uuid',
+    description: 'Пользователь ID',
+  })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 

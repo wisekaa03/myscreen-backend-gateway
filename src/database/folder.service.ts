@@ -1,6 +1,13 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DeleteResult, In, EntityManager, IsNull } from 'typeorm';
+import {
+  Repository,
+  DeleteResult,
+  In,
+  EntityManager,
+  IsNull,
+  Not,
+} from 'typeorm';
 
 import { NotFoundError } from '@/errors';
 import {
@@ -9,8 +16,12 @@ import {
   exportFolderName,
   invoiceFolderName,
   monitorFolderName,
+  otherFolderId,
+  otherFolderName,
   rootFolderName,
 } from '@/constants';
+import { UserRoleEnum } from '@/enums';
+import { FolderResponse } from '@/dto';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
@@ -20,6 +31,8 @@ import {
   FindOneOptionsCaseInsensitive,
 } from '@/interfaces';
 import { FileEntity } from './file.entity';
+import { UserEntity } from './user.entity';
+import { getFullName } from '@/utils/full-name';
 
 @Injectable()
 export class FolderService {
@@ -28,6 +41,8 @@ export class FolderService {
   constructor(
     @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(FolderEntity)
     private readonly folderRepository: Repository<FolderEntity>,
     @InjectRepository(FileEntity)
@@ -53,7 +68,7 @@ export class FolderService {
 
   async findAndCount(
     find: FindManyOptionsCaseInsensitive<FolderEntity>,
-  ): Promise<[FolderEntity[], number]> {
+  ): Promise<[FolderFileNumberEntity[], number]> {
     const transact = find.transact
       ? find.transact.withRepository(this.folderFilenumberRepository)
       : this.folderFilenumberRepository;
@@ -62,7 +77,7 @@ export class FolderService {
       ? transact.findAndCount(
           TypeOrmFind.findParams(FolderFileNumberEntity, find),
         )
-      : TypeOrmFind.findAndCountCI(
+      : TypeOrmFind.findAndCountCI<FolderFileNumberEntity>(
           transact,
           TypeOrmFind.findParams(FolderFileNumberEntity, find),
         );
@@ -218,6 +233,41 @@ export class FolderService {
       parentFolderId: parentFolder.id,
       system: true,
     } as FolderEntity;
+  }
+
+  async otherUserFoldersName({
+    role,
+    id: userId,
+  }: UserEntity): Promise<FolderResponse[]> {
+    if (role === UserRoleEnum.Administrator) {
+      const users = await this.userRepository.find({
+        where: {
+          id: Not(userId),
+          verified: true,
+          disabled: false,
+        },
+        select: ['id', 'name', 'surname', 'middleName', 'email'],
+        loadEagerRelations: false,
+        relations: {},
+      });
+      return users.map((user) => ({
+        id: otherFolderId.replace(/%/, user.id.slice(24)),
+        name: otherFolderName.replace(/%/, getFullName(user)),
+        system: true,
+        userId: user.id,
+        parentFolderId: administratorFolderId,
+      }));
+    }
+    return [];
+  }
+
+  async otherUserFolders(userId: string): Promise<FolderResponse[]> {
+    const folders = await this.folderRepository.find({
+      where: { system: true, userId: Not(userId) },
+      loadEagerRelations: false,
+      relations: {},
+    });
+    return folders;
   }
 
   async create(

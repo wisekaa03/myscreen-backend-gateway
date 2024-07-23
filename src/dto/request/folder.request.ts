@@ -1,5 +1,5 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger';
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsUUID } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
 import { FolderEntity } from '@/database/folder.entity';
@@ -14,18 +14,29 @@ export class FolderRequest extends PartialType(
     required: false,
   })
   @IsOptional()
-  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   id!: string;
 
   @ApiProperty({
+    type: 'string',
     description: 'Родительская папка',
     format: 'uuid',
     nullable: true,
     required: false,
   })
   @IsOptional()
-  @IsString({ message: i18nValidationMessage('validation.IS_STRING') })
-  parentFolderId!: string;
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
+  parentFolderId!: string | null;
+
+  @ApiProperty({
+    description: 'Пользователь ID',
+    type: 'string',
+    format: 'uuid',
+    required: false,
+  })
+  @IsOptional()
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
+  userId?: string;
 
   @ApiProperty({
     description: 'Время создания',

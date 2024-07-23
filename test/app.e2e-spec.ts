@@ -832,28 +832,6 @@ describe('Backend API (e2e)', () => {
   });
 
   /**
-   * Константы
-   */
-  describe('Константы /constants', () => {
-    /**
-     * Константы
-     */
-    test('GET /constants (Константы)', async () => {
-      await request
-        .get(`${apiPath}/constants`)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: ConstantsGetResponse }) => {
-          expect(body.data.COMMISSION_PERCENT).toBeGreaterThanOrEqual(0);
-          expect(body.data.MIN_INVOICE_SUM).toBeGreaterThanOrEqual(0);
-          expect(body.data.SUBSCRIPTION_FEE).toBeGreaterThanOrEqual(0);
-          expect(body.data.VERSION_BACKEND).toBeDefined();
-        });
-    });
-  });
-
-  /**
    *
    * Папки (/folder)
    *
@@ -870,30 +848,6 @@ describe('Backend API (e2e)', () => {
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
         .expect(400);
-    });
-
-    /**
-     * Получение списка папок
-     */
-    test('POST /folder [success] (Получение списка папок)', async () => {
-      if (!advertiserToken) {
-        expect(false).toEqual(true);
-      }
-
-      const content = request
-        .post(`${apiPath}/folder`)
-        .auth(advertiserToken, { type: 'bearer' })
-        .send({ where: {}, scope: {} })
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200);
-
-      await content.then(({ body }: { body: FoldersGetResponse }) => {
-        expect(body.status).toBe(Status.Success);
-        expect(body.data).toBeDefined();
-        expect((body.data as any)?.[0]?.userId).toBeDefined();
-        expect((body.data as any)?.[0]?.user?.password).toBeUndefined();
-      });
     });
   });
 
@@ -1166,6 +1120,23 @@ describe('Backend API (e2e)', () => {
    *
    */
   describe('Пользовательский путь: MonitorOwner, Advertiser, Accountant', () => {
+    /**
+     * Константы
+     */
+    test('GET /constants (Константы)', async () => {
+      await request
+        .get(`${apiPath}/constants`)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: ConstantsGetResponse }) => {
+          expect(body.data.COMMISSION_PERCENT).toBeGreaterThanOrEqual(0);
+          expect(body.data.MIN_INVOICE_SUM).toBeGreaterThanOrEqual(0);
+          expect(body.data.SUBSCRIPTION_FEE).toBeGreaterThanOrEqual(0);
+          expect(body.data.VERSION_BACKEND).toBeDefined();
+        });
+    });
+
     /**
      * MonitorOwner: Регистрация пользователя
      */
@@ -1794,6 +1765,29 @@ describe('Backend API (e2e)', () => {
           );
           expect(body.data[0]?.user?.password).toBeUndefined();
         });
+    });
+
+    /**
+     * MonitorOwner: Получение списка папок
+     */
+    test('MonitorOwner: POST /folder (Получение списка папок)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+
+      const content = request
+        .post(`${apiPath}/folder`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send({ where: {}, scope: {} })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      await content.then(({ body }: { body: FoldersGetResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.data).toBeDefined();
+        expect(body.data?.[0]?.userId).toBeDefined();
+      });
     });
 
     /**
