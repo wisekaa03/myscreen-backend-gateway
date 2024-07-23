@@ -33,6 +33,7 @@ export type I18nTranslations = {
         "BID_NOT_FOUND": string;
         "BID_ERROR": string;
         "INVOICE_FILE": string;
+        "EDITOR_NOT_FOUND": string;
     };
     "validation": {
         "IS_DEFINED": string;

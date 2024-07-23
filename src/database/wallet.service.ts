@@ -109,16 +109,39 @@ export class WalletService {
     dates,
     invoiceId,
     actId,
+    isSubscription = null,
   }: {
     userId: string;
     transact?: EntityManager;
     dates?: [Date, Date];
     actId?: FindOperator<string> | string;
     invoiceId?: FindOperator<string> | string;
+    isSubscription?: boolean | null;
   }): Promise<number> {
     const transactWallet = transact
       ? transact.withRepository(this.walletRepository)
       : this.walletRepository;
+    if (isSubscription !== null) {
+      const qb = transactWallet
+        .createQueryBuilder('wallet')
+        .select('SUM("wallet"."sum")', 'SUM')
+        .leftJoin('act', 'act', '"act"."id" = "wallet"."actId"')
+        .where(`"wallet"."userId" = :userId`, { userId })
+        .andWhere('"act"."isSubscription" = :isSubscription', {
+          isSubscription,
+        })
+        .andWhere(`"wallet"."invoiceId" IS NULL`)
+        .andWhere(`"wallet"."actId" IS NOT NULL`);
+      if (dates) {
+        qb.andWhere(`"wallet"."createdAt" BETWEEN :dateStart AND :dateEnd`, {
+          dateStart: dates[0],
+          dateEnd: dates[1],
+        });
+      }
+      const sum = await qb.getRawOne();
+      return sum['SUM'] ?? 0;
+    }
+
     return transactWallet
       .sum('sum', {
         userId,
@@ -158,14 +181,17 @@ export class WalletService {
 
     // получаем количество актов за последний месяц
     const toDate = new Date();
-    const fromDate = dayjs(toDate).subtract(28).toDate();
-    const actsInPastMonth = -(await this.walletSum({
-      userId,
-      dates: [fromDate, toDate],
-      invoiceId: IsNull(),
-      actId: Not(IsNull()),
-      transact,
-    }));
+    const fromDate = dayjs(toDate).subtract(28, 'days').toDate();
+    const actsInPastMonth = Math.abs(
+      await this.walletSum({
+        userId,
+        dates: [fromDate, toDate],
+        invoiceId: IsNull(),
+        actId: Not(IsNull()),
+        isSubscription: true,
+        transact,
+      }),
+    );
     const fullName = getFullName(user);
 
     this.logger.warn(
@@ -177,20 +203,19 @@ export class WalletService {
         ` [ ] Skipping "${fullName}" because acceptance act was issued in the last month. Balance ₽${balance}`,
       );
     } else {
-      if (balance > this.subscriptionFee) {
+      if (balance >= this.subscriptionFee) {
         // теперь списание средств с баланса и создание акта
         const sum = this.subscriptionFee;
         this.logger.warn(
           ` [+] Issue an acceptance act to the user "${fullName}" to the sum of ₽${sum}`,
         );
-        if (sum !== 0) {
-          await this.actService.create({
-            userId,
-            sum,
-            isSubscription: true,
-            description: this.subscriptionDescription,
-          });
-        }
+
+        await this.actService.create({
+          userId,
+          sum,
+          isSubscription: true,
+          description: this.subscriptionDescription,
+        });
 
         // проверяем план пользователя
         if (user.plan === UserPlanEnum.Demo) {
@@ -198,6 +223,7 @@ export class WalletService {
           await transact.update(UserEntity, user.id, {
             plan: UserPlanEnum.Full,
             storageSpace: UserStoreSpaceEnum.FULL,
+            nonPayment: 0,
           });
         }
 
@@ -223,6 +249,7 @@ export class WalletService {
               plan: UserPlanEnum.Demo,
               storageSpace: UserStoreSpaceEnum.DEMO,
             });
+            await transact.increment(WalletEntity, '', 'nonPayment', 1);
           }
 
           // и вывод информации на email
@@ -242,14 +269,14 @@ export class WalletService {
     this.walletRepository.manager.transaction(
       'REPEATABLE READ',
       async (transact) => {
-        const users = await transact.find(UserResponse, {
-          where: [
-            {
-              verified: true,
-              disabled: false,
-              role: UserRoleEnum.MonitorOwner,
-            },
-          ],
+        const users = await transact.find(UserEntity, {
+          where: {
+            verified: true,
+            disabled: false,
+            role: UserRoleEnum.MonitorOwner,
+          },
+          loadEagerRelations: false,
+          relations: {},
         });
 
         const promiseUsers = users.map(async (user) =>
