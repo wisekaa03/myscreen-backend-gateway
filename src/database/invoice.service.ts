@@ -3,7 +3,7 @@ import { buffer } from 'node:stream/consumers';
 import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, FindManyOptions, Repository } from 'typeorm';
+import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { ClientProxy } from '@nestjs/microservices';
@@ -15,7 +15,12 @@ import {
   NotFoundError,
   ServiceUnavailableError,
 } from '@/errors';
-import { MailInvoiceConfirmed, PrintInvoice } from '@/interfaces';
+import {
+  FindManyOptionsExt,
+  FindOneOptionsExt,
+  MailInvoiceConfirmed,
+  PrintInvoice,
+} from '@/interfaces';
 import { MAIL_SERVICE, formatToContentType } from '@/constants';
 import { UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -28,6 +33,7 @@ import { WsStatistics } from './ws.statistics';
 import { WalletService } from './wallet.service';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
+import { FileEntity } from './file.entity';
 
 @Injectable()
 export class InvoiceService {
@@ -56,7 +62,7 @@ export class InvoiceService {
   }
 
   async findAndCount(
-    find: FindManyOptions<InvoiceEntity>,
+    find: FindManyOptionsExt<InvoiceEntity>,
   ): Promise<[InvoiceEntity[], number]> {
     let invoices: InvoiceEntity[];
     let count = 0;
@@ -77,7 +83,7 @@ export class InvoiceService {
   }
 
   async findOne(
-    find: FindManyOptions<InvoiceEntity>,
+    find: FindOneOptionsExt<InvoiceEntity>,
   ): Promise<InvoiceEntity | null> {
     const invoice = await this.invoiceRepository.findOne(
       TypeOrmFind.findParams(InvoiceEntity, find),
@@ -191,6 +197,47 @@ export class InvoiceService {
     return invoiceFind;
   }
 
+  async generateInvoiceFile(
+    invoice: InvoiceEntity,
+    format: SpecificFormat,
+    transact?: EntityManager,
+  ): Promise<FileEntity> {
+    const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
+    const _transact = transact
+      ? transact.withRepository(this.invoiceRepository)
+      : this.invoiceRepository;
+
+    const language =
+      invoiceUser.preferredLanguage ??
+      this.configService.getOrThrow('DEFAULT_LANGUAGE');
+    const invoiceFile = this.mailService.send<Buffer, PrintInvoice>('invoice', {
+      format,
+      invoice,
+      language,
+    });
+    const { id: invoiceFolderId } = await this.folderService.invoiceFolder(
+      invoiceUserId,
+      transact,
+    );
+    const fileBuffer = await lastValueFrom(invoiceFile);
+
+    const [file] = await this.fileService.upload({
+      user: invoiceUser,
+      files: fileBuffer,
+      folderId: invoiceFolderId,
+      originalname: `Invoice_${dayjs(invoice.createdAt).format('YYYYDDMM_HHmmss')}.xlsx`,
+      mimetype: 'application/vnd.ms-excel',
+      transact,
+    });
+    if (!file) {
+      throw new BadRequestError();
+    }
+
+    await _transact.save(_transact.create({ id, file }));
+
+    return file;
+  }
+
   async statusChange(
     invoice: InvoiceEntity,
     status: InvoiceStatus,
@@ -268,36 +315,10 @@ export class InvoiceService {
           case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
             let { file } = invoice;
             if (!file) {
-              const language =
-                invoiceUser.preferredLanguage ??
-                this.configService.getOrThrow('DEFAULT_LANGUAGE');
-              const invoiceFile = this.mailService.send<Buffer, PrintInvoice>(
-                'invoice',
-                {
-                  format: SpecificFormat.XLSX,
-                  invoice,
-                  language,
-                },
-              );
-              const { id: invoiceFolderId } =
-                await this.folderService.invoiceFolder(invoiceUserId, transact);
-              const fileBuffer = await lastValueFrom(invoiceFile);
-
-              [file] = await this.fileService.upload({
-                user: invoiceUser,
-                files: fileBuffer,
-                folderId: invoiceFolderId,
-                originalname: `Invoice_${dayjs(invoice.createdAt).format('YYYYDDMM_HHmmss')}.xlsx`,
-                mimetype: 'application/vnd.ms-excel',
+              file = await this.generateInvoiceFile(
+                invoice,
+                SpecificFormat.XLSX,
                 transact,
-              });
-              if (!file) {
-                throw new BadRequestError();
-              }
-
-              await transact.save(
-                InvoiceEntity,
-                transact.create(InvoiceEntity, { id, file }),
               );
             }
 
@@ -318,8 +339,6 @@ export class InvoiceService {
                   invoiceFile,
                 },
               );
-            } else {
-              throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
             }
 
             break;
@@ -369,41 +388,39 @@ export class InvoiceService {
       throw new NotFoundError('Invoice: user not found');
     }
 
-    const { file } = invoice;
-    if (file) {
-      const data = await this.fileService
-        .getS3Object(file)
-        .catch((error: unknown) => {
-          throw new NotFoundError(`File '${file.id}' is not exists: ${error}`);
-        });
-      if (data.Body instanceof internal.Readable) {
-        const specificFormat = formatToContentType[format]
-          ? format
-          : SpecificFormat.XLSX;
+    let { file } = invoice;
+    if (!file) {
+      file = await this.generateInvoiceFile(invoice, format);
+    }
 
-        const createdAt = dayjs(invoice.createdAt || new Date())
-          .locale('ru')
-          .format('DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm');
-        const invoiceFilename = encodeURI(
-          `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
-        );
-        res.statusCode = 200;
-        res.setHeader(
-          'Content-Disposition',
-          `attachment; filename="${invoiceFilename}"`,
-        );
-        res.setHeader('Content-Type', formatToContentType[format]);
+    const data = await this.fileService
+      .getS3Object(file)
+      .catch((error: unknown) => {
+        throw new NotFoundError(`File '${file.id}' is not exists: ${error}`);
+      });
+    if (data.Body instanceof internal.Readable) {
+      const specificFormat = formatToContentType[format]
+        ? format
+        : SpecificFormat.XLSX;
 
-        this.logger.debug(
-          `The invoice file '${file.name}' has been downloaded`,
-        );
+      const createdAt = dayjs(invoice.createdAt || new Date())
+        .locale('ru')
+        .format('DD[_]MMMM[_]YYYY[_г._в_]hh[_]mm');
+      const invoiceFilename = encodeURI(
+        `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
+      );
+      res.statusCode = 200;
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${invoiceFilename}"`,
+      );
+      res.setHeader('Content-Type', formatToContentType[format]);
 
-        data.Body.pipe(res);
-      } else {
-        throw new ServiceUnavailableError();
-      }
+      this.logger.debug(`The invoice file '${file.name}' has been downloaded`);
+
+      data.Body.pipe(res);
     } else {
-      throw new NotFoundError('FILE_MUST_EXISTS');
+      throw new ServiceUnavailableError();
     }
   }
 }

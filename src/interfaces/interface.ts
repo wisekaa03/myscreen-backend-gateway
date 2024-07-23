@@ -22,14 +22,18 @@ export interface MonitorGroupWithPlaylist
   playlist: PlaylistEntity;
 }
 
-export interface FindManyOptionsCaseInsensitive<T> extends FindManyOptions<T> {
+export interface FindManyOptionsExt<T> extends FindManyOptions<T> {
   caseInsensitive?: boolean;
   fromView?: boolean;
+  signedUrl?: boolean;
+  userId?: string;
   transact?: EntityManager;
 }
 
-export interface FindOneOptionsCaseInsensitive<T> extends FindOneOptions<T> {
+export interface FindOneOptionsExt<T> extends FindOneOptions<T> {
   caseInsensitive?: boolean;
   fromView?: boolean;
+  signedUrl?: boolean;
+  userId?: string;
   transact?: EntityManager;
 }

@@ -13,12 +13,7 @@ import dayjsDuration from 'dayjs/plugin/duration';
 import dayjs from 'dayjs';
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  DeepPartial,
-  DeleteResult,
-  FindManyOptions,
-  Repository,
-} from 'typeorm';
+import { DeepPartial, DeleteResult, Repository } from 'typeorm';
 import { ffprobe } from 'media-probe';
 import Editly from 'editly';
 
@@ -30,7 +25,11 @@ import {
   BidStatus,
   FileType,
 } from '@/enums';
-import { MonitorGroupWithPlaylist } from '@/interfaces';
+import {
+  FindManyOptionsExt,
+  FindOneOptionsExt,
+  MonitorGroupWithPlaylist,
+} from '@/interfaces';
 import { fileExist } from '@/utils/fs';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
@@ -65,10 +64,10 @@ export class EditorService {
     private readonly monitorRepository: Repository<MonitorEntity>,
   ) {}
 
-  async find(
-    find: FindManyOptions<EditorEntity>,
+  async find({
     caseInsensitive = true,
-  ): Promise<EditorEntity[]> {
+    ...find
+  }: FindManyOptionsExt<EditorEntity>): Promise<EditorEntity[]> {
     const conditional = TypeOrmFind.findParams(EditorEntity, find);
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
@@ -78,10 +77,10 @@ export class EditorService {
       : this.editorRepository.find(conditional);
   }
 
-  async findAndCount(
-    find: FindManyOptions<EditorEntity>,
+  async findAndCount({
     caseInsensitive = true,
-  ): Promise<[EditorEntity[], number]> {
+    ...find
+  }: FindManyOptionsExt<EditorEntity>): Promise<[EditorEntity[], number]> {
     const conditional = TypeOrmFind.findParams(EditorEntity, find);
     if (!find.relations) {
       conditional.relations = ['videoLayers', 'audioLayers', 'renderedFile'];
@@ -91,9 +90,9 @@ export class EditorService {
       : this.editorRepository.findAndCount(conditional);
   }
 
-  async findOne(
-    find: FindManyOptions<EditorEntity>,
-  ): Promise<EditorEntity | null> {
+  async findOne({
+    ...find
+  }: FindOneOptionsExt<EditorEntity>): Promise<EditorEntity | null> {
     return find.relations
       ? this.editorRepository.findOne(
           TypeOrmFind.findParams(EditorEntity, find),
@@ -136,9 +135,11 @@ export class EditorService {
     });
   }
 
-  async findLayer(
-    find: FindManyOptions<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity[] | undefined> {
+  async findLayer({
+    ...find
+  }: FindManyOptionsExt<EditorLayerEntity>): Promise<
+    EditorLayerEntity[] | undefined
+  > {
     const conditional = find;
     if (!find.relations) {
       conditional.relations = ['video', 'audio', 'file'];
@@ -149,9 +150,9 @@ export class EditorService {
     return this.editorLayerRepository.find(conditional);
   }
 
-  async findOneLayer(
-    find: FindManyOptions<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity | null> {
+  async findOneLayer({
+    ...find
+  }: FindOneOptionsExt<EditorLayerEntity>): Promise<EditorLayerEntity | null> {
     const conditional = find;
     if (!find.relations) {
       conditional.relations = ['video', 'audio', 'file'];
@@ -626,7 +627,7 @@ export class EditorService {
       },
     });
     if (!editor) {
-      throw new NotFoundError('Editor not found');
+      throw new NotFoundError('EDITOR_NOT_FOUND', { args: { id } });
     }
     const { id: editorId } = editor;
     if (!rerender) {

@@ -72,9 +72,7 @@ export class StatisticsController {
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
-        find: {
-          where: { userId: user.id, id: In(monitorIds) },
-        },
+        where: { userId: user.id, id: In(monitorIds) },
       });
     }
 
@@ -141,10 +139,7 @@ export class StatisticsController {
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
-
-        find: {
-          where: { userId: user.id, id: In(monitorIds) },
-        },
+        where: { userId: user.id, id: In(monitorIds) },
       });
     }
 

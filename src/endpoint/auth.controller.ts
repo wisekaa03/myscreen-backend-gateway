@@ -341,11 +341,10 @@ export class AuthController {
     @Body() { code }: AuthMonitorRequest,
   ): Promise<AuthRefreshResponse> {
     const monitor = await this.monitorService.findOne({
-      find: {
-        where: { attached: false, code },
-        loadEagerRelations: false,
-        relations: {},
-      },
+      where: { attached: false, code },
+      loadEagerRelations: false,
+      relations: {},
+      caseInsensitive: false,
     });
     if (!monitor) {
       throw new NotFoundError(`Monitor with code '${code}' does not exist`);

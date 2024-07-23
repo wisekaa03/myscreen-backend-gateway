@@ -18,15 +18,15 @@ import { UserEntity } from './user.entity';
 export const mockRepository = jest.fn(() => ({
   find: async (find: FindOneOptions<ObjectLiteral>) =>
     Promise.resolve({
-      id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id,
+      id: (find.where as FindOptionsWhere<ObjectLiteral>)?.id,
     }),
   findOne: async (find: FindOneOptions<ObjectLiteral>) =>
     Promise.resolve({
-      id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id,
+      id: (find.where as FindOptionsWhere<ObjectLiteral>)?.id,
     }),
   findAndCount: async (find: FindOneOptions<ObjectLiteral>) =>
     Promise.resolve([
-      { id: (find?.where as FindOptionsWhere<ObjectLiteral>)?.id },
+      { id: (find.where as FindOptionsWhere<ObjectLiteral>)?.id },
       1,
     ]),
   createQueryBuilder: () => ({
@@ -88,15 +88,15 @@ describe(FolderService.name, () => {
 
   it('returns folder.findOne', async () => {
     const find = await service.findOne({
-      where: { id: '0000-0000-0000-0001' },
+      where: { id: '0000-0000-0000-0000' },
     });
-    expect(find).toStrictEqual({ id: '0000-0000-0000-0001' });
+    expect(find).toStrictEqual({ id: '0000-0000-0000-0000' });
   });
 
-  // it('returns folder.create', async () => {
-  //   const folder = await service.create({ name: 'aaa' });
-  //   expect(folder).toStrictEqual({ name: 'aaa' });
-  // });
+  it('returns folder.create', async () => {
+    const folder = await service.create({ name: 'aaa' });
+    expect(folder).toStrictEqual({ name: 'aaa' });
+  });
 
   it('returns folder.update', async () => {
     const folder = await service.update('0000-0000-0000-0004', {});
