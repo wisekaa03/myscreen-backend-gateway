@@ -17,7 +17,12 @@ import { DeepPartial, DeleteResult, Repository } from 'typeorm';
 import { ffprobe } from 'media-probe';
 import Editly from 'editly';
 
-import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
+import {
+  BadRequestError,
+  NotAcceptableError,
+  NotFoundError,
+  ServiceUnavailableError,
+} from '@/errors';
 import {
   MonitorMultiple,
   MonitorOrientation,
@@ -30,7 +35,7 @@ import {
   FindOneOptionsExt,
   MonitorGroupWithPlaylist,
 } from '@/interfaces';
-import { fileExist } from '@/utils/fs';
+import { fileExist } from '@/utils/file-exist';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
@@ -38,8 +43,8 @@ import { FileService } from '@/database/file.service';
 import { FolderService } from './folder.service';
 import { UserEntity } from './user.entity';
 import { BidEntity } from './bid.entity';
-import { PlaylistService } from './playlist.service';
 import { MonitorEntity } from './monitor.entity';
+import { PlaylistEntity } from './playlist.entity';
 
 dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
@@ -50,8 +55,6 @@ export class EditorService {
 
   constructor(
     private readonly folderService: FolderService,
-    @Inject(forwardRef(() => PlaylistService))
-    private readonly playlistService: PlaylistService,
     @Inject(forwardRef(() => FileService))
     private readonly fileService: FileService,
     @InjectRepository(EditorEntity)
@@ -62,6 +65,8 @@ export class EditorService {
     private readonly bidRepository: Repository<BidEntity>,
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
+    @InjectRepository(PlaylistEntity)
+    private readonly playlistRepository: Repository<PlaylistEntity>,
   ) {}
 
   async find({
@@ -283,8 +288,9 @@ export class EditorService {
 
     layer.path = filePath;
 
-    if (!(await fileExist(filePath))) {
-      if (await this.fileService.headS3Object(file)) {
+    if (!fileExist(filePath)) {
+      const headS3file = await this.fileService.headS3Object(file);
+      if (headS3file.ETag) {
         const outputStream = createWriteStream(filePath);
         const data = await this.fileService.getS3Object(file);
         if (data.Body instanceof internal.Readable) {
@@ -300,7 +306,7 @@ export class EditorService {
     editor: EditorEntity,
     audio: boolean,
   ): Promise<[string, Editly.Config]> {
-    const { downloadDir } = this.fileService;
+    const downloadDir = this.fileService.downloadDir;
     await fs.mkdir(downloadDir, { recursive: true });
 
     const videoLayersPromise = editor.videoLayers.map(
@@ -495,16 +501,19 @@ export class EditorService {
     const monitorPlaylistsPromise = groupMonitors.map(async (groupMonitor) => {
       const { name: monitorName, id: monitorId } = groupMonitor.monitor;
       // создаем плэйлист
-      const playlistLocal = await this.playlistService.create({
-        name: `Scaling monitor "${monitorName}": #${monitorId}`,
-        description: `Scaling monitor "${monitorName}": #${monitorId}`,
-        userId,
-        monitors: [],
-        hide: true,
-      });
+      const _playlist = await this.playlistRepository.save(
+        this.playlistRepository.create({
+          name: `Scaling monitor "${monitorName}": #${monitorId}`,
+          description: `Scaling monitor "${monitorName}": #${monitorId}`,
+          userId,
+          monitors: [],
+          hide: true,
+        }),
+      );
+      const { id: playlistId } = _playlist;
       // добавляем в плэйлист монитор
       await this.monitorRepository.update(monitorId, {
-        playlist: playlistLocal,
+        playlistId,
       });
       // создаем редакторы
       const editorsPromise = files.map(async (file) => {
@@ -520,7 +529,7 @@ export class EditorService {
           renderingPercent: null,
           renderingError: null,
           renderedFile: null,
-          playlistId: playlistLocal.id,
+          playlistId,
         });
         // и добавляем в редактор видео-слой с файлом
         await this.createLayer(bid.user.id, editor.id, {
@@ -545,7 +554,7 @@ export class EditorService {
 
       return {
         ...groupMonitor,
-        playlist: playlistLocal,
+        playlist: _playlist,
       };
     });
     const monitorPlaylists = await Promise.all(monitorPlaylistsPromise);
@@ -555,6 +564,8 @@ export class EditorService {
       const playlistsPromise = monitorPlaylists.map(async (item) => {
         const editors = await this.editorRepository.find({
           where: { playlistId: item.playlist.id },
+          loadEagerRelations: false,
+          relations: {},
         });
         const editorsPromise = editors.map(async (editor) => {
           await this.export({
@@ -639,6 +650,9 @@ export class EditorService {
         return editorLocal as EditorEntity;
       }
     }
+    const { id: exportFolderId } = await this.folderService.exportFolder(
+      user.id,
+    );
 
     try {
       await this.editorRepository.update(editorId, {
@@ -676,6 +690,7 @@ export class EditorService {
       editlyConfig.customOutputArgs = customOutputArgs;
 
       (async (renderEditor: EditorEntity) => {
+        const { id: renderEditorId, name: renderEditorName } = renderEditor;
         const editlyJSON = JSON.stringify(editlyConfig);
         const editlyPath = path.join(mkdirPath, editorId, 'editly.json');
         await fs.writeFile(editlyPath, editlyJSON).catch((reason) => {
@@ -694,18 +709,22 @@ export class EditorService {
           childEditly.stdout?.on('data', (message: Buffer) => {
             const msg = message.toString();
             this.logger.debug(
-              `Editly on '${renderEditor.id}' / '${renderEditor.name}': ${msg}`,
+              `Editly on '${renderEditorId}' / '${renderEditorName}': ${msg}`,
               'Editly',
             );
             // Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
             const percent = msg.match(/(\d+%)/g);
             if (Array.isArray(percent) && percent.length > 0) {
               this.editorRepository
-                .update(renderEditor.id, {
+                .update(renderEditorId, {
                   renderingPercent: parseInt(percent[percent.length - 1], 10),
                 })
                 .catch((error: any) => {
-                  this.logger.error(error?.message, error?.stack, 'Editly');
+                  this.logger.error(
+                    error?.message || error,
+                    error?.stack,
+                    'Editly',
+                  );
                 });
             }
           });
@@ -732,9 +751,6 @@ export class EditorService {
         }
 
         const { size } = await fs.stat(outPath);
-        const { id: exportFolderId } = await this.folderService.exportFolder(
-          user.id,
-        );
         const media = await ffprobe(outPath, {
           showFormat: true,
           showStreams: true,
@@ -759,43 +775,44 @@ export class EditorService {
           stream: null as unknown as ReadStream,
           buffer: null as unknown as Buffer,
         };
-        const renderedFiles = await this.fileService
+        const renderedFile = await this.fileService
           .upload({ user, files: file, folderId: exportFolderId })
-          .then((renderedFile) => {
-            if (renderedFile[0]) {
-              this.editorRepository.update(renderEditor.id, {
+          .then(([file]) => {
+            if (file) {
+              this.editorRepository.update(renderEditorId, {
                 renderingStatus: RenderingStatus.Ready,
-                renderedFile: renderedFile[0],
+                renderedFile: file,
                 renderingPercent: 100,
                 renderingError: null,
               });
 
-              return renderedFile;
+              return file;
             }
 
-            throw new NotFoundError(
+            throw new ServiceUnavailableError(
               `Upload file not found: '${JSON.stringify(file)}'`,
             );
           })
-          .catch((reason: unknown) => {
+          .catch((reason: any) => {
             this.logger.error(
               `Can't write to out file: ${JSON.stringify(reason)}`,
             );
-            throw reason;
+            throw new Error(reason);
           });
 
         this.logger.log(`Writed out file: ${JSON.stringify(file)}`);
 
         // Для SCALING, но может быть еще для чего-то
         if (editor.playlistId) {
-          const playlist = await this.playlistService.findOne({
+          const playlist = await this.playlistRepository.findOne({
             where: { id: editor.playlistId },
+            loadEagerRelations: false,
             relations: { editors: true },
           });
           if (playlist) {
             // обновляем плэйлист
-            await this.playlistService.update(playlist.id, {
-              files: renderedFiles,
+            await this.playlistRepository.update(playlist.id, {
+              files: [renderedFile],
             });
             if (playlist.editors) {
               const editors = playlist.editors.filter(

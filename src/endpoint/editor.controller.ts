@@ -549,12 +549,12 @@ export class EditorController {
   })
   @Crud(CRUD.READ)
   async getEditorExportStatus(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
   ): Promise<EditorGetRenderingStatusResponse> {
     const data = await this.editorService.findOne({
       where: {
-        userId: user.id,
+        userId,
         id,
       },
     });
