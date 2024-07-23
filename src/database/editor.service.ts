@@ -605,7 +605,7 @@ export class EditorService {
     id: string;
     rerender?: boolean;
     customOutputArgs?: string[];
-  }): Promise<EditorEntity | undefined> {
+  }): Promise<EditorEntity> {
     const editor = await this.editorRepository.findOne({
       relations: {
         videoLayers: {
@@ -632,11 +632,11 @@ export class EditorService {
     const { id: editorId } = editor;
     if (!rerender) {
       if (
-        editor.renderingStatus !== RenderingStatus.Initial &&
-        editor.renderingStatus !== RenderingStatus.Error
+        editor.renderingStatus === RenderingStatus.Ready ||
+        editor.renderingStatus === RenderingStatus.Pending
       ) {
-        const { videoLayers, audioLayers, ...other } = editor;
-        return other as EditorEntity;
+        const { videoLayers, audioLayers, ...editorLocal } = editor;
+        return editorLocal as EditorEntity;
       }
     }
 
@@ -711,6 +711,9 @@ export class EditorService {
           });
           childEditly.stderr?.on('data', (message: Buffer) => {
             const msg = message.toString();
+            if (msg.includes('editly: symbol lookup error')) {
+              reject(new Error(msg));
+            }
             this.logger.debug(msg, undefined, 'Editly');
           });
           childEditly.on('error', (error: Error) => {
@@ -829,18 +832,12 @@ export class EditorService {
         });
       });
 
-      const { videoLayers, audioLayers, ...other } = editor;
-      return other as EditorEntity;
-    } catch (error: unknown) {
-      let renderingError: string;
-      if (error instanceof Error) {
-        renderingError = error.message;
-      } else {
-        renderingError = error as string;
-      }
+      const { videoLayers, audioLayers, ...editorLocal } = editor;
+      return editorLocal as EditorEntity;
+    } catch (error: any) {
       this.editorRepository.update(editorId, {
         renderingStatus: RenderingStatus.Error,
-        renderingError,
+        renderingError: error?.message || error,
         renderingPercent: 0,
       });
 
