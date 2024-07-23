@@ -283,11 +283,9 @@ export class EditorController {
       whereFile.userId = user.id;
     }
     const file = await this.fileService.findOne({
-      find: {
-        where: whereFile,
-        loadEagerRelations: false,
-        relations: {},
-      },
+      where: whereFile,
+      loadEagerRelations: false,
+      relations: {},
     });
     if (!file) {
       throw new NotFoundError(`The file '${body.file}' is not found`);

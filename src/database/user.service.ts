@@ -14,15 +14,13 @@ import { I18nContext, I18nService } from 'nestjs-i18n';
 
 import {
   BadRequestError,
-  ConflictData,
-  ConflictError,
   ForbiddenError,
   PreconditionFailedError,
   UnauthorizedError,
 } from '@/errors';
 import {
-  FindManyOptionsCaseInsensitive,
-  FindOneOptionsCaseInsensitive,
+  FindManyOptionsExt,
+  FindOneOptionsExt,
   MailForgotPassword,
   MailSendVerificationCode,
   MailWelcomeMessage,
@@ -61,6 +59,106 @@ export class UserService {
       'FRONTEND_URL',
       'http://localhost',
     );
+  }
+
+  async find({
+    caseInsensitive = true,
+    ...find
+  }: FindManyOptionsExt<UserResponse>): Promise<UserResponse[]> {
+    const users = !caseInsensitive
+      ? await this.userResponseRepository.find(
+          TypeOrmFind.findParams(UserResponse, find),
+        )
+      : await TypeOrmFind.findCI(
+          this.userResponseRepository,
+          TypeOrmFind.findParams(UserResponse, find),
+        );
+
+    return users;
+  }
+
+  async findOne({
+    fromView = true,
+    caseInsensitive = true,
+    ...find
+  }: FindOneOptionsExt<UserResponse | UserEntity>): Promise<
+    UserResponse | UserEntity | null
+  > {
+    if (!fromView) {
+      if (!caseInsensitive) {
+        return this.userRepository.findOne(
+          TypeOrmFind.findParams(UserEntity, find),
+        );
+      }
+
+      return TypeOrmFind.findOneCI(
+        this.userRepository,
+        TypeOrmFind.findParams(UserEntity, find),
+      );
+    }
+
+    if (!caseInsensitive) {
+      return this.userResponseRepository.findOne(
+        TypeOrmFind.findParams(UserResponse, find),
+      );
+    }
+
+    return TypeOrmFind.findOneCI(
+      this.userResponseRepository,
+      TypeOrmFind.findParams(UserResponse, find),
+    );
+  }
+
+  async findAndCount({
+    caseInsensitive = true,
+    ...find
+  }: FindManyOptionsExt<UserResponse>): Promise<[UserResponse[], number]> {
+    const userCount = !caseInsensitive
+      ? await this.userResponseRepository.findAndCount(
+          TypeOrmFind.findParams(UserResponse, find),
+        )
+      : await TypeOrmFind.findAndCountCI(
+          this.userResponseRepository,
+          TypeOrmFind.findParams(UserResponse, find),
+        );
+
+    return userCount;
+  }
+
+  async findByEmail(
+    email: string,
+    find?: FindManyOptionsExt<UserResponse>,
+  ): Promise<UserResponse | null> {
+    return this.userResponseRepository.findOne({
+      ...find,
+      where: { email },
+    });
+  }
+
+  async findById(
+    id: string,
+    role?: UserRoleEnum,
+    disabled = false,
+  ): Promise<UserResponse | null> {
+    if (role === UserRoleEnum.Monitor) {
+      return this.userResponseRepository.create({
+        id,
+        role: UserRoleEnum.Monitor,
+        plan: UserPlanEnum.Full,
+        name: null,
+        surname: null,
+        middleName: null,
+        email: '',
+        disabled: false,
+        verified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    return this.userResponseRepository.findOne({
+      where: { id, disabled: disabled ? undefined : disabled },
+    });
   }
 
   /**
@@ -442,101 +540,6 @@ export class UserService {
     throw new ForbiddenError('Forgot password not equal to our records', {
       args: { forgotPassword },
     });
-  }
-
-  async find(
-    find: FindManyOptionsCaseInsensitive<UserResponse>,
-  ): Promise<UserResponse[]> {
-    const users = !find.caseInsensitive
-      ? await this.userResponseRepository.find(
-          TypeOrmFind.findParams(UserResponse, find),
-        )
-      : await TypeOrmFind.findCI(
-          this.userResponseRepository,
-          TypeOrmFind.findParams(UserResponse, find),
-        );
-
-    return users;
-  }
-
-  async findOne(
-    find: FindOneOptionsCaseInsensitive<UserResponse | UserEntity>,
-  ): Promise<UserResponse | UserEntity | null> {
-    if (!find.fromView) {
-      if (!find.caseInsensitive) {
-        return this.userRepository.findOne(
-          TypeOrmFind.findParams(UserEntity, find),
-        );
-      }
-
-      return TypeOrmFind.findOneCI(
-        this.userRepository,
-        TypeOrmFind.findParams(UserEntity, find),
-      );
-    }
-
-    if (!find.caseInsensitive) {
-      return this.userResponseRepository.findOne(
-        TypeOrmFind.findParams(UserResponse, find),
-      );
-    }
-
-    return TypeOrmFind.findOneCI(
-      this.userResponseRepository,
-      TypeOrmFind.findParams(UserResponse, find),
-    );
-  }
-
-  async findAndCount(
-    find: FindManyOptionsCaseInsensitive<UserResponse>,
-  ): Promise<[UserResponse[], number]> {
-    const userCount = !find.caseInsensitive
-      ? await this.userResponseRepository.findAndCount(
-          TypeOrmFind.findParams(UserResponse, find),
-        )
-      : await TypeOrmFind.findAndCountCI(
-          this.userResponseRepository,
-          TypeOrmFind.findParams(UserResponse, find),
-        );
-    return userCount;
-  }
-
-  async findByEmail(
-    email: string,
-    find?: FindManyOptions<UserResponse>,
-  ): Promise<UserResponse | null> {
-    return this.userResponseRepository.findOne({
-      ...find,
-      where: { email },
-    });
-  }
-
-  async findById(
-    id: string,
-    role?: UserRoleEnum,
-    disabled = false,
-  ): Promise<UserResponse | null> {
-    if (role === UserRoleEnum.Monitor) {
-      return this.userResponseRepository.create({
-        id,
-        role: UserRoleEnum.Monitor,
-        plan: UserPlanEnum.Full,
-        name: null,
-        surname: null,
-        middleName: null,
-        email: '',
-        disabled: false,
-        verified: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-    }
-
-    const find: FindManyOptions<UserEntity> = disabled
-      ? { where: { id } }
-      : { where: { id, disabled } };
-
-    return this.userResponseRepository.findOne(find);
   }
 
   static validateCredentials = (

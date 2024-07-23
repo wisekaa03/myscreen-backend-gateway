@@ -22,7 +22,6 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { InjectS3, S3 } from 'nestjs-s3-aws';
 import {
   Repository,
-  FindManyOptions,
   DeepPartial,
   DeleteResult,
   In,
@@ -36,6 +35,7 @@ import {
   InternalServerError,
   NotFoundError,
 } from '@/errors';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import { FileType } from '@/enums';
 import {
   filePreviewAudio,
@@ -111,14 +111,10 @@ export class FileService {
    * @returns {Array<FileEntity>} {Array<FileEntity>} Результат
    */
   async find({
-    find,
     caseInsensitive = true,
     signedUrl = true,
-  }: {
-    find: FindManyOptions<FileEntity>;
-    caseInsensitive?: boolean;
-    signedUrl?: boolean;
-  }): Promise<FileEntity[]> {
+    ...find
+  }: FindManyOptionsExt<FileEntity>): Promise<FileEntity[]> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};
@@ -145,14 +141,10 @@ export class FileService {
    * @returns {[Array<FileEntity>, number]} {[Array<FileEntity>, number]} Результат
    */
   async findAndCount({
-    find,
     caseInsensitive = true,
     signedUrl = true,
-  }: {
-    find: FindManyOptions<FileEntity>;
-    caseInsensitive?: boolean;
-    signedUrl?: boolean;
-  }): Promise<[FileEntity[], number]> {
+    ...find
+  }: FindManyOptionsExt<FileEntity>): Promise<[FileEntity[], number]> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};
@@ -181,14 +173,10 @@ export class FileService {
    * @returns {FileEntity} {FileEntity | undefined} Результат
    */
   async findOne({
-    find,
     caseInsensitive = true,
     signedUrl = true,
-  }: {
-    find: FindManyOptions<FileEntity>;
-    caseInsensitive?: boolean;
-    signedUrl?: boolean;
-  }): Promise<FileEntity | null> {
+    ...find
+  }: FindOneOptionsExt<FileEntity>): Promise<FileEntity | null> {
     const conditional = TypeOrmFind.findParams(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};

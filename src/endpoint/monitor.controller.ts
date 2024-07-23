@@ -147,27 +147,25 @@ export class MonitorController {
       isDateString(where.dateWhenApp[0]) &&
       isDateString(where.dateWhenApp[1])
     ) {
-      const bidsWhen = await this.bidService.find(
-        {
-          where: {
-            dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
-            approved: Not(BidApprove.DENIED),
-          },
-          select: {
-            monitorId: true,
-          },
-          relations: {},
-          loadEagerRelations: false,
+      const bidsWhen = await this.bidService.find({
+        where: {
+          dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
+          approved: Not(BidApprove.DENIED),
         },
-        false,
-      );
+        select: {
+          monitorId: true,
+        },
+        relations: {},
+        loadEagerRelations: false,
+        caseInsensitive: false,
+      });
       find.where = {
         id: In(bidsWhen.map((bid) => bid.monitorId)),
       };
     }
     const [data, count] = await this.monitorService.findAndCount({
       userId,
-      find,
+      ...find,
     });
     if (scope?.order?.favorite) {
       return {
@@ -214,10 +212,8 @@ export class MonitorController {
     }
     if (multiple === MonitorMultiple.SINGLE) {
       const findMonitor = await this.monitorService.findOne({
-        find: {
-          where: { code: insert.code },
-          select: ['id', 'name', 'code'],
-        },
+        where: { code: insert.code },
+        select: ['id', 'name', 'code'],
       });
       if (findMonitor) {
         throw new BadRequestError(
@@ -230,10 +226,8 @@ export class MonitorController {
       where.userId = userId;
     }
     const findMonitor = await this.monitorService.findOne({
-      find: {
-        where,
-        select: ['id', 'name'],
-      },
+      where,
+      select: ['id', 'name'],
     });
     if (findMonitor) {
       throw new BadRequestError(
@@ -364,11 +358,9 @@ export class MonitorController {
     const dataPromise = attach.monitorIds.map(async (monitorId) => {
       const monitor = await this.monitorService.findOne({
         userId: user.id,
-        find: {
-          where: {
-            userId: user.id,
-            id: monitorId,
-          },
+        where: {
+          userId: user.id,
+          id: monitorId,
         },
       });
       if (!monitor) {
@@ -427,7 +419,7 @@ export class MonitorController {
     }
     const data = await this.monitorService.findOne({
       userId,
-      find,
+      ...find,
     });
     if (!data) {
       throw new NotFoundError(`Monitor '${id}' not found`);
@@ -485,7 +477,7 @@ export class MonitorController {
     };
     const monitor = await this.monitorService.findOne({
       userId,
-      find,
+      ...find,
     });
     if (!monitor) {
       throw new NotFoundError(`Monitor '${id}' not found`);
@@ -546,7 +538,7 @@ export class MonitorController {
     };
     const monitor = await this.monitorService.findOne({
       userId,
-      find,
+      ...find,
     });
     if (!monitor) {
       throw new NotFoundError(`Monitor '${id}' not found`);
@@ -662,7 +654,7 @@ export class MonitorController {
     }
     const monitor = await this.monitorService.findOne({
       userId,
-      find,
+      ...find,
     });
     if (!monitor) {
       throw new NotFoundError(`Monitor '${id}' not found`);
@@ -714,12 +706,10 @@ export class MonitorController {
     }
     const monitor = await this.monitorService.findOne({
       userId,
-      find: {
-        where,
-        select: ['id'],
-        loadEagerRelations: false,
-        relations: {},
-      },
+      where,
+      select: ['id'],
+      loadEagerRelations: false,
+      relations: {},
     });
     if (!monitor) {
       throw new NotFoundError(`Monitor '${id}' is not found`);
@@ -755,12 +745,10 @@ export class MonitorController {
       where.userId = userId;
     }
     const monitor = await this.monitorService.findOne({
-      find: {
-        where,
-        select: ['id', 'name', 'multiple', 'groupMonitors', 'userId', 'user'],
-        loadEagerRelations: false,
-        relations: { groupMonitors: true, user: true },
-      },
+      where,
+      select: ['id', 'name', 'multiple', 'groupMonitors', 'userId', 'user'],
+      loadEagerRelations: false,
+      relations: { groupMonitors: true, user: true },
     });
     if (!monitor) {
       throw new NotFoundError(`Monitor '${id}' not found`);

@@ -79,7 +79,8 @@ export class WSGateway
     if (role === UserRoleEnum.Monitor && sub) {
       monitorId = sub;
       monitor = await this.monitorService.findOne({
-        find: { where: { id: monitorId }, caseInsensitive: false },
+        where: { id: monitorId },
+        caseInsensitive: false,
       });
       if (!monitor) {
         throw new WsException('Not authorized');
@@ -149,12 +150,10 @@ export class WSGateway
     if (value.role === UserRoleEnum.Monitor) {
       if (value.monitorId) {
         const monitor = await this.monitorService.findOne({
-          find: {
-            where: { id: value.monitorId },
-            loadEagerRelations: false,
-            relations: { user: true },
-            caseInsensitive: false,
-          },
+          where: { id: value.monitorId },
+          loadEagerRelations: false,
+          relations: { user: true },
+          caseInsensitive: false,
         });
         if (monitor) {
           await this.monitorService
@@ -188,12 +187,10 @@ export class WSGateway
         value = await this.authorization(client, value, body.token);
         if (value.role === UserRoleEnum.Monitor && value.monitorId) {
           const monitor = await this.monitorService.findOne({
-            find: {
-              where: { id: value.monitorId },
-              loadEagerRelations: false,
-              relations: { user: true },
-              caseInsensitive: false,
-            },
+            where: { id: value.monitorId },
+            loadEagerRelations: false,
+            relations: { user: true },
+            caseInsensitive: false,
           });
           let bids: BidEntity[] | null = null;
           if (monitor) {
@@ -250,11 +247,9 @@ export class WSGateway
     }
 
     let monitor = await this.monitorService.findOne({
-      find: {
-        where: { id: value.monitorId },
-        relations: {},
-        caseInsensitive: false,
-      },
+      where: { id: value.monitorId },
+      relations: {},
+      caseInsensitive: false,
     });
     if (!monitor) {
       throw new WsException('Not exist monitorId');

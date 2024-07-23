@@ -20,19 +20,16 @@ import {
   otherFolderName,
   rootFolderName,
 } from '@/constants';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import { UserRoleEnum } from '@/enums';
 import { FolderResponse } from '@/dto';
+import { getFullName } from '@/utils/full-name';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderFileNumberEntity } from './folder.view.entity';
-import {
-  FindManyOptionsCaseInsensitive,
-  FindOneOptionsCaseInsensitive,
-} from '@/interfaces';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
-import { getFullName } from '@/utils/full-name';
 
 @Injectable()
 export class FolderService {
@@ -51,14 +48,15 @@ export class FolderService {
     private readonly folderFilenumberRepository: Repository<FolderFileNumberEntity>,
   ) {}
 
-  async find(
-    find: FindManyOptionsCaseInsensitive<FolderEntity>,
-  ): Promise<FolderEntity[]> {
+  async find({
+    caseInsensitive = true,
+    ...find
+  }: FindManyOptionsExt<FolderEntity>): Promise<FolderEntity[]> {
     const transact = find.transact
       ? find.transact.withRepository(this.folderFilenumberRepository)
       : this.folderFilenumberRepository;
 
-    return !find.caseInsensitive
+    return !caseInsensitive
       ? transact.find(TypeOrmFind.findParams(FolderEntity, find))
       : TypeOrmFind.findCI(
           transact,
@@ -66,14 +64,17 @@ export class FolderService {
         );
   }
 
-  async findAndCount(
-    find: FindManyOptionsCaseInsensitive<FolderEntity>,
-  ): Promise<[FolderFileNumberEntity[], number]> {
+  async findAndCount({
+    caseInsensitive = true,
+    ...find
+  }: FindManyOptionsExt<FolderEntity>): Promise<
+    [FolderFileNumberEntity[], number]
+  > {
     const transact = find.transact
       ? find.transact.withRepository(this.folderFilenumberRepository)
       : this.folderFilenumberRepository;
 
-    return !find.caseInsensitive
+    return !caseInsensitive
       ? transact.findAndCount(
           TypeOrmFind.findParams(FolderFileNumberEntity, find),
         )
@@ -83,30 +84,32 @@ export class FolderService {
         );
   }
 
-  async findOne(
-    find: FindOneOptionsCaseInsensitive<FolderEntity>,
-  ): Promise<FolderEntity | null> {
-    const transact = find.transact
-      ? find.transact.withRepository(this.folderFilenumberRepository)
+  async findOne({
+    caseInsensitive = true,
+    transact,
+    ...find
+  }: FindOneOptionsExt<FolderEntity>): Promise<FolderEntity | null> {
+    const _transact = transact
+      ? transact.withRepository(this.folderFilenumberRepository)
       : this.folderFilenumberRepository;
 
-    return !find.caseInsensitive
-      ? transact.findOne(TypeOrmFind.findParams(FolderFileNumberEntity, find))
+    return !caseInsensitive
+      ? _transact.findOne(TypeOrmFind.findParams(FolderFileNumberEntity, find))
       : TypeOrmFind.findOneCI(
-          transact,
+          _transact,
           TypeOrmFind.findParams(FolderFileNumberEntity, find),
         );
   }
 
   async rootFolder(
     userId: string,
-    _transact?: EntityManager,
+    transact?: EntityManager,
   ): Promise<FolderEntity> {
-    const transact = _transact
-      ? _transact.withRepository(this.folderRepository)
+    const _transact = transact
+      ? transact.withRepository(this.folderRepository)
       : this.folderRepository;
 
-    let folder = await transact.findOne({
+    let folder = await _transact.findOne({
       where: { parentFolder: IsNull(), userId },
     });
 
@@ -118,7 +121,7 @@ export class FolderService {
           userId,
           system: true,
         },
-        _transact,
+        transact,
       );
     }
 
@@ -127,9 +130,9 @@ export class FolderService {
 
   async exportFolder(
     userId: string,
-    _transact?: EntityManager,
+    transact?: EntityManager,
   ): Promise<FolderEntity> {
-    const { id: parentFolderId } = await this.rootFolder(userId, _transact);
+    const { id: parentFolderId } = await this.rootFolder(userId, transact);
 
     const folder = await this.findOne({
       where: {
@@ -139,7 +142,7 @@ export class FolderService {
         userId,
       },
       caseInsensitive: false,
-      transact: _transact,
+      transact,
     });
 
     if (!folder) {
@@ -150,7 +153,7 @@ export class FolderService {
           system: true,
           userId,
         },
-        _transact,
+        transact,
       );
     }
 
@@ -191,9 +194,9 @@ export class FolderService {
 
   async monitorFolder(
     userId: string,
-    _transact?: EntityManager,
+    transact?: EntityManager,
   ): Promise<FolderEntity> {
-    const { id: parentFolderId } = await this.rootFolder(userId, _transact);
+    const { id: parentFolderId } = await this.rootFolder(userId, transact);
 
     const folder = await this.findOne({
       where: {
@@ -203,7 +206,7 @@ export class FolderService {
         system: true,
       },
       caseInsensitive: false,
-      transact: _transact,
+      transact,
     });
 
     if (!folder) {
@@ -214,7 +217,7 @@ export class FolderService {
           userId,
           system: true,
         },
-        _transact,
+        transact,
       );
     }
 
@@ -223,9 +226,9 @@ export class FolderService {
 
   async administratorFolder(
     userId: string,
-    _transact?: EntityManager,
+    transact?: EntityManager,
   ): Promise<FolderEntity> {
-    const parentFolder = await this.rootFolder(userId, _transact);
+    const parentFolder = await this.rootFolder(userId, transact);
 
     return {
       id: administratorFolderId,
@@ -272,13 +275,13 @@ export class FolderService {
 
   async create(
     folder: Partial<FolderEntity>,
-    _transact?: EntityManager,
+    transact?: EntityManager,
   ): Promise<FolderEntity> {
-    const transact = _transact
-      ? _transact.withRepository(this.folderRepository)
+    const _transact = transact
+      ? transact.withRepository(this.folderRepository)
       : this.folderRepository;
 
-    const created = await transact.save(folder);
+    const created = await _transact.save(folder);
     if (!created) {
       throw new NotFoundError('Error when creating folder');
     }

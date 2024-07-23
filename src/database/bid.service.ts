@@ -5,8 +5,7 @@ import {
   DeepPartial,
   DeleteResult,
   EntityManager,
-  FindManyOptions,
-  FindOneOptions,
+  FindOptionsRelations,
   FindOptionsWhere,
   In,
   IsNull,
@@ -18,12 +17,15 @@ import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 
 import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
-import { MailSendBidMessage } from '@/interfaces';
+import {
+  FindManyOptionsExt,
+  FindOneOptionsExt,
+  MailSendBidMessage,
+} from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { BidApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
 import { BidEntity } from './bid.entity';
-import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
@@ -65,10 +67,10 @@ export class BidService {
     );
   }
 
-  async find(
-    find: FindManyOptions<BidEntity>,
+  async find({
     caseInsensitive = true,
-  ): Promise<BidEntity[]> {
+    ...find
+  }: FindManyOptionsExt<BidEntity>): Promise<BidEntity[]> {
     let result: BidEntity[];
     const findLocal = TypeOrmFind.findParams(BidEntity, find);
 
@@ -90,10 +92,10 @@ export class BidService {
     return result;
   }
 
-  async findAndCount(
-    find: FindManyOptions<BidEntity>,
+  async findAndCount({
     caseInsensitive = true,
-  ): Promise<[BidEntity[], number]> {
+    ...find
+  }: FindManyOptionsExt<BidEntity>): Promise<[BidEntity[], number]> {
     let result: [BidEntity[], number];
     const findLocal = TypeOrmFind.findParams(BidEntity, find);
 
@@ -114,10 +116,10 @@ export class BidService {
     return result;
   }
 
-  async findOne(
-    find: FindManyOptions<BidEntity>,
+  async findOne({
     caseInsensitive = true,
-  ): Promise<BidEntity | null> {
+    ...find
+  }: FindOneOptionsExt<BidEntity>): Promise<BidEntity | null> {
     let result: BidEntity | null;
     const findLocal = TypeOrmFind.findParams(BidEntity, find);
 
@@ -367,7 +369,7 @@ export class BidService {
           throw new NotFoundError('Application not found');
         }
 
-        let relations: FindOneOptions<BidEntity>['relations'];
+        let relations: FindOptionsRelations<BidEntity>;
         if (update.approved !== BidApprove.NOTPROCESSED) {
           relations = {
             buyer: true,
@@ -480,12 +482,10 @@ export class BidService {
         const bidsPromise = monitorIds.map(async (monitorId) => {
           // Проверяем наличие мониторов
           let monitor = await this.monitorService.findOne({
-            find: {
-              where: { id: monitorId },
-              loadEagerRelations: false,
-              relations: {},
-              transact,
-            },
+            where: { id: monitorId },
+            loadEagerRelations: false,
+            relations: {},
+            transact,
           });
           if (!monitor) {
             throw new NotFoundError(`Monitor '${monitorIds}' not found`);
@@ -545,7 +545,7 @@ export class BidService {
           }
           const { id } = insertResult.identifiers[0];
 
-          let relations: FindOneOptions<BidEntity>['relations'];
+          let relations: FindOptionsRelations<BidEntity>;
           if (!(insert.approved === BidApprove.NOTPROCESSED || !insert.hide)) {
             relations = { buyer: true, seller: true, user: true };
           } else {
@@ -656,12 +656,10 @@ export class BidService {
   }): Promise<string> {
     const monitors = await this.monitorService.find({
       userId: user.id,
-      find: {
-        where: { id: In(monitorIds) },
-        relations: [],
-        loadEagerRelations: false,
-        select: ['id', 'price1s', 'minWarranty'],
-      },
+      where: { id: In(monitorIds) },
+      relations: [],
+      loadEagerRelations: false,
+      select: ['id', 'price1s', 'minWarranty'],
     });
     if (!monitors.length) {
       throw new NotFoundError('Monitors not found');

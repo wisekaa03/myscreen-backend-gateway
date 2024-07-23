@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   DeepPartial,
   DeleteResult,
-  FindManyOptions,
   FindOptionsWhere,
   Repository,
 } from 'typeorm';
@@ -15,6 +14,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
 import { BidService } from '@/database/bid.service';
 import { WsStatistics } from './ws.statistics';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 
 @Injectable()
 export class PlaylistService {
@@ -26,10 +26,10 @@ export class PlaylistService {
     private readonly playlistRepository: Repository<PlaylistEntity>,
   ) {}
 
-  async find(
-    find: FindManyOptions<PlaylistEntity>,
+  async find({
     caseInsensitive = true,
-  ): Promise<PlaylistEntity[]> {
+    ...find
+  }: FindManyOptionsExt<PlaylistEntity>): Promise<PlaylistEntity[]> {
     return caseInsensitive
       ? TypeOrmFind.findCI(this.playlistRepository, {
           relations: { files: true, monitors: true },
@@ -41,10 +41,10 @@ export class PlaylistService {
         });
   }
 
-  async findAndCount(
-    find: FindManyOptions<PlaylistEntity>,
+  async findAndCount({
     caseInsensitive = true,
-  ): Promise<[PlaylistEntity[], number]> {
+    ...find
+  }: FindManyOptionsExt<PlaylistEntity>): Promise<[PlaylistEntity[], number]> {
     return caseInsensitive
       ? TypeOrmFind.findAndCountCI(this.playlistRepository, {
           relations: { files: true, monitors: true },
@@ -56,16 +56,16 @@ export class PlaylistService {
         });
   }
 
-  async findOne(
-    find: FindManyOptions<PlaylistEntity>,
-  ): Promise<PlaylistEntity | null> {
+  async findOne({
+    ...find
+  }: FindOneOptionsExt<PlaylistEntity>): Promise<PlaylistEntity | null> {
     return this.playlistRepository.findOne({
       relations: { files: true, monitors: true },
       ...TypeOrmFind.findParams(PlaylistEntity, find),
     });
   }
 
-  async count(find: FindManyOptions<PlaylistEntity>): Promise<number> {
+  async count(find: FindManyOptionsExt<PlaylistEntity>): Promise<number> {
     return this.playlistRepository.count(
       TypeOrmFind.findParams(PlaylistEntity, find),
     );

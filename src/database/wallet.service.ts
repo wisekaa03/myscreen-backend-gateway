@@ -12,17 +12,12 @@ import {
 import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 
-import {
-  FindManyOptionsCaseInsensitive,
-  FindOneOptionsCaseInsensitive,
-} from '@/interfaces';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { ActService } from './act.service';
 import { UserEntity } from './user.entity';
-import { ActEntity } from './act.entity';
-import { InvoiceEntity } from './invoice.entity';
 import { WalletEntity } from './wallet.entity';
 import {
   UserPlanEnum,
@@ -62,7 +57,7 @@ export class WalletService {
   }
 
   async find(
-    find: FindManyOptionsCaseInsensitive<WalletEntity>,
+    find: FindManyOptionsExt<WalletEntity>,
   ): Promise<[WalletEntity[], number]> {
     return this.walletRepository.findAndCount(
       TypeOrmFind.findParams(WalletEntity, find),
@@ -70,7 +65,7 @@ export class WalletService {
   }
 
   async findOne(
-    find: FindOneOptionsCaseInsensitive<WalletEntity>,
+    find: FindOneOptionsExt<WalletEntity>,
   ): Promise<WalletEntity | null> {
     return this.walletRepository.findOne(
       TypeOrmFind.findParams(WalletEntity, find),

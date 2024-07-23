@@ -10,7 +10,7 @@ import {
   UpdateResult,
 } from 'typeorm';
 
-import { FindManyOptionsCaseInsensitive } from '@/interfaces';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { MonitorMultiple, MonitorStatus } from '@/enums';
 import { MonitorGroup } from '@/dto/request/monitor-group';
@@ -44,22 +44,13 @@ export class MonitorService {
 
   async find({
     userId,
-    find,
     caseInsensitive = true,
-  }: {
-    userId: string;
-    find: FindManyOptions<MonitorEntity>;
-    caseInsensitive?: boolean;
-  }): Promise<MonitorEntity[]> {
-    let monitorWhere: FindManyOptions<MonitorEntity>;
+    ...find
+  }: FindManyOptionsExt<MonitorEntity>): Promise<MonitorEntity[]> {
+    let _find: FindManyOptions<MonitorEntity>;
 
-    if (find.relations !== undefined) {
-      monitorWhere = {
-        ...find,
-        ...TypeOrmFind.findParams(MonitorEntity, find),
-      };
-    } else {
-      monitorWhere = {
+    if (find.relations === undefined) {
+      _find = {
         relations: {
           photos: true,
           documents: true,
@@ -68,11 +59,13 @@ export class MonitorService {
         },
         ...TypeOrmFind.findParams(MonitorEntity, find),
       };
+    } else {
+      _find = TypeOrmFind.findParams(MonitorEntity, find);
     }
 
     const monitor = caseInsensitive
-      ? await TypeOrmFind.findCI(this.monitorRepository, monitorWhere)
-      : await this.monitorRepository.find(monitorWhere);
+      ? await TypeOrmFind.findCI(this.monitorRepository, _find)
+      : await this.monitorRepository.find(_find);
 
     return monitor && userId !== undefined
       ? monitor.map((item: MonitorEntity) => {
@@ -85,9 +78,7 @@ export class MonitorService {
       : monitor;
   }
 
-  async count(
-    find: FindManyOptionsCaseInsensitive<MonitorEntity>,
-  ): Promise<number> {
+  async count(find: FindManyOptionsExt<MonitorEntity>): Promise<number> {
     const monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
     const monitor = find.caseInsensitive
       ? await TypeOrmFind.countCI(this.monitorRepository, monitorWhere)
@@ -110,20 +101,15 @@ export class MonitorService {
 
   async findAndCount({
     userId,
-    find,
-  }: {
-    userId: string;
-    find: FindManyOptionsCaseInsensitive<MonitorEntity>;
-  }): Promise<[MonitorEntity[], number]> {
-    let monitorWhere: FindManyOptions<MonitorEntity>;
+    caseInsensitive = true,
+    ...find
+  }: FindManyOptionsExt<MonitorEntity>): Promise<[MonitorEntity[], number]> {
+    let _find: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
-      monitorWhere = {
-        ...find,
-        ...TypeOrmFind.findParams(MonitorEntity, find),
-      };
+      _find = TypeOrmFind.findParams(MonitorEntity, find);
     } else {
-      monitorWhere = {
+      _find = {
         relations: {
           photos: true,
           documents: true,
@@ -137,13 +123,12 @@ export class MonitorService {
 
     let monitors: MonitorEntity[] = [];
     let count = 0;
-    if (!find.caseInsensitive) {
-      [monitors, count] =
-        await this.monitorRepository.findAndCount(monitorWhere);
+    if (!caseInsensitive) {
+      [monitors, count] = await this.monitorRepository.findAndCount(_find);
     } else {
       [monitors, count] = await TypeOrmFind.findAndCountCI(
         this.monitorRepository,
-        monitorWhere,
+        _find,
       );
     }
 
@@ -194,21 +179,16 @@ export class MonitorService {
   }
 
   async findOne({
-    find,
     userId,
-  }: {
-    find: FindManyOptionsCaseInsensitive<MonitorEntity>;
-    userId?: string;
-  }): Promise<MonitorEntity | null> {
-    let monitorWhere: FindManyOptions<MonitorEntity>;
+    caseInsensitive = true,
+    ...find
+  }: FindOneOptionsExt<MonitorEntity>): Promise<MonitorEntity | null> {
+    let _find: FindManyOptions<MonitorEntity>;
 
     if (find.relations !== undefined) {
-      monitorWhere = {
-        ...find,
-        ...TypeOrmFind.findParams(MonitorEntity, find),
-      };
+      _find = TypeOrmFind.findParams(MonitorEntity, find);
     } else {
-      monitorWhere = {
+      _find = {
         relations: {
           photos: true,
           documents: true,
@@ -220,9 +200,9 @@ export class MonitorService {
       };
     }
 
-    const monitor = !find.caseInsensitive
-      ? await this.monitorRepository.findOne(monitorWhere)
-      : await TypeOrmFind.findOneCI(this.monitorRepository, monitorWhere);
+    const monitor = !caseInsensitive
+      ? await this.monitorRepository.findOne(_find)
+      : await TypeOrmFind.findOneCI(this.monitorRepository, _find);
 
     if (monitor) {
       if (userId !== undefined) {
@@ -267,12 +247,10 @@ export class MonitorService {
     const multipleBool = Array.isArray(groupIds);
 
     const originalMonitor = await this.findOne({
-      find: {
-        where: { id },
-        relations: multipleBool ? { groupMonitors: { monitor: true } } : {},
-        loadEagerRelations: false,
-        transact,
-      },
+      where: { id },
+      relations: multipleBool ? { groupMonitors: { monitor: true } } : {},
+      loadEagerRelations: false,
+      transact,
     });
     if (!originalMonitor) {
       throw new NotFoundError(`Monitor '${id}' not found`);
@@ -400,10 +378,8 @@ export class MonitorService {
     });
 
     const monitorUpdated = await this.findOne({
-      find: {
-        where: { id },
-        relations: { groupMonitors: { monitor: true } },
-      },
+      where: { id },
+      relations: { groupMonitors: { monitor: true } },
     });
     if (!monitorUpdated) {
       throw new NotFoundError(`Monitor with this '${id}' not found`);
@@ -615,9 +591,7 @@ export class MonitorService {
     const { id: userId } = user;
     const monitor = await this.findOne({
       userId,
-      find: {
-        where: { id: monitorId },
-      },
+      where: { id: monitorId },
     });
     if (!monitor) {
       throw new NotFoundError('Monitor not found');
@@ -641,11 +615,9 @@ export class MonitorService {
 
     return this.findOne({
       userId,
-      find: {
-        where: { id: monitorId },
-        loadEagerRelations: false,
-        relations: { favorities: true },
-      },
+      where: { id: monitorId },
+      loadEagerRelations: false,
+      relations: { favorities: true },
     });
   }
 

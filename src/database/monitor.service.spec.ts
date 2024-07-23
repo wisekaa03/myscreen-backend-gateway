@@ -87,9 +87,7 @@ describe(MonitorService.name, () => {
 
   it('returns monitor.findOne', async () => {
     const find = await service.findOne({
-      find: {
-        where: { id: '0000-0000-0000-0000' },
-      },
+      where: { id: '0000-0000-0000-0000' },
     });
     expect(find).toStrictEqual({ id: '0000-0000-0000-0000' });
   });

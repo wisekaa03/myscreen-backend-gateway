@@ -29,7 +29,7 @@ import {
   FolderIdUpdateRequest,
   FolderRequest,
 } from '@/dto';
-import { administratorFolderId, otherFolderId } from '@/constants';
+import { administratorFolderId } from '@/constants';
 import { CRUD, Status, UserRoleEnum } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { paginationQuery } from '@/utils/pagination-query';
@@ -75,15 +75,17 @@ export class FolderController {
     let count = 0;
     let data: FolderResponse[] = [];
     const { id: rootFolderId } = await this.folderService.rootFolder(userId);
-    const whereLocal: FindOptionsWhere<FolderEntity> = {
-      parentFolderId: rootFolderId,
-      ...TypeOrmFind.where<FolderRequest, FolderEntity>(FolderRequest, where),
-    };
-    [data, count] = await this.folderService.findAndCount({
-      ...paginationQuery(scope),
-      select,
-      where: { ...whereLocal, userId },
-    });
+    if (where?.userId === undefined) {
+      const whereLocal: FindOptionsWhere<FolderEntity> = {
+        parentFolderId: rootFolderId,
+        ...TypeOrmFind.where<FolderRequest, FolderEntity>(FolderRequest, where),
+      };
+      [data, count] = await this.folderService.findAndCount({
+        ...paginationQuery(scope),
+        select,
+        where: { ...whereLocal, userId },
+      });
+    }
     if (where && role === UserRoleEnum.Administrator) {
       if (
         where.parentFolderId === null ||
@@ -98,11 +100,7 @@ export class FolderController {
           await this.folderService.otherUserFoldersName(user);
         data = [...data, ...otherUserFoldersName];
         count += otherUserFoldersName.length;
-      } else if (
-        (where.parentFolderId as string)?.slice(0, 7) ===
-          otherFolderId.slice(0, 7) &&
-        typeof where.userId === 'string'
-      ) {
+      } else if (typeof where.userId === 'string') {
         const otherUserFolders = await this.folderService.otherUserFolders(
           where.userId,
         );

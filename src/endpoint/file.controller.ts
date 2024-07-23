@@ -92,15 +92,13 @@ export class FileController {
       throw new BadRequestError('folderId: must be UUID');
     }
     [data, count] = await this.fileService.findAndCount({
-      find: {
-        ...paginationQuery(scope),
-        loadEagerRelations: false,
-        relations: {},
-        select,
-        where: {
-          ...TypeOrmFind.where(FileEntity, where),
-          userId: user.id,
-        },
+      ...paginationQuery(scope),
+      loadEagerRelations: false,
+      relations: {},
+      select,
+      where: {
+        ...TypeOrmFind.where(FileEntity, where),
+        userId: user.id,
       },
     });
 
@@ -180,11 +178,9 @@ export class FileController {
   ): Promise<FilesGetResponse> {
     const filesPromise = files.map(async (file) => {
       const fileDB = await this.fileService.findOne({
-        find: {
-          where: {
-            userId,
-            id: file.id,
-          },
+        where: {
+          userId,
+          id: file.id,
         },
       });
 
@@ -226,9 +222,7 @@ export class FileController {
   ): Promise<FilesGetResponse> {
     const filesIds = files.map((file) => file.id);
     const filesCopy = await this.fileService.find({
-      find: {
-        where: { userId, id: In(filesIds) },
-      },
+      where: { userId, id: In(filesIds) },
     });
     if (filesCopy.length !== files.length) {
       throw new BadRequestError();
@@ -289,24 +283,22 @@ export class FileController {
   ): Promise<void> {
     const where: FindOptionsWhere<FileEntity> = { id: fileId };
     const file = await this.fileService.findOne({
-      find: {
-        where,
-        select: [
-          'id',
-          'userId',
-          'hash',
-          'info',
-          'type',
-          'name',
-          'duration',
-          'width',
-          'height',
-          'folderId',
-          'preview',
-          'folder',
-        ],
-        relations: { preview: true, folder: true },
-      },
+      where,
+      select: [
+        'id',
+        'userId',
+        'hash',
+        'info',
+        'type',
+        'name',
+        'duration',
+        'width',
+        'height',
+        'folderId',
+        'preview',
+        'folder',
+      ],
+      relations: { preview: true, folder: true },
     });
     if (!file) {
       throw new NotFoundError('File not found');
@@ -400,11 +392,9 @@ export class FileController {
     @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
     const file = await this.fileService.findOne({
-      find: {
-        where: { id },
-        relations: {
-          folder: true,
-        },
+      where: { id },
+      relations: {
+        folder: true,
       },
     });
     if (!file) {
@@ -460,9 +450,7 @@ export class FileController {
   ): Promise<FileGetResponse> {
     const where: FindOptionsWhere<FileEntity> = { id };
     const data = await this.fileService.findOne({
-      find: {
-        where,
-      },
+      where,
     });
     if (!data) {
       throw new NotFoundError('File not found');
@@ -496,9 +484,7 @@ export class FileController {
       where.userId = user.id;
     }
     const file = await this.fileService.findOne({
-      find: {
-        where,
-      },
+      where,
     });
     if (!file) {
       throw new NotFoundError('File not found');
@@ -550,9 +536,7 @@ export class FileController {
   ): Promise<SuccessResponse> {
     if (role !== UserRoleEnum.Administrator) {
       const files = await this.fileService.find({
-        find: {
-          where: { userId, id: In(filesId) },
-        },
+        where: { userId, id: In(filesId) },
       });
       if (files.length !== filesId.length) {
         throw new BadRequestError('Not all files in the database exists');
