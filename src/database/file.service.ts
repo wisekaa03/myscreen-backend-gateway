@@ -765,43 +765,72 @@ export class FileService {
     const filenameParsed = pathParse(filename);
     let { ext } = filenameParsed;
 
-    const type =
-      file.type === FileType.VIDEO
-        ? 'video/webm'
-        : file.type === FileType.IMAGE
-          ? 'image/jpeg'
-          : 'image/svg+xml';
+    let type: string;
+    switch (file.type) {
+      case FileType.VIDEO:
+        type = 'video/webm';
+        break;
+      case FileType.IMAGE:
+        type = 'image/jpeg';
+        break;
+      default:
+        type = 'image/svg+xml';
+    }
+
     res.set({
       'Content-Type': type,
       'Cache-Control': 'private, max-age=315360',
     });
 
-    if (file.type === FileType.VIDEO) {
-      ext = '.webm';
-    } else if (file.type === FileType.IMAGE) {
-      ext = '.jpg';
-    } else if (file.type === FileType.AUDIO) {
-      res.set({ 'Content-Length': this.filePreviewAudioLength });
-      Readable.from(this.filePreviewAudio).pipe(res);
-      return;
-    } else if (file.type === FileType.OTHER) {
-      if (ext === '.xlsx' || ext === '.xls' || ext === '.ods') {
-        res.set({ 'Content-Length': this.filePreviewXlsxLength });
-        Readable.from(this.filePreviewXlsx).pipe(res);
-        return;
-      } else if (ext === '.docx' || ext === '.doc' || ext === '.odt') {
-        res.set({ 'Content-Length': this.filePreviewDocxLength });
-        Readable.from(this.filePreviewDocx).pipe(res);
-        return;
-      } else if (ext === '.pdf') {
-        res.set({ 'Content-Length': this.filePreviewPDFLength });
-        Readable.from(this.filePreviewPDF).pipe(res);
+    switch (file.type) {
+      case FileType.VIDEO: {
+        ext = '.webm';
+        break;
+      }
+
+      case FileType.IMAGE: {
+        ext = '.jpg';
+        break;
+      }
+
+      case FileType.AUDIO: {
+        res.set({ 'Content-Length': this.filePreviewAudioLength });
+        Readable.from(this.filePreviewAudio).pipe(res);
         return;
       }
 
-      res.set({ 'Content-Length': this.filePreviewOtherLength });
-      Readable.from(this.filePreviewOther).pipe(res);
-      return;
+      case FileType.OTHER:
+      default: {
+        switch (ext) {
+          case '.xlsx':
+          case '.xls':
+          case '.ods': {
+            res.set({ 'Content-Length': this.filePreviewXlsxLength });
+            Readable.from(this.filePreviewXlsx).pipe(res);
+            return;
+          }
+
+          case '.docx':
+          case '.doc':
+          case '.odt': {
+            res.set({ 'Content-Length': this.filePreviewDocxLength });
+            Readable.from(this.filePreviewDocx).pipe(res);
+            return;
+          }
+
+          case '.pdf': {
+            res.set({ 'Content-Length': this.filePreviewPDFLength });
+            Readable.from(this.filePreviewPDF).pipe(res);
+            return;
+          }
+
+          default: {
+            res.set({ 'Content-Length': this.filePreviewOtherLength });
+            Readable.from(this.filePreviewOther).pipe(res);
+            return;
+          }
+        }
+      }
     }
 
     let preview: Buffer;
