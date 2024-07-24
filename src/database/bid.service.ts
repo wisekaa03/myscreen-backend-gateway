@@ -21,7 +21,12 @@ import {
 } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { BidApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
+import {
+  BidApprove,
+  MsvcMailService,
+  MonitorMultiple,
+  UserRoleEnum,
+} from '@/enums';
 import { getFullName } from '@/utils/full-name';
 import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
@@ -266,7 +271,7 @@ export class BidService {
           const language = bid.seller?.preferredLanguage;
           if (sellerEmail) {
             this.mailService.emit<unknown, MailSendBidMessage>(
-              'sendBidWarningMessage',
+              MsvcMailService.BidWarning,
               {
                 email: sellerEmail,
                 bidUrl: `${this.fileService.frontEndUrl}/bids`,
@@ -454,7 +459,7 @@ export class BidService {
             const language =
               bid.seller.preferredLanguage ?? user.preferredLanguage;
             this.mailService.emit<unknown, MailSendBidMessage>(
-              'sendBidWarningMessage',
+              MsvcMailService.BidWarning,
               {
                 email: sellerEmail,
                 bidUrl: `${this.fileService.frontEndUrl}/bids`,

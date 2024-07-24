@@ -12,7 +12,12 @@ import {
 import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 
-import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
+import {
+  FindManyOptionsExt,
+  FindOneOptionsExt,
+  MailBalanceChanged,
+  MailBalanceNotChanged,
+} from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -20,6 +25,7 @@ import { ActService } from './act.service';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
 import {
+  MsvcMailService,
   UserPlanEnum,
   UserStoreSpaceEnum,
   WalletTransactionType,
@@ -241,7 +247,14 @@ export class WalletService {
         this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
 
         // и вывод информации на email
-        this.mailService.emit('balanceChanged', { user, sum, balance });
+        this.mailService.emit<unknown, MailBalanceChanged>(
+          MsvcMailService.BalanceChanged,
+          {
+            user,
+            sum,
+            balance,
+          },
+        );
       } else {
         this.logger.warn(
           ` [!] User "${fullName}" balance ₽${balance} is less than ₽${this.subscriptionFee}`,
@@ -259,11 +272,14 @@ export class WalletService {
           }
 
           // и вывод информации на email
-          this.mailService.emit('balanceNotChanged', {
-            user,
-            sum: this.subscriptionFee,
-            balance,
-          });
+          this.mailService.emit<unknown, MailBalanceNotChanged>(
+            MsvcMailService.BalanceNotChanged,
+            {
+              user,
+              sum: this.subscriptionFee,
+              balance,
+            },
+          );
         }
       }
     }

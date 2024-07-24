@@ -2,12 +2,7 @@ import { createHmac } from 'crypto';
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Repository,
-  type DeleteResult,
-  type DeepPartial,
-  FindManyOptions,
-} from 'typeorm';
+import { Repository, type DeleteResult, type DeepPartial } from 'typeorm';
 import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 import { I18nContext, I18nService } from 'nestjs-i18n';
@@ -27,7 +22,13 @@ import {
 } from '@/interfaces';
 import { MAIL_SERVICE } from '@/constants';
 import { RegisterRequest } from '@/dto/request/register.request';
-import { CRUD, UserPlanEnum, UserRoleEnum, UserStoreSpaceEnum } from '@/enums';
+import {
+  CRUD,
+  MsvcMailService,
+  UserPlanEnum,
+  UserRoleEnum,
+  UserStoreSpaceEnum,
+} from '@/enums';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -301,11 +302,14 @@ export class UserService {
 
       const [{ affected }] = await Promise.all([
         this.userRepository.update(userId, { ...update, emailConfirmKey }),
-        this.mailService.emit('sendWelcomeMessage', {
-          email: update.email,
-          confirmUrl,
-          language,
-        }),
+        this.mailService.emit<unknown, MailSendVerificationCode>(
+          MsvcMailService.SendVerificationCode,
+          {
+            email: update.email,
+            confirmUrl,
+            language,
+          },
+        ),
       ]);
       if (!affected) {
         throw new ForbiddenError();
@@ -420,12 +424,15 @@ export class UserService {
 
     const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(userPartial)),
-      this.mailService.emit<unknown, MailWelcomeMessage>('sendWelcomeMessage', {
-        email,
-        language,
-      }),
+      this.mailService.emit<unknown, MailWelcomeMessage>(
+        MsvcMailService.SendWelcome,
+        {
+          email,
+          language,
+        },
+      ),
       this.mailService.emit<unknown, MailSendVerificationCode>(
-        'sendVerificationCode',
+        MsvcMailService.SendVerificationCode,
         {
           email,
           confirmUrl,
@@ -493,7 +500,7 @@ export class UserService {
 
     const language = user.preferredLanguage;
     return this.mailService.emit<unknown, MailForgotPassword>(
-      'forgotPassword',
+      MsvcMailService.ForgotPassword,
       {
         email,
         forgotPasswordUrl,

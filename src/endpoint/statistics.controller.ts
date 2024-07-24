@@ -11,7 +11,7 @@ import { lastValueFrom } from 'rxjs';
 import { PrintReportDeviceStatus } from '@/interfaces';
 import { MAIL_SERVICE, formatToContentType } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
-import { UserRoleEnum, SpecificFormat, CRUD } from '@/enums';
+import { UserRoleEnum, SpecificFormat, CRUD, MsvcFormService } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
@@ -77,8 +77,8 @@ export class StatisticsController {
     }
 
     const data = await lastValueFrom(
-      this.mailService.send<unknown, PrintReportDeviceStatus>(
-        'reportDeviceStatus',
+      this.mailService.send<Buffer, PrintReportDeviceStatus>(
+        MsvcFormService.ReportDeviceStatus,
         {
           user,
           monitors,
@@ -144,13 +144,16 @@ export class StatisticsController {
     }
 
     const data = await lastValueFrom(
-      this.mailService.send<unknown, PrintReportDeviceStatus>('reportViews', {
-        user,
-        monitors,
-        format,
-        dateFrom: new Date(dateFrom),
-        dateTo: new Date(dateTo),
-      }),
+      this.mailService.send<Buffer, PrintReportDeviceStatus>(
+        MsvcFormService.ReportViews,
+        {
+          user,
+          monitors,
+          format,
+          dateFrom: new Date(dateFrom),
+          dateTo: new Date(dateTo),
+        },
+      ),
     );
 
     const specificFormat = formatToContentType[format]
