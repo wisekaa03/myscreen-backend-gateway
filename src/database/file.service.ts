@@ -799,7 +799,6 @@ export class FileService {
         return;
       }
 
-      case FileType.OTHER:
       default: {
         switch (ext) {
           case '.xlsx':
