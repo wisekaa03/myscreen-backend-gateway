@@ -4,7 +4,7 @@ import {
   promises as fs,
   ReadStream,
 } from 'node:fs';
-import internal from 'node:stream';
+import { Readable } from 'node:stream';
 import StreamPromises from 'node:stream/promises';
 import path from 'node:path';
 import child from 'node:child_process';
@@ -184,11 +184,11 @@ export class EditorService {
     const updatedQuery: DeepPartial<EditorLayerEntity> = { ...update };
 
     if (updatedQuery.fileId === undefined) {
-      throw new BadRequestError('FILE_MUST_EXISTS');
+      throw new BadRequestError('BID_FILE_MUST_EXISTS');
     }
     if (updatedQuery.duration === undefined) {
       if (updatedQuery.file === undefined) {
-        throw new BadRequestError('FILE_MUST_EXISTS');
+        throw new BadRequestError('BID_FILE_MUST_EXISTS');
       }
       updatedQuery.duration = updatedQuery.file.duration;
     }
@@ -296,7 +296,7 @@ export class EditorService {
       if (headS3file.ETag) {
         const outputStream = createWriteStream(filePath);
         const data = await this.fileService.getS3Object(file);
-        if (data.Body instanceof internal.Readable) {
+        if (data.Body instanceof Readable) {
           await StreamPromises.pipeline(data.Body, outputStream);
         }
       }

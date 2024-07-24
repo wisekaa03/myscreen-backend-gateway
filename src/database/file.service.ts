@@ -5,9 +5,10 @@ import {
   createWriteStream,
   ReadStream,
 } from 'node:fs';
-import internal from 'node:stream';
+import { Readable } from 'node:stream';
 import StreamPromises from 'node:stream/promises';
 import { join as pathJoin, parse as pathParse } from 'node:path';
+import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -72,6 +73,21 @@ export class FileService {
 
   private signedUrlExpiresIn: number;
 
+  private filePreviewAudio: Buffer;
+  private filePreviewAudioLength: number;
+
+  private filePreviewXlsx: Buffer;
+  private filePreviewXlsxLength: number;
+
+  private filePreviewDocx: Buffer;
+  private filePreviewDocxLength: number;
+
+  private filePreviewPDF: Buffer;
+  private filePreviewPDFLength: number;
+
+  private filePreviewOther: Buffer;
+  private filePreviewOtherLength: number;
+
   constructor(
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => WsStatistics))
@@ -102,6 +118,21 @@ export class FileService {
       configService.getOrThrow('AWS_SIGNED_URL_EXPIRES'),
       10,
     );
+
+    this.filePreviewAudio = Buffer.from(filePreviewAudio);
+    this.filePreviewAudioLength = this.filePreviewAudio.length;
+
+    this.filePreviewXlsx = Buffer.from(filePreviewXLS);
+    this.filePreviewXlsxLength = this.filePreviewXlsx.length;
+
+    this.filePreviewDocx = Buffer.from(filePreviewDOC);
+    this.filePreviewDocxLength = this.filePreviewDocx.length;
+
+    this.filePreviewPDF = Buffer.from(filePreviewPDF);
+    this.filePreviewPDFLength = this.filePreviewPDF.length;
+
+    this.filePreviewOther = Buffer.from(filePreviewOther);
+    this.filePreviewOtherLength = this.filePreviewOther.length;
   }
 
   /**
@@ -725,69 +756,101 @@ export class FileService {
    * @param {FileEntity} file FileEntity with PreviewEntity
    * @returns Buffer preview
    */
-  async downloadPreviewFile(file: FileEntity): Promise<Buffer> {
+  async downloadPreviewFile(
+    res: ExpressResponse,
+    file: FileEntity,
+  ): Promise<void> {
     await fs.mkdir(this.downloadDir, { recursive: true });
     const filename = pathJoin(this.downloadDir, file.name);
     const filenameParsed = pathParse(filename);
-    const { name, ext } = filenameParsed;
-    let outPath = pathJoin(this.downloadDir, `${name}-preview`);
+    let { ext } = filenameParsed;
+
+    const type =
+      file.type === FileType.VIDEO
+        ? 'video/webm'
+        : file.type === FileType.IMAGE
+          ? 'image/jpeg'
+          : 'image/svg+xml';
+    res.set({
+      'Content-Type': type,
+      'Cache-Control': 'private, max-age=315360',
+    });
+
     if (file.type === FileType.VIDEO) {
-      outPath += '.webm';
+      ext = '.webm';
     } else if (file.type === FileType.IMAGE) {
-      outPath += '.jpg';
+      ext = '.jpg';
     } else if (file.type === FileType.AUDIO) {
-      return Buffer.from(filePreviewAudio);
+      res.set({ 'Content-Length': this.filePreviewAudioLength });
+      Readable.from(this.filePreviewAudio).pipe(res);
+      return;
     } else if (file.type === FileType.OTHER) {
       if (ext === '.xlsx' || ext === '.xls' || ext === '.ods') {
-        return Buffer.from(filePreviewXLS);
+        res.set({ 'Content-Length': this.filePreviewXlsxLength });
+        Readable.from(this.filePreviewXlsx).pipe(res);
+        return;
       } else if (ext === '.docx' || ext === '.doc' || ext === '.odt') {
-        return Buffer.from(filePreviewDOC);
+        res.set({ 'Content-Length': this.filePreviewDocxLength });
+        Readable.from(this.filePreviewDocx).pipe(res);
+        return;
       } else if (ext === '.pdf') {
-        return Buffer.from(filePreviewPDF);
+        res.set({ 'Content-Length': this.filePreviewPDFLength });
+        Readable.from(this.filePreviewPDF).pipe(res);
+        return;
       }
-      return Buffer.from(filePreviewOther);
+
+      res.set({ 'Content-Length': this.filePreviewOtherLength });
+      Readable.from(this.filePreviewOther).pipe(res);
+      return;
     }
 
     let preview: Buffer;
+    const outPath = pathJoin(
+      this.downloadDir,
+      `${filenameParsed.name}-preview${ext}`,
+    );
     if (fileExist(outPath)) {
       this.logger.debug(`Preview file "${file.name}" has cached`);
+
       preview = await fs.readFile(outPath);
     } else {
-      const outputStream = createWriteStream(filename);
-      const data: GetObjectCommandOutput = await this.getS3Object(file).catch(
-        (error: unknown) => {
-          this.logger.error(
-            `S3 Error preview: "${file.name}" (${getS3FullName(file)})`,
-            error,
-          );
-          throw new NotFoundError(error);
-        },
-      );
-      if (data.Body instanceof internal.Readable) {
-        await StreamPromises.pipeline(data.Body, outputStream);
-        this.logger.debug(`The file "${file.name}" has been downloaded`);
-        await FfMpegPreview(
-          file.type,
-          file.info || {},
-          filename,
-          outPath,
-        ).catch((reason: unknown) => {
-          throw new InternalServerError(reason);
-        });
-      } else {
-        throw new InternalServerError('S3 data is not readable');
-      }
+      try {
+        const data: GetObjectCommandOutput = await this.getS3Object(file);
+        if (data.Body instanceof Readable) {
+          this.logger.debug(`The file "${file.name}" has been downloaded`);
 
-      preview = await fs.readFile(outPath);
+          const outputStream = createWriteStream(filename);
+          await StreamPromises.pipeline(data.Body, outputStream);
 
-      const id = file.preview?.id;
-      if (id) {
-        await this.filePreviewRepository.update(id, { preview });
-      } else {
-        await this.filePreviewRepository.insert({ fileId: file.id, preview });
+          await FfMpegPreview(file.type, file.info || {}, filename, outPath);
+
+          preview = await fs.readFile(outPath);
+
+          const id = file.preview?.id;
+          if (id) {
+            await this.filePreviewRepository.update(id, { preview });
+          } else {
+            await this.filePreviewRepository.insert({
+              fileId: file.id,
+              preview,
+            });
+          }
+        } else {
+          throw new Error('Body is not Readable');
+        }
+      } catch (error: unknown) {
+        this.logger.error(
+          `S3 Error preview: "${file.name}" (${getS3FullName(file)})`,
+          error,
+        );
+
+        res.set({ 'Content-Length': this.filePreviewOtherLength });
+        Readable.from(this.filePreviewOther).pipe(res);
+        return;
       }
     }
 
-    return preview;
+    res.set({ 'Content-Length': preview.length });
+    Readable.from(preview).pipe(res);
   }
 }

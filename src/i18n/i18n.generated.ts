@@ -27,7 +27,8 @@ export type I18nTranslations = {
         "USER_ROLE": string;
         "USER_EXISTS": string;
         "USER_NOT_EXISTS": string;
-        "FILE_MUST_EXISTS": string;
+        "BID_FILE_MUST_EXISTS": string;
+        "FILE_NOT_EXIST": string;
         "CONFLICT_ERROR": string;
         "PLAYLIST_NOT_FOUND": string;
         "BID_NOT_FOUND": string;
