@@ -52,8 +52,11 @@ import {
   EditorGetRenderingStatusResponse,
   MonitorsPlaylistAttachRequest,
   FoldersCopyRequest,
+  BidUpdateRequest,
+  BidGetResponse,
 } from '@/dto';
 import {
+  BidApprove,
   BidStatus,
   InvoiceStatus,
   MonitorCategoryEnum,
@@ -65,6 +68,7 @@ import {
   UserPlanEnum,
   UserRoleEnum,
   WalletTransactionType,
+  WsEvent,
 } from '@/enums';
 import { generateMailToken } from '@/utils/mail-token';
 import { ExceptionsFilter } from '@/exception/exceptions.filter';
@@ -73,7 +77,6 @@ import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
 import { WsAdapter } from '@/websocket/ws-adapter';
 import { UserResponse } from '@/database/user-response.entity';
-import { WsEvent } from '@/enums/ws-event.enum';
 import { HttpError } from '@/errors';
 import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
 
@@ -252,6 +255,7 @@ const monitorNameMirror2 = 'Test monitor: ' + jabber.createWord(5);
 const monitorCodeMirror2 = generateCode();
 let monitorMirror2Id: string;
 
+const monitorNameSingle = 'Test single: ' + jabber.createWord(5);
 const monitorCodeSingle = generateCode();
 let monitorSingleId: string;
 
@@ -301,6 +305,10 @@ let monitorOwnerInvoiceId: string;
 let monitorOwnerInvoiceId2: string;
 let monitorOwnerInvoiceFilesize2: number;
 let advertiserInvoiceId: string;
+
+let advertiserBidMonitorSingleId: string;
+let advertiserBidMonitorMirrorId: string;
+let advertiserBidMonitorScalingId: string;
 
 describe('Backend API (e2e)', () => {
   beforeAll(async () => {
@@ -1934,7 +1942,7 @@ describe('Backend API (e2e)', () => {
       const monitor: MonitorCreateRequest = {
         name: monitorNameGroupMirror,
         code: monitorCodeGroupMirror,
-        price1s: 10000,
+        price1s: 0.1,
         minWarranty: 10,
         maxDuration: 10000,
         width: 1920,
@@ -2143,7 +2151,7 @@ describe('Backend API (e2e)', () => {
       const monitor: MonitorCreateRequest = {
         name: monitorNameGroupScaling,
         code: monitorCodeGroupScaling,
-        price1s: 10000,
+        price1s: 0.00001,
         minWarranty: 10,
         maxDuration: 10000,
         width: 1920,
@@ -2188,9 +2196,9 @@ describe('Backend API (e2e)', () => {
       }
 
       const monitor = {
-        name: '% test monitor % ' + jabber.createWord(5),
+        name: monitorNameSingle,
         code: monitorCodeSingle,
-        price1s: '1.00005',
+        price1s: '0.00001',
         minWarranty: 10,
         maxDuration: 10000,
         width: 1920,
@@ -2996,7 +3004,7 @@ describe('Backend API (e2e)', () => {
     });
 
     /**
-     * MonitorOwner: Отправка плэйлиста на монитор Single
+     * Advertiser: Отправка плэйлиста на монитор Single
      */
     test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Single)', async () => {
       if (!advertiserToken || !advertiserPlaylistId1 || !monitorSingleId) {
@@ -3007,8 +3015,8 @@ describe('Backend API (e2e)', () => {
         playlistId: advertiserPlaylistId1,
         monitorIds: [monitorSingleId],
         bid: {
-          dateBefore: dayjs().subtract(1, 'day').toDate(),
-          dateWhen: dayjs().add(1).toDate(),
+          dateBefore: dayjs().add(1).toDate(),
+          dateWhen: dayjs().subtract(1, 'day').toDate(),
           playlistChange: true,
         },
       };
@@ -3024,11 +3032,60 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.count).toBe(1);
+          expect(body.data[0].id).toBeDefined();
+          advertiserBidMonitorSingleId = body.data[0].id;
         });
     });
 
     /**
-     * MonitorOwner: Отправка плэйлиста на монитор Mirror
+     * MonitorOwner: Список заявок
+     */
+    test('MonitorOwner: POST /bid (Список заявок)', async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toEqual(true);
+      }
+
+      await request
+        .post(`${apiPath}/bid`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data[0].id).toBe(advertiserBidMonitorSingleId);
+        });
+    });
+
+    /**
+     * MonitorOwner: Утверждение заявки advertiserBidMonitorSingleId
+     */
+    test('MonitorOwner: PATCH /bid/{advertiserBidMonitorSingleId} (Утверждение заявки)', async () => {
+      if (!monitorOwnerToken || !advertiserBidMonitorSingleId) {
+        expect(false).toEqual(true);
+      }
+
+      const bid: BidUpdateRequest = {
+        approved: BidApprove.ALLOWED,
+      };
+
+      await request
+        .patch(`${apiPath}/bid/${advertiserBidMonitorSingleId}`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(bid)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(advertiserBidMonitorSingleId);
+        });
+    });
+
+    /**
+     * Advertiser: Отправка плэйлиста на монитор Mirror
      */
     test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Mirror)', async () => {
       if (!advertiserToken || !advertiserPlaylistId1 || !monitorGroupMirrorId) {
@@ -3039,8 +3096,8 @@ describe('Backend API (e2e)', () => {
         playlistId: advertiserPlaylistId1,
         monitorIds: [monitorGroupMirrorId],
         bid: {
-          dateBefore: dayjs().subtract(1, 'day').toDate(),
-          dateWhen: dayjs().add(1).toDate(),
+          dateBefore: dayjs().add(1).toDate(),
+          dateWhen: dayjs().subtract(1, 'day').toDate(),
           playlistChange: true,
         },
       };
@@ -3056,11 +3113,39 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.count).toBe(1);
+          expect(body.data[0].id).toBeDefined();
+          advertiserBidMonitorMirrorId = body.data[0].id;
         });
     });
 
     /**
-     * MonitorOwner: Отправка плэйлиста на монитор Scaling
+     * MonitorOwner: Утверждение заявки advertiserBidMonitorMirrorId
+     */
+    test('MonitorOwner: PATCH /bid/{advertiserBidMonitorMirrorId} (Утверждение заявки)', async () => {
+      if (!monitorOwnerToken || !advertiserBidMonitorMirrorId) {
+        expect(false).toEqual(true);
+      }
+
+      const bid: BidUpdateRequest = {
+        approved: BidApprove.ALLOWED,
+      };
+
+      await request
+        .patch(`${apiPath}/bid/${advertiserBidMonitorMirrorId}`)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .send(bid)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: BidGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeDefined();
+          expect(body.data.id).toBe(advertiserBidMonitorMirrorId);
+        });
+    });
+
+    /**
+     * Advertiser: Отправка плэйлиста на монитор Scaling
      */
     test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Scaling)', async () => {
       if (
@@ -3075,8 +3160,8 @@ describe('Backend API (e2e)', () => {
         playlistId: advertiserPlaylistId1,
         monitorIds: [monitorGroupScalingId],
         bid: {
-          dateBefore: dayjs().subtract(1, 'day').toDate(),
-          dateWhen: dayjs().add(1).toDate(),
+          dateBefore: dayjs().add(1).toDate(),
+          dateWhen: dayjs().subtract(1, 'day').toDate(),
           playlistChange: true,
         },
       };
@@ -3092,8 +3177,36 @@ describe('Backend API (e2e)', () => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
           expect(body.count).toBe(1);
+          expect(body.data[0].id).toBeDefined();
+          advertiserBidMonitorScalingId = body.data[0].id;
         });
     });
+
+    /**
+     * MonitorOwner: Утверждение заявки advertiserBidMonitorScalingId
+     */
+    // test('MonitorOwner: PATCH /bid/{advertiserBidMonitorScalingId} (Утверждение заявки)', async () => {
+    //   if (!monitorOwnerToken || !advertiserBidMonitorScalingId) {
+    //     expect(false).toEqual(true);
+    //   }
+
+    //   const bid: BidUpdateRequest = {
+    //     approved: BidApprove.ALLOWED,
+    //   };
+
+    //   await request
+    //     .patch(`${apiPath}/bid/${advertiserBidMonitorScalingId}`)
+    //     .auth(monitorOwnerToken, { type: 'bearer' })
+    //     .send(bid)
+    //     .set('Accept', 'application/json')
+    //     .expect('Content-Type', /json/)
+    //     .expect(200)
+    //     .then(({ body }: { body: BidGetResponse }) => {
+    //       expect(body.status).toBe(Status.Success);
+    //       expect(body.data).toBeDefined();
+    //       expect(body.data.id).toBe(advertiserBidMonitorScalingId);
+    //     });
+    // });
 
     /**
      *

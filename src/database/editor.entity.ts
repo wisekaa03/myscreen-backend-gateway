@@ -223,7 +223,13 @@ export class EditorEntity extends BaseEntity {
   @JoinColumn({ foreignKeyConstraintName: 'FK_editor_user_id' })
   user!: UserEntity;
 
-  @Column({ type: 'uuid', select: false })
+  @Column({ type: 'uuid' })
+  @RelationId((editor: EditorEntity) => editor.user)
+  @ApiProperty({
+    type: 'string',
+    format: 'uuid',
+    description: 'Пользователь ID',
+  })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 

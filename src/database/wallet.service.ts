@@ -90,9 +90,14 @@ export class WalletService {
     const transactWallet = transact
       ? transact.withRepository(this.walletRepository)
       : this.walletRepository;
-    const type = invoiceId
-      ? WalletTransactionType.DEBIT
-      : WalletTransactionType.CREDIT;
+
+    let type: WalletTransactionType;
+    if (sum > 0) {
+      type = WalletTransactionType.DEBIT;
+    } else {
+      type = WalletTransactionType.CREDIT;
+    }
+
     return transactWallet.create({
       sum,
       invoiceId,
@@ -121,6 +126,7 @@ export class WalletService {
     const transactWallet = transact
       ? transact.withRepository(this.walletRepository)
       : this.walletRepository;
+
     if (isSubscription !== null) {
       const qb = transactWallet
         .createQueryBuilder('wallet')

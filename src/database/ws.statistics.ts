@@ -1,17 +1,31 @@
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import {
+  In,
+  IsNull,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
+
 import { wsClients } from '@/constants';
+import {
+  BidApprove,
+  MonitorMultiple,
+  MonitorStatus,
+  PlaylistStatusEnum,
+  WsEvent,
+} from '@/enums';
+import { WsMetricsObject, WsWalletObject } from '@/interfaces';
 import { BidEntity } from '@/database/bid.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { MonitorMultiple, MonitorStatus, PlaylistStatusEnum } from '@/enums';
-import { WsEvent } from '@/enums/ws-event.enum';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { WsMetricsObject, WsWalletObject } from '@/interfaces';
 import { UserEntity } from '@/database/user.entity';
-import { In, IsNull } from 'typeorm';
 import { PlaylistService } from '@/database/playlist.service';
 import { WalletService } from '@/database/wallet.service';
 import { FileService } from '@/database/file.service';
 import { MonitorService } from '@/database/monitor.service';
+import { PlaylistEntity } from './playlist.entity';
 
 @Injectable()
 export class WsStatistics {
@@ -22,7 +36,97 @@ export class WsStatistics {
     private readonly fileService: FileService,
     private readonly playlistService: PlaylistService,
     private readonly walletService: WalletService,
+    @InjectRepository(BidEntity)
+    private readonly bidRepository: Repository<BidEntity>,
   ) {}
+
+  /**
+   * Get the bids for the monitor
+   *
+   * @param {string} monitorId Монитор ID
+   * @param {string} playlistId Плэйлист ID
+   * @param {(string | Date)} [dateLocal=new Date()] Локальная для пользователя дата
+   * @return {*}
+   * @memberof BidService
+   */
+  async monitorPlaylistToBids({
+    monitorId,
+    playlistId,
+    dateLocal = new Date(),
+  }: {
+    monitorId?: string;
+    playlistId?: string;
+    dateLocal?: Date;
+  }): Promise<BidEntity[]> {
+    const monitorRequests = await this.bidRepository.find({
+      where: [
+        {
+          monitorId,
+          playlistId,
+          approved: BidApprove.ALLOWED,
+          dateWhen: LessThanOrEqual<Date>(dateLocal),
+          dateBefore: MoreThanOrEqual<Date>(dateLocal),
+        },
+        {
+          monitorId,
+          playlistId,
+          approved: BidApprove.ALLOWED,
+          dateWhen: LessThanOrEqual<Date>(dateLocal),
+          dateBefore: IsNull(),
+        },
+      ],
+      relations: { playlist: { files: true } },
+      loadEagerRelations: false,
+      order: { updatedAt: 'DESC' },
+    });
+
+    let forceReplace = false;
+
+    let expected = monitorRequests.filter(
+      ({ dateWhen, dateBefore, playlistChange }) => {
+        if (forceReplace) {
+          return false;
+        }
+        let isExpect = true;
+
+        if (dateBefore) {
+          const date1 = new Date(dateBefore);
+          date1.setSeconds(0, 0);
+
+          isExpect = date1 >= dateLocal;
+        }
+
+        if (playlistChange) {
+          const date2 = new Date(dateWhen);
+          date2.setSeconds(0, 0);
+
+          if (dateLocal >= date2) {
+            forceReplace = true;
+          }
+        }
+
+        return isExpect;
+      },
+    );
+
+    const expectedPromise = expected.map(
+      async (bid) =>
+        ({
+          ...bid,
+          playlist: {
+            ...bid.playlist,
+            files: await Promise.all(
+              bid.playlist.files.map(async (file) =>
+                this.fileService.signedUrl(file),
+              ),
+            ),
+          },
+        }) as BidEntity,
+    );
+    expected = await Promise.all(expectedPromise);
+
+    return expected;
+  }
 
   /**
    * Отсылает всем подключенным клиентам (не мониторам) изменения статуса монитора
@@ -107,6 +211,41 @@ export class WsStatistics {
   }
 
   /**
+   * Отсылает всем подключенным клиентам (мониторов) удаление плэйлиста
+   */
+  async onChangePlaylistDelete(
+    user: UserEntity,
+    playlist: PlaylistEntity,
+  ): Promise<void> {
+    const bids = await this.monitorPlaylistToBids({
+      playlistId: playlist.id,
+    });
+
+    const wsPromise = bids.map(async (bidDelete) =>
+      this.onChange({ bidDelete }),
+    );
+
+    await Promise.allSettled(wsPromise);
+  }
+
+  /**
+   * Отсылает всем подключенным клиентам (мониторов) изменение плэйлиста
+   */
+  async onChangePlaylist(
+    user: UserEntity,
+    playlist: PlaylistEntity,
+  ): Promise<void> {
+    const bids = await this.monitorPlaylistToBids({
+      playlistId: playlist.id,
+    });
+
+    const wsPromise = bids.map(async (bid) => this.onChange({ bid }));
+
+    await Promise.allSettled(wsPromise);
+  }
+
+  /**
+   * TODO: переделать на более умный алгоритм
    * Вызывается из:
    *  - Создание связки плэйлиста и монитора
    *  - Удаление связки плэйлиста и монитора

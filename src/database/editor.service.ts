@@ -183,10 +183,13 @@ export class EditorService {
   ): Promise<EditorLayerEntity> {
     const updatedQuery: DeepPartial<EditorLayerEntity> = { ...update };
 
-    if (updatedQuery.file === undefined) {
+    if (updatedQuery.fileId === undefined) {
       throw new BadRequestError('FILE_MUST_EXISTS');
     }
     if (updatedQuery.duration === undefined) {
+      if (updatedQuery.file === undefined) {
+        throw new BadRequestError('FILE_MUST_EXISTS');
+      }
       updatedQuery.duration = updatedQuery.file.duration;
     }
     if (updatedQuery.index === undefined) {
@@ -532,7 +535,7 @@ export class EditorService {
           playlistId,
         });
         // и добавляем в редактор видео-слой с файлом
-        await this.createLayer(bid.user.id, editor.id, {
+        await this.createLayer(userId, editor.id, {
           index: 0,
           cutFrom: 0,
           cutTo: file.duration,
@@ -545,6 +548,8 @@ export class EditorService {
 
           duration: file.duration,
           mixVolume: 1,
+
+          file,
           fileId: file.id,
         });
 

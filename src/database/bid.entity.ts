@@ -8,6 +8,7 @@ import {
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
@@ -34,9 +35,10 @@ export class BidEntity extends BaseEntity {
   @ApiProperty({
     description: 'Идентификатор взаимодействия',
     format: 'uuid',
+    required: true,
   })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
-  id?: string;
+  id!: string;
 
   @Generated('increment')
   @Index('bidSeqNo')
@@ -268,8 +270,13 @@ export class BidEntity extends BaseEntity {
   @JoinColumn({ foreignKeyConstraintName: 'FK_bid_user' })
   user!: UserEntity;
 
-  @Column({ select: false })
-  @Index('bidUser')
+  @Column({ type: 'uuid' })
+  @RelationId((bid: BidEntity) => bid.user)
+  @ApiProperty({
+    type: 'string',
+    format: 'uuid',
+    description: 'Пользователь ID',
+  })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 

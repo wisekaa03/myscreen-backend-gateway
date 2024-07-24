@@ -16,7 +16,7 @@ import {
 import { type Server, type WebSocket } from 'ws';
 import { Observable, of } from 'rxjs';
 
-import { MonitorStatus, UserRoleEnum } from '@/enums';
+import { MonitorStatus, UserRoleEnum, WsEvent } from '@/enums';
 import { AuthService } from '@/auth/auth.service';
 import {
   WebSocketClient,
@@ -30,8 +30,6 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { BidEntity } from '@/database/bid.entity';
-import { BidService } from '@/database/bid.service';
-import { WsEvent } from '@/enums/ws-event.enum';
 import { UserService } from '@/database/user.service';
 import { UserResponse } from '@/database/user-response.entity';
 import { WsStatistics } from '@/database/ws.statistics';
@@ -48,7 +46,6 @@ export class WSGateway
 {
   constructor(
     private readonly authService: AuthService,
-    private readonly bidService: BidService,
     private readonly monitorService: MonitorService,
     private readonly userService: UserService,
     private readonly wsStatistics: WsStatistics,
@@ -195,7 +192,7 @@ export class WSGateway
           let bids: BidEntity[] | null = null;
           if (monitor) {
             [bids] = await Promise.all([
-              this.bidService.monitorPlaylistToBids({
+              this.wsStatistics.monitorPlaylistToBids({
                 monitorId: monitor.id,
                 dateLocal: new Date(body.date),
               }),

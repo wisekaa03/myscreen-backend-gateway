@@ -8,18 +8,16 @@ import {
 } from 'typeorm';
 
 import { NotFoundError } from '@/errors';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
-import { BidService } from '@/database/bid.service';
 import { WsStatistics } from './ws.statistics';
-import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 
 @Injectable()
 export class PlaylistService {
   constructor(
-    private readonly bidService: BidService,
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
     @InjectRepository(PlaylistEntity)
@@ -86,7 +84,7 @@ export class PlaylistService {
     }
 
     await Promise.all([
-      this.bidService.websocketChange({ playlist }),
+      this.wsStatistics.onChangePlaylist(playlist.user, playlist),
       this.wsStatistics.onMetrics(playlist.user),
     ]);
 
@@ -109,7 +107,7 @@ export class PlaylistService {
       throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
     }
     if (update.status === undefined) {
-      await this.bidService.websocketChange({ playlist });
+      await this.wsStatistics.onChangePlaylist(playlist.user, playlist);
     }
 
     return playlist;
@@ -119,7 +117,7 @@ export class PlaylistService {
     user: UserEntity,
     playlist: PlaylistEntity,
   ): Promise<DeleteResult> {
-    await this.bidService.websocketChange({ playlistDelete: playlist });
+    await this.wsStatistics.onChangePlaylistDelete(user, playlist);
 
     const deleteQuery: FindOptionsWhere<PlaylistEntity> = { id: playlist.id };
     if (user.role !== UserRoleEnum.Administrator) {

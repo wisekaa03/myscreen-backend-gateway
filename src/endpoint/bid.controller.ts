@@ -26,10 +26,9 @@ import {
   BidPrecalcResponse,
 } from '@/dto';
 import { ApiComplexDecorators, Crud } from '@/decorators';
-import { CRUD, Status, UserRoleEnum } from '@/enums';
+import { BidStatus, CRUD, Status, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQuery } from '@/utils/pagination-query';
-import { UserService } from '@/database/user.service';
 import { BidService } from '@/database/bid.service';
 import { BidEntity } from '@/database/bid.entity';
 
@@ -44,10 +43,7 @@ import { BidEntity } from '@/database/bid.entity';
 export class BidController {
   logger = new Logger(BidController.name);
 
-  constructor(
-    private readonly userService: UserService,
-    private readonly bidService: BidService,
-  ) {}
+  constructor(private readonly bidService: BidService) {}
 
   @Post()
   @HttpCode(200)
@@ -71,12 +67,20 @@ export class BidController {
       const [data, count] = await this.bidService.findAndCount({
         ...paginationQuery(scope),
         select,
-        where: {
-          hide: false,
-          ...where,
-          buyerId: Not(userId),
-          sellerId: userId,
-        },
+        where: [
+          {
+            hide: false,
+            ...where,
+            buyerId: Not(userId),
+            sellerId: userId,
+          },
+          {
+            hide: false,
+            ...where,
+            status: BidStatus.WAITING,
+            userId,
+          },
+        ],
       });
 
       return {
@@ -133,7 +137,7 @@ export class BidController {
       },
     });
     if (!data) {
-      throw new NotFoundError('Request not found');
+      throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
     }
 
     return {
@@ -176,7 +180,7 @@ export class BidController {
         loadEagerRelations: false,
       });
       if (!bid) {
-        throw new NotFoundError('Request not found');
+        throw new NotFoundError('BID_NOT_FOUND', { args: { id: bidId } });
       }
     }
 
@@ -220,7 +224,7 @@ export class BidController {
       bid = await this.bidService.findOne({ where: { id } });
     }
     if (!bid) {
-      throw new NotFoundError(`Bid '${id}' is not found`);
+      throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
     }
 
     const { affected } = await this.bidService.delete(bid);

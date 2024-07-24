@@ -751,7 +751,6 @@ export class FileService {
     let preview: Buffer;
     if (fileExist(outPath)) {
       this.logger.debug(`Preview file "${file.name}" has cached`);
-
       preview = await fs.readFile(outPath);
     } else {
       const outputStream = createWriteStream(filename);

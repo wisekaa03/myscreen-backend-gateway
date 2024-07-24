@@ -18,13 +18,13 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  Index,
   JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  RelationId,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
@@ -35,7 +35,6 @@ import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { EditorEntity } from '@/database/editor.entity';
-import { FileResponse } from '@/dto';
 
 @Entity('playlist', { comment: 'Плейлисты' })
 @Unique('IDX_userId_name', ['userId', 'name'])
@@ -98,7 +97,12 @@ export class PlaylistEntity extends BaseEntity {
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
-  @Index('playlistUserIdIndex')
+  @RelationId((playlist: PlaylistEntity) => playlist.user)
+  @ApiProperty({
+    type: 'string',
+    format: 'uuid',
+    description: 'Пользователь ID',
+  })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 

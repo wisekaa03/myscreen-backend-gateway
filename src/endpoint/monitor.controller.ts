@@ -30,6 +30,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { isDateString } from 'class-validator';
+import { FilesInterceptor } from '@nestjs/platform-express';
 
 import { BadRequestError, ForbiddenError, NotFoundError } from '@/errors';
 import {
@@ -60,7 +61,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { MonitorService } from '@/database/monitor.service';
 import { PlaylistService } from '@/database/playlist.service';
 import { BidService } from '@/database/bid.service';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { WsStatistics } from '@/database/ws.statistics';
 
 @ApiComplexDecorators({
   path: ['monitor'],
@@ -78,6 +79,7 @@ export class MonitorController {
     private readonly monitorService: MonitorService,
     private readonly playlistService: PlaylistService,
     private readonly bidService: BidService,
+    private readonly wsStatistics: WsStatistics,
   ) {}
 
   @Post()
@@ -655,6 +657,7 @@ export class MonitorController {
     const monitor = await this.monitorService.findOne({
       userId,
       ...find,
+      select: ['id', 'playlist'],
     });
     if (!monitor) {
       throw new NotFoundError(`Monitor '${id}' not found`);
@@ -663,7 +666,7 @@ export class MonitorController {
       throw new NotFoundError(`Have no playlist in monitor '${id}'`);
     }
 
-    const data = await this.bidService.monitorPlaylistToBids({
+    const data = await this.wsStatistics.monitorPlaylistToBids({
       monitorId: monitor.id,
     });
 

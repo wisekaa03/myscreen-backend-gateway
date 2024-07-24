@@ -293,6 +293,7 @@ export class EditorController {
     const create: Partial<EditorLayerEntity> = {
       ...body,
       file,
+      fileId: file.id,
     };
     if (file.type === FileType.AUDIO) {
       create.audio = [editor];

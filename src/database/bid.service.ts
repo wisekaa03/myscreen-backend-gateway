@@ -8,9 +8,6 @@ import {
   FindOptionsRelations,
   FindOptionsWhere,
   In,
-  IsNull,
-  LessThanOrEqual,
-  MoreThanOrEqual,
   Repository,
 } from 'typeorm';
 import dayjs from 'dayjs';
@@ -25,13 +22,13 @@ import {
 import { MAIL_SERVICE } from '@/constants';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { BidApprove, MonitorMultiple, UserRoleEnum } from '@/enums';
-import { BidEntity } from './bid.entity';
-import { PlaylistEntity } from './playlist.entity';
+import { getFullName } from '@/utils/full-name';
 import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
 import { ActService } from './act.service';
-import { getFullName } from '@/utils/full-name';
+import { BidEntity } from './bid.entity';
+import { PlaylistEntity } from './playlist.entity';
 import { UserResponse } from './user-response.entity';
 import { WalletService } from './wallet.service';
 import { WsStatistics } from './ws.statistics';
@@ -146,131 +143,6 @@ export class BidService {
     return result;
   }
 
-  /**
-   * WebSocket change
-   *
-   * TODO: Переделать на более умный алгоритм
-   */
-  async websocketChange({
-    playlist,
-    playlistDelete,
-    bid,
-    bidDelete,
-  }: {
-    playlist?: PlaylistEntity;
-    playlistDelete?: PlaylistEntity;
-    bid?: BidEntity;
-    bidDelete?: BidEntity;
-  }) {
-    if (playlist) {
-      const bids = await this.monitorPlaylistToBids({
-        playlistId: playlist.id,
-      });
-
-      const wsPromise = bids.map(async (_bid) =>
-        this.wsStatistics.onChange({ bid: _bid }),
-      );
-
-      await Promise.allSettled(wsPromise);
-    }
-
-    if (bid) {
-      await this.wsStatistics.onChange({ bid });
-    }
-
-    if (bidDelete) {
-      await this.wsStatistics.onChange({ bidDelete });
-    }
-  }
-
-  /**
-   * Get the bids for the monitor
-   *
-   * @param {string} monitorId Монитор ID
-   * @param {string} playlistId Плэйлист ID
-   * @param {(string | Date)} [dateLocal=new Date()] Локальная для пользователя дата
-   * @return {*}
-   * @memberof BidService
-   */
-  async monitorPlaylistToBids({
-    monitorId,
-    playlistId,
-    dateLocal = new Date(),
-  }: {
-    monitorId?: string;
-    playlistId?: string;
-    dateLocal?: Date;
-  }): Promise<BidEntity[]> {
-    const monitorRequests = await this.find({
-      where: [
-        {
-          monitorId,
-          playlistId,
-          approved: BidApprove.ALLOWED,
-          dateWhen: LessThanOrEqual<Date>(dateLocal),
-          dateBefore: MoreThanOrEqual<Date>(dateLocal),
-        },
-        {
-          monitorId,
-          playlistId,
-          approved: BidApprove.ALLOWED,
-          dateWhen: LessThanOrEqual<Date>(dateLocal),
-          dateBefore: IsNull(),
-        },
-      ],
-      relations: { playlist: { files: true } },
-      loadEagerRelations: false,
-      order: { updatedAt: 'DESC' },
-    });
-
-    let forceReplace = false;
-
-    let expected = monitorRequests.filter(
-      ({ dateWhen, dateBefore, playlistChange }) => {
-        if (forceReplace) {
-          return false;
-        }
-        let isExpect = true;
-
-        if (dateBefore) {
-          const date1 = new Date(dateBefore);
-          date1.setSeconds(0, 0);
-
-          isExpect = date1 >= dateLocal;
-        }
-
-        if (playlistChange) {
-          const date2 = new Date(dateWhen);
-          date2.setSeconds(0, 0);
-
-          if (dateLocal >= date2) {
-            forceReplace = true;
-          }
-        }
-
-        return isExpect;
-      },
-    );
-
-    const expectedPromise = expected.map(
-      async (bid) =>
-        ({
-          ...bid,
-          playlist: {
-            ...bid.playlist,
-            files: await Promise.all(
-              bid.playlist.files.map(async (file) =>
-                this.fileService.signedUrl(file),
-              ),
-            ),
-          },
-        }) as BidEntity,
-    );
-    expected = await Promise.all(expectedPromise);
-
-    return expected;
-  }
-
   private async bidPostCreate({
     bid,
     transact,
@@ -281,7 +153,7 @@ export class BidService {
     const { multiple } = bid.monitor;
     const { id, seqNo, createdAt, updatedAt, ...insert } = bid;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.websocketChange({ bid });
+      await this.wsStatistics.onChange({ bid });
     } else {
       const manager = transact ?? this.bidRepository.manager;
       await manager.transaction('REPEATABLE READ', async (transact) => {
@@ -302,7 +174,7 @@ export class BidService {
           });
           const subBid = await transact.save(BidEntity, createReq);
 
-          await this.websocketChange({ bid: subBid });
+          await this.wsStatistics.onChange({ bid: subBid });
 
           return subBid;
         });
@@ -323,7 +195,7 @@ export class BidService {
   }): Promise<void> {
     const { multiple } = bid.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.websocketChange({ bidDelete: bid });
+      await this.wsStatistics.onChange({ bidDelete: bid });
     } else {
       const manager = transact ?? this.bidRepository.manager;
       await manager.transaction('REPEATABLE READ', async (transact) => {
@@ -334,7 +206,7 @@ export class BidService {
           relations: { monitor: true, playlist: true },
         });
         const groupAppPromise = groupApplication.map(async (bidLocal) => {
-          await this.websocketChange({ bidDelete: bidLocal });
+          await this.wsStatistics.onChange({ bidDelete: bidLocal });
           if (deleteLocal) {
             if (multiple === MonitorMultiple.SCALING) {
               await transact.delete(PlaylistEntity, {
@@ -578,21 +450,17 @@ export class BidService {
 
           // Отправляем письмо продавцу
           if (insert.approved === BidApprove.NOTPROCESSED) {
-            const sellerEmail = bid.seller?.email;
+            const sellerEmail = bid.seller.email;
             const language =
               bid.seller.preferredLanguage ?? user.preferredLanguage;
-            if (sellerEmail) {
-              this.mailService.emit<unknown, MailSendBidMessage>(
-                'sendBidWarningMessage',
-                {
-                  email: sellerEmail,
-                  bidUrl: `${this.fileService.frontEndUrl}/bids`,
-                  language,
-                },
-              );
-            } else {
-              this.logger.error(`BidService seller email='${sellerEmail}'`);
-            }
+            this.mailService.emit<unknown, MailSendBidMessage>(
+              'sendBidWarningMessage',
+              {
+                email: sellerEmail,
+                bidUrl: `${this.fileService.frontEndUrl}/bids`,
+                language,
+              },
+            );
           } else if (insert.approved === BidApprove.ALLOWED) {
             // Оплата поступает на пользователя - владельца монитора
             if (sum !== 0) {

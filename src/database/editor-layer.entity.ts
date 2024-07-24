@@ -19,6 +19,7 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import { i18nValidationMessage } from 'nestjs-i18n';
@@ -201,7 +202,8 @@ export class EditorLayerEntity extends BaseEntity {
   })
   file!: FileEntity;
 
-  @Column({ type: 'uuid', select: false })
+  @Column({ type: 'uuid' })
+  @RelationId((editorLayer: EditorLayerEntity) => editorLayer.file)
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   fileId!: string;
 
