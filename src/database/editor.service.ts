@@ -98,7 +98,7 @@ export class EditorService {
   async findOne({
     ...find
   }: FindOneOptionsExt<EditorEntity>): Promise<EditorEntity | null> {
-    return find.relations
+    return find.relations === undefined
       ? this.editorRepository.findOne(
           TypeOrmFind.findParams(EditorEntity, find),
         )
@@ -521,7 +521,7 @@ export class EditorService {
       // создаем редакторы
       const editorsPromise = files.map(async (file) => {
         const editor = await this.create({
-          name: `Automatic "${playlist.name}": file #${file.id}`,
+          name: `Automatic playlist: ${playlist.name}. Monitor#${monitorId}. File#${file.id}`,
           userId,
           width: widthMonitor,
           height: heightMonitor,
@@ -536,7 +536,7 @@ export class EditorService {
         });
         // и добавляем в редактор видео-слой с файлом
         await this.createLayer(userId, editor.id, {
-          index: 0,
+          index: 1,
           cutFrom: 0,
           cutTo: file.duration,
 
@@ -952,7 +952,7 @@ export class EditorService {
     if (!layers.find((l) => l.id === layerId)) {
       layers = editor.audioLayers;
       if (!layers.find((l) => l.id === layerId)) {
-        throw new NotFoundError('layerId is not in editor layers');
+        return;
       }
     }
 

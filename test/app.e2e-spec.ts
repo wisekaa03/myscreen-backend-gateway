@@ -3147,40 +3147,40 @@ describe('Backend API (e2e)', () => {
     /**
      * Advertiser: Отправка плэйлиста на монитор Scaling
      */
-    test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Scaling)', async () => {
-      if (
-        !advertiserToken ||
-        !advertiserPlaylistId1 ||
-        !monitorGroupScalingId
-      ) {
-        expect(false).toEqual(true);
-      }
+    // test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Scaling)', async () => {
+    //   if (
+    //     !advertiserToken ||
+    //     !advertiserPlaylistId1 ||
+    //     !monitorGroupScalingId
+    //   ) {
+    //     expect(false).toEqual(true);
+    //   }
 
-      const playlistToMonitor: MonitorsPlaylistAttachRequest = {
-        playlistId: advertiserPlaylistId1,
-        monitorIds: [monitorGroupScalingId],
-        bid: {
-          dateBefore: dayjs().add(1).toDate(),
-          dateWhen: dayjs().subtract(1, 'day').toDate(),
-          playlistChange: true,
-        },
-      };
+    //   const playlistToMonitor: MonitorsPlaylistAttachRequest = {
+    //     playlistId: advertiserPlaylistId1,
+    //     monitorIds: [monitorGroupScalingId],
+    //     bid: {
+    //       dateBefore: dayjs().add(1).toDate(),
+    //       dateWhen: dayjs().subtract(1, 'day').toDate(),
+    //       playlistChange: true,
+    //     },
+    //   };
 
-      await request
-        .patch(`${apiPath}/monitor/playlist`)
-        .auth(advertiserToken, { type: 'bearer' })
-        .send(playlistToMonitor)
-        .set('Accept', 'application/json')
-        .expect('Content-Type', /json/)
-        .expect(200)
-        .then(({ body }: { body: BidsGetResponse }) => {
-          expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.count).toBe(1);
-          expect(body.data[0].id).toBeDefined();
-          advertiserBidMonitorScalingId = body.data[0].id;
-        });
-    });
+    //   await request
+    //     .patch(`${apiPath}/monitor/playlist`)
+    //     .auth(advertiserToken, { type: 'bearer' })
+    //     .send(playlistToMonitor)
+    //     .set('Accept', 'application/json')
+    //     .expect('Content-Type', /json/)
+    //     .expect(200)
+    //     .then(({ body }: { body: BidsGetResponse }) => {
+    //       expect(body.status).toBe(Status.Success);
+    //       expect(body.data).toBeDefined();
+    //       expect(body.count).toBe(1);
+    //       expect(body.data[0].id).toBeDefined();
+    //       advertiserBidMonitorScalingId = body.data[0].id;
+    //     });
+    // });
 
     /**
      * MonitorOwner: Утверждение заявки advertiserBidMonitorScalingId

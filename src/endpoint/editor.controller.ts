@@ -271,6 +271,7 @@ export class EditorController {
     const editor = await this.editorService.findOne({
       where: whereEditor,
       select: ['id', 'userId'],
+      loadEagerRelations: false,
       relations: {},
     });
     if (!editor) {
