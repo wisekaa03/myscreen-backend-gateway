@@ -1,4 +1,4 @@
-import internal from 'node:stream';
+import { Readable } from 'node:stream';
 import { parse as pathParse } from 'node:path';
 import type {
   Request as ExpressRequest,
@@ -43,7 +43,7 @@ import {
   FilesUpdateRequest,
   FilesCopyRequest,
 } from '@/dto';
-import { UserRoleEnum, FileType, Status, CRUD } from '@/enums';
+import { UserRoleEnum, Status, CRUD } from '@/enums';
 import { ApiComplexDecorators, Crud, Roles } from '@/decorators';
 import { JwtAuthGuard, RolesGuard } from '@/guards';
 import { paginationQuery } from '@/utils/pagination-query';
@@ -279,9 +279,9 @@ export class FileController {
   @Crud(CRUD.READ)
   async downloadPreviewFile(
     @Res() res: ExpressResponse,
-    @Param('fileId', ParseUUIDPipe) fileId: string,
+    @Param('fileId', ParseUUIDPipe) id: string,
   ): Promise<void> {
-    const where: FindOptionsWhere<FileEntity> = { id: fileId };
+    const where: FindOptionsWhere<FileEntity> = { id };
     const file = await this.fileService.findOne({
       where,
       select: [
@@ -304,43 +304,7 @@ export class FileController {
       throw new NotFoundError('File not found');
     }
 
-    try {
-      const buffer = await this.fileService.downloadPreviewFile(file);
-
-      res.setHeader('Content-Length', buffer.length);
-      res.setHeader('Cache-Control', 'private, max-age=315360');
-      const fileParse = pathParse(file.name);
-      if (file.type === FileType.VIDEO) {
-        res.setHeader('Content-Type', 'video/webm');
-        res.setHeader(
-          'Content-Disposition',
-          `attachment;filename=${encodeURIComponent(
-            `${fileParse.name}-preview.webm`,
-          )};`,
-        );
-      } else if (file.type === FileType.IMAGE) {
-        res.setHeader('Content-Type', 'image/jpeg');
-        res.setHeader(
-          'Content-Disposition',
-          `attachment;filename=${encodeURIComponent(
-            `${fileParse.name}-preview.jpeg`,
-          )};`,
-        );
-      } else {
-        res.setHeader('Content-Type', 'image/svg+xml');
-        res.setHeader(
-          'Content-Disposition',
-          `attachment;filename=${encodeURIComponent(
-            `${fileParse.name}-preview.svg`,
-          )};`,
-        );
-      }
-
-      res.write(buffer);
-      res.end();
-    } catch (error: unknown) {
-      throw new NotFoundError(error);
-    }
+    await this.fileService.downloadPreviewFile(res, file);
   }
 
   @Get('download/:fileId')
@@ -399,27 +363,21 @@ export class FileController {
       throw new NotFoundError(`File '${id}' is not exists`);
     }
 
-    const data = await this.fileService
-      .getS3Object(file)
-      .catch((error: unknown) => {
-        throw new NotFoundError(`File '${id}' is not exists: ${error}`);
-      });
-    if (data.Body instanceof internal.Readable) {
-      res.setHeader('Content-Length', String(file.filesize));
-      res.setHeader('Cache-Control', 'private, max-age=31536000');
-      // res.setHeader('Content-Type', headers['content-type']);
-      // res.setHeader('Last-Modified', headers['last-modified']);
-      res.setHeader(
-        'Content-Disposition',
-        `attachment;filename=${encodeURIComponent(file?.name || '')}`,
-      );
-      if (!res.headersSent) {
-        res.flushHeaders();
+    try {
+      const data = await this.fileService.getS3Object(file);
+      if (data.Body instanceof Readable) {
+        this.logger.debug(`The file '${file?.name}' has been downloaded`);
+
+        res.set({
+          'Content-Length': String(file.filesize),
+          'Content-Disposition': `attachment;filename=${encodeURIComponent(file?.name || '')}`,
+        });
+        data.Body.pipe(res);
+      } else {
+        throw new Error('Body is not Readable');
       }
-
-      this.logger.debug(`The file '${file?.name}' has been downloaded`);
-
-      data.Body.pipe(res);
+    } catch (error: unknown) {
+      throw new NotFoundError('FILE_NOT_EXIST', { args: { id, error } });
     }
   }
 

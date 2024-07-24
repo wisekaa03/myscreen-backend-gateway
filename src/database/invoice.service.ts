@@ -1,4 +1,4 @@
-import internal from 'node:stream';
+import { Readable } from 'node:stream';
 import { buffer } from 'node:stream/consumers';
 import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
@@ -206,7 +206,7 @@ export class InvoiceService {
     format: SpecificFormat,
     transact?: EntityManager,
   ): Promise<FileEntity> {
-    const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
+    const { id, user: invoiceUser, userId: invoiceUserId, createdAt } = invoice;
     const _transact = transact
       ? transact.withRepository(this.invoiceRepository)
       : this.invoiceRepository;
@@ -214,7 +214,7 @@ export class InvoiceService {
     const language =
       invoiceUser.preferredLanguage ??
       this.configService.getOrThrow('DEFAULT_LANGUAGE');
-    const invoiceFile = this.formService.send<Buffer, PrintInvoice>(
+    const invoiceFileObservable = this.formService.send<Buffer, PrintInvoice>(
       MsvcFormService.Invoice,
       {
         format,
@@ -222,17 +222,21 @@ export class InvoiceService {
         language,
       },
     );
+    let fileBuffer = await lastValueFrom(invoiceFileObservable);
+    fileBuffer = Buffer.from(fileBuffer);
+
+    const specificFormat = formatToContentType[format]
+      ? format
+      : SpecificFormat.XLSX;
     const { id: invoiceFolderId } = await this.folderService.invoiceFolder(
       invoiceUserId,
       transact,
     );
-    const fileBuffer = await lastValueFrom(invoiceFile);
-
     const [file] = await this.fileService.upload({
       user: invoiceUser,
       files: fileBuffer,
       folderId: invoiceFolderId,
-      originalname: `Invoice_${dayjs(invoice.createdAt).format('YYYYDDMM_HHmmss')}.xlsx`,
+      originalname: `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
       mimetype: 'application/vnd.ms-excel',
       transact,
     });
@@ -344,7 +348,7 @@ export class InvoiceService {
                   `File '${file.id}' is not exists: ${JSON.stringify(error)}`,
                 );
               });
-            if (data.Body instanceof internal.Readable) {
+            if (data.Body instanceof Readable) {
               const invoiceFile = await buffer(data.Body);
               this.mailService.emit<unknown, MailInvoiceConfirmed>(
                 MsvcMailService.InvoiceConfirmed,
@@ -413,7 +417,9 @@ export class InvoiceService {
       .catch((error: unknown) => {
         throw new NotFoundError(`File '${file.id}' is not exists: ${error}`);
       });
-    if (data.Body instanceof internal.Readable) {
+    if (data.Body instanceof Readable) {
+      this.logger.debug(`The invoice file '${file.name}' has been downloaded`);
+
       const specificFormat = formatToContentType[format]
         ? format
         : SpecificFormat.XLSX;
@@ -424,15 +430,12 @@ export class InvoiceService {
       const invoiceFilename = encodeURI(
         `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
       );
+
       res.statusCode = 200;
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="${invoiceFilename}"`,
-      );
-      res.setHeader('Content-Type', formatToContentType[format]);
-
-      this.logger.debug(`The invoice file '${file.name}' has been downloaded`);
-
+      res.set({
+        'Content-Type': formatToContentType[format],
+        'Content-Disposition': `attachment; filename="${invoiceFilename}"`,
+      });
       data.Body.pipe(res);
     } else {
       throw new ServiceUnavailableError();

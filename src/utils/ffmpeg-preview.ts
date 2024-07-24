@@ -8,6 +8,7 @@ import { FileType } from '@/enums/file-type.enum';
 import { fileExist } from './file-exist';
 
 const exec = util.promisify(child.exec);
+const logger = new Logger('FfMpeg');
 
 export async function FfMpegPreview(
   type: FileType,
@@ -15,8 +16,6 @@ export async function FfMpegPreview(
   filename: string,
   outPath: string,
 ): Promise<void> {
-  const logger = new Logger('FfMpeg');
-
   const ffmpeg = fileExist('node_modules/ffmpeg-static/ffmpeg')
     ? 'node_modules/ffmpeg-static/ffmpeg'
     : 'ffmpeg';
@@ -26,7 +25,7 @@ export async function FfMpegPreview(
       `${ffmpeg} -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
         ` -vf scale="100:-1" -y "${outPath}"`,
     ).catch((error: unknown) => {
-      logger.error('FfMpeg error', error);
+      logger.error('FfMpeg error preview', error);
       throw error;
     });
   }
@@ -46,14 +45,14 @@ export async function FfMpegPreview(
         ` -vf scale="100:-1",fps="1/${frameInterval}"` +
         ` -y "${outPattern}"`,
     ).catch((error: unknown) => {
-      logger.error('FfMpeg error', error);
+      logger.error('FfMpeg error preview', error);
       throw error;
     });
 
     await exec(
       `${ffmpeg} -framerate 1/0.6 -i "${outPattern}" -q:v 10 -v error -y "${outPath}"`,
     ).catch((error: unknown) => {
-      logger.error('FfMpeg error', error);
+      logger.error('FfMpeg error preview', error);
       throw error;
     });
   }
