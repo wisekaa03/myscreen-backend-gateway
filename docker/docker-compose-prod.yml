@@ -5,34 +5,18 @@ networks:
     driver: bridge
 
 volumes:
-  postgres:
+  rabbitmq_data:
+    driver: local
 
 services:
-  postgres:
-    image: postgis/postgis:13-3.4-alpine
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 12345678
-      POSTGRES_DB: myscreen
-      POSTGRES_INITDB_ARGS: '--data-checksums'
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - postgres:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
   rabbitmq:
-    image: bitnami/rabbitmq:3.12.13
+    image: bitnami/rabbitmq:3.12.14
     restart: always
     environment:
       - RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS=true
       - RABBITMQ_PASSWORD=MAnMCMrP7q
       - RABBITMQ_USERNAME=admin
+      - RABBITMQ_DISK_FREE_ABSOLUTE_LIMIT=50Mb
     volumes:
       - rabbitmq_data:/bitnami/rabbitmq/mnesia
     ports:

@@ -29,6 +29,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  RelationId,
   Unique,
   UpdateDateColumn,
 } from 'typeorm';
@@ -522,6 +523,12 @@ export class MonitorEntity extends BaseEntity {
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
+  @RelationId((monitor: MonitorEntity) => monitor.user)
+  @ApiProperty({
+    type: 'string',
+    format: 'uuid',
+    description: 'Пользователь ID',
+  })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 

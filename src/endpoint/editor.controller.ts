@@ -271,6 +271,7 @@ export class EditorController {
     const editor = await this.editorService.findOne({
       where: whereEditor,
       select: ['id', 'userId'],
+      loadEagerRelations: false,
       relations: {},
     });
     if (!editor) {
@@ -293,6 +294,7 @@ export class EditorController {
     const create: Partial<EditorLayerEntity> = {
       ...body,
       file,
+      fileId: file.id,
     };
     if (file.type === FileType.AUDIO) {
       create.audio = [editor];

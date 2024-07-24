@@ -33,7 +33,6 @@ import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from '@/database/folder.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
-import { MonitorEntity } from '@/database/monitor.entity';
 
 @Entity('file', { comment: 'Файлы' })
 export class FileEntity extends BaseEntity {
@@ -182,6 +181,11 @@ export class FileEntity extends BaseEntity {
 
   @Column({ type: 'uuid' })
   @RelationId((file: FileEntity) => file.user)
+  @ApiProperty({
+    type: 'string',
+    format: 'uuid',
+    description: 'Пользователь ID',
+  })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 

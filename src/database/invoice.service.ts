@@ -18,11 +18,13 @@ import {
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
+  MailInvoiceAwaitingConfirmation,
   MailInvoiceConfirmed,
+  MailInvoicePayed,
   PrintInvoice,
 } from '@/interfaces';
-import { MAIL_SERVICE, formatToContentType } from '@/constants';
-import { UserRoleEnum } from '@/enums';
+import { FORM_SERVICE, MAIL_SERVICE, formatToContentType } from '@/constants';
+import { MsvcFormService, MsvcMailService, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { SpecificFormat } from '@/enums/specific-format.enum';
 import { InvoiceStatus } from '@/enums/invoice-status.enum';
@@ -50,6 +52,8 @@ export class InvoiceService {
     private readonly wsStatistics: WsStatistics,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
+    @Inject(FORM_SERVICE)
+    private readonly formService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
     @InjectRepository(UserEntity)
@@ -210,11 +214,14 @@ export class InvoiceService {
     const language =
       invoiceUser.preferredLanguage ??
       this.configService.getOrThrow('DEFAULT_LANGUAGE');
-    const invoiceFile = this.mailService.send<Buffer, PrintInvoice>('invoice', {
-      format,
-      invoice,
-      language,
-    });
+    const invoiceFile = this.formService.send<Buffer, PrintInvoice>(
+      MsvcFormService.Invoice,
+      {
+        format,
+        invoice,
+        language,
+      },
+    );
     const { id: invoiceFolderId } = await this.folderService.invoiceFolder(
       invoiceUserId,
       transact,
@@ -277,11 +284,14 @@ export class InvoiceService {
             });
 
             // и выводится письмо о том, что счет оплачен
-            this.mailService.emit('invoicePayed', {
-              invoice,
-              user: invoiceUser,
-              balance,
-            });
+            this.mailService.emit<unknown, MailInvoicePayed>(
+              MsvcMailService.InvoicePayed,
+              {
+                invoice,
+                user: invoiceUser,
+                balance,
+              },
+            );
 
             await this.walletService.acceptanceActCreate({
               user: invoiceUser,
@@ -302,10 +312,15 @@ export class InvoiceService {
               },
             });
 
-            // Вызов сервиса отправки писем
-            this.mailService.emit('invoiceAwaitingConfirmation', {
-              accountantUsers,
-              invoice,
+            accountantUsers.forEach(async (user) => {
+              // Вызов сервиса отправки писем
+              this.mailService.emit<unknown, MailInvoiceAwaitingConfirmation>(
+                MsvcMailService.InvoiceAwaitingConfirmation,
+                {
+                  user,
+                  invoice,
+                },
+              );
             });
 
             break;
@@ -331,8 +346,8 @@ export class InvoiceService {
               });
             if (data.Body instanceof internal.Readable) {
               const invoiceFile = await buffer(data.Body);
-              this.mailService.emit<any, MailInvoiceConfirmed>(
-                'invoiceConfirmed',
+              this.mailService.emit<unknown, MailInvoiceConfirmed>(
+                MsvcMailService.InvoiceConfirmed,
                 {
                   user: invoiceUser,
                   invoice,
