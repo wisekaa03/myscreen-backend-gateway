@@ -9,7 +9,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
 import { PrintReportDeviceStatus } from '@/interfaces';
-import { MAIL_SERVICE, formatToContentType } from '@/constants';
+import { FORM_SERVICE, formatToContentType } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
 import { UserRoleEnum, SpecificFormat, CRUD, MsvcFormService } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
@@ -32,8 +32,8 @@ export class StatisticsController {
   constructor(
     private readonly userService: UserService,
     private readonly monitorService: MonitorService,
-    @Inject(MAIL_SERVICE)
-    private readonly mailService: ClientProxy,
+    @Inject(FORM_SERVICE)
+    private readonly formService: ClientProxy,
   ) {}
 
   @Post('deviceStatus')
@@ -77,7 +77,7 @@ export class StatisticsController {
     }
 
     const data = await lastValueFrom(
-      this.mailService.send<Buffer, PrintReportDeviceStatus>(
+      this.formService.send<Buffer, PrintReportDeviceStatus>(
         MsvcFormService.ReportDeviceStatus,
         {
           user,
@@ -144,7 +144,7 @@ export class StatisticsController {
     }
 
     const data = await lastValueFrom(
-      this.mailService.send<Buffer, PrintReportDeviceStatus>(
+      this.formService.send<Buffer, PrintReportDeviceStatus>(
         MsvcFormService.ReportViews,
         {
           user,

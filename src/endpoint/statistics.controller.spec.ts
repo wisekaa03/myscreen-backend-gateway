@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { Observable } from 'rxjs';
 
-import { MAIL_SERVICE } from '@/constants';
+import { FORM_SERVICE } from '@/constants';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { StatisticsController } from './statistics.controller';
 import { MonitorService } from '@/database/monitor.service';
@@ -33,7 +33,7 @@ describe(StatisticsController.name, () => {
       providers: [
         { provide: MonitorService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
-        { provide: MAIL_SERVICE, useClass: mockRepository },
+        { provide: FORM_SERVICE, useClass: mockRepository },
       ],
     }).compile();
 

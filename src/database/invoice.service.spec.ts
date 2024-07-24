@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
-import { MAIL_SERVICE } from '@/constants';
+import { FORM_SERVICE, MAIL_SERVICE } from '@/constants';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
@@ -36,10 +36,11 @@ describe(InvoiceService.name, () => {
         InvoiceService,
         { provide: ConfigService, useClass: mockRepository },
         { provide: WalletService, useClass: mockRepository },
-        { provide: WsStatistics, useClass: mockRepository },
-        { provide: FileService, useClass: mockRepository },
         { provide: FolderService, useClass: mockRepository },
+        { provide: FileService, useClass: mockRepository },
+        { provide: WsStatistics, useClass: mockRepository },
         { provide: MAIL_SERVICE, useClass: mockRepository },
+        { provide: FORM_SERVICE, useClass: mockRepository },
         {
           provide: getRepositoryToken(InvoiceEntity),
           useClass: mockRepository,

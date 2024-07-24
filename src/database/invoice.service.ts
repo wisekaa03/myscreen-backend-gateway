@@ -23,7 +23,7 @@ import {
   MailInvoicePayed,
   PrintInvoice,
 } from '@/interfaces';
-import { MAIL_SERVICE, formatToContentType } from '@/constants';
+import { FORM_SERVICE, MAIL_SERVICE, formatToContentType } from '@/constants';
 import { MsvcFormService, MsvcMailService, UserRoleEnum } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { SpecificFormat } from '@/enums/specific-format.enum';
@@ -52,6 +52,8 @@ export class InvoiceService {
     private readonly wsStatistics: WsStatistics,
     @Inject(MAIL_SERVICE)
     private readonly mailService: ClientProxy,
+    @Inject(FORM_SERVICE)
+    private readonly formService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
     @InjectRepository(UserEntity)
@@ -212,7 +214,7 @@ export class InvoiceService {
     const language =
       invoiceUser.preferredLanguage ??
       this.configService.getOrThrow('DEFAULT_LANGUAGE');
-    const invoiceFile = this.mailService.send<Buffer, PrintInvoice>(
+    const invoiceFile = this.formService.send<Buffer, PrintInvoice>(
       MsvcFormService.Invoice,
       {
         format,
