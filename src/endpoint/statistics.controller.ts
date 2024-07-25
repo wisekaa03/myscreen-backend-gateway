@@ -78,16 +78,23 @@ export class StatisticsController {
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
-        where: { userId: user.id, id: In(monitorIds) },
+        where: {
+          userId:
+            user.role === UserRoleEnum.Administrator ? undefined : user.id,
+          id: In(monitorIds),
+        },
         loadEagerRelations: false,
-        relations: { playlist: true, user: true },
+        relations: { user: true },
       });
     } else {
       monitors = await this.monitorService.find({
         userId: user.id,
-        where: { userId: user.id },
+        where: {
+          userId:
+            user.role === UserRoleEnum.Administrator ? undefined : user.id,
+        },
         loadEagerRelations: false,
-        relations: { playlist: true, user: true },
+        relations: { user: true },
       });
     }
 
@@ -111,11 +118,10 @@ export class StatisticsController {
       : SpecificFormat.XLSX;
 
     res.statusCode = 200;
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="report-device-status.${specificFormat}"`,
-    );
-    res.setHeader('Content-Type', formatToContentType[format]);
+    res.set({
+      'Content-Type': formatToContentType[format],
+      'Content-Disposition': `attachment; filename="report-device-status.${specificFormat}"`,
+    });
 
     res.end(data, 'binary');
   }
@@ -156,16 +162,20 @@ export class StatisticsController {
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
-        where: { userId: user.id, id: In(monitorIds) },
+        where: {
+          userId:
+            user.role === UserRoleEnum.Administrator ? undefined : user.id,
+          id: In(monitorIds),
+        },
         loadEagerRelations: false,
-        relations: { playlist: true, user: true, statistics: true },
+        relations: { user: true, statistics: true },
       });
     } else {
       monitors = await this.monitorService.find({
-        userId: user.id,
+        userId: user.role === UserRoleEnum.Administrator ? undefined : user.id,
         where: { userId: user.id },
         loadEagerRelations: false,
-        relations: { playlist: true, user: true, statistics: true },
+        relations: { user: true, statistics: true },
       });
     }
 
@@ -189,11 +199,10 @@ export class StatisticsController {
       : SpecificFormat.XLSX;
 
     res.statusCode = 200;
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="report-views.${specificFormat}"`,
-    );
-    res.setHeader('Content-Type', formatToContentType[format]);
+    res.set({
+      'Content-Type': formatToContentType[format],
+      'Content-Disposition': `attachment; filename="report-views.${specificFormat}"`,
+    });
 
     res.end(data, 'binary');
   }

@@ -399,7 +399,7 @@ export class MonitorEntity extends BaseEntity {
   })
   @IsOptional()
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
-  groupOnlineMonitors?: number;
+  groupOnlineMonitors!: number;
 
   @Column({
     type: 'enum',
