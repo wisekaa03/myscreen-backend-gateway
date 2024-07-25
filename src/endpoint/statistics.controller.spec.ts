@@ -5,8 +5,9 @@ import { Observable } from 'rxjs';
 import { MICROSERVICE_MYSCREEN } from '@/enums';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { MonitorService } from '@/database/monitor.service';
-import { UserService } from '@/database/user.service';
 import { StatisticsController } from './statistics.controller';
+import { StatisticsService } from '@/database/statistics.service';
+import { UserService } from '@/database/user.service';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -33,6 +34,7 @@ describe(StatisticsController.name, () => {
       providers: [
         { provide: MonitorService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
+        { provide: StatisticsService, useClass: mockRepository },
         { provide: MICROSERVICE_MYSCREEN.FORM, useClass: mockRepository },
       ],
     }).compile();

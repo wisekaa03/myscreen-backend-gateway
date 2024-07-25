@@ -33,6 +33,7 @@ import { BidEntity } from '@/database/bid.entity';
 import { UserService } from '@/database/user.service';
 import { UserResponse } from '@/database/user-response.entity';
 import { WsStatistics } from '@/database/ws.statistics';
+import { StatisticsService } from '@/database/statistics.service';
 
 @WebSocketGateway({
   cors: {
@@ -48,6 +49,7 @@ export class WSGateway
     private readonly authService: AuthService,
     private readonly monitorService: MonitorService,
     private readonly userService: UserService,
+    private readonly statisticsService: StatisticsService,
     private readonly wsStatistics: WsStatistics,
   ) {}
 
@@ -239,17 +241,8 @@ export class WSGateway
     if (!value || !value.auth) {
       throw new WsException('Not authorized');
     }
-    if (value.role !== UserRoleEnum.Monitor) {
+    if (value.role !== UserRoleEnum.Monitor || value.monitorId === undefined) {
       throw new WsException('This is not Role.Monitor');
-    }
-
-    let monitor = await this.monitorService.findOne({
-      where: { id: value.monitorId },
-      relations: {},
-      caseInsensitive: false,
-    });
-    if (!monitor) {
-      throw new WsException('Not exist monitorId');
     }
 
     let bodyObject: WsMonitorEvent;
@@ -262,15 +255,35 @@ export class WSGateway
     } else {
       bodyObject = body;
     }
+    const { playlistId, playlistPlayed } = bodyObject;
+    if (!playlistId) {
+      throw new WsException('Not exist playlistId');
+    }
+
+    const monitor = await this.monitorService.findOne({
+      where: { id: value.monitorId },
+      relations: {},
+      caseInsensitive: false,
+    });
+    if (!monitor) {
+      throw new WsException('Not exist monitorId');
+    }
+    const { id: monitorId, userId } = monitor;
 
     // записываем в базу данных
-    monitor = await this.monitorService.update(monitor.id, {
-      playlistPlayed: bodyObject.playlistPlayed,
-    });
+    await Promise.all([
+      this.monitorService.playlistPlayed({ monitorId, playlistPlayed }),
+      this.statisticsService.create({
+        monitorId,
+        playlistId,
+        playlistPlayed,
+        userId,
+      }),
+    ]);
 
     // Отсылаем всем кто к нам подключен по WS изменения playlist-а в monitor
     wsClients.forEach((v, c) => {
-      if (v.role === UserRoleEnum.Advertiser || v.monitorId === monitor?.id) {
+      if (v.role === UserRoleEnum.Advertiser || v.monitorId === monitorId) {
         c.send(JSON.stringify([{ event: WsEvent.MONITOR, data: monitor }]));
       }
     });

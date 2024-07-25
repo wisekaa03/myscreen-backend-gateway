@@ -275,12 +275,16 @@ export class InvoiceService {
           // Если статус счета "Оплачен", то нужно записать в базу
           // сумму баланса и отправить письмо пользователю
           case InvoiceStatus.PAID: {
+            const createdAtFormat = dayjs(invoice.createdAt)
+              .locale('ru')
+              .format('DD MMMM YYYY г.');
+            const description = `Счет на оплату №${invoice.seqNo} от ${createdAtFormat}`;
             // здесь записывается в базу сумма баланса
             await transact.save(
               WalletEntity,
               this.walletService.create({
                 userId: invoiceUserId,
-                description: `Счет на оплату №${invoice.seqNo} от ${dayjs(invoice.createdAt).locale('ru').format('DD[ ]MMMM[ ]YYYY[ г.]')}`,
+                description,
                 sum: invoice.sum,
                 invoiceId: id,
               }),

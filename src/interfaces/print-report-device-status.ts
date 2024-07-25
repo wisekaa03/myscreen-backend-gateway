@@ -5,7 +5,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 export interface PrintReportDeviceStatus {
   user: UserEntity;
   format: SpecificFormat;
-  monitors?: MonitorEntity[];
+  monitors: MonitorEntity[];
   dateFrom: Date;
   dateTo: Date;
 }

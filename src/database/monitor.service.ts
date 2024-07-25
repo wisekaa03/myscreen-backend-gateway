@@ -238,6 +238,16 @@ export class MonitorService {
     return monitor;
   }
 
+  async playlistPlayed({
+    monitorId,
+    playlistPlayed,
+  }: {
+    monitorId: string;
+    playlistPlayed: boolean;
+  }): Promise<UpdateResult> {
+    return this.monitorRepository.update(monitorId, { playlistPlayed });
+  }
+
   async update(
     id: string,
     update: Partial<MonitorEntity>,

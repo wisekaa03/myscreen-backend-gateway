@@ -21,7 +21,7 @@ import {
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { UserService } from '@/database/user.service';
+import { StatisticsService } from '@/database/statistics.service';
 
 @ApiComplexDecorators({
   path: ['statistics'],
@@ -36,8 +36,8 @@ export class StatisticsController {
   logger = new Logger(StatisticsController.name);
 
   constructor(
-    private readonly userService: UserService,
     private readonly monitorService: MonitorService,
+    private readonly statisticsService: StatisticsService,
     @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
   ) {}
@@ -79,6 +79,15 @@ export class StatisticsController {
       monitors = await this.monitorService.find({
         userId: user.id,
         where: { userId: user.id, id: In(monitorIds) },
+        loadEagerRelations: false,
+        relations: { playlist: true, user: true },
+      });
+    } else {
+      monitors = await this.monitorService.find({
+        userId: user.id,
+        where: { userId: user.id },
+        loadEagerRelations: false,
+        relations: { playlist: true, user: true },
       });
     }
 
@@ -148,6 +157,15 @@ export class StatisticsController {
       monitors = await this.monitorService.find({
         userId: user.id,
         where: { userId: user.id, id: In(monitorIds) },
+        loadEagerRelations: false,
+        relations: { playlist: true, user: true, statistics: true },
+      });
+    } else {
+      monitors = await this.monitorService.find({
+        userId: user.id,
+        where: { userId: user.id },
+        loadEagerRelations: false,
+        relations: { playlist: true, user: true, statistics: true },
       });
     }
 

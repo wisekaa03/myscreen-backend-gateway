@@ -50,6 +50,7 @@ import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
+import { StatisticsEntity } from './statistics.entity';
 
 export class PointClass implements Point {
   @ApiProperty({
@@ -564,6 +565,14 @@ export class MonitorEntity extends BaseEntity {
     eager: false,
   })
   bids?: BidEntity[];
+
+  @OneToMany(() => StatisticsEntity, (stat) => stat.monitor, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
+  statistics!: StatisticsEntity[];
 
   @CreateDateColumn()
   @ApiProperty({
