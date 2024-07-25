@@ -82,16 +82,18 @@ export class StatisticsController {
       });
     }
 
-    const data = await lastValueFrom(
-      this.formService.send<Buffer, PrintReportDeviceStatus>(
-        MsvcFormService.ReportDeviceStatus,
-        {
-          user,
-          monitors,
-          format,
-          dateFrom: new Date(dateFrom),
-          dateTo: new Date(dateTo),
-        },
+    const data = Buffer.from(
+      await lastValueFrom(
+        this.formService.send<Buffer, PrintReportDeviceStatus>(
+          MsvcFormService.ReportDeviceStatus,
+          {
+            user,
+            monitors,
+            format,
+            dateFrom: new Date(dateFrom),
+            dateTo: new Date(dateTo),
+          },
+        ),
       ),
     );
 
@@ -149,16 +151,18 @@ export class StatisticsController {
       });
     }
 
-    const data = await lastValueFrom(
-      this.formService.send<Buffer, PrintReportDeviceStatus>(
-        MsvcFormService.ReportViews,
-        {
-          user,
-          monitors,
-          format,
-          dateFrom: new Date(dateFrom),
-          dateTo: new Date(dateTo),
-        },
+    const data = Buffer.from(
+      await lastValueFrom(
+        this.formService.send<Buffer, PrintReportDeviceStatus>(
+          MsvcFormService.ReportViews,
+          {
+            user,
+            monitors,
+            format,
+            dateFrom: new Date(dateFrom),
+            dateTo: new Date(dateTo),
+          },
+        ),
       ),
     );
 

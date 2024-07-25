@@ -227,8 +227,7 @@ export class InvoiceService {
         language,
       },
     );
-    let fileBuffer = await lastValueFrom(invoiceFileObservable);
-    fileBuffer = Buffer.from(fileBuffer);
+    const fileBuffer = Buffer.from(await lastValueFrom(invoiceFileObservable));
 
     const specificFormat = formatToContentType[format]
       ? format
