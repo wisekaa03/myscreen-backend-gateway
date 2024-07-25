@@ -18,19 +18,19 @@ import {
   MailBalanceChanged,
   MailBalanceNotChanged,
 } from '@/interfaces';
-import { MAIL_SERVICE } from '@/constants';
-import { UserRoleEnum } from '@/enums/user-role.enum';
-import { TypeOrmFind } from '@/utils/typeorm.find';
-import { ActService } from './act.service';
-import { UserEntity } from './user.entity';
-import { WalletEntity } from './wallet.entity';
 import {
+  UserRoleEnum,
+  MICROSERVICE_MYSCREEN,
   MsvcMailService,
   UserPlanEnum,
   UserStoreSpaceEnum,
   WalletTransactionType,
 } from '@/enums';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { getFullName } from '@/utils/full-name';
+import { ActService } from './act.service';
+import { UserEntity } from './user.entity';
+import { WalletEntity } from './wallet.entity';
 import { UserResponse } from './user-response.entity';
 
 @Injectable()
@@ -47,7 +47,7 @@ export class WalletService {
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
-    @Inject(MAIL_SERVICE)
+    @Inject(MICROSERVICE_MYSCREEN.MAIL)
     private readonly mailService: ClientProxy,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,

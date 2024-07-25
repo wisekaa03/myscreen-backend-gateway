@@ -2,11 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { Observable } from 'rxjs';
 
-import { FORM_SERVICE } from '@/constants';
+import { MICROSERVICE_MYSCREEN } from '@/enums';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
-import { StatisticsController } from './statistics.controller';
 import { MonitorService } from '@/database/monitor.service';
 import { UserService } from '@/database/user.service';
+import { StatisticsController } from './statistics.controller';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -33,7 +33,7 @@ describe(StatisticsController.name, () => {
       providers: [
         { provide: MonitorService, useClass: mockRepository },
         { provide: UserService, useClass: mockRepository },
-        { provide: FORM_SERVICE, useClass: mockRepository },
+        { provide: MICROSERVICE_MYSCREEN.FORM, useClass: mockRepository },
       ],
     }).compile();
 

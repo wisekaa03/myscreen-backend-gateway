@@ -23,11 +23,16 @@ import {
   MailInvoicePayed,
   PrintInvoice,
 } from '@/interfaces';
-import { FORM_SERVICE, MAIL_SERVICE, formatToContentType } from '@/constants';
-import { MsvcFormService, MsvcMailService, UserRoleEnum } from '@/enums';
+import { formatToContentType } from '@/constants';
+import {
+  MICROSERVICE_MYSCREEN,
+  MsvcFormService,
+  MsvcMailService,
+  UserRoleEnum,
+  SpecificFormat,
+  InvoiceStatus,
+} from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { SpecificFormat } from '@/enums/specific-format.enum';
-import { InvoiceStatus } from '@/enums/invoice-status.enum';
 import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
@@ -50,9 +55,9 @@ export class InvoiceService {
     private readonly fileService: FileService,
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
-    @Inject(MAIL_SERVICE)
+    @Inject(MICROSERVICE_MYSCREEN.MAIL)
     private readonly mailService: ClientProxy,
-    @Inject(FORM_SERVICE)
+    @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,

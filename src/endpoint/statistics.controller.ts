@@ -9,9 +9,15 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
 import { PrintReportDeviceStatus } from '@/interfaces';
-import { FORM_SERVICE, formatToContentType } from '@/constants';
+import { formatToContentType } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
-import { UserRoleEnum, SpecificFormat, CRUD, MsvcFormService } from '@/enums';
+import {
+  UserRoleEnum,
+  SpecificFormat,
+  CRUD,
+  MICROSERVICE_MYSCREEN,
+  MsvcFormService,
+} from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
@@ -32,7 +38,7 @@ export class StatisticsController {
   constructor(
     private readonly userService: UserService,
     private readonly monitorService: MonitorService,
-    @Inject(FORM_SERVICE)
+    @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
   ) {}
 

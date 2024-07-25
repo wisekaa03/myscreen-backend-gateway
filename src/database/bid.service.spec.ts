@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-import { MAIL_SERVICE } from '@/constants';
+import { MICROSERVICE_MYSCREEN } from '@/enums';
 import { BidEntity } from './bid.entity';
 import { BidService } from './bid.service';
 import { UserService } from './user.service';
@@ -43,7 +43,7 @@ describe(BidService.name, () => {
         { provide: MonitorService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
         { provide: EditorService, useClass: mockRepository },
-        { provide: MAIL_SERVICE, useClass: mockRepository },
+        { provide: MICROSERVICE_MYSCREEN.MAIL, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
         { provide: WsStatistics, useClass: mockRepository },
         { provide: WalletService, useClass: mockRepository },

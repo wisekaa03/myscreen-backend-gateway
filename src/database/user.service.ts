@@ -20,10 +20,9 @@ import {
   MailSendVerificationCode,
   MailWelcomeMessage,
 } from '@/interfaces';
-import { MAIL_SERVICE } from '@/constants';
-import { RegisterRequest } from '@/dto/request/register.request';
 import {
   CRUD,
+  MICROSERVICE_MYSCREEN,
   MsvcMailService,
   UserPlanEnum,
   UserRoleEnum,
@@ -32,6 +31,7 @@ import {
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
+import { RegisterRequest } from '@/dto/request/register.request';
 import { UserEntity } from './user.entity';
 import { UserResponse } from './user-response.entity';
 import { FileEntity } from './file.entity';
@@ -47,7 +47,7 @@ export class UserService {
     private readonly i18n: I18nService,
     private readonly configService: ConfigService,
     private readonly fileService: FileService,
-    @Inject(MAIL_SERVICE)
+    @Inject(MICROSERVICE_MYSCREEN.MAIL)
     private readonly mailService: ClientProxy,
     @InjectRepository(UserEntity)
     public readonly userRepository: Repository<UserEntity>,

@@ -1,20 +1,9 @@
 import { SpecificFormat } from '@/enums/specific-format.enum';
-import type { WebSocket } from 'ws';
-import { WebSocketClient } from '@/interfaces';
-
-export const MAIL_SERVICE = 'MAIL_SERVICE';
-export const FORM_SERVICE = 'FORM_SERVICE';
-export const EDITOR_SERVICE = 'EDITOR_EXPORT_SERVICE';
-export const FILE_SERVICE = 'FILE_SERVICE';
-
-export const dateLocalNow = new Date();
 
 export const formatToContentType: Record<SpecificFormat, string> = {
   [SpecificFormat.PDF]: 'application/pdf',
   [SpecificFormat.XLSX]: 'application/vnd.ms-excel',
 };
-
-export const wsClients = new Map<WebSocket, WebSocketClient>();
 
 export const rootFolderName = '\u2039Корень\u203a';
 export const exportFolderName = '\u2039Обработанные\u203a';

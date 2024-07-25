@@ -3,9 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { I18nService } from 'nestjs-i18n';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { Observable } from 'rxjs';
 
-import { MAIL_SERVICE } from '@/constants';
-import { UserPlanEnum, UserRoleEnum } from '@/enums';
+import { UserPlanEnum, UserRoleEnum, MICROSERVICE_MYSCREEN } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { UserEntity } from '@/database/user.entity';
@@ -15,7 +15,6 @@ import { JwtStrategy } from './jwt.strategy';
 import { FileService } from '@/database/file.service';
 import { FileEntity } from '@/database/file.entity';
 import { FolderEntity } from '@/database/folder.entity';
-import { Observable } from 'rxjs';
 
 UserService.validateCredentials = () => true;
 
@@ -57,7 +56,7 @@ describe(AuthService.name, () => {
         { provide: JwtService, useClass: mockRepository },
         { provide: JwtStrategy, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
-        { provide: MAIL_SERVICE, useClass: mockRepository },
+        { provide: MICROSERVICE_MYSCREEN.MAIL, useClass: mockRepository },
         {
           provide: getRepositoryToken(UserEntity),
           useClass: mockRepository,
