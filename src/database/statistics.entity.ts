@@ -33,7 +33,6 @@ export class StatisticsEntity extends BaseEntity {
   id!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
-    cascade: true,
     eager: false,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_statistics_monitor_id' })
