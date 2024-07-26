@@ -369,6 +369,7 @@ export class FileController {
         this.logger.debug(`The file '${file?.name}' has been downloaded`);
 
         res.set({
+          'Content-Type': data.ContentType || 'application/octet-stream',
           'Content-Length': String(file.filesize),
           'Content-Disposition': `attachment;filename=${encodeURIComponent(file?.name || '')}`,
         });
@@ -443,7 +444,7 @@ export class FileController {
       where,
     });
     if (!file) {
-      throw new NotFoundError('File not found');
+      throw new NotFoundError('FILE_NOT_FOUND', { args: { id } });
     }
 
     let data: FileEntity;
@@ -451,9 +452,14 @@ export class FileController {
       const folder = await this.folderService.findOne({
         where: { id: update.folderId },
         select: { id: true },
+        loadEagerRelations: false,
+        relations: {},
+        fromView: false,
       });
       if (!folder) {
-        throw new NotFoundError('Folder not found');
+        throw new NotFoundError('FOLDER_NOT_EXIST', {
+          args: { id: update.folderId },
+        });
       }
       data = await this.fileService.update(file, {
         ...file,
@@ -465,7 +471,7 @@ export class FileController {
     }
 
     if (!data) {
-      throw new BadRequestError('File exists and not exists ?');
+      throw new BadRequestError('FILE_NOT_FOUND', { args: { id } });
     }
 
     return {
@@ -500,8 +506,8 @@ export class FileController {
     }
     await this.fileService.deletePrep(filesId);
 
-    const { affected } = await this.fileService.delete(filesId);
-    if (!affected) {
+    const del = await this.fileService.delete(filesId);
+    if (!del.some((d) => d.affected)) {
       throw new NotFoundError('This file is not exists');
     }
 
@@ -528,8 +534,8 @@ export class FileController {
   ): Promise<SuccessResponse> {
     await this.fileService.deletePrep([fileId]);
 
-    const { affected } = await this.fileService.delete([fileId]);
-    if (!affected) {
+    const del = await this.fileService.delete([fileId]);
+    if (!del.some((d) => d.affected)) {
       throw new NotFoundError('This file is not exists');
     }
 

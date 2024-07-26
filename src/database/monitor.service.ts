@@ -80,16 +80,29 @@ export class MonitorService {
       : monitor;
   }
 
-  async count(find: FindManyOptionsExt<MonitorEntity>): Promise<number> {
+  async count({
+    transact: _transact,
+    ...find
+  }: FindManyOptionsExt<MonitorEntity>): Promise<number> {
     const monitorWhere = TypeOrmFind.findParams(MonitorEntity, find);
+    const transact = _transact
+      ? _transact.withRepository(this.monitorRepository)
+      : this.monitorRepository;
+
     const monitor = find.caseInsensitive
-      ? await TypeOrmFind.countCI(this.monitorRepository, monitorWhere)
-      : await this.monitorRepository.count(monitorWhere);
+      ? await TypeOrmFind.countCI(transact, monitorWhere)
+      : await transact.count(monitorWhere);
 
     return monitor;
   }
 
-  async countMonitors(userId: string): Promise<number> {
+  async countMonitors({
+    userId,
+    transact,
+  }: {
+    userId: string;
+    transact?: EntityManager;
+  }): Promise<number> {
     return this.count({
       where: {
         userId,
@@ -98,6 +111,7 @@ export class MonitorService {
       caseInsensitive: false,
       loadEagerRelations: false,
       relations: {},
+      transact,
     });
   }
 
@@ -514,7 +528,7 @@ export class MonitorService {
           await Promise.all(monitorMultiple);
         }
 
-        await this.wsStatistics.onMetrics(user);
+        await this.wsStatistics.onMetrics({ user });
 
         return monitor;
       },
@@ -643,7 +657,7 @@ export class MonitorService {
   async delete(monitor: MonitorEntity): Promise<DeleteResult> {
     const { id: monitorId, user } = monitor;
 
-    await this.wsStatistics.onChangeMonitorDelete(user, monitor);
+    await this.wsStatistics.onChangeMonitorDelete({ user, monitor });
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
       return this.monitorRepository.manager.transaction(

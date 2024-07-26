@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
+  EntityManager,
   In,
   IsNull,
   LessThanOrEqual,
@@ -151,19 +152,24 @@ export class WsStatistics {
       }
     });
 
-    await this.onMetrics(user);
+    await this.onMetrics({ user });
     if (userId !== monitorUserId) {
-      await this.onMetrics(monitorUser);
+      await this.onMetrics({ user: monitorUser });
     }
   }
 
   /**
    * Отсылает всем подключенным клиентам (мониторов) удаления монитора
    */
-  async onChangeMonitorDelete(
-    user: UserEntity,
-    monitor: MonitorEntity,
-  ): Promise<void> {
+  async onChangeMonitorDelete({
+    user,
+    monitor,
+    transact,
+  }: {
+    user: UserEntity;
+    monitor: MonitorEntity;
+    transact?: EntityManager;
+  }): Promise<void> {
     const { id: userId } = user;
     const { id: monitorId, user: monitorUser, userId: monitorUserId } = monitor;
     wsClients.forEach((value, client) => {
@@ -180,9 +186,9 @@ export class WsStatistics {
       }
     });
 
-    await this.onMetrics(user);
+    await this.onMetrics({ user, transact });
     if (userId !== monitorUserId) {
-      await this.onMetrics(monitorUser);
+      await this.onMetrics({ user: monitorUser, transact });
     }
   }
 
@@ -204,9 +210,9 @@ export class WsStatistics {
       }
     });
 
-    await this.onMetrics(user);
+    await this.onMetrics({ user });
     if (userId !== monitorUserId) {
-      await this.onMetrics(monitorUser);
+      await this.onMetrics({ user: monitorUser });
     }
   }
 
@@ -288,26 +294,43 @@ export class WsStatistics {
     }
   }
 
-  async preWallet(userId: string): Promise<WsWalletObject> {
+  async preWallet({
+    userId,
+    transact,
+  }: {
+    userId: string;
+    transact?: EntityManager;
+  }): Promise<WsWalletObject> {
     return {
       event: WsEvent.WALLET,
-      data: { total: await this.walletService.walletSum({ userId }) },
+      data: { total: await this.walletService.walletSum({ userId, transact }) },
     };
   }
 
-  async onWallet(userId: string): Promise<void> {
+  async onWallet({
+    userId,
+    transact,
+  }: {
+    userId: string;
+    transact?: EntityManager;
+  }): Promise<void> {
     wsClients.forEach(async (value, client) => {
       if (value.userId === userId) {
-        const wallet = await this.preWallet(userId);
+        const wallet = await this.preWallet({ userId, transact });
         client.send(JSON.stringify([wallet]));
       }
     });
   }
 
-  async preMetrics(
-    userId: string,
-    storageSpace?: number,
-  ): Promise<WsMetricsObject> {
+  async preMetrics({
+    userId,
+    storageSpace,
+    transact,
+  }: {
+    userId: string;
+    storageSpace?: number;
+    transact?: EntityManager;
+  }): Promise<WsMetricsObject> {
     const [
       countMonitors,
       onlineMonitors,
@@ -317,7 +340,7 @@ export class WsStatistics {
       playlistBroadcast,
       countUsedSpace,
     ] = await Promise.all([
-      this.monitorService.countMonitors(userId),
+      this.monitorService.countMonitors({ userId, transact }),
       this.monitorService.count({
         where: {
           userId,
@@ -327,6 +350,7 @@ export class WsStatistics {
         caseInsensitive: false,
         loadEagerRelations: false,
         relations: {},
+        transact,
       }),
       this.monitorService.count({
         where: {
@@ -337,6 +361,7 @@ export class WsStatistics {
         caseInsensitive: false,
         loadEagerRelations: false,
         relations: {},
+        transact,
       }),
       this.monitorService.count({
         where: {
@@ -347,18 +372,21 @@ export class WsStatistics {
         caseInsensitive: false,
         loadEagerRelations: false,
         relations: {},
+        transact,
       }),
       this.playlistService.count({
         where: { userId },
         loadEagerRelations: false,
         relations: {},
+        transact,
       }),
       this.playlistService.count({
         where: { userId, status: PlaylistStatusEnum.Broadcast },
         loadEagerRelations: false,
         relations: {},
+        transact,
       }),
-      this.fileService.sum(userId),
+      this.fileService.sum({ userId, transact }),
     ]);
     return {
       event: WsEvent.METRICS,
@@ -381,11 +409,21 @@ export class WsStatistics {
     };
   }
 
-  async onMetrics(user: UserEntity): Promise<void> {
+  async onMetrics({
+    user,
+    transact,
+  }: {
+    user: UserEntity;
+    transact?: EntityManager;
+  }): Promise<void> {
     const { id: userId, storageSpace } = user;
     wsClients.forEach(async (value, client) => {
       if (value.userId === userId) {
-        const metrics = await this.preMetrics(userId, storageSpace);
+        const metrics = await this.preMetrics({
+          userId,
+          storageSpace,
+          transact,
+        });
         client.send(JSON.stringify([metrics]));
       }
     });

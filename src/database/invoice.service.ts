@@ -378,7 +378,7 @@ export class InvoiceService {
     );
 
     if (status === InvoiceStatus.PAID) {
-      await this.wsStatistics.onWallet(invoiceUserId);
+      await this.wsStatistics.onWallet({ userId: invoiceUserId });
     }
     const invoiceChanged = await this.invoiceRepository.findOne({
       where: { id },

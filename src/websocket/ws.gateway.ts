@@ -211,11 +211,13 @@ export class WSGateway
           ]);
         } else if (value.user) {
           const { id: userId, storageSpace } = value.user;
-          const wallet = await this.wsStatistics.preWallet(userId);
-          const metrics = await this.wsStatistics.preMetrics(
-            userId,
-            storageSpace,
-          );
+          const [wallet, metrics] = await Promise.all([
+            this.wsStatistics.preWallet({ userId }),
+            this.wsStatistics.preMetrics({
+              userId,
+              storageSpace,
+            }),
+          ]);
           return of([
             { event: WsEvent.AUTH, data: 'authorized' },
             wallet,

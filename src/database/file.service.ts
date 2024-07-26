@@ -224,8 +224,18 @@ export class FileService {
     return signedUrl ? this.signedUrl(file) : file;
   }
 
-  async sum(userId: string): Promise<number> {
-    return this.fileRepository
+  async sum({
+    userId,
+    transact: _transact,
+  }: {
+    userId: string;
+    transact?: EntityManager;
+  }): Promise<number> {
+    const transact = _transact
+      ? _transact.withRepository(this.fileRepository)
+      : this.fileRepository;
+
+    return transact
       .sum('filesize', { userId })
       .then((sum: number | null) => sum ?? 0);
   }
@@ -322,7 +332,7 @@ export class FileService {
           Key = `${file.folderId}/${file.hash}-${s3NameUpdated}`;
         }
 
-        await this.s3Service
+        const data = await this.s3Service
           .copyObject({
             Bucket: this.bucket,
             Key,
@@ -334,15 +344,22 @@ export class FileService {
               Bucket: this.bucket,
               Key: CopySource,
             }),
-          );
-
-        await transact.update(FileEntity, file.id, {
-          folderId: update?.folderId,
-          name: update?.name,
-        });
-        const data = await transact.findOneByOrFail(FileEntity, {
-          id: file.id,
-        });
+          )
+          .then(() =>
+            transact.update(FileEntity, file.id, {
+              folderId: update?.folderId,
+              name: update?.name,
+            }),
+          )
+          .then(() =>
+            transact.findOneByOrFail(FileEntity, {
+              id: file.id,
+            }),
+          )
+          .catch((error: unknown) => {
+            this.logger.error(`S3 error: ${JSON.stringify(error)}`);
+            throw new NotFoundError(`S3 error: ${JSON.stringify(error)}`);
+          });
 
         await this.wsStatistics.onChange({ files: [data] });
 
@@ -425,7 +442,7 @@ export class FileService {
         const filesPromises = files.map(async (file) => {
           const {
             mimetype,
-            originalname,
+            originalname: name,
             path,
             media: info,
             size: filesize,
@@ -440,8 +457,8 @@ export class FileService {
           }
 
           const [mime] = mimetype.split('/');
-          const extension = pathParse(originalname).ext.slice(1);
-          const fileType =
+          const extension = pathParse(name).ext.slice(1);
+          const type =
             Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
 
           const stream = info?.streams?.[0];
@@ -457,49 +474,55 @@ export class FileService {
           const fileToSave: DeepPartial<FileEntity> = {
             userId,
             folderId,
-            name: originalname,
+            name,
             filesize,
             duration,
             width,
             height,
             info,
-            videoType: fileType,
-            type: fileType,
+            type,
             extension,
             hash,
             preview: undefined,
           };
 
-          const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
-          try {
-            const uploaded = await this.s3Service.putObject({
+          const Key = `${folderId}/${hash}-${getS3Name(name)}`;
+          const fileUpdated = await this.s3Service
+            .putObject({
               Bucket: this.bucket,
               Key,
               ContentType: mimetype,
               Body: filesBuffer,
+            })
+            .then((uploaded) => {
+              this.logger.warn(
+                `S3: the file "${name}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
+              );
+            })
+            .then(() =>
+              transact.save(
+                FileEntity,
+                transact.create(FileEntity, fileToSave),
+              ),
+            )
+            .catch((error: unknown) => {
+              this.logger.error(
+                `S3 upload error: "${JSON.stringify(error)}"`,
+                error,
+              );
             });
-            this.logger.warn(
-              `S3: the file "${originalname}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
-            );
-          } catch (error: unknown) {
-            this.logger.error(
-              `S3 upload error: "${JSON.stringify(error)}"`,
-              error,
-            );
-            throw new InternalServerError(error);
-          }
-
-          const fileUpdated = await transact.save(
-            FileEntity,
-            transact.create(FileEntity, fileToSave),
-          );
 
           return fileUpdated;
         });
 
-        const filesDatabase = await Promise.all(filesPromises);
+        const filesDatabase = await Promise.all(filesPromises).then((files) =>
+          files.reduce(
+            (acc, file) => (file ? acc.concat(file) : acc),
+            [] as FileEntity[],
+          ),
+        );
 
-        await this.wsStatistics.onMetrics(user);
+        await this.wsStatistics.onMetrics({ user });
 
         return filesDatabase;
       },
@@ -725,28 +748,35 @@ export class FileService {
    * @param {string} filesId Files ID
    * @return {DeleteResult} {DeleteResult}
    */
-  async delete(filesId: string[]): Promise<DeleteResult> {
+  async delete(filesId: string[]): Promise<DeleteResult[]> {
     const files = await this.fileRepository.find({
       where: { id: In(filesId) },
       relations: { folder: true },
     });
     if (files.length === 0) {
-      return { affected: 0, raw: 0 };
+      return [{ affected: 0, raw: 0 }];
     }
 
     await this.wsStatistics.onChange({ filesDelete: files });
 
-    const filesS3DeletePromise = files.map(async (file) => {
-      this.deleteS3Object(file).catch((error: unknown) => {
-        this.logger.error(`S3 Error deleteObject: ${JSON.stringify(error)}`);
-      });
-    });
-    await Promise.allSettled(filesS3DeletePromise);
+    const filesS3DeletePromise = files.map(async (file) =>
+      this.deleteS3Object(file)
+        .then(() =>
+          this.fileRepository.delete({
+            id: file.id,
+          }),
+        )
+        .catch((error: unknown) => {
+          this.logger.error(`S3 Error deleteObject: ${JSON.stringify(error)}`);
+        }),
+    );
+    const filesDelete = await Promise.all(filesS3DeletePromise).then((files) =>
+      files.reduce(
+        (acc, file) => (file ? acc.concat(file) : acc),
+        [] as DeleteResult[],
+      ),
+    );
 
-    const filesDeleteId = files.map(({ id }) => id);
-    const filesDelete = await this.fileRepository.delete({
-      id: In(filesDeleteId),
-    });
     return filesDelete;
   }
 
