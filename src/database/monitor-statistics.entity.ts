@@ -17,12 +17,12 @@ import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 
-@Entity('monitor-statistics', {
+@Entity('monitor_statistics', {
   comment: 'Статистика мониторов',
 })
 export class MonitorStatisticsEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', {
-    primaryKeyConstraintName: 'PK_monitor_statistics_id',
+    primaryKeyConstraintName: 'PK_monitorstatistics_id',
   })
   @ApiProperty({
     description: 'Идентификатор',
@@ -34,7 +34,7 @@ export class MonitorStatisticsEntity extends BaseEntity {
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_statistics_monitor_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitorstatistics_monitor_id' })
   monitor!: MonitorEntity;
 
   @Column({ type: 'uuid' })
@@ -48,7 +48,7 @@ export class MonitorStatisticsEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_statistics_playlist_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitorstatistics_playlist_id' })
   playlist!: PlaylistEntity;
 
   @Column({ type: 'uuid' })
@@ -70,7 +70,7 @@ export class MonitorStatisticsEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_statistics_user_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitorstatistics_user_id' })
   user!: UserEntity;
 
   @Column({ type: 'uuid' })

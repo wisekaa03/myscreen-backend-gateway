@@ -132,6 +132,9 @@ export class DatabaseModule implements OnModuleInit {
       }
 
       await manager.query('DROP TABLE IF EXISTS monitor_files_file');
+      await manager.query('DROP TABLE IF EXISTS statistics');
+      await manager.query('DROP TABLE IF EXISTS "monitor-online"');
+      await manager.query('DROP TABLE IF EXISTS "monitor-statistics"');
       await manager.query(
         'UPDATE "file" SET "type" = ("videoType"::text)::file_type_enum',
       );

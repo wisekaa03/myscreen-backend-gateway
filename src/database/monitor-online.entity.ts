@@ -18,12 +18,12 @@ import { MonitorStatus } from '@/enums';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 
-@Entity('monitor-online', {
+@Entity('monitor_online', {
   comment: 'Мониторы онлайн/оффлайн',
 })
 export class MonitorOnlineEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', {
-    primaryKeyConstraintName: 'PK_monitor_online_id',
+    primaryKeyConstraintName: 'PK_monitoronline_id',
   })
   @ApiProperty({
     description: 'Идентификатор',
@@ -35,7 +35,7 @@ export class MonitorOnlineEntity extends BaseEntity {
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_online_monitor_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitoronline_monitor_id' })
   monitor!: MonitorEntity;
 
   @Column({ type: 'uuid' })
@@ -44,7 +44,7 @@ export class MonitorOnlineEntity extends BaseEntity {
   monitorId!: string;
 
   @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
-  @Index('monitorOnlineStatusIndex')
+  @Index('monitorOnlineStatus')
   @ApiProperty({
     description: 'Подключен',
     enum: MonitorStatus,
@@ -63,7 +63,7 @@ export class MonitorOnlineEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_online_user_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitoronline_user_id' })
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
