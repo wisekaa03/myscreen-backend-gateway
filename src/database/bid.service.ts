@@ -13,21 +13,21 @@ import {
 import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 
-import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
   MailSendBidMessage,
 } from '@/interfaces';
-import { MAIL_SERVICE } from '@/constants';
-import { TypeOrmFind } from '@/utils/typeorm.find';
 import {
   BidApprove,
   MsvcMailService,
   MonitorMultiple,
   UserRoleEnum,
+  MICROSERVICE_MYSCREEN,
 } from '@/enums';
+import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import { getFullName } from '@/utils/full-name';
+import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorService } from '@/database/monitor.service';
 import { EditorService } from '@/database/editor.service';
 import { FileService } from '@/database/file.service';
@@ -60,7 +60,7 @@ export class BidService {
     private readonly bidRepository: Repository<BidEntity>,
     @InjectRepository(PlaylistEntity)
     private readonly playlistRepository: Repository<PlaylistEntity>,
-    @Inject(MAIL_SERVICE)
+    @Inject(MICROSERVICE_MYSCREEN.MAIL)
     private readonly mailService: ClientProxy,
   ) {
     this.commissionPercent = parseInt(

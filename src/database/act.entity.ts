@@ -4,10 +4,10 @@ import {
   CreateDateColumn,
   Entity,
   Generated,
-  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
@@ -101,7 +101,7 @@ export class ActEntity extends BaseEntity {
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
-  @Index('actUserIdIndex')
+  @RelationId((act: ActEntity) => act.user)
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 

@@ -9,13 +9,20 @@ import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
 import { PrintReportDeviceStatus } from '@/interfaces';
-import { FORM_SERVICE, formatToContentType } from '@/constants';
+import { formatToContentType } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
-import { UserRoleEnum, SpecificFormat, CRUD, MsvcFormService } from '@/enums';
+import {
+  UserRoleEnum,
+  SpecificFormat,
+  CRUD,
+  MICROSERVICE_MYSCREEN,
+  MsvcFormService,
+} from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { UserService } from '@/database/user.service';
+import { MonitorStatisticsService } from '@/database/monitor-statistics.service';
+import { MonitorOnlineService } from '@/database/monitor-online.service';
 
 @ApiComplexDecorators({
   path: ['statistics'],
@@ -30,16 +37,17 @@ export class StatisticsController {
   logger = new Logger(StatisticsController.name);
 
   constructor(
-    private readonly userService: UserService,
     private readonly monitorService: MonitorService,
-    @Inject(FORM_SERVICE)
+    private readonly statisticsService: MonitorStatisticsService,
+    private readonly monitorOnlineService: MonitorOnlineService,
+    @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
   ) {}
 
-  @Post('deviceStatus')
+  @Post('device-status')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'deviceStatus',
+    operationId: 'device-status',
     summary: 'Отчёт по статусу устройства',
   })
   @ApiResponse({
@@ -72,20 +80,38 @@ export class StatisticsController {
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
-        where: { userId: user.id, id: In(monitorIds) },
+        where: {
+          userId:
+            user.role === UserRoleEnum.Administrator ? undefined : user.id,
+          id: In(monitorIds),
+        },
+        loadEagerRelations: false,
+        relations: { monitorOnline: true, user: true },
+      });
+    } else {
+      monitors = await this.monitorService.find({
+        userId: user.id,
+        where: {
+          userId:
+            user.role === UserRoleEnum.Administrator ? undefined : user.id,
+        },
+        loadEagerRelations: false,
+        relations: { monitorOnline: true, user: true },
       });
     }
 
-    const data = await lastValueFrom(
-      this.formService.send<Buffer, PrintReportDeviceStatus>(
-        MsvcFormService.ReportDeviceStatus,
-        {
-          user,
-          monitors,
-          format,
-          dateFrom: new Date(dateFrom),
-          dateTo: new Date(dateTo),
-        },
+    const data = Buffer.from(
+      await lastValueFrom(
+        this.formService.send<Buffer, PrintReportDeviceStatus>(
+          MsvcFormService.ReportDeviceStatus,
+          {
+            user,
+            monitors,
+            format,
+            dateFrom: new Date(dateFrom),
+            dateTo: new Date(dateTo),
+          },
+        ),
       ),
     );
 
@@ -94,19 +120,18 @@ export class StatisticsController {
       : SpecificFormat.XLSX;
 
     res.statusCode = 200;
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="report-device-status.${specificFormat}"`,
-    );
-    res.setHeader('Content-Type', formatToContentType[format]);
+    res.set({
+      'Content-Type': formatToContentType[format],
+      'Content-Disposition': `attachment; filename="report-device-status.${specificFormat}"`,
+    });
 
     res.end(data, 'binary');
   }
 
-  @Post('reportViews')
+  @Post('report-views')
   @HttpCode(200)
   @ApiOperation({
-    operationId: 'reportViews',
+    operationId: 'report-views',
     summary: 'Отчёт по показам',
   })
   @ApiResponse({
@@ -139,20 +164,35 @@ export class StatisticsController {
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
-        where: { userId: user.id, id: In(monitorIds) },
+        where: {
+          userId:
+            user.role === UserRoleEnum.Administrator ? undefined : user.id,
+          id: In(monitorIds),
+        },
+        loadEagerRelations: false,
+        relations: { user: true, statistics: true },
+      });
+    } else {
+      monitors = await this.monitorService.find({
+        userId: user.role === UserRoleEnum.Administrator ? undefined : user.id,
+        where: { userId: user.id },
+        loadEagerRelations: false,
+        relations: { user: true, statistics: true },
       });
     }
 
-    const data = await lastValueFrom(
-      this.formService.send<Buffer, PrintReportDeviceStatus>(
-        MsvcFormService.ReportViews,
-        {
-          user,
-          monitors,
-          format,
-          dateFrom: new Date(dateFrom),
-          dateTo: new Date(dateTo),
-        },
+    const data = Buffer.from(
+      await lastValueFrom(
+        this.formService.send<Buffer, PrintReportDeviceStatus>(
+          MsvcFormService.ReportViews,
+          {
+            user,
+            monitors,
+            format,
+            dateFrom: new Date(dateFrom),
+            dateTo: new Date(dateTo),
+          },
+        ),
       ),
     );
 
@@ -161,11 +201,10 @@ export class StatisticsController {
       : SpecificFormat.XLSX;
 
     res.statusCode = 200;
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="report-views.${specificFormat}"`,
-    );
-    res.setHeader('Content-Type', formatToContentType[format]);
+    res.set({
+      'Content-Type': formatToContentType[format],
+      'Content-Disposition': `attachment; filename="report-views.${specificFormat}"`,
+    });
 
     res.end(data, 'binary');
   }

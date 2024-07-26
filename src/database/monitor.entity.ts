@@ -50,6 +50,8 @@ import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FileEntity } from './file.entity';
+import { MonitorStatisticsEntity } from './monitor-statistics.entity';
+import { MonitorOnlineEntity } from './monitor-online.entity';
 
 export class PointClass implements Point {
   @ApiProperty({
@@ -398,7 +400,7 @@ export class MonitorEntity extends BaseEntity {
   })
   @IsOptional()
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
-  groupOnlineMonitors?: number;
+  groupOnlineMonitors!: number;
 
   @Column({
     type: 'enum',
@@ -564,6 +566,22 @@ export class MonitorEntity extends BaseEntity {
     eager: false,
   })
   bids?: BidEntity[];
+
+  @OneToMany(() => MonitorStatisticsEntity, (stat) => stat.monitor, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
+  statistics!: MonitorStatisticsEntity[];
+
+  @OneToMany(() => MonitorOnlineEntity, (stat) => stat.monitor, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    cascade: true,
+    eager: false,
+  })
+  monitorOnline!: MonitorOnlineEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

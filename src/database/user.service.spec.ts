@@ -6,13 +6,17 @@ import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
 import { Observable } from 'rxjs';
 import { I18nService } from 'nestjs-i18n';
-import { MAIL_SERVICE } from '@/constants';
-import { CRUD, UserPlanEnum, UserRoleEnum } from '@/enums';
+import {
+  CRUD,
+  UserPlanEnum,
+  UserRoleEnum,
+  MICROSERVICE_MYSCREEN,
+} from '@/enums';
+import { RegisterRequest } from '@/dto';
+import { getFullName } from '@/utils/full-name';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';
-import { getFullName } from '@/utils/full-name';
 import { UserResponse } from './user-response.entity';
-import { RegisterRequest } from '@/dto';
 import { FileService } from './file.service';
 import { FileEntity } from './file.entity';
 
@@ -58,7 +62,7 @@ describe(UserService.name, () => {
         { provide: FileService, useClass: mockRepository },
         { provide: I18nService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
-        { provide: MAIL_SERVICE, useClass: mockRepository },
+        { provide: MICROSERVICE_MYSCREEN.MAIL, useClass: mockRepository },
         {
           provide: getRepositoryToken(UserEntity),
           useClass: mockRepository,

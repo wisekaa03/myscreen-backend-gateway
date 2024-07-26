@@ -2,10 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-import { WalletService } from './wallet.service';
-import { ActEntity } from './act.entity';
-import { ActService } from './act.service';
-import { WsStatistics } from './ws.statistics';
+import { MonitorStatisticsService } from './monitor-statistics.service';
+import { MonitorStatisticsEntity } from './monitor-statistics.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -22,23 +20,22 @@ export const mockRepository = jest.fn(() => ({
   },
 }));
 
-describe(ActService.name, () => {
-  let service: ActService;
+describe(MonitorStatisticsService.name, () => {
+  let service: MonitorStatisticsService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        ActService,
-        { provide: WalletService, useClass: mockRepository },
-        { provide: WsStatistics, useClass: mockRepository },
+        MonitorStatisticsService,
+        { provide: ConfigService, useClass: mockRepository },
         {
-          provide: getRepositoryToken(ActEntity),
+          provide: getRepositoryToken(MonitorStatisticsEntity),
           useClass: mockRepository,
         },
       ],
     }).compile();
 
-    service = module.get<ActService>(ActService);
+    service = module.get<MonitorStatisticsService>(MonitorStatisticsService);
   });
 
   it('should be defined', () => {

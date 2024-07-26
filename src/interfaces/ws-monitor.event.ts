@@ -7,5 +7,6 @@
  * }
  */
 export interface WsMonitorEvent {
+  playlistId: string;
   playlistPlayed: boolean;
 }

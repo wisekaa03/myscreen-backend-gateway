@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
-import { FORM_SERVICE, MAIL_SERVICE } from '@/constants';
+import { MICROSERVICE_MYSCREEN } from '@/enums';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
@@ -39,8 +39,8 @@ describe(InvoiceService.name, () => {
         { provide: FolderService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
         { provide: WsStatistics, useClass: mockRepository },
-        { provide: MAIL_SERVICE, useClass: mockRepository },
-        { provide: FORM_SERVICE, useClass: mockRepository },
+        { provide: MICROSERVICE_MYSCREEN.MAIL, useClass: mockRepository },
+        { provide: MICROSERVICE_MYSCREEN.FORM, useClass: mockRepository },
         {
           provide: getRepositoryToken(InvoiceEntity),
           useClass: mockRepository,

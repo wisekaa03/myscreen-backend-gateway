@@ -23,11 +23,16 @@ import {
   MailInvoicePayed,
   PrintInvoice,
 } from '@/interfaces';
-import { FORM_SERVICE, MAIL_SERVICE, formatToContentType } from '@/constants';
-import { MsvcFormService, MsvcMailService, UserRoleEnum } from '@/enums';
+import { formatToContentType } from '@/constants';
+import {
+  MICROSERVICE_MYSCREEN,
+  MsvcFormService,
+  MsvcMailService,
+  UserRoleEnum,
+  SpecificFormat,
+  InvoiceStatus,
+} from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
-import { SpecificFormat } from '@/enums/specific-format.enum';
-import { InvoiceStatus } from '@/enums/invoice-status.enum';
 import { InvoiceEntity } from './invoice.entity';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
@@ -50,9 +55,9 @@ export class InvoiceService {
     private readonly fileService: FileService,
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
-    @Inject(MAIL_SERVICE)
+    @Inject(MICROSERVICE_MYSCREEN.MAIL)
     private readonly mailService: ClientProxy,
-    @Inject(FORM_SERVICE)
+    @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
@@ -222,8 +227,7 @@ export class InvoiceService {
         language,
       },
     );
-    let fileBuffer = await lastValueFrom(invoiceFileObservable);
-    fileBuffer = Buffer.from(fileBuffer);
+    const fileBuffer = Buffer.from(await lastValueFrom(invoiceFileObservable));
 
     const specificFormat = formatToContentType[format]
       ? format
@@ -271,12 +275,16 @@ export class InvoiceService {
           // Если статус счета "Оплачен", то нужно записать в базу
           // сумму баланса и отправить письмо пользователю
           case InvoiceStatus.PAID: {
+            const createdAtFormat = dayjs(invoice.createdAt)
+              .locale('ru')
+              .format('DD MMMM YYYY г.');
+            const description = `Счет на оплату №${invoice.seqNo} от ${createdAtFormat}`;
             // здесь записывается в базу сумма баланса
             await transact.save(
               WalletEntity,
               this.walletService.create({
                 userId: invoiceUserId,
-                description: `Счет на оплату №${invoice.seqNo} от ${dayjs(invoice.createdAt).locale('ru').format('DD[ ]MMMM[ ]YYYY[ г.]')}`,
+                description,
                 sum: invoice.sum,
                 invoiceId: id,
               }),
