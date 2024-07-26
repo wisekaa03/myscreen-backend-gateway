@@ -21,6 +21,7 @@
   "USER_EXISTS": "User exists: '{email}'",
   "USER_NOT_EXISTS": "User is not exists",
   "BID_FILE_MUST_EXISTS": "File must exists",
+  "FOLDER_NOT_EXIST": "Folder not exist '{id}'. {error}",
   "FILE_NOT_EXIST": "File not exist '{id}'. {error}",
   "CONFLICT_ERROR": "Video/audio editors, playlists do not allow to delete this file",
   "PLAYLIST_NOT_FOUND": "Playlist not found: '{id}'",

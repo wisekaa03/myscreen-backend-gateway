@@ -21,6 +21,7 @@
   "USER_EXISTS": "Пользователь существует: '{email}'",
   "USER_NOT_EXISTS": "Пользователь не существует",
   "BID_FILE_MUST_EXISTS": "Файл должен существовать",
+  "FOLDER_NOT_EXIST": "Не найдена папка '{id}'. {error}",
   "FILE_NOT_EXIST": "Не найден файл '{id}'. {error}",
   "CONFLICT_ERROR": "Редакторы и плэйлисты не позволяют удалить этот файл",
   "PLAYLIST_NOT_FOUND": "Плэйлист не найден: '{id}'",
