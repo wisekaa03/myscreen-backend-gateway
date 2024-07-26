@@ -85,7 +85,7 @@ export class PlaylistService {
 
     await Promise.all([
       this.wsStatistics.onChangePlaylist(playlist.user, playlist),
-      this.wsStatistics.onMetrics(playlist.user),
+      this.wsStatistics.onMetrics({ user: playlist.user }),
     ]);
 
     return playlist;

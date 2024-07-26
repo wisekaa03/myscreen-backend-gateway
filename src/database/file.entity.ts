@@ -96,20 +96,6 @@ export class FileEntity extends BaseEntity {
   @Column({ type: 'enum', enum: FileType, default: FileType.OTHER })
   @ApiProperty({
     description: 'Тип файла',
-    deprecated: true,
-    enum: FileType,
-    enumName: 'FileType',
-    example: FileType.VIDEO,
-    required: true,
-  })
-  @IsEnum(FileType, {
-    message: i18nValidationMessage('validation.IS_ENUM'),
-  })
-  videoType!: FileType;
-
-  @Column({ type: 'enum', enum: FileType, default: FileType.OTHER })
-  @ApiProperty({
-    description: 'Тип файла',
     enum: FileType,
     enumName: 'FileType',
     example: FileType.VIDEO,

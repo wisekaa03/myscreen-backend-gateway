@@ -268,8 +268,8 @@ export class BidService {
 
         if (update.approved === BidApprove.NOTPROCESSED) {
           const sellerEmail = bid.seller?.email;
-          const language = bid.seller?.preferredLanguage;
           if (sellerEmail) {
+            const language = bid.seller?.preferredLanguage;
             this.mailService.emit<unknown, MailSendBidMessage>(
               MsvcMailService.BidWarning,
               {
@@ -279,7 +279,7 @@ export class BidService {
               },
             );
           } else {
-            this.logger.error(`BidService seller email='${sellerEmail}'`);
+            this.logger.error(`BidService seller email undefined ?`);
           }
         } else if (update.approved === BidApprove.ALLOWED) {
           // Оплата поступает на пользователя - владельца монитора
@@ -287,7 +287,7 @@ export class BidService {
             -(Number(bid.sum) * (100 - this.commissionPercent)) / 100;
           if (sumIncrement !== 0) {
             await this.actService.create({
-              userId: bid.monitor.user.id,
+              userId: bid.sellerId,
               sum: sumIncrement,
               isSubscription: false,
               description: `Оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
@@ -297,13 +297,13 @@ export class BidService {
 
           await this.bidPostCreate({ bid, transact });
         } else if (update.approved === BidApprove.DENIED) {
-          // Снята оплата на пользователя - рекламодателя
-          if (Number(bid.sum) !== 0) {
+          // Возврат средств на пользователя - рекламодателя
+          if (Number(bid.sum) !== 0 && bid.buyerId) {
             await this.actService.create({
-              userId: bid.seller.id,
-              sum: bid.sum,
+              userId: bid.buyerId,
+              sum: -bid.sum,
               isSubscription: false,
-              description: `Возврат средств после отмены заявки №${bid.seqNo}}`,
+              description: `Возврат средств после отмены заявки №${bid.seqNo}`,
               transact,
             });
           }
@@ -471,10 +471,9 @@ export class BidService {
             if (sum !== 0) {
               const sumIncrement =
                 -(sum * (100 - this.commissionPercent)) / 100;
-              const actUserResponse = bid.buyer ? bid.buyer : monitor.user;
               if (sumIncrement !== 0) {
                 await this.actService.create({
-                  userId: actUserResponse.id,
+                  userId: bid.sellerId,
                   sum: sumIncrement,
                   isSubscription: false,
                   description: `Оплата заявки №${bid.seqNo} рекламодателем ${getFullName(bid.user)}`,
@@ -489,8 +488,8 @@ export class BidService {
           }
 
           await Promise.all([
-            this.wsStatistics.onMetrics(bid.seller),
-            this.wsStatistics.onMetrics(bid.buyer ? bid.buyer : monitor.user),
+            this.wsStatistics.onMetrics({ user: bid.seller }),
+            this.wsStatistics.onMetrics({ user: bid.buyer ?? monitor.user }),
           ]);
 
           return bid;

@@ -21,8 +21,6 @@ import {
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { MonitorStatisticsService } from '@/database/monitor-statistics.service';
-import { MonitorOnlineService } from '@/database/monitor-online.service';
 
 @ApiComplexDecorators({
   path: ['statistics'],
@@ -38,8 +36,6 @@ export class StatisticsController {
 
   constructor(
     private readonly monitorService: MonitorService,
-    private readonly statisticsService: MonitorStatisticsService,
-    private readonly monitorOnlineService: MonitorOnlineService,
     @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
   ) {}

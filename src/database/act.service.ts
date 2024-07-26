@@ -99,7 +99,7 @@ export class ActService {
       },
     );
 
-    await this.wsStatistics.onWallet(userId);
+    await this.wsStatistics.onWallet({ userId, transact: _transact });
 
     return created;
   }

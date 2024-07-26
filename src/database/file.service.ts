@@ -224,8 +224,18 @@ export class FileService {
     return signedUrl ? this.signedUrl(file) : file;
   }
 
-  async sum(userId: string): Promise<number> {
-    return this.fileRepository
+  async sum({
+    userId,
+    transact: _transact,
+  }: {
+    userId: string;
+    transact?: EntityManager;
+  }): Promise<number> {
+    const transact = _transact
+      ? _transact.withRepository(this.fileRepository)
+      : this.fileRepository;
+
+    return transact
       .sum('filesize', { userId })
       .then((sum: number | null) => sum ?? 0);
   }
@@ -425,7 +435,7 @@ export class FileService {
         const filesPromises = files.map(async (file) => {
           const {
             mimetype,
-            originalname,
+            originalname: name,
             path,
             media: info,
             size: filesize,
@@ -440,8 +450,8 @@ export class FileService {
           }
 
           const [mime] = mimetype.split('/');
-          const extension = pathParse(originalname).ext.slice(1);
-          const fileType =
+          const extension = pathParse(name).ext.slice(1);
+          const type =
             Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
 
           const stream = info?.streams?.[0];
@@ -457,20 +467,19 @@ export class FileService {
           const fileToSave: DeepPartial<FileEntity> = {
             userId,
             folderId,
-            name: originalname,
+            name,
             filesize,
             duration,
             width,
             height,
             info,
-            videoType: fileType,
-            type: fileType,
+            type,
             extension,
             hash,
             preview: undefined,
           };
 
-          const Key = `${folderId}/${hash}-${getS3Name(originalname)}`;
+          const Key = `${folderId}/${hash}-${getS3Name(name)}`;
           try {
             const uploaded = await this.s3Service.putObject({
               Bucket: this.bucket,
@@ -479,7 +488,7 @@ export class FileService {
               Body: filesBuffer,
             });
             this.logger.warn(
-              `S3: the file "${originalname}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
+              `S3: the file "${name}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
             );
           } catch (error: unknown) {
             this.logger.error(
@@ -499,7 +508,7 @@ export class FileService {
 
         const filesDatabase = await Promise.all(filesPromises);
 
-        await this.wsStatistics.onMetrics(user);
+        await this.wsStatistics.onMetrics({ user });
 
         return filesDatabase;
       },
