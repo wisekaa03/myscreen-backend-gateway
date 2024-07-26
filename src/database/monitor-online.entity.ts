@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -10,23 +11,22 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsBoolean, IsDateString, IsUUID } from 'class-validator';
+import { IsDateString, IsEnum, IsOptional, IsUUID } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
+import { MonitorStatus } from '@/enums';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
-import { PlaylistEntity } from './playlist.entity';
 
-@Entity('statistics', {
-  comment: 'Статистика устройств',
-  orderBy: { createdAt: 'ASC' },
+@Entity('monitor-online', {
+  comment: 'Мониторы онлайн/оффлайн',
 })
-export class StatisticsEntity extends BaseEntity {
+export class MonitorOnlineEntity extends BaseEntity {
   @PrimaryGeneratedColumn('uuid', {
-    primaryKeyConstraintName: 'PK_statistics_id',
+    primaryKeyConstraintName: 'PK_monitor_online_id',
   })
   @ApiProperty({
-    description: 'Идентификатор акта выполненных работ',
+    description: 'Идентификатор',
     format: 'uuid',
   })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
@@ -35,35 +35,27 @@ export class StatisticsEntity extends BaseEntity {
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_statistics_monitor_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_online_monitor_id' })
   monitor!: MonitorEntity;
 
   @Column({ type: 'uuid' })
-  @RelationId((stat: StatisticsEntity) => stat.monitor)
+  @RelationId((stat: MonitorOnlineEntity) => stat.monitor)
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   monitorId!: string;
 
-  @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
-    eager: false,
-  })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_statistics_playlist_id' })
-  playlist!: PlaylistEntity;
-
-  @Column({ type: 'uuid' })
-  @RelationId((stat: StatisticsEntity) => stat.playlist)
-  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
-  playlistId!: string;
-
-  @Column({ type: 'boolean' })
+  @Column({ type: 'enum', enum: MonitorStatus, default: MonitorStatus.Offline })
+  @Index('monitorOnlineStatusIndex')
   @ApiProperty({
-    description: 'Проигрывается плэйлист',
-    example: false,
+    description: 'Подключен',
+    enum: MonitorStatus,
+    enumName: 'MonitorStatus',
+    example: MonitorStatus.Offline,
   })
-  @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
-  playlistPlayed!: boolean;
+  @IsOptional()
+  @IsEnum(MonitorStatus, {
+    message: i18nValidationMessage('validation.IS_ENUM'),
+  })
+  status!: MonitorStatus;
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onUpdate: 'CASCADE',
@@ -71,11 +63,11 @@ export class StatisticsEntity extends BaseEntity {
     cascade: true,
     eager: false,
   })
-  @JoinColumn({ foreignKeyConstraintName: 'FK_statistics_user_id' })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_monitor_online_user_id' })
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
-  @RelationId((stat: StatisticsEntity) => stat.user)
+  @RelationId((stat: MonitorOnlineEntity) => stat.user)
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 

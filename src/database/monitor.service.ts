@@ -23,6 +23,7 @@ import { WsStatistics } from './ws.statistics';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
+import { MonitorOnlineService } from './monitor-online.service';
 
 @Injectable()
 export class MonitorService {
@@ -34,6 +35,7 @@ export class MonitorService {
     private readonly fileService: FileService,
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
+    private readonly monitorOnlineService: MonitorOnlineService,
     @InjectRepository(MonitorEntity)
     public readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(MonitorGroupEntity)
@@ -587,8 +589,15 @@ export class MonitorService {
       }
     }
 
-    const updated = await this.monitorRepository.update(id, { status });
-    await this.wsStatistics.monitorStatus(user, monitor, status);
+    const [updated] = await Promise.all([
+      this.monitorRepository.update(id, { status }),
+      await this.monitorOnlineService.create({
+        monitorId: id,
+        status,
+        userId: user.id,
+      }),
+      this.wsStatistics.monitorStatus(user, monitor, status),
+    ]);
 
     return updated;
   }

@@ -33,7 +33,7 @@ import { BidEntity } from '@/database/bid.entity';
 import { UserService } from '@/database/user.service';
 import { UserResponse } from '@/database/user-response.entity';
 import { WsStatistics } from '@/database/ws.statistics';
-import { StatisticsService } from '@/database/statistics.service';
+import { MonitorStatisticsService } from '@/database/monitor-statistics.service';
 
 @WebSocketGateway({
   cors: {
@@ -49,7 +49,7 @@ export class WSGateway
     private readonly authService: AuthService,
     private readonly monitorService: MonitorService,
     private readonly userService: UserService,
-    private readonly statisticsService: StatisticsService,
+    private readonly statisticsService: MonitorStatisticsService,
     private readonly wsStatistics: WsStatistics,
   ) {}
 

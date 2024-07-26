@@ -21,7 +21,8 @@ import {
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { StatisticsService } from '@/database/statistics.service';
+import { MonitorStatisticsService } from '@/database/monitor-statistics.service';
+import { MonitorOnlineService } from '@/database/monitor-online.service';
 
 @ApiComplexDecorators({
   path: ['statistics'],
@@ -37,12 +38,13 @@ export class StatisticsController {
 
   constructor(
     private readonly monitorService: MonitorService,
-    private readonly statisticsService: StatisticsService,
+    private readonly statisticsService: MonitorStatisticsService,
+    private readonly monitorOnlineService: MonitorOnlineService,
     @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
   ) {}
 
-  @Post('deviceStatus')
+  @Post('device-status')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'deviceStatus',
@@ -84,7 +86,7 @@ export class StatisticsController {
           id: In(monitorIds),
         },
         loadEagerRelations: false,
-        relations: { user: true },
+        relations: { monitorOnline: true, user: true },
       });
     } else {
       monitors = await this.monitorService.find({
@@ -94,7 +96,7 @@ export class StatisticsController {
             user.role === UserRoleEnum.Administrator ? undefined : user.id,
         },
         loadEagerRelations: false,
-        relations: { user: true },
+        relations: { monitorOnline: true, user: true },
       });
     }
 
@@ -126,7 +128,7 @@ export class StatisticsController {
     res.end(data, 'binary');
   }
 
-  @Post('reportViews')
+  @Post('report-views')
   @HttpCode(200)
   @ApiOperation({
     operationId: 'reportViews',

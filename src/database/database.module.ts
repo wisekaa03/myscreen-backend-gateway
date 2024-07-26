@@ -34,8 +34,10 @@ import { ActService } from './act.service';
 import { ActEntity } from './act.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
 import { WsStatistics } from './ws.statistics';
-import { StatisticsService } from './statistics.service';
-import { StatisticsEntity } from './statistics.entity';
+import { MonitorStatisticsService } from './monitor-statistics.service';
+import { MonitorStatisticsEntity } from './monitor-statistics.entity';
+import { MonitorOnlineEntity } from './monitor-online.entity';
+import { MonitorOnlineService } from './monitor-online.service';
 
 @Global()
 @Module({
@@ -63,7 +65,8 @@ import { StatisticsEntity } from './statistics.entity';
       BidEntity,
       WalletEntity,
       ActEntity,
-      StatisticsEntity,
+      MonitorStatisticsEntity,
+      MonitorOnlineEntity,
     ]),
   ],
 
@@ -81,7 +84,8 @@ import { StatisticsEntity } from './statistics.entity';
     UserService,
     WalletService,
     WsStatistics,
-    StatisticsService,
+    MonitorStatisticsService,
+    MonitorOnlineService,
   ],
 
   exports: [
@@ -97,7 +101,8 @@ import { StatisticsEntity } from './statistics.entity';
     UserService,
     WalletService,
     WsStatistics,
-    StatisticsService,
+    MonitorStatisticsService,
+    MonitorOnlineService,
   ],
 })
 export class DatabaseModule implements OnModuleInit {
