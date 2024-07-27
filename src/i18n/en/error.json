@@ -1,4 +1,45 @@
 {
+  "auth": {
+    "password_mismatched": "Password mismatched",
+    "have_to_respond": "You have to respond to our email"
+  },
+  "bid": {
+    "file_must_exists": "File must exists",
+    "not_found": "Bid not found: '{id}'",
+    "error": "Error when creating Bid"
+  },
+  "editor": {
+    "not_created": "Editor not created.",
+    "not_found": "Editor not found: '{id}'"
+  },
+  "file": {
+    "not_found": "File not found '{id}'",
+    "not_exist": "File not exist '{id}'. {error}"
+  },
+  "folder": {
+    "not_found": "Folder not exist '{id}'",
+    "not_exist": "Folder not exist '{id}'. {error}"
+  },
+  "playlist": {
+    "not_found": "Playlist not found: '{id}'"
+  },
+  "invoice": {
+    "minimum_sum": "Sum must be more than {sum}",
+    "not_found": "Invoice not found: '{id}'",
+    "file": "Confirmed waiting payment must expect file"
+  },
+  "monitor": {
+    "not_created": "Monitor not created",
+    "not_found": "Monitor not found: '{id}'"
+  },
+  "user": {
+    "email": "email must be defined",
+    "password": "password must be defined",
+    "role": "role must be defined",
+    "exists": "User exists: '{email}'",
+    "not_created": "User is not created",
+    "not_exist": "User is not exists: '{id}'"
+  },
   "demoTimeIsUp": "You have a Demo User account. Time to pay.",
   "FORBIDDEN": "Forbidden",
   "CONFLICT": "Conflict exists",
@@ -10,23 +51,8 @@
   "PRECONDITION": "Precondition failed",
   "SERVICE_UNAVAILABLE": "Service unavailable",
   "UNAUTHORIZED": "Unauthorized request",
-  "PASSWORD_MISMATCHED": "Password mismatched",
-  "YOU_HAVE_TO_RESPOND": "You have to respond to our email",
   "BALANCE": "Not enough balance. Current balance: {totalBalance}. Needed sum: {sum}",
   "LIMITED_STORE_SPACE": "You have a limited User account to store space: {countUsedSpace} / {plan}",
   "DENIED_ADVERTISER": "Denied. You have an Advertiser account.",
-  "USER_EMAIL": "email must be defined",
-  "USER_PASSWORD": "password must be defined",
-  "USER_ROLE": "role must be defined",
-  "USER_EXISTS": "User exists: '{email}'",
-  "USER_NOT_EXISTS": "User is not exists",
-  "BID_FILE_MUST_EXISTS": "File must exists",
-  "FOLDER_NOT_EXIST": "Folder not exist '{id}'. {error}",
-  "FILE_NOT_EXIST": "File not exist '{id}'. {error}",
-  "CONFLICT_ERROR": "Video/audio editors, playlists do not allow to delete this file",
-  "PLAYLIST_NOT_FOUND": "Playlist not found: '{id}'",
-  "BID_NOT_FOUND": "Bid not found: '{id}'",
-  "BID_ERROR": "Error when creating Bid",
-  "INVOICE_FILE": "Confirmed waiting payment must expect file",
-  "EDITOR_NOT_FOUND": "Editor not found: '{id}'"
+  "CONFLICT_ERROR": "Video/audio editors, playlists do not allow to delete this file"
 }

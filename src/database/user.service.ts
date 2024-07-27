@@ -5,13 +5,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, type DeleteResult, type DeepPartial } from 'typeorm';
 import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
-import { I18nContext, I18nService } from 'nestjs-i18n';
+import { I18nService } from 'nestjs-i18n';
 
 import {
   BadRequestError,
   ForbiddenError,
+  NotFoundError,
   PreconditionFailedError,
-  UnauthorizedError,
 } from '@/errors';
 import {
   FindManyOptionsExt,
@@ -36,6 +36,7 @@ import { UserEntity } from './user.entity';
 import { UserExtView } from './user-ext.view';
 import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class UserService {
@@ -217,9 +218,7 @@ export class UserService {
           crud === CRUD.CREATE &&
           1 + Number(countMonitors) > 5
         ) {
-          throw new ForbiddenError('demoTimeIsUp', {
-            lang: I18nContext.current()?.lang,
-          });
+          throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
         }
 
         if (
@@ -229,9 +228,7 @@ export class UserService {
             .add(14 + 1, 'days')
             .isBefore(dayjs())
         ) {
-          throw new ForbiddenError('demoTimeIsUp', {
-            lang: I18nContext.current()?.lang,
-          });
+          throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
         }
 
         if (
@@ -241,15 +238,11 @@ export class UserService {
             .add(28 + 1, 'days')
             .isBefore(dayjs())
         ) {
-          throw new ForbiddenError('demoTimeIsUp', {
-            lang: I18nContext.current()?.lang,
-          });
+          throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
         }
 
         if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {
-          throw new ForbiddenError('demoTimeIsUp', {
-            lang: I18nContext.current()?.lang,
-          });
+          throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
         }
       } else if (plan === UserPlanEnum.Full) {
         if (
@@ -257,8 +250,7 @@ export class UserService {
           countUsedSpace >= UserStoreSpaceEnum.FULL &&
           crud === CRUD.CREATE
         ) {
-          throw new ForbiddenError('LIMITED_STORE_SPACE', {
-            lang: I18nContext.current()?.lang,
+          throw new ForbiddenError<I18nPath>('error.LIMITED_STORE_SPACE', {
             args: { countUsedSpace, plan: UserStoreSpaceEnum.FULL },
           });
         }
@@ -266,9 +258,7 @@ export class UserService {
     } else if (role === UserRoleEnum.Advertiser) {
       if (controllerName === 'monitor' && crud !== CRUD.READ) {
         if (functionName.search(/monitorFavorite|MonitorPlaylist/) === -1) {
-          throw new ForbiddenError('DENIED_ADVERTISER', {
-            lang: I18nContext.current()?.lang,
-          });
+          throw new ForbiddenError<I18nPath>('error.DENIED_ADVERTISER');
         }
       }
 
@@ -277,8 +267,7 @@ export class UserService {
         countUsedSpace >= UserStoreSpaceEnum.FULL &&
         crud === CRUD.CREATE
       ) {
-        throw new ForbiddenError('LIMITED_STORE_SPACE', {
-          lang: I18nContext.current()?.lang,
+        throw new ForbiddenError<I18nPath>('error.LIMITED_STORE_SPACE', {
           args: { countUsedSpace, plan: UserStoreSpaceEnum.FULL },
         });
       }
@@ -374,19 +363,13 @@ export class UserService {
   async register(create: RegisterRequest): Promise<UserExtView> {
     const { email, password, role, ...createUser } = create;
     if (!email) {
-      throw new BadRequestError('USER_EMAIL', {
-        lang: I18nContext.current()?.lang,
-      });
+      throw new BadRequestError<I18nPath>('error.user.email');
     }
     if (!password) {
-      throw new BadRequestError('USER_PASSWORD', {
-        lang: I18nContext.current()?.lang,
-      });
+      throw new BadRequestError<I18nPath>('error.user.password');
     }
     if (!role) {
-      throw new BadRequestError('USER_ROLE', {
-        lang: I18nContext.current()?.lang,
-      });
+      throw new BadRequestError<I18nPath>('error.user.role');
     }
 
     // TODO: verify email domain
@@ -397,9 +380,8 @@ export class UserService {
       },
     });
     if (existingUser) {
-      throw new PreconditionFailedError('USER_EXISTS', {
+      throw new PreconditionFailedError<I18nPath>('error.user.exists', {
         args: { email: create.email },
-        lang: I18nContext.current()?.lang,
       });
     }
 
@@ -456,7 +438,9 @@ export class UserService {
 
     const user = await this.userExtRepository.findOneBy({ id });
     if (!user) {
-      throw new UnauthorizedError('USER_NOT_EXISTS');
+      throw new NotFoundError<I18nPath>('error.user.not_exist', {
+        args: { id },
+      });
     }
     return user;
   }
@@ -496,7 +480,9 @@ export class UserService {
       select: ['id', 'forgotConfirmKey'],
     });
     if (!user) {
-      throw new ForbiddenError('USER_NOT_EXISTS', { args: { email } });
+      throw new ForbiddenError<I18nPath>('error.user.not_exist', {
+        args: { email },
+      });
     }
 
     user.forgotConfirmKey = genKey();
@@ -539,7 +525,9 @@ export class UserService {
       where: { email },
     });
     if (!user) {
-      throw new ForbiddenError('USER_NOT_EXISTS', { args: { email } });
+      throw new ForbiddenError<I18nPath>('error.user.not_exist', {
+        args: { email },
+      });
     }
 
     if (forgotPassword === user.forgotConfirmKey) {
@@ -552,7 +540,9 @@ export class UserService {
         where: { id: user.id },
       });
       if (!userUpdated) {
-        throw new ForbiddenError('USER_NOT_EXISTS', { args: { email } });
+        throw new ForbiddenError<I18nPath>('error.user.not_exist', {
+          args: { email },
+        });
       }
       return userUpdated;
     }

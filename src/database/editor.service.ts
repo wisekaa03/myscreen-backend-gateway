@@ -45,6 +45,7 @@ import { UserEntity } from './user.entity';
 import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { I18nPath } from '@/i18n';
 
 dayjs.extend(dayjsDuration);
 const exec = util.promisify(child.exec);
@@ -184,11 +185,11 @@ export class EditorService {
     const updatedQuery: DeepPartial<EditorLayerEntity> = { ...update };
 
     if (updatedQuery.fileId === undefined) {
-      throw new BadRequestError('BID_FILE_MUST_EXISTS');
+      throw new BadRequestError<I18nPath>('error.bid.file_must_exists');
     }
     if (updatedQuery.duration === undefined) {
       if (updatedQuery.file === undefined) {
-        throw new BadRequestError('BID_FILE_MUST_EXISTS');
+        throw new BadRequestError<I18nPath>('error.bid.file_must_exists');
       }
       updatedQuery.duration = updatedQuery.file.duration;
     }
@@ -643,7 +644,9 @@ export class EditorService {
       },
     });
     if (!editor) {
-      throw new NotFoundError('EDITOR_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.editor.not_found', {
+        args: { id },
+      });
     }
     const { id: editorId } = editor;
     if (!rerender) {
@@ -848,9 +851,10 @@ export class EditorService {
           }
         }
       })(editor).catch((error: any) => {
-        this.logger.error(error?.message, error?.stack, 'Editly');
+        const renderingError = error?.message || error || 'Unknown error';
+        this.logger.error(renderingError, error?.stack, 'Editly');
         this.editorRepository.update(editorId, {
-          renderingError: error?.message || error,
+          renderingError,
           renderingStatus: RenderingStatus.Error,
           renderingPercent: null,
         });
@@ -944,7 +948,7 @@ export class EditorService {
       relations: { videoLayers: true, audioLayers: true },
     });
     if (!editor) {
-      throw new NotFoundError('Editor not found');
+      throw new NotFoundError<I18nPath>('error.editor.not_found');
     }
     if (moveIndex < 1) {
       throw new BadRequestError('moveIndex must be greater or equal than 1');

@@ -14,6 +14,7 @@ import { UserRoleEnum } from '@/enums/user-role.enum';
 import { PlaylistEntity } from './playlist.entity';
 import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class PlaylistService {
@@ -83,7 +84,7 @@ export class PlaylistService {
       relations: { user: true, files: true },
     });
     if (!playlist) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', {
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
         args: { id: playlistCreated.id },
       });
     }
@@ -104,12 +105,16 @@ export class PlaylistService {
       this.playlistRepository.create({ id, ...update }),
     );
     if (!updated) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
+        args: { id },
+      });
     }
 
     const playlist = await this.findOne({ where: { id } });
     if (!playlist) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
+        args: { id },
+      });
     }
     if (update.status === undefined) {
       await this.wsStatistics.onChangePlaylist(playlist.user, playlist);

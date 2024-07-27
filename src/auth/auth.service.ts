@@ -12,6 +12,7 @@ import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
 import { UserExtView } from '@/database/user-ext.view';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class AuthService {
@@ -44,24 +45,24 @@ export class AuthService {
     userAgent?: string,
   ): Promise<[UserExtView, AuthenticationPayload]> {
     if (!email || !password) {
-      throw new ForbiddenError('PASSWORD_MISMATCHED');
+      throw new ForbiddenError<I18nPath>('error.auth.password_mismatched');
     }
 
     let user = await this.userService.findByEmail(email, {
       select: ['id', 'email', 'password', 'role', 'verified', 'disabled'],
     });
     if (!user) {
-      throw new ForbiddenError('PASSWORD_MISMATCHED');
+      throw new ForbiddenError<I18nPath>('error.auth.password_mismatched');
     }
     if (!user.verified) {
-      throw new ForbiddenError('YOU_HAVE_TO_RESPOND');
+      throw new ForbiddenError<I18nPath>('error.auth.have_to_respond');
     }
 
     const valid = user.password
       ? UserService.validateCredentials(user, password)
       : false;
     if (!valid) {
-      throw new ForbiddenError('PASSWORD_MISMATCHED');
+      throw new ForbiddenError<I18nPath>('error.auth.password_mismatched');
     }
 
     const [token, refresh] = await Promise.all([
@@ -71,7 +72,7 @@ export class AuthService {
     const payload = this.buildResponsePayload(token, refresh);
     user = await this.userService.findById(user.id);
     if (!user) {
-      throw new ForbiddenError('PASSWORD_MISMATCHED');
+      throw new ForbiddenError<I18nPath>('error.auth.password_mismatched');
     }
 
     return [user, payload];

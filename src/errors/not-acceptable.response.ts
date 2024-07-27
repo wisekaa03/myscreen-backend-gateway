@@ -3,14 +3,17 @@ import { HttpStatus, NotAcceptableException } from '@nestjs/common';
 
 import { Status } from '@/enums/status.enum';
 import { TranslateOptions } from 'nestjs-i18n';
+import { I18nPath } from '@/i18n';
 
-export class NotAcceptableError extends NotAcceptableException {
-  constructor(message?: string, options?: TranslateOptions) {
+export class NotAcceptableError<
+  T extends string = I18nPath,
+> extends NotAcceptableException {
+  constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.NOT_ACCEPTABLE,
       code: 'server-error.10000',
-      message: message ?? 'NOT_ACCEPTABLE',
+      message: message ?? 'error.NOT_ACCEPTABLE',
       options,
     });
     this.initMessage();

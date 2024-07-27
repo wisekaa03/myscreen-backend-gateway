@@ -37,6 +37,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserExtView } from './user-ext.view';
 import { WalletService } from './wallet.service';
 import { WsStatistics } from './ws.statistics';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class BidService {
@@ -243,7 +244,7 @@ export class BidService {
           transact.create(BidEntity, update),
         );
         if (!updateResult.affected) {
-          throw new NotFoundError('Application not found');
+          throw new NotFoundError<I18nPath>('error.bid.not_found');
         }
 
         let relations: FindOptionsRelations<BidEntity>;
@@ -263,7 +264,9 @@ export class BidService {
           relations,
         });
         if (!bid) {
-          throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
+          throw new NotFoundError<I18nPath>('error.bid.not_found', {
+            args: { id },
+          });
         }
 
         if (update.approved === BidApprove.NOTPROCESSED) {
@@ -348,7 +351,7 @@ export class BidService {
       where,
     });
     if (!playlist) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', {
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
         args: { id: playlistId },
       });
     }
@@ -394,7 +397,7 @@ export class BidService {
             });
 
             if (sum > totalBalance) {
-              throw new NotAcceptableError('BALANCE', {
+              throw new NotAcceptableError<I18nPath>('error.BALANCE', {
                 args: { sum, totalBalance },
               });
             }
@@ -418,7 +421,7 @@ export class BidService {
             transact.create(BidEntity, insert),
           );
           if (!insertResult.identifiers[0]) {
-            throw new NotFoundError('BID_ERROR');
+            throw new NotFoundError<I18nPath>('error.bid.error');
           }
           const { id } = insertResult.identifiers[0];
 
@@ -439,7 +442,9 @@ export class BidService {
             relations,
           });
           if (!bid) {
-            throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
+            throw new NotFoundError<I18nPath>('error.bid.not_found', {
+              args: { id },
+            });
           }
 
           // Списываем средства со счета пользователя Рекламодателя
@@ -573,7 +578,7 @@ export class BidService {
       select: ['id', 'files'],
     });
     if (!playlist) {
-      throw new NotFoundError('Playlist not found');
+      throw new NotFoundError<I18nPath>('error.playlist.not_found');
     }
 
     // продолжительность плейлиста заявки в сек.

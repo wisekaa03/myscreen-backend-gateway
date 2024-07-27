@@ -53,6 +53,7 @@ import { FileEntity } from '@/database/file.entity';
 import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
 import { FileExtView } from '@/database/file-ext.view';
+import { I18nPath } from '@/i18n';
 
 @ApiComplexDecorators({
   path: ['file'],
@@ -302,7 +303,9 @@ export class FileController {
       relations: { preview: true, folder: true },
     });
     if (!file) {
-      throw new NotFoundError('File not found');
+      throw new NotFoundError<I18nPath>('error.file.not_exist', {
+        args: { id },
+      });
     }
 
     await this.fileService.downloadPreviewFile(res, file);
@@ -379,7 +382,9 @@ export class FileController {
         throw new Error('Body is not Readable');
       }
     } catch (error: unknown) {
-      throw new NotFoundError('FILE_NOT_EXIST', { args: { id, error } });
+      throw new NotFoundError<I18nPath>('error.file.not_exist', {
+        args: { id, error },
+      });
     }
   }
 
@@ -445,7 +450,9 @@ export class FileController {
       where,
     });
     if (!file) {
-      throw new NotFoundError('FILE_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.file.not_found', {
+        args: { id },
+      });
     }
 
     let data: FileExtView;
@@ -458,7 +465,7 @@ export class FileController {
         fromView: false,
       });
       if (!folder) {
-        throw new NotFoundError('FOLDER_NOT_EXIST', {
+        throw new NotFoundError<I18nPath>('error.folder.not_found', {
           args: { id: update.folderId },
         });
       }
@@ -472,7 +479,9 @@ export class FileController {
     }
 
     if (!data) {
-      throw new BadRequestError('FILE_NOT_FOUND', { args: { id } });
+      throw new BadRequestError<I18nPath>('error.file.not_found', {
+        args: { id },
+      });
     }
 
     return {

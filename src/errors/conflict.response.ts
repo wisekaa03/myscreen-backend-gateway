@@ -4,6 +4,7 @@ import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
 import { FileIDResponse } from '@/dto/response/file-id.response';
+import { I18nPath } from '@/i18n';
 
 export class ConflictDataFile {
   @ApiProperty({
@@ -70,17 +71,15 @@ export class ConflictData {
   files?: ConflictDataFile[];
 }
 
-export class ConflictError extends ConflictException {
-  constructor(
-    message: string,
-    options?: TranslateOptions,
-    error?: ConflictData,
-  ) {
+export class ConflictError<
+  T extends string = I18nPath,
+> extends ConflictException {
+  constructor(message: T, options?: TranslateOptions, error?: ConflictData) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.CONFLICT,
       code: 'server-error.10000',
-      message: message ?? 'CONFLICT',
+      message: message ?? 'error.CONFLICT',
       options,
       error,
     });

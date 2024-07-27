@@ -59,6 +59,7 @@ import { FolderEntity } from './folder.entity';
 import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
 import { FileExtView } from './file-ext.view';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class FileService {
@@ -774,7 +775,7 @@ export class FileService {
       name: playlist.name,
       file: playlist.files.find((file) => filesId.includes(file.id)),
     }));
-    throw new ConflictError('CONFLICT_ERROR', {}, errorMsg);
+    throw new ConflictError<I18nPath>('error.CONFLICT_ERROR', {}, errorMsg);
   }
 
   /**

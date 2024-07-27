@@ -6,6 +6,47 @@ import { Path } from "nestjs-i18n";
 /* prettier-ignore */
 export type I18nTranslations = {
     "error": {
+        "auth": {
+            "password_mismatched": string;
+            "have_to_respond": string;
+        };
+        "bid": {
+            "file_must_exists": string;
+            "not_found": string;
+            "error": string;
+        };
+        "editor": {
+            "not_created": string;
+            "not_found": string;
+        };
+        "file": {
+            "not_found": string;
+            "not_exist": string;
+        };
+        "folder": {
+            "not_found": string;
+            "not_exist": string;
+        };
+        "playlist": {
+            "not_found": string;
+        };
+        "invoice": {
+            "minimum_sum": string;
+            "not_found": string;
+            "file": string;
+        };
+        "monitor": {
+            "not_created": string;
+            "not_found": string;
+        };
+        "user": {
+            "email": string;
+            "password": string;
+            "role": string;
+            "exists": string;
+            "not_created": string;
+            "not_exist": string;
+        };
         "demoTimeIsUp": string;
         "FORBIDDEN": string;
         "CONFLICT": string;
@@ -17,25 +58,10 @@ export type I18nTranslations = {
         "PRECONDITION": string;
         "SERVICE_UNAVAILABLE": string;
         "UNAUTHORIZED": string;
-        "PASSWORD_MISMATCHED": string;
-        "YOU_HAVE_TO_RESPOND": string;
         "BALANCE": string;
         "LIMITED_STORE_SPACE": string;
         "DENIED_ADVERTISER": string;
-        "USER_EMAIL": string;
-        "USER_PASSWORD": string;
-        "USER_ROLE": string;
-        "USER_EXISTS": string;
-        "USER_NOT_EXISTS": string;
-        "BID_FILE_MUST_EXISTS": string;
-        "FOLDER_NOT_EXIST": string;
-        "FILE_NOT_EXIST": string;
         "CONFLICT_ERROR": string;
-        "PLAYLIST_NOT_FOUND": string;
-        "BID_NOT_FOUND": string;
-        "BID_ERROR": string;
-        "INVOICE_FILE": string;
-        "EDITOR_NOT_FOUND": string;
     };
     "validation": {
         "IS_DEFINED": string;

@@ -3,14 +3,17 @@ import { ForbiddenException, HttpStatus } from '@nestjs/common';
 import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
+import { I18nPath } from '@/i18n';
 
-export class ForbiddenError extends ForbiddenException {
-  constructor(message?: string, options?: TranslateOptions) {
+export class ForbiddenError<
+  T extends string = I18nPath,
+> extends ForbiddenException {
+  constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.FORBIDDEN,
       code: 'server-error.10002',
-      message: message ?? 'FORBIDDEN',
+      message: message ?? 'error.FORBIDDEN',
       options,
     });
     this.initMessage();

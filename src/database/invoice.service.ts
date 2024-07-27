@@ -42,6 +42,7 @@ import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { UserExtView } from './user-ext.view';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class InvoiceService {
@@ -110,7 +111,9 @@ export class InvoiceService {
     description: string,
   ): Promise<InvoiceEntity | null> {
     if (sum < this.minInvoiceSum) {
-      throw new BadRequestError('INVOICE_MINIMUM_SUM');
+      throw new BadRequestError<I18nPath>('error.invoice.minimum_sum', {
+        args: { sum: this.minInvoiceSum },
+      });
     }
     const { id: userId } = user;
 
@@ -155,7 +158,9 @@ export class InvoiceService {
           relations: { user: true, file: true },
         });
         if (!invoice) {
-          throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+          throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+            args: { id },
+          });
         }
 
         return invoice;
@@ -172,7 +177,7 @@ export class InvoiceService {
 
   async upload(invoice: InvoiceEntity, file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestError('INVOICE_FILE');
+      throw new BadRequestError<I18nPath>('error.invoice.file');
     }
     const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
     const { id: folderId } =
@@ -199,7 +204,9 @@ export class InvoiceService {
       relations: { file: true },
     });
     if (!invoiceFind) {
-      throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+        args: { id },
+      });
     }
     if (invoiceFind.file) {
       invoiceFind.file = await this.fileService.signedUrl(invoiceFind.file);
@@ -268,7 +275,9 @@ export class InvoiceService {
             status,
           });
           if (!update.affected) {
-            throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+            throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+              args: { id },
+            });
           }
         }
 
@@ -387,7 +396,9 @@ export class InvoiceService {
       relations: { file: true },
     });
     if (!invoiceChanged) {
-      throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+        args: { id },
+      });
     }
     if (invoiceChanged.file) {
       invoiceChanged.file = await this.fileService.signedUrl(

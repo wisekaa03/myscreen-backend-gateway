@@ -64,15 +64,15 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
       );
       const errorsMessage =
         errorsArray && errorsArray.flat(Infinity).join(', ');
-      let messageLang: string | undefined = undefined;
+      let messageLang = message;
       if (i18n) {
-        messageLang = i18n.t(`error.${message}`, {
+        messageLang = i18n.t(message, {
           lang: i18n.lang,
           defaultValue: message,
           ...options,
         });
         this.logger.error(
-          messageLang ?? message,
+          messageLang,
           this.debugLevel ? exception.stack : undefined,
         );
       } else {
@@ -87,8 +87,7 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
           status: Status.Error,
           statusCode: status,
           message:
-            `${messageLang ?? message}` +
-            (errorsMessage ? `: ${errorsMessage}` : ''),
+            `${messageLang}` + (errorsMessage ? `: ${errorsMessage}` : ''),
           code,
           error,
           errors,
