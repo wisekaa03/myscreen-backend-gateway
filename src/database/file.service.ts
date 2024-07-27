@@ -907,6 +907,8 @@ export class FileService {
       this.logger.debug(`Preview file "${file.name}" has cached`);
 
       preview = await fs.readFile(outPath);
+    } else if (file.preview) {
+      preview = Buffer.from(file.preview.preview);
     } else {
       try {
         const data: GetObjectCommandOutput = await this.getS3Object(file);
@@ -920,15 +922,20 @@ export class FileService {
 
           preview = await fs.readFile(outPath);
 
-          const id = file.preview?.id;
-          if (id) {
-            await this.filePreviewRepository.update(id, { preview });
-          } else {
-            await this.filePreviewRepository.insert({
-              fileId: file.id,
-              preview,
+          await this.filePreviewRepository
+            .upsert(
+              {
+                fileId: file.id,
+                preview,
+              },
+              ['id'],
+            )
+            .catch((error: any) => {
+              this.logger.error(
+                `File preview: ${error?.message}`,
+                error?.stack,
+              );
             });
-          }
         } else {
           throw new Error('Body is not Readable');
         }

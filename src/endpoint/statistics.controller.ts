@@ -8,7 +8,7 @@ import { In } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 
-import { MsvcPrintReport } from '@/interfaces';
+import { MsvcFormReport } from '@/interfaces';
 import { formatToContentType } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
 import {
@@ -98,7 +98,7 @@ export class StatisticsController {
 
     const data = Buffer.from(
       await lastValueFrom(
-        this.formService.send<Buffer, MsvcPrintReport>(
+        this.formService.send<Buffer, MsvcFormReport>(
           MsvcFormService.ReportDeviceStatus,
           {
             user,
@@ -179,7 +179,7 @@ export class StatisticsController {
 
     const data = Buffer.from(
       await lastValueFrom(
-        this.formService.send<Buffer, MsvcPrintReport>(
+        this.formService.send<Buffer, MsvcFormReport>(
           MsvcFormService.ReportViews,
           {
             user,
