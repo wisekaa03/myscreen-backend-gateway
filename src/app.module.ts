@@ -1,9 +1,10 @@
 import * as nodePath from 'node:path';
-import { Module, Logger } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { Module, Logger, ClassSerializerInterceptor } from '@nestjs/common';
 import 'dotenv';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from 'nestjs-s3-aws';
-import { LoggerModule } from 'nestjs-pino';
+import { LoggerErrorInterceptor, LoggerModule } from 'nestjs-pino';
 import { I18nModule } from 'nestjs-i18n';
 import { ClientsModule } from '@nestjs/microservices';
 
@@ -73,6 +74,10 @@ import { CrontabModule } from './crontab/crontab.module';
       imports: [DatabaseModule, AuthModule, ConfigModule],
     }),
   ],
-  providers: [Logger],
+  providers: [
+    Logger,
+    { provide: APP_INTERCEPTOR, useClass: LoggerErrorInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: ClassSerializerInterceptor },
+  ],
 })
 export class AppModule {}

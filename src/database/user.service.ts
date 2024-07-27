@@ -33,7 +33,7 @@ import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { RegisterRequest } from '@/dto/request/register.request';
 import { UserEntity } from './user.entity';
-import { UserResponse } from './user-response.entity';
+import { UserExtView } from './user-ext.view';
 import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
 
@@ -51,8 +51,8 @@ export class UserService {
     private readonly mailService: ClientProxy,
     @InjectRepository(UserEntity)
     public readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(UserResponse)
-    public readonly userResponseRepository: Repository<UserResponse>,
+    @InjectRepository(UserExtView)
+    public readonly userExtRepository: Repository<UserExtView>,
     @InjectRepository(FileEntity)
     public readonly fileRepository: Repository<FileEntity>,
   ) {
@@ -64,15 +64,20 @@ export class UserService {
 
   async find({
     caseInsensitive = true,
+    transact: _transact,
     ...find
-  }: FindManyOptionsExt<UserResponse>): Promise<UserResponse[]> {
+  }: FindManyOptionsExt<UserEntity>): Promise<UserExtView[]> {
+    const transact = _transact
+      ? _transact.withRepository(this.userExtRepository)
+      : this.userExtRepository;
+
     const users = !caseInsensitive
-      ? await this.userResponseRepository.find(
-          TypeOrmFind.findParams(UserResponse, find),
+      ? await transact.find(
+          TypeOrmFind.findParams<UserExtView>(UserEntity, find),
         )
       : await TypeOrmFind.findCI(
-          this.userResponseRepository,
-          TypeOrmFind.findParams(UserResponse, find),
+          transact,
+          TypeOrmFind.findParams<UserExtView>(UserEntity, find),
         );
 
     return users;
@@ -81,46 +86,54 @@ export class UserService {
   async findOne({
     fromView = true,
     caseInsensitive = true,
+    transact: _transact,
     ...find
-  }: FindOneOptionsExt<UserResponse | UserEntity>): Promise<
-    UserResponse | UserEntity | null
-  > {
+  }: FindOneOptionsExt<UserEntity>): Promise<UserExtView | null> {
+    const transact = _transact
+      ? _transact.withRepository(this.userExtRepository)
+      : this.userExtRepository;
+
     if (!fromView) {
       if (!caseInsensitive) {
-        return this.userRepository.findOne(
-          TypeOrmFind.findParams(UserEntity, find),
+        return transact.findOne(
+          TypeOrmFind.findParams<UserExtView>(UserEntity, find),
         );
       }
 
       return TypeOrmFind.findOneCI(
-        this.userRepository,
-        TypeOrmFind.findParams(UserEntity, find),
+        transact,
+        TypeOrmFind.findParams<UserExtView>(UserEntity, find),
       );
     }
 
     if (!caseInsensitive) {
-      return this.userResponseRepository.findOne(
-        TypeOrmFind.findParams(UserResponse, find),
+      return transact.findOne(
+        TypeOrmFind.findParams<UserExtView>(UserEntity, find),
       );
     }
 
     return TypeOrmFind.findOneCI(
-      this.userResponseRepository,
-      TypeOrmFind.findParams(UserResponse, find),
+      transact,
+      TypeOrmFind.findParams<UserExtView>(UserEntity, find),
     );
   }
 
   async findAndCount({
     caseInsensitive = true,
+    transact: _transact,
     ...find
-  }: FindManyOptionsExt<UserResponse>): Promise<[UserResponse[], number]> {
+  }: FindManyOptionsExt<UserEntity>): Promise<[UserExtView[], number]> {
+    const transact = _transact
+      ? _transact.withRepository(this.userExtRepository)
+      : this.userExtRepository;
+
     const userCount = !caseInsensitive
-      ? await this.userResponseRepository.findAndCount(
-          TypeOrmFind.findParams(UserResponse, find),
+      ? await transact.findAndCount(
+          TypeOrmFind.findParams<UserExtView>(UserEntity, find),
         )
       : await TypeOrmFind.findAndCountCI(
-          this.userResponseRepository,
-          TypeOrmFind.findParams(UserResponse, find),
+          transact,
+          TypeOrmFind.findParams<UserExtView>(UserEntity, find),
         );
 
     return userCount;
@@ -128,9 +141,9 @@ export class UserService {
 
   async findByEmail(
     email: string,
-    find?: FindManyOptionsExt<UserResponse>,
-  ): Promise<UserResponse | null> {
-    return this.userResponseRepository.findOne({
+    find?: FindManyOptionsExt<UserEntity>,
+  ): Promise<UserExtView | null> {
+    return this.userExtRepository.findOne({
       ...find,
       where: { email },
     });
@@ -140,9 +153,9 @@ export class UserService {
     id: string,
     role?: UserRoleEnum,
     disabled = false,
-  ): Promise<UserResponse | null> {
+  ): Promise<UserExtView | null> {
     if (role === UserRoleEnum.Monitor) {
-      return this.userResponseRepository.create({
+      return this.userExtRepository.create({
         id,
         role: UserRoleEnum.Monitor,
         plan: UserPlanEnum.Full,
@@ -157,7 +170,7 @@ export class UserService {
       });
     }
 
-    return this.userResponseRepository.findOne({
+    return this.userExtRepository.findOne({
       where: { id, disabled: disabled ? undefined : disabled },
     });
   }
@@ -165,7 +178,7 @@ export class UserService {
   /**
    * Verify user permissions.
    *
-   * @param {UserResponse} user User
+   * @param {UserExtView} user User
    * @param {string} controllerName Controller name (monitor, bid, etc.)
    * @param {string} functionName Function name (create, read, update, delete, status)
    * @param {CRUDS} crud CRUDS (CREATE, READ, UPDATE, DELETE, STATUS)
@@ -174,7 +187,7 @@ export class UserService {
    * @memberof UserService
    */
   async verify(
-    user: UserResponse,
+    user: UserExtView,
     controllerName: string,
     functionName: string,
     crud: CRUD,
@@ -291,7 +304,7 @@ export class UserService {
   async update(
     user: UserEntity,
     update: Partial<UserEntity>,
-  ): Promise<UserResponse | null> {
+  ): Promise<UserExtView | null> {
     const { id: userId } = user;
     if (update.email !== undefined && user.email !== update.email) {
       const emailConfirmKey = genKey();
@@ -315,7 +328,7 @@ export class UserService {
         throw new ForbiddenError();
       }
 
-      const userUpdated = await this.userResponseRepository.findOneBy({
+      const userUpdated = await this.userExtRepository.findOneBy({
         id: userId,
       });
       return userUpdated;
@@ -326,7 +339,7 @@ export class UserService {
       throw new ForbiddenError();
     }
 
-    const userUpdated = await this.userResponseRepository.findOneBy({
+    const userUpdated = await this.userExtRepository.findOneBy({
       id: user.id,
     });
     return userUpdated;
@@ -358,7 +371,7 @@ export class UserService {
    * @param {RegisterRequest} create
    * @returns {UserEntity} Пользователь
    */
-  async register(create: RegisterRequest): Promise<UserResponse> {
+  async register(create: RegisterRequest): Promise<UserExtView> {
     const { email, password, role, ...createUser } = create;
     if (!email) {
       throw new BadRequestError('USER_EMAIL', {
@@ -441,7 +454,7 @@ export class UserService {
       ),
     ]);
 
-    const user = await this.userResponseRepository.findOneBy({ id });
+    const user = await this.userExtRepository.findOneBy({ id });
     if (!user) {
       throw new UnauthorizedError('USER_NOT_EXISTS');
     }
@@ -455,8 +468,8 @@ export class UserService {
    * @param {Partial<UserEntity>} create
    * @returns {UserEntity} Пользователь
    */
-  async createTest(create: Partial<UserEntity>): Promise<UserEntity> {
-    const user: DeepPartial<UserEntity> = {
+  async createTest(create: Partial<UserExtView>): Promise<UserExtView> {
+    const user: DeepPartial<UserExtView> = {
       ...create,
       disabled: false,
       password: createHmac('sha256', create.password?.normalize() ?? '').digest(
@@ -468,7 +481,7 @@ export class UserService {
       plan: UserPlanEnum.VIP,
     };
 
-    return this.userRepository.save(this.userRepository.create(user));
+    return this.userExtRepository.save(this.userRepository.create(user));
   }
 
   /**
@@ -519,7 +532,7 @@ export class UserService {
   async forgotPasswordVerify(
     forgotPasswordToken: string,
     password: string,
-  ): Promise<UserResponse> {
+  ): Promise<UserExtView> {
     const [email, forgotPassword] = decodeMailToken(forgotPasswordToken);
 
     const user = await this.userRepository.findOne({
@@ -535,7 +548,7 @@ export class UserService {
         forgotConfirmKey: null,
         emailConfirmKey: null,
       });
-      const userUpdated = await this.userResponseRepository.findOne({
+      const userUpdated = await this.userExtRepository.findOne({
         where: { id: user.id },
       });
       if (!userUpdated) {

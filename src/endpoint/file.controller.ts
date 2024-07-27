@@ -52,6 +52,7 @@ import { FileService } from '@/database/file.service';
 import { FileEntity } from '@/database/file.entity';
 import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
+import { FileExtView } from '@/database/file-ext.view';
 
 @ApiComplexDecorators({
   path: ['file'],
@@ -87,7 +88,7 @@ export class FileController {
     @Body() { where, select, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
     let count = 0;
-    let data: FileEntity[] = [];
+    let data: FileExtView[] = [];
     if (where?.folderId && !isUUID(where?.folderId)) {
       throw new BadRequestError('folderId: must be UUID');
     }
@@ -447,7 +448,7 @@ export class FileController {
       throw new NotFoundError('FILE_NOT_FOUND', { args: { id } });
     }
 
-    let data: FileEntity;
+    let data: FileExtView;
     if (update.folderId) {
       const folder = await this.folderService.findOne({
         where: { id: update.folderId },

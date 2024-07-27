@@ -27,9 +27,10 @@ import { getFullName } from '@/utils/full-name';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FileService } from '@/database/file.service';
 import { FolderEntity } from './folder.entity';
-import { FolderFileNumberEntity } from './folder.view.entity';
+import { FolderExtView } from './folder-ext.view';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
+import { FileExtView } from './file-ext.view';
 
 @Injectable()
 export class FolderService {
@@ -44,43 +45,44 @@ export class FolderService {
     private readonly folderRepository: Repository<FolderEntity>,
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
-    @InjectRepository(FolderFileNumberEntity)
-    private readonly folderFilenumberRepository: Repository<FolderFileNumberEntity>,
+    @InjectRepository(FileExtView)
+    private readonly fileExtRepository: Repository<FileExtView>,
+    @InjectRepository(FolderExtView)
+    private readonly folderExtRepository: Repository<FolderExtView>,
   ) {}
 
   async find({
     caseInsensitive = true,
+    transact: _transact,
     ...find
-  }: FindManyOptionsExt<FolderEntity>): Promise<FolderEntity[]> {
-    const transact = find.transact
-      ? find.transact.withRepository(this.folderFilenumberRepository)
-      : this.folderFilenumberRepository;
+  }: FindManyOptionsExt<FolderEntity>): Promise<FolderExtView[]> {
+    const transact = _transact
+      ? _transact.withRepository(this.folderExtRepository)
+      : this.folderExtRepository;
 
     return !caseInsensitive
-      ? transact.find(TypeOrmFind.findParams(FolderEntity, find))
+      ? transact.find(TypeOrmFind.findParams<FolderExtView>(FolderEntity, find))
       : TypeOrmFind.findCI(
           transact,
-          TypeOrmFind.findParams(FolderEntity, find),
+          TypeOrmFind.findParams<FolderExtView>(FolderEntity, find),
         );
   }
 
   async findAndCount({
     caseInsensitive = true,
     ...find
-  }: FindManyOptionsExt<FolderEntity>): Promise<
-    [FolderFileNumberEntity[], number]
-  > {
+  }: FindManyOptionsExt<FolderEntity>): Promise<[FolderExtView[], number]> {
     const transact = find.transact
-      ? find.transact.withRepository(this.folderFilenumberRepository)
-      : this.folderFilenumberRepository;
+      ? find.transact.withRepository(this.folderExtRepository)
+      : this.folderExtRepository;
 
     return !caseInsensitive
       ? transact.findAndCount(
-          TypeOrmFind.findParams(FolderFileNumberEntity, find),
+          TypeOrmFind.findParams<FolderExtView>(FolderEntity, find),
         )
-      : TypeOrmFind.findAndCountCI<FolderFileNumberEntity>(
+      : TypeOrmFind.findAndCountCI<FolderExtView>(
           transact,
-          TypeOrmFind.findParams(FolderFileNumberEntity, find),
+          TypeOrmFind.findParams(FolderEntity, find),
         );
   }
 
@@ -88,16 +90,18 @@ export class FolderService {
     caseInsensitive = true,
     transact,
     ...find
-  }: FindOneOptionsExt<FolderEntity>): Promise<FolderEntity | null> {
+  }: FindOneOptionsExt<FolderEntity>): Promise<FolderExtView | null> {
     const _transact = transact
-      ? transact.withRepository(this.folderFilenumberRepository)
-      : this.folderFilenumberRepository;
+      ? transact.withRepository(this.folderExtRepository)
+      : this.folderExtRepository;
 
     return !caseInsensitive
-      ? _transact.findOne(TypeOrmFind.findParams(FolderFileNumberEntity, find))
+      ? _transact.findOne(
+          TypeOrmFind.findParams<FolderExtView>(FolderEntity, find),
+        )
       : TypeOrmFind.findOneCI(
           _transact,
-          TypeOrmFind.findParams(FolderFileNumberEntity, find),
+          TypeOrmFind.findParams<FolderExtView>(FolderEntity, find),
         );
   }
 

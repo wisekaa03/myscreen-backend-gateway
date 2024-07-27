@@ -16,15 +16,15 @@ import { RegisterRequest } from '@/dto';
 import { getFullName } from '@/utils/full-name';
 import { UserEntity } from './user.entity';
 import { UserService } from './user.service';
-import { UserResponse } from './user-response.entity';
+import { UserExtView } from './user-ext.view';
 import { FileService } from './file.service';
 import { FileEntity } from './file.entity';
 
 describe(UserService.name, () => {
   let service: UserService;
 
-  let testUser: Partial<UserResponse>;
-  let monitorTestDemo: Partial<UserResponse>;
+  let testUser: Partial<UserExtView>;
+  let monitorTestDemo: Partial<UserExtView>;
 
   const mockRepository = jest.fn(() => ({
     findOne: async ({ where }: FindOneOptions<UserEntity>) => {
@@ -68,7 +68,7 @@ describe(UserService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(UserResponse),
+          provide: getRepositoryToken(UserExtView),
           useClass: mockRepository,
         },
         {
@@ -154,7 +154,7 @@ describe(UserService.name, () => {
         {
           ...monitorTestDemo,
           role: UserRoleEnum.Administrator,
-        } as UserResponse,
+        } as UserExtView,
         'auth',
         'login',
         CRUD.READ,
@@ -165,7 +165,7 @@ describe(UserService.name, () => {
         {
           ...monitorTestDemo,
           role: UserRoleEnum.Accountant,
-        } as UserResponse,
+        } as UserExtView,
         'invoice',
         'get',
         CRUD.READ,
@@ -175,7 +175,7 @@ describe(UserService.name, () => {
 
     test('Access to Auth and invoice', async () => {
       const verifyAuthGet = service.verify(
-        monitorTestDemo as UserResponse,
+        monitorTestDemo as UserExtView,
         'auth',
         'get',
         CRUD.READ,
@@ -183,7 +183,7 @@ describe(UserService.name, () => {
       await expect(verifyAuthGet).resolves.toBe(true);
 
       const verifyInvoiceGet = service.verify(
-        monitorTestDemo as UserResponse,
+        monitorTestDemo as UserExtView,
         'invoice',
         'get',
         CRUD.READ,
@@ -206,7 +206,7 @@ describe(UserService.name, () => {
               storage: 0,
             },
           },
-        } as UserResponse,
+        } as UserExtView,
         'monitor',
         'create',
         CRUD.CREATE,
@@ -228,7 +228,7 @@ describe(UserService.name, () => {
               storage: 0,
             },
           },
-        } as UserResponse,
+        } as UserExtView,
         'monitor',
         'get',
         CRUD.READ,
@@ -250,7 +250,7 @@ describe(UserService.name, () => {
               storage: 0,
             },
           },
-        } as UserResponse,
+        } as UserExtView,
         'files',
         'get',
         CRUD.READ,
@@ -270,7 +270,7 @@ describe(UserService.name, () => {
             storageSpace: { storage: 0, total: 1000000 },
           },
           createdAt,
-        } as UserResponse,
+        } as UserExtView,
         'monitor',
         'create',
         CRUD.CREATE,
@@ -284,7 +284,7 @@ describe(UserService.name, () => {
           ...monitorTestDemo,
           countMonitors: '4',
           createdAt: dayjs().subtract(16, 'days').toDate(),
-        } as UserResponse,
+        } as UserExtView,
         'monitor',
         'create',
         CRUD.CREATE,
@@ -298,7 +298,7 @@ describe(UserService.name, () => {
         {
           ...monitorTestDemo,
           createdAt: dayjs().subtract(28, 'days').toDate(),
-        } as UserResponse,
+        } as UserExtView,
         'file',
         'create',
         CRUD.CREATE,
@@ -311,7 +311,7 @@ describe(UserService.name, () => {
         {
           ...monitorTestDemo,
           createdAt: dayjs().subtract(30, 'days').toDate(),
-        } as UserResponse,
+        } as UserExtView,
         'file',
         'create',
         CRUD.CREATE,

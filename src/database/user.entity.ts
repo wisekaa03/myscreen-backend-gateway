@@ -104,27 +104,9 @@ export class UserEntity {
   @MaxLength(50, { message: i18nValidationMessage('validation.MAX_LENGTH') })
   middleName!: string | null;
 
-  @Column({ select: false })
-  @ApiProperty({
-    example: 'Secret~12345678',
-    description:
-      'Пароля пользователя (должен удовлетворять минимальным требованиям)',
-    minLength: 8,
-    maxLength: 30,
-    type: 'string',
-    format: 'password',
-    pattern: '/((?=.*\\d)|(?=.*\\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/',
-  })
-  @MinLength(8, {
-    message: i18nValidationMessage('validation.PASSWORD_MIN_LENGTH'),
-  })
-  @MaxLength(32, {
-    message: i18nValidationMessage('validation.PASSWORD_MAX_LENGTH'),
-  })
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
-    message: i18nValidationMessage('validation.PASSWORD_TOO_WEAK'),
-  })
-  password?: string;
+  @Column()
+  @ApiHideProperty()
+  password!: string;
 
   @Column({ nullable: true })
   @ApiProperty({

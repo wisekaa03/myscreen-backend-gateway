@@ -1,5 +1,5 @@
 import { UserRequest } from '@/dto';
-import { UserResponse } from '@/database/user-response.entity';
+import { UserExtView } from '@/database/user-ext.view';
 import { UserEntity } from '@/database/user.entity';
 
 /**
@@ -9,7 +9,7 @@ import { UserEntity } from '@/database/user.entity';
  * @returns string
  */
 export const getFullName = (
-  user: UserEntity | UserResponse | UserRequest,
+  user: UserEntity | UserExtView | UserRequest,
   isEmail = true,
 ) =>
   [user.surname, user.name, user.middleName].join(' ') +

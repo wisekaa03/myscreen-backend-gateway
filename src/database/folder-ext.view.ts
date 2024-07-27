@@ -11,6 +11,7 @@ import { FileEntity } from './file.entity';
 import { FolderEntity } from './folder.entity';
 
 @ViewEntity({
+  name: 'folder_ext',
   materialized: false,
   expression: (connection: DataSource) =>
     connection
@@ -38,7 +39,7 @@ import { FolderEntity } from './folder.entity';
         '"folderSub"."subParentFolderId" = "folder"."id"',
       ),
 })
-export class FolderFileNumberEntity extends FolderEntity {
+export class FolderExtView extends FolderEntity {
   @ViewColumn()
   fileNumber?: number | null;
 

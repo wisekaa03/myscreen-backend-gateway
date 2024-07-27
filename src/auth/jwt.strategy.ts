@@ -5,7 +5,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import type { MyscreenJwtPayload } from '@/utils/jwt.payload';
 import { UserService } from '@/database/user.service';
 import { AuthService } from './auth.service';
-import { UserResponse } from '@/database/user-response.entity';
+import { UserExtView } from '@/database/user-ext.view';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -25,7 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: MyscreenJwtPayload): Promise<UserResponse | null> {
+  async validate(payload: MyscreenJwtPayload): Promise<UserExtView | null> {
     const id = payload.sub;
     if (!id) {
       return null;

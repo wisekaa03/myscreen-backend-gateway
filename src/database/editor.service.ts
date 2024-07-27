@@ -670,13 +670,15 @@ export class EditorService {
       if (editor.renderedFile) {
         await this.fileService
           .delete([editor.renderedFile.id])
+          .then(() =>
+            this.editorRepository.update(editorId, {
+              renderedFile: null,
+            }),
+          )
           .catch((reason) => {
             this.logger.error(`Delete from editor failed: ${reason}`);
             throw reason;
           });
-        await this.editorRepository.update(editorId, {
-          renderedFile: null,
-        });
       }
 
       const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);

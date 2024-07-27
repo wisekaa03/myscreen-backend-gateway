@@ -28,6 +28,7 @@ import { BidApprove, BidStatus } from '@/enums';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { UserExtView } from './user-ext.view';
 
 @Entity('bid', { comment: 'Заявки на воспроизведение' })
 export class BidEntity extends BaseEntity {
@@ -59,7 +60,6 @@ export class BidEntity extends BaseEntity {
   @JoinColumn({ foreignKeyConstraintName: 'FK_bid_buyer' })
   @ApiProperty({
     description: 'Покупатель',
-    type: 'string',
     allOf: [{ $ref: '#/components/schemas/UserResponse' }],
   })
   buyer!: UserEntity | null;

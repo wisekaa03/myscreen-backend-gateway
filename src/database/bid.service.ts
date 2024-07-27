@@ -34,7 +34,7 @@ import { FileService } from '@/database/file.service';
 import { ActService } from './act.service';
 import { BidEntity } from './bid.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { UserResponse } from './user-response.entity';
+import { UserExtView } from './user-ext.view';
 import { WalletService } from './wallet.service';
 import { WsStatistics } from './ws.statistics';
 
@@ -324,7 +324,7 @@ export class BidService {
     dateBefore,
     playlistChange,
   }: {
-    user: UserResponse;
+    user: UserExtView;
     playlistId: string;
     monitorIds: string[];
     dateWhen: Date;
@@ -520,7 +520,7 @@ export class BidService {
     dateTo,
     monitorIds,
   }: {
-    user: UserResponse;
+    user: UserExtView;
     playlistDuration: number;
     dateFrom: string;
     dateTo: string;
@@ -559,7 +559,7 @@ export class BidService {
     dateWhen,
     playlistId,
   }: {
-    user: UserResponse;
+    user: UserExtView;
     minWarranty: number;
     price1s: number;
     dateBefore: Date | null;

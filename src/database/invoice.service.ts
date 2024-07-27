@@ -41,6 +41,7 @@ import { WalletService } from './wallet.service';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
+import { UserExtView } from './user-ext.view';
 
 @Injectable()
 export class InvoiceService {
@@ -61,8 +62,8 @@ export class InvoiceService {
     private readonly formService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(UserExtView)
+    private readonly userExtRepository: Repository<UserExtView>,
   ) {
     this.minInvoiceSum = parseInt(
       this.configService.getOrThrow('MIN_INVOICE_SUM'),
@@ -316,7 +317,7 @@ export class InvoiceService {
 
           // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
           case InvoiceStatus.AWAITING_CONFIRMATION: {
-            const accountantUsers = await this.userRepository.find({
+            const accountantUsers = await this.userExtRepository.find({
               where: {
                 role: UserRoleEnum.Accountant,
                 disabled: false,

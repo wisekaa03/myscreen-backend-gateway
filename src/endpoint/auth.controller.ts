@@ -32,7 +32,7 @@ import { RolesGuard, JwtAuthGuard } from '@/guards';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
-import { UserResponseToExternal } from '@/database/user-response.entity';
+import { UserResponseToExternal } from '@/database/user-ext.view';
 import { UserEntity } from '@/database/user.entity';
 
 @ApiComplexDecorators({ path: ['auth'] })

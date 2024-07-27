@@ -31,7 +31,7 @@ import { MonitorService } from '@/database/monitor.service';
 import { WsExceptionsFilter } from '@/exception/ws-exceptions.filter';
 import { BidEntity } from '@/database/bid.entity';
 import { UserService } from '@/database/user.service';
-import { UserResponse } from '@/database/user-response.entity';
+import { UserExtView } from '@/database/user-ext.view';
 import { WsStatistics } from '@/database/ws.statistics';
 import { MonitorStatisticsService } from '@/database/monitor-statistics.service';
 
@@ -66,7 +66,7 @@ export class WSGateway
     let monitorId: string | undefined;
     let monitor: MonitorEntity | undefined | null;
     let userId: string | undefined;
-    let user: UserResponse | undefined | null;
+    let user: UserExtView | undefined | null;
 
     const { sub, aud: role } = await this.authService
       .jwtVerify(token)

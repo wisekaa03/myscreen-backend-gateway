@@ -34,8 +34,8 @@ import type { FfprobeData } from 'media-probe';
 import {
   ConflictData,
   ConflictError,
-  InternalServerError,
   NotFoundError,
+  ServiceUnavailableError,
 } from '@/errors';
 import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import { FileType } from '@/enums';
@@ -58,6 +58,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from './folder.entity';
 import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
+import { FileExtView } from './file-ext.view';
 
 @Injectable()
 export class FileService {
@@ -104,6 +105,8 @@ export class FileService {
     private readonly playlistRepository: Repository<PlaylistEntity>,
     @InjectRepository(FilePreviewEntity)
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
+    @InjectRepository(FileExtView)
+    private readonly fileExtRepository: Repository<FileExtView>,
   ) {
     this.frontEndUrl = this.configService.get(
       'FRONTEND_URL',
@@ -145,16 +148,21 @@ export class FileService {
   async find({
     caseInsensitive = true,
     signedUrl = true,
+    transact: _transact,
     ...find
-  }: FindManyOptionsExt<FileEntity>): Promise<FileEntity[]> {
-    const conditional = TypeOrmFind.findParams(FileEntity, find);
+  }: FindManyOptionsExt<FileEntity>): Promise<FileExtView[]> {
+    const conditional = TypeOrmFind.findParams<FileExtView>(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};
     }
 
+    const transact = _transact
+      ? _transact.withRepository(this.fileExtRepository)
+      : this.fileExtRepository;
+
     const files = caseInsensitive
-      ? await TypeOrmFind.findCI(this.fileRepository, conditional)
-      : await this.fileRepository.find(conditional);
+      ? await TypeOrmFind.findCI(transact, conditional)
+      : await transact.find(conditional);
 
     if (files.length <= 0) {
       return files;
@@ -175,15 +183,21 @@ export class FileService {
   async findAndCount({
     caseInsensitive = true,
     signedUrl = true,
+    transact: _transact,
     ...find
-  }: FindManyOptionsExt<FileEntity>): Promise<[FileEntity[], number]> {
-    const conditional = TypeOrmFind.findParams(FileEntity, find);
+  }: FindManyOptionsExt<FileEntity>): Promise<[FileExtView[], number]> {
+    const conditional = TypeOrmFind.findParams<FileExtView>(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};
     }
+
+    const transact = _transact
+      ? _transact.withRepository(this.fileExtRepository)
+      : this.fileExtRepository;
+
     const files = caseInsensitive
-      ? await TypeOrmFind.findAndCountCI(this.fileRepository, conditional)
-      : await this.fileRepository.findAndCount(conditional);
+      ? await TypeOrmFind.findAndCountCI(transact, conditional)
+      : await transact.findAndCount(conditional);
 
     if (files[1] <= 0) {
       return files;
@@ -207,16 +221,21 @@ export class FileService {
   async findOne({
     caseInsensitive = true,
     signedUrl = true,
+    transact: _transact,
     ...find
-  }: FindOneOptionsExt<FileEntity>): Promise<FileEntity | null> {
-    const conditional = TypeOrmFind.findParams(FileEntity, find);
+  }: FindOneOptionsExt<FileEntity>): Promise<FileExtView | null> {
+    const conditional = TypeOrmFind.findParams<FileExtView>(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};
     }
 
+    const transact = _transact
+      ? _transact.withRepository(this.fileExtRepository)
+      : this.fileExtRepository;
+
     const file = caseInsensitive
-      ? await TypeOrmFind.findOneCI(this.fileRepository, conditional)
-      : await this.fileRepository.findOne(conditional);
+      ? await TypeOrmFind.findOneCI(transact, conditional)
+      : await transact.findOne(conditional);
     if (!file) {
       return null;
     }
@@ -240,20 +259,17 @@ export class FileService {
       .then((sum: number | null) => sum ?? 0);
   }
 
-  async signedUrl(file: FileEntity): Promise<FileEntity> {
+  async signedUrl<T extends FileEntity>(file: T): Promise<T> {
     const getObject = new GetObjectCommand({
       Bucket: this.bucket,
       Key: getS3FullName(file),
     });
 
-    const signedUrl = await getSignedUrl(this.s3Service, getObject, {
+    file.signedUrl = await getSignedUrl(this.s3Service, getObject, {
       expiresIn: this.signedUrlExpiresIn,
     });
 
-    return {
-      ...file,
-      signedUrl,
-    } as FileEntity;
+    return file;
   }
 
   async createFolder(
@@ -309,8 +325,8 @@ export class FileService {
    */
   async update(
     file: FileEntity,
-    update: Partial<FileEntity>,
-  ): Promise<FileEntity> {
+    update: Partial<FileExtView>,
+  ): Promise<FileExtView> {
     return this.fileRepository.manager.transaction(
       'REPEATABLE READ',
       async (transact) => {
@@ -352,10 +368,17 @@ export class FileService {
             }),
           )
           .then(() =>
-            transact.findOneByOrFail(FileEntity, {
-              id: file.id,
+            this.findOne({
+              where: { id: file.id },
+              transact,
             }),
           )
+          .then((files) => {
+            if (!files) {
+              throw new ServiceUnavailableError();
+            }
+            return files;
+          })
           .catch((error: unknown) => {
             this.logger.error(`S3 error: ${JSON.stringify(error)}`);
             throw new NotFoundError(`S3 error: ${JSON.stringify(error)}`);
@@ -384,7 +407,7 @@ export class FileService {
     mimetype?: string;
     info?: FfprobeData;
     transact?: EntityManager;
-  }): Promise<FileEntity[]> {
+  }): Promise<FileExtView[]> {
     const {
       user,
       files: _files,
@@ -505,6 +528,9 @@ export class FileService {
                 transact.create(FileEntity, fileToSave),
               ),
             )
+            .then(({ id }) =>
+              this.findOne({ caseInsensitive: false, transact, where: { id } }),
+            )
             .catch((error: unknown) => {
               this.logger.error(
                 `S3 upload error: "${JSON.stringify(error)}"`,
@@ -518,7 +544,7 @@ export class FileService {
         const filesDatabase = await Promise.all(filesPromises).then((files) =>
           files.reduce(
             (acc, file) => (file ? acc.concat(file) : acc),
-            [] as FileEntity[],
+            [] as FileExtView[],
           ),
         );
 
@@ -612,7 +638,7 @@ export class FileService {
     toFolder: FolderEntity,
     originalFiles: FileEntity[],
     transact?: EntityManager,
-  ): Promise<FileEntity[]> {
+  ): Promise<FileExtView[]> {
     const copyFiles = (transact: EntityManager) => {
       const filePromises = originalFiles.map(async (file) => {
         await this.copyS3Object(toFolder, file);
@@ -629,7 +655,16 @@ export class FileService {
           createdAt: undefined,
           updatedAt: undefined,
         });
-        return transact.save(FileEntity, fileCopy);
+        const { id } = await transact.save(FileEntity, fileCopy);
+        const _file = await this.findOne({
+          caseInsensitive: false,
+          transact,
+          where: { id },
+        });
+        if (!_file) {
+          throw new ServiceUnavailableError();
+        }
+        return _file;
       });
 
       return Promise.all(filePromises);

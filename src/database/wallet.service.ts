@@ -31,7 +31,7 @@ import { getFullName } from '@/utils/full-name';
 import { ActService } from './act.service';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
-import { UserResponse } from './user-response.entity';
+import { UserExtView } from './user-ext.view';
 
 @Injectable()
 export class WalletService {
@@ -176,7 +176,7 @@ export class WalletService {
     transact,
     balance,
   }: {
-    user: UserResponse | UserEntity;
+    user: UserExtView | UserEntity;
     transact: EntityManager;
     balance?: number;
   }) {

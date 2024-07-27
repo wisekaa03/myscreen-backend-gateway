@@ -9,7 +9,7 @@ import { UserPlanEnum, UserRoleEnum, MICROSERVICE_MYSCREEN } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { UserEntity } from '@/database/user.entity';
-import { UserResponse } from '@/database/user-response.entity';
+import { UserExtView } from '@/database/user-ext.view';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { FileService } from '@/database/file.service';
@@ -27,7 +27,7 @@ describe(AuthService.name, () => {
   const token = 'token';
 
   let user: UserEntity;
-  let userResponse: UserResponse;
+  let userResponse: UserExtView;
 
   const mockRepository = jest.fn(() => ({
     find: async () => Promise.resolve([]),
@@ -62,7 +62,7 @@ describe(AuthService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(UserResponse),
+          provide: getRepositoryToken(UserExtView),
           useClass: mockRepository,
         },
         { provide: RefreshTokenService, useClass: mockRepository },
@@ -99,7 +99,7 @@ describe(AuthService.name, () => {
       createdAt: new Date('1000-01-01T01:00:50.804Z'),
       updatedAt: new Date('1000-01-01T01:00:43.121Z'),
     });
-    userResponse = userService.userResponseRepository.create({
+    userResponse = userService.userExtRepository.create({
       ...user,
       // fullName: 'Steve John Doe',
       // fullNameEmail: 'Steve John Doe <foo@bar.baz>',

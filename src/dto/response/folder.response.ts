@@ -1,8 +1,8 @@
 import { PickType } from '@nestjs/swagger';
 
-import { FolderFileNumberEntity } from '@/database/folder.view.entity';
+import { FolderExtView } from '@/database/folder-ext.view';
 
-export class FolderResponse extends PickType(FolderFileNumberEntity, [
+export class FolderResponse extends PickType(FolderExtView, [
   'id',
   'name',
   'parentFolderId',
