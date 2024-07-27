@@ -16,9 +16,9 @@ import {
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
-  MailForgotPassword,
-  MailSendVerificationCode,
-  MailWelcomeMessage,
+  MsvcMailForgotPassword,
+  MsvcMailVerificationCode,
+  MsvcMailWelcomeMessage,
 } from '@/interfaces';
 import {
   CRUD,
@@ -304,7 +304,7 @@ export class UserService {
 
       const [{ affected }] = await Promise.all([
         this.userRepository.update(userId, { ...update, emailConfirmKey }),
-        this.mailService.emit<unknown, MailSendVerificationCode>(
+        this.mailService.emit<unknown, MsvcMailVerificationCode>(
           MsvcMailService.SendVerificationCode,
           {
             email: update.email,
@@ -419,14 +419,14 @@ export class UserService {
 
     const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(userPartial)),
-      this.mailService.emit<unknown, MailWelcomeMessage>(
+      this.mailService.emit<unknown, MsvcMailWelcomeMessage>(
         MsvcMailService.SendWelcome,
         {
           email,
           language,
         },
       ),
-      this.mailService.emit<unknown, MailSendVerificationCode>(
+      this.mailService.emit<unknown, MsvcMailVerificationCode>(
         MsvcMailService.SendVerificationCode,
         {
           email,
@@ -498,7 +498,7 @@ export class UserService {
     }
 
     const language = user.preferredLanguage;
-    return this.mailService.emit<unknown, MailForgotPassword>(
+    return this.mailService.emit<unknown, MsvcMailForgotPassword>(
       MsvcMailService.ForgotPassword,
       {
         email,

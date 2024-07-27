@@ -15,3 +15,7 @@ export enum MsvcFormService {
   ReportDeviceStatus = 'reportDeviceStatus',
   ReportViews = 'reportViews',
 }
+
+export enum MsvcEditor {
+  Export = 'export',
+}

@@ -16,7 +16,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
-  MailSendBidMessage,
+  MsvcMailBidMessage,
 } from '@/interfaces';
 import {
   BidApprove,
@@ -273,7 +273,7 @@ export class BidService {
           const sellerEmail = bid.seller?.email;
           if (sellerEmail) {
             const language = bid.seller?.preferredLanguage;
-            this.mailService.emit<unknown, MailSendBidMessage>(
+            this.mailService.emit<unknown, MsvcMailBidMessage>(
               MsvcMailService.BidWarning,
               {
                 email: sellerEmail,
@@ -463,7 +463,7 @@ export class BidService {
             const sellerEmail = bid.seller.email;
             const language =
               bid.seller.preferredLanguage ?? user.preferredLanguage;
-            this.mailService.emit<unknown, MailSendBidMessage>(
+            this.mailService.emit<unknown, MsvcMailBidMessage>(
               MsvcMailService.BidWarning,
               {
                 email: sellerEmail,

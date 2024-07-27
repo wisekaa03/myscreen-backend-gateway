@@ -18,10 +18,10 @@ import {
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
-  MailInvoiceAwaitingConfirmation,
-  MailInvoiceConfirmed,
-  MailInvoicePayed,
-  PrintInvoice,
+  MsvcMailInvoiceAwaitingConfirmation,
+  MsvcMailInvoiceConfirmed,
+  MsvcMailInvoicePayed,
+  MsvcFormInvoice,
 } from '@/interfaces';
 import { formatToContentType } from '@/constants';
 import {
@@ -227,14 +227,14 @@ export class InvoiceService {
     const language =
       invoiceUser.preferredLanguage ??
       this.configService.getOrThrow('DEFAULT_LANGUAGE');
-    const invoiceFileObservable = this.formService.send<Buffer, PrintInvoice>(
-      MsvcFormService.Invoice,
-      {
-        format,
-        invoice,
-        language,
-      },
-    );
+    const invoiceFileObservable = this.formService.send<
+      Buffer,
+      MsvcFormInvoice
+    >(MsvcFormService.Invoice, {
+      format,
+      invoice,
+      language,
+    });
     const fileBuffer = Buffer.from(await lastValueFrom(invoiceFileObservable));
 
     const specificFormat = formatToContentType[format]
@@ -306,7 +306,7 @@ export class InvoiceService {
             });
 
             // и выводится письмо о том, что счет оплачен
-            this.mailService.emit<unknown, MailInvoicePayed>(
+            this.mailService.emit<unknown, MsvcMailInvoicePayed>(
               MsvcMailService.InvoicePayed,
               {
                 invoice,
@@ -336,13 +336,13 @@ export class InvoiceService {
 
             accountantUsers.forEach(async (user) => {
               // Вызов сервиса отправки писем
-              this.mailService.emit<unknown, MailInvoiceAwaitingConfirmation>(
-                MsvcMailService.InvoiceAwaitingConfirmation,
-                {
-                  user,
-                  invoice,
-                },
-              );
+              this.mailService.emit<
+                unknown,
+                MsvcMailInvoiceAwaitingConfirmation
+              >(MsvcMailService.InvoiceAwaitingConfirmation, {
+                user,
+                invoice,
+              });
             });
 
             break;
@@ -368,7 +368,7 @@ export class InvoiceService {
               });
             if (data.Body instanceof Readable) {
               const invoiceFile = await buffer(data.Body);
-              this.mailService.emit<unknown, MailInvoiceConfirmed>(
+              this.mailService.emit<unknown, MsvcMailInvoiceConfirmed>(
                 MsvcMailService.InvoiceConfirmed,
                 {
                   user: invoiceUser,

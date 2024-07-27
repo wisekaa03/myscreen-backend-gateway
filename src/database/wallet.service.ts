@@ -15,8 +15,8 @@ import { ClientProxy } from '@nestjs/microservices';
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
-  MailBalanceChanged,
-  MailBalanceNotChanged,
+  MsvcMailBalanceChanged,
+  MsvcMailBalanceNotChanged,
 } from '@/interfaces';
 import {
   UserRoleEnum,
@@ -247,7 +247,7 @@ export class WalletService {
         this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
 
         // и вывод информации на email
-        this.mailService.emit<unknown, MailBalanceChanged>(
+        this.mailService.emit<unknown, MsvcMailBalanceChanged>(
           MsvcMailService.BalanceChanged,
           {
             user,
@@ -272,7 +272,7 @@ export class WalletService {
           }
 
           // и вывод информации на email
-          this.mailService.emit<unknown, MailBalanceNotChanged>(
+          this.mailService.emit<unknown, MsvcMailBalanceNotChanged>(
             MsvcMailService.BalanceNotChanged,
             {
               user,

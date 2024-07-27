@@ -1,15 +1,5 @@
-export * from './mail-send-bid-message';
-export * from './mail-send-verification-code';
-export * from './mail-forgot-password';
-export * from './mail-invoice-confirmed';
-export * from './mail-invoice-payed';
-export * from './mail-invoice-awaiting-confirmation';
-export * from './mail-balance-changed';
-export * from './mail-balance-not-changed';
-export * from './mail-welcome-message';
-export * from './print-report-device-status';
-export * from './print-invoice';
 export * from './interface';
+export * from './microservices';
 
 export * from './websocket-client';
 export * from './ws-auth-token.event';

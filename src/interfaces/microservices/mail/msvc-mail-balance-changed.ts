@@ -1,6 +1,6 @@
 import { UserEntity } from '@/database/user.entity';
 
-export interface MailBalanceChanged {
+export interface MsvcMailBalanceChanged {
   user: UserEntity;
   sum: number;
   balance: number;
