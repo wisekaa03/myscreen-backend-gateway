@@ -104,7 +104,7 @@ export class UserEntity {
   @MaxLength(50, { message: i18nValidationMessage('validation.MAX_LENGTH') })
   middleName!: string | null;
 
-  @Column()
+  @Column({ select: false })
   @ApiHideProperty()
   password!: string;
 

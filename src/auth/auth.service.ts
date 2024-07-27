@@ -47,7 +47,9 @@ export class AuthService {
       throw new ForbiddenError('PASSWORD_MISMATCHED');
     }
 
-    const user = await this.userService.findByEmail(email);
+    let user = await this.userService.findByEmail(email, {
+      select: ['id', 'email', 'password', 'role', 'verified', 'disabled'],
+    });
     if (!user) {
       throw new ForbiddenError('PASSWORD_MISMATCHED');
     }
@@ -67,6 +69,10 @@ export class AuthService {
       this.generateRefreshToken(user.id, fingerprint, userAgent),
     ]);
     const payload = this.buildResponsePayload(token, refresh);
+    user = await this.userService.findById(user.id);
+    if (!user) {
+      throw new ForbiddenError('PASSWORD_MISMATCHED');
+    }
 
     return [user, payload];
   }
