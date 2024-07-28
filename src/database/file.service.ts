@@ -8,6 +8,7 @@ import {
 import { Readable } from 'node:stream';
 import StreamPromises from 'node:stream/promises';
 import { join as pathJoin, parse as pathParse } from 'node:path';
+import { rimraf } from 'rimraf';
 import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -519,6 +520,7 @@ export class FileService {
               Body: filesBuffer,
             })
             .then((uploaded) => {
+              rimraf(path);
               this.logger.warn(
                 `S3: the file "${name}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
               );
