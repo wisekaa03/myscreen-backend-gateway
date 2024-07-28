@@ -1,10 +1,9 @@
 import { Readable } from 'node:stream';
-import { parse as pathParse } from 'node:path';
 import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { FindOptionsWhere, In } from 'typeorm';
+import { FindOptionsWhere, In, Not } from 'typeorm';
 import {
   Body,
   Delete,
@@ -227,13 +226,20 @@ export class FileController {
       where: { userId, id: In(filesIds) },
     });
     if (filesCopy.length !== files.length) {
-      throw new BadRequestError();
+      const filesNotExist = await this.fileService.find({
+        where: { userId, id: Not(In(filesIds)) },
+      });
+      throw new NotFoundError<I18nPath>('error.file.not_found', {
+        args: { id: filesNotExist.join(',') },
+      });
     }
     const folder = await this.folderService.findOne({
       where: { userId, id: toFolder },
     });
     if (!folder) {
-      throw new NotFoundError(`Folder '${toFolder}' is not exist`);
+      throw new NotFoundError<I18nPath>('error.folder.not_found', {
+        args: { id: toFolder },
+      });
     }
 
     const data = await this.fileService.copy(userId, folder, filesCopy);

@@ -640,44 +640,52 @@ export class FileService {
     originalFiles: FileEntity[],
     transact?: EntityManager,
   ): Promise<FileExtView[]> {
-    const copyFiles = (transact: EntityManager) => {
-      const filePromises = originalFiles.map(async (file) => {
-        await this.copyS3Object(toFolder, file);
+    const transactFile = transact
+      ? transact.withRepository(this.fileRepository)
+      : this.fileRepository;
 
-        const fileCopy = transact.create(FileEntity, {
-          ...file,
-          userId,
-          folderId: toFolder.id,
-          folder: toFolder,
-          id: undefined,
-          preview: undefined,
-          playlists: undefined,
-          monitors: undefined,
-          createdAt: undefined,
-          updatedAt: undefined,
-        });
-        const { id } = await transact.save(FileEntity, fileCopy);
-        const _file = await this.findOne({
-          caseInsensitive: false,
-          transact,
-          where: { id },
-        });
-        if (!_file) {
-          throw new ServiceUnavailableError();
-        }
-        return _file;
-      });
-
-      return Promise.all(filePromises);
-    };
-
-    if (transact) {
-      return copyFiles(transact);
-    }
-
-    return this.fileRepository.manager.transaction(
+    return transactFile.manager.transaction(
       'REPEATABLE READ',
-      async (transact) => copyFiles(transact),
+      async (transact) => {
+        const filePromises = originalFiles.map(async (file) =>
+          this.copyS3Object(toFolder, file)
+            .then(() =>
+              transact.save(
+                FileEntity,
+                transact.create(FileEntity, {
+                  ...file,
+                  userId,
+                  folderId: toFolder.id,
+                  folder: toFolder,
+                  id: undefined,
+                  preview: undefined,
+                  playlists: undefined,
+                  monitors: undefined,
+                  createdAt: undefined,
+                  updatedAt: undefined,
+                }),
+              ),
+            )
+            .then(({ id }) =>
+              this.findOne({
+                caseInsensitive: false,
+                transact,
+                where: { id },
+              }),
+            ),
+        );
+
+        const copiedFiles = await Promise.allSettled(filePromises);
+        return copiedFiles.reduce(
+          (acc, p) =>
+            p.status === 'fulfilled'
+              ? p.value
+                ? acc.concat(p.value)
+                : acc
+              : acc,
+          [] as FileExtView[],
+        );
+      },
     );
   }
 
