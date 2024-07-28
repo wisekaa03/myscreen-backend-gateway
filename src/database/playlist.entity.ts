@@ -122,7 +122,7 @@ export class PlaylistEntity extends BaseEntity {
     onDelete: 'CASCADE',
     eager: true,
   })
-  @JoinTable()
+  @JoinTable({ name: 'playlist_files_file' })
   @ApiProperty({
     description: 'Файлы',
     items: { $ref: '#/components/schemas/FileResponse' },
