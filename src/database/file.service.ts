@@ -918,23 +918,22 @@ export class FileService {
           const outputStream = createWriteStream(filename);
           await StreamPromises.pipeline(data.Body, outputStream);
 
-          await FfMpegPreview(file.type, file.info || {}, filename, outPath);
-
-          preview = await fs.readFile(outPath);
-
-          await this.filePreviewRepository
-            .upsert(
-              {
-                fileId: file.id,
-                preview,
-              },
-              ['id'],
-            )
-            .catch((error: any) => {
-              this.logger.error(
-                `File preview: ${error?.message}`,
-                error?.stack,
+          preview = await FfMpegPreview(
+            file.type,
+            file.info || {},
+            filename,
+            outPath,
+          )
+            .then(() => fs.readFile(outPath))
+            .then((preview) => {
+              this.filePreviewRepository.upsert(
+                {
+                  fileId: file.id,
+                  preview,
+                },
+                ['id'],
               );
+              return preview;
             });
         } else {
           throw new Error('Body is not Readable');
