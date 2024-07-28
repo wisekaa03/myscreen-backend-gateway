@@ -7,3 +7,4 @@ export * from './msvc-mail-invoice-payed';
 export * from './msvc-mail-bid-message';
 export * from './msvc-mail-verification-code';
 export * from './msvc-mail-welcome-message';
+export * from './msvc-mail-verify';

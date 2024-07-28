@@ -8,6 +8,7 @@ export enum MsvcMailService {
   ForgotPassword = 'forgotPassword',
   BalanceChanged = 'balanceChanged',
   BalanceNotChanged = 'balanceNotChanged',
+  Verify = 'verify',
 }
 
 export enum MsvcFormService {

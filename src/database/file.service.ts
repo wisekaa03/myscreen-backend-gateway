@@ -520,7 +520,9 @@ export class FileService {
               Body: filesBuffer,
             })
             .then((uploaded) => {
-              rimraf(path);
+              if (path) {
+                rimraf(path);
+              }
               this.logger.warn(
                 `S3: the file "${name}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
               );
