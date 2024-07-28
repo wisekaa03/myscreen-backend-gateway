@@ -296,7 +296,7 @@ export class FolderService {
   async update(
     id: string,
     folder: Partial<FolderEntity>,
-  ): Promise<FolderEntity> {
+  ): Promise<FolderExtView> {
     const updated = await this.folderRepository.update(
       id,
       this.folderRepository.create(folder),
@@ -305,7 +305,7 @@ export class FolderService {
       throw new NotFoundError('Error when updating folder');
     }
 
-    const find = await this.folderRepository.findOne({ where: { id } });
+    const find = await this.findOne({ where: { id }, caseInsensitive: false });
     if (!find) {
       throw new NotFoundError('Error when updating folder');
     }

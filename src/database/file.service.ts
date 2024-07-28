@@ -464,7 +464,7 @@ export class FileService {
     return transactFile.manager.transaction(
       'REPEATABLE READ',
       async (transact) => {
-        const filesPromises = files.map(async (file) => {
+        const filesPromises = files.map(async (fileToSave) => {
           const {
             mimetype,
             originalname: name,
@@ -472,8 +472,8 @@ export class FileService {
             media: info,
             size: filesize,
             buffer,
-          } = file;
-          const { hash } = file;
+            hash,
+          } = fileToSave;
           let filesBuffer: ReadStream | Buffer;
           if (Buffer.isBuffer(buffer)) {
             filesBuffer = buffer;
@@ -496,7 +496,7 @@ export class FileService {
             height = Number(stream.height ?? 0);
           }
 
-          const fileToSave: DeepPartial<FileEntity> = {
+          const fileEntity: DeepPartial<FileEntity> = {
             userId,
             folderId,
             name,
@@ -512,7 +512,7 @@ export class FileService {
           };
 
           const Key = `${folderId}/${hash}-${getS3Name(name)}`;
-          const fileUpdated = await this.s3Service
+          const file = await this.s3Service
             .putObject({
               Bucket: this.bucket,
               Key,
@@ -530,32 +530,36 @@ export class FileService {
             .then(() =>
               transact.save(
                 FileEntity,
-                transact.create(FileEntity, fileToSave),
+                transact.create(FileEntity, fileEntity),
               ),
             )
             .then(({ id }) =>
               this.findOne({ caseInsensitive: false, transact, where: { id } }),
             )
-            .catch((error: unknown) => {
+            .catch((error: any) => {
               this.logger.error(
                 `S3 upload error: "${JSON.stringify(error)}"`,
                 error,
               );
+              throw new Error(error?.message || error);
             });
 
-          return fileUpdated;
+          return file;
         });
 
-        const filesDatabase = await Promise.all(filesPromises).then((files) =>
-          files.reduce(
-            (acc, file) => (file ? acc.concat(file) : acc),
-            [] as FileExtView[],
-          ),
+        const filesCreated = await Promise.allSettled(filesPromises).then(
+          (files) =>
+            files.reduce((acc, p) => {
+              if (p.status === 'fulfilled' && p.value) {
+                return acc.concat(p.value);
+              }
+              return acc;
+            }, [] as FileExtView[]),
         );
 
         await this.wsStatistics.onMetrics({ user });
 
-        return filesDatabase;
+        return filesCreated;
       },
     );
   }
@@ -676,18 +680,20 @@ export class FileService {
                 transact,
                 where: { id },
               }),
-            ),
+            )
+            .catch((error: any) => {
+              this.logger.error(`S3 copy files error: ${error}`);
+              throw new Error(error?.message || error);
+            }),
         );
 
-        const copiedFiles = await Promise.allSettled(filePromises);
-        return copiedFiles.reduce(
-          (acc, p) =>
-            p.status === 'fulfilled'
-              ? p.value
-                ? acc.concat(p.value)
-                : acc
-              : acc,
-          [] as FileExtView[],
+        return Promise.allSettled(filePromises).then((files) =>
+          files.reduce((acc, p) => {
+            if (p.status === 'fulfilled' && p.value) {
+              return acc.concat(p.value);
+            }
+            return acc;
+          }, [] as FileExtView[]),
         );
       },
     );
@@ -814,15 +820,19 @@ export class FileService {
             id: file.id,
           }),
         )
-        .catch((error: unknown) => {
+        .catch((error: any) => {
           this.logger.error(`S3 Error deleteObject: ${JSON.stringify(error)}`);
+          throw new Error(error?.message || error);
         }),
     );
-    const filesDelete = await Promise.all(filesS3DeletePromise).then((files) =>
-      files.reduce(
-        (acc, file) => (file ? acc.concat(file) : acc),
-        [] as DeleteResult[],
-      ),
+    const filesDelete = await Promise.allSettled(filesS3DeletePromise).then(
+      (files) =>
+        files.reduce((acc, p) => {
+          if (p.status === 'fulfilled' && p.value) {
+            return acc.concat(p.value);
+          }
+          return acc;
+        }, [] as DeleteResult[]),
     );
 
     return filesDelete;

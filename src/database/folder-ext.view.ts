@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
   DataSource,
@@ -9,6 +9,7 @@ import {
 
 import { FileEntity } from './file.entity';
 import { FolderEntity } from './folder.entity';
+import { Exclude } from 'class-transformer';
 
 @ViewEntity({
   name: 'folder_ext',
@@ -17,8 +18,10 @@ import { FolderEntity } from './folder.entity';
     connection
       .createQueryBuilder()
       .select('"folder".*')
+      .addSelect('"folderNumber"')
+      .addSelect('"fileNumber"')
       .from(FolderEntity, 'folder')
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<FileEntity>) =>
           qb
             .select('"file"."folderId"')
@@ -28,7 +31,7 @@ import { FolderEntity } from './folder.entity';
         'file',
         '"file"."folderId" = "folder"."id"',
       )
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<FolderEntity>) =>
           qb
             .select('"folder"."parentFolderId"', 'subParentFolderId')
@@ -41,10 +44,14 @@ import { FolderEntity } from './folder.entity';
 })
 export class FolderExtView extends FolderEntity {
   @ViewColumn()
-  fileNumber?: number | null;
+  @ApiHideProperty()
+  @Exclude()
+  fileNumber!: string | null;
 
   @ViewColumn()
-  folderNumber?: number | null;
+  @ApiHideProperty()
+  @Exclude()
+  folderNumber!: string | null;
 
   @ApiProperty({
     type: Boolean,
@@ -56,20 +63,9 @@ export class FolderExtView extends FolderEntity {
 
   @AfterLoad()
   after() {
-    const fileNumber = parseInt(
-      (this.fileNumber as unknown as string) ?? '0',
-      10,
-    );
-    const folderNumber = parseInt(
-      (this.folderNumber as unknown as string) ?? '0',
-      10,
-    );
-    this.fileNumber = undefined;
-    this.folderNumber = undefined;
-    if (fileNumber > 0 || folderNumber > 0) {
-      this.empty = false;
-    } else {
-      this.empty = true;
-    }
+    const fileNumber = Number(this.fileNumber ?? 0);
+    const folderNumber = Number(this.folderNumber ?? 0);
+
+    this.empty = fileNumber + folderNumber > 0 ? false : true;
   }
 }
