@@ -151,6 +151,10 @@ export class EditorEntity extends BaseEntity {
   })
   renderedFile!: FileEntity | null;
 
+  @Column({ type: 'uuid', nullable: true })
+  @RelationId((editor: EditorEntity) => editor.renderedFile)
+  renderedFileId!: string | null;
+
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     nullable: true,
     cascade: true,
