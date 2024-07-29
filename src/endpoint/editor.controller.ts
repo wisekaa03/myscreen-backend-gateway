@@ -237,7 +237,7 @@ export class EditorController {
       select: ['id', 'userId'],
     });
     if (!editor) {
-      throw new NotFoundError<I18nPath>('error.bid.not_found', {
+      throw new NotFoundError<I18nPath>('error.editor.not_found', {
         args: { id },
       });
     }
@@ -502,49 +502,6 @@ export class EditorController {
     };
   }
 
-  @Post('/frame/:editorId/:time')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'editor-frame-get',
-    summary: 'Получение кадра из редактора',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Успешный ответ',
-    content: {
-      'image/jpeg': {
-        encoding: {
-          image_jpeg: {
-            contentType: 'image/jpeg',
-          },
-        },
-      },
-    },
-  })
-  @Crud(CRUD.READ)
-  async postEditorFrame(
-    @Req() { user }: ExpressRequest,
-    @Res() res: ExpressResponse,
-    @Param('editorId', ParseUUIDPipe) id: string,
-    @Param('time', ParseIntPipe) time: number,
-  ): Promise<void> {
-    const editor = await this.editorService.findOne({
-      where: {
-        userId: user.id,
-        id,
-      },
-      relations: ['videoLayers', 'audioLayers'],
-    });
-    if (!editor) {
-      throw new NotFoundError<I18nPath>('error.editor.not_found', {
-        args: { id },
-      });
-    }
-
-    const capturedFrame = await this.editorService.captureFrame(editor, time);
-    capturedFrame.pipe(res);
-  }
-
   @Get('export/:editorId')
   @HttpCode(200)
   @ApiOperation({
@@ -568,7 +525,7 @@ export class EditorController {
       },
     });
     if (!data) {
-      throw new NotFoundError<I18nPath>('error.bid.not_found', {
+      throw new NotFoundError<I18nPath>('error.editor.not_found', {
         args: { id },
       });
     }
@@ -600,12 +557,10 @@ export class EditorController {
   })
   @Crud(CRUD.UPDATE)
   async postEditorExport(
-    @Req() { user }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) id: string,
     @Body() body?: EditorExportRequest,
   ): Promise<EditorGetRenderingStatusResponse> {
     const data = await this.editorService.export({
-      user,
       id,
       rerender: body?.rerender,
     });

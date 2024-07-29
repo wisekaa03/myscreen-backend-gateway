@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { isDateString } from 'class-validator';
-import { intersection } from 'lodash';
+import intersection from 'lodash/intersection';
 import {
   FindManyOptions,
   FindOptionsWhere,
