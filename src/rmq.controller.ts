@@ -4,8 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import path from 'node:path';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 
 import {
   MsvcGatewayUpdate,
@@ -15,10 +13,9 @@ import {
 import { BidStatus, MsvcGateway, RenderingStatus } from './enums';
 import { FileService } from './database/file.service';
 import { UserService } from './database/user.service';
-import { PlaylistEntity } from './database/playlist.entity';
-import { BidEntity } from './database/bid.entity';
 import { EditorService } from './database/editor.service';
-import { EditorEntity } from './database/editor.entity';
+import { BidService } from './database/bid.service';
+import { PlaylistService } from './database/playlist.service';
 
 @Controller()
 export class RmqController {
@@ -31,14 +28,10 @@ export class RmqController {
     private readonly fileService: FileService,
     private readonly userService: UserService,
     private readonly editorService: EditorService,
-    @InjectRepository(PlaylistEntity)
-    private readonly playlistRepository: Repository<PlaylistEntity>,
-    @InjectRepository(BidEntity)
-    private readonly bidRepository: Repository<BidEntity>,
-    @InjectRepository(EditorEntity)
-    private readonly editorRepository: Repository<EditorEntity>,
+    private readonly bidService: BidService,
+    private readonly playlistService: PlaylistService,
   ) {
-    this.downloadDir = this.configService.getOrThrow('FILE_UPLOAD');
+    this.downloadDir = this.configService.getOrThrow('FILES_UPLOAD');
   }
 
   @MessagePattern(MsvcGateway.Update)
@@ -53,7 +46,7 @@ export class RmqController {
       return;
     }
 
-    await this.editorRepository.update(editorId, {
+    await this.editorService.update(editorId, {
       renderingStatus: RenderingStatus.Ready,
       renderedFile: files[0],
       renderingPercent: 100,
@@ -62,14 +55,15 @@ export class RmqController {
 
     // Для SCALING, но может быть еще для чего-то
     if (playlistId) {
-      const playlist = await this.playlistRepository.findOne({
+      const playlist = await this.playlistService.findOne({
         where: { id: playlistId },
         loadEagerRelations: false,
         relations: { editors: true },
+        caseInsensitive: false,
       });
       if (playlist) {
         // обновляем плэйлист
-        await this.playlistRepository.update(playlist.id, {
+        await this.playlistService.update(playlist.id, {
           files,
         });
         if (playlist.editors) {
@@ -77,12 +71,13 @@ export class RmqController {
             (e) => e.renderingStatus === RenderingStatus.Ready,
           );
           if (editors.length === playlist.editors.length) {
-            const bid = await this.bidRepository.find({
+            const bid = await this.bidService.find({
               where: { playlistId: playlist.id },
+              caseInsensitive: false,
             });
             const bidIds = new Set<string>(...bid.map((r) => r.id));
-            bidIds.forEach((bidId) => {
-              this.bidRepository.update(bidId, {
+            bidIds.forEach(async (bidId) => {
+              await this.bidService.update(bidId, {
                 status: BidStatus.OK,
               });
             });
