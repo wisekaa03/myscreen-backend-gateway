@@ -38,6 +38,7 @@ import { CrontabModule } from './crontab/crontab.module';
       clients: [
         MicroserviceOptions(MICROSERVICE_MYSCREEN.MAIL),
         MicroserviceOptions(MICROSERVICE_MYSCREEN.FORM),
+        MicroserviceOptions(MICROSERVICE_MYSCREEN.EDITOR),
       ],
     }),
 

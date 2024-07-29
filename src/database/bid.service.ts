@@ -62,7 +62,7 @@ export class BidService {
     @InjectRepository(PlaylistEntity)
     private readonly playlistRepository: Repository<PlaylistEntity>,
     @Inject(MICROSERVICE_MYSCREEN.MAIL)
-    private readonly mailService: ClientProxy,
+    private readonly mailMsvc: ClientProxy,
   ) {
     this.commissionPercent = parseInt(
       configService.getOrThrow('COMMISSION_PERCENT'),
@@ -273,7 +273,7 @@ export class BidService {
           const sellerEmail = bid.seller?.email;
           if (sellerEmail) {
             const language = bid.seller?.preferredLanguage;
-            this.mailService.emit<unknown, MsvcMailBidMessage>(
+            this.mailMsvc.emit<unknown, MsvcMailBidMessage>(
               MsvcMailService.BidWarning,
               {
                 email: sellerEmail,
@@ -463,7 +463,7 @@ export class BidService {
             const sellerEmail = bid.seller.email;
             const language =
               bid.seller.preferredLanguage ?? user.preferredLanguage;
-            this.mailService.emit<unknown, MsvcMailBidMessage>(
+            this.mailMsvc.emit<unknown, MsvcMailBidMessage>(
               MsvcMailService.BidWarning,
               {
                 email: sellerEmail,

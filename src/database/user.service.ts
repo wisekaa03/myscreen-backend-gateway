@@ -49,7 +49,7 @@ export class UserService {
     private readonly configService: ConfigService,
     private readonly fileService: FileService,
     @Inject(MICROSERVICE_MYSCREEN.MAIL)
-    private readonly mailService: ClientProxy,
+    private readonly mailMsvc: ClientProxy,
     @InjectRepository(UserEntity)
     public readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserExtView)
@@ -304,7 +304,7 @@ export class UserService {
 
       const [{ affected }] = await Promise.all([
         this.userRepository.update(userId, { ...update, emailConfirmKey }),
-        this.mailService.emit<unknown, MsvcMailVerificationCode>(
+        this.mailMsvc.emit<unknown, MsvcMailVerificationCode>(
           MsvcMailService.SendVerificationCode,
           {
             email: update.email,
@@ -419,14 +419,14 @@ export class UserService {
 
     const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(userPartial)),
-      this.mailService.emit<unknown, MsvcMailWelcomeMessage>(
+      this.mailMsvc.emit<unknown, MsvcMailWelcomeMessage>(
         MsvcMailService.SendWelcome,
         {
           email,
           language,
         },
       ),
-      this.mailService.emit<unknown, MsvcMailVerificationCode>(
+      this.mailMsvc.emit<unknown, MsvcMailVerificationCode>(
         MsvcMailService.SendVerificationCode,
         {
           email,
@@ -498,7 +498,7 @@ export class UserService {
     }
 
     const language = user.preferredLanguage;
-    return this.mailService.emit<unknown, MsvcMailForgotPassword>(
+    return this.mailMsvc.emit<unknown, MsvcMailForgotPassword>(
       MsvcMailService.ForgotPassword,
       {
         email,

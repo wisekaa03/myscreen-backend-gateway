@@ -935,7 +935,9 @@ export class FileService {
       try {
         const data: GetObjectCommandOutput = await this.getS3Object(file);
         if (data.Body instanceof Readable) {
-          this.logger.debug(`The file "${file.name}" has been downloaded`);
+          this.logger.debug(
+            `Preview: the file "${file.name}" has been downloaded`,
+          );
 
           await StreamPromises.pipeline(data.Body, createWriteStream(filename));
 
@@ -946,7 +948,13 @@ export class FileService {
             outPath,
           )
             .then(() => {
+              this.logger.debug(
+                `Preview: the preview file "${file.name}" has been created`,
+              );
               if (fileExist(filename)) {
+                this.logger.debug(
+                  `Preview: the file "${file.name}" has been deleted`,
+                );
                 rimraf(filename);
               }
             })

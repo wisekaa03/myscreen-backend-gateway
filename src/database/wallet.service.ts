@@ -48,7 +48,7 @@ export class WalletService {
     @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
     @Inject(MICROSERVICE_MYSCREEN.MAIL)
-    private readonly mailService: ClientProxy,
+    private readonly mailMsvc: ClientProxy,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
   ) {
@@ -247,7 +247,7 @@ export class WalletService {
         this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
 
         // и вывод информации на email
-        this.mailService.emit<unknown, MsvcMailBalanceChanged>(
+        this.mailMsvc.emit<unknown, MsvcMailBalanceChanged>(
           MsvcMailService.BalanceChanged,
           {
             user,
@@ -272,7 +272,7 @@ export class WalletService {
           }
 
           // и вывод информации на email
-          this.mailService.emit<unknown, MsvcMailBalanceNotChanged>(
+          this.mailMsvc.emit<unknown, MsvcMailBalanceNotChanged>(
             MsvcMailService.BalanceNotChanged,
             {
               user,

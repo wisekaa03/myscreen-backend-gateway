@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
 import { ClientProxy } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, timeout } from 'rxjs';
 
 import {
   BadRequestError,
@@ -58,7 +58,7 @@ export class InvoiceService {
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
     @Inject(MICROSERVICE_MYSCREEN.MAIL)
-    private readonly mailService: ClientProxy,
+    private readonly mailMsvc: ClientProxy,
     @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
     @InjectRepository(InvoiceEntity)
@@ -235,7 +235,15 @@ export class InvoiceService {
       invoice,
       language,
     });
-    const fileBuffer = Buffer.from(await lastValueFrom(invoiceFileObservable));
+    const fileBuffer = Buffer.from(
+      await lastValueFrom(invoiceFileObservable.pipe(timeout(3000))).catch(
+        (error: any) => {
+          throw new ServiceUnavailableError(
+            `File unavailable: ${JSON.stringify(error)}`,
+          );
+        },
+      ),
+    );
 
     const specificFormat = formatToContentType[format]
       ? format
@@ -306,7 +314,7 @@ export class InvoiceService {
             });
 
             // и выводится письмо о том, что счет оплачен
-            this.mailService.emit<unknown, MsvcMailInvoicePayed>(
+            this.mailMsvc.emit<unknown, MsvcMailInvoicePayed>(
               MsvcMailService.InvoicePayed,
               {
                 invoice,
@@ -336,13 +344,13 @@ export class InvoiceService {
 
             accountantUsers.forEach(async (user) => {
               // Вызов сервиса отправки писем
-              this.mailService.emit<
-                unknown,
-                MsvcMailInvoiceAwaitingConfirmation
-              >(MsvcMailService.InvoiceAwaitingConfirmation, {
-                user,
-                invoice,
-              });
+              this.mailMsvc.emit<unknown, MsvcMailInvoiceAwaitingConfirmation>(
+                MsvcMailService.InvoiceAwaitingConfirmation,
+                {
+                  user,
+                  invoice,
+                },
+              );
             });
 
             break;
@@ -368,7 +376,7 @@ export class InvoiceService {
               });
             if (data.Body instanceof Readable) {
               const invoiceFile = await buffer(data.Body);
-              this.mailService.emit<unknown, MsvcMailInvoiceConfirmed>(
+              this.mailMsvc.emit<unknown, MsvcMailInvoiceConfirmed>(
                 MsvcMailService.InvoiceConfirmed,
                 {
                   user: invoiceUser,
