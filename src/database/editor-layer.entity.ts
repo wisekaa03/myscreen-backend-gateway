@@ -28,7 +28,7 @@ import { FileEntity } from './file.entity';
 import { EditorEntity } from './editor.entity';
 
 @Entity('editor_layer')
-export class EditorLayerEntity extends BaseEntity {
+export class EditorLayerEntity {
   @PrimaryGeneratedColumn('uuid', {
     primaryKeyConstraintName: 'PK_editor_layer_id',
   })
@@ -47,7 +47,7 @@ export class EditorLayerEntity extends BaseEntity {
     nullable: true,
     eager: false,
   })
-  video!: EditorEntity[];
+  video?: EditorEntity[];
 
   @ManyToMany(() => EditorEntity, (editor) => editor.audioLayers, {
     onUpdate: 'CASCADE',
@@ -56,7 +56,7 @@ export class EditorLayerEntity extends BaseEntity {
     nullable: true,
     eager: false,
   })
-  audio!: EditorEntity[];
+  audio?: EditorEntity[];
 
   @Column({ type: 'integer', default: 1 })
   @ApiProperty({
@@ -207,7 +207,7 @@ export class EditorLayerEntity extends BaseEntity {
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   fileId!: string;
 
-  @CreateDateColumn({ select: false })
+  @CreateDateColumn()
   @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T00:00:00.000Z',
@@ -225,7 +225,7 @@ export class EditorLayerEntity extends BaseEntity {
   )
   createdAt?: Date;
 
-  @UpdateDateColumn({ select: false })
+  @UpdateDateColumn()
   @ApiProperty({
     description: 'Время создания',
     example: '2021-01-01T00:00:00.000Z',
@@ -249,9 +249,9 @@ export class EditorLayerEntity extends BaseEntity {
   @AfterLoad()
   @AfterUpdate()
   after() {
-    this.start = parseFloat(`${this.start || 0}`);
-    this.duration = parseFloat(`${this.duration || 0}`);
-    this.cutFrom = parseFloat(`${this.cutFrom}`);
-    this.cutTo = parseFloat(`${this.cutTo}`);
+    this.start = Number(this.start || 0);
+    this.duration = Number(this.duration || 0);
+    this.cutFrom = Number(this.cutFrom);
+    this.cutTo = Number(this.cutTo);
   }
 }

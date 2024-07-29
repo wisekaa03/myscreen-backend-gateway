@@ -623,7 +623,7 @@ export class EditorService {
     rerender?: boolean;
     customOutputArgs?: string[];
   }): Promise<EditorEntity> {
-    const editor = await this.editorRepository.findOne({
+    const _editor = await this.editorRepository.findOne({
       relations: {
         videoLayers: {
           file: {
@@ -643,46 +643,73 @@ export class EditorService {
         id,
       },
     });
-    if (!editor) {
+    if (!_editor) {
       throw new NotFoundError<I18nPath>('error.editor.not_found', {
         args: { id },
       });
     }
-    const { id: editorId } = editor;
+    const { id: editorId, renderedFile } = _editor;
+    if (renderedFile) {
+      await this.fileService
+        .delete([renderedFile.id])
+        .then(() =>
+          this.editorRepository.update(editorId, {
+            renderedFile: null,
+          }),
+        )
+        .then(() => {
+          // @ts-expect-error Delete operator must be optional ?
+          delete _editor.renderedFile;
+        })
+        .catch((reason) => {
+          this.logger.error(`Delete from editor failed: ${reason}`);
+          throw reason;
+        });
+    }
+
     if (!rerender) {
       if (
-        editor.renderingStatus === RenderingStatus.Ready ||
-        editor.renderingStatus === RenderingStatus.Pending
+        _editor.renderingStatus === RenderingStatus.Ready ||
+        _editor.renderingStatus === RenderingStatus.Pending
       ) {
-        const { videoLayers, audioLayers, ...editorLocal } = editor;
-        return editorLocal as EditorEntity;
+        // @ts-expect-error Delete operator must be optional ?
+        delete _editor.audioLayers;
+        // @ts-expect-error Delete operator must be optional ?
+        delete _editor.videoLayers;
+        return _editor;
       }
     }
+
     const { id: exportFolderId } = await this.folderService.exportFolder(
       user.id,
     );
 
     try {
+      const { videoLayers: video, audioLayers: audio } = _editor;
+      const videoLayers = await Promise.all(
+        video.map(async (layer) => ({
+          ...layer,
+          file: await this.fileService.signedUrl(layer.file),
+        })),
+      );
+      const audioLayers = await Promise.all(
+        audio.map(async (layer) => ({
+          ...layer,
+          file: await this.fileService.signedUrl(layer.file),
+        })),
+      );
+      const editor = {
+        ..._editor,
+        videoLayers,
+        audioLayers,
+      } as EditorEntity;
+
       await this.editorRepository.update(editorId, {
-        totalDuration: this.calcTotalDuration(editor.videoLayers),
+        totalDuration: this.calcTotalDuration(videoLayers),
         renderingStatus: RenderingStatus.Pending,
         renderingError: null,
         renderingPercent: 0,
       });
-
-      if (editor.renderedFile) {
-        await this.fileService
-          .delete([editor.renderedFile.id])
-          .then(() =>
-            this.editorRepository.update(editorId, {
-              renderedFile: null,
-            }),
-          )
-          .catch((reason) => {
-            this.logger.error(`Delete from editor failed: ${reason}`);
-            throw reason;
-          });
-      }
 
       const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
       await fs
@@ -807,6 +834,7 @@ export class EditorService {
             this.logger.error(
               `Can't write to out file: ${JSON.stringify(reason)}`,
             );
+
             throw new Error(reason);
           });
 
@@ -860,8 +888,11 @@ export class EditorService {
         });
       });
 
-      const { videoLayers, audioLayers, ...editorLocal } = editor;
-      return editorLocal as EditorEntity;
+      // @ts-expect-error Delete operator must be optional ?
+      delete _editor.audioLayers;
+      // @ts-expect-error Delete operator must be optional ?
+      delete _editor.videoLayers;
+      return _editor;
     } catch (error: any) {
       this.editorRepository.update(editorId, {
         renderingStatus: RenderingStatus.Error,
