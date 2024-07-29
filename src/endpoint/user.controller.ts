@@ -25,6 +25,7 @@ import { UserService } from '@/database/user.service';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from '@/database/user.entity';
+import { I18nPath } from '@/i18n';
 // import { UserExtEntity } from '@/database/user-ext.entity';
 
 @ApiComplexDecorators({ path: ['user'], roles: [UserRoleEnum.Administrator] })
@@ -189,12 +190,16 @@ export class UserController {
   ): Promise<SuccessResponse> {
     const user = await this.userService.findById(userId);
     if (!user) {
-      throw new NotFoundError('USER_NOT_EXISTS');
+      throw new NotFoundError<I18nPath>('error.user.not_exist', {
+        args: { id: userId },
+      });
     }
 
     const { affected } = await this.userService.delete(user);
     if (!affected) {
-      throw new NotFoundError('USER_NOT_EXISTS');
+      throw new NotFoundError<I18nPath>('error.user.not_exist', {
+        args: { id: userId },
+      });
     }
 
     return {

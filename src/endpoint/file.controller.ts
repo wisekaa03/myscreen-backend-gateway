@@ -1,10 +1,9 @@
 import { Readable } from 'node:stream';
-import { parse as pathParse } from 'node:path';
 import type {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { FindOptionsWhere, In } from 'typeorm';
+import { FindOptionsWhere, In, Not } from 'typeorm';
 import {
   Body,
   Delete,
@@ -52,6 +51,8 @@ import { FileService } from '@/database/file.service';
 import { FileEntity } from '@/database/file.entity';
 import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
+import { FileExtView } from '@/database/file-ext.view';
+import { I18nPath } from '@/i18n';
 
 @ApiComplexDecorators({
   path: ['file'],
@@ -87,7 +88,7 @@ export class FileController {
     @Body() { where, select, scope }: FilesGetRequest,
   ): Promise<FilesGetResponse> {
     let count = 0;
-    let data: FileEntity[] = [];
+    let data: FileExtView[] = [];
     if (where?.folderId && !isUUID(where?.folderId)) {
       throw new BadRequestError('folderId: must be UUID');
     }
@@ -225,13 +226,20 @@ export class FileController {
       where: { userId, id: In(filesIds) },
     });
     if (filesCopy.length !== files.length) {
-      throw new BadRequestError();
+      const filesNotExist = await this.fileService.find({
+        where: { userId, id: Not(In(filesIds)) },
+      });
+      throw new NotFoundError<I18nPath>('error.file.not_found', {
+        args: { id: filesNotExist.join(',') },
+      });
     }
     const folder = await this.folderService.findOne({
       where: { userId, id: toFolder },
     });
     if (!folder) {
-      throw new NotFoundError(`Folder '${toFolder}' is not exist`);
+      throw new NotFoundError<I18nPath>('error.folder.not_found', {
+        args: { id: toFolder },
+      });
     }
 
     const data = await this.fileService.copy(userId, folder, filesCopy);
@@ -301,7 +309,9 @@ export class FileController {
       relations: { preview: true, folder: true },
     });
     if (!file) {
-      throw new NotFoundError('File not found');
+      throw new NotFoundError<I18nPath>('error.file.not_exist', {
+        args: { id },
+      });
     }
 
     await this.fileService.downloadPreviewFile(res, file);
@@ -378,7 +388,9 @@ export class FileController {
         throw new Error('Body is not Readable');
       }
     } catch (error: unknown) {
-      throw new NotFoundError('FILE_NOT_EXIST', { args: { id, error } });
+      throw new NotFoundError<I18nPath>('error.file.not_exist', {
+        args: { id, error },
+      });
     }
   }
 
@@ -444,10 +456,12 @@ export class FileController {
       where,
     });
     if (!file) {
-      throw new NotFoundError('FILE_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.file.not_found', {
+        args: { id },
+      });
     }
 
-    let data: FileEntity;
+    let data: FileExtView;
     if (update.folderId) {
       const folder = await this.folderService.findOne({
         where: { id: update.folderId },
@@ -457,7 +471,7 @@ export class FileController {
         fromView: false,
       });
       if (!folder) {
-        throw new NotFoundError('FOLDER_NOT_EXIST', {
+        throw new NotFoundError<I18nPath>('error.folder.not_found', {
           args: { id: update.folderId },
         });
       }
@@ -471,7 +485,9 @@ export class FileController {
     }
 
     if (!data) {
-      throw new BadRequestError('FILE_NOT_FOUND', { args: { id } });
+      throw new BadRequestError<I18nPath>('error.file.not_found', {
+        args: { id },
+      });
     }
 
     return {

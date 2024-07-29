@@ -1,7 +1,7 @@
-import { UserResponse } from '@/dto';
+import { UserExtView } from '@/database/user-ext.view';
 
 declare module 'express' {
   export interface Request {
-    user: UserResponse;
+    user: UserExtView;
   }
 }

@@ -3,14 +3,17 @@ import { HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
+import { I18nPath } from '@/i18n';
 
-export class UnauthorizedError extends UnauthorizedException {
-  constructor(message?: string, options?: TranslateOptions) {
+export class UnauthorizedError<
+  T extends string = I18nPath,
+> extends UnauthorizedException {
+  constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.UNAUTHORIZED,
       code: 'server-error.10001',
-      message: message ?? 'UNAUTHORIZED',
+      message: message ?? 'error.UNAUTHORIZED',
       options,
     });
     this.initMessage();

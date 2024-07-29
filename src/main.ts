@@ -9,7 +9,7 @@ import {
   type SwaggerCustomOptions,
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
+import { Logger } from 'nestjs-pino';
 import { I18nValidationPipe } from 'nestjs-i18n';
 
 import { version, author, homepage, description } from '../package.json';
@@ -65,7 +65,6 @@ async function bootstrap() {
         skipUndefinedProperties: true,
       }),
     )
-    .useGlobalInterceptors(new LoggerErrorInterceptor())
     .useWebSocketAdapter(new WsAdapter(app));
 
   const swaggerConfig = new DocumentBuilder()

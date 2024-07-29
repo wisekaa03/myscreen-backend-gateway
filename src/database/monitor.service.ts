@@ -24,6 +24,7 @@ import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { MonitorOnlineService } from './monitor-online.service';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class MonitorService {
@@ -627,7 +628,9 @@ export class MonitorService {
       where: { id: monitorId },
     });
     if (!monitor) {
-      throw new NotFoundError('Monitor not found');
+      throw new NotFoundError<I18nPath>('error.monitor.not_found', {
+        args: { id: monitorId },
+      });
     }
     if (favorite && !monitor.favorite) {
       const insertResult = await this.monitorFavoriteRepository.insert({
@@ -635,7 +638,7 @@ export class MonitorService {
         userId,
       });
       if (!insertResult) {
-        throw new NotFoundError('Monitor not found');
+        throw new NotFoundError('error.monitor.not_created');
       }
     } else if (!favorite && monitor.favorite) {
       const { affected } = await this.monitorFavoriteRepository.delete({

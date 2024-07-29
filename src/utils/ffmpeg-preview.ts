@@ -3,6 +3,7 @@ import util from 'node:util';
 import path from 'node:path';
 import { Logger } from '@nestjs/common';
 import type { FfprobeData } from 'media-probe';
+import { rimraf } from 'rimraf';
 
 import { FileType } from '@/enums/file-type.enum';
 import { fileExist } from './file-exist';
@@ -33,11 +34,8 @@ export async function FfMpegPreview(
   if (type === FileType.VIDEO) {
     const duration = Math.floor(info.format?.duration || 0);
     const frameInterval = Math.floor(duration / 6) || 1; // 6 - Number of frames
-    const filenameParsed = path.parse(filename);
-    const outPattern = path.join(
-      filenameParsed.dir,
-      `${filenameParsed.name}-preview-%02d.jpg`,
-    );
+    const { dir, name } = path.parse(filename);
+    const outPattern = path.join(dir, `${name}-preview-%02d.jpg`);
 
     await exec(
       `${ffmpeg} -i "${filename}" -q:v 10 -hide_banner -vcodec mjpeg -v error` +
@@ -51,9 +49,13 @@ export async function FfMpegPreview(
 
     await exec(
       `${ffmpeg} -framerate 1/0.6 -i "${outPattern}" -q:v 10 -v error -y "${outPath}"`,
-    ).catch((error: unknown) => {
-      logger.error('FfMpeg error preview', error);
-      throw error;
-    });
+    )
+      .catch((error: unknown) => {
+        logger.error('FfMpeg error preview', error);
+        throw error;
+      })
+      .finally(() => {
+        rimraf(path.join(dir, `${name}-preview-??.jpg`), { glob: true });
+      });
   }
 }

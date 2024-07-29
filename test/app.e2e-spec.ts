@@ -76,13 +76,13 @@ import { UserEntity } from '@/database/user.entity';
 import { UserService } from '@/database/user.service';
 import { AppModule } from '@/app.module';
 import { WsAdapter } from '@/websocket/ws-adapter';
-import { UserResponse } from '@/database/user-response.entity';
+import { UserExtView } from '@/database/user-ext.view';
 import { HttpError } from '@/errors';
 import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
 
 const delay = (ms: number) => () => new Promise((res) => setTimeout(res, ms));
 
-type UserFileEntity = UserEntity & Partial<UserResponse>;
+type UserFileEntity = UserEntity & Partial<UserExtView>;
 
 const fileXLS = `${__dirname}/testing.xlsx`;
 const fileXLSfilesize = fs.statSync(fileXLS).size;

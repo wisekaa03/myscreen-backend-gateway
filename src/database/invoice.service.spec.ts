@@ -6,7 +6,7 @@ import { MICROSERVICE_MYSCREEN } from '@/enums';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
-import { UserResponse } from './user-response.entity';
+import { UserExtView } from './user-ext.view';
 import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
 import { FileService } from './file.service';
@@ -46,7 +46,7 @@ describe(InvoiceService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(UserResponse),
+          provide: getRepositoryToken(UserExtView),
           useClass: mockRepository,
         },
         {

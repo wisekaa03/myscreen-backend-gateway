@@ -1,4 +1,45 @@
 {
+  "auth": {
+    "password_mismatched": "Пароль неправильный",
+    "have_to_respond": "Вы должны ответить на наш email"
+  },
+  "bid": {
+    "file_must_exists": "Файл должен существовать",
+    "not_found": "Заявка не найдена: '{id}'",
+    "error": "Ошибка при создании Заявки"
+  },
+  "editor": {
+    "not_created": "Редактор не создан.",
+    "not_found": "Редактор не найден: '{id}'"
+  },
+  "file": {
+    "not_found": "Не найден файл '{id}'",
+    "not_exist": "Не найден файл '{id}'. {error}"
+  },
+  "folder": {
+    "not_found": "Не найдена папка '{id}'",
+    "not_exist": "Не найдена папка '{id}'. {error}"
+  },
+  "playlist": {
+    "not_found": "Плэйлист не найден: '{id}'"
+  },
+  "invoice": {
+    "minimum_sum": "Сумма должна быть больше {sum}",
+    "not_found": "Не найден счёт: '{id}'",
+    "file": "Ожидается файл при подтверждении счета"
+  },
+  "monitor": {
+    "not_created": "Monitor not created",
+    "not_found": "Монитор не найден: '{id}'"
+  },
+  "user": {
+    "email": "email должен быть определен",
+    "password": "password должен быть определен",
+    "role": "role должен быть определен",
+    "exists": "Пользователь существует: '{email}'",
+    "not_created": "Пользователь не создан",
+    "not_exist": "Пользователь не существует: {id}"
+  },
   "demoTimeIsUp": "Время вышло для вашего аккаунта. Пожалуйста, заплатите для продления.",
   "FORBIDDEN": "Запрещено",
   "CONFLICT": "Существует конфликт",
@@ -10,23 +51,8 @@
   "PRECONDITION": "Предварительное условие не выполнено",
   "SERVICE_UNAVAILABLE": "Сервис недоступен",
   "UNAUTHORIZED": "Неавторизованный запрос",
-  "PASSWORD_MISMATCHED": "Пароль неправильный",
-  "YOU_HAVE_TO_RESPOND": "Вы должны ответить на наш email",
   "BALANCE": "Не хватает средств на балансе. Текущий баланс: {totalBalance}. Необходимая сумма: {sum}",
   "LIMITED_STORE_SPACE": "У вас ограниченное место для размещения файлов: {countUsedSpace} / {plan}",
   "DENIED_ADVERTISER": "Отклонено. Вы владеете аккаунтом Рекламодателя.",
-  "USER_EMAIL": "email должен быть определен",
-  "USER_PASSWORD": "password должен быть определен",
-  "USER_ROLE": "role должен быть определен",
-  "USER_EXISTS": "Пользователь существует: '{email}'",
-  "USER_NOT_EXISTS": "Пользователь не существует",
-  "BID_FILE_MUST_EXISTS": "Файл должен существовать",
-  "FOLDER_NOT_EXIST": "Не найдена папка '{id}'. {error}",
-  "FILE_NOT_EXIST": "Не найден файл '{id}'. {error}",
-  "CONFLICT_ERROR": "Редакторы и плэйлисты не позволяют удалить этот файл",
-  "PLAYLIST_NOT_FOUND": "Плэйлист не найден: '{id}'",
-  "BID_NOT_FOUND": "Заявка не найдена: '{id}'",
-  "BID_ERROR": "Ошибка при создании Заявки",
-  "INVOICE_FILE": "Ожидается файл при подтверждении счета",
-  "EDITOR_NOT_FOUND": "Редактор не найден: '{id}'"
+  "CONFLICT_ERROR": "Редакторы и плэйлисты не позволяют удалить этот файл"
 }

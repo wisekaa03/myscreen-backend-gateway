@@ -3,14 +3,17 @@ import { HttpStatus, PreconditionFailedException } from '@nestjs/common';
 import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
+import { I18nPath } from '@/i18n';
 
-export class PreconditionFailedError extends PreconditionFailedException {
-  constructor(message?: string, options?: TranslateOptions) {
+export class PreconditionFailedError<
+  T extends string = I18nPath,
+> extends PreconditionFailedException {
+  constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.PRECONDITION_FAILED,
       code: 'server-error.10002',
-      message: message ?? 'PRECONDITION',
+      message: message ?? 'error.PRECONDITION',
       options,
     });
     this.initMessage();

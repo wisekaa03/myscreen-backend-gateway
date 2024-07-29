@@ -3,14 +3,17 @@ import { HttpStatus, InternalServerErrorException } from '@nestjs/common';
 import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
+import { I18nPath } from '@/i18n';
 
-export class InternalServerError extends InternalServerErrorException {
-  constructor(message?: any, options?: TranslateOptions) {
+export class InternalServerError<
+  T extends string = I18nPath,
+> extends InternalServerErrorException {
+  constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       code: 'server-error.10000',
-      message: message ?? 'SERVER_ERROR',
+      message: message ?? 'error.SERVER_ERROR',
       options,
     });
     this.initMessage();

@@ -31,6 +31,7 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { paginationQuery } from '@/utils/pagination-query';
 import { BidService } from '@/database/bid.service';
 import { BidEntity } from '@/database/bid.entity';
+import { I18nPath } from '@/i18n';
 
 @ApiComplexDecorators({
   path: ['bid'],
@@ -137,7 +138,9 @@ export class BidController {
       },
     });
     if (!data) {
-      throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.bid.not_found', {
+        args: { id },
+      });
     }
 
     return {
@@ -180,13 +183,17 @@ export class BidController {
         loadEagerRelations: false,
       });
       if (!bid) {
-        throw new NotFoundError('BID_NOT_FOUND', { args: { id: bidId } });
+        throw new NotFoundError<I18nPath>('error.bid.not_found', {
+          args: { id: bidId },
+        });
       }
     }
 
     const data = await this.bidService.update(bidId, update);
     if (!data) {
-      throw new BadRequestError('Bid exists and not exists ?');
+      throw new NotFoundError<I18nPath>('error.bid.not_found', {
+        args: { id: bidId },
+      });
     }
 
     return {
@@ -224,12 +231,16 @@ export class BidController {
       bid = await this.bidService.findOne({ where: { id } });
     }
     if (!bid) {
-      throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.bid.not_found', {
+        args: { id },
+      });
     }
 
     const { affected } = await this.bidService.delete(bid);
     if (!affected) {
-      throw new NotFoundError('This bid is not exists');
+      throw new NotFoundError<I18nPath>('error.bid.not_found', {
+        args: { id },
+      });
     }
 
     return {

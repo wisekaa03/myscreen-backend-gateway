@@ -8,6 +8,7 @@ import {
 import { Readable } from 'node:stream';
 import StreamPromises from 'node:stream/promises';
 import { join as pathJoin, parse as pathParse } from 'node:path';
+import { rimraf } from 'rimraf';
 import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -34,8 +35,8 @@ import type { FfprobeData } from 'media-probe';
 import {
   ConflictData,
   ConflictError,
-  InternalServerError,
   NotFoundError,
+  ServiceUnavailableError,
 } from '@/errors';
 import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import { FileType } from '@/enums';
@@ -58,6 +59,8 @@ import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from './folder.entity';
 import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
+import { FileExtView } from './file-ext.view';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class FileService {
@@ -104,6 +107,8 @@ export class FileService {
     private readonly playlistRepository: Repository<PlaylistEntity>,
     @InjectRepository(FilePreviewEntity)
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
+    @InjectRepository(FileExtView)
+    private readonly fileExtRepository: Repository<FileExtView>,
   ) {
     this.frontEndUrl = this.configService.get(
       'FRONTEND_URL',
@@ -145,16 +150,21 @@ export class FileService {
   async find({
     caseInsensitive = true,
     signedUrl = true,
+    transact: _transact,
     ...find
-  }: FindManyOptionsExt<FileEntity>): Promise<FileEntity[]> {
-    const conditional = TypeOrmFind.findParams(FileEntity, find);
+  }: FindManyOptionsExt<FileEntity>): Promise<FileExtView[]> {
+    const conditional = TypeOrmFind.findParams<FileExtView>(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};
     }
 
+    const transact = _transact
+      ? _transact.withRepository(this.fileExtRepository)
+      : this.fileExtRepository;
+
     const files = caseInsensitive
-      ? await TypeOrmFind.findCI(this.fileRepository, conditional)
-      : await this.fileRepository.find(conditional);
+      ? await TypeOrmFind.findCI(transact, conditional)
+      : await transact.find(conditional);
 
     if (files.length <= 0) {
       return files;
@@ -175,15 +185,21 @@ export class FileService {
   async findAndCount({
     caseInsensitive = true,
     signedUrl = true,
+    transact: _transact,
     ...find
-  }: FindManyOptionsExt<FileEntity>): Promise<[FileEntity[], number]> {
-    const conditional = TypeOrmFind.findParams(FileEntity, find);
+  }: FindManyOptionsExt<FileEntity>): Promise<[FileExtView[], number]> {
+    const conditional = TypeOrmFind.findParams<FileExtView>(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};
     }
+
+    const transact = _transact
+      ? _transact.withRepository(this.fileExtRepository)
+      : this.fileExtRepository;
+
     const files = caseInsensitive
-      ? await TypeOrmFind.findAndCountCI(this.fileRepository, conditional)
-      : await this.fileRepository.findAndCount(conditional);
+      ? await TypeOrmFind.findAndCountCI(transact, conditional)
+      : await transact.findAndCount(conditional);
 
     if (files[1] <= 0) {
       return files;
@@ -207,16 +223,21 @@ export class FileService {
   async findOne({
     caseInsensitive = true,
     signedUrl = true,
+    transact: _transact,
     ...find
-  }: FindOneOptionsExt<FileEntity>): Promise<FileEntity | null> {
-    const conditional = TypeOrmFind.findParams(FileEntity, find);
+  }: FindOneOptionsExt<FileEntity>): Promise<FileExtView | null> {
+    const conditional = TypeOrmFind.findParams<FileExtView>(FileEntity, find);
     if (find.relations === undefined) {
       conditional.relations = {};
     }
 
+    const transact = _transact
+      ? _transact.withRepository(this.fileExtRepository)
+      : this.fileExtRepository;
+
     const file = caseInsensitive
-      ? await TypeOrmFind.findOneCI(this.fileRepository, conditional)
-      : await this.fileRepository.findOne(conditional);
+      ? await TypeOrmFind.findOneCI(transact, conditional)
+      : await transact.findOne(conditional);
     if (!file) {
       return null;
     }
@@ -240,20 +261,17 @@ export class FileService {
       .then((sum: number | null) => sum ?? 0);
   }
 
-  async signedUrl(file: FileEntity): Promise<FileEntity> {
+  async signedUrl<T extends FileEntity>(file: T): Promise<T> {
     const getObject = new GetObjectCommand({
       Bucket: this.bucket,
       Key: getS3FullName(file),
     });
 
-    const signedUrl = await getSignedUrl(this.s3Service, getObject, {
+    file.signedUrl = await getSignedUrl(this.s3Service, getObject, {
       expiresIn: this.signedUrlExpiresIn,
     });
 
-    return {
-      ...file,
-      signedUrl,
-    } as FileEntity;
+    return file;
   }
 
   async createFolder(
@@ -309,8 +327,8 @@ export class FileService {
    */
   async update(
     file: FileEntity,
-    update: Partial<FileEntity>,
-  ): Promise<FileEntity> {
+    update: Partial<FileExtView>,
+  ): Promise<FileExtView> {
     return this.fileRepository.manager.transaction(
       'REPEATABLE READ',
       async (transact) => {
@@ -352,10 +370,17 @@ export class FileService {
             }),
           )
           .then(() =>
-            transact.findOneByOrFail(FileEntity, {
-              id: file.id,
+            this.findOne({
+              where: { id: file.id },
+              transact,
             }),
           )
+          .then((files) => {
+            if (!files) {
+              throw new ServiceUnavailableError();
+            }
+            return files;
+          })
           .catch((error: unknown) => {
             this.logger.error(`S3 error: ${JSON.stringify(error)}`);
             throw new NotFoundError(`S3 error: ${JSON.stringify(error)}`);
@@ -384,7 +409,7 @@ export class FileService {
     mimetype?: string;
     info?: FfprobeData;
     transact?: EntityManager;
-  }): Promise<FileEntity[]> {
+  }): Promise<FileExtView[]> {
     const {
       user,
       files: _files,
@@ -439,7 +464,7 @@ export class FileService {
     return transactFile.manager.transaction(
       'REPEATABLE READ',
       async (transact) => {
-        const filesPromises = files.map(async (file) => {
+        const filesPromises = files.map(async (fileToSave) => {
           const {
             mimetype,
             originalname: name,
@@ -447,8 +472,8 @@ export class FileService {
             media: info,
             size: filesize,
             buffer,
-          } = file;
-          const { hash } = file;
+            hash,
+          } = fileToSave;
           let filesBuffer: ReadStream | Buffer;
           if (Buffer.isBuffer(buffer)) {
             filesBuffer = buffer;
@@ -471,7 +496,7 @@ export class FileService {
             height = Number(stream.height ?? 0);
           }
 
-          const fileToSave: DeepPartial<FileEntity> = {
+          const fileEntity: DeepPartial<FileEntity> = {
             userId,
             folderId,
             name,
@@ -487,7 +512,7 @@ export class FileService {
           };
 
           const Key = `${folderId}/${hash}-${getS3Name(name)}`;
-          const fileUpdated = await this.s3Service
+          const file = await this.s3Service
             .putObject({
               Bucket: this.bucket,
               Key,
@@ -495,6 +520,9 @@ export class FileService {
               Body: filesBuffer,
             })
             .then((uploaded) => {
+              if (path) {
+                rimraf(path);
+              }
               this.logger.warn(
                 `S3: the file "${name}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
               );
@@ -502,29 +530,36 @@ export class FileService {
             .then(() =>
               transact.save(
                 FileEntity,
-                transact.create(FileEntity, fileToSave),
+                transact.create(FileEntity, fileEntity),
               ),
             )
-            .catch((error: unknown) => {
+            .then(({ id }) =>
+              this.findOne({ caseInsensitive: false, transact, where: { id } }),
+            )
+            .catch((error: any) => {
               this.logger.error(
                 `S3 upload error: "${JSON.stringify(error)}"`,
                 error,
               );
+              throw new Error(error?.message || error);
             });
 
-          return fileUpdated;
+          return file;
         });
 
-        const filesDatabase = await Promise.all(filesPromises).then((files) =>
-          files.reduce(
-            (acc, file) => (file ? acc.concat(file) : acc),
-            [] as FileEntity[],
-          ),
+        const filesCreated = await Promise.allSettled(filesPromises).then(
+          (files) =>
+            files.reduce((acc, p) => {
+              if (p.status === 'fulfilled' && p.value) {
+                return acc.concat(p.value);
+              }
+              return acc;
+            }, [] as FileExtView[]),
         );
 
         await this.wsStatistics.onMetrics({ user });
 
-        return filesDatabase;
+        return filesCreated;
       },
     );
   }
@@ -612,36 +647,55 @@ export class FileService {
     toFolder: FolderEntity,
     originalFiles: FileEntity[],
     transact?: EntityManager,
-  ): Promise<FileEntity[]> {
-    const copyFiles = (transact: EntityManager) => {
-      const filePromises = originalFiles.map(async (file) => {
-        await this.copyS3Object(toFolder, file);
+  ): Promise<FileExtView[]> {
+    const transactFile = transact
+      ? transact.withRepository(this.fileRepository)
+      : this.fileRepository;
 
-        const fileCopy = transact.create(FileEntity, {
-          ...file,
-          userId,
-          folderId: toFolder.id,
-          folder: toFolder,
-          id: undefined,
-          preview: undefined,
-          playlists: undefined,
-          monitors: undefined,
-          createdAt: undefined,
-          updatedAt: undefined,
-        });
-        return transact.save(FileEntity, fileCopy);
-      });
-
-      return Promise.all(filePromises);
-    };
-
-    if (transact) {
-      return copyFiles(transact);
-    }
-
-    return this.fileRepository.manager.transaction(
+    return transactFile.manager.transaction(
       'REPEATABLE READ',
-      async (transact) => copyFiles(transact),
+      async (transact) => {
+        const filePromises = originalFiles.map(async (file) =>
+          this.copyS3Object(toFolder, file)
+            .then(() =>
+              transact.save(
+                FileEntity,
+                transact.create(FileEntity, {
+                  ...file,
+                  userId,
+                  folderId: toFolder.id,
+                  folder: toFolder,
+                  id: undefined,
+                  preview: undefined,
+                  playlists: undefined,
+                  monitors: undefined,
+                  createdAt: undefined,
+                  updatedAt: undefined,
+                }),
+              ),
+            )
+            .then(({ id }) =>
+              this.findOne({
+                caseInsensitive: false,
+                transact,
+                where: { id },
+              }),
+            )
+            .catch((error: any) => {
+              this.logger.error(`S3 copy files error: ${error}`);
+              throw new Error(error?.message || error);
+            }),
+        );
+
+        return Promise.allSettled(filePromises).then((files) =>
+          files.reduce((acc, p) => {
+            if (p.status === 'fulfilled' && p.value) {
+              return acc.concat(p.value);
+            }
+            return acc;
+          }, [] as FileExtView[]),
+        );
+      },
     );
   }
 
@@ -739,7 +793,7 @@ export class FileService {
       name: playlist.name,
       file: playlist.files.find((file) => filesId.includes(file.id)),
     }));
-    throw new ConflictError('CONFLICT_ERROR', {}, errorMsg);
+    throw new ConflictError<I18nPath>('error.CONFLICT_ERROR', {}, errorMsg);
   }
 
   /**
@@ -766,15 +820,19 @@ export class FileService {
             id: file.id,
           }),
         )
-        .catch((error: unknown) => {
+        .catch((error: any) => {
           this.logger.error(`S3 Error deleteObject: ${JSON.stringify(error)}`);
+          throw new Error(error?.message || error);
         }),
     );
-    const filesDelete = await Promise.all(filesS3DeletePromise).then((files) =>
-      files.reduce(
-        (acc, file) => (file ? acc.concat(file) : acc),
-        [] as DeleteResult[],
-      ),
+    const filesDelete = await Promise.allSettled(filesS3DeletePromise).then(
+      (files) =>
+        files.reduce((acc, p) => {
+          if (p.status === 'fulfilled' && p.value) {
+            return acc.concat(p.value);
+          }
+          return acc;
+        }, [] as DeleteResult[]),
     );
 
     return filesDelete;
@@ -871,6 +929,8 @@ export class FileService {
       this.logger.debug(`Preview file "${file.name}" has cached`);
 
       preview = await fs.readFile(outPath);
+    } else if (file.preview) {
+      preview = Buffer.from(file.preview.preview);
     } else {
       try {
         const data: GetObjectCommandOutput = await this.getS3Object(file);
@@ -880,19 +940,23 @@ export class FileService {
           const outputStream = createWriteStream(filename);
           await StreamPromises.pipeline(data.Body, outputStream);
 
-          await FfMpegPreview(file.type, file.info || {}, filename, outPath);
-
-          preview = await fs.readFile(outPath);
-
-          const id = file.preview?.id;
-          if (id) {
-            await this.filePreviewRepository.update(id, { preview });
-          } else {
-            await this.filePreviewRepository.insert({
-              fileId: file.id,
-              preview,
+          preview = await FfMpegPreview(
+            file.type,
+            file.info || {},
+            filename,
+            outPath,
+          )
+            .then(() => fs.readFile(outPath))
+            .then((preview) => {
+              this.filePreviewRepository.upsert(
+                {
+                  fileId: file.id,
+                  preview,
+                },
+                ['id'],
+              );
+              return preview;
             });
-          }
         } else {
           throw new Error('Body is not Readable');
         }

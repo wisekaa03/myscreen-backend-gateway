@@ -12,6 +12,7 @@ import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from './folder.entity';
 import { WsStatistics } from './ws.statistics';
+import { FileExtView } from './file-ext.view';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -64,6 +65,10 @@ describe(FileService.name, () => {
         },
         {
           provide: getRepositoryToken(PlaylistEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(FileExtView),
           useClass: mockRepository,
         },
       ],

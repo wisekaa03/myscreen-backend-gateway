@@ -8,6 +8,7 @@ import {
   JoinColumn,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   RelationId,
@@ -33,6 +34,8 @@ import { UserEntity } from './user.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from '@/database/folder.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
+import { EditorLayerEntity } from './editor-layer.entity';
+import { EditorEntity } from './editor.entity';
 
 @Entity('file', { comment: 'Файлы' })
 export class FileEntity extends BaseEntity {
@@ -184,12 +187,20 @@ export class FileEntity extends BaseEntity {
   preview?: FilePreviewEntity;
 
   @ManyToMany(() => PlaylistEntity, (playlist) => playlist.files, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
     nullable: true,
     eager: false,
   })
   playlists?: PlaylistEntity[];
+
+  @OneToMany(() => EditorLayerEntity, (editorLayer) => editorLayer.file, {
+    eager: false,
+  })
+  editorLayer?: EditorLayerEntity[];
+
+  @OneToMany(() => EditorEntity, (editor) => editor.renderedFile, {
+    eager: false,
+  })
+  editorRendered?: EditorEntity[];
 
   @CreateDateColumn()
   @ApiProperty({

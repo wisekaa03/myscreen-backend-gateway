@@ -1,7 +1,6 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
   DataSource,
-  OneToMany,
   SelectQueryBuilder,
   ViewColumn,
   ViewEntity,
@@ -16,21 +15,16 @@ import {
   MonitorStatus,
   PlaylistStatusEnum,
   UserPlanEnum,
-  UserRoleEnum,
 } from '@/enums';
 import { FileEntity } from './file.entity';
-import {
-  UserEntity,
-  defaultCountry,
-  defaultLanguage,
-  defaultLocale,
-} from './user.entity';
+import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
 import { WalletEntity } from './wallet.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { BidEntity } from './bid.entity';
 import { ActEntity } from './act.entity';
 import { RefreshTokenEntity } from './refreshtoken.entity';
+import { Exclude } from 'class-transformer';
 
 export class UserMetricsMonitors {
   @ApiProperty({
@@ -133,7 +127,7 @@ export class UserLastEntry {
 }
 
 @ViewEntity({
-  name: 'user_response',
+  name: 'user_ext',
   materialized: false,
   expression: (connection: DataSource) =>
     connection
@@ -313,364 +307,62 @@ export class UserLastEntry {
         '"refreshTokenLastLoginUserId" = "user"."id"',
       ),
 })
-export class UserResponse implements UserEntity {
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Идентификатор пользователя',
-    format: 'uuid',
-  })
-  id!: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'EMail пользователя',
-    type: 'string',
-    format: 'email',
-    minLength: 6,
-    maxLength: 254,
-    example: 'foo@bar.baz',
-  })
-  email!: string;
-
-  @ViewColumn()
-  @ApiHideProperty()
-  disabled!: boolean;
-
-  @ViewColumn()
-  @ApiProperty({
-    type: 'string',
-    description: 'Фамилия',
-    example: 'Steve',
-    maxLength: 50,
-    nullable: true,
-    required: false,
-  })
-  surname!: string | null;
-
-  @ViewColumn()
-  @ApiProperty({
-    type: 'string',
-    description: 'Имя',
-    example: 'John',
-    maxLength: 50,
-    nullable: true,
-    required: false,
-  })
-  name!: string | null;
-
-  @ViewColumn()
-  @ApiProperty({
-    type: 'string',
-    description: 'Отчество',
-    maxLength: 50,
-    example: 'Doe',
-    nullable: true,
-    required: false,
-  })
-  middleName!: string | null;
-
-  @ViewColumn()
-  @ApiHideProperty()
-  password?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Телефон пользователя',
-    example: '+78002000000',
-    maxLength: 14,
-    nullable: true,
-    required: false,
-  })
-  phoneNumber?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Город',
-    example: 'Krasnodar',
-    maxLength: 100,
-    nullable: true,
-    required: false,
-  })
-  city!: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Страна',
-    example: defaultCountry,
-    maxLength: 2,
-    required: false,
-  })
-  country!: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Предпочитаемый язык',
-    example: defaultLanguage,
-    maxLength: 6,
-    required: false,
-  })
-  preferredLanguage!: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Настройки даты',
-    example: defaultLocale,
-    maxLength: 6,
-    required: false,
-  })
-  locale!: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Дисковое пространство',
-    example: 20000000,
-    required: false,
-  })
-  storageSpace?: number;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Роль пользователя',
-    enum: UserRoleEnum,
-    enumName: 'UserRole',
-    example: UserRoleEnum.Advertiser,
-    required: true,
-  })
-  role!: UserRoleEnum;
-
-  @ViewColumn()
-  forgotConfirmKey?: string | null;
-
-  @ViewColumn()
-  emailConfirmKey?: string | null;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'EMail подтвержден',
-    example: true,
-    required: false,
-  })
-  verified!: boolean;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'План пользователя',
-    enum: UserPlanEnum,
-    enumName: 'UserPlan',
-    example: UserPlanEnum.Full,
-    required: false,
-  })
-  plan?: UserPlanEnum;
-
-  @OneToMany(() => MonitorEntity, (monitor) => monitor.user)
-  monitors?: MonitorEntity[];
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Сколько раз отправлялось напоминание о неуплате',
-    example: 0,
-  })
-  nonPayment!: number;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Компания',
-    example: 'ACME corporation',
-    maxLength: 100,
-    nullable: true,
-    required: false,
-  })
-  company?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Юридический адрес',
-    example: 'г. Краснодар, ул. Красная, д. 1',
-    maxLength: 254,
-    required: false,
-  })
-  companyLegalAddress?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Фактический адрес',
-    example: 'г. Краснодар, ул. Красная, д. 1',
-    maxLength: 254,
-    required: false,
-  })
-  companyActualAddress?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Идентификационный номер налогоплательщика (ИНН)',
-    example: '012345678901',
-    maxLength: 12,
-    required: false,
-  })
-  companyTIN?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Код Причины Постановки на учет (КПП)',
-    example: '012345678901',
-    maxLength: 9,
-    required: false,
-  })
-  companyRRC?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Основной Государственный Регистрационный Номер (ОГРН)',
-    example: '012345678901',
-    maxLength: 15,
-    required: false,
-  })
-  companyPSRN?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Телефон организации',
-    example: '+78002000000',
-    maxLength: 14,
-    required: false,
-  })
-  companyPhone?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Email организации',
-    example: 'we@are.the.best',
-    maxLength: 254,
-    required: false,
-  })
-  companyEmail?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Наименование банка',
-    example: 'Банк',
-    maxLength: 254,
-    required: false,
-  })
-  companyBank?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Банковский идентификационный код (БИК)',
-    example: '012345678',
-    maxLength: 9,
-    required: false,
-  })
-  companyBIC?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Корреспондентский счет',
-    example: '30101810400000000000',
-    maxLength: 20,
-    required: false,
-  })
-  companyCorrespondentAccount?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Расчетный счет',
-    example: '40802810064580000000',
-    maxLength: 20,
-    required: false,
-  })
-  companyPaymentAccount?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Факс организации',
-    example: '+78002000000',
-    maxLength: 14,
-    required: false,
-  })
-  companyFax?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Представитель организации',
-    example: 'Тухбатуллина Юлия Евгеньевна',
-    maxLength: 254,
-    required: false,
-  })
-  companyRepresentative?: string;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Время создания',
-    example: '2021-01-01T00:00:00.000Z',
-    examples: {
-      one: '2021-01-01',
-      two: ['2021-12-30', '2021-12-31T10:10:10'],
-    },
-    type: 'string',
-    format: 'date-time',
-    required: false,
-  })
-  createdAt?: Date;
-
-  @ViewColumn()
-  @ApiProperty({
-    description: 'Время изменения',
-    example: '2021-01-01T00:00:00.000Z',
-    examples: {
-      one: '2021-01-01',
-      two: ['2021-12-30', '2021-12-31T10:10:10'],
-    },
-    type: 'string',
-    format: 'date-time',
-    required: false,
-  })
-  updatedAt?: Date;
-
+export class UserExtView extends UserEntity {
   // добавочные LEFT JOIN поля
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   countUsedSpace!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   countMonitors!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   onlineMonitors!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   offlineMonitors!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   emptyMonitors!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   walletSum!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   monthlyPayment!: Date;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   playlistAdded!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   playlistBroadcast!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   refreshTokenLastLoginUpdatedAt!: string;
 
   @ViewColumn()
   @ApiHideProperty()
+  @Exclude()
   refreshTokenLastLoginUserAgent!: string;
 
   // Вычисляемые поля
@@ -793,4 +485,4 @@ export const UserResponseToExternal = ({
   refreshTokenLastLoginUpdatedAt,
   refreshTokenLastLoginUserAgent,
   ...user
-}: UserResponse): UserResponse => user as UserResponse;
+}: UserExtView): UserExtView => user as UserExtView;

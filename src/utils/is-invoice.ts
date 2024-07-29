@@ -6,6 +6,7 @@ export const isInvoice = (invoice: any): invoice is InvoiceEntity => {
     typeof invoice.id === 'string' &&
     typeof invoice.seqNo === 'number' &&
     typeof invoice.sum === 'string' &&
-    typeof invoice.description === 'string'
+    typeof invoice.description === 'string' &&
+    typeof invoice.user === 'object'
   );
 };

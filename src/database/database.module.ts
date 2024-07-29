@@ -10,7 +10,6 @@ import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorService } from './editor.service';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
-import { FolderFileNumberEntity } from './folder.view.entity';
 import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
 import { FilePreviewEntity } from './file-preview.entity';
@@ -22,7 +21,9 @@ import { InvoiceService } from './invoice.service';
 import { PlaylistEntity } from './playlist.entity';
 import { PlaylistService } from './playlist.service';
 import { UserEntity } from './user.entity';
-import { UserResponse } from './user-response.entity';
+import { UserExtView } from './user-ext.view';
+import { FileExtView } from './file-ext.view';
+import { FolderExtView } from './folder-ext.view';
 import { UserService } from './user.service';
 import { RefreshTokenEntity } from './refreshtoken.entity';
 import { RefreshTokenService } from './refreshtoken.service';
@@ -51,7 +52,6 @@ import { MonitorOnlineService } from './monitor-online.service';
       EditorEntity,
       EditorLayerEntity,
       FolderEntity,
-      FolderFileNumberEntity,
       FileEntity,
       FilePreviewEntity,
       MonitorEntity,
@@ -60,13 +60,15 @@ import { MonitorOnlineService } from './monitor-online.service';
       InvoiceEntity,
       PlaylistEntity,
       UserEntity,
-      UserResponse,
       RefreshTokenEntity,
       BidEntity,
       WalletEntity,
       ActEntity,
       MonitorStatisticsEntity,
       MonitorOnlineEntity,
+      UserExtView,
+      FileExtView,
+      FolderExtView,
     ]),
   ],
 
@@ -130,6 +132,9 @@ export class DatabaseModule implements OnModuleInit {
           groupOnlineMonitors: 0,
         });
       }
+
+      await manager.query('DROP VIEW IF EXISTS folder_file_number_entity');
+      await manager.query('DROP VIEW IF EXISTS user_response');
     });
   }
 }

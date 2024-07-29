@@ -1,14 +1,10 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 
-import { FileEntity } from '@/database/file.entity';
 import { FolderEntity } from '@/database/folder.entity';
 import { FolderResponse } from './folder.response';
+import { FileExtView } from '@/database/file-ext.view';
 
-export class FileResponse extends OmitType(FileEntity, [
-  'preview',
-  'folder',
-  'folderId',
-]) {
+export class FileResponse extends OmitType(FileExtView, ['preview', 'folder']) {
   @ApiProperty({
     description: 'Папка',
     type: FolderResponse,

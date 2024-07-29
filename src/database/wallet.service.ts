@@ -15,8 +15,8 @@ import { ClientProxy } from '@nestjs/microservices';
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
-  MailBalanceChanged,
-  MailBalanceNotChanged,
+  MsvcMailBalanceChanged,
+  MsvcMailBalanceNotChanged,
 } from '@/interfaces';
 import {
   UserRoleEnum,
@@ -31,7 +31,7 @@ import { getFullName } from '@/utils/full-name';
 import { ActService } from './act.service';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
-import { UserResponse } from './user-response.entity';
+import { UserExtView } from './user-ext.view';
 
 @Injectable()
 export class WalletService {
@@ -176,7 +176,7 @@ export class WalletService {
     transact,
     balance,
   }: {
-    user: UserResponse | UserEntity;
+    user: UserExtView | UserEntity;
     transact: EntityManager;
     balance?: number;
   }) {
@@ -247,7 +247,7 @@ export class WalletService {
         this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
 
         // и вывод информации на email
-        this.mailService.emit<unknown, MailBalanceChanged>(
+        this.mailService.emit<unknown, MsvcMailBalanceChanged>(
           MsvcMailService.BalanceChanged,
           {
             user,
@@ -272,7 +272,7 @@ export class WalletService {
           }
 
           // и вывод информации на email
-          this.mailService.emit<unknown, MailBalanceNotChanged>(
+          this.mailService.emit<unknown, MsvcMailBalanceNotChanged>(
             MsvcMailService.BalanceNotChanged,
             {
               user,

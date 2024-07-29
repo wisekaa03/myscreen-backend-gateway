@@ -34,6 +34,7 @@ import { PlaylistService } from '@/database/playlist.service';
 import type { FileEntity } from '@/database/file.entity';
 import { FileService } from '@/database/file.service';
 import { PlaylistEntity } from '@/database/playlist.entity';
+import { I18nPath } from '@/i18n';
 
 @ApiComplexDecorators({
   path: ['playlist'],
@@ -152,7 +153,9 @@ export class PlaylistController {
       where: { id },
     });
     if (!data) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
+        args: { id },
+      });
     }
 
     return {
@@ -182,7 +185,9 @@ export class PlaylistController {
       where: { id },
     });
     if (!playlist) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
+        args: { id },
+      });
     }
 
     let files: FileEntity[] = [];
@@ -227,12 +232,16 @@ export class PlaylistController {
     }
     const data = await this.playlistService.findOne({ where });
     if (!data) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
+        args: { id },
+      });
     }
 
     const { affected } = await this.playlistService.delete(user, data);
     if (!affected) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
+        args: { id },
+      });
     }
 
     return {

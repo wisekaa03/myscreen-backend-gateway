@@ -11,9 +11,10 @@ import {
 import { FileService } from './file.service';
 import { FolderEntity } from './folder.entity';
 import { FolderService } from './folder.service';
-import { FolderFileNumberEntity } from './folder.view.entity';
+import { FolderExtView } from './folder-ext.view';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
+import { FileExtView } from './file-ext.view';
 
 export const mockRepository = jest.fn(() => ({
   find: async (find: FindOneOptions<ObjectLiteral>) =>
@@ -73,7 +74,11 @@ describe(FolderService.name, () => {
           useClass: mockRepository,
         },
         {
-          provide: getRepositoryToken(FolderFileNumberEntity),
+          provide: getRepositoryToken(FileExtView),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(FolderExtView),
           useClass: mockRepository,
         },
       ],

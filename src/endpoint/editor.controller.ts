@@ -23,6 +23,7 @@ import { FindOptionsWhere } from 'typeorm';
 import {
   BadRequestError,
   NotFoundError,
+  PreconditionFailedError,
   ServiceUnavailableError,
 } from '@/errors';
 import {
@@ -48,6 +49,7 @@ import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { UserService } from '@/database/user.service';
 import { EditorEntity } from '@/database/editor.entity';
 import { FileEntity } from '@/database/file.entity';
+import { I18nPath } from '@/i18n';
 
 @ApiComplexDecorators({
   path: ['editor'],
@@ -113,13 +115,14 @@ export class EditorController {
   ): Promise<EditorGetResponse> {
     const editor = await this.editorService.find({
       where: { userId: user.id, name: body.name },
+      select: ['id'],
     });
     if (Array.isArray(editor) && editor.length > 0) {
       throw new BadRequestError('This name is already taken');
     }
     const data = await this.editorService.create({ ...body, userId: user.id });
     if (!data) {
-      throw new NotFoundError('Editor not found');
+      throw new PreconditionFailedError<I18nPath>('error.editor.not_created');
     }
 
     return {
@@ -234,7 +237,9 @@ export class EditorController {
       select: ['id', 'userId'],
     });
     if (!editor) {
-      throw new NotFoundError(`Editor '${id}' is not found`);
+      throw new NotFoundError<I18nPath>('error.bid.not_found', {
+        args: { id },
+      });
     }
 
     const { affected } = await this.editorService.delete(user.id, editor);
@@ -531,7 +536,9 @@ export class EditorController {
       relations: ['videoLayers', 'audioLayers'],
     });
     if (!editor) {
-      throw new NotFoundError('Editor not found');
+      throw new NotFoundError<I18nPath>('error.editor.not_found', {
+        args: { id },
+      });
     }
 
     const capturedFrame = await this.editorService.captureFrame(editor, time);
@@ -561,14 +568,17 @@ export class EditorController {
       },
     });
     if (!data) {
-      throw new NotFoundError('Editor not found');
+      throw new NotFoundError<I18nPath>('error.bid.not_found', {
+        args: { id },
+      });
     }
     if (data.renderingStatus === RenderingStatus.Error) {
       await this.editorService.update(id, {
         renderingError: null,
         renderingStatus: RenderingStatus.Initial,
       });
-      throw new ServiceUnavailableError(data.renderingError);
+      const error = data.renderingError ?? undefined;
+      throw new ServiceUnavailableError(error);
     }
 
     return {

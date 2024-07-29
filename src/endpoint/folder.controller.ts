@@ -37,6 +37,7 @@ import { TypeOrmFind } from '@/utils/typeorm.find';
 import { FolderEntity } from '@/database/folder.entity';
 import { FolderService } from '@/database/folder.service';
 import { UserService } from '@/database/user.service';
+import { FolderExtView } from '@/database/folder-ext.view';
 
 @ApiExtraModels(FolderResponse)
 @ApiComplexDecorators({
@@ -202,15 +203,17 @@ export class FolderController {
       }
     }
 
-    const foldersPromise = folders.map(({ id, name, parentFolderId }) =>
+    const foldersPromise = folders.map(async ({ id, name, parentFolderId }) =>
       this.folderService.update(id, { name, userId, parentFolderId }),
     );
 
-    const dataFromPromise = await Promise.allSettled(foldersPromise);
-    const data = dataFromPromise.reduce(
-      (result, folder) =>
-        folder.status === 'fulfilled' ? result.concat(folder.value) : result,
-      [] as FolderEntity[],
+    const data = await Promise.allSettled(foldersPromise).then((folder) =>
+      folder.reduce((acc, p) => {
+        if (p.status === 'fulfilled' && p.value) {
+          return acc.concat(p.value);
+        }
+        return acc;
+      }, [] as FolderExtView[]),
     );
 
     return {

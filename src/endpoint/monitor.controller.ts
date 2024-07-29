@@ -238,7 +238,7 @@ export class MonitorController {
     }
 
     if (role !== UserRoleEnum.Administrator && plan === UserPlanEnum.Demo) {
-      const countMonitors = await this.monitorService.countMonitors(userId);
+      const countMonitors = await this.monitorService.countMonitors({ userId });
       if (countMonitors > 5) {
         throw new ForbiddenError(
           'You have a Demo User account. There are 5 monitors limit.',

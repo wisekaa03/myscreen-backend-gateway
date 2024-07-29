@@ -11,7 +11,8 @@ import { AuthenticationPayload } from '@/dto';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { RefreshTokenEntity } from '@/database/refreshtoken.entity';
-import { UserResponse } from '@/database/user-response.entity';
+import { UserExtView } from '@/database/user-ext.view';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class AuthService {
@@ -42,24 +43,26 @@ export class AuthService {
     password: string,
     fingerprint?: string,
     userAgent?: string,
-  ): Promise<[UserResponse, AuthenticationPayload]> {
+  ): Promise<[UserExtView, AuthenticationPayload]> {
     if (!email || !password) {
-      throw new ForbiddenError('PASSWORD_MISMATCHED');
+      throw new ForbiddenError<I18nPath>('error.auth.password_mismatched');
     }
 
-    const user = await this.userService.findByEmail(email);
+    let user = await this.userService.findByEmail(email, {
+      select: ['id', 'email', 'password', 'role', 'verified', 'disabled'],
+    });
     if (!user) {
-      throw new ForbiddenError('PASSWORD_MISMATCHED');
+      throw new ForbiddenError<I18nPath>('error.auth.password_mismatched');
     }
     if (!user.verified) {
-      throw new ForbiddenError('YOU_HAVE_TO_RESPOND');
+      throw new ForbiddenError<I18nPath>('error.auth.have_to_respond');
     }
 
     const valid = user.password
       ? UserService.validateCredentials(user, password)
       : false;
     if (!valid) {
-      throw new ForbiddenError('PASSWORD_MISMATCHED');
+      throw new ForbiddenError<I18nPath>('error.auth.password_mismatched');
     }
 
     const [token, refresh] = await Promise.all([
@@ -67,6 +70,10 @@ export class AuthService {
       this.generateRefreshToken(user.id, fingerprint, userAgent),
     ]);
     const payload = this.buildResponsePayload(token, refresh);
+    user = await this.userService.findById(user.id);
+    if (!user) {
+      throw new ForbiddenError<I18nPath>('error.auth.password_mismatched');
+    }
 
     return [user, payload];
   }
@@ -85,7 +92,7 @@ export class AuthService {
     return payload;
   }
 
-  async generateAccessToken(user: UserResponse): Promise<string> {
+  async generateAccessToken(user: UserExtView): Promise<string> {
     const opts: JwtSignOptions = {
       ...JWT_BASE_OPTIONS,
       subject: String(user.id),
@@ -117,7 +124,7 @@ export class AuthService {
     return this.jwtService.signAsync({}, opts);
   }
 
-  async resolveRefreshToken(encoded: string): Promise<UserResponse> {
+  async resolveRefreshToken(encoded: string): Promise<UserExtView> {
     const payload = await this.decodeRefreshToken(encoded);
     const token = await this.getStoredTokenFromRefreshTokenPayload(payload);
 
@@ -176,7 +183,7 @@ export class AuthService {
       this.generateAccessToken({
         id: monitorId,
         role: UserRoleEnum.Monitor,
-      } as UserResponse),
+      } as UserExtView),
       this.createMonitorRefreshToken(monitorId),
     ]);
 
@@ -199,7 +206,7 @@ export class AuthService {
 
   private async getUserFromRefreshTokenPayload(
     payload: MyscreenJwtPayload,
-  ): Promise<UserResponse | null> {
+  ): Promise<UserExtView | null> {
     const { sub, iss } = payload;
 
     if (!sub) {

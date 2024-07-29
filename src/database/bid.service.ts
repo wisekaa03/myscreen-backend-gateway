@@ -16,7 +16,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
-  MailSendBidMessage,
+  MsvcMailBidMessage,
 } from '@/interfaces';
 import {
   BidApprove,
@@ -34,9 +34,10 @@ import { FileService } from '@/database/file.service';
 import { ActService } from './act.service';
 import { BidEntity } from './bid.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { UserResponse } from './user-response.entity';
+import { UserExtView } from './user-ext.view';
 import { WalletService } from './wallet.service';
 import { WsStatistics } from './ws.statistics';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class BidService {
@@ -243,7 +244,7 @@ export class BidService {
           transact.create(BidEntity, update),
         );
         if (!updateResult.affected) {
-          throw new NotFoundError('Application not found');
+          throw new NotFoundError<I18nPath>('error.bid.not_found');
         }
 
         let relations: FindOptionsRelations<BidEntity>;
@@ -263,14 +264,16 @@ export class BidService {
           relations,
         });
         if (!bid) {
-          throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
+          throw new NotFoundError<I18nPath>('error.bid.not_found', {
+            args: { id },
+          });
         }
 
         if (update.approved === BidApprove.NOTPROCESSED) {
           const sellerEmail = bid.seller?.email;
           if (sellerEmail) {
             const language = bid.seller?.preferredLanguage;
-            this.mailService.emit<unknown, MailSendBidMessage>(
+            this.mailService.emit<unknown, MsvcMailBidMessage>(
               MsvcMailService.BidWarning,
               {
                 email: sellerEmail,
@@ -324,7 +327,7 @@ export class BidService {
     dateBefore,
     playlistChange,
   }: {
-    user: UserResponse;
+    user: UserExtView;
     playlistId: string;
     monitorIds: string[];
     dateWhen: Date;
@@ -348,7 +351,7 @@ export class BidService {
       where,
     });
     if (!playlist) {
-      throw new NotFoundError('PLAYLIST_NOT_FOUND', {
+      throw new NotFoundError<I18nPath>('error.playlist.not_found', {
         args: { id: playlistId },
       });
     }
@@ -394,7 +397,7 @@ export class BidService {
             });
 
             if (sum > totalBalance) {
-              throw new NotAcceptableError('BALANCE', {
+              throw new NotAcceptableError<I18nPath>('error.BALANCE', {
                 args: { sum, totalBalance },
               });
             }
@@ -418,7 +421,7 @@ export class BidService {
             transact.create(BidEntity, insert),
           );
           if (!insertResult.identifiers[0]) {
-            throw new NotFoundError('BID_ERROR');
+            throw new NotFoundError<I18nPath>('error.bid.error');
           }
           const { id } = insertResult.identifiers[0];
 
@@ -439,7 +442,9 @@ export class BidService {
             relations,
           });
           if (!bid) {
-            throw new NotFoundError('BID_NOT_FOUND', { args: { id } });
+            throw new NotFoundError<I18nPath>('error.bid.not_found', {
+              args: { id },
+            });
           }
 
           // Списываем средства со счета пользователя Рекламодателя
@@ -458,7 +463,7 @@ export class BidService {
             const sellerEmail = bid.seller.email;
             const language =
               bid.seller.preferredLanguage ?? user.preferredLanguage;
-            this.mailService.emit<unknown, MailSendBidMessage>(
+            this.mailService.emit<unknown, MsvcMailBidMessage>(
               MsvcMailService.BidWarning,
               {
                 email: sellerEmail,
@@ -520,7 +525,7 @@ export class BidService {
     dateTo,
     monitorIds,
   }: {
-    user: UserResponse;
+    user: UserExtView;
     playlistDuration: number;
     dateFrom: string;
     dateTo: string;
@@ -559,7 +564,7 @@ export class BidService {
     dateWhen,
     playlistId,
   }: {
-    user: UserResponse;
+    user: UserExtView;
     minWarranty: number;
     price1s: number;
     dateBefore: Date | null;
@@ -573,7 +578,7 @@ export class BidService {
       select: ['id', 'files'],
     });
     if (!playlist) {
-      throw new NotFoundError('Playlist not found');
+      throw new NotFoundError<I18nPath>('error.playlist.not_found');
     }
 
     // продолжительность плейлиста заявки в сек.

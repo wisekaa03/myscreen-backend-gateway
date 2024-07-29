@@ -18,10 +18,10 @@ import {
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
-  MailInvoiceAwaitingConfirmation,
-  MailInvoiceConfirmed,
-  MailInvoicePayed,
-  PrintInvoice,
+  MsvcMailInvoiceAwaitingConfirmation,
+  MsvcMailInvoiceConfirmed,
+  MsvcMailInvoicePayed,
+  MsvcFormInvoice,
 } from '@/interfaces';
 import { formatToContentType } from '@/constants';
 import {
@@ -41,6 +41,8 @@ import { WalletService } from './wallet.service';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
+import { UserExtView } from './user-ext.view';
+import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class InvoiceService {
@@ -61,8 +63,8 @@ export class InvoiceService {
     private readonly formService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(UserExtView)
+    private readonly userExtRepository: Repository<UserExtView>,
   ) {
     this.minInvoiceSum = parseInt(
       this.configService.getOrThrow('MIN_INVOICE_SUM'),
@@ -109,7 +111,9 @@ export class InvoiceService {
     description: string,
   ): Promise<InvoiceEntity | null> {
     if (sum < this.minInvoiceSum) {
-      throw new BadRequestError('INVOICE_MINIMUM_SUM');
+      throw new BadRequestError<I18nPath>('error.invoice.minimum_sum', {
+        args: { sum: this.minInvoiceSum },
+      });
     }
     const { id: userId } = user;
 
@@ -154,7 +158,9 @@ export class InvoiceService {
           relations: { user: true, file: true },
         });
         if (!invoice) {
-          throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+          throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+            args: { id },
+          });
         }
 
         return invoice;
@@ -171,7 +177,7 @@ export class InvoiceService {
 
   async upload(invoice: InvoiceEntity, file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestError('INVOICE_FILE');
+      throw new BadRequestError<I18nPath>('error.invoice.file');
     }
     const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
     const { id: folderId } =
@@ -198,7 +204,9 @@ export class InvoiceService {
       relations: { file: true },
     });
     if (!invoiceFind) {
-      throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+        args: { id },
+      });
     }
     if (invoiceFind.file) {
       invoiceFind.file = await this.fileService.signedUrl(invoiceFind.file);
@@ -219,14 +227,14 @@ export class InvoiceService {
     const language =
       invoiceUser.preferredLanguage ??
       this.configService.getOrThrow('DEFAULT_LANGUAGE');
-    const invoiceFileObservable = this.formService.send<Buffer, PrintInvoice>(
-      MsvcFormService.Invoice,
-      {
-        format,
-        invoice,
-        language,
-      },
-    );
+    const invoiceFileObservable = this.formService.send<
+      Buffer,
+      MsvcFormInvoice
+    >(MsvcFormService.Invoice, {
+      format,
+      invoice,
+      language,
+    });
     const fileBuffer = Buffer.from(await lastValueFrom(invoiceFileObservable));
 
     const specificFormat = formatToContentType[format]
@@ -267,7 +275,9 @@ export class InvoiceService {
             status,
           });
           if (!update.affected) {
-            throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+            throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+              args: { id },
+            });
           }
         }
 
@@ -296,7 +306,7 @@ export class InvoiceService {
             });
 
             // и выводится письмо о том, что счет оплачен
-            this.mailService.emit<unknown, MailInvoicePayed>(
+            this.mailService.emit<unknown, MsvcMailInvoicePayed>(
               MsvcMailService.InvoicePayed,
               {
                 invoice,
@@ -316,7 +326,7 @@ export class InvoiceService {
 
           // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
           case InvoiceStatus.AWAITING_CONFIRMATION: {
-            const accountantUsers = await this.userRepository.find({
+            const accountantUsers = await this.userExtRepository.find({
               where: {
                 role: UserRoleEnum.Accountant,
                 disabled: false,
@@ -326,13 +336,13 @@ export class InvoiceService {
 
             accountantUsers.forEach(async (user) => {
               // Вызов сервиса отправки писем
-              this.mailService.emit<unknown, MailInvoiceAwaitingConfirmation>(
-                MsvcMailService.InvoiceAwaitingConfirmation,
-                {
-                  user,
-                  invoice,
-                },
-              );
+              this.mailService.emit<
+                unknown,
+                MsvcMailInvoiceAwaitingConfirmation
+              >(MsvcMailService.InvoiceAwaitingConfirmation, {
+                user,
+                invoice,
+              });
             });
 
             break;
@@ -358,7 +368,7 @@ export class InvoiceService {
               });
             if (data.Body instanceof Readable) {
               const invoiceFile = await buffer(data.Body);
-              this.mailService.emit<unknown, MailInvoiceConfirmed>(
+              this.mailService.emit<unknown, MsvcMailInvoiceConfirmed>(
                 MsvcMailService.InvoiceConfirmed,
                 {
                   user: invoiceUser,
@@ -386,7 +396,9 @@ export class InvoiceService {
       relations: { file: true },
     });
     if (!invoiceChanged) {
-      throw new NotFoundError('INVOICE_NOT_FOUND', { args: { id } });
+      throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+        args: { id },
+      });
     }
     if (invoiceChanged.file) {
       invoiceChanged.file = await this.fileService.signedUrl(

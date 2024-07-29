@@ -8,10 +8,15 @@ export enum MsvcMailService {
   ForgotPassword = 'forgotPassword',
   BalanceChanged = 'balanceChanged',
   BalanceNotChanged = 'balanceNotChanged',
+  Verify = 'verify',
 }
 
 export enum MsvcFormService {
   Invoice = 'invoice',
   ReportDeviceStatus = 'reportDeviceStatus',
   ReportViews = 'reportViews',
+}
+
+export enum MsvcEditor {
+  Export = 'export',
 }

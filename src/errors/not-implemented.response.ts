@@ -3,14 +3,17 @@ import { HttpStatus, NotImplementedException } from '@nestjs/common';
 import { TranslateOptions } from 'nestjs-i18n';
 
 import { Status } from '@/enums/status.enum';
+import { I18nPath } from '@/i18n';
 
-export class NotImplementedError extends NotImplementedException {
-  constructor(message?: string, options?: TranslateOptions) {
+export class NotImplementedError<
+  T extends string = I18nPath,
+> extends NotImplementedException {
+  constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.NOT_IMPLEMENTED,
       code: 'server-error.10000',
-      message: message ?? 'NOT_IMPLEMENTED',
+      message: message ?? 'error.NOT_IMPLEMENTED',
       options,
     });
     this.initMessage();
