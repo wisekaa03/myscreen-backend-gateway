@@ -520,7 +520,7 @@ export class FileService {
               Body: filesBuffer,
             })
             .then((uploaded) => {
-              if (path) {
+              if (fileExist(path)) {
                 rimraf(path);
               }
               this.logger.warn(
@@ -937,8 +937,7 @@ export class FileService {
         if (data.Body instanceof Readable) {
           this.logger.debug(`The file "${file.name}" has been downloaded`);
 
-          const outputStream = createWriteStream(filename);
-          await StreamPromises.pipeline(data.Body, outputStream);
+          await StreamPromises.pipeline(data.Body, createWriteStream(filename));
 
           preview = await FfMpegPreview(
             file.type,
@@ -946,6 +945,11 @@ export class FileService {
             filename,
             outPath,
           )
+            .then(() => {
+              if (fileExist(filename)) {
+                rimraf(filename);
+              }
+            })
             .then(() => fs.readFile(outPath))
             .then((preview) => {
               this.filePreviewRepository.upsert(
@@ -960,9 +964,9 @@ export class FileService {
         } else {
           throw new Error('Body is not Readable');
         }
-      } catch (error: unknown) {
+      } catch (error: any) {
         this.logger.error(
-          `S3 Error preview: "${file.name}" (${getS3FullName(file)})`,
+          `S3 Error preview: "${file.name}" (${getS3FullName(file)}): ${error?.message}`,
           error,
         );
 
