@@ -18,6 +18,7 @@ import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
 import { CrontabModule } from './crontab/crontab.module';
+import { RmqController } from './rmq.controller';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { CrontabModule } from './crontab/crontab.module';
       clients: [
         MicroserviceOptions(MICROSERVICE_MYSCREEN.MAIL),
         MicroserviceOptions(MICROSERVICE_MYSCREEN.FORM),
+        MicroserviceOptions(MICROSERVICE_MYSCREEN.EDITOR),
       ],
     }),
 
@@ -69,11 +71,15 @@ import { CrontabModule } from './crontab/crontab.module';
             : '../i18n/i18n.generated.ts',
         ),
       }),
+
       resolvers: [UserLanguageResolver],
       inject: [ConfigService],
       imports: [DatabaseModule, AuthModule, ConfigModule],
     }),
   ],
+
+  controllers: [RmqController],
+
   providers: [
     Logger,
     { provide: APP_INTERCEPTOR, useClass: LoggerErrorInterceptor },

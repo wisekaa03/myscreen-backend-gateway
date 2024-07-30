@@ -10,6 +10,7 @@ import { PlaylistService } from './playlist.service';
 import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { MICROSERVICE_MYSCREEN } from '@/enums';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -36,6 +37,7 @@ describe(EditorService.name, () => {
         { provide: FolderService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
+        { provide: MICROSERVICE_MYSCREEN.EDITOR, useClass: mockRepository },
         {
           provide: getRepositoryToken(EditorEntity),
           useClass: mockRepository,

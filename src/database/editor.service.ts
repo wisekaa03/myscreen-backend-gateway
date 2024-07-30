@@ -1,54 +1,35 @@
-import {
-  createReadStream,
-  createWriteStream,
-  promises as fs,
-  ReadStream,
-} from 'node:fs';
-import { Readable } from 'node:stream';
-import StreamPromises from 'node:stream/promises';
-import path from 'node:path';
-import child from 'node:child_process';
-import util from 'node:util';
 import dayjsDuration from 'dayjs/plugin/duration';
 import dayjs from 'dayjs';
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, DeleteResult, Repository } from 'typeorm';
-import { ffprobe } from 'media-probe';
-import Editly from 'editly';
+import { ClientProxy } from '@nestjs/microservices';
 
-import {
-  BadRequestError,
-  NotAcceptableError,
-  NotFoundError,
-  ServiceUnavailableError,
-} from '@/errors';
+import { I18nPath } from '@/i18n';
+import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
 import {
   MonitorMultiple,
   MonitorOrientation,
   RenderingStatus,
-  BidStatus,
-  FileType,
+  MICROSERVICE_MYSCREEN,
+  MsvcEditor,
 } from '@/enums';
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
   MonitorGroupWithPlaylist,
+  MsvcEditorExport,
 } from '@/interfaces';
-import { fileExist } from '@/utils/file-exist';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
 import { EditorLayerEntity } from './editor-layer.entity';
 import { FileService } from '@/database/file.service';
 import { FolderService } from './folder.service';
-import { UserEntity } from './user.entity';
 import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { I18nPath } from '@/i18n';
 
 dayjs.extend(dayjsDuration);
-const exec = util.promisify(child.exec);
 
 @Injectable()
 export class EditorService {
@@ -62,12 +43,12 @@ export class EditorService {
     private readonly editorRepository: Repository<EditorEntity>,
     @InjectRepository(EditorLayerEntity)
     private readonly editorLayerRepository: Repository<EditorLayerEntity>,
-    @InjectRepository(BidEntity)
-    private readonly bidRepository: Repository<BidEntity>,
     @InjectRepository(MonitorEntity)
     private readonly monitorRepository: Repository<MonitorEntity>,
     @InjectRepository(PlaylistEntity)
     private readonly playlistRepository: Repository<PlaylistEntity>,
+    @Inject(MICROSERVICE_MYSCREEN.EDITOR)
+    private readonly editorMsvc: ClientProxy,
   ) {}
 
   async find({
@@ -273,185 +254,15 @@ export class EditorService {
     return result;
   }
 
-  calcDuration = (layer: Partial<EditorLayerEntity>): number => {
+  private calcDuration = (layer: Partial<EditorLayerEntity>): number => {
     if (layer.cutTo !== undefined && layer.cutFrom !== undefined) {
       return layer.cutTo - layer.cutFrom;
     }
     return layer.duration ?? layer.file?.duration ?? 0;
   };
 
-  calcTotalDuration = (video: Partial<EditorLayerEntity>[]): number =>
+  private calcTotalDuration = (video: Partial<EditorLayerEntity>[]): number =>
     video.reduce((duration, layer) => duration + this.calcDuration(layer), 0);
-
-  private async prepareFile(
-    mkdirPath: string,
-    layer: EditorLayerEntity,
-  ): Promise<EditorLayerEntity> {
-    const { file } = layer;
-    const filePath = path.join(mkdirPath, file.name);
-
-    layer.path = filePath;
-
-    if (!fileExist(filePath)) {
-      const headS3file = await this.fileService.headS3Object(file);
-      if (headS3file.ETag) {
-        const outputStream = createWriteStream(filePath);
-        const data = await this.fileService.getS3Object(file);
-        if (data.Body instanceof Readable) {
-          await StreamPromises.pipeline(data.Body, outputStream);
-        }
-      }
-    }
-
-    return layer;
-  }
-
-  private async prepareAssets(
-    editor: EditorEntity,
-    audio: boolean,
-  ): Promise<[string, Editly.Config]> {
-    const downloadDir = this.fileService.downloadDir;
-    await fs.mkdir(downloadDir, { recursive: true });
-
-    const videoLayersPromise = editor.videoLayers.map(
-      async (layer: EditorLayerEntity) => this.prepareFile(downloadDir, layer),
-    );
-    const layers = await Promise.all(videoLayersPromise);
-
-    if (audio) {
-      const audioLayersPromise = editor.audioLayers.map(
-        async (layer: EditorLayerEntity) =>
-          this.prepareFile(downloadDir, layer),
-      );
-      await Promise.all(audioLayersPromise);
-    }
-
-    const { keepSourceAudio, audioLayers, width, height, fps } = editor;
-
-    const clips = layers.map((layer) => {
-      const duration = this.calcDuration(layer);
-      if (layer.file.type === FileType.IMAGE) {
-        return {
-          duration,
-          layers: [
-            {
-              type: 'image',
-              resizeMode: 'contain',
-              zoomDirection: null,
-              path: layer.path,
-            } as Editly.ImageLayer,
-          ],
-          transition: {
-            duration: 0,
-          },
-        };
-      }
-
-      return {
-        duration,
-        layers: [
-          {
-            type: 'video',
-            path: layer.path,
-            cutFrom: layer.cutFrom,
-            cutTo: layer.cutTo,
-            mixVolume: layer.mixVolume,
-          } as Editly.VideoLayer,
-        ],
-        transition: {
-          duration: 0,
-        },
-      };
-    });
-
-    const audioTracks = audioLayers.map((layer) => ({
-      type: 'audio',
-      path: layer.path,
-      cutFrom: layer.cutFrom,
-      cutTo: layer.cutTo,
-      mixVolume: layer.mixVolume,
-    }));
-
-    return [
-      downloadDir,
-      {
-        width,
-        height,
-        fps,
-        keepSourceAudio,
-        clips,
-        loopAudio: true,
-        audioTracks,
-        outPath: path.join(downloadDir, editor.id),
-      },
-    ];
-  }
-
-  convertSecToTime = (seconds: number): string =>
-    dayjs.duration({ seconds }).format('HH:mm:ss');
-
-  /**
-   * Capture one frame from Clips
-   * @async
-   * @param {EditorEntity} editor Editor entity
-   * @param {number} time Time in seconds
-   * @returns {ReadStream} The read stream
-   */
-  async captureFrame(editor: EditorEntity, time: number): Promise<ReadStream> {
-    const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, false);
-    let outPath = path.resolve(mkdirPath, `frame_${time}.jpg`);
-    const { width = 800, height = 800, clips } = editlyConfig;
-
-    let startTime = 0;
-    const clip = clips.find(({ duration = 1 }) => {
-      if (startTime <= time && startTime + duration >= time) {
-        return true;
-      }
-      startTime += duration;
-      return false;
-    });
-
-    if (!clip || typeof clip !== 'object') {
-      this.logger.error('No clip found at requested time');
-      throw new NotAcceptableError('No clip found at requested time');
-    }
-
-    if (!(typeof clip.layers === 'object' && Array.isArray(clip.layers))) {
-      throw new NotAcceptableError('Layers not exists');
-    }
-
-    const seekTime = time - startTime;
-    const seekTimestamp = this.convertSecToTime(seekTime);
-
-    const isFormat = (format: string) =>
-      (clip.layers as Editly.Layer[]).every((layer) =>
-        (layer as Editly.VideoLayer).path.endsWith(format),
-      );
-
-    if (isFormat('jpg')) {
-      if (clip.layers.length !== 1) {
-        throw new NotAcceptableError(
-          'Multi-layer editing does not support for images',
-        );
-      }
-      outPath = (clip.layers[0] as Editly.VideoLayer).path;
-    } else if (isFormat('mp4')) {
-      const inputs = (clip.layers as Editly.VideoLayer[]).reduce(
-        (input, { path: videoPath }) => `${input}-i ${videoPath} `,
-        '',
-      );
-
-      await exec(
-        `ffmpeg -ss ${seekTimestamp} ${inputs} -r 1 -an -t 1 -vsync 1 -s ${width}x${height} ${outPath}`,
-      );
-    } else {
-      throw new NotAcceptableError('Unsupported format to be captured');
-    }
-
-    return createReadStream(outPath).on('end', () => {
-      fs.unlink(outPath);
-    });
-  }
 
   async partitionMonitors({
     bid,
@@ -575,7 +386,6 @@ export class EditorService {
         });
         const editorsPromise = editors.map(async (editor) => {
           await this.export({
-            user: bid.user,
             id: editor.id,
             rerender: true,
             // TODO: customOutputArgs
@@ -590,7 +400,7 @@ export class EditorService {
   }
 
   /**
-   * Start Export
+   * Start Export creation
    * @async
    * @param {UserEntity} user The user
    * @param {string} id Editor ID
@@ -598,7 +408,6 @@ export class EditorService {
    * @returns {EditorEntity} Result
    */
   async export({
-    user,
     id,
     rerender = false,
     customOutputArgs = [
@@ -618,7 +427,6 @@ export class EditorService {
       '+faststart', // Is an option for MP4 output that move some data to the beginning of the file after encoding is finished. This allows the video to begin playing faster if it is watched via progressive download playback.
     ],
   }: {
-    user: UserEntity;
     id: string;
     rerender?: boolean;
     customOutputArgs?: string[];
@@ -638,6 +446,8 @@ export class EditorService {
         renderedFile: {
           folder: true,
         },
+        playlist: true,
+        user: true,
       },
       where: {
         id,
@@ -648,10 +458,10 @@ export class EditorService {
         args: { id },
       });
     }
-    const { id: editorId, renderedFile } = _editor;
-    if (renderedFile) {
+    const { id: editorId, renderedFileId, userId } = _editor;
+    if (renderedFileId) {
       await this.fileService
-        .delete([renderedFile.id])
+        .delete([renderedFileId])
         .then(() =>
           this.editorRepository.update(editorId, {
             renderedFile: null,
@@ -680,228 +490,37 @@ export class EditorService {
       }
     }
 
-    const { id: exportFolderId } = await this.folderService.exportFolder(
-      user.id,
+    const { videoLayers: video, audioLayers: audio } = _editor;
+    const videoLayers = await Promise.all(
+      video.map(async (layer) => ({
+        ...layer,
+        file: await this.fileService.signedUrl(layer.file),
+      })),
     );
+    const audioLayers = await Promise.all(
+      audio.map(async (layer) => ({
+        ...layer,
+        file: await this.fileService.signedUrl(layer.file),
+      })),
+    );
+    const editor = {
+      ..._editor,
+      videoLayers,
+      audioLayers,
+    } as EditorEntity;
 
-    try {
-      const { videoLayers: video, audioLayers: audio } = _editor;
-      const videoLayers = await Promise.all(
-        video.map(async (layer) => ({
-          ...layer,
-          file: await this.fileService.signedUrl(layer.file),
-        })),
-      );
-      const audioLayers = await Promise.all(
-        audio.map(async (layer) => ({
-          ...layer,
-          file: await this.fileService.signedUrl(layer.file),
-        })),
-      );
-      const editor = {
-        ..._editor,
-        videoLayers,
-        audioLayers,
-      } as EditorEntity;
+    const { id: folderId } = await this.folderService.exportFolder(userId);
+    this.editorMsvc.emit<Buffer, MsvcEditorExport>(MsvcEditor.Export, {
+      folderId,
+      editor,
+      customOutputArgs,
+    });
 
-      await this.editorRepository.update(editorId, {
-        totalDuration: this.calcTotalDuration(videoLayers),
-        renderingStatus: RenderingStatus.Pending,
-        renderingError: null,
-        renderingPercent: 0,
-      });
-
-      const [mkdirPath, editlyConfig] = await this.prepareAssets(editor, true);
-      await fs
-        .mkdir(editlyConfig.outPath, { recursive: true })
-        .catch((reason) => {
-          this.logger.error(
-            `Mkdir '${editlyConfig.outPath}' failed: ${reason}`,
-          );
-          throw reason;
-        });
-      editlyConfig.outPath = path.join(
-        mkdirPath,
-        `${path.parse(editor.name).name}-out.mp4`,
-      );
-      editlyConfig.customOutputArgs = customOutputArgs;
-
-      (async (renderEditor: EditorEntity) => {
-        const { id: renderEditorId, name: renderEditorName } = renderEditor;
-        const editlyJSON = JSON.stringify(editlyConfig);
-        const editlyPath = path.join(mkdirPath, editorId, 'editly.json');
-        await fs.writeFile(editlyPath, editlyJSON).catch((reason) => {
-          this.logger.error(`Write to ${editlyPath} failed: ${reason}`);
-          throw reason;
-        });
-
-        const outPath = await new Promise<string | Error>((resolve, reject) => {
-          const childEditly = child.fork(
-            'node_modules/.bin/editly',
-            ['--json', editlyPath],
-            {
-              silent: true,
-            },
-          );
-          childEditly.stdout?.on('data', (message: Buffer) => {
-            const msg = message.toString();
-            this.logger.debug(
-              `Editly on '${renderEditorId}' / '${renderEditorName}': ${msg}`,
-              'Editly',
-            );
-            // Ахмет: Было бы круто увидеть эти проценты здесь https://t.me/c/1337424109/5988
-            const percent = msg.match(/(\d+%)/g);
-            if (Array.isArray(percent) && percent.length > 0) {
-              this.editorRepository
-                .update(renderEditorId, {
-                  renderingPercent: parseInt(percent[percent.length - 1], 10),
-                })
-                .catch((error: any) => {
-                  this.logger.error(
-                    error?.message || error,
-                    error?.stack,
-                    'Editly',
-                  );
-                });
-            }
-          });
-          childEditly.stderr?.on('data', (message: Buffer) => {
-            const msg = message.toString();
-            if (msg.includes('editly: symbol lookup error')) {
-              reject(new Error(msg));
-            }
-            this.logger.debug(msg, undefined, 'Editly');
-          });
-          childEditly.on('error', (error: Error) => {
-            this.logger.error(error.message, error.stack, 'Editly');
-            reject(error);
-          });
-          childEditly.on(
-            'exit',
-            (/* code: number | null, signal: NodeJS.Signals | null */) => {
-              resolve(editlyConfig.outPath);
-            },
-          );
-        });
-        if (outPath instanceof Error) {
-          throw outPath;
-        }
-
-        const { size } = await fs.stat(outPath);
-        const media = await ffprobe(outPath, {
-          showFormat: true,
-          showStreams: true,
-          showFrames: false,
-          showPackets: false,
-          showPrograms: false,
-          countFrames: false,
-          countPackets: false,
-        });
-        const fileOutParse = path.parse(outPath);
-        const file: Express.Multer.File = {
-          originalname: fileOutParse.base,
-          encoding: 'utf8',
-          mimetype: 'video/mp4',
-          destination: fileOutParse.dir,
-          filename: fileOutParse.base,
-          size,
-          path: outPath,
-          hash: 'render',
-          media,
-          fieldname: null as unknown as string,
-          stream: null as unknown as ReadStream,
-          buffer: null as unknown as Buffer,
-        };
-        const renderedFile = await this.fileService
-          .upload({ user, files: file, folderId: exportFolderId })
-          .then(([file]) => {
-            if (file) {
-              this.editorRepository.update(renderEditorId, {
-                renderingStatus: RenderingStatus.Ready,
-                renderedFile: file,
-                renderingPercent: 100,
-                renderingError: null,
-              });
-
-              return file;
-            }
-
-            throw new ServiceUnavailableError(
-              `Upload file not found: '${JSON.stringify(file)}'`,
-            );
-          })
-          .catch((reason: any) => {
-            this.logger.error(
-              `Can't write to out file: ${JSON.stringify(reason)}`,
-            );
-
-            throw new Error(reason);
-          });
-
-        this.logger.log(`Writed out file: ${JSON.stringify(file)}`);
-
-        // Для SCALING, но может быть еще для чего-то
-        if (editor.playlistId) {
-          const playlist = await this.playlistRepository.findOne({
-            where: { id: editor.playlistId },
-            loadEagerRelations: false,
-            relations: { editors: true },
-          });
-          if (playlist) {
-            // обновляем плэйлист
-            await this.playlistRepository.update(playlist.id, {
-              files: [renderedFile],
-            });
-            if (playlist.editors) {
-              const editors = playlist.editors.filter(
-                (e) => e.renderingStatus === RenderingStatus.Ready,
-              );
-              if (editors.length === playlist.editors.length) {
-                const bid = await this.bidRepository.find({
-                  where: { playlistId: playlist.id },
-                });
-                const bidIds = new Set<string>(...bid.map((r) => r.id));
-                bidIds.forEach((bidId) => {
-                  this.bidRepository.update(bidId, {
-                    status: BidStatus.OK,
-                  });
-                });
-              }
-            } else {
-              this.logger.error(
-                `Editors not found: editorId="${editorId}" / playlistId="${playlist.id}"`,
-              );
-            }
-          } else {
-            this.logger.error(
-              `Playlist not found: playlistId="${editor.playlistId}"`,
-            );
-          }
-        }
-      })(editor).catch((error: any) => {
-        const renderingError = error?.message || error || 'Unknown error';
-        this.logger.error(renderingError, error?.stack, 'Editly');
-        this.editorRepository.update(editorId, {
-          renderingError,
-          renderingStatus: RenderingStatus.Error,
-          renderingPercent: null,
-        });
-      });
-
-      // @ts-expect-error Delete operator must be optional ?
-      delete _editor.audioLayers;
-      // @ts-expect-error Delete operator must be optional ?
-      delete _editor.videoLayers;
-      return _editor;
-    } catch (error: any) {
-      this.editorRepository.update(editorId, {
-        renderingStatus: RenderingStatus.Error,
-        renderingError: error?.message || error,
-        renderingPercent: 0,
-      });
-
-      throw error;
-    }
+    // @ts-expect-error Delete operator must be optional ?
+    delete _editor.audioLayers;
+    // @ts-expect-error Delete operator must be optional ?
+    delete _editor.videoLayers;
+    return _editor;
   }
 
   private async correctLayers(editorId: string): Promise<void> {

@@ -6,7 +6,7 @@ import { Body, HttpCode, Inject, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { In } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, timeout } from 'rxjs';
 
 import { MsvcFormReport } from '@/interfaces';
 import { formatToContentType } from '@/constants';
@@ -98,16 +98,15 @@ export class StatisticsController {
 
     const data = Buffer.from(
       await lastValueFrom(
-        this.formService.send<Buffer, MsvcFormReport>(
-          MsvcFormService.ReportDeviceStatus,
-          {
+        this.formService
+          .send<Buffer, MsvcFormReport>(MsvcFormService.ReportDeviceStatus, {
             user,
             monitors,
             format,
             dateFrom: new Date(dateFrom),
             dateTo: new Date(dateTo),
-          },
-        ),
+          })
+          .pipe(timeout(3000)),
       ),
     );
 
@@ -179,16 +178,15 @@ export class StatisticsController {
 
     const data = Buffer.from(
       await lastValueFrom(
-        this.formService.send<Buffer, MsvcFormReport>(
-          MsvcFormService.ReportViews,
-          {
+        this.formService
+          .send<Buffer, MsvcFormReport>(MsvcFormService.ReportViews, {
             user,
             monitors,
             format,
             dateFrom: new Date(dateFrom),
             dateTo: new Date(dateTo),
-          },
-        ),
+          })
+          .pipe(timeout(3000)),
       ),
     );
 

@@ -20,3 +20,9 @@ export enum MsvcFormService {
 export enum MsvcEditor {
   Export = 'export',
 }
+
+export enum MsvcGateway {
+  Update = 'update',
+  FileUpload = 'file_upload',
+  EditorFile = 'editor_file',
+}

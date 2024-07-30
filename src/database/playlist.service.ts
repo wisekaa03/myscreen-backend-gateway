@@ -89,10 +89,13 @@ export class PlaylistService {
       });
     }
 
-    await Promise.all([
-      this.wsStatistics.onChangePlaylist(playlist.user, playlist),
-      this.wsStatistics.onMetrics({ user: playlist.user }),
-    ]);
+    this.wsStatistics.onChangePlaylist({ playlistId: playlist.id });
+    if (playlist.user) {
+      this.wsStatistics.onMetrics({
+        userId: playlist.userId,
+        storageSpace: playlist.user?.storageSpace,
+      });
+    }
 
     return playlist;
   }
@@ -117,7 +120,7 @@ export class PlaylistService {
       });
     }
     if (update.status === undefined) {
-      await this.wsStatistics.onChangePlaylist(playlist.user, playlist);
+      await this.wsStatistics.onChangePlaylist({ playlistId: id });
     }
 
     return playlist;
@@ -127,7 +130,7 @@ export class PlaylistService {
     user: UserEntity,
     playlist: PlaylistEntity,
   ): Promise<DeleteResult> {
-    await this.wsStatistics.onChangePlaylistDelete(user, playlist);
+    await this.wsStatistics.onChangePlaylistDelete({ playlistId: playlist.id });
 
     const deleteQuery: FindOptionsWhere<PlaylistEntity> = { id: playlist.id };
     if (user.role !== UserRoleEnum.Administrator) {

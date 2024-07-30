@@ -3,6 +3,7 @@ import { join as pathJoin } from 'node:path';
 import { dump as yamlDump } from 'js-yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import { RmqOptions, Transport } from '@nestjs/microservices';
 import {
   SwaggerModule,
   DocumentBuilder,
@@ -13,6 +14,7 @@ import { Logger } from 'nestjs-pino';
 import { I18nValidationPipe } from 'nestjs-i18n';
 
 import { version, author, homepage, description } from '../package.json';
+import { MICROSERVICE_MYSCREEN } from './enums';
 import { ExceptionsFilter } from './exception/exceptions.filter';
 import { WsAdapter } from './websocket/ws-adapter';
 import { AppModule } from './app.module';
@@ -149,6 +151,28 @@ async function bootstrap() {
       ".swagger-ui .topbar { padding: 0; } .swagger-ui .topbar a { content: url('/favicon.ico'); max-width: 40px; max-height: 44px; } .swagger-ui .topbar .topbar-wrapper::after { margin-left: 5px; content: 'MyScreen'; color: white; }",
   };
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
+
+  app.connectMicroservice<RmqOptions>(
+    {
+      transport: Transport.RMQ,
+      options: {
+        urls: [
+          {
+            hostname: configService.getOrThrow('RABBITMQ_HOST'),
+            port: configService.getOrThrow('RABBITMQ_PORT'),
+            username: configService.getOrThrow('RABBITMQ_USERNAME'),
+            password: configService.getOrThrow('RABBITMQ_PASSWORD'),
+          },
+        ],
+        queue: MICROSERVICE_MYSCREEN.GATEWAY,
+        queueOptions: {
+          durable: true,
+        },
+      },
+    },
+    { inheritAppConfig: true },
+  );
+  await app.startAllMicroservices();
 
   await app.listen(port);
   const url = await app.getUrl();

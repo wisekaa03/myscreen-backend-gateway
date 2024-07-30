@@ -334,7 +334,11 @@ export class MonitorService {
         throw new NotFoundError(`Monitor with this '${id}' not found`);
       }
 
-      await this.wsStatistics.onChangeMonitor(monitor.user, monitor);
+      await this.wsStatistics.onChangeMonitor({
+        userId: monitor.userId,
+        monitor,
+        storageSpace: monitor.user?.storageSpace,
+      });
 
       // а тут начинается полный трэш
       if (updateMultiple !== MonitorMultiple.SINGLE && multipleBool) {
@@ -416,15 +420,16 @@ export class MonitorService {
   }
 
   async create({
-    user,
+    userId,
+    storageSpace,
     insert,
     groupIds,
   }: {
-    user: UserEntity;
+    userId: string;
+    storageSpace?: number;
     insert: Partial<MonitorEntity>;
     groupIds?: MonitorGroup[];
   }) {
-    const { id: userId } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
     if (insert.monitorInfo) {
       throw new BadRequestError('Monitor info deprecated');
@@ -529,7 +534,7 @@ export class MonitorService {
           await Promise.all(monitorMultiple);
         }
 
-        await this.wsStatistics.onMetrics({ user });
+        this.wsStatistics.onMetrics({ userId, storageSpace });
 
         return monitor;
       },
@@ -540,11 +545,17 @@ export class MonitorService {
     await this.monitorRepository.update({ attached: true }, { attached });
   }
 
-  async status(
-    monitor: MonitorEntity,
+  async status({
+    monitor,
     status = MonitorStatus.Online,
-    user: UserEntity,
-  ): Promise<UpdateResult> {
+    userId,
+    storageSpace,
+  }: {
+    monitor: MonitorEntity;
+    status: MonitorStatus;
+    userId: string;
+    storageSpace?: number;
+  }): Promise<UpdateResult> {
     const { id } = monitor;
     if (monitor.multiple === MonitorMultiple.SUBORDINATE) {
       const groupMonitor = await this.monitorGroupRepository.findOne({
@@ -581,11 +592,12 @@ export class MonitorService {
                 { id: monitorGroup.id },
                 { status: MonitorStatus.Online },
               );
-              this.wsStatistics.monitorStatus(
-                user,
-                monitorGroup,
-                MonitorStatus.Online,
-              );
+              this.wsStatistics.monitorStatus({
+                userId,
+                storageSpace,
+                monitor: monitorGroup,
+                status: MonitorStatus.Online,
+              });
             }
           } else {
             if (monitorGroup.status !== MonitorStatus.Offline) {
@@ -593,11 +605,12 @@ export class MonitorService {
                 { id: monitorGroup.id },
                 { status: MonitorStatus.Offline },
               );
-              this.wsStatistics.monitorStatus(
-                user,
-                monitorGroup,
-                MonitorStatus.Offline,
-              );
+              this.wsStatistics.monitorStatus({
+                userId,
+                storageSpace,
+                monitor: monitorGroup,
+                status: MonitorStatus.Offline,
+              });
             }
           }
         }
@@ -609,20 +622,24 @@ export class MonitorService {
       await this.monitorOnlineService.create({
         monitorId: id,
         status,
-        userId: user.id,
+        userId,
       }),
-      this.wsStatistics.monitorStatus(user, monitor, status),
+      this.wsStatistics.monitorStatus({
+        userId,
+        storageSpace,
+        monitor,
+        status,
+      }),
     ]);
 
     return updated;
   }
 
   async favorite(
-    user: UserEntity,
+    userId: string,
     monitorId: string,
     favorite = true,
   ): Promise<MonitorEntity | null> {
-    const { id: userId } = user;
     const monitor = await this.findOne({
       userId,
       where: { id: monitorId },
@@ -660,7 +677,11 @@ export class MonitorService {
   async delete(monitor: MonitorEntity): Promise<DeleteResult> {
     const { id: monitorId, user } = monitor;
 
-    await this.wsStatistics.onChangeMonitorDelete({ user, monitor });
+    await this.wsStatistics.onChangeMonitorDelete({
+      userId: user.id,
+      storageSpace: user?.storageSpace,
+      monitor,
+    });
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
       return this.monitorRepository.manager.transaction(
@@ -703,20 +724,22 @@ export class MonitorService {
       documents: _docs,
     }: { photos?: Express.Multer.File[]; documents?: Express.Multer.File[] },
   ): Promise<MonitorEntity> {
-    const { id: userId } = user;
+    const { id: userId, storageSpace } = user;
     const { id: folderId } = await this.folderService.monitorFolder(userId);
     let photos: FileEntity[] | undefined;
     let documents: FileEntity[] | undefined;
     if (_photos) {
       photos = await this.fileService.upload({
-        user,
+        userId,
+        storageSpace,
         files: _photos,
         folderId,
       });
     }
     if (_docs) {
       documents = await this.fileService.upload({
-        user,
+        userId,
+        storageSpace,
         files: _docs,
         folderId,
       });
