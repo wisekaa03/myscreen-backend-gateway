@@ -492,10 +492,16 @@ export class BidService {
             await this.bidPreDelete({ bid, transact });
           }
 
-          await Promise.all([
-            this.wsStatistics.onMetrics({ user: bid.seller }),
-            this.wsStatistics.onMetrics({ user: bid.buyer ?? monitor.user }),
-          ]);
+          this.wsStatistics.onMetrics({
+            userId: bid.seller.id,
+            storageSpace: bid.seller.storageSpace,
+          });
+          if (bid.buyer && bid.buyerId) {
+            this.wsStatistics.onMetrics({
+              userId: bid.buyerId,
+              storageSpace: bid.buyer.storageSpace,
+            });
+          }
 
           return bid;
         });

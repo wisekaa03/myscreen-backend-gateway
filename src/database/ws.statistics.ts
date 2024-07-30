@@ -21,12 +21,10 @@ import { WsMetricsObject, WsWalletObject } from '@/interfaces';
 import { BidEntity } from '@/database/bid.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
-import { UserEntity } from '@/database/user.entity';
 import { PlaylistService } from '@/database/playlist.service';
 import { WalletService } from '@/database/wallet.service';
 import { FileService } from '@/database/file.service';
 import { MonitorService } from '@/database/monitor.service';
-import { PlaylistEntity } from './playlist.entity';
 
 @Injectable()
 export class WsStatistics {
@@ -132,12 +130,17 @@ export class WsStatistics {
   /**
    * Отсылает всем подключенным клиентам (не мониторам) изменения статуса монитора
    */
-  public async monitorStatus(
-    user: UserEntity,
-    monitor: MonitorEntity,
-    status: MonitorStatus,
-  ): Promise<void> {
-    const { id: userId } = user;
+  public async monitorStatus({
+    userId,
+    storageSpace,
+    monitor,
+    status,
+  }: {
+    userId: string;
+    storageSpace?: number;
+    monitor: MonitorEntity;
+    status: MonitorStatus;
+  }): Promise<void> {
     const { id: monitorId, user: monitorUser, userId: monitorUserId } = monitor;
     wsClients.forEach((client) => {
       if (client.auth && client.userId) {
@@ -152,9 +155,14 @@ export class WsStatistics {
       }
     });
 
-    await this.onMetrics({ user });
-    if (userId !== monitorUserId) {
-      await this.onMetrics({ user: monitorUser });
+    if (storageSpace !== undefined) {
+      this.onMetrics({ userId, storageSpace });
+    }
+    if (userId !== monitorUserId && monitorUser.storageSpace !== undefined) {
+      this.onMetrics({
+        userId: monitorUserId,
+        storageSpace: monitorUser.storageSpace,
+      });
     }
   }
 
@@ -162,15 +170,16 @@ export class WsStatistics {
    * Отсылает всем подключенным клиентам (мониторов) удаления монитора
    */
   async onChangeMonitorDelete({
-    user,
+    userId,
+    storageSpace,
     monitor,
     transact,
   }: {
-    user: UserEntity;
+    userId: string;
+    storageSpace?: number;
     monitor: MonitorEntity;
     transact?: EntityManager;
   }): Promise<void> {
-    const { id: userId } = user;
     const { id: monitorId, user: monitorUser, userId: monitorUserId } = monitor;
     wsClients.forEach((value, client) => {
       if (value.monitorId === monitorId) {
@@ -186,20 +195,30 @@ export class WsStatistics {
       }
     });
 
-    await this.onMetrics({ user, transact });
+    if (storageSpace !== undefined) {
+      this.onMetrics({ userId, storageSpace, transact });
+    }
     if (userId !== monitorUserId) {
-      await this.onMetrics({ user: monitorUser, transact });
+      this.onMetrics({
+        userId: monitorUserId,
+        storageSpace: monitorUser.storageSpace,
+        transact,
+      });
     }
   }
 
   /**
    * Отсылает всем подключенным клиентам (мониторов) изменения монитора
    */
-  async onChangeMonitor(
-    user: UserEntity,
-    monitor: MonitorEntity,
-  ): Promise<void> {
-    const { id: userId } = user;
+  async onChangeMonitor({
+    userId,
+    storageSpace,
+    monitor,
+  }: {
+    userId: string;
+    storageSpace?: number;
+    monitor: MonitorEntity;
+  }): Promise<void> {
     const { id: monitorId, user: monitorUser, userId: monitorUserId } = monitor;
 
     wsClients.forEach((value, client) => {
@@ -210,21 +229,27 @@ export class WsStatistics {
       }
     });
 
-    await this.onMetrics({ user });
-    if (userId !== monitorUserId) {
-      await this.onMetrics({ user: monitorUser });
+    if (storageSpace !== undefined) {
+      this.onMetrics({ userId, storageSpace });
+    }
+    if (userId !== monitorUserId && monitorUser.storageSpace !== undefined) {
+      this.onMetrics({
+        userId: monitorUserId,
+        storageSpace: monitorUser.storageSpace,
+      });
     }
   }
 
   /**
    * Отсылает всем подключенным клиентам (мониторов) удаление плэйлиста
    */
-  async onChangePlaylistDelete(
-    user: UserEntity,
-    playlist: PlaylistEntity,
-  ): Promise<void> {
+  async onChangePlaylistDelete({
+    playlistId,
+  }: {
+    playlistId: string;
+  }): Promise<void> {
     const bids = await this.monitorPlaylistToBids({
-      playlistId: playlist.id,
+      playlistId,
     });
 
     const wsPromise = bids.map(async (bidDelete) =>
@@ -237,12 +262,13 @@ export class WsStatistics {
   /**
    * Отсылает всем подключенным клиентам (мониторов) изменение плэйлиста
    */
-  async onChangePlaylist(
-    user: UserEntity,
-    playlist: PlaylistEntity,
-  ): Promise<void> {
+  async onChangePlaylist({
+    playlistId,
+  }: {
+    playlistId: string;
+  }): Promise<void> {
     const bids = await this.monitorPlaylistToBids({
-      playlistId: playlist.id,
+      playlistId: playlistId,
     });
 
     const wsPromise = bids.map(async (bid) => this.onChange({ bid }));
@@ -410,13 +436,14 @@ export class WsStatistics {
   }
 
   async onMetrics({
-    user,
+    userId,
+    storageSpace,
     transact,
   }: {
-    user: UserEntity;
+    userId: string;
+    storageSpace?: number;
     transact?: EntityManager;
   }): Promise<void> {
-    const { id: userId, storageSpace } = user;
     wsClients.forEach(async (value, client) => {
       if (value.userId === userId) {
         const metrics = await this.preMetrics({

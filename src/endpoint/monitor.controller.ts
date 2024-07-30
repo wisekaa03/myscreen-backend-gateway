@@ -205,7 +205,7 @@ export class MonitorController {
     @Req() { user }: ExpressRequest,
     @Body() { groupIds, ...insert }: MonitorCreateRequest,
   ): Promise<MonitorGetResponse> {
-    const { id: userId, role, plan } = user;
+    const { id: userId, role, plan, storageSpace } = user;
     const { multiple = MonitorMultiple.SINGLE } = insert;
     if (multiple === MonitorMultiple.SUBORDINATE) {
       throw new BadRequestError(
@@ -247,7 +247,8 @@ export class MonitorController {
     }
 
     const data = await this.monitorService.create({
-      user,
+      userId,
+      storageSpace,
       insert,
       groupIds,
     });
@@ -574,10 +575,10 @@ export class MonitorController {
   })
   @Crud(CRUD.UPDATE)
   async monitorFavoritePlus(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) monitorId: string,
   ): Promise<MonitorGetResponse> {
-    const data = await this.monitorService.favorite(user, monitorId, true);
+    const data = await this.monitorService.favorite(userId, monitorId, true);
     if (!data) {
       throw new NotFoundError(`Monitor '${monitorId}' not found`);
     }
@@ -607,10 +608,10 @@ export class MonitorController {
   })
   @Crud(CRUD.UPDATE)
   async monitorFavoriteMinus(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('monitorId', ParseUUIDPipe) monitorId: string,
   ): Promise<MonitorGetResponse> {
-    const data = await this.monitorService.favorite(user, monitorId, false);
+    const data = await this.monitorService.favorite(userId, monitorId, false);
     if (!data) {
       throw new NotFoundError(`Monitor '${monitorId}' not found`);
     }

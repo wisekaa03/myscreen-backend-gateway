@@ -103,7 +103,13 @@ export class RmqController {
     buffer,
   }: MsvcGatewayFileUpload) {
     try {
-      const user = await this.userService.findById(userId);
+      const user = await this.userService.findOne({
+        where: { id: userId },
+        select: ['id', 'storageSpace'],
+        loadEagerRelations: false,
+        relations: {},
+        caseInsensitive: true,
+      });
       if (!user) {
         throw new Error(`User id not found: ${userId}`);
       }
@@ -126,7 +132,8 @@ export class RmqController {
       }
 
       return this.fileService.upload({
-        user,
+        userId,
+        storageSpace: user.storageSpace,
         folderId,
         originalname,
         mimetype,

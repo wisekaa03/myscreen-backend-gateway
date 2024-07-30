@@ -401,8 +401,18 @@ export class FileService {
    * @param {string} folderId Folder ID
    * @param {string} originalname Original name of the file
    */
-  async upload(param: {
-    user: UserEntity;
+  async upload({
+    userId,
+    storageSpace,
+    files: _files,
+    folderId: _folderId,
+    originalname: _originalname,
+    mimetype: _mimetype,
+    info: _info,
+    transact,
+  }: {
+    userId: string;
+    storageSpace?: number;
     files: Express.Multer.File[] | Express.Multer.File | Buffer;
     folderId?: string;
     originalname?: string;
@@ -410,15 +420,6 @@ export class FileService {
     info?: FfprobeData;
     transact?: EntityManager;
   }): Promise<FileExtView[]> {
-    const {
-      user,
-      files: _files,
-      folderId: _folderId,
-      originalname: _originalname,
-      mimetype: _mimetype,
-      info: _info,
-      transact,
-    } = param;
     let files: Express.Multer.File[];
     if (Array.isArray(_files)) {
       files = _files;
@@ -446,7 +447,6 @@ export class FileService {
       ? transact.withRepository(this.fileRepository)
       : this.fileRepository;
 
-    const { id: userId } = user;
     let folderId: string;
     if (_folderId) {
       const folder = await transactFolder.findOne({
@@ -557,7 +557,7 @@ export class FileService {
             }, [] as FileExtView[]),
         );
 
-        await this.wsStatistics.onMetrics({ user });
+        await this.wsStatistics.onMetrics({ userId, storageSpace });
 
         return filesCreated;
       },

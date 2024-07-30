@@ -156,7 +156,11 @@ export class WSGateway
         });
         if (monitor) {
           await this.monitorService
-            .status(monitor, MonitorStatus.Offline, monitor.user)
+            .status({
+              monitor,
+              status: MonitorStatus.Offline,
+              userId: monitor.user.id,
+            })
             .catch((error: unknown) => {
               this.logger.error(error);
             });
@@ -199,7 +203,12 @@ export class WSGateway
                 dateLocal: new Date(body.date),
               }),
               this.monitorService
-                .status(monitor, MonitorStatus.Online, monitor.user)
+                .status({
+                  monitor,
+                  status: MonitorStatus.Online,
+                  userId: monitor.user.id,
+                  storageSpace: monitor.user.storageSpace,
+                })
                 .catch((error: unknown) => {
                   this.logger.error(error);
                 }),

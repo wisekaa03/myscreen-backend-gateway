@@ -187,7 +187,8 @@ export class InvoiceService {
       'REPEATABLE READ',
       async (transact) => {
         const [downloadFile] = await this.fileService.upload({
-          user: invoiceUser,
+          userId: invoiceUserId,
+          storageSpace: invoiceUser.storageSpace,
           files: file,
           folderId,
           transact,
@@ -253,7 +254,8 @@ export class InvoiceService {
       transact,
     );
     const [file] = await this.fileService.upload({
-      user: invoiceUser,
+      userId: invoiceUserId,
+      storageSpace: invoiceUser.storageSpace,
       files: fileBuffer,
       folderId: invoiceFolderId,
       originalname: `Счет_на_оплату_MyScreen_${createdAt}_на_сумму_${invoice.sum}₽.${specificFormat}`,
