@@ -21,6 +21,7 @@ import { AppModule } from './app.module';
 import { UserService } from './database/user.service';
 import { I18nValidationExceptionMyScreenFilter } from './exception/i18nvalidationexception.filter';
 import { WsEventClass } from './dto/response/ws-event.response';
+import { MicroserviceOptions } from './utils/microservice-options';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -153,23 +154,7 @@ async function bootstrap() {
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
 
   app.connectMicroservice<RmqOptions>(
-    {
-      transport: Transport.RMQ,
-      options: {
-        urls: [
-          {
-            hostname: configService.getOrThrow('RABBITMQ_HOST'),
-            port: configService.getOrThrow('RABBITMQ_PORT'),
-            username: configService.getOrThrow('RABBITMQ_USERNAME'),
-            password: configService.getOrThrow('RABBITMQ_PASSWORD'),
-          },
-        ],
-        queue: MICROSERVICE_MYSCREEN.GATEWAY,
-        queueOptions: {
-          durable: true,
-        },
-      },
-    },
+    MicroserviceOptions(configService, MICROSERVICE_MYSCREEN.GATEWAY),
     { inheritAppConfig: true },
   );
   await app.startAllMicroservices();
