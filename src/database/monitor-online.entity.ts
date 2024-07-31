@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -21,7 +20,7 @@ import { MonitorEntity } from './monitor.entity';
 @Entity('monitor_online', {
   comment: 'Мониторы онлайн/оффлайн',
 })
-export class MonitorOnlineEntity extends BaseEntity {
+export class MonitorOnlineEntity {
   @PrimaryGeneratedColumn('uuid', {
     primaryKeyConstraintName: 'PK_monitoronline_id',
   })

@@ -6,14 +6,14 @@ import { Status } from '@/enums/status.enum';
 import { I18nPath } from '@/i18n';
 
 export class UnauthorizedError<
-  T extends string = I18nPath,
+  T extends I18nPath | string = I18nPath,
 > extends UnauthorizedException {
   constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.UNAUTHORIZED,
       code: 'server-error.10001',
-      message: message ?? 'error.UNAUTHORIZED',
+      message: message ?? ('error.UNAUTHORIZED' as I18nPath),
       options,
     });
     this.initMessage();

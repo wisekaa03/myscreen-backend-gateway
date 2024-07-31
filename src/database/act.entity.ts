@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -32,7 +31,7 @@ import { UserEntity } from './user.entity';
   comment: 'Акты выполненных работ',
   orderBy: { createdAt: 'ASC' },
 })
-export class ActEntity extends BaseEntity {
+export class ActEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_act_id' })
   @ApiProperty({
     description: 'Идентификатор акта выполненных работ',

@@ -12,7 +12,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import {
   AfterLoad,
-  BaseEntity,
   BeforeInsert,
   BeforeUpdate,
   Column,
@@ -38,7 +37,7 @@ import { EditorEntity } from '@/database/editor.entity';
 
 @Entity('playlist', { comment: 'Плейлисты' })
 @Unique('IDX_userId_name', ['userId', 'name'])
-export class PlaylistEntity extends BaseEntity {
+export class PlaylistEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_column_id' })
   @ApiProperty({
     description: 'Идентификатор плэйлиста',

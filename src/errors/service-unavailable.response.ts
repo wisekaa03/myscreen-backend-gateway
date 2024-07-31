@@ -6,14 +6,14 @@ import { Status } from '@/enums/status.enum';
 import { I18nPath } from '@/i18n';
 
 export class ServiceUnavailableError<
-  T extends string = I18nPath,
+  T extends I18nPath | string = I18nPath,
 > extends ServiceUnavailableException {
   constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.SERVICE_UNAVAILABLE,
       code: 'server-error.10000',
-      message: message ?? 'error.SERVICE_UNAVAILABLE',
+      message: message ?? ('error.SERVICE_UNAVAILABLE' as I18nPath),
       options,
     });
     this.initMessage();

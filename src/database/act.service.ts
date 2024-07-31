@@ -21,6 +21,7 @@ export class ActService {
     private readonly wsStatistics: WsStatistics,
     @InjectRepository(ActEntity)
     private readonly actRepository: Repository<ActEntity>,
+    private readonly entityManager: EntityManager,
   ) {}
 
   async find(find: FindManyOptionsExt<ActEntity>): Promise<ActEntity[]> {
@@ -65,11 +66,9 @@ export class ActService {
     description: string;
     transact?: EntityManager;
   }): Promise<ActEntity> {
-    const transact = _transact
-      ? _transact.withRepository(this.actRepository)
-      : this.actRepository;
+    const transact = _transact ?? this.entityManager;
 
-    const created = await transact.manager.transaction(
+    const created = await transact.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const actCreated: DeepPartial<ActEntity> = {

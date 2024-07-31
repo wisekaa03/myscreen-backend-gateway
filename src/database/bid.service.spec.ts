@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
 import { MICROSERVICE_MYSCREEN } from '@/enums';
@@ -57,6 +57,10 @@ describe(BidService.name, () => {
         },
         {
           provide: getRepositoryToken(PlaylistEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getEntityManagerToken(),
           useClass: mockRepository,
         },
       ],

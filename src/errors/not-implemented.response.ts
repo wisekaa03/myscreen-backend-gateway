@@ -6,14 +6,14 @@ import { Status } from '@/enums/status.enum';
 import { I18nPath } from '@/i18n';
 
 export class NotImplementedError<
-  T extends string = I18nPath,
+  T extends I18nPath | string = I18nPath,
 > extends NotImplementedException {
   constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.NOT_IMPLEMENTED,
       code: 'server-error.10000',
-      message: message ?? 'error.NOT_IMPLEMENTED',
+      message: message ?? ('error.NOT_IMPLEMENTED' as I18nPath),
       options,
     });
     this.initMessage();

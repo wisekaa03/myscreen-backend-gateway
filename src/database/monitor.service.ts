@@ -43,6 +43,7 @@ export class MonitorService {
     public readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
     @InjectRepository(MonitorFavoriteEntity)
     public readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
+    private readonly entityManager: EntityManager,
   ) {}
 
   async find({
@@ -317,11 +318,9 @@ export class MonitorService {
         );
       }
     }
-    const _transact = transact
-      ? transact.withRepository(this.monitorRepository)
-      : this.monitorRepository;
+    const _transact = transact ?? this.entityManager;
 
-    await _transact.manager.transaction('REPEATABLE READ', async (transact) => {
+    await _transact.transaction('REPEATABLE READ', async (transact) => {
       const updated = await transact.update(MonitorEntity, id, update);
       if (!updated.affected) {
         throw new NotAcceptableError(`Monitor with this '${id}' not found`);
@@ -445,7 +444,7 @@ export class MonitorService {
       userId,
     };
 
-    return this.monitorRepository.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const monitorInserted = await transact.insert(
@@ -684,7 +683,7 @@ export class MonitorService {
     });
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
-      return this.monitorRepository.manager.transaction(
+      return this.entityManager.transaction(
         'REPEATABLE READ',
         async (transact) => {
           const monitorMultiple = await transact.find(MonitorGroupEntity, {

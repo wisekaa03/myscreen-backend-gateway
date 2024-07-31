@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import {
   FindOneOptions,
   FindOptionsWhere,
@@ -75,6 +75,10 @@ describe(MonitorService.name, () => {
         },
         {
           provide: getRepositoryToken(MonitorFavoriteEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getEntityManagerToken(),
           useClass: mockRepository,
         },
       ],

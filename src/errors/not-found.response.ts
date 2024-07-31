@@ -6,14 +6,14 @@ import { Status } from '@/enums/status.enum';
 import { I18nPath } from '@/i18n';
 
 export class NotFoundError<
-  T extends string = I18nPath,
+  T extends I18nPath | string = I18nPath,
 > extends NotFoundException {
   constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.NOT_FOUND,
       code: 'server-error.10005',
-      message: message ?? 'error.NOT_FOUND',
+      message: message ?? ('error.NOT_FOUND' as I18nPath),
       options,
     });
     this.initMessage();

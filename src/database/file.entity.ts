@@ -1,7 +1,6 @@
 import {
   AfterLoad,
   AfterUpdate,
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -38,7 +37,7 @@ import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorEntity } from './editor.entity';
 
 @Entity('file', { comment: 'Файлы' })
-export class FileEntity extends BaseEntity {
+export class FileEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_file_id' })
   @ApiProperty({
     description: 'Идентификатор файла',

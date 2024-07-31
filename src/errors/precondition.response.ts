@@ -6,14 +6,14 @@ import { Status } from '@/enums/status.enum';
 import { I18nPath } from '@/i18n';
 
 export class PreconditionFailedError<
-  T extends string = I18nPath,
+  T extends I18nPath | string = I18nPath,
 > extends PreconditionFailedException {
   constructor(message?: T, options?: TranslateOptions) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.PRECONDITION_FAILED,
       code: 'server-error.10002',
-      message: message ?? 'error.PRECONDITION',
+      message: message ?? ('error.PRECONDITION' as I18nPath),
       options,
     });
     this.initMessage();

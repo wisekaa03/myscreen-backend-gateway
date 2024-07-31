@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNumber, IsUUID } from 'class-validator';
 import {
-  BaseEntity,
   Column,
   Entity,
   Index,
@@ -15,7 +14,7 @@ import { MonitorEntity } from '@/database/monitor.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('monitor_multiple', { comment: 'Групповые мониторы' })
-export class MonitorGroupEntity extends BaseEntity {
+export class MonitorGroupEntity {
   @PrimaryGeneratedColumn('uuid', {
     primaryKeyConstraintName: 'PK_monitor_group_id',
   })

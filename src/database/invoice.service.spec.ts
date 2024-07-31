@@ -1,8 +1,10 @@
+import { Readable } from 'stream';
+import { Observable, of } from 'rxjs';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 
-import { MICROSERVICE_MYSCREEN } from '@/enums';
+import { InvoiceStatus, MICROSERVICE_MYSCREEN, UserRoleEnum } from '@/enums';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
@@ -11,20 +13,75 @@ import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
 import { FileService } from './file.service';
 import { FolderService } from './folder.service';
+import { FileExtView } from './file-ext.view';
 
-export const mockRepository = jest.fn(() => ({
+export const idMock = '00000000-0000-0000-0000-000000000000';
+const email = 'postmaster@domain.com';
+const balance = 1000;
+
+const user: UserEntity = {
+  id: idMock,
+  email,
+  disabled: false,
+  surname: 'Test',
+  name: 'Test',
+  middleName: 'Test',
+  role: UserRoleEnum.Administrator,
+  verified: true,
+  password: 'mock password',
+  city: 'Keasnodar',
+  country: 'RU',
+  preferredLanguage: 'ru',
+  locale: 'ru-RU',
+  nonPayment: 0,
+};
+const invoice: InvoiceEntity = {
+  id: idMock,
+  seqNo: 1,
+  description: 'Test description',
+  status: InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
+  sum: 1000,
+  user,
+  userId: idMock,
+  file: null,
+};
+
+const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
   findAndCount: async () => Promise.resolve([]),
   save: async () => Promise.resolve([]),
   create: () => [],
   remove: async () => Promise.resolve([]),
+  update: async () => Promise.resolve(),
   get: (key: string, defaultValue?: string) => defaultValue,
   getOrThrow: (key: string, defaultValue?: string) => '100',
+  getS3Object: async () => Promise.resolve({ Body: Readable }),
+  send: (): Observable<Buffer> => of(Buffer.from('test')),
+  emit: (): Observable<string> => of('test'),
+  onWallet: async () => Promise.resolve(),
+  walletSum: async () => Promise.resolve(balance),
+  invoiceFolder: async () => Promise.resolve(''),
+  upload: async () => Promise.resolve([{ id: idMock } as FileExtView]),
+  acceptanceActCreate: async () => Promise.resolve(),
   metadata: {
     columns: [],
     relations: [],
   },
 }));
+
+const mockEntityManager = {
+  find: async () => Promise.resolve([]),
+  findOne: async () => Promise.resolve(),
+  findAndCount: async () => Promise.resolve([]),
+  save: async () => Promise.resolve([]),
+  create: () => [],
+  remove: async () => Promise.resolve([]),
+  update: async () => Promise.resolve({ affected: 1 }),
+  metadata: {
+    columns: [],
+    relations: [],
+  },
+};
 
 describe(InvoiceService.name, () => {
   let service: InvoiceService;
@@ -53,6 +110,16 @@ describe(InvoiceService.name, () => {
           provide: getRepositoryToken(UserEntity),
           useClass: mockRepository,
         },
+        {
+          provide: getEntityManagerToken(),
+          useValue: {
+            transaction: jest
+              .fn()
+              .mockImplementation((level, transactionalFunction) => {
+                return transactionalFunction(mockEntityManager);
+              }),
+          },
+        },
       ],
     }).compile();
 
@@ -61,5 +128,37 @@ describe(InvoiceService.name, () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  it('statusChange: status change AWAITING_CONFIRMATION', async () => {
+    const statusChange = await service.statusChange(
+      invoice,
+      InvoiceStatus.AWAITING_CONFIRMATION,
+    );
+    expect(statusChange).toBeDefined();
+  });
+
+  it('statusChange: status change CANCELLED', async () => {
+    const statusChange = await service.statusChange(
+      invoice,
+      InvoiceStatus.CANCELLED,
+    );
+    expect(statusChange).toBeDefined();
+  });
+
+  it('statusChange: status change CONFIRMED_PENDING_PAYMENT', async () => {
+    const statusChange = await service.statusChange(
+      invoice,
+      InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
+    );
+    expect(statusChange).toBeDefined();
+  });
+
+  it('statusChange: status change PAID', async () => {
+    const statusChange = await service.statusChange(
+      invoice,
+      InvoiceStatus.PAID,
+    );
+    expect(statusChange).toBeDefined();
   });
 });

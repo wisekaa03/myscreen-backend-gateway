@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
 import { MICROSERVICE_MYSCREEN } from '@/enums';
@@ -35,6 +35,10 @@ describe(WalletService.name, () => {
         { provide: ActService, useClass: mockRepository },
         {
           provide: getRepositoryToken(WalletEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getEntityManagerToken(),
           useClass: mockRepository,
         },
       ],

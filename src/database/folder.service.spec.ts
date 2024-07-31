@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import {
   FindOneOptions,
   FindOptionsWhere,
@@ -79,6 +79,10 @@ describe(FolderService.name, () => {
         },
         {
           provide: getRepositoryToken(FolderExtView),
+          useClass: mockRepository,
+        },
+        {
+          provide: getEntityManagerToken(),
           useClass: mockRepository,
         },
       ],

@@ -57,7 +57,6 @@ import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { EditorEntity } from './editor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from './folder.entity';
-import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
 import { FileExtView } from './file-ext.view';
 import { I18nPath } from '@/i18n';
@@ -109,6 +108,7 @@ export class FileService {
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
     @InjectRepository(FileExtView)
     private readonly fileExtRepository: Repository<FileExtView>,
+    private readonly entityManager: EntityManager,
   ) {
     this.frontEndUrl = this.configService.get(
       'FRONTEND_URL',
@@ -329,7 +329,7 @@ export class FileService {
     file: FileEntity,
     update: Partial<FileExtView>,
   ): Promise<FileExtView> {
-    return this.fileRepository.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const s3Name = getS3Name(file.name);
@@ -461,7 +461,7 @@ export class FileService {
       folderId = (await this.rootFolder(userId, transact)).id;
     }
 
-    return transactFile.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const filesPromises = files.map(async (fileToSave) => {
@@ -648,55 +648,49 @@ export class FileService {
     originalFiles: FileEntity[],
     transact?: EntityManager,
   ): Promise<FileExtView[]> {
-    const transactFile = transact
-      ? transact.withRepository(this.fileRepository)
-      : this.fileRepository;
-
-    return transactFile.manager.transaction(
-      'REPEATABLE READ',
-      async (transact) => {
-        const filePromises = originalFiles.map(async (file) =>
-          this.copyS3Object(toFolder, file)
-            .then(() =>
-              transact.save(
-                FileEntity,
-                transact.create(FileEntity, {
-                  ...file,
-                  userId,
-                  folderId: toFolder.id,
-                  folder: toFolder,
-                  id: undefined,
-                  preview: undefined,
-                  playlists: undefined,
-                  monitors: undefined,
-                  createdAt: undefined,
-                  updatedAt: undefined,
-                }),
-              ),
-            )
-            .then(({ id }) =>
-              this.findOne({
-                caseInsensitive: false,
-                transact,
-                where: { id },
+    const _transact = transact ?? this.entityManager;
+    return _transact.transaction('REPEATABLE READ', async (transact) => {
+      const filePromises = originalFiles.map(async (file) =>
+        this.copyS3Object(toFolder, file)
+          .then(() =>
+            transact.save(
+              FileEntity,
+              transact.create(FileEntity, {
+                ...file,
+                userId,
+                folderId: toFolder.id,
+                folder: toFolder,
+                id: undefined,
+                preview: undefined,
+                playlists: undefined,
+                monitors: undefined,
+                createdAt: undefined,
+                updatedAt: undefined,
               }),
-            )
-            .catch((error: any) => {
-              this.logger.error(`S3 copy files error: ${error}`);
-              throw new Error(error?.message || error);
+            ),
+          )
+          .then(({ id }) =>
+            this.findOne({
+              caseInsensitive: false,
+              transact,
+              where: { id },
             }),
-        );
+          )
+          .catch((error: any) => {
+            this.logger.error(`S3 copy files error: ${error}`);
+            throw new Error(error?.message || error);
+          }),
+      );
 
-        return Promise.allSettled(filePromises).then((files) =>
-          files.reduce((acc, p) => {
-            if (p.status === 'fulfilled' && p.value) {
-              return acc.concat(p.value);
-            }
-            return acc;
-          }, [] as FileExtView[]),
-        );
-      },
-    );
+      return Promise.allSettled(filePromises).then((files) =>
+        files.reduce((acc, p) => {
+          if (p.status === 'fulfilled' && p.value) {
+            return acc.concat(p.value);
+          }
+          return acc;
+        }, [] as FileExtView[]),
+      );
+    });
   }
 
   async deletePrep(filesId: string[]): Promise<void> {

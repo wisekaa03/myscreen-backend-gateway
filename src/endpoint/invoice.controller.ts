@@ -243,7 +243,6 @@ export class InvoiceController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Crud(CRUD.UPDATE)
   async payed(
-    @Req() { user }: ExpressRequest,
     @Param('invoiceId', ParseUUIDPipe) id: string,
   ): Promise<InvoiceGetResponse> {
     const invoice = await this.invoiceService.findOne({

@@ -1,7 +1,4 @@
-import type {
-  Request as ExpressRequest,
-  Response as ExpressResponse,
-} from 'express';
+import type { Request as ExpressRequest } from 'express';
 import {
   Body,
   Delete,
@@ -15,7 +12,6 @@ import {
   Post,
   Put,
   Req,
-  Res,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { FindOptionsWhere } from 'typeorm';

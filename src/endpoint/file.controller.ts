@@ -550,7 +550,6 @@ export class FileController {
   })
   @Crud(CRUD.DELETE)
   async deleteFile(
-    @Req() { user }: ExpressRequest,
     @Param('fileId', ParseUUIDPipe) fileId: string,
   ): Promise<SuccessResponse> {
     await this.fileService.deletePrep([fileId]);

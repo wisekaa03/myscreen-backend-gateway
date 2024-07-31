@@ -110,11 +110,11 @@ import { MonitorOnlineService } from './monitor-online.service';
 export class DatabaseModule implements OnModuleInit {
   constructor(
     @InjectEntityManager()
-    private readonly manager: EntityManager,
+    private readonly entityManager: EntityManager,
   ) {}
 
   async onModuleInit(): Promise<void> {
-    await this.manager.transaction('REPEATABLE READ', async (manager) => {
+    await this.entityManager.transaction('REPEATABLE READ', async (manager) => {
       const monitors = await manager.find(MonitorEntity, {
         where: [
           {

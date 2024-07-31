@@ -45,10 +45,9 @@ export class FolderService {
     private readonly folderRepository: Repository<FolderEntity>,
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
-    @InjectRepository(FileExtView)
-    private readonly fileExtRepository: Repository<FileExtView>,
     @InjectRepository(FolderExtView)
     private readonly folderExtRepository: Repository<FolderExtView>,
+    private readonly entityManager: EntityManager,
   ) {}
 
   async find({
@@ -318,7 +317,7 @@ export class FolderService {
     toFolder: FolderEntity,
     originalFolders: FolderEntity[],
   ): Promise<FolderEntity[]> {
-    return this.folderRepository.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const foldersPromise = originalFolders.map(async (folder) => {
@@ -354,7 +353,7 @@ export class FolderService {
   }
 
   async delete(foldersId: string[]): Promise<DeleteResult> {
-    return this.folderRepository.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const folderSubId = await transact

@@ -72,14 +72,14 @@ export class ConflictData {
 }
 
 export class ConflictError<
-  T extends string = I18nPath,
+  T extends I18nPath | string = I18nPath,
 > extends ConflictException {
   constructor(message: T, options?: TranslateOptions, error?: ConflictData) {
     super({
       status: Status.Error,
       statusCode: HttpStatus.CONFLICT,
       code: 'server-error.10000',
-      message: message ?? 'error.CONFLICT',
+      message: message ?? ('error.CONFLICT' as I18nPath),
       options,
       error,
     });

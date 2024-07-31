@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 
 import { WalletService } from './wallet.service';
 import { ActEntity } from './act.entity';
@@ -32,6 +32,10 @@ describe(ActService.name, () => {
         { provide: WsStatistics, useClass: mockRepository },
         {
           provide: getRepositoryToken(ActEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getEntityManagerToken(),
           useClass: mockRepository,
         },
       ],
