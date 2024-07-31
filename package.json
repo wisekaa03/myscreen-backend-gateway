@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.57.1",
+  "version": "2.57.2",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -97,8 +97,8 @@
     "**/**/ws": ">=8.18.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.620.1",
-    "@aws-sdk/s3-request-presigner": "^3.620.1",
+    "@aws-sdk/client-s3": "^3.621.0",
+    "@aws-sdk/s3-request-presigner": "^3.621.0",
     "@elastic/elasticsearch": "^8.14.0",
     "@nestjs/common": "^10.3.10",
     "@nestjs/config": "^3.2.3",

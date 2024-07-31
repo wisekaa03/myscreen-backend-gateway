@@ -1,7 +1,10 @@
 import { ConfigService } from '@nestjs/config';
 import { RmqOptions, Transport } from '@nestjs/microservices';
 
-export const MicroserviceOptions = (name: string) => ({
+export const MicroserviceOptions = (
+  name: string,
+  options?: RmqOptions['options'],
+) => ({
   name,
   useFactory: (configService: ConfigService) =>
     ({
@@ -19,6 +22,7 @@ export const MicroserviceOptions = (name: string) => ({
         queueOptions: {
           durable: true,
         },
+        ...options,
       },
     }) as RmqOptions,
   inject: [ConfigService],
