@@ -279,123 +279,125 @@ export class InvoiceService {
   ): Promise<InvoiceEntity> {
     const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
 
-    const entityManager = this.entityManager;
-    await entityManager.transaction('REPEATABLE READ', async (transact) => {
-      if (invoice.status !== status) {
-        const update = await transact.update(InvoiceEntity, id, {
-          status,
-        });
-        if (!update.affected) {
-          throw new NotFoundError<I18nPath>('error.invoice.not_found', {
-            args: { id },
+    await this.entityManager.transaction(
+      'REPEATABLE READ',
+      async (transact) => {
+        if (invoice.status !== status) {
+          const update = await transact.update(InvoiceEntity, id, {
+            status,
           });
+          if (!update.affected) {
+            throw new NotFoundError<I18nPath>('error.invoice.not_found', {
+              args: { id },
+            });
+          }
         }
-      }
 
-      switch (status) {
-        // Если статус счета "Оплачен", то нужно записать в базу
-        // сумму баланса и отправить письмо пользователю
-        case InvoiceStatus.PAID: {
-          const createdAtFormat = dayjs(invoice.createdAt)
-            .locale('ru')
-            .format('DD MMMM YYYY г.');
-          const description = `Счет на оплату №${invoice.seqNo} от ${createdAtFormat}`;
-          // здесь записывается в базу сумма баланса
-          await transact.save(
-            WalletEntity,
-            this.walletService.create({
+        switch (status) {
+          // Если статус счета "Оплачен", то нужно записать в базу
+          // сумму баланса и отправить письмо пользователю
+          case InvoiceStatus.PAID: {
+            const createdAtFormat = dayjs(invoice.createdAt)
+              .locale('ru')
+              .format('DD MMMM YYYY г.');
+            const description = `Счет на оплату №${invoice.seqNo} от ${createdAtFormat}`;
+            // здесь записывается в базу сумма баланса
+            await transact.save(
+              WalletEntity,
+              this.walletService.create({
+                userId: invoiceUserId,
+                description,
+                sum: invoice.sum,
+                invoiceId: id,
+              }),
+            );
+
+            const balance = await this.walletService.walletSum({
               userId: invoiceUserId,
-              description,
-              sum: invoice.sum,
-              invoiceId: id,
-            }),
-          );
+              transact,
+            });
 
-          const balance = await this.walletService.walletSum({
-            userId: invoiceUserId,
-            transact,
-          });
+            // и выводится письмо о том, что счет оплачен
+            this.mailMsvc.emit<unknown, MsvcMailInvoicePayed>(
+              MsvcMailService.InvoicePayed,
+              {
+                invoice,
+                user: invoiceUser,
+                balance,
+              },
+            );
 
-          // и выводится письмо о том, что счет оплачен
-          this.mailMsvc.emit<unknown, MsvcMailInvoicePayed>(
-            MsvcMailService.InvoicePayed,
-            {
-              invoice,
+            await this.walletService.acceptanceActCreate({
               user: invoiceUser,
               balance,
-            },
-          );
-
-          await this.walletService.acceptanceActCreate({
-            user: invoiceUser,
-            balance,
-            transact,
-          });
-
-          break;
-        }
-
-        // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
-        case InvoiceStatus.AWAITING_CONFIRMATION: {
-          const accountantUsers = await transact.find(UserExtView, {
-            where: {
-              role: UserRoleEnum.Accountant,
-              disabled: false,
-              verified: true,
-            },
-          });
-
-          accountantUsers.forEach(async (user) => {
-            // Вызов сервиса отправки писем
-            this.mailMsvc.emit<unknown, MsvcMailInvoiceAwaitingConfirmation>(
-              MsvcMailService.InvoiceAwaitingConfirmation,
-              {
-                user,
-                invoice,
-              },
-            );
-          });
-
-          break;
-        }
-
-        // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
-        case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
-          let { file } = invoice;
-          if (!file) {
-            file = await this.generateInvoiceFile(
-              invoice,
-              SpecificFormat.XLSX,
               transact,
-            );
+            });
+
+            break;
           }
 
-          const data = await this.fileService
-            .getS3Object(file)
-            .catch((error: unknown) => {
-              throw new NotFoundError(
-                `File '${file.id}' is not exists: ${JSON.stringify(error)}`,
+          // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
+          case InvoiceStatus.AWAITING_CONFIRMATION: {
+            const accountantUsers = await transact.find(UserExtView, {
+              where: {
+                role: UserRoleEnum.Accountant,
+                disabled: false,
+                verified: true,
+              },
+            });
+
+            accountantUsers.forEach(async (user) => {
+              // Вызов сервиса отправки писем
+              this.mailMsvc.emit<unknown, MsvcMailInvoiceAwaitingConfirmation>(
+                MsvcMailService.InvoiceAwaitingConfirmation,
+                {
+                  user,
+                  invoice,
+                },
               );
             });
-          if (data.Body instanceof Readable) {
-            const invoiceFile = await buffer(data.Body);
-            this.mailMsvc.emit<unknown, MsvcMailInvoiceConfirmed>(
-              MsvcMailService.InvoiceConfirmed,
-              {
-                user: invoiceUser,
-                invoice,
-                invoiceFile,
-              },
-            );
+
+            break;
           }
 
-          break;
-        }
+          // Если статус счета "Подтвержден, ожидает оплаты", то нужно отправить письмо пользователю
+          case InvoiceStatus.CONFIRMED_PENDING_PAYMENT: {
+            let { file } = invoice;
+            if (!file) {
+              file = await this.generateInvoiceFile(
+                invoice,
+                SpecificFormat.XLSX,
+                transact,
+              );
+            }
 
-        default:
-          break;
-      }
-    });
+            const data = await this.fileService
+              .getS3Object(file)
+              .catch((error: unknown) => {
+                throw new NotFoundError(
+                  `File '${file.id}' is not exists: ${JSON.stringify(error)}`,
+                );
+              });
+            if (data.Body instanceof Readable) {
+              const invoiceFile = await buffer(data.Body);
+              this.mailMsvc.emit<unknown, MsvcMailInvoiceConfirmed>(
+                MsvcMailService.InvoiceConfirmed,
+                {
+                  user: invoiceUser,
+                  invoice,
+                  invoiceFile,
+                },
+              );
+            }
+
+            break;
+          }
+
+          default:
+            break;
+        }
+      },
+    );
 
     if (status === InvoiceStatus.PAID) {
       await this.wsStatistics.onWallet({ userId: invoiceUserId });
