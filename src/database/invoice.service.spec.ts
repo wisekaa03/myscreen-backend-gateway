@@ -47,10 +47,10 @@ const invoice: InvoiceEntity = {
 };
 
 const mockRepository = jest.fn(() => ({
-  findOne: async () => Promise.resolve([]),
-  findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
+  findOne: async () => Promise.resolve(invoice),
+  findAndCount: async () => Promise.resolve([invoice]),
+  save: async () => Promise.resolve(invoice),
+  create: () => invoice,
   remove: async () => Promise.resolve([]),
   update: async () => Promise.resolve(),
   get: (key: string, defaultValue?: string) => defaultValue,
@@ -70,11 +70,11 @@ const mockRepository = jest.fn(() => ({
 }));
 
 const mockEntityManager = {
-  find: async () => Promise.resolve([]),
-  findOne: async () => Promise.resolve(),
-  findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
+  find: async () => Promise.resolve([invoice]),
+  findOne: async () => Promise.resolve(invoice),
+  findAndCount: async () => Promise.resolve([invoice]),
+  save: async () => Promise.resolve(invoice),
+  create: () => invoice,
   remove: async () => Promise.resolve([]),
   update: async () => Promise.resolve({ affected: 1 }),
   metadata: {
@@ -135,7 +135,7 @@ describe(InvoiceService.name, () => {
       invoice,
       InvoiceStatus.AWAITING_CONFIRMATION,
     );
-    expect(statusChange).toBeDefined();
+    expect(statusChange).toBeInstanceOf(Object);
   });
 
   it('statusChange: status change CANCELLED', async () => {
@@ -143,7 +143,7 @@ describe(InvoiceService.name, () => {
       invoice,
       InvoiceStatus.CANCELLED,
     );
-    expect(statusChange).toBeDefined();
+    expect(statusChange).toBeInstanceOf(Object);
   });
 
   it('statusChange: status change CONFIRMED_PENDING_PAYMENT', async () => {
@@ -151,7 +151,7 @@ describe(InvoiceService.name, () => {
       invoice,
       InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
     );
-    expect(statusChange).toBeDefined();
+    expect(statusChange).toBeInstanceOf(Object);
   });
 
   it('statusChange: status change PAID', async () => {
@@ -159,6 +159,6 @@ describe(InvoiceService.name, () => {
       invoice,
       InvoiceStatus.PAID,
     );
-    expect(statusChange).toBeDefined();
+    expect(statusChange).toBeInstanceOf(Object);
   });
 });
