@@ -12,7 +12,9 @@ import WebSocket from 'ws';
 import { Logger } from 'nestjs-pino';
 import { I18nValidationPipe } from 'nestjs-i18n';
 import dayjs from 'dayjs';
+import { Observable, of } from 'rxjs';
 
+import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
 import {
   AuthResponse,
   RegisterRequest,
@@ -59,6 +61,7 @@ import {
   BidApprove,
   BidStatus,
   InvoiceStatus,
+  MICROSERVICE_MYSCREEN,
   MonitorCategoryEnum,
   MonitorMultiple,
   MonitorOrientation,
@@ -78,7 +81,6 @@ import { AppModule } from '@/app.module';
 import { WsAdapter } from '@/websocket/ws-adapter';
 import { UserExtView } from '@/database/user-ext.view';
 import { HttpError } from '@/errors';
-import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
 
 const delay = (ms: number) => () => new Promise((res) => setTimeout(res, ms));
 
@@ -118,12 +120,18 @@ const emailAccountant = jabber.createEmail();
 const passwordAccountant = generatePassword(20);
 
 export const mockRepository = jest.fn(() => ({
-  findOne: async () => Promise.resolve([]),
-  findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
+  findOne: async () => Promise.resolve({}),
+  findAndCount: async () => Promise.resolve([{}]),
+  save: async () => Promise.resolve({}),
+  create: () => '',
   remove: async () => Promise.resolve([]),
   get: () => '',
+  send: (): Observable<Buffer> => {
+    return of(Buffer.from('test'));
+  },
+  emit: (): Observable<Buffer> => {
+    return of(Buffer.from('test'));
+  },
   metadata: {
     columns: [],
     relations: [],
@@ -314,7 +322,18 @@ describe('Backend API (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(MICROSERVICE_MYSCREEN.MAIL)
+      .useClass(mockRepository)
+      .overrideProvider(MICROSERVICE_MYSCREEN.EDITOR)
+      .useClass(mockRepository)
+      .overrideProvider(MICROSERVICE_MYSCREEN.FILE)
+      .useClass(mockRepository)
+      .overrideProvider(MICROSERVICE_MYSCREEN.FORM)
+      .useClass(mockRepository)
+      .overrideProvider(MICROSERVICE_MYSCREEN.GATEWAY)
+      .useClass(mockRepository)
+      .compile();
     app = moduleFixture.createNestApplication();
 
     const httpAdaper = app.get(HttpAdapterHost);
@@ -1802,6 +1821,10 @@ describe('Backend API (e2e)', () => {
      * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toBe(true);
+      }
+
       wsMonitorOwner = new WebSocket(wsUrl);
       await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
@@ -2195,7 +2218,9 @@ describe('Backend API (e2e)', () => {
         expect(false).toEqual(true);
       }
 
-      const monitor = {
+      const monitor: Omit<MonitorCreateRequest, 'price1s'> & {
+        price1s: string;
+      } = {
         name: monitorNameSingle,
         code: monitorCodeSingle,
         price1s: '0.00001',
@@ -2275,6 +2300,10 @@ describe('Backend API (e2e)', () => {
      * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toBe(true);
+      }
+
       wsMonitorOwner = new WebSocket(wsUrl);
       await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
@@ -2651,6 +2680,10 @@ describe('Backend API (e2e)', () => {
      * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toBe(true);
+      }
+
       wsMonitorOwner = new WebSocket(wsUrl);
       await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
@@ -2873,7 +2906,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Лайк монитора Single
      */
     test('MonitorOwner: GET /monitor/{monitorSingleId}/favoritePlus (Лайк монитора Single)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorSingleId) {
         expect(false).toEqual(true);
       }
 
@@ -2895,7 +2928,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Дизлайк монитора Single
      */
     test('MonitorOwner: GET /monitor/{monitorSingleId}/favoriteMinus (Дизлайк монитора Single)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorSingleId) {
         expect(false).toEqual(true);
       }
 
@@ -2963,7 +2996,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Лайк монитора Scaling
      */
     test('MonitorOwner: GET /monitor/{monitorGroupScalingId}/favoritePlus (Лайк монитора Scaling)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorGroupScalingId) {
         expect(false).toEqual(true);
       }
 
@@ -2985,7 +3018,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Дизлайк монитора Scaling
      */
     test('MonitorOwner: GET /monitor/{monitorGroupScalingId}/favoriteMinus (Дизлайк монитора Scaling)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorGroupScalingId) {
         expect(false).toEqual(true);
       }
 
@@ -3054,7 +3087,7 @@ describe('Backend API (e2e)', () => {
         .then(({ body }: { body: BidsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
           expect(body.data).toBeDefined();
-          expect(body.data[0].id).toBe(advertiserBidMonitorSingleId);
+          expect(body.data[0]?.id).toBe(advertiserBidMonitorSingleId);
         });
     });
 
@@ -3359,6 +3392,11 @@ describe('Backend API (e2e)', () => {
           .expect({ status: Status.Success });
       });
     });
+  });
+
+  afterEach(() => {
+    wsAdvertiser?.close();
+    wsMonitorOwner?.close();
   });
 
   afterAll(() => {

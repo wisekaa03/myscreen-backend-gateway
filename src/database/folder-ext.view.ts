@@ -1,6 +1,5 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import {
-  AfterLoad,
   DataSource,
   SelectQueryBuilder,
   ViewColumn,
@@ -60,12 +59,4 @@ export class FolderExtView extends FolderEntity {
     required: false,
   })
   empty?: boolean;
-
-  @AfterLoad()
-  after() {
-    const fileNumber = Number(this.fileNumber ?? 0);
-    const folderNumber = Number(this.folderNumber ?? 0);
-
-    this.empty = fileNumber + folderNumber > 0 ? false : true;
-  }
 }

@@ -1,7 +1,6 @@
 import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
 import { Exclude } from 'class-transformer';
 import {
-  AfterLoad,
   DataSource,
   SelectQueryBuilder,
   ViewColumn,
@@ -59,12 +58,4 @@ export class FileExtView extends FileEntity {
     required: false,
   })
   used!: boolean;
-
-  @AfterLoad()
-  generate() {
-    const playlistCount = Number(this.playlistFilesFileCount ?? 0);
-    const editorCount = Number(this.editorLayerFileCount ?? 0);
-
-    this.used = playlistCount + editorCount > 0 ? true : false;
-  }
 }

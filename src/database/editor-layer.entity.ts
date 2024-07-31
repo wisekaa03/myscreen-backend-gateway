@@ -9,9 +9,6 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  AfterLoad,
-  AfterUpdate,
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -245,13 +242,4 @@ export class EditorLayerEntity {
 
   // For path name
   path!: string;
-
-  @AfterLoad()
-  @AfterUpdate()
-  after() {
-    this.start = Number(this.start || 0);
-    this.duration = Number(this.duration || 0);
-    this.cutFrom = Number(this.cutFrom);
-    this.cutTo = Number(this.cutTo);
-  }
 }

@@ -84,7 +84,7 @@ jobs:
         run: yarn test
       - name: Test end to end
         if: ${{ !cancelled() }}
-        run: yarn test:e2e
+        run: yarn test:e2e:debug
       - name: Build test
         if: ${{ !cancelled() }}
         run: yarn build
