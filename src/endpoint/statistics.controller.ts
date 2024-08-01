@@ -4,11 +4,12 @@ import {
 } from 'express';
 import { Body, HttpCode, Inject, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { In } from 'typeorm';
+import { In, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom, timeout } from 'rxjs';
 
-import { MsvcFormReport } from '@/interfaces';
+import { MsvcFormReportDeviceStatus, MsvcFormReportViews } from '@/interfaces';
 import { formatToContentType } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
 import {
@@ -21,6 +22,7 @@ import {
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { MonitorService } from '@/database/monitor.service';
 import { MonitorEntity } from '@/database/monitor.entity';
+import { MonitorStatisticsEntity } from '@/database/monitor-statistics.entity';
 
 @ApiComplexDecorators({
   path: ['statistics'],
@@ -72,7 +74,7 @@ export class StatisticsController {
     @Res() res: ExpressResponse,
     @Body() { format, monitorIds, dateFrom, dateTo }: ReportDeviceStatusRequest,
   ): Promise<void> {
-    let monitors: MonitorEntity[] | undefined;
+    let monitors: MonitorEntity[];
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
@@ -99,13 +101,16 @@ export class StatisticsController {
     const data = Buffer.from(
       await lastValueFrom(
         this.formService
-          .send<Buffer, MsvcFormReport>(MsvcFormService.ReportDeviceStatus, {
-            user,
-            monitors,
-            format,
-            dateFrom: new Date(dateFrom),
-            dateTo: new Date(dateTo),
-          })
+          .send<Buffer, MsvcFormReportDeviceStatus>(
+            MsvcFormService.ReportDeviceStatus,
+            {
+              user,
+              monitors,
+              format,
+              dateFrom: new Date(dateFrom),
+              dateTo: new Date(dateTo),
+            },
+          )
           .pipe(timeout(3000)),
       ),
     );
@@ -155,33 +160,33 @@ export class StatisticsController {
     @Res() res: ExpressResponse,
     @Body() { format, monitorIds, dateFrom, dateTo }: ReportViewsRequest,
   ): Promise<void> {
-    let monitors: MonitorEntity[] | undefined;
+    const { id: userId, role } = user;
+    let statistics: MonitorStatisticsEntity[];
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
-      monitors = await this.monitorService.find({
-        userId: user.id,
+      statistics = await this.monitorService.findStatistics({
         where: {
-          userId:
-            user.role === UserRoleEnum.Administrator ? undefined : user.id,
-          id: In(monitorIds),
+          userId: role === UserRoleEnum.Administrator ? undefined : userId,
+          monitorId: In(monitorIds),
         },
-        loadEagerRelations: false,
-        relations: { user: true, statistics: true },
+        loadEagerRelations: true,
+        relations: { user: true, monitor: true, playlist: true },
       });
     } else {
-      monitors = await this.monitorService.find({
-        userId: user.role === UserRoleEnum.Administrator ? undefined : user.id,
-        where: { userId: user.id },
-        loadEagerRelations: false,
-        relations: { user: true, statistics: true },
+      statistics = await this.monitorService.findStatistics({
+        where: {
+          userId: role === UserRoleEnum.Administrator ? undefined : userId,
+        },
+        loadEagerRelations: true,
+        relations: { user: true, monitor: true, playlist: true },
       });
     }
 
     const data = Buffer.from(
       await lastValueFrom(
         this.formService
-          .send<Buffer, MsvcFormReport>(MsvcFormService.ReportViews, {
+          .send<Buffer, MsvcFormReportViews>(MsvcFormService.ReportViews, {
             user,
-            monitors,
+            statistics,
             format,
             dateFrom: new Date(dateFrom),
             dateTo: new Date(dateTo),

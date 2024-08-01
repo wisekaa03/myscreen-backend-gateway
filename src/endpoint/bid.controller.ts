@@ -14,7 +14,7 @@ import {
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { Not } from 'typeorm';
 
-import { BadRequestError, NotFoundError } from '@/errors';
+import { NotFoundError } from '@/errors';
 import {
   SuccessResponse,
   BidGetResponse,

@@ -65,6 +65,7 @@ export class InvoiceService {
     private readonly invoiceRepository: Repository<InvoiceEntity>,
     @InjectRepository(UserExtView)
     private readonly userExtRepository: Repository<UserExtView>,
+    private readonly entityManager: EntityManager,
   ) {
     this.minInvoiceSum = parseInt(
       this.configService.getOrThrow('MIN_INVOICE_SUM'),
@@ -117,7 +118,7 @@ export class InvoiceService {
     }
     const { id: userId } = user;
 
-    const invoice = await this.invoiceRepository.manager.transaction(
+    const invoice = await this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         // Если у пользователя есть счет со статусом "Ожидает подтверждения",
@@ -183,7 +184,7 @@ export class InvoiceService {
     const { id: folderId } =
       await this.folderService.invoiceFolder(invoiceUserId);
 
-    await this.invoiceRepository.manager.transaction(
+    await this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const [downloadFile] = await this.fileService.upload({
@@ -221,9 +222,7 @@ export class InvoiceService {
     transact?: EntityManager,
   ): Promise<FileEntity> {
     const { id, user: invoiceUser, userId: invoiceUserId, createdAt } = invoice;
-    const _transact = transact
-      ? transact.withRepository(this.invoiceRepository)
-      : this.invoiceRepository;
+    const _transact = transact ?? this.entityManager;
 
     const language =
       invoiceUser.preferredLanguage ??
@@ -266,7 +265,10 @@ export class InvoiceService {
       throw new BadRequestError();
     }
 
-    await _transact.save(_transact.create({ id, file }));
+    await _transact.save(
+      InvoiceEntity,
+      _transact.create(InvoiceEntity, { id, file }),
+    );
 
     return file;
   }
@@ -277,7 +279,7 @@ export class InvoiceService {
   ): Promise<InvoiceEntity> {
     const { id, user: invoiceUser, userId: invoiceUserId } = invoice;
 
-    await this.invoiceRepository.manager.transaction(
+    await this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         if (invoice.status !== status) {
@@ -336,7 +338,7 @@ export class InvoiceService {
 
           // Если статус счета "Ожидание подтверждения", то нужно отправить письма всем Бухгалтерам
           case InvoiceStatus.AWAITING_CONFIRMATION: {
-            const accountantUsers = await this.userExtRepository.find({
+            const accountantUsers = await transact.find(UserExtView, {
               where: {
                 role: UserRoleEnum.Accountant,
                 disabled: false,

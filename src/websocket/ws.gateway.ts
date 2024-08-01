@@ -260,8 +260,8 @@ export class WSGateway
     if (typeof body === 'string') {
       try {
         bodyObject = JSON.parse(body);
-      } catch (e) {
-        throw new WsException('WebSocket: Error in parsing data');
+      } catch (e: any) {
+        throw new WsException(`WebSocket: Error in parsing data: ${e}`);
       }
     } else {
       bodyObject = body;

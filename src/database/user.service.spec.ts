@@ -338,7 +338,7 @@ describe(UserService.name, () => {
       password: 'aA1!aaaa',
     } as UserEntity;
     const user = service.update(testUserUpdate, testUserUpdate);
-    await expect(user).resolves.toBeDefined();
+    await expect(user).resolves.toBeInstanceOf(Object);
   });
 
   // TODO: should inspect:

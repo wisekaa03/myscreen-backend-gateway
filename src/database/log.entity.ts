@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -16,7 +15,7 @@ import { i18nValidationMessage } from 'nestjs-i18n';
 import { UserEntity } from './user.entity';
 
 @Entity('log', { comment: 'Логирование' })
-export class LogEntity extends BaseEntity {
+export class LogEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_log_id' })
   @ApiProperty({
     description: 'Идентификатор',

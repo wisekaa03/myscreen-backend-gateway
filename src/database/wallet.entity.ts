@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -27,7 +26,7 @@ import { ActEntity } from './act.entity';
 import { WalletTransactionType } from '@/enums';
 
 @Entity('wallet', { comment: 'Деньги в бумажнике' })
-export class WalletEntity extends BaseEntity {
+export class WalletEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_wallet_id' })
   @ApiProperty({
     description: 'Идентификатор баланса',

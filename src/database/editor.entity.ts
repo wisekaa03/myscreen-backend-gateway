@@ -27,7 +27,6 @@ import {
   UpdateDateColumn,
   Unique,
   RelationId,
-  BaseEntity,
 } from 'typeorm';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
@@ -39,7 +38,7 @@ import { PlaylistEntity } from './playlist.entity';
 
 @Entity('editor')
 @Unique('IDX_editor_userId_name', ['userId', 'name'])
-export class EditorEntity extends BaseEntity {
+export class EditorEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_editor_id' })
   @ApiProperty({
     description: 'Идентификатор редактора',

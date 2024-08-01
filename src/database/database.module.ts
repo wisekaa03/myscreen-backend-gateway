@@ -39,6 +39,10 @@ import { MonitorStatisticsService } from './monitor-statistics.service';
 import { MonitorStatisticsEntity } from './monitor-statistics.entity';
 import { MonitorOnlineEntity } from './monitor-online.entity';
 import { MonitorOnlineService } from './monitor-online.service';
+import { EditorLayerSubscriber } from './editor-layer.subscriber';
+import { FileExtSubscriber } from './file-ext.subsciber';
+import { FolderExtSubscriber } from './folder-ext.subsciber';
+import { MonitorSubscriber } from './monitor.subsciber';
 
 @Global()
 @Module({
@@ -88,6 +92,11 @@ import { MonitorOnlineService } from './monitor-online.service';
     WsStatistics,
     MonitorStatisticsService,
     MonitorOnlineService,
+
+    EditorLayerSubscriber,
+    FileExtSubscriber,
+    FolderExtSubscriber,
+    MonitorSubscriber,
   ],
 
   exports: [
@@ -110,11 +119,11 @@ import { MonitorOnlineService } from './monitor-online.service';
 export class DatabaseModule implements OnModuleInit {
   constructor(
     @InjectEntityManager()
-    private readonly manager: EntityManager,
+    private readonly entityManager: EntityManager,
   ) {}
 
   async onModuleInit(): Promise<void> {
-    await this.manager.transaction('REPEATABLE READ', async (manager) => {
+    await this.entityManager.transaction('REPEATABLE READ', async (manager) => {
       const monitors = await manager.find(MonitorEntity, {
         where: [
           {

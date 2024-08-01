@@ -57,7 +57,6 @@ import { FilePreviewEntity } from '@/database/file-preview.entity';
 import { EditorEntity } from './editor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from './folder.entity';
-import { UserEntity } from './user.entity';
 import { WsStatistics } from './ws.statistics';
 import { FileExtView } from './file-ext.view';
 import { I18nPath } from '@/i18n';
@@ -109,6 +108,7 @@ export class FileService {
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
     @InjectRepository(FileExtView)
     private readonly fileExtRepository: Repository<FileExtView>,
+    private readonly entityManager: EntityManager,
   ) {
     this.frontEndUrl = this.configService.get(
       'FRONTEND_URL',
@@ -329,7 +329,7 @@ export class FileService {
     file: FileEntity,
     update: Partial<FileExtView>,
   ): Promise<FileExtView> {
-    return this.fileRepository.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const s3Name = getS3Name(file.name);
@@ -409,7 +409,7 @@ export class FileService {
     originalname: _originalname,
     mimetype: _mimetype,
     info: _info,
-    transact,
+    transact: _transact,
   }: {
     userId: string;
     storageSpace?: number;
@@ -440,16 +440,12 @@ export class FileService {
     } else {
       files = [_files];
     }
-    const transactFolder = transact
-      ? transact.withRepository(this.folderRepository)
-      : this.folderRepository;
-    const transactFile = transact
-      ? transact.withRepository(this.fileRepository)
-      : this.fileRepository;
+
+    const transact = _transact ?? this.entityManager;
 
     let folderId: string;
     if (_folderId) {
-      const folder = await transactFolder.findOne({
+      const folder = await transact.findOne(FolderEntity, {
         where: { userId, id: _folderId },
         select: ['id'],
       });
@@ -461,107 +457,101 @@ export class FileService {
       folderId = (await this.rootFolder(userId, transact)).id;
     }
 
-    return transactFile.manager.transaction(
-      'REPEATABLE READ',
-      async (transact) => {
-        const filesPromises = files.map(async (fileToSave) => {
-          const {
-            mimetype,
-            originalname: name,
-            path,
-            media: info,
-            size: filesize,
-            buffer,
-            hash,
-          } = fileToSave;
-          let filesBuffer: ReadStream | Buffer;
-          if (Buffer.isBuffer(buffer)) {
-            filesBuffer = buffer;
-          } else {
-            filesBuffer = createReadStream(path);
-          }
+    return transact.transaction('REPEATABLE READ', async (transact) => {
+      const filesPromises = files.map(async (fileToSave) => {
+        const {
+          mimetype,
+          originalname: name,
+          path,
+          media: info,
+          size: filesize,
+          buffer,
+          hash,
+        } = fileToSave;
+        let filesBuffer: ReadStream | Buffer;
+        if (Buffer.isBuffer(buffer)) {
+          filesBuffer = buffer;
+        } else {
+          filesBuffer = createReadStream(path);
+        }
 
-          const [mime] = mimetype.split('/');
-          const extension = pathParse(name).ext.slice(1);
-          const type =
-            Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
+        const [mime] = mimetype.split('/');
+        const extension = pathParse(name).ext.slice(1);
+        const type =
+          Object.values(FileType).find((t) => t === mime) ?? FileType.OTHER;
 
-          const stream = info?.streams?.[0];
-          let duration = 0;
-          let width = 0;
-          let height = 0;
-          if (stream) {
-            duration = Number(stream.duration ?? 0);
-            width = Number(stream.width ?? 0);
-            height = Number(stream.height ?? 0);
-          }
+        const stream = info?.streams?.[0];
+        let duration = 0;
+        let width = 0;
+        let height = 0;
+        if (stream) {
+          duration = Number(stream.duration ?? 0);
+          width = Number(stream.width ?? 0);
+          height = Number(stream.height ?? 0);
+        }
 
-          const fileEntity: DeepPartial<FileEntity> = {
-            userId,
-            folderId,
-            name,
-            filesize,
-            duration,
-            width,
-            height,
-            info,
-            type,
-            extension,
-            hash,
-            preview: undefined,
-          };
+        const fileEntity: DeepPartial<FileEntity> = {
+          userId,
+          folderId,
+          name,
+          filesize,
+          duration,
+          width,
+          height,
+          info,
+          type,
+          extension,
+          hash,
+          preview: undefined,
+        };
 
-          const Key = `${folderId}/${hash}-${getS3Name(name)}`;
-          const file = await this.s3Service
-            .putObject({
-              Bucket: this.bucket,
-              Key,
-              ContentType: mimetype,
-              Body: filesBuffer,
-            })
-            .then((uploaded) => {
-              if (fileExist(path)) {
-                rimraf(path);
-              }
-              this.logger.warn(
-                `S3: the file "${name}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
-              );
-            })
-            .then(() =>
-              transact.save(
-                FileEntity,
-                transact.create(FileEntity, fileEntity),
-              ),
-            )
-            .then(({ id }) =>
-              this.findOne({ caseInsensitive: false, transact, where: { id } }),
-            )
-            .catch((error: any) => {
-              this.logger.error(
-                `S3 upload error: "${JSON.stringify(error)}"`,
-                error,
-              );
-              throw new Error(error?.message || error);
-            });
+        const Key = `${folderId}/${hash}-${getS3Name(name)}`;
+        const file = await this.s3Service
+          .putObject({
+            Bucket: this.bucket,
+            Key,
+            ContentType: mimetype,
+            Body: filesBuffer,
+          })
+          .then((uploaded) => {
+            if (fileExist(path)) {
+              rimraf(path);
+            }
+            this.logger.warn(
+              `S3: the file "${name}" uploaded to "${Key}": ${JSON.stringify(uploaded)}`,
+            );
+          })
+          .then(() =>
+            transact.save(FileEntity, transact.create(FileEntity, fileEntity)),
+          )
+          .then(({ id }) =>
+            this.findOne({ caseInsensitive: false, transact, where: { id } }),
+          )
+          .catch((error: any) => {
+            this.logger.error(
+              `S3 upload error: "${JSON.stringify(error)}"`,
+              error,
+            );
+            throw new Error(error?.message || error);
+          });
 
-          return file;
-        });
+        return file;
+      });
 
-        const filesCreated = await Promise.allSettled(filesPromises).then(
-          (files) =>
-            files.reduce((acc, p) => {
-              if (p.status === 'fulfilled' && p.value) {
-                return acc.concat(p.value);
-              }
-              return acc;
-            }, [] as FileExtView[]),
-        );
+      const filesCreated = await Promise.allSettled(filesPromises).then(
+        (files) =>
+          files.reduce((acc, p) => {
+            if (p.status === 'fulfilled' && p.value) {
+              return acc.concat(p.value);
+            }
+            return acc;
+          }, [] as FileExtView[]),
+      );
 
-        await this.wsStatistics.onMetrics({ userId, storageSpace });
+      await this.wsStatistics.onMetrics({ userId, storageSpace });
 
-        return filesCreated;
-      },
-    );
+      return filesCreated;
+    });
   }
 
   /**
@@ -648,55 +638,49 @@ export class FileService {
     originalFiles: FileEntity[],
     transact?: EntityManager,
   ): Promise<FileExtView[]> {
-    const transactFile = transact
-      ? transact.withRepository(this.fileRepository)
-      : this.fileRepository;
-
-    return transactFile.manager.transaction(
-      'REPEATABLE READ',
-      async (transact) => {
-        const filePromises = originalFiles.map(async (file) =>
-          this.copyS3Object(toFolder, file)
-            .then(() =>
-              transact.save(
-                FileEntity,
-                transact.create(FileEntity, {
-                  ...file,
-                  userId,
-                  folderId: toFolder.id,
-                  folder: toFolder,
-                  id: undefined,
-                  preview: undefined,
-                  playlists: undefined,
-                  monitors: undefined,
-                  createdAt: undefined,
-                  updatedAt: undefined,
-                }),
-              ),
-            )
-            .then(({ id }) =>
-              this.findOne({
-                caseInsensitive: false,
-                transact,
-                where: { id },
+    const _transact = transact ?? this.entityManager;
+    return _transact.transaction('REPEATABLE READ', async (transact) => {
+      const filePromises = originalFiles.map(async (file) =>
+        this.copyS3Object(toFolder, file)
+          .then(() =>
+            transact.save(
+              FileEntity,
+              transact.create(FileEntity, {
+                ...file,
+                userId,
+                folderId: toFolder.id,
+                folder: toFolder,
+                id: undefined,
+                preview: undefined,
+                playlists: undefined,
+                monitors: undefined,
+                createdAt: undefined,
+                updatedAt: undefined,
               }),
-            )
-            .catch((error: any) => {
-              this.logger.error(`S3 copy files error: ${error}`);
-              throw new Error(error?.message || error);
+            ),
+          )
+          .then(({ id }) =>
+            this.findOne({
+              caseInsensitive: false,
+              transact,
+              where: { id },
             }),
-        );
+          )
+          .catch((error: any) => {
+            this.logger.error(`S3 copy files error: ${error}`);
+            throw new Error(error?.message || error);
+          }),
+      );
 
-        return Promise.allSettled(filePromises).then((files) =>
-          files.reduce((acc, p) => {
-            if (p.status === 'fulfilled' && p.value) {
-              return acc.concat(p.value);
-            }
-            return acc;
-          }, [] as FileExtView[]),
-        );
-      },
-    );
+      return Promise.allSettled(filePromises).then((files) =>
+        files.reduce((acc, p) => {
+          if (p.status === 'fulfilled' && p.value) {
+            return acc.concat(p.value);
+          }
+          return acc;
+        }, [] as FileExtView[]),
+      );
+    });
   }
 
   async deletePrep(filesId: string[]): Promise<void> {

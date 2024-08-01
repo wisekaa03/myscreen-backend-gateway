@@ -1,5 +1,4 @@
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -28,10 +27,9 @@ import { BidApprove, BidStatus } from '@/enums';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { UserExtView } from './user-ext.view';
 
 @Entity('bid', { comment: 'Заявки на воспроизведение' })
-export class BidEntity extends BaseEntity {
+export class BidEntity {
   @PrimaryGeneratedColumn('uuid', { primaryKeyConstraintName: 'PK_bid' })
   @ApiProperty({
     description: 'Идентификатор взаимодействия',

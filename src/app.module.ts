@@ -11,7 +11,7 @@ import { ClientsModule } from '@nestjs/microservices';
 import { MICROSERVICE_MYSCREEN } from './enums';
 import { LoggerModuleOptions } from './utils/logger-module-options';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
-import { MicroserviceOptions } from './utils/microservice-options';
+import { ModuleMicroserviceOptions } from './utils/microservice-options';
 import { UserLanguageResolver } from './i18n/userLanguageResolver';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
@@ -37,9 +37,9 @@ import { RmqController } from './rmq.controller';
     ClientsModule.registerAsync({
       isGlobal: true,
       clients: [
-        MicroserviceOptions(MICROSERVICE_MYSCREEN.MAIL),
-        MicroserviceOptions(MICROSERVICE_MYSCREEN.FORM),
-        MicroserviceOptions(MICROSERVICE_MYSCREEN.EDITOR),
+        ModuleMicroserviceOptions(MICROSERVICE_MYSCREEN.MAIL),
+        ModuleMicroserviceOptions(MICROSERVICE_MYSCREEN.FORM),
+        ModuleMicroserviceOptions(MICROSERVICE_MYSCREEN.EDITOR),
       ],
     }),
 

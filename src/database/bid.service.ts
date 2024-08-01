@@ -63,6 +63,7 @@ export class BidService {
     private readonly playlistRepository: Repository<PlaylistEntity>,
     @Inject(MICROSERVICE_MYSCREEN.MAIL)
     private readonly mailMsvc: ClientProxy,
+    private readonly entityManager: EntityManager,
   ) {
     this.commissionPercent = parseInt(
       configService.getOrThrow('COMMISSION_PERCENT'),
@@ -161,7 +162,7 @@ export class BidService {
     if (multiple === MonitorMultiple.SINGLE) {
       await this.wsStatistics.onChange({ bid });
     } else {
-      const manager = transact ?? this.bidRepository.manager;
+      const manager = transact ?? this.entityManager;
       await manager.transaction('REPEATABLE READ', async (transact) => {
         const groupMonitors = await this.editorService.partitionMonitors({
           bid,
@@ -203,7 +204,7 @@ export class BidService {
     if (multiple === MonitorMultiple.SINGLE) {
       await this.wsStatistics.onChange({ bidDelete: bid });
     } else {
-      const manager = transact ?? this.bidRepository.manager;
+      const manager = transact ?? this.entityManager;
       await manager.transaction('REPEATABLE READ', async (transact) => {
         const groupApplication = await transact.find(BidEntity, {
           where: {
@@ -235,7 +236,7 @@ export class BidService {
    * @returns
    */
   async update(id: string, update: Partial<BidEntity>): Promise<BidEntity> {
-    return this.bidRepository.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const updateResult = await transact.update(
@@ -356,7 +357,7 @@ export class BidService {
       });
     }
 
-    return this.bidRepository.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const bidsPromise = monitorIds.map(async (monitorId) => {

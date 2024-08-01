@@ -12,7 +12,9 @@ import WebSocket from 'ws';
 import { Logger } from 'nestjs-pino';
 import { I18nValidationPipe } from 'nestjs-i18n';
 import dayjs from 'dayjs';
+import { Observable, of } from 'rxjs';
 
+import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
 import {
   AuthResponse,
   RegisterRequest,
@@ -59,6 +61,7 @@ import {
   BidApprove,
   BidStatus,
   InvoiceStatus,
+  MICROSERVICE_MYSCREEN,
   MonitorCategoryEnum,
   MonitorMultiple,
   MonitorOrientation,
@@ -78,7 +81,6 @@ import { AppModule } from '@/app.module';
 import { WsAdapter } from '@/websocket/ws-adapter';
 import { UserExtView } from '@/database/user-ext.view';
 import { HttpError } from '@/errors';
-import { WsAuthObject, WsMetricsObject, WsWalletObject } from '@/interfaces';
 
 const delay = (ms: number) => () => new Promise((res) => setTimeout(res, ms));
 
@@ -118,12 +120,18 @@ const emailAccountant = jabber.createEmail();
 const passwordAccountant = generatePassword(20);
 
 export const mockRepository = jest.fn(() => ({
-  findOne: async () => Promise.resolve([]),
-  findAndCount: async () => Promise.resolve([]),
-  save: async () => Promise.resolve([]),
-  create: () => [],
+  findOne: async () => Promise.resolve({}),
+  findAndCount: async () => Promise.resolve([{}]),
+  save: async () => Promise.resolve({}),
+  create: () => '',
   remove: async () => Promise.resolve([]),
   get: () => '',
+  send: (): Observable<Buffer> => {
+    return of(Buffer.from('test'));
+  },
+  emit: (): Observable<Buffer> => {
+    return of(Buffer.from('test'));
+  },
   metadata: {
     columns: [],
     relations: [],
@@ -314,7 +322,18 @@ describe('Backend API (e2e)', () => {
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    })
+      .overrideProvider(MICROSERVICE_MYSCREEN.MAIL)
+      .useClass(mockRepository)
+      .overrideProvider(MICROSERVICE_MYSCREEN.EDITOR)
+      .useClass(mockRepository)
+      .overrideProvider(MICROSERVICE_MYSCREEN.FILE)
+      .useClass(mockRepository)
+      .overrideProvider(MICROSERVICE_MYSCREEN.FORM)
+      .useClass(mockRepository)
+      .overrideProvider(MICROSERVICE_MYSCREEN.GATEWAY)
+      .useClass(mockRepository)
+      .compile();
     app = moduleFixture.createNestApplication();
 
     const httpAdaper = app.get(HttpAdapterHost);
@@ -365,7 +384,7 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: UserGetResponse }) => {
-          expect(body.data.id).toBeDefined();
+          expect(body.data.id).toBeTruthy();
           expect((body.data as any).password).toBeUndefined();
           advertiserUserId = body.data.id;
         });
@@ -549,7 +568,7 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: UserGetResponse }) => {
-          expect(body.data.id).toBeDefined();
+          expect(body.data.id).toBeTruthy();
           expect((body.data as any).password).toBeUndefined();
           monitorOwnerUserId = body.data.id;
         });
@@ -919,7 +938,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data[0]?.user?.password).toBeUndefined();
         });
     });
@@ -976,7 +995,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: BidsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data[0]?.user?.password).toBeUndefined();
         });
     });
@@ -1032,7 +1051,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoicesGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data[0]?.user?.password).toBeUndefined();
         });
     });
@@ -1156,7 +1175,7 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: UserGetResponse }) => {
-          expect(body.data.id).toBeDefined();
+          expect(body.data.id).toBeTruthy();
           expect((body.data as any).password).toBeUndefined();
           monitorOwnerUserId = body.data.id;
         });
@@ -1224,7 +1243,7 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: UserGetResponse }) => {
-          expect(body.data.id).toBeDefined();
+          expect(body.data.id).toBeTruthy();
           expect((body.data as any).password).toBeUndefined();
           advertiserUserId = body.data.id;
           // попадает в демо-режим ?
@@ -1293,7 +1312,7 @@ describe('Backend API (e2e)', () => {
         .expect('Content-Type', /json/)
         .expect(201)
         .then(({ body }: { body: UserGetResponse }) => {
-          expect(body.data.id).toBeDefined();
+          expect(body.data.id).toBeTruthy();
           expect((body.data as any).password).toBeUndefined();
           accountantUserId = body.data.id;
         });
@@ -1430,8 +1449,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data?.user?.password).toBeUndefined();
           monitorOwnerInvoiceId = body.data.id;
         });
@@ -1459,8 +1478,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data?.user?.password).toBeUndefined();
           advertiserInvoiceId = body.data.id;
         });
@@ -1483,11 +1502,11 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(monitorOwnerInvoiceId);
           expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
-          expect(body.data.file).toBeDefined();
-          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file).toBeInstanceOf(Object);
+          expect(body.data.file?.id).toBeTruthy();
           expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data?.user?.password).toBeUndefined();
         });
@@ -1510,11 +1529,11 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(advertiserInvoiceId);
           expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
-          expect(body.data.file).toBeDefined();
-          expect(body.data.file?.id).toBeDefined();
+          expect(body.data.file).toBeInstanceOf(Object);
+          expect(body.data.file?.id).toBeTruthy();
           expect(body.data.file?.signedUrl).toBeDefined();
           expect(body.data?.user?.password).toBeUndefined();
         });
@@ -1536,11 +1555,11 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(monitorOwnerInvoiceId);
-          expect(body.data.file).toBeDefined();
-          expect(body.data.file?.id).toBeDefined();
-          expect(body.data.file?.signedUrl).toBeDefined();
+          expect(body.data.file).toBeInstanceOf(Object);
+          expect(body.data.file?.id).toBeTruthy();
+          expect(body.data.file?.signedUrl).toBeTruthy();
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
           );
@@ -1564,11 +1583,11 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(advertiserInvoiceId);
-          expect(body.data.file).toBeDefined();
-          expect(body.data.file?.id).toBeDefined();
-          expect(body.data.file?.signedUrl).toBeDefined();
+          expect(body.data.file).toBeInstanceOf(Object);
+          expect(body.data.file?.id).toBeTruthy();
+          expect(body.data.file?.signedUrl).toBeTruthy();
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
           );
@@ -1592,11 +1611,11 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(monitorOwnerInvoiceId);
-          expect(body.data.file).toBeDefined();
-          expect(body.data.file?.id).toBeDefined();
-          expect(body.data.file?.signedUrl).toBeDefined();
+          expect(body.data.file).toBeInstanceOf(Object);
+          expect(body.data.file?.id).toBeTruthy();
+          expect(body.data.file?.signedUrl).toBeTruthy();
           expect(body.data.status).toBe(InvoiceStatus.PAID);
           expect(body.data?.user?.password).toBeUndefined();
         });
@@ -1618,11 +1637,11 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(advertiserInvoiceId);
-          expect(body.data.file).toBeDefined();
-          expect(body.data.file?.id).toBeDefined();
-          expect(body.data.file?.signedUrl).toBeDefined();
+          expect(body.data.file).toBeInstanceOf(Object);
+          expect(body.data.file?.id).toBeTruthy();
+          expect(body.data.file?.signedUrl).toBeTruthy();
           expect(body.data.status).toBe(InvoiceStatus.PAID);
           expect(body.data?.user?.password).toBeUndefined();
         });
@@ -1669,8 +1688,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.status).toBe(InvoiceStatus.AWAITING_CONFIRMATION);
           expect(body.data?.user?.password).toBeUndefined();
           monitorOwnerInvoiceId2 = body.data.id;
@@ -1693,12 +1712,12 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: InvoiceGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(monitorOwnerInvoiceId2);
-          expect(body.data.file).toBeDefined();
-          expect(body.data.file?.id).toBeDefined();
-          expect(body.data.file?.signedUrl).toBeDefined();
-          expect(body.data.file?.filesize).toBeDefined();
+          expect(body.data.file).toBeInstanceOf(Object);
+          expect(body.data.file?.id).toBeTruthy();
+          expect(body.data.file?.signedUrl).toBeTruthy();
+          expect(body.data.file?.filesize).toBeGreaterThan(0);
           monitorOwnerInvoiceFilesize2 = Number(body.data.file?.filesize || 0);
           expect(body.data.status).toBe(
             InvoiceStatus.CONFIRMED_PENDING_PAYMENT,
@@ -1729,7 +1748,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: WalletOperationsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.count).toBe(1);
           expect(Number(body.data[0].sum)).toBe(monitorOwnerInvoiceSum);
           expect(body.data[0].invoiceId).toBe(monitorOwnerInvoiceId);
@@ -1761,12 +1780,12 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: WalletOperationsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.count).toBe(1);
           expect(Number(body.data[0].sum)).toBe(
             0 - configService.getOrThrow('SUBSCRIPTION_FEE'),
           );
-          expect(body.data[0].actId).toBeDefined();
+          expect(body.data[0].actId).toBeTruthy();
           expect(body.data[0].invoiceId).toBeNull();
           expect(body.data[0].description).toBe(
             configService.getOrThrow('SUBSCRIPTION_DESCRIPTION'),
@@ -1793,7 +1812,7 @@ describe('Backend API (e2e)', () => {
 
       await content.then(({ body }: { body: FoldersGetResponse }) => {
         expect(body.status).toBe(Status.Success);
-        expect(body.data).toBeDefined();
+        expect(body.data).toBeInstanceOf(Object);
         expect(body.data?.[0]?.userId).toBeDefined();
       });
     });
@@ -1802,6 +1821,10 @@ describe('Backend API (e2e)', () => {
      * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toBe(true);
+      }
+
       wsMonitorOwner = new WebSocket(wsUrl);
       await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
@@ -1883,8 +1906,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorMirror1Id = body.data.id;
         });
@@ -1924,8 +1947,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorMirror2Id = body.data.id;
         });
@@ -1969,8 +1992,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorGroupMirrorId = body.data.id;
         });
@@ -2010,8 +2033,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorScaling1Id = body.data.id;
         });
@@ -2051,8 +2074,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorScaling2Id = body.data.id;
         });
@@ -2092,8 +2115,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorScaling3Id = body.data.id;
         });
@@ -2133,8 +2156,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorScaling4Id = body.data.id;
         });
@@ -2180,8 +2203,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorGroupScalingId = body.data.id;
         });
@@ -2195,7 +2218,9 @@ describe('Backend API (e2e)', () => {
         expect(false).toEqual(true);
       }
 
-      const monitor = {
+      const monitor: Omit<MonitorCreateRequest, 'price1s'> & {
+        price1s: string;
+      } = {
         name: monitorNameSingle,
         code: monitorCodeSingle,
         price1s: '0.00001',
@@ -2221,7 +2246,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           monitorSingleId = body.data.id;
         });
@@ -2244,7 +2270,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.user?.password).toBeUndefined();
         });
     });
@@ -2266,7 +2292,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.user?.password).toBeUndefined();
         });
     });
@@ -2275,6 +2301,10 @@ describe('Backend API (e2e)', () => {
      * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toBe(true);
+      }
+
       wsMonitorOwner = new WebSocket(wsUrl);
       await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
@@ -2344,8 +2374,8 @@ describe('Backend API (e2e)', () => {
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data.id).toBeDefined();
-          expect(body.data.parentFolderId).toBeDefined();
+          expect(body.data.id).toBeTruthy();
+          expect(body.data.parentFolderId).toBeTruthy();
           expect(body.data.name).toBe('bar');
           expect((body.data as any)?.user?.password).toBeUndefined();
           monitorOwnerFolderBarId = body.data.id;
@@ -2363,7 +2393,7 @@ describe('Backend API (e2e)', () => {
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data.id).toBeDefined();
+          expect(body.data.id).toBeTruthy();
           expect(body.data.name).toBe('baz');
           expect((body.data as any)?.user?.password).toBeUndefined();
           monitorOwnerFolderBazId = body.data.id;
@@ -2386,7 +2416,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(monitorOwnerFolderBarId);
           expect(body.data.name).toBe('bar');
           expect((body.data as any)?.user?.password).toBeUndefined();
@@ -2425,7 +2455,7 @@ describe('Backend API (e2e)', () => {
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data.id).toBeDefined();
+          expect(body.data.id).toBeTruthy();
           expect(body.data.name).toBe('foo');
           expect(body.data.parentFolderId).toBe(monitorOwnerFolderBarId);
           expect((body.data as any)?.user?.password).toBeUndefined();
@@ -2446,7 +2476,7 @@ describe('Backend API (e2e)', () => {
         .expect(201)
         .then(({ body }: { body: FolderGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data.id).toBeDefined();
+          expect(body.data.id).toBeTruthy();
           expect(body.data.name).toBe('baz');
           expect(body.data.parentFolderId).toBe(monitorOwnerFolderBarId);
           expect((body.data as any)?.user?.password).toBeUndefined();
@@ -2475,8 +2505,8 @@ describe('Backend API (e2e)', () => {
         .expect(200);
 
       expect(body.status).toBe(Status.Success);
-      expect(body.data).toBeDefined();
-      expect(body.data[0].id).toBeDefined();
+      expect(body.data).toBeInstanceOf(Object);
+      expect(body.data[0].id).toBeTruthy();
       monitorOwnerImageId = body.data[0].id;
       expect(body.data[0]?.user?.password).toBeUndefined();
     });
@@ -2557,8 +2587,8 @@ describe('Backend API (e2e)', () => {
         .expect(200);
 
       expect(body.status).toBe(Status.Success);
-      expect(body.data).toBeDefined();
-      expect(body.data[0].id).toBeDefined();
+      expect(body.data).toBeInstanceOf(Object);
+      expect(body.data[0].id).toBeTruthy();
       monitorOwnerImageId1 = body.data[0].id;
       expect(body.data[0]?.user?.password).toBeUndefined();
     });
@@ -2610,8 +2640,8 @@ describe('Backend API (e2e)', () => {
         .expect(200);
 
       expect(body.status).toBe(Status.Success);
-      expect(body.data).toBeDefined();
-      expect(body.data[0].id).toBeDefined();
+      expect(body.data).toBeInstanceOf(Object);
+      expect(body.data[0].id).toBeTruthy();
       advertiserVideoId = body.data[0].id;
       expect(body.data[0]?.user?.password).toBeUndefined();
     });
@@ -2639,8 +2669,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: PlaylistGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data?.files?.[0]?.id).toBe(advertiserVideoId);
           expect(body.data.user?.password).toBeUndefined();
           advertiserPlaylistId1 = body.data.id;
@@ -2651,6 +2681,10 @@ describe('Backend API (e2e)', () => {
      * WebSocket MonitorOwner: авторизация пользователя и проверка metrics и wallet
      */
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
+      if (!monitorOwnerToken) {
+        expect(false).toBe(true);
+      }
+
       wsMonitorOwner = new WebSocket(wsUrl);
       await new Promise((resolve) => wsMonitorOwner.on('open', resolve));
 
@@ -2782,8 +2816,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: EditorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
           expect(body.data.user?.password).toBeUndefined();
           advertiserEditorId = body.data.id;
         });
@@ -2816,8 +2850,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: EditorLayerGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data.id).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
         });
     });
 
@@ -2842,8 +2876,8 @@ describe('Backend API (e2e)', () => {
     //     .expect(200)
     //     .then(({ body }: { body: EditorGetRenderingStatusResponse }) => {
     //       expect(body.status).toBe(Status.Success);
-    //       expect(body.data).toBeDefined();
-    //       expect(body.data.id).toBeDefined();
+    //       expect(body.data).toBeInstanceOf(Object);
+    //       expect(body.data.id).toBeTruthy();;
     //       expect(body.data.renderingStatus).toBe(RenderingStatus.Initial);
     //     });
     // });
@@ -2864,8 +2898,8 @@ describe('Backend API (e2e)', () => {
     //     .expect(200)
     //     .then(({ body }: { body: EditorGetRenderingStatusResponse }) => {
     //       expect(body.status).toBe(Status.Success);
-    //       expect(body.data).toBeDefined();
-    //       expect(body.data.id).toBeDefined();
+    //       expect(body.data).toBeInstanceOf(Object);
+    //       expect(body.data.id).toBeTruthy();;
     //     });
     // });
 
@@ -2873,7 +2907,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Лайк монитора Single
      */
     test('MonitorOwner: GET /monitor/{monitorSingleId}/favoritePlus (Лайк монитора Single)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorSingleId) {
         expect(false).toEqual(true);
       }
 
@@ -2885,7 +2919,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.user?.password).toBeUndefined();
           expect(body.data.favorite).toBe(true);
         });
@@ -2895,7 +2929,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Дизлайк монитора Single
      */
     test('MonitorOwner: GET /monitor/{monitorSingleId}/favoriteMinus (Дизлайк монитора Single)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorSingleId) {
         expect(false).toEqual(true);
       }
 
@@ -2907,7 +2941,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.user?.password).toBeUndefined();
           expect(body.data.favorite).toBe(false);
         });
@@ -2929,7 +2963,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.user?.password).toBeUndefined();
           expect(body.data.id).toBe(monitorGroupMirrorId);
           expect(body.data.favorite).toBe(true);
@@ -2952,7 +2986,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.user?.password).toBeUndefined();
           expect(body.data.id).toBe(monitorGroupMirrorId);
           expect(body.data.favorite).toBe(false);
@@ -2963,7 +2997,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Лайк монитора Scaling
      */
     test('MonitorOwner: GET /monitor/{monitorGroupScalingId}/favoritePlus (Лайк монитора Scaling)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorGroupScalingId) {
         expect(false).toEqual(true);
       }
 
@@ -2975,7 +3009,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.user?.password).toBeUndefined();
           expect(body.data.favorite).toBe(true);
         });
@@ -2985,7 +3019,7 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Дизлайк монитора Scaling
      */
     test('MonitorOwner: GET /monitor/{monitorGroupScalingId}/favoriteMinus (Дизлайк монитора Scaling)', async () => {
-      if (!monitorOwnerToken) {
+      if (!monitorOwnerToken || !monitorGroupScalingId) {
         expect(false).toEqual(true);
       }
 
@@ -2997,7 +3031,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: MonitorGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.user?.password).toBeUndefined();
           expect(body.data.favorite).toBe(false);
         });
@@ -3030,9 +3064,9 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: BidsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.count).toBe(1);
-          expect(body.data[0].id).toBeDefined();
+          expect(body.data[0].id).toBeTruthy();
           advertiserBidMonitorSingleId = body.data[0].id;
         });
     });
@@ -3053,8 +3087,8 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: BidsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
-          expect(body.data[0].id).toBe(advertiserBidMonitorSingleId);
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data[0]?.id).toBe(advertiserBidMonitorSingleId);
         });
     });
 
@@ -3079,7 +3113,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: BidGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(advertiserBidMonitorSingleId);
         });
     });
@@ -3111,9 +3145,9 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: BidsGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.count).toBe(1);
-          expect(body.data[0].id).toBeDefined();
+          expect(body.data[0].id).toBeTruthy();
           advertiserBidMonitorMirrorId = body.data[0].id;
         });
     });
@@ -3139,7 +3173,7 @@ describe('Backend API (e2e)', () => {
         .expect(200)
         .then(({ body }: { body: BidGetResponse }) => {
           expect(body.status).toBe(Status.Success);
-          expect(body.data).toBeDefined();
+          expect(body.data).toBeInstanceOf(Object);
           expect(body.data.id).toBe(advertiserBidMonitorMirrorId);
         });
     });
@@ -3175,7 +3209,7 @@ describe('Backend API (e2e)', () => {
     //     .expect(200)
     //     .then(({ body }: { body: BidsGetResponse }) => {
     //       expect(body.status).toBe(Status.Success);
-    //       expect(body.data).toBeDefined();
+    //       expect(body.data).toBeInstanceOf(Object);
     //       expect(body.count).toBe(1);
     //       expect(body.data[0].id).toBeDefined();
     //       advertiserBidMonitorScalingId = body.data[0].id;
@@ -3203,7 +3237,7 @@ describe('Backend API (e2e)', () => {
     //     .expect(200)
     //     .then(({ body }: { body: BidGetResponse }) => {
     //       expect(body.status).toBe(Status.Success);
-    //       expect(body.data).toBeDefined();
+    //       expect(body.data).toBeInstanceOf(Object);
     //       expect(body.data.id).toBe(advertiserBidMonitorScalingId);
     //     });
     // });
@@ -3359,6 +3393,11 @@ describe('Backend API (e2e)', () => {
           .expect({ status: Status.Success });
       });
     });
+  });
+
+  afterEach(() => {
+    wsAdvertiser?.close();
+    wsMonitorOwner?.close();
   });
 
   afterAll(() => {

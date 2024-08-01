@@ -51,6 +51,7 @@ export class WalletService {
     private readonly mailMsvc: ClientProxy,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
+    private readonly entityManager: EntityManager,
   ) {
     this.subscriptionFee = parseInt(
       this.configService.getOrThrow('SUBSCRIPTION_FEE'),
@@ -288,28 +289,25 @@ export class WalletService {
   async calculateBalance(): Promise<void> {
     this.logger.warn('Wallet service is calculating balance:');
 
-    this.walletRepository.manager.transaction(
-      'REPEATABLE READ',
-      async (transact) => {
-        const users = await transact.find(UserEntity, {
-          where: {
-            verified: true,
-            disabled: false,
-            role: UserRoleEnum.MonitorOwner,
-          },
-          loadEagerRelations: false,
-          relations: {},
-        });
+    this.entityManager.transaction('REPEATABLE READ', async (transact) => {
+      const users = await transact.find(UserEntity, {
+        where: {
+          verified: true,
+          disabled: false,
+          role: UserRoleEnum.MonitorOwner,
+        },
+        loadEagerRelations: false,
+        relations: {},
+      });
 
-        const promiseUsers = users.map(async (user) =>
-          this.acceptanceActCreate({
-            user,
-            transact,
-          }),
-        );
+      const promiseUsers = users.map(async (user) =>
+        this.acceptanceActCreate({
+          user,
+          transact,
+        }),
+      );
 
-        await Promise.all(promiseUsers);
-      },
-    );
+      await Promise.all(promiseUsers);
+    });
   }
 }

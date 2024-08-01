@@ -25,6 +25,7 @@ import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { MonitorOnlineService } from './monitor-online.service';
 import { I18nPath } from '@/i18n';
+import { MonitorStatisticsEntity } from './monitor-statistics.entity';
 
 @Injectable()
 export class MonitorService {
@@ -43,7 +44,23 @@ export class MonitorService {
     public readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
     @InjectRepository(MonitorFavoriteEntity)
     public readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
+    @InjectRepository(MonitorStatisticsEntity)
+    public readonly monitorStatisticsRepository: Repository<MonitorStatisticsEntity>,
+    private readonly entityManager: EntityManager,
   ) {}
+
+  async findStatistics({
+    caseInsensitive = true,
+    ...find
+  }: FindManyOptionsExt<MonitorStatisticsEntity>): Promise<
+    MonitorStatisticsEntity[]
+  > {
+    const monitorStatistics = caseInsensitive
+      ? await TypeOrmFind.findCI(this.monitorStatisticsRepository, find)
+      : await this.monitorStatisticsRepository.find(find);
+
+    return monitorStatistics;
+  }
 
   async find({
     userId,
@@ -317,11 +334,9 @@ export class MonitorService {
         );
       }
     }
-    const _transact = transact
-      ? transact.withRepository(this.monitorRepository)
-      : this.monitorRepository;
+    const _transact = transact ?? this.entityManager;
 
-    await _transact.manager.transaction('REPEATABLE READ', async (transact) => {
+    await _transact.transaction('REPEATABLE READ', async (transact) => {
       const updated = await transact.update(MonitorEntity, id, update);
       if (!updated.affected) {
         throw new NotAcceptableError(`Monitor with this '${id}' not found`);
@@ -445,7 +460,7 @@ export class MonitorService {
       userId,
     };
 
-    return this.monitorRepository.manager.transaction(
+    return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
         const monitorInserted = await transact.insert(
@@ -684,7 +699,7 @@ export class MonitorService {
     });
 
     if (monitor.multiple !== MonitorMultiple.SINGLE) {
-      return this.monitorRepository.manager.transaction(
+      return this.entityManager.transaction(
         'REPEATABLE READ',
         async (transact) => {
           const monitorMultiple = await transact.find(MonitorGroupEntity, {
