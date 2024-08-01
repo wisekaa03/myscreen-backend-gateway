@@ -142,6 +142,7 @@ export class MonitorController {
         maxDuration: MoreThan(0),
       };
     }
+
     if (
       where?.dateWhenApp &&
       Array.isArray(where.dateWhenApp) &&
@@ -151,7 +152,7 @@ export class MonitorController {
     ) {
       const bidsWhen = await this.bidService.find({
         where: {
-          dateWhen: Not(Between(where.dateWhenApp[0], where.dateWhenApp[1])),
+          dateWhen: Between(where.dateWhenApp[0], where.dateWhenApp[1]),
           approved: Not(BidApprove.DENIED),
         },
         select: {
@@ -162,9 +163,11 @@ export class MonitorController {
         caseInsensitive: false,
       });
       find.where = {
+        ...find.where,
         id: In(bidsWhen.map((bid) => bid.monitorId)),
       };
     }
+
     const [data, count] = await this.monitorService.findAndCount({
       userId,
       ...find,
