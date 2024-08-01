@@ -567,17 +567,11 @@ export class MonitorEntity {
   bids?: BidEntity[];
 
   @OneToMany(() => MonitorStatisticsEntity, (stat) => stat.monitor, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    cascade: true,
     eager: false,
   })
   statistics!: MonitorStatisticsEntity[];
 
   @OneToMany(() => MonitorOnlineEntity, (stat) => stat.monitor, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-    cascade: true,
     eager: false,
   })
   monitorOnline!: MonitorOnlineEntity[];

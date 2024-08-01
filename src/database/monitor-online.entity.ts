@@ -32,6 +32,9 @@ export class MonitorOnlineEntity {
   id!: string;
 
   @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    cascade: true,
     eager: false,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_monitoronline_monitor_id' })
