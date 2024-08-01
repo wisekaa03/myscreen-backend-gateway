@@ -25,6 +25,7 @@ import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { MonitorOnlineService } from './monitor-online.service';
 import { I18nPath } from '@/i18n';
+import { MonitorStatisticsEntity } from './monitor-statistics.entity';
 
 @Injectable()
 export class MonitorService {
@@ -43,8 +44,23 @@ export class MonitorService {
     public readonly monitorGroupRepository: Repository<MonitorGroupEntity>,
     @InjectRepository(MonitorFavoriteEntity)
     public readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
+    @InjectRepository(MonitorStatisticsEntity)
+    public readonly monitorStatisticsRepository: Repository<MonitorStatisticsEntity>,
     private readonly entityManager: EntityManager,
   ) {}
+
+  async findStatistics({
+    caseInsensitive = true,
+    ...find
+  }: FindManyOptionsExt<MonitorStatisticsEntity>): Promise<
+    MonitorStatisticsEntity[]
+  > {
+    const monitorStatistics = caseInsensitive
+      ? await TypeOrmFind.findCI(this.monitorStatisticsRepository, find)
+      : await this.monitorStatisticsRepository.find(find);
+
+    return monitorStatistics;
+  }
 
   async find({
     userId,

@@ -40,10 +40,6 @@ describe(StatisticsController.name, () => {
         { provide: MonitorStatisticsService, useClass: mockRepository },
         { provide: MonitorOnlineService, useClass: mockRepository },
         { provide: MICROSERVICE_MYSCREEN.FORM, useClass: mockRepository },
-        {
-          provide: getRepositoryToken(MonitorStatisticsEntity),
-          useClass: mockRepository,
-        },
       ],
     }).compile();
 

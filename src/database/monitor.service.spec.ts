@@ -16,6 +16,7 @@ import { WsStatistics } from './ws.statistics';
 import { FolderService } from './folder.service';
 import { FileService } from './file.service';
 import { MonitorOnlineService } from './monitor-online.service';
+import { MonitorStatisticsEntity } from './monitor-statistics.entity';
 
 export const mockRepository = jest.fn(() => ({
   find: async (find: FindOneOptions<ObjectLiteral>) =>
@@ -75,6 +76,10 @@ describe(MonitorService.name, () => {
         },
         {
           provide: getRepositoryToken(MonitorFavoriteEntity),
+          useClass: mockRepository,
+        },
+        {
+          provide: getRepositoryToken(MonitorStatisticsEntity),
           useClass: mockRepository,
         },
         {

@@ -40,8 +40,6 @@ export class StatisticsController {
     private readonly monitorService: MonitorService,
     @Inject(MICROSERVICE_MYSCREEN.FORM)
     private readonly formService: ClientProxy,
-    @InjectRepository(MonitorStatisticsEntity)
-    private readonly monitorStatisticsRepository: Repository<MonitorStatisticsEntity>,
   ) {}
 
   @Post('device-status')
@@ -76,7 +74,7 @@ export class StatisticsController {
     @Res() res: ExpressResponse,
     @Body() { format, monitorIds, dateFrom, dateTo }: ReportDeviceStatusRequest,
   ): Promise<void> {
-    let monitors: MonitorEntity[] | undefined;
+    let monitors: MonitorEntity[];
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
       monitors = await this.monitorService.find({
         userId: user.id,
@@ -163,9 +161,9 @@ export class StatisticsController {
     @Body() { format, monitorIds, dateFrom, dateTo }: ReportViewsRequest,
   ): Promise<void> {
     const { id: userId, role } = user;
-    let statistics: MonitorStatisticsEntity[] | undefined;
+    let statistics: MonitorStatisticsEntity[];
     if (Array.isArray(monitorIds) && monitorIds.length > 0) {
-      statistics = await this.monitorStatisticsRepository.find({
+      statistics = await this.monitorService.findStatistics({
         where: {
           userId: role === UserRoleEnum.Administrator ? undefined : userId,
           monitorId: In(monitorIds),
@@ -174,7 +172,7 @@ export class StatisticsController {
         relations: { user: true, monitor: true, playlist: true },
       });
     } else {
-      statistics = await this.monitorStatisticsRepository.find({
+      statistics = await this.monitorService.findStatistics({
         where: {
           userId: role === UserRoleEnum.Administrator ? undefined : userId,
         },
