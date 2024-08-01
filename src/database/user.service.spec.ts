@@ -20,6 +20,8 @@ import { UserExtView } from './user-ext.view';
 import { FileService } from './file.service';
 import { FileEntity } from './file.entity';
 
+const idMock = '00000000-0000-0000-0000-000000000000';
+
 describe(UserService.name, () => {
   let service: UserService;
 
@@ -28,7 +30,13 @@ describe(UserService.name, () => {
 
   const mockRepository = jest.fn(() => ({
     findOne: async ({ where }: FindOneOptions<UserEntity>) => {
-      if ((where as FindOptionsWhere<UserEntity>)?.email === testUser.email) {
+      if ((where as FindOptionsWhere<UserEntity>).email === testUser.email) {
+        return Promise.resolve(null);
+      }
+      if (
+        (Array.isArray(where) && where.some((w) => w.disabled === true)) ||
+        (!Array.isArray(where) && where?.disabled === true)
+      ) {
         return Promise.resolve(null);
       }
       return Promise.resolve(testUser);
@@ -37,7 +45,8 @@ describe(UserService.name, () => {
     findAndCount: async () => Promise.resolve([]),
     save: async () => Promise.resolve([]),
     create: (value: any) => value,
-    update: (value: any) => ({ affected: 1, raw: value }),
+    update: async (value: any, rawBody: any) =>
+      Promise.resolve({ affected: 1, raw: rawBody }),
     remove: async () => Promise.resolve([]),
     sendWelcomeMessage: async () => Promise.resolve({}),
     sendVerificationCode: async () => Promise.resolve({}),
@@ -80,7 +89,7 @@ describe(UserService.name, () => {
 
     service = module.get<UserService>(UserService);
     testUser = {
-      id: '0000-0000-0000-0000',
+      id: idMock,
       disabled: false,
       verified: false,
       email: 'postmaster@domain.com',
@@ -341,7 +350,107 @@ describe(UserService.name, () => {
     await expect(user).resolves.toBeInstanceOf(Object);
   });
 
-  // TODO: should inspect:
-  // TODO: - delete, create, findAll, findByEmail, findById
-  // TODO: - forgotPasswordInvitation, forgotPasswordVerify, validateCredentials
+  test('findById: monitor', async () => {
+    const monitor = await service.findById(idMock, {
+      role: UserRoleEnum.Monitor,
+    });
+    if (!monitor) {
+      expect(true).toBe(false);
+      return;
+    }
+    expect(monitor).toBeInstanceOf(Object);
+    expect(monitor.id).toBe(idMock);
+    expect(monitor.name).toBeNull();
+    expect(monitor.surname).toBeNull();
+    expect(monitor.middleName).toBeNull();
+    expect(monitor.email).toBe('');
+    expect(monitor.disabled).toBeFalsy();
+    expect(monitor.verified).toBeTruthy();
+    expect(monitor.verified).toBeTruthy();
+    expect(monitor.role).toBe(UserRoleEnum.Monitor);
+    expect(monitor.plan).toBe(UserPlanEnum.Full);
+  });
+
+  test('findById: monitor', async () => {
+    const monitor = await service.findById(idMock, {
+      role: UserRoleEnum.Monitor,
+      where: { disabled: true },
+    });
+    if (!monitor) {
+      expect(true).toBe(false);
+      return;
+    }
+    expect(monitor).toBeInstanceOf(Object);
+    expect(monitor.id).toBe(idMock);
+    expect(monitor.name).toBeNull();
+    expect(monitor.surname).toBeNull();
+    expect(monitor.middleName).toBeNull();
+    expect(monitor.email).toBe('');
+    expect(monitor.disabled).toBeFalsy();
+    expect(monitor.verified).toBeTruthy();
+    expect(monitor.verified).toBeTruthy();
+    expect(monitor.role).toBe(UserRoleEnum.Monitor);
+    expect(monitor.plan).toBe(UserPlanEnum.Full);
+  });
+
+  test('findById: user', async () => {
+    const user = await service.findById(idMock);
+    if (!user) {
+      expect(true).toBe(false);
+      return;
+    }
+    expect(user).toBeInstanceOf(Object);
+    expect(user.id).toBe(idMock);
+    expect(user.name).toBe(testUser.name);
+    expect(user.surname).toBe(testUser.surname);
+    expect(user.middleName).toBe(testUser.middleName);
+    expect(user.email).toBe(testUser.email);
+    expect(user.disabled).toBe(testUser.disabled);
+    expect(user.verified).toBe(testUser.verified);
+    expect(user.role).toBe(testUser.role);
+    expect(user.plan).toBe(testUser.plan);
+  });
+
+  test('findById: user disabled = true', async () => {
+    const user = await service.findById(idMock, { where: { disabled: true } });
+    expect(user).toBeNull();
+  });
+
+  test('findById: user disabled = false', async () => {
+    const user = await service.findById(idMock, { where: { disabled: false } });
+    if (!user) {
+      expect(true).toBe(false);
+      return;
+    }
+    expect(user).toBeInstanceOf(Object);
+    expect(user.id).toBe(idMock);
+    expect(user.name).toBe(testUser.name);
+    expect(user.surname).toBe(testUser.surname);
+    expect(user.middleName).toBe(testUser.middleName);
+    expect(user.email).toBe(testUser.email);
+    expect(user.disabled).toBe(testUser.disabled);
+    expect(user.verified).toBe(testUser.verified);
+    expect(user.role).toBe(testUser.role);
+    expect(user.plan).toBe(testUser.plan);
+  });
+
+  test('findById: user disabled = undefined', async () => {
+    const user = await service.findById(idMock, {
+      where: { disabled: undefined },
+    });
+    if (!user) {
+      expect(true).toBe(false);
+      return;
+    }
+    expect(user).toBeInstanceOf(Object);
+    expect(user.id).toBe(idMock);
+    expect(user.name).toBe(testUser.name);
+    expect(user.surname).toBe(testUser.surname);
+    expect(user.middleName).toBe(testUser.middleName);
+    expect(user.email).toBe(testUser.email);
+    expect(user.disabled).toBe(testUser.disabled);
+    expect(user.verified).toBe(testUser.verified);
+    expect(user.role).toBe(testUser.role);
+    expect(user.plan).toBe(testUser.plan);
+  });
 });

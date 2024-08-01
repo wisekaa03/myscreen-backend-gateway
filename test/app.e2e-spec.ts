@@ -427,12 +427,14 @@ describe('Backend API (e2e)', () => {
      * Подтвердить email пользователя
      */
     test('POST /auth/email-verify (Подтвердить email пользователя)', async () => {
-      advertiserUser = await userService.findById(advertiserUserId);
+      advertiserUser = await userService.findById(advertiserUserId, {
+        select: ['id', 'email', 'emailConfirmKey'],
+      });
       if (advertiserUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
             advertiserUser.email,
-            advertiserUser.emailConfirmKey ?? '-',
+            advertiserUser.emailConfirmKey ?? '<undefined>',
           ),
         };
 
@@ -445,8 +447,11 @@ describe('Backend API (e2e)', () => {
           .then(({ body }: { body: SuccessResponse }) => {
             expect(body.status).toBe(Status.Success);
           });
+
+        advertiserUser = await userService.findById(advertiserUserId);
       } else {
         expect(false).toEqual(true);
+        return;
       }
     });
 
@@ -501,8 +506,8 @@ describe('Backend API (e2e)', () => {
         .expect(200);
       expect(body.payload?.type).toBe('bearer');
       expect(body.data?.id).toBe(advertiserUserId);
-      expect(body.payload?.token).toBeDefined();
-      expect(body.payload?.refreshToken).toBeDefined();
+      expect(body.payload?.token).toBeTruthy();
+      expect(body.payload?.refreshToken).toBeTruthy();
       expect((body.data as any).password).toBeUndefined();
 
       advertiserToken = body.payload.token;
@@ -578,12 +583,14 @@ describe('Backend API (e2e)', () => {
      * Подтвердить email пользователя
      */
     test('POST /auth/email-verify (Подтвердить email пользователя)', async () => {
-      monitorOwnerUser = await userService.findById(monitorOwnerUserId);
+      monitorOwnerUser = await userService.findById(monitorOwnerUserId, {
+        select: ['id', 'email', 'emailConfirmKey'],
+      });
       if (monitorOwnerUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
             monitorOwnerUser.email,
-            monitorOwnerUser.emailConfirmKey ?? '-',
+            monitorOwnerUser.emailConfirmKey ?? '<undefined>',
           ),
         };
 
@@ -596,8 +603,11 @@ describe('Backend API (e2e)', () => {
           .then(({ body }: { body: SuccessResponse }) => {
             expect(body.status).toBe(Status.Success);
           });
+
+        monitorOwnerUser = await userService.findById(monitorOwnerUserId);
       } else {
         expect(false).toEqual(true);
+        return;
       }
     });
 
@@ -854,6 +864,7 @@ describe('Backend API (e2e)', () => {
         expect(userUpdate?.id).toBe(advertiserUserId);
       } else {
         expect(false).toEqual(true);
+        return;
       }
     });
   });
@@ -890,6 +901,7 @@ describe('Backend API (e2e)', () => {
     test('POST /monitor [unsuccess] (Получение списка мониторов)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitors: MonitorsGetRequest = {
@@ -912,6 +924,7 @@ describe('Backend API (e2e)', () => {
     test('POST /monitor (Получение списка мониторов advertiser)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitors: MonitorsGetRequest = {
@@ -956,6 +969,7 @@ describe('Backend API (e2e)', () => {
     test('POST /bid [unsuccess] (Получение списка заявок)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const bids: BidsGetRequest = {
@@ -978,6 +992,7 @@ describe('Backend API (e2e)', () => {
     test('POST /bid (Получение списка заявок)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const bids: BidsGetRequest = {
@@ -1013,6 +1028,7 @@ describe('Backend API (e2e)', () => {
     test('POST /invoice [unsuccess] (Получение списка счетов)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const invoices: InvoicesGetRequest = {
@@ -1035,6 +1051,7 @@ describe('Backend API (e2e)', () => {
     test('POST /invoice (Получение списка счетов)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const invoices: InvoicesGetRequest = {
@@ -1079,6 +1096,7 @@ describe('Backend API (e2e)', () => {
         expect(userUpdate.role).toBe(UserRoleEnum.Administrator);
       } else {
         expect(false).toEqual(true);
+        return;
       }
     });
 
@@ -1184,12 +1202,14 @@ describe('Backend API (e2e)', () => {
      * MonitorOwner: Подтвердить email пользователя
      */
     test('MonitorOwner: POST /auth/email-verify', async () => {
-      monitorOwnerUser = await userService.findById(monitorOwnerUserId);
+      monitorOwnerUser = await userService.findById(monitorOwnerUserId, {
+        select: ['id', 'email', 'emailConfirmKey'],
+      });
       if (monitorOwnerUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
             monitorOwnerUser.email,
-            monitorOwnerUser.emailConfirmKey ?? '-',
+            monitorOwnerUser.emailConfirmKey ?? '<undefined>',
           ),
         };
 
@@ -1202,8 +1222,11 @@ describe('Backend API (e2e)', () => {
           .then(({ body }: { body: SuccessResponse }) => {
             expect(body.status).toBe(Status.Success);
           });
+
+        monitorOwnerUser = await userService.findById(monitorOwnerUserId);
       } else {
         expect(false).toEqual(true);
+        return;
       }
     });
     /**
@@ -1253,12 +1276,14 @@ describe('Backend API (e2e)', () => {
      * Advertiser: Подтвердить email пользователя
      */
     test('Advertiser: POST /auth/email-verify', async () => {
-      advertiserUser = await userService.findById(advertiserUserId);
+      advertiserUser = await userService.findById(advertiserUserId, {
+        select: ['id', 'email', 'emailConfirmKey'],
+      });
       if (advertiserUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
             advertiserUser.email,
-            advertiserUser.emailConfirmKey ?? '-',
+            advertiserUser.emailConfirmKey ?? '<undefined>',
           ),
         };
 
@@ -1271,8 +1296,11 @@ describe('Backend API (e2e)', () => {
           .then(({ body }: { body: SuccessResponse }) => {
             expect(body.status).toBe(Status.Success);
           });
+
+        advertiserUser = await userService.findById(advertiserUserId);
       } else {
         expect(false).toEqual(true);
+        return;
       }
     });
     /**
@@ -1321,12 +1349,14 @@ describe('Backend API (e2e)', () => {
      * Accountant: Подтвердить email пользователя
      */
     test('Accountant: POST /auth/email-verify', async () => {
-      accountantUser = await userService.findById(accountantUserId);
+      accountantUser = await userService.findById(accountantUserId, {
+        select: ['id', 'email', 'emailConfirmKey'],
+      });
       if (accountantUser) {
         const verify: VerifyEmailRequest = {
           verify: generateMailToken(
             accountantUser.email,
-            accountantUser.emailConfirmKey ?? '-',
+            accountantUser.emailConfirmKey ?? '<undefined>',
           ),
         };
 
@@ -1347,6 +1377,7 @@ describe('Backend API (e2e)', () => {
         expect(accountantUser?.role).toBe(UserRoleEnum.Accountant);
       } else {
         expect(false).toEqual(true);
+        return;
       }
     });
     /**
@@ -1433,6 +1464,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /invoice (Выставление счета)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const invoice: InvoiceCreateRequest = {
@@ -1462,6 +1494,7 @@ describe('Backend API (e2e)', () => {
     test('Advertiser: PUT /invoice (Выставление счета)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const invoice: InvoiceCreateRequest = {
@@ -1491,6 +1524,7 @@ describe('Backend API (e2e)', () => {
     test(`Accountant: POST /invoice/upload/{monitorOwnerInvoiceId} (Закачка счета)`, async () => {
       if (!accountantToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -1518,6 +1552,7 @@ describe('Backend API (e2e)', () => {
     test(`Accountant: POST /invoice/upload/{advertiserInvoiceId} (Закачка счета)`, async () => {
       if (!accountantToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -1545,6 +1580,7 @@ describe('Backend API (e2e)', () => {
     test(`Accountant: GET /invoice/confirmed/{monitorOwnerInvoiceId} (Подтверждение счета)`, async () => {
       if (!accountantToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -1573,6 +1609,7 @@ describe('Backend API (e2e)', () => {
     test(`Accountant: GET /invoice/confirmed/{advertiserInvoiceId} (Подтверждение счета)`, async () => {
       if (!accountantToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -1601,6 +1638,7 @@ describe('Backend API (e2e)', () => {
     test(`Accountant: GET /invoice/payed/{monitorOwnerInvoiceId} (Оплата счета)`, async () => {
       if (!accountantToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -1627,6 +1665,7 @@ describe('Backend API (e2e)', () => {
     test(`Accountant: GET /invoice/payed/{advertiserInvoiceId} (Оплата счета)`, async () => {
       if (!accountantToken || !advertiserInvoiceId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -1653,6 +1692,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /invoice/download/{monitorOwnerInvoiceId}/xlsx (Скачивание счета)', async () => {
       if (!monitorOwnerToken || !monitorOwnerInvoiceId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -1672,6 +1712,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /invoice (Выставление счета - 2)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const invoice: InvoiceCreateRequest = {
@@ -1702,6 +1743,7 @@ describe('Backend API (e2e)', () => {
     test(`Accountant: GET /invoice/confirmed/{monitorOwnerInvoiceId2} (Подтверждение счета 2)`, async () => {
       if (!accountantToken || !monitorOwnerInvoiceId2) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -1732,6 +1774,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: POST /wallet (История операций DEBIT)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const wallet: WalletOperationsGetRequest = {
@@ -1764,6 +1807,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: POST /wallet (История операций CREDIT)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const wallet: WalletOperationsGetRequest = {
@@ -1800,6 +1844,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: POST /folder (Получение списка папок)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const content = request
@@ -1823,6 +1868,7 @@ describe('Backend API (e2e)', () => {
     test("WebSocket MonitorOwner: 'auth/token' (Авторизация пользователя и проверка metrics и wallet)", async () => {
       if (!monitorOwnerToken) {
         expect(false).toBe(true);
+        return;
       }
 
       wsMonitorOwner = new WebSocket(wsUrl);
@@ -1878,6 +1924,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация монитора: тот, что станет Mirror - 1)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: MonitorCreateRequest = {
@@ -1919,6 +1966,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация монитора: тот, что станет Mirror - 2)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: MonitorCreateRequest = {
@@ -1960,6 +2008,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация группового монитора Mirror)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: MonitorCreateRequest = {
@@ -2005,6 +2054,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация монитора: тот, что станет Scaling - 1)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: MonitorCreateRequest = {
@@ -2046,6 +2096,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация монитора: тот, что станет Scaling - 2)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: MonitorCreateRequest = {
@@ -2087,6 +2138,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация монитора: тот, что станет Scaling - 3)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: MonitorCreateRequest = {
@@ -2128,6 +2180,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация монитора: тот, что станет Scaling - 4)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: MonitorCreateRequest = {
@@ -2169,6 +2222,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация группового монитора Scaling)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: MonitorCreateRequest = {
@@ -2216,6 +2270,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor (Регистрация монитора: Single)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const monitor: Omit<MonitorCreateRequest, 'price1s'> & {
@@ -2259,6 +2314,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor/{monitorSingleId}/upload-photos (Картинки монитора Single)', async () => {
       if (!monitorOwnerToken || !monitorSingleId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2281,6 +2337,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /monitor/{monitorSingleId}/upload-documents (Документы монитора Single)', async () => {
       if (!monitorOwnerToken || !monitorSingleId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2406,6 +2463,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /folder/{monitorOwnerFolderBarId} (Получение информации о папке)', async () => {
       if (!monitorOwnerToken || !monitorOwnerFolderBarId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2429,6 +2487,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: DELETE /folder/{monitorOwnerFolderBazId} (Удаление папки)', async () => {
       if (!monitorOwnerToken || !monitorOwnerFolderBazId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2490,6 +2549,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /file (Загрузка файлов в папку /bar/foo)', async () => {
       if (!monitorOwnerToken || !monitorOwnerFolderFooId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const folderId = monitorOwnerFolderFooId;
@@ -2517,6 +2577,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: POST /file (Получение списка файлов, неуспешно)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2536,6 +2597,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /file/download/{monitorOwnerImageId} (Скачивание картинки)', async () => {
       if (!monitorOwnerToken || !monitorOwnerImageId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const { body }: { body: HttpError | string } = await request
@@ -2554,6 +2616,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /file/preview/{monitorOwnerImageId} (Скачивание предпросмотра)', async () => {
       if (!monitorOwnerToken || !monitorOwnerImageId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const { body }: { body: HttpError | string } = await request
@@ -2572,6 +2635,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PUT /file (Загрузка файлов в папку /bar/baz)', async () => {
       if (!monitorOwnerToken || !monitorOwnerFolderBazId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const folderId = monitorOwnerFolderBazId;
@@ -2603,22 +2667,23 @@ describe('Backend API (e2e)', () => {
         !monitorOwnerFolderBazId
       ) {
         expect(false).toEqual(true);
-      } else {
-        const folderCopy: FoldersCopyRequest = {
-          toFolder: monitorOwnerRootFolderId,
-          folders: [{ id: monitorOwnerFolderBazId }],
-        };
-
-        const { body }: { body: HttpError | FoldersGetResponse } = await request
-          .patch(`${apiPath}/folder/copy`)
-          .send(folderCopy)
-          .auth(monitorOwnerToken, { type: 'bearer' })
-          .set('Accept', 'application/json')
-          .expect(200);
-
-        expect(body).toBeDefined();
-        expect(body.status).toBe(Status.Success);
+        return;
       }
+
+      const folderCopy: FoldersCopyRequest = {
+        toFolder: monitorOwnerRootFolderId,
+        folders: [{ id: monitorOwnerFolderBazId }],
+      };
+
+      const { body }: { body: HttpError | FoldersGetResponse } = await request
+        .patch(`${apiPath}/folder/copy`)
+        .send(folderCopy)
+        .auth(monitorOwnerToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(body).toBeDefined();
+      expect(body.status).toBe(Status.Success);
     });
 
     /**
@@ -2627,6 +2692,7 @@ describe('Backend API (e2e)', () => {
     test('Advertiser: PUT /file (Загрузка файлов)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const files = videoTestingDirname;
@@ -2652,6 +2718,7 @@ describe('Backend API (e2e)', () => {
     test('Advertiser: PUT /playlist (Создаем плэйлист)', async () => {
       if (!advertiserToken || !advertiserVideoId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const playlistCreate: PlaylistCreateRequest = {
@@ -2797,6 +2864,7 @@ describe('Backend API (e2e)', () => {
     test('Advertiser: PUT /editor (Создаем редактор)', async () => {
       if (!advertiserToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       const editorCreate: EditorCreateRequest = {
@@ -2827,8 +2895,9 @@ describe('Backend API (e2e)', () => {
      * Advertiser: Создаем слой редактора
      */
     test('Advertiser: PUT /editor/layer/{advertiserEditorId} (Создаем слой редактора)', async () => {
-      if (!advertiserToken || !advertiserVideoId) {
+      if (!advertiserToken || !advertiserVideoId || !advertiserEditorId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const editorLayerCreate: EditorLayerCreateRequest = {
@@ -2858,50 +2927,52 @@ describe('Backend API (e2e)', () => {
     /**
      * Advertiser: Запуск редактора
      */
-    // test('Advertiser: POST /editor/export/{advertiserEditorId} (Запуск редактора)', async () => {
-    //   if (!advertiserToken || !advertiserVideoId) {
-    //     expect(false).toEqual(true);
-    //   }
+    test('Advertiser: POST /editor/export/{advertiserEditorId} (Запуск редактора)', async () => {
+      if (!advertiserToken || !advertiserVideoId || !advertiserEditorId) {
+        expect(false).toEqual(true);
+        return;
+      }
 
-    //   const editorExportCreate: EditorExportRequest = {
-    //     rerender: false,
-    //   };
+      const editorExportCreate: EditorExportRequest = {
+        rerender: false,
+      };
 
-    //   await request
-    //     .post(`${apiPath}/editor/export/${advertiserEditorId}`)
-    //     .auth(advertiserToken, { type: 'bearer' })
-    //     .send(editorExportCreate)
-    //     .set('Accept', 'application/json')
-    //     .expect('Content-Type', /json/)
-    //     .expect(200)
-    //     .then(({ body }: { body: EditorGetRenderingStatusResponse }) => {
-    //       expect(body.status).toBe(Status.Success);
-    //       expect(body.data).toBeInstanceOf(Object);
-    //       expect(body.data.id).toBeTruthy();;
-    //       expect(body.data.renderingStatus).toBe(RenderingStatus.Initial);
-    //     });
-    // });
+      await request
+        .post(`${apiPath}/editor/export/${advertiserEditorId}`)
+        .auth(advertiserToken, { type: 'bearer' })
+        .send(editorExportCreate)
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: EditorGetRenderingStatusResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
+          expect(body.data.renderingStatus).toBe(RenderingStatus.Initial);
+        });
+    });
 
     /**
      * Advertiser: Проверка редактора
      */
-    // test('Advertiser: GET /editor/export/{advertiserEditorId} (Проверка редактора)', async () => {
-    //   if (!advertiserToken || !advertiserVideoId) {
-    //     expect(false).toEqual(true);
-    //   }
+    test('Advertiser: GET /editor/export/{advertiserEditorId} (Проверка редактора)', async () => {
+      if (!advertiserToken || !advertiserVideoId || !advertiserEditorId) {
+        expect(false).toEqual(true);
+        return;
+      }
 
-    //   await request
-    //     .get(`${apiPath}/editor/export/${advertiserEditorId}`)
-    //     .auth(advertiserToken, { type: 'bearer' })
-    //     .set('Accept', 'application/json')
-    //     .expect('Content-Type', /json/)
-    //     .expect(200)
-    //     .then(({ body }: { body: EditorGetRenderingStatusResponse }) => {
-    //       expect(body.status).toBe(Status.Success);
-    //       expect(body.data).toBeInstanceOf(Object);
-    //       expect(body.data.id).toBeTruthy();;
-    //     });
-    // });
+      await request
+        .get(`${apiPath}/editor/export/${advertiserEditorId}`)
+        .auth(advertiserToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: EditorGetRenderingStatusResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeInstanceOf(Object);
+          expect(body.data.id).toBeTruthy();
+        });
+    });
 
     /**
      * MonitorOwner: Лайк монитора Single
@@ -2909,6 +2980,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /monitor/{monitorSingleId}/favoritePlus (Лайк монитора Single)', async () => {
       if (!monitorOwnerToken || !monitorSingleId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2931,6 +3003,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /monitor/{monitorSingleId}/favoriteMinus (Дизлайк монитора Single)', async () => {
       if (!monitorOwnerToken || !monitorSingleId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2953,6 +3026,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /monitor/{monitorGroupMirrorId}/favoritePlus (Лайк монитора Mirror)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2976,6 +3050,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /monitor/{monitorGroupMirrorId}/favoriteMinus (Дизлайк монитора Mirror)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -2999,6 +3074,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /monitor/{monitorGroupScalingId}/favoritePlus (Лайк монитора Scaling)', async () => {
       if (!monitorOwnerToken || !monitorGroupScalingId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -3021,6 +3097,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: GET /monitor/{monitorGroupScalingId}/favoriteMinus (Дизлайк монитора Scaling)', async () => {
       if (!monitorOwnerToken || !monitorGroupScalingId) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -3043,6 +3120,7 @@ describe('Backend API (e2e)', () => {
     test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Single)', async () => {
       if (!advertiserToken || !advertiserPlaylistId1 || !monitorSingleId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const playlistToMonitor: MonitorsPlaylistAttachRequest = {
@@ -3077,6 +3155,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: POST /bid (Список заявок)', async () => {
       if (!monitorOwnerToken) {
         expect(false).toEqual(true);
+        return;
       }
 
       await request
@@ -3098,6 +3177,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PATCH /bid/{advertiserBidMonitorSingleId} (Утверждение заявки)', async () => {
       if (!monitorOwnerToken || !advertiserBidMonitorSingleId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const bid: BidUpdateRequest = {
@@ -3124,6 +3204,7 @@ describe('Backend API (e2e)', () => {
     test('Advertiser: PATCH /monitor/playlist (Отправка плэйлиста на монитор Mirror)', async () => {
       if (!advertiserToken || !advertiserPlaylistId1 || !monitorGroupMirrorId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const playlistToMonitor: MonitorsPlaylistAttachRequest = {
@@ -3158,6 +3239,7 @@ describe('Backend API (e2e)', () => {
     test('MonitorOwner: PATCH /bid/{advertiserBidMonitorMirrorId} (Утверждение заявки)', async () => {
       if (!monitorOwnerToken || !advertiserBidMonitorMirrorId) {
         expect(false).toEqual(true);
+        return;
       }
 
       const bid: BidUpdateRequest = {
@@ -3266,6 +3348,7 @@ describe('Backend API (e2e)', () => {
           expect(userUpdate.role).toBe(UserRoleEnum.Administrator);
         } else {
           expect(false).toEqual(true);
+          return;
         }
       });
 
@@ -3294,6 +3377,7 @@ describe('Backend API (e2e)', () => {
       test('DELETE /file/{monitorOwnerImageId} (Удаление файлов)', async () => {
         if (!monitorOwnerToken || !monitorOwnerImageId) {
           expect(false).toEqual(true);
+          return;
         }
 
         const { body }: { body: SuccessResponse } = await request
@@ -3347,6 +3431,7 @@ describe('Backend API (e2e)', () => {
       test('DELETE /playlist/{advertiserPlaylistId1} (Удаление плэйлиста)', async () => {
         if (!advertiserToken || !advertiserPlaylistId1) {
           expect(false).toEqual(true);
+          return;
         }
 
         const { body }: { body: SuccessResponse } = await request
@@ -3364,6 +3449,7 @@ describe('Backend API (e2e)', () => {
       test('DELETE /file/{advertiserVideoId} (Удаление файлов)', async () => {
         if (!advertiserToken || !advertiserVideoId) {
           expect(false).toEqual(true);
+          return;
         }
 
         const { body }: { body: SuccessResponse } = await request

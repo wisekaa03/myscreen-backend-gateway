@@ -204,10 +204,10 @@ export class UserEntity {
   @IsEnum(UserRole, { message: i18nValidationMessage('validation.IS_ENUM') })
   role!: UserRoleEnum;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, select: false })
   forgotConfirmKey?: string | null;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ type: 'varchar', nullable: true, select: false })
   emailConfirmKey?: string | null;
 
   @Column({ type: 'boolean', default: false })
