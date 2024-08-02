@@ -214,7 +214,7 @@ export class AuthService {
     }
 
     if (iss === 'false') {
-      return this.userService.findById(sub, UserRoleEnum.Monitor);
+      return this.userService.findById(sub, { role: UserRoleEnum.Monitor });
     }
     return this.userService.findById(sub);
   }
@@ -249,13 +249,17 @@ export class AuthService {
   async verifyEmail(verify_email: string): Promise<true> {
     const [email, verifyToken] = decodeMailToken(verify_email);
 
-    const user = await this.userService.findByEmail(email);
-    if (!user) {
-      throw new ForbiddenError();
-    }
-    if (user.verified) {
-      throw new ForbiddenError();
-    }
+    const user = await this.userService
+      .findByEmail(email, { select: ['id', 'emailConfirmKey', 'verified'] })
+      .then((value) => {
+        if (!value) {
+          throw new ForbiddenError();
+        }
+        if (value.verified) {
+          throw new ForbiddenError();
+        }
+        return value;
+      });
 
     if (user.emailConfirmKey === verifyToken) {
       await this.userService.update(user, {

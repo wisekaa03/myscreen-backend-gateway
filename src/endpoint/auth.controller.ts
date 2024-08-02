@@ -32,7 +32,6 @@ import { RolesGuard, JwtAuthGuard } from '@/guards';
 import { AuthService } from '@/auth/auth.service';
 import { UserService } from '@/database/user.service';
 import { MonitorService } from '@/database/monitor.service';
-import { UserResponseToExternal } from '@/database/user-ext.view';
 import { UserEntity } from '@/database/user.entity';
 
 @ApiComplexDecorators({ path: ['auth'] })
@@ -61,11 +60,11 @@ export class AuthController {
   })
   @Crud(CRUD.READ)
   async authorization(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: data }: ExpressRequest,
   ): Promise<UserGetResponse> {
     return {
       status: Status.Success,
-      data: UserResponseToExternal(user),
+      data,
     };
   }
 
@@ -147,7 +146,7 @@ export class AuthController {
 
     return {
       status: Status.Success,
-      data: UserResponseToExternal(data),
+      data,
     };
   }
 
@@ -179,7 +178,7 @@ export class AuthController {
     return {
       status: Status.Success,
       payload,
-      data: UserResponseToExternal(data),
+      data,
     };
   }
 
@@ -200,7 +199,7 @@ export class AuthController {
 
     return {
       status: Status.Success,
-      data: UserResponseToExternal(data),
+      data,
     };
   }
 

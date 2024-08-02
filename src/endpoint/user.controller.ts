@@ -26,7 +26,6 @@ import { ApiComplexDecorators, Crud } from '@/decorators';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { UserEntity } from '@/database/user.entity';
 import { I18nPath } from '@/i18n';
-// import { UserExtEntity } from '@/database/user-ext.entity';
 
 @ApiComplexDecorators({ path: ['user'], roles: [UserRoleEnum.Administrator] })
 export class UserController {
@@ -66,7 +65,7 @@ export class UserController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'user-disable',
-    summary: 'Скрытие аккаунта пользователя (только администратор)',
+    summary: 'Отключение аккаунта пользователя (только администратор)',
   })
   @ApiResponse({
     status: 200,
@@ -130,7 +129,9 @@ export class UserController {
   async user(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<UserGetResponse> {
-    const data = await this.userService.findById(userId, undefined, true);
+    const data = await this.userService.findById(userId, {
+      where: [{ disabled: true }, { disabled: false }],
+    });
     if (!data) {
       throw new ForbiddenError();
     }

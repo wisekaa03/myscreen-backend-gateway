@@ -27,6 +27,7 @@ export interface FindManyOptionsExt<T> extends FindManyOptions<T> {
   fromView?: boolean;
   signedUrl?: boolean;
   userId?: string;
+  role?: string;
   transact?: EntityManager;
 }
 
@@ -35,5 +36,6 @@ export interface FindOneOptionsExt<T> extends FindOneOptions<T> {
   fromView?: boolean;
   signedUrl?: boolean;
   userId?: string;
+  role?: string;
   transact?: EntityManager;
 }

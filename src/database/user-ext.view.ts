@@ -4,18 +4,9 @@ import {
   SelectQueryBuilder,
   ViewColumn,
   ViewEntity,
-  AfterLoad,
-  AfterInsert,
-  AfterUpdate,
 } from 'typeorm';
-import dayjs from 'dayjs';
 
-import {
-  MonitorMultiple,
-  MonitorStatus,
-  PlaylistStatusEnum,
-  UserPlanEnum,
-} from '@/enums';
+import { MonitorMultiple, MonitorStatus, PlaylistStatusEnum } from '@/enums';
 import { FileEntity } from './file.entity';
 import { UserEntity } from './user.entity';
 import { MonitorEntity } from './monitor.entity';
@@ -313,57 +304,57 @@ export class UserExtView extends UserEntity {
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  countUsedSpace!: string;
+  countUsedSpace?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  countMonitors!: string;
+  countMonitors?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  onlineMonitors!: string;
+  onlineMonitors?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  offlineMonitors!: string;
+  offlineMonitors?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  emptyMonitors!: string;
+  emptyMonitors?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  walletSum!: string;
+  walletSum?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  monthlyPayment!: Date;
+  monthlyPayment?: Date;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  playlistAdded!: string;
+  playlistAdded?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  playlistBroadcast!: string;
+  playlistBroadcast?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  refreshTokenLastLoginUpdatedAt!: string;
+  refreshTokenLastLoginUpdatedAt?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  refreshTokenLastLoginUserAgent!: string;
+  refreshTokenLastLoginUserAgent?: string;
 
   // Вычисляемые поля
 
@@ -402,87 +393,4 @@ export class UserExtView extends UserEntity {
     required: false,
   })
   lastEntry!: UserLastEntry;
-
-  @AfterLoad()
-  @AfterInsert()
-  @AfterUpdate()
-  generate() {
-    const {
-      surname,
-      name,
-      middleName,
-      onlineMonitors,
-      offlineMonitors,
-      emptyMonitors,
-      countMonitors,
-      playlistAdded,
-      playlistBroadcast,
-      countUsedSpace,
-      storageSpace,
-      monthlyPayment,
-      walletSum,
-      refreshTokenLastLoginUpdatedAt,
-      refreshTokenLastLoginUserAgent,
-      createdAt = Date.now(),
-    } = this;
-
-    this.fullName = [surname, name, middleName].filter((x) => x).join(' ');
-    this.fullNameEmail = `${this.fullName} <${this.email}>`;
-
-    this.lastEntry = {
-      userAgent: refreshTokenLastLoginUserAgent,
-      at: refreshTokenLastLoginUpdatedAt,
-    };
-
-    this.metrics = {
-      monitors: {
-        online: parseInt(onlineMonitors ?? '0', 10),
-        offline: parseInt(offlineMonitors ?? '0', 10),
-        empty: parseInt(emptyMonitors ?? '0', 10),
-        user: parseInt(countMonitors ?? '0', 10),
-      },
-      playlists: {
-        added: parseInt(playlistAdded ?? '0', 10),
-        played: parseInt(playlistBroadcast ?? '0', 10),
-      },
-      storageSpace: {
-        storage: parseFloat(countUsedSpace ?? '0'),
-        total: parseFloat(`${storageSpace}`),
-      },
-    };
-
-    if (this.plan === UserPlanEnum.Demo) {
-      const end = dayjs(Date.now()).subtract(14, 'days');
-      const duration = dayjs(createdAt).diff(end, 'days');
-      this.planValidityPeriod = duration > 0 ? duration : 0;
-    } else if (monthlyPayment) {
-      const end = dayjs(Date.now()).subtract(28, 'days');
-      const duration = dayjs(monthlyPayment).diff(end, 'days');
-      this.planValidityPeriod = duration > 0 ? duration : 0;
-    } else {
-      this.planValidityPeriod = 0;
-    }
-
-    this.wallet = {
-      total: parseFloat(walletSum ?? '0'),
-    };
-  }
 }
-
-export const UserResponseToExternal = ({
-  password,
-  emailConfirmKey,
-  forgotConfirmKey,
-  countUsedSpace,
-  countMonitors,
-  onlineMonitors,
-  offlineMonitors,
-  emptyMonitors,
-  walletSum,
-  monthlyPayment,
-  playlistAdded,
-  playlistBroadcast,
-  refreshTokenLastLoginUpdatedAt,
-  refreshTokenLastLoginUserAgent,
-  ...user
-}: UserExtView): UserExtView => user as UserExtView;

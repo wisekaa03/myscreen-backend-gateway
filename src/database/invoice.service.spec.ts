@@ -15,7 +15,7 @@ import { FileService } from './file.service';
 import { FolderService } from './folder.service';
 import { FileExtView } from './file-ext.view';
 
-export const idMock = '00000000-0000-0000-0000-000000000000';
+const idMock = '00000000-0000-0000-0000-000000000000';
 const email = 'postmaster@domain.com';
 const balance = 1000;
 

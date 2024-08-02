@@ -31,11 +31,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       return null;
     }
 
-    const user = await this.userService.findById(id);
-    if (!user) {
-      return null;
-    }
-
-    return user;
+    return this.userService.findById(id);
   }
 }

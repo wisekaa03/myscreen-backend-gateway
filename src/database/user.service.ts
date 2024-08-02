@@ -44,6 +44,8 @@ export class UserService {
 
   public frontendUrl: string;
 
+  private languageDefault: string;
+
   constructor(
     private readonly i18n: I18nService,
     private readonly configService: ConfigService,
@@ -61,6 +63,7 @@ export class UserService {
       'FRONTEND_URL',
       'http://localhost',
     );
+    this.languageDefault = this.configService.getOrThrow('LANGUAGE_DEFAULT');
   }
 
   async find({
@@ -152,10 +155,18 @@ export class UserService {
 
   async findById(
     id: string,
-    role?: UserRoleEnum,
-    disabled = false,
+    find?: FindOneOptionsExt<UserEntity>,
   ): Promise<UserExtView | null> {
-    if (role === UserRoleEnum.Monitor) {
+    let disabled = undefined;
+    if (
+      !find ||
+      (Array.isArray(find.where) &&
+        find.where.some((w) => w.disabled === undefined)) ||
+      (!Array.isArray(find.where) && find.where?.disabled === undefined)
+    ) {
+      disabled = false;
+    }
+    if (find?.role === UserRoleEnum.Monitor) {
       return this.userExtRepository.create({
         id,
         role: UserRoleEnum.Monitor,
@@ -172,7 +183,8 @@ export class UserService {
     }
 
     return this.userExtRepository.findOne({
-      where: { id, disabled: disabled ? undefined : disabled },
+      where: { id, disabled },
+      ...find,
     });
   }
 
@@ -317,21 +329,20 @@ export class UserService {
         throw new ForbiddenError();
       }
 
-      const userUpdated = await this.userExtRepository.findOneBy({
+      return this.userExtRepository.findOneBy({
         id: userId,
       });
-      return userUpdated;
     }
 
-    const { affected } = await this.userRepository.update(userId, update);
-    if (!affected) {
-      throw new ForbiddenError();
-    }
-
-    const userUpdated = await this.userExtRepository.findOneBy({
-      id: user.id,
+    await this.userRepository.update(userId, update).then(({ affected }) => {
+      if (!affected) {
+        throw new ForbiddenError();
+      }
     });
-    return userUpdated;
+
+    return this.userExtRepository.findOneBy({
+      id: userId,
+    });
   }
 
   /**
@@ -340,9 +351,9 @@ export class UserService {
    * @param {UserEntity} user User
    * @returns {DeleteResult} {DeleteResult} Результат
    */
-  async delete(user: UserEntity): Promise<DeleteResult> {
+  async delete({ id: userId }: UserEntity): Promise<DeleteResult> {
     const files = await this.fileRepository.find({
-      where: { userId: user.id },
+      where: { userId },
       select: ['id'],
       loadEagerRelations: false,
       relations: {},
@@ -351,7 +362,7 @@ export class UserService {
       const fileIds = files.map(({ id }) => id);
       await this.fileService.delete(fileIds);
     }
-    return this.userRepository.delete({ id: user.id });
+    return this.userRepository.delete({ id: userId });
   }
 
   /**
@@ -397,6 +408,7 @@ export class UserService {
       storageSpace = UserStoreSpaceEnum.FULL;
     }
 
+    const emailConfirmKey = genKey();
     const userPartial: DeepPartial<UserEntity> = {
       ...createUser,
       email,
@@ -406,16 +418,11 @@ export class UserService {
       password: createHmac('sha256', password.normalize()).digest('hex'),
       disabled: false,
       verified: false,
-      emailConfirmKey: genKey(),
+      emailConfirmKey,
     };
-    const verifyToken = generateMailToken(
-      email,
-      userPartial.emailConfirmKey ?? '-',
-    );
+    const verifyToken = generateMailToken(email, emailConfirmKey);
     const confirmUrl = `${this.frontendUrl}/verify-email?key=${verifyToken}`;
-    const language =
-      createUser.preferredLanguage ??
-      this.configService.getOrThrow('LANGUAGE_DEFAULT');
+    const language = createUser.preferredLanguage ?? this.languageDefault;
 
     const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(userPartial)),
@@ -436,13 +443,14 @@ export class UserService {
       ),
     ]);
 
-    const user = await this.userExtRepository.findOneBy({ id });
-    if (!user) {
-      throw new NotFoundError<I18nPath>('error.user.not_exist', {
-        args: { id },
-      });
-    }
-    return user;
+    return this.userExtRepository.findOneBy({ id }).then((user) => {
+      if (!user) {
+        throw new NotFoundError<I18nPath>('error.user.not_exist', {
+          args: { id },
+        });
+      }
+      return user;
+    });
   }
 
   /**
@@ -477,7 +485,7 @@ export class UserService {
   async forgotPasswordInvitation(email: string): Promise<any> {
     const user = await this.userRepository.findOne({
       where: { email, disabled: false },
-      select: ['id', 'forgotConfirmKey'],
+      select: ['id', 'forgotConfirmKey', 'preferredLanguage'],
     });
     if (!user) {
       throw new ForbiddenError<I18nPath>('error.user.not_exist', {
@@ -486,6 +494,7 @@ export class UserService {
     }
 
     user.forgotConfirmKey = genKey();
+
     await this.userRepository.update(user.id, {
       forgotConfirmKey: user.forgotConfirmKey,
     });
@@ -497,13 +506,12 @@ export class UserService {
       return true;
     }
 
-    const language = user.preferredLanguage;
-    return this.mailMsvc.emit<unknown, MsvcMailForgotPassword>(
+    this.mailMsvc.emit<unknown, MsvcMailForgotPassword>(
       MsvcMailService.ForgotPassword,
       {
         email,
         forgotPasswordUrl,
-        language,
+        language: user.preferredLanguage,
       },
     );
   }
@@ -521,30 +529,39 @@ export class UserService {
   ): Promise<UserExtView> {
     const [email, forgotPassword] = decodeMailToken(forgotPasswordToken);
 
-    const user = await this.userRepository.findOne({
-      where: { email },
-    });
-    if (!user) {
-      throw new ForbiddenError<I18nPath>('error.user.not_exist', {
-        args: { email },
+    const { id: userId, forgotConfirmKey } = await this.userRepository
+      .findOne({
+        where: { email },
+        select: ['id', 'forgotConfirmKey'],
+      })
+      .then((user) => {
+        if (!user) {
+          throw new ForbiddenError<I18nPath>('error.user.not_exist', {
+            args: { email },
+          });
+        }
+        return user;
       });
-    }
 
-    if (forgotPassword === user.forgotConfirmKey) {
-      await this.userRepository.update(user.id, {
-        password: createHmac('sha256', password.normalize()).digest('hex'),
-        forgotConfirmKey: null,
-        emailConfirmKey: null,
-      });
-      const userUpdated = await this.userExtRepository.findOne({
-        where: { id: user.id },
-      });
-      if (!userUpdated) {
-        throw new ForbiddenError<I18nPath>('error.user.not_exist', {
-          args: { email },
+    if (forgotPassword === forgotConfirmKey) {
+      return this.userRepository
+        .update(userId, {
+          password: createHmac('sha256', password.normalize()).digest('hex'),
+          forgotConfirmKey: null,
+        })
+        .then(() =>
+          this.userExtRepository.findOne({
+            where: { id: userId },
+          }),
+        )
+        .then((user) => {
+          if (!user) {
+            throw new ForbiddenError<I18nPath>('error.user.not_exist', {
+              args: { email },
+            });
+          }
+          return user;
         });
-      }
-      return userUpdated;
     }
 
     throw new ForbiddenError('Forgot password not equal to our records', {

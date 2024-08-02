@@ -43,6 +43,7 @@ import { EditorLayerSubscriber } from './editor-layer.subscriber';
 import { FileExtSubscriber } from './file-ext.subsciber';
 import { FolderExtSubscriber } from './folder-ext.subsciber';
 import { MonitorSubscriber } from './monitor.subsciber';
+import { UserExtSubscriber } from './user-ext.subsciber';
 
 @Global()
 @Module({
@@ -97,6 +98,7 @@ import { MonitorSubscriber } from './monitor.subsciber';
     FileExtSubscriber,
     FolderExtSubscriber,
     MonitorSubscriber,
+    UserExtSubscriber,
   ],
 
   exports: [
