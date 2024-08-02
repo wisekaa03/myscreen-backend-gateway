@@ -56,6 +56,7 @@ import {
   FoldersCopyRequest,
   BidUpdateRequest,
   BidGetResponse,
+  AuthMonitorRequest,
 } from '@/dto';
 import {
   BidApprove,
@@ -88,9 +89,10 @@ type UserFileEntity = UserEntity & Partial<UserExtView>;
 
 const fileXLS = `${__dirname}/testing.xlsx`;
 const fileXLSfilesize = fs.statSync(fileXLS).size;
+// const fileXLSbuffer = fs.readFileSync(fileXLS);
 const imageTestingDirname = `${__dirname}/testing.png`;
 const imageTestingFilesize = fs.statSync(imageTestingDirname).size;
-// const imageTestingBuffer = fs.readFileSync(imageTestingDirname);
+const imageTestingBuffer = fs.readFileSync(imageTestingDirname);
 // const imageTestingBinary = imageTestingBuffer.toString('binary');
 const videoTestingDirname = `${__dirname}/testing.mp4`;
 // const videoTestingBuffer = fs.readFileSync(videoTestingDirname);
@@ -265,6 +267,8 @@ let monitorMirror2Id: string;
 
 const monitorNameSingle = 'Test single: ' + jabber.createWord(5);
 const monitorCodeSingle = generateCode();
+let monitorSingleToken: string;
+let monitorSingleRefreshToken: string;
 let monitorSingleId: string;
 
 const monitorNameGroupMirror = 'Test mirror monitor: ' + jabber.createWord(5);
@@ -375,170 +379,6 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
     request = superAgent(app.getHttpServer());
     wsUrl = `ws://localhost:${port}/ws`;
   });
-
-  /**
-   * Авторизация
-   */
-  // describe('Изменение advertiser-monitor', () => {
-  //   /**
-  //    * Изменение аккаунта пользователя (с паролем - неудача)
-  //    */
-  //   test('PATCH /auth (Изменение аккаунта пользователя: неудача)', async () => {
-  //     await request
-  //       .patch(`${apiPath}/auth`)
-  //       .auth(advertiserToken, { type: 'bearer' })
-  //       .send({ ...updateUser, password: 'Gruodis19771203!' })
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(400);
-  //   });
-
-  //   /**
-  //    * Обновление токена [неправильный refresh_token]
-  //    */
-  //   test('POST /auth/refresh [неправильный refresh_token] (Обновление токена)', async () => {
-  //     const verify: VerifyEmailRequest = { verify: 'фывфвафавыаы' };
-  //     await request
-  //       .post(`${apiPath}/auth/refresh`)
-  //       .send(verify)
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(400);
-  //   });
-
-  //   /**
-  //    * Обновление токена [отсутствие refresh_token]
-  //    */
-  //   test('POST /auth/refresh [отсутствие refresh_token] (Обновление токена)', async () => {
-  //     await request
-  //       .post(`${apiPath}/auth/refresh`)
-  //       .send({})
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(400);
-  //   });
-
-  //   test('POST /auth/refresh [success] (Обновление токена)', async () => {
-  //     const verify: AuthRefreshRequest = {
-  //       refreshToken: advertiserRefreshToken ?? '',
-  //     };
-  //     const content = request.post(`${apiPath}/auth/refresh`).send(verify);
-
-  //     await content
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(200)
-  //       .then(({ body }: { body: AuthRefreshResponse }) => {
-  //         expect(body.payload.token).toBeDefined();
-  //         advertiserToken = body.payload.token ?? undefined;
-  //         advertiserRefreshToken = body.payload.refreshToken;
-  //       });
-  //   });
-
-  //   /**
-  //    * Отправить на почту пользователю разрешение на смену пароля [отсутствие email]
-  //    */
-  //   test('POST /auth/reset-password [отсутствие email] (Отправить на почту пользователю разрешение на смену пароля)', async () => {
-  //     const body = request.post(`${apiPath}/auth/reset-password`).send({});
-
-  //     await body
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(400);
-  //   });
-
-  //   /**
-  //    * Отправить на почту пользователю разрешение на смену пароля [succcess]
-  //    */
-  //   test('POST /auth/reset-password [success] (Отправить на почту пользователю разрешение на смену пароля)', async () => {
-  //     const verify: ResetPasswordInvitationRequest = {
-  //       email: advertiserUser?.email ?? '',
-  //     };
-
-  //     await request
-  //       .post(`${apiPath}/auth/reset-password`)
-  //       .send(verify)
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(200)
-  //       .then(({ body }: { body: SuccessResponse }) => {
-  //         expect(body.status).toBe(Status.Success);
-  //       });
-  //   });
-
-  //   // TODO: POST /auth/reset-password-verify - Меняет пароль пользователя по приглашению из почты
-
-  //   /**
-  //    * Скрытие аккаунта пользователя - неавторизован
-  //    */
-  //   test('PATCH /auth/disable [неавторизован] (Скрытие аккаунта пользователя)', async () => {
-  //     await request
-  //       .patch(`${apiPath}/auth/disable`)
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(401);
-  //   });
-
-  //   /**
-  //    * Скрытие аккаунта пользователя
-  //    */
-  //   test('PATCH /auth/disable [success] (Скрытие аккаунта пользователя)', async () => {
-  //     await request
-  //       .patch(`${apiPath}/auth/disable`)
-  //       .auth(advertiserToken, { type: 'bearer' })
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(200)
-  //       .then(({ body }: { body: SuccessResponse }) => {
-  //         expect(body.status).toBe(Status.Success);
-  //       });
-  //   });
-
-  //   /**
-  //    * Изменение через базу disabled: false
-  //    */
-  //   test('Change user Disabled: False (database access)', async () => {
-  //     if (advertiserUser) {
-  //       const userUpdate = await userService.update(advertiserUser, {
-  //         disabled: false,
-  //       });
-  //       expect(userUpdate).toBeDefined();
-  //       expect(userUpdate?.id).toBe(advertiserUserId);
-  //     } else {
-  //       expect(false).toEqual(true);
-  //       return;
-  //     }
-  //   });
-  // });
-
-  /**
-   *
-   * Папки (/folder)
-   *
-   */
-  // describe('Папки /folder', () => {
-  //   /**
-  //    * Получение списка папок [ scope: { limit: 0 } ]
-  //    */
-  //   test('POST /folder [ scope: { limit: 0 } }] (Получение списка папок)', async () => {
-  //     await request
-  //       .post(`${apiPath}/folder`)
-  //       .auth(advertiserToken, { type: 'bearer' })
-  //       .send({ where: {}, scope: { limit: 0 } })
-  //       .set('Accept', 'application/json')
-  //       .expect('Content-Type', /json/)
-  //       .expect(400);
-  //   });
-  // });
-
-  /**
-   *
-   * Мониторы
-   *
-   */
-  // describe('Мониторы /monitor', () => {
-
-  // });
 
   /**
    * Константы
@@ -827,6 +667,19 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
   });
 
   /**
+   * Advertiser: Изменение аккаунта пользователя с паролем - неудача
+   */
+  test('Advertiser: PATCH /auth (Изменение аккаунта пользователя: неудача)', async () => {
+    await request
+      .patch(`${apiPath}/auth`)
+      .auth(advertiserToken, { type: 'bearer' })
+      .send({ ...updateUser, password: 'Gruodis19771203!' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  /**
    * Advertiser: Проверяет, авторизован ли пользователь и выдает о пользователе полную информацию
    */
   test('Advertiser: GET /auth (Выдает о пользователе полную информацию)', async () => {
@@ -875,6 +728,128 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data.company).toBe(updateUser.company);
         expect(body.data.password).toBeUndefined();
       });
+  });
+
+  /**
+   * Отправить на почту пользователю разрешение на смену пароля [отсутствие email]
+   */
+  test('POST /auth/reset-password [отсутствие email] (Отправить на почту пользователю разрешение на смену пароля)', async () => {
+    await request
+      .post(`${apiPath}/auth/reset-password`)
+      .send({})
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  /**
+   * Advertiser: Отправить на почту пользователю разрешение на смену пароля [succcess]
+   */
+  test('Advertiser: POST /auth/reset-password [success] (Отправить на почту пользователю разрешение на смену пароля)', async () => {
+    const verify: ResetPasswordInvitationRequest = {
+      email: advertiserUser?.email ?? '',
+    };
+
+    await request
+      .post(`${apiPath}/auth/reset-password`)
+      .send(verify)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: SuccessResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect((body as any)?.data?.password).toBeUndefined();
+      });
+  });
+
+  /**
+   * Обновление токена [неправильный refresh_token]
+   */
+  test('POST /auth/refresh [неправильный refresh_token] (Обновление токена)', async () => {
+    const verify: VerifyEmailRequest = { verify: 'фывфвафавыаы' };
+    await request
+      .post(`${apiPath}/auth/refresh`)
+      .send(verify)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  /**
+   * Обновление токена [отсутствие refresh_token]
+   */
+  test('POST /auth/refresh [отсутствие refresh_token] (Обновление токена)', async () => {
+    await request
+      .post(`${apiPath}/auth/refresh`)
+      .send({})
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400);
+  });
+
+  test('POST /auth/refresh [success] (Обновление токена)', async () => {
+    if (!advertiserRefreshToken) {
+      expect(false).toBe(true);
+      return;
+    }
+
+    const verify: AuthRefreshRequest = {
+      refreshToken: advertiserRefreshToken ?? '',
+    };
+
+    await request
+      .post(`${apiPath}/auth/refresh`)
+      .send(verify)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: AuthRefreshResponse }) => {
+        expect(body.payload.token).toBeDefined();
+        advertiserToken = body.payload.token ?? undefined;
+        advertiserRefreshToken = body.payload.refreshToken;
+      });
+  });
+
+  /**
+   * Скрытие аккаунта пользователя - неавторизован
+   */
+  test('PATCH /auth/disable [неавторизован] (Скрытие аккаунта пользователя)', async () => {
+    await request
+      .patch(`${apiPath}/auth/disable`)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(401);
+  });
+
+  /**
+   * Advertiser: Скрытие аккаунта пользователя
+   */
+  test('Advertiser: PATCH /auth/disable [success] (Скрытие аккаунта пользователя)', async () => {
+    await request
+      .patch(`${apiPath}/auth/disable`)
+      .auth(advertiserToken, { type: 'bearer' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: SuccessResponse }) => {
+        expect(body.status).toBe(Status.Success);
+      });
+  });
+
+  /**
+   * Advertiser: Изменение через базу disabled: false
+   */
+  test('Advertiser: Change user Disabled: False (database access)', async () => {
+    if (!advertiserUser) {
+      expect(false).toEqual(true);
+      return;
+    }
+
+    const userUpdate = await userService.update(advertiserUser, {
+      disabled: false,
+    });
+    expect(userUpdate).toBeDefined();
+    expect(userUpdate?.id).toBe(advertiserUserId);
   });
 
   /**
@@ -1242,9 +1217,8 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
       .auth(monitorOwnerToken, { type: 'bearer' })
       .set('Accept', 'application/json')
       .expect(200)
-      .then(({ body }: { body: unknown }) => {
-        expect(body).toBeDefined();
-        expect((body as any)?.status).toBeUndefined();
+      .then(({ body }: { body: Buffer }) => {
+        expect(body).toBeInstanceOf(Object);
       });
   });
 
@@ -1608,7 +1582,7 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
       brightness: 0,
       groupIds: [
         { monitorId: monitorMirror1Id, row: 0, col: 0 },
-        { monitorId: monitorMirror2Id, row: 0, col: 1 },
+        { monitorId: monitorMirror2Id, row: 0, col: 0 },
       ],
     };
 
@@ -1625,6 +1599,38 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data.id).toBeTruthy();
         expect(body.data.user?.password).toBeUndefined();
         monitorGroupMirrorId = body.data.id;
+      });
+  });
+
+  /**
+   * MonitorOwner: Получение группового монитора Mirror
+   */
+  test('MonitorOwner: GET /monitor/{monitorGroupMirrorId} (Получение группового монитора Mirror)', async () => {
+    if (!monitorOwnerToken || !monitorGroupMirrorId) {
+      expect(false).toEqual(true);
+      return;
+    }
+
+    await request
+      .get(`${apiPath}/monitor/${monitorGroupMirrorId}`)
+      .auth(monitorOwnerToken, { type: 'bearer' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: MonitorGetResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.data).toBeInstanceOf(Object);
+        expect(body.data.id).toBeTruthy();
+        expect(body.data.multiple).toBe(MonitorMultiple.MIRROR);
+        expect(body.data.groupIds).toBeInstanceOf(Object);
+        const re = RegExp(`${monitorMirror1Id}|${monitorMirror2Id}`);
+        expect(body.data.groupIds?.[0]?.monitorId).toMatch(re);
+        expect(body.data.groupIds?.[0]?.row).toBe(0);
+        expect(body.data.groupIds?.[0]?.col).toBe(0);
+        expect(body.data.groupIds?.[1]?.monitorId).toMatch(re);
+        expect(body.data.groupIds?.[1]?.row).toBe(0);
+        expect(body.data.groupIds?.[1]?.col).toBe(0);
+        expect(body.data.user?.password).toBeUndefined();
       });
   });
 
@@ -1841,6 +1847,43 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data.id).toBeTruthy();
         expect(body.data.user?.password).toBeUndefined();
         monitorGroupScalingId = body.data.id;
+      });
+  });
+
+  /**
+   * MonitorOwner: Получение группового монитора Scaling
+   */
+  test('MonitorOwner: GET /monitor/{monitorGroupScalingId} (Получение группового монитора Scaling)', async () => {
+    if (!monitorOwnerToken || !monitorGroupScalingId) {
+      expect(false).toEqual(true);
+      return;
+    }
+
+    await request
+      .get(`${apiPath}/monitor/${monitorGroupScalingId}`)
+      .auth(monitorOwnerToken, { type: 'bearer' })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: MonitorGetResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.data).toBeInstanceOf(Object);
+        expect(body.data.id).toBeTruthy();
+        expect(body.data.multiple).toBe(MonitorMultiple.SCALING);
+        expect(body.data.groupIds).toBeInstanceOf(Object);
+        expect(body.data.groupIds?.[0]?.monitorId).toBe(monitorScaling1Id);
+        expect(body.data.groupIds?.[0]?.row).toBe(0);
+        expect(body.data.groupIds?.[0]?.col).toBe(0);
+        expect(body.data.groupIds?.[1]?.monitorId).toBe(monitorScaling2Id);
+        expect(body.data.groupIds?.[1]?.row).toBe(0);
+        expect(body.data.groupIds?.[1]?.col).toBe(1);
+        expect(body.data.groupIds?.[2]?.monitorId).toBe(monitorScaling3Id);
+        expect(body.data.groupIds?.[2]?.row).toBe(1);
+        expect(body.data.groupIds?.[2]?.col).toBe(0);
+        expect(body.data.groupIds?.[3]?.monitorId).toBe(monitorScaling4Id);
+        expect(body.data.groupIds?.[3]?.row).toBe(1);
+        expect(body.data.groupIds?.[3]?.col).toBe(1);
+        expect(body.data.user?.password).toBeUndefined();
       });
   });
 
@@ -2176,14 +2219,16 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
       return;
     }
 
-    const { body }: { body: HttpError | string } = await request
+    const { body }: { body: HttpError | Buffer } = await request
       .get(`${apiPath}/file/download/${monitorOwnerImageId}`)
       .auth(monitorOwnerToken, { type: 'bearer' })
       .set('Accept', 'application/json')
       .expect(200);
 
-    expect(body).toBeInstanceOf(Buffer);
     expect((body as HttpError)?.status).toBeUndefined();
+    expect(body).toBeInstanceOf(Buffer);
+    const diff = body.compare(imageTestingBuffer);
+    expect(diff).toBe(0);
   });
 
   /**
@@ -2201,8 +2246,8 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
       .set('Accept', 'application/json')
       .expect(200);
 
-    expect(body).toBeDefined();
     expect((body as HttpError)?.status).toBeUndefined();
+    expect(body).toBeInstanceOf(Buffer);
   });
 
   /**
@@ -2258,7 +2303,7 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
       .set('Accept', 'application/json')
       .expect(200);
 
-    expect(body).toBeDefined();
+    expect(body).toBeInstanceOf(Object);
     expect(body.status).toBe(Status.Success);
   });
 
@@ -2719,6 +2764,8 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data).toBeInstanceOf(Object);
         expect(body.count).toBe(1);
         expect(body.data[0].id).toBeTruthy();
+        expect(body.data[0].status).toBe(BidStatus.OK);
+        expect(body.data[0].approved).toBe(BidApprove.NOTPROCESSED);
         advertiserBidMonitorSingleId = body.data[0].id;
       });
   });
@@ -2813,6 +2860,8 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.status).toBe(Status.Success);
         expect(body.data).toBeInstanceOf(Object);
         expect(body.data.id).toBe(advertiserBidMonitorSingleId);
+        expect(body.data.status).toBe(BidStatus.OK);
+        expect(body.data.approved).toBe(BidApprove.ALLOWED);
       });
   });
 
@@ -2847,6 +2896,8 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data).toBeInstanceOf(Object);
         expect(body.count).toBe(1);
         expect(body.data[0].id).toBeTruthy();
+        expect(body.data[0].status).toBe(BidStatus.OK);
+        expect(body.data[0].approved).toBe(BidApprove.NOTPROCESSED);
         advertiserBidMonitorMirrorId = body.data[0].id;
       });
   });
@@ -2875,6 +2926,8 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.status).toBe(Status.Success);
         expect(body.data).toBeInstanceOf(Object);
         expect(body.data.id).toBe(advertiserBidMonitorMirrorId);
+        expect(body.data.status).toBe(BidStatus.OK);
+        expect(body.data.approved).toBe(BidApprove.ALLOWED);
       });
   });
 
@@ -2941,6 +2994,36 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
   //       expect(body.data.id).toBe(advertiserBidMonitorScalingId);
   //     });
   // });
+
+  /**
+   * Monitor Single: авторизация
+   */
+  test('Monitor Single: POST /auth/monitor [Авторизация монитора Single]', async () => {
+    if (!monitorSingleId || !monitorCodeSingle) {
+      expect(false).toEqual(true);
+      return;
+    }
+
+    const auth: AuthMonitorRequest = {
+      code: monitorCodeSingle,
+    };
+
+    await request
+      .post(`${apiPath}/auth/monitor`)
+      .send(auth)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: AuthRefreshResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.payload).toBeInstanceOf(Object);
+        expect(body.payload.token).toBeTruthy();
+        expect(body.payload.refreshToken).toBeTruthy();
+        expect(body.payload.type).toBeTruthy();
+        monitorSingleToken = body.payload.token;
+        monitorSingleRefreshToken = body.payload.refreshToken || '';
+      });
+  });
 
   /**
    *
