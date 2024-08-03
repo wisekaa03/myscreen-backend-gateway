@@ -1,6 +1,4 @@
 import {
-  AfterLoad,
-  AfterUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -245,12 +243,4 @@ export class FileEntity {
   })
   @IsUrl({}, { message: i18nValidationMessage('validation.IS_URL') })
   signedUrl!: string;
-
-  @AfterLoad()
-  @AfterUpdate()
-  after() {
-    if (this.duration !== undefined && this.duration !== null) {
-      this.duration = parseFloat(`${this.duration}`);
-    }
-  }
 }

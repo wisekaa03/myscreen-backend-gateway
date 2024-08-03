@@ -11,9 +11,6 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  AfterLoad,
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   CreateDateColumn,
   Entity,
@@ -29,7 +26,7 @@ import {
 } from 'typeorm';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
-import { MonitorStatus, PlaylistStatusEnum } from '@/enums';
+import { PlaylistStatusEnum } from '@/enums';
 import { UserEntity } from '@/database/user.entity';
 import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
@@ -196,25 +193,4 @@ export class PlaylistEntity {
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
   updatedAt?: Date;
-
-  @AfterLoad()
-  @BeforeInsert()
-  @BeforeUpdate()
-  after() {
-    if (this.monitors) {
-      const monitorStatus = this.monitors.filter(
-        (monitor) => monitor.status === MonitorStatus.Online,
-      );
-      const monitorPlayed = this.monitors.filter(
-        (monitor) => monitor.playlistPlayed,
-      );
-      if (monitorPlayed.length > 0) {
-        this.status = PlaylistStatusEnum.Broadcast;
-      } else if (monitorStatus.length > 0) {
-        this.status = PlaylistStatusEnum.NoBroadcast;
-      } else {
-        this.status = PlaylistStatusEnum.Offline;
-      }
-    }
-  }
 }
