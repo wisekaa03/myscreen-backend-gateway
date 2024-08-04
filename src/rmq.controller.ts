@@ -1,9 +1,10 @@
 import { writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { ffprobe, FfprobeData } from 'media-probe';
+import { EntityManager, ObjectLiteral, UpdateResult } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Controller, Logger } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
-import path from 'node:path';
+import { EventPattern, MessagePattern } from '@nestjs/microservices';
 
 import {
   MsvcGatewayUpdate,
@@ -30,17 +31,31 @@ export class RmqController {
     private readonly editorService: EditorService,
     private readonly bidService: BidService,
     private readonly playlistService: PlaylistService,
+    private readonly entityManager: EntityManager,
   ) {
     this.downloadDir = this.configService.getOrThrow('FILES_UPLOAD');
   }
 
   @MessagePattern(MsvcGateway.Update)
-  async update({ entity, id, column, json }: MsvcGatewayUpdate) {
-    return;
+  async update<Entity extends ObjectLiteral>({
+    entity,
+    criteria,
+    column,
+  }: MsvcGatewayUpdate<Entity>): Promise<UpdateResult | undefined> {
+    try {
+      const entityManager = this.entityManager.getRepository(entity);
+      return entityManager.update(criteria, column);
+    } catch (error: any) {
+      this.logger.error(error);
+    }
   }
 
-  @MessagePattern(MsvcGateway.EditorFile)
-  async editorFile({ editorId, playlistId, ...param }: MsvcGatewayEditorFile) {
+  @EventPattern(MsvcGateway.EditorFile)
+  async editorFile({
+    editorId,
+    playlistId,
+    ...param
+  }: MsvcGatewayEditorFile): Promise<void> {
     const files = await this.fileUpload(param);
     if (!files) {
       return;

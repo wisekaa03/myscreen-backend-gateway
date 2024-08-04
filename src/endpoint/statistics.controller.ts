@@ -4,8 +4,7 @@ import {
 } from 'express';
 import { Body, HttpCode, Inject, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { In, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { In } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom, timeout } from 'rxjs';
 
