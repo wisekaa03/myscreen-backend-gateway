@@ -1,82 +1,15 @@
 name: Develop
 
 on:
-  push:
+  pull_request:
     branches:
       - develop
+    types:
+      - closed
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: self-hosted
-    environment: tests
-    steps:
-      - name: Initializing the repository
-        uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-      - name: Install Yarn dependencies
-        run: yarn install --frozen-lockfile
-      - name: Environment variables
-        run: |
-          rm -rf .env.test
-          touch .env.test
-
-          # Server config
-          echo "PORT=${{ vars.PORT }}" >>.env.test
-          echo "API_PATH=${{ vars.API_PATH }}" >>.env.test
-          echo "FRONTEND_URL=${{ vars.FRONTEND_URL }}" >>.env.test
-          echo "FILES_UPLOAD=${{ vars.FILES_UPLOAD }}" >>.env.test
-          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >>.env.test
-
-          # PostgreSQL Credentials
-          echo "DB_DATABASE=${{ vars.DB_DATABASE }}" >>.env.test
-          echo "DB_USERNAME=${{ vars.DB_USERNAME }}" >>.env.test
-          echo "DB_PASSWORD=${{ vars.DB_PASSWORD }}" >>.env.test
-          echo "DB_PORT=${{ vars.DB_PORT }}" >>.env.test
-          echo "DB_HOST=${{ vars.DB_HOST }}" >>.env.test
-          echo "DB_TYPE=${{ vars.DB_TYPE }}" >>.env.test
-          echo "DB_SSL=${{ vars.DB_SSL }}" >>.env.test
-
-          # JWT Credentials
-          echo "JWT_ACCESS_TOKEN=${{ vars.JWT_ACCESS_TOKEN }}" >>.env.test
-          echo "JWT_ACCESS_EXPIRES=${{ vars.JWT_ACCESS_EXPIRES }}" >>.env.test
-          echo "JWT_REFRESH_TOKEN=${{ vars.JWT_REFRESH_TOKEN }}" >>.env.test
-          echo "JWT_REFRESH_EXPIRES=${{ vars.JWT_REFRESH_EXPIRES }}" >>.env.test
-
-          # Logstash config
-          # echo "KIBANA_HOST=${{ vars.KIBANA_HOST }}" >>.env.test
-          # echo "KIBANA_PORT=${{ vars.KIBANA_PORT }}" >>.env.test
-
-          # Secrets
-          echo "AWS_HOST=${{ vars.AWS_HOST }}" >>.env.test
-          echo "AWS_ACCESS_KEY=${{ vars.AWS_ACCESS_KEY }}" >>.env.test
-          echo "AWS_SECRET_KEY=${{ vars.AWS_SECRET_KEY }}" >>.env.test
-          echo "AWS_REGION=${{ vars.AWS_REGION }}" >>.env.test
-          echo "AWS_BUCKET=${{ vars.AWS_BUCKET }}" >>.env.test
-          echo "AWS_SIGNED_URL_EXPIRES=${{ vars.AWS_SIGNED_URL_EXPIRES }}" >>.env.test
-
-          echo "SUBSCRIPTION_FEE=${{ vars.SUBSCRIPTION_FEE }}" >>.env.test
-          echo "SUBSCRIPTION_DESCRIPTION=${{ vars.SUBSCRIPTION_DESCRIPTION }}" >>.env.test
-          echo "COMMISSION_PERCENT=${{ vars.COMMISSION_PERCENT }}" >>.env.test
-          echo "MIN_INVOICE_SUM=${{ vars.MIN_INVOICE_SUM }}" >>.env.test
-
-          echo "RABBITMQ_HOST=${{ vars.RABBITMQ_HOST }}" >>.env.test
-          echo "RABBITMQ_PORT=${{ vars.RABBITMQ_PORT }}" >>.env.test
-          echo "RABBITMQ_USERNAME=${{ vars.RABBITMQ_USERNAME }}" >>.env.test
-          echo "RABBITMQ_PASSWORD=${{ vars.RABBITMQ_PASSWORD }}" >>.env.test
-
-          echo "LANGUAGE_DEFAULT=${{ vars.LANGUAGE_DEFAULT }}" >>.env.test
-      - name: Test
-        run: yarn test
-      - name: Build test
-        if: ${{ !cancelled() }}
-        run: yarn build
-
   develop:
-    needs: test
     runs-on: self-hosted
     environment: develop
     env:

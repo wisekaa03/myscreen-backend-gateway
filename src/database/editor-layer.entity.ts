@@ -24,7 +24,7 @@ import { i18nValidationMessage } from 'nestjs-i18n';
 import { FileEntity } from './file.entity';
 import { EditorEntity } from './editor.entity';
 
-@Entity('editor_layer', { orderBy: () => ({ index: 'ASC' }) })
+@Entity('editor_layer')
 export class EditorLayerEntity {
   @PrimaryGeneratedColumn('uuid', {
     primaryKeyConstraintName: 'PK_editor_layer_id',
