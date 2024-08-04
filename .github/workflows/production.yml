@@ -174,7 +174,7 @@ jobs:
             --include="upload/***" \
             --include="node_modules/***" \
             --include=".env" \
-            --include="ecosystem.config.js" \
+            --include="ecosystem.config.cjs" \
             --include="package.json" \
             --include="yarn.lock" \
             --exclude='*'
