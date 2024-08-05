@@ -2513,7 +2513,7 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
   /**
    * Advertiser: Создаем слой редактора
    */
-  test('Advertiser: PUT /editor/layer/{advertiserEditorId} (Создаем слой редактора)', async () => {
+  test('Advertiser: PUT /editor/layer/{advertiserEditorId} (Создаем слой редактора - 1)', async () => {
     if (!advertiserToken || !advertiserVideoId || !advertiserEditorId) {
       expect(false).toEqual(true);
       return;
@@ -2540,6 +2540,62 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.status).toBe(Status.Success);
         expect(body.data).toBeInstanceOf(Object);
         expect(body.data.id).toBeTruthy();
+        expect(body.data.fileId).toBe(advertiserVideoId);
+        expect(body.data.cropH).toBeNull();
+        expect(body.data.cropW).toBeNull();
+        expect(body.data.cropX).toBeNull();
+        expect(body.data.cropY).toBeNull();
+        expect(body.data.cutFrom).toBeTruthy();
+        expect(body.data.cutTo).toBeTruthy();
+        expect(body.data.duration).toBeTruthy();
+        expect(body.data.index).toBe(1);
+        expect(body.data.mixVolume).toBe(1);
+      });
+  });
+
+  /**
+   * Advertiser: Создаем слой редактора
+   */
+  test('Advertiser: PUT /editor/layer/{advertiserEditorId} (Создаем слой редактора - 2)', async () => {
+    if (!advertiserToken || !advertiserVideoId || !advertiserEditorId) {
+      expect(false).toEqual(true);
+      return;
+    }
+
+    const editorLayerCreate: Omit<
+      EditorLayerCreateRequest,
+      'duration' | 'cutFrom' | 'cutTo' | 'start'
+    > & { duration: string; cutFrom: string; cutTo: string; start: string } = {
+      index: 2,
+      duration: '10',
+      cutFrom: '0',
+      cutTo: '10',
+      start: '10',
+      mixVolume: 0,
+      file: advertiserVideoId,
+    };
+
+    await request
+      .put(`${apiPath}/editor/layer/${advertiserEditorId}`)
+      .auth(advertiserToken, { type: 'bearer' })
+      .send(editorLayerCreate)
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: EditorLayerGetResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.data).toBeInstanceOf(Object);
+        expect(body.data.id).toBeTruthy();
+        expect(body.data.fileId).toBe(advertiserVideoId);
+        expect(body.data.cropH).toBeNull();
+        expect(body.data.cropW).toBeNull();
+        expect(body.data.cropX).toBeNull();
+        expect(body.data.cropY).toBeNull();
+        expect(body.data.cutFrom).toBeTruthy();
+        expect(body.data.cutTo).toBeTruthy();
+        expect(body.data.duration).toBeTruthy();
+        expect(body.data.index).toBe(2);
+        expect(body.data.mixVolume).toBe(0);
       });
   });
 
