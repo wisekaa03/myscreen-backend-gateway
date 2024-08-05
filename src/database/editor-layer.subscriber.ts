@@ -2,6 +2,8 @@ import {
   DataSource,
   EntitySubscriberInterface,
   EventSubscriber,
+  InsertEvent,
+  UpdateEvent,
 } from 'typeorm';
 
 import { EditorLayerEntity } from './editor-layer.entity';
@@ -18,10 +20,29 @@ export class EditorLayerSubscriber
     return EditorLayerEntity;
   }
 
+  entity(entity: EditorLayerEntity) {
+    entity.duration = entity.duration && Number(entity.duration);
+    entity.cutFrom = entity.cutFrom && Number(entity.cutFrom);
+    entity.cutTo = entity.cutTo && Number(entity.cutTo);
+    entity.cropH = entity.cropH && Number(entity.cropH);
+    entity.cropW = entity.cropW && Number(entity.cropW);
+    entity.cropX = entity.cropX && Number(entity.cropX);
+    entity.cropY = entity.cropY && Number(entity.cropY);
+    entity.start = entity.start && Number(entity.start);
+    entity.index = entity.index && Number(entity.index);
+  }
+
+  beforeInsert(event: InsertEvent<EditorLayerEntity>) {
+    this.entity(event.entity);
+  }
+
+  beforeUpdate(event: UpdateEvent<EditorLayerEntity>) {
+    if (event.entity) {
+      this.entity(event.entity as EditorLayerEntity);
+    }
+  }
+
   afterLoad(entity: EditorLayerEntity) {
-    entity.start = Number(entity.start || 0);
-    entity.duration = Number(entity.duration || 0);
-    entity.cutFrom = Number(entity.cutFrom);
-    entity.cutTo = Number(entity.cutTo);
+    this.entity(entity);
   }
 }

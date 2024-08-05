@@ -2,6 +2,11 @@ name: Test
 
 on:
   push:
+    paths:
+      - '**.ts'
+      - '**.js'
+      - '**.cjs'
+      - '**.mjs'
     branches-ignore:
       - develop
       - main
