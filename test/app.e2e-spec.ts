@@ -2595,7 +2595,7 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data.cutTo).toBeTruthy();
         expect(body.data.duration).toBeTruthy();
         expect(body.data.index).toBe(2);
-        expect(body.data.mixVolume).toBe(1);
+        expect(body.data.mixVolume).toBe(0);
       });
   });
 
