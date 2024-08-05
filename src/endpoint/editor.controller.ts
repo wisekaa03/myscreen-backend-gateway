@@ -294,6 +294,15 @@ export class EditorController {
 
     const create: Partial<EditorLayerEntity> = {
       ...body,
+      duration: body.duration && Number(body.duration),
+      cutFrom: body.cutFrom && Number(body.cutFrom),
+      cutTo: body.cutTo && Number(body.cutTo),
+      cropH: body.cropH && Number(body.cropH),
+      cropW: body.cropW && Number(body.cropW),
+      cropX: body.cropX && Number(body.cropX),
+      cropY: body.cropY && Number(body.cropY),
+      start: body.start && Number(body.start),
+      index: body.index && Number(body.index),
       file,
       fileId: file.id,
     };

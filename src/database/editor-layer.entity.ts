@@ -6,6 +6,11 @@ import {
   IsNumber,
   IsDateString,
   IsPositive,
+  ValidateIf,
+  isNumberString,
+  isNumber,
+  isPositive,
+  min,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -69,58 +74,74 @@ export class EditorLayerEntity {
 
   @Column({ type: 'numeric', precision: 18, scale: 2, default: 10 })
   @ApiProperty({
+    type: 'number',
     description: 'Длительность',
     example: 10,
     default: 10,
     required: true,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value) && isPositive(Number(value))
+        : isNumber(value, { allowInfinity: false, allowNaN: false }) &&
+          isPositive(value),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @IsPositive({ message: i18nValidationMessage('validation.IS_POSITIVE') })
   duration!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 2, default: 0 })
   @ApiProperty({
+    type: 'number',
     description: 'С какой секунды начать вырезать клип',
     example: 0,
     default: 0,
     required: true,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value) && isPositive(Number(value))
+        : isNumber(value, { allowInfinity: false, allowNaN: false }) &&
+          isPositive(value),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @Min(0, { message: i18nValidationMessage('validation.MIN') })
   cutFrom!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 2, default: 10 })
   @ApiProperty({
+    type: 'number',
     description: 'До какой секунды вырезать клип',
     example: 10,
     default: 10,
     required: true,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value) && isPositive(Number(value))
+        : isNumber(value, { allowInfinity: false, allowNaN: false }) &&
+          isPositive(value),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @Min(0, { message: i18nValidationMessage('validation.MIN') })
   cutTo!: number;
 
   @Column({ type: 'numeric', precision: 18, scale: 0, default: 0 })
   @ApiProperty({
+    type: 'number',
     description: 'С какой секунды начинать воспроизводить клип',
     default: 0,
     example: 0,
     required: true,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value) && isPositive(Number(value))
+        : isNumber(value, { allowInfinity: false, allowNaN: false }) &&
+          isPositive(value),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  @Min(0, { message: i18nValidationMessage('validation.MIN') })
   start!: number;
 
   @Column({ type: 'numeric', nullable: true, default: null })
@@ -129,8 +150,11 @@ export class EditorLayerEntity {
     type: 'number',
     required: false,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   cropX!: number;
@@ -141,8 +165,11 @@ export class EditorLayerEntity {
     type: 'number',
     required: false,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   cropY!: number;
@@ -153,8 +180,11 @@ export class EditorLayerEntity {
     type: 'number',
     required: false,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   cropW!: number;
@@ -165,8 +195,11 @@ export class EditorLayerEntity {
     description: 'Высота обрезки',
     required: false,
   })
-  @IsNumber(
-    { allowInfinity: false, allowNaN: false },
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   cropH!: number;
