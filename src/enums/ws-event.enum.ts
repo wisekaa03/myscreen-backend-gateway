@@ -7,4 +7,5 @@ export enum WsEvent {
   MONITOR_DELETE = 'monitor/delete',
   WALLET = 'wallet',
   METRICS = 'metrics',
+  ERROR = 'error',
 }
