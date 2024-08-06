@@ -4,19 +4,12 @@ import { ffprobe, FfprobeData } from 'media-probe';
 import { EntityManager, ObjectLiteral, UpdateResult } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Controller, Logger } from '@nestjs/common';
-import { EventPattern, MessagePattern } from '@nestjs/microservices';
+import { MessagePattern } from '@nestjs/microservices';
 
-import {
-  MsvcGatewayUpdate,
-  MsvcGatewayFileUpload,
-  MsvcGatewayEditorFile,
-} from './interfaces';
-import { BidStatus, MsvcGateway, RenderingStatus } from './enums';
+import { MsvcGatewayUpdate, MsvcGatewayFileUpload } from './interfaces';
+import { MsvcGateway } from './enums';
 import { FileService } from './database/file.service';
 import { UserService } from './database/user.service';
-import { EditorService } from './database/editor.service';
-import { BidService } from './database/bid.service';
-import { PlaylistService } from './database/playlist.service';
 
 @Controller()
 export class RmqController {
@@ -28,9 +21,6 @@ export class RmqController {
     private readonly configService: ConfigService,
     private readonly fileService: FileService,
     private readonly userService: UserService,
-    private readonly editorService: EditorService,
-    private readonly bidService: BidService,
-    private readonly playlistService: PlaylistService,
     private readonly entityManager: EntityManager,
   ) {
     this.downloadDir = this.configService.getOrThrow('FILES_UPLOAD');
@@ -47,64 +37,6 @@ export class RmqController {
       return entityManager.update(criteria, column);
     } catch (error: any) {
       this.logger.error(error);
-    }
-  }
-
-  @EventPattern(MsvcGateway.EditorFile)
-  async editorFile({
-    editorId,
-    playlistId,
-    ...param
-  }: MsvcGatewayEditorFile): Promise<void> {
-    const files = await this.fileUpload(param);
-    if (!files) {
-      return;
-    }
-
-    await this.editorService.update(editorId, {
-      renderingStatus: RenderingStatus.Ready,
-      renderedFile: files[0],
-      renderingPercent: 100,
-      renderingError: null,
-    });
-
-    // Для SCALING, но может быть еще для чего-то
-    if (playlistId) {
-      const playlist = await this.playlistService.findOne({
-        where: { id: playlistId },
-        loadEagerRelations: false,
-        relations: { editors: true },
-        caseInsensitive: false,
-      });
-      if (playlist) {
-        // обновляем плэйлист
-        await this.playlistService.update(playlist.id, {
-          files,
-        });
-        if (playlist.editors) {
-          const editors = playlist.editors.filter(
-            (e) => e.renderingStatus === RenderingStatus.Ready,
-          );
-          if (editors.length === playlist.editors.length) {
-            const bid = await this.bidService.find({
-              where: { playlistId: playlist.id },
-              caseInsensitive: false,
-            });
-            const bidIds = new Set<string>(...bid.map((r) => r.id));
-            bidIds.forEach(async (bidId) => {
-              await this.bidService.update(bidId, {
-                status: BidStatus.OK,
-              });
-            });
-          }
-        } else {
-          this.logger.error(
-            `Editors not found: editorId="${editorId}" / playlistId="${playlist.id}"`,
-          );
-        }
-      } else {
-        this.logger.error(`Playlist not found: playlistId="${playlistId}"`);
-      }
     }
   }
 
