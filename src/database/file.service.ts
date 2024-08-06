@@ -67,8 +67,6 @@ export class FileService {
 
   private bucket: string;
 
-  private region: string;
-
   public downloadDir: string;
 
   public frontEndUrl: string;
@@ -116,7 +114,6 @@ export class FileService {
     );
     this.downloadDir = configService.getOrThrow('FILES_UPLOAD');
 
-    this.region = configService.getOrThrow('AWS_REGION');
     this.bucket = configService.getOrThrow('AWS_BUCKET');
     // 7 days
     this.signedUrlExpiresIn = parseInt(

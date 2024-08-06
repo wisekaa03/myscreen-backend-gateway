@@ -1,3 +1,4 @@
+import { WsEvent } from '@/enums';
 import { Catch, type ArgumentsHost, Logger } from '@nestjs/common';
 import { BaseWsExceptionFilter, WsException } from '@nestjs/websockets';
 import { WebSocket } from 'ws';
@@ -12,7 +13,9 @@ export class WsExceptionsFilter extends BaseWsExceptionFilter<WsException> {
     if (typeof exception.message === 'object') {
       client.send(JSON.stringify(exception.message));
     } else {
-      client.send(JSON.stringify({ event: 'Error', error: exception.message }));
+      client.send(
+        JSON.stringify({ event: WsEvent.ERROR, error: exception.message }),
+      );
     }
   }
 }
