@@ -446,11 +446,7 @@ export class EditorController {
       throw new NotFoundError(`Editor '${editorId}' not found`);
     }
 
-    /* await */ this.editorService
-      .moveIndex(editorId, layerId, moveIndex)
-      .catch((error: unknown) => {
-        this.logger.error(error);
-      });
+    await this.editorService.moveIndex(editorId, layerId, moveIndex);
 
     return {
       status: Status.Success,

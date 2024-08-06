@@ -620,9 +620,7 @@ export class EditorService {
     }
 
     if (moveIndex === layer.index) {
-      throw new BadRequestError(
-        `Passed index "${moveIndex}" matches with current index "${layer.index}"`,
-      );
+      return;
     }
     const moveDirection = moveIndex > layer.index ? 'forward' : 'backward';
     let { start, index } = layer;
