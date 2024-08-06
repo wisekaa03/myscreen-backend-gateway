@@ -604,54 +604,72 @@ export class EditorService {
       throw new BadRequestError('moveIndex must be greater or equal than 1');
     }
 
-    let layers = editor.videoLayers;
-    if (!layers.find((l) => l.id === layerId)) {
-      layers = editor.audioLayers;
-      if (!layers.find((l) => l.id === layerId)) {
-        return;
+    let layerIdx = -1;
+    const layers = [editor.videoLayers, editor.audioLayers].find((layers) => {
+      const idx = layers.findIndex((l) => l.id === layerId);
+      if (idx !== -1) {
+        layerIdx = idx;
+        return true;
       }
+      return false;
+    });
+    const layer = layers && layers[layerIdx];
+
+    if (!layer) {
+      throw new BadRequestError(`layer is not found with ID "${layerId}"`);
     }
 
-    let moveIndexLocal = 1;
-    const layersBefore = layers
-      .map((value) => {
-        const duration = this.calcDuration(value);
-        if (value.id === layerId) {
-          return {
-            id: value.id,
-            index: moveIndex,
-            duration,
-          };
-        }
+    if (moveIndex === layer.index) {
+      throw new BadRequestError(
+        `Passed index "${moveIndex}" matches with current index "${layer.index}"`,
+      );
+    }
+    const moveDirection = moveIndex > layer.index ? 'forward' : 'backward';
+    let { start, index } = layer;
 
-        if (moveIndexLocal === moveIndex) {
-          moveIndexLocal = moveIndex + 1;
-        }
-        const result = {
-          id: value.id,
-          index: moveIndexLocal,
-          duration,
-        };
-        moveIndexLocal += 1;
-        return result;
-      }, [])
-      .sort((a, b) => a.index - b.index);
+    const movedLayers = layers
+      .map(
+        moveDirection === 'forward'
+          ? (l: EditorLayerEntity) => {
+              if (moveIndex >= l.index && l.index > layer.index) {
+                start += l.duration;
+                index += 1;
 
-    let start = 0;
-    const layerPromises = layersBefore.map((value) => {
-      const result: Partial<EditorLayerEntity> = {
-        duration: value.duration,
-        index: value.index,
-        start,
-      };
-      start += value.duration;
-      return this.editorLayerRepository.update(value.id, result);
-    });
+                return {
+                  ...l,
+                  start: l.start - layer.duration,
+                  index: l.index - 1,
+                };
+              }
+            }
+          : (l: EditorLayerEntity) => {
+              if (layer.index > l.index && l.index >= moveIndex) {
+                start -= l.duration;
+                index -= 1;
 
-    const editorPromise = this.editorRepository.update(editor.id, {
-      totalDuration: this.calcTotalDuration(editor.videoLayers),
-    });
+                return {
+                  ...l,
+                  start: l.start + layer.duration,
+                  index: l.index + 1,
+                };
+              }
+            },
+      )
+      .filter((l): l is NonNullable<typeof l> => Boolean(l));
 
-    await Promise.all([layerPromises, editorPromise]);
+    await Promise.all(
+      movedLayers
+        .concat({
+          ...layer,
+          start,
+          index,
+        })
+        .map((l) =>
+          this.editorLayerRepository.update(l.id, {
+            start: l.start,
+            index: l.index,
+          }),
+        ),
+    );
   }
 }
