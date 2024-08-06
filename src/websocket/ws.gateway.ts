@@ -72,7 +72,7 @@ export class WSGateway
       .jwtVerify(token)
       .catch((error: any) => {
         this.logger.error(error);
-        throw new WsException('Not authorized');
+        throw new WsException({ event: WsEvent.AUTH, error: 'Not authorized' });
       });
 
     if (role === UserRoleEnum.Monitor && sub) {
@@ -82,7 +82,7 @@ export class WSGateway
         caseInsensitive: false,
       });
       if (!monitor) {
-        throw new WsException('Not authorized');
+        throw new WsException({ event: WsEvent.AUTH, error: 'Not authorized' });
       }
 
       this.logger.debug(
@@ -92,14 +92,14 @@ export class WSGateway
       userId = sub;
       user = await this.userService.findById(userId);
       if (!user) {
-        throw new WsException('Not authorized');
+        throw new WsException({ event: WsEvent.AUTH, error: 'Not authorized' });
       }
 
       this.logger.debug(
         `Client key='${value.key}', auth=true, role='${role}', userId='${userId}'`,
       );
     } else {
-      throw new WsException('Not authorized');
+      throw new WsException({ event: WsEvent.AUTH, error: 'Not authorized' });
     }
 
     const valueUpdated: WebSocketClient = {
@@ -182,7 +182,7 @@ export class WSGateway
     >
   > {
     if (!(body.token && body.date)) {
-      throw new WsException('Not authorized');
+      throw new WsException({ event: WsEvent.AUTH, error: 'Not authorized' });
     }
     if (isJWT(body.token)) {
       let value = wsClients.get(client);
@@ -236,7 +236,7 @@ export class WSGateway
         return of([{ event: WsEvent.AUTH, data: 'authorized' }]);
       }
     }
-    throw new WsException('Not authorized');
+    throw new WsException({ event: WsEvent.AUTH, error: 'Not authorized' });
   }
 
   /**
@@ -250,7 +250,10 @@ export class WSGateway
   ): Promise<Observable<WsResponse<string>[]>> {
     const value = wsClients.get(client);
     if (!value || !value.auth) {
-      throw new WsException('Not authorized');
+      throw new WsException({
+        event: WsEvent.MONITOR,
+        error: 'Not authorized',
+      });
     }
     if (value.role !== UserRoleEnum.Monitor || value.monitorId === undefined) {
       throw new WsException('This is not Role.Monitor');
