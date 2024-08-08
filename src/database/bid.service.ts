@@ -157,6 +157,9 @@ export class BidService {
     bid: BidEntity;
     transact?: EntityManager;
   }): Promise<void> {
+    if (!bid.monitor) {
+      throw new BadRequestError();
+    }
     const { multiple } = bid.monitor;
     const { id, seqNo, createdAt, updatedAt, ...insert } = bid;
     if (multiple === MonitorMultiple.SINGLE) {
@@ -200,6 +203,9 @@ export class BidService {
     transact?: EntityManager;
     delete?: boolean;
   }): Promise<void> {
+    if (!bid.monitor) {
+      throw new BadRequestError();
+    }
     const { multiple } = bid.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
       await this.wsStatistics.onChange({ bidDelete: bid });
@@ -271,9 +277,12 @@ export class BidService {
         }
 
         if (update.approved === BidApprove.NOTPROCESSED) {
-          const sellerEmail = bid.seller?.email;
+          if (!bid.seller) {
+            throw new BadRequestError();
+          }
+          const sellerEmail = bid.seller.email;
           if (sellerEmail) {
-            const language = bid.seller?.preferredLanguage;
+            const language = bid.seller.preferredLanguage;
             this.mailMsvc.emit<unknown, MsvcMailBidMessage>(
               MsvcMailService.BidWarning,
               {
@@ -286,6 +295,9 @@ export class BidService {
             this.logger.error(`BidService seller email undefined ?`);
           }
         } else if (update.approved === BidApprove.ALLOWED) {
+          if (!bid.user) {
+            throw new BadRequestError();
+          }
           // Оплата поступает на пользователя - владельца монитора
           const sumIncrement =
             -(Number(bid.sum) * (100 - this.commissionPercent)) / 100;
@@ -446,6 +458,9 @@ export class BidService {
             throw new NotFoundError<I18nPath>('error.bid.not_found', {
               args: { id },
             });
+          }
+          if (!bid.user || !bid.seller || !bid.buyer) {
+            throw new BadRequestError();
           }
 
           // Списываем средства со счета пользователя Рекламодателя

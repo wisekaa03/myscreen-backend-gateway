@@ -236,42 +236,42 @@ export class FolderController {
   })
   @Crud(CRUD.UPDATE)
   async copy(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Body() { toFolder, folders }: FoldersCopyRequest,
   ): Promise<FoldersGetResponse> {
     const foldersIds = folders.map((folder) => folder.id);
-    const toFolderEntity = await this.folderService.findOne({
-      where: { userId: user.id, id: toFolder },
+    const _toFolder = await this.folderService.findOne({
+      where: { userId, id: toFolder },
     });
-    if (!toFolderEntity) {
+    if (!_toFolder) {
       throw new BadRequestError(`Folder '${toFolder}' is not exist`);
     }
-    const foldersCopy = await this.folderService.find({
-      where: { userId: user.id, id: In(foldersIds) },
-      relations: ['files'],
+    const copyFolders = await this.folderService.find({
+      where: { userId, id: In(foldersIds) },
+      relations: { files: true },
     });
-    if (foldersCopy.length !== folders.length) {
+    if (copyFolders.length !== folders.length) {
       throw new BadRequestError('The number of folders does not match');
     }
     if (
-      foldersCopy.some((folderCopy) => folderCopy.parentFolderId === toFolder)
+      copyFolders.some((copyFolder) => copyFolder.parentFolderId === toFolder)
     ) {
       throw new BadRequestError('Copying to the same directory');
     }
     if (
-      foldersCopy.some(
-        (folderCopy) =>
-          folderCopy.parentFolderId !== foldersCopy[0].parentFolderId,
+      copyFolders.some(
+        (copyFolder) =>
+          copyFolder.parentFolderId !== copyFolders[0].parentFolderId,
       )
     ) {
       throw new BadRequestError('Copying multiple sources into one');
     }
 
-    const data = await this.folderService.copy(
-      user.id,
-      toFolderEntity,
-      foldersCopy,
-    );
+    const data = await this.folderService.copy({
+      userId,
+      toFolder: _toFolder,
+      folders: copyFolders,
+    });
 
     return {
       status: Status.Success,

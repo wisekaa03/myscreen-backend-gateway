@@ -115,7 +115,7 @@ export class WsStatistics {
           playlist: {
             ...bid.playlist,
             files: await Promise.all(
-              bid.playlist.files.map(async (file) =>
+              bid!.playlist!.files.map(async (file) =>
                 this.fileService.signedUrl(file),
               ),
             ),
@@ -295,7 +295,7 @@ export class WsStatistics {
     files?: FileEntity[];
     filesDelete?: FileEntity[];
   }): Promise<void> {
-    if ((bid?.playlistId || bid?.playlist) && bid.monitorId) {
+    if (bid?.playlist) {
       const playlistId = bid.playlistId ?? bid.playlist?.id;
       await this.playlistService.update(playlistId, {
         status: PlaylistStatusEnum.Broadcast,

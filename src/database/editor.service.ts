@@ -180,6 +180,9 @@ export class EditorService {
         loadEagerRelations: false,
         relations: { videoLayers: true },
       });
+      if (!editor.videoLayers) {
+        throw new BadRequestError();
+      }
       updatedQuery.index = editor.videoLayers.length;
     }
     if (updatedQuery.cutFrom === undefined) {
@@ -269,6 +272,9 @@ export class EditorService {
   }: {
     bid: BidEntity;
   }): Promise<MonitorGroupWithPlaylist[] | null> {
+    if (!bid.monitor || !bid.playlist) {
+      throw new BadRequestError();
+    }
     const { playlist, userId } = bid;
     const { multiple, groupMonitors } = bid.monitor;
     if (!groupMonitors) {
@@ -458,6 +464,9 @@ export class EditorService {
         args: { id },
       });
     }
+    if (!_editor.videoLayers || !_editor.audioLayers) {
+      throw new BadRequestError();
+    }
     const { id: editorId, renderedFileId, userId } = _editor;
     if (renderedFileId) {
       await this.fileService
@@ -468,7 +477,7 @@ export class EditorService {
           }),
         )
         .then(() => {
-          // @ts-expect-error Delete operator must be optional ?
+          // @ts-expect-error The operand of delete must be optional
           delete _editor.renderedFile;
         })
         .catch((reason) => {
@@ -482,9 +491,7 @@ export class EditorService {
         _editor.renderingStatus === RenderingStatus.Ready ||
         _editor.renderingStatus === RenderingStatus.Pending
       ) {
-        // @ts-expect-error Delete operator must be optional ?
         delete _editor.audioLayers;
-        // @ts-expect-error Delete operator must be optional ?
         delete _editor.videoLayers;
         return _editor;
       }
@@ -494,13 +501,13 @@ export class EditorService {
     const videoLayers = await Promise.all(
       video.map(async (layer) => ({
         ...layer,
-        file: await this.fileService.signedUrl(layer.file),
+        file: layer.file && (await this.fileService.signedUrl(layer.file)),
       })),
     );
     const audioLayers = await Promise.all(
       audio.map(async (layer) => ({
         ...layer,
-        file: await this.fileService.signedUrl(layer.file),
+        file: layer.file && (await this.fileService.signedUrl(layer.file)),
       })),
     );
     const editor = {
@@ -516,9 +523,7 @@ export class EditorService {
       customOutputArgs,
     });
 
-    // @ts-expect-error Delete operator must be optional ?
     delete _editor.audioLayers;
-    // @ts-expect-error Delete operator must be optional ?
     delete _editor.videoLayers;
     return _editor;
   }
@@ -530,6 +535,9 @@ export class EditorService {
     });
     if (!editor) {
       throw new NotFoundError(`The editor '${editorId}' is not found`);
+    }
+    if (!editor.videoLayers || !editor.audioLayers) {
+      throw new BadRequestError();
     }
 
     let start = 0;
@@ -599,6 +607,9 @@ export class EditorService {
     });
     if (!editor) {
       throw new NotFoundError<I18nPath>('error.editor.not_found');
+    }
+    if (!editor.videoLayers || !editor.audioLayers) {
+      throw new BadRequestError();
     }
     if (moveIndex < 1) {
       throw new BadRequestError('moveIndex must be greater or equal than 1');

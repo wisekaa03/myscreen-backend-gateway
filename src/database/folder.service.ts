@@ -262,6 +262,8 @@ export class FolderService {
         system: true,
         userId: user.id,
         parentFolderId: administratorFolderId,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }));
     }
     return [];
@@ -312,19 +314,22 @@ export class FolderService {
     return find;
   }
 
-  async copy(
-    userId: string,
-    toFolder: FolderEntity,
-    originalFolders: FolderEntity[],
-  ): Promise<FolderEntity[]> {
+  async copy({
+    userId,
+    toFolder,
+    folders,
+  }: {
+    userId: string;
+    toFolder: FolderEntity;
+    folders: FolderEntity[];
+  }): Promise<FolderEntity[]> {
     return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
-        const foldersPromise = originalFolders.map(async (folder) => {
+        const foldersPromise = folders.map(async (folder) => {
           const folderCopyCreate = transact.create(FolderEntity, {
             ...folder,
             userId,
-            parentFolder: toFolder,
             parentFolderId: toFolder.id,
             id: undefined,
             user: undefined,
@@ -337,12 +342,14 @@ export class FolderService {
             folderCopyCreate,
           );
 
-          await this.fileService.copy(
-            userId,
-            folderCopy,
-            folder.files,
-            transact,
-          );
+          if (folder.files) {
+            await this.fileService.copy({
+              userId,
+              toFolder: folderCopy,
+              files: folder.files,
+              transact,
+            });
+          }
 
           return folderCopy;
         });

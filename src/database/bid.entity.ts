@@ -161,8 +161,9 @@ export class BidEntity {
   parentRequest?: BidEntity;
 
   @Column({ type: 'uuid', nullable: true })
+  @RelationId((bid: BidEntity) => bid.parentRequest)
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
-  parentRequestId?: string;
+  parentRequestId!: string | null;
 
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     onDelete: 'CASCADE',
@@ -266,7 +267,7 @@ export class BidEntity {
     eager: false,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_bid_user' })
-  user!: UserEntity;
+  user?: UserEntity;
 
   @Column({ type: 'uuid' })
   @RelationId((bid: BidEntity) => bid.user)
@@ -294,7 +295,7 @@ export class BidEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  createdAt?: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -312,5 +313,5 @@ export class BidEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  updatedAt?: Date;
+  updatedAt!: Date;
 }

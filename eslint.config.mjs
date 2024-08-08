@@ -18,6 +18,7 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unused-vars': 'warn',
       '@typescript-eslint/prefer-literal-enum-member': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'warn',
     },
   },
 );
