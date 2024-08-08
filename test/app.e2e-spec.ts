@@ -3082,6 +3082,32 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
   });
 
   /**
+   * Advertiser: Получение списка файлов
+   */
+  test('Advertiser: POST /file (Получение списка файлов: advertiserVideoId.user === true)', async () => {
+    if (!advertiserToken) {
+      expect(false).toEqual(true);
+      return;
+    }
+
+    await request
+      .post(`${apiPath}/file`)
+      .auth(advertiserToken, { type: 'bearer' })
+      .send({})
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: FilesGetResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.data).toBeInstanceOf(Object);
+        const filesAdv = body.data.filter(
+          (files) => files.id === advertiserVideoId,
+        );
+        expect(filesAdv[0].used).toBeTruthy();
+      });
+  });
+
+  /**
    *
    * Повышаем роли Advertiser до администратора и логинимся, и после этого удаляем все
    *
