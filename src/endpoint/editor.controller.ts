@@ -18,6 +18,7 @@ import { FindOptionsWhere } from 'typeorm';
 
 import {
   BadRequestError,
+  InternalServerError,
   NotFoundError,
   PreconditionFailedError,
   ServiceUnavailableError,
@@ -466,36 +467,17 @@ export class EditorController {
   })
   @Crud(CRUD.DELETE)
   async deleteEditorLayer(
-    @Req() { user }: ExpressRequest,
+    @Req() { user: { id: userId } }: ExpressRequest,
     @Param('editorId', ParseUUIDPipe) editorId: string,
     @Param('layerId', ParseUUIDPipe) layerId: string,
   ): Promise<SuccessResponse> {
-    // TODO: разобраться
-    const editor = await this.editorService.findOne({
-      where: { userId: user.id, id: editorId },
-      select: ['id', 'userId'],
-      relations: {},
-    });
-    if (!editor) {
-      throw new NotFoundError(`Editor '${editorId}' is not found`);
-    }
-    const editorLayer = await this.editorService.findOneLayer({
-      where: { id: layerId },
-      select: ['id'],
-      loadEagerRelations: false,
-      relations: {},
-      order: {},
-    });
-    if (!editorLayer) {
-      throw new NotFoundError(`Editor layer '${layerId}' is not found`);
-    }
-
-    const { affected } = await this.editorService.deleteLayer(
+    const editor = await this.editorService.deleteLayer({
+      userId,
       editorId,
       layerId,
-    );
-    if (!affected) {
-      throw new NotFoundError('This editor layer is not exists');
+    });
+    if (!editor) {
+      throw new InternalServerError();
     }
 
     return {

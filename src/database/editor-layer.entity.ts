@@ -40,19 +40,11 @@ export class EditorLayerEntity {
   id!: string;
 
   @ManyToMany(() => EditorEntity, (editor) => editor.videoLayers, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
-    nullable: true,
     eager: false,
   })
   video?: EditorEntity[];
 
   @ManyToMany(() => EditorEntity, (editor) => editor.audioLayers, {
-    onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
-    cascade: true,
-    nullable: true,
     eager: false,
   })
   audio?: EditorEntity[];

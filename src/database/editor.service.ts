@@ -105,9 +105,9 @@ export class EditorService {
 
   async update(
     id: string,
-    insert: Partial<EditorEntity>,
+    update: Partial<EditorEntity>,
   ): Promise<EditorEntity> {
-    const updated = await this.editorRepository.update(id, insert);
+    const updated = await this.editorRepository.update(id, update);
     if (!updated.affected) {
       throw new NotAcceptableError(`Editor with this '${id}' not found`);
     }
@@ -243,6 +243,48 @@ export class EditorService {
     });
   }
 
+  private async correctLayers(editor: EditorEntity): Promise<number> {
+    if (!editor.videoLayers || !editor.audioLayers) {
+      throw new InternalServerError();
+    }
+
+    let start = 0;
+    let index = 1;
+    let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
+    const correctedVideoLayers = layers.map((value) => {
+      const duration = this.calcDuration(value);
+      const layer = {
+        duration,
+        start,
+        index,
+      };
+      start += duration;
+      index += 1;
+      return this.editorLayerRepository.update(value.id, layer);
+    });
+
+    const totalDuration = start;
+
+    start = 0;
+    index = 1;
+    layers = editor.audioLayers.sort((v1, v2) => v1.index - v2.index);
+    const correctedAudioLayers = layers.map(async (value) => {
+      const duration = this.calcDuration(value);
+      const layer = {
+        duration,
+        start,
+        index,
+      };
+      start += duration;
+      index += 1;
+      return this.editorLayerRepository.update(value.id, layer);
+    });
+
+    await Promise.all([correctedVideoLayers, correctedAudioLayers]);
+
+    return totalDuration;
+  }
+
   /**
    * Delete layer
    * @async
@@ -251,15 +293,38 @@ export class EditorService {
    * @param {EditorLayerEntity} editorLayerId Editor layer entity
    * @returns {DeleteResult} Result
    */
-  async deleteLayer(
-    editorId: string,
-    editorLayerId: string,
-  ): Promise<DeleteResult> {
-    const result = await this.editorLayerRepository.delete(editorLayerId);
+  async deleteLayer({
+    userId,
+    editorId,
+    layerId,
+  }: {
+    userId: string;
+    editorId: string;
+    layerId: string;
+  }): Promise<EditorEntity> {
+    const editor = await this.editorRepository.findOne({
+      where: { userId, id: editorId },
+      relations: { videoLayers: { file: true }, audioLayers: { file: true } },
+    });
+    if (!editor || !editor.videoLayers || !editor.audioLayers) {
+      throw new NotFoundError<I18nPath>('error.editor.not_found', {
+        args: { id: editorId },
+      });
+    }
+    editor.videoLayers = editor.videoLayers.filter(
+      (layer) => layer.id !== layerId,
+    );
+    editor.audioLayers = editor.audioLayers.filter(
+      (layer) => layer.id !== layerId,
+    );
+    editor.totalDuration = await this.correctLayers(editor);
 
-    await this.correctLayers(editorId);
+    await Promise.all([
+      this.editorRepository.save(editor),
+      this.editorLayerRepository.delete(layerId),
+    ]);
 
-    return result;
+    return editor;
   }
 
   private calcDuration = (layer: Partial<EditorLayerEntity>): number => {
@@ -268,9 +333,6 @@ export class EditorService {
     }
     return layer.duration ?? layer.file?.duration ?? 0;
   };
-
-  private calcTotalDuration = (video: Partial<EditorLayerEntity>[]): number =>
-    video.reduce((duration, layer) => duration + this.calcDuration(layer), 0);
 
   async partitionMonitors({
     bid,
@@ -531,62 +593,6 @@ export class EditorService {
     delete _editor.audioLayers;
     delete _editor.videoLayers;
     return _editor;
-  }
-
-  private async correctLayers(editorId: string): Promise<void> {
-    const editor = await this.editorRepository.findOne({
-      where: { id: editorId },
-      relations: { videoLayers: true, audioLayers: true },
-    });
-    if (!editor) {
-      throw new NotFoundError(`The editor '${editorId}' is not found`);
-    }
-    if (!editor.videoLayers || !editor.audioLayers) {
-      throw new InternalServerError();
-    }
-
-    let start = 0;
-    let index = 1;
-    let layers = editor.videoLayers.sort((v1, v2) => v1.index - v2.index);
-    const correctedVideoLayers = layers.map((value) => {
-      const duration = this.calcDuration(value);
-      const layer = {
-        duration,
-        start,
-        index,
-      };
-      start += duration;
-      index += 1;
-      return this.editorLayerRepository.update(value.id, layer);
-    });
-
-    const editorPromise = this.editorRepository.update(editor.id, {
-      renderingStatus: RenderingStatus.Initial,
-      renderingPercent: null,
-      renderingError: null,
-      totalDuration: start,
-    });
-
-    start = 0;
-    index = 1;
-    layers = editor.audioLayers.sort((v1, v2) => v1.index - v2.index);
-    const correctedAudioLayers = layers.map((value) => {
-      const duration = this.calcDuration(value);
-      const layer = {
-        duration,
-        start,
-        index,
-      };
-      start += duration;
-      index += 1;
-      return this.editorLayerRepository.update(value.id, layer);
-    });
-
-    await Promise.all([
-      correctedVideoLayers,
-      correctedAudioLayers,
-      editorPromise,
-    ]);
   }
 
   /**

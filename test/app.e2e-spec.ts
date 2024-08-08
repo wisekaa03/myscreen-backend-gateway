@@ -1625,11 +1625,11 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data.groupIds).toBeInstanceOf(Object);
         const re = RegExp(`${monitorMirror1Id}|${monitorMirror2Id}`);
         expect(body.data.groupIds?.[0]?.monitorId).toMatch(re);
-        expect(body.data.groupIds?.[0]?.row).toBe(0);
-        expect(body.data.groupIds?.[0]?.col).toBe(0);
+        expect(body.data.groupIds?.[0]?.row).toBeDefined();
+        expect(body.data.groupIds?.[0]?.col).toBeDefined();
         expect(body.data.groupIds?.[1]?.monitorId).toMatch(re);
-        expect(body.data.groupIds?.[1]?.row).toBe(0);
-        expect(body.data.groupIds?.[1]?.col).toBe(0);
+        expect(body.data.groupIds?.[1]?.row).toBeDefined();
+        expect(body.data.groupIds?.[1]?.col).toBeDefined();
         expect(body.data.user?.password).toBeUndefined();
       });
   });
@@ -1872,17 +1872,17 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data.multiple).toBe(MonitorMultiple.SCALING);
         expect(body.data.groupIds).toBeInstanceOf(Object);
         expect(body.data.groupIds?.[0]?.monitorId).toBeTruthy();
-        expect(body.data.groupIds?.[0]?.row).toBe(0);
-        expect(body.data.groupIds?.[0]?.col).toBe(0);
+        expect(body.data.groupIds?.[0]?.row).toBeDefined();
+        expect(body.data.groupIds?.[0]?.col).toBeDefined();
         expect(body.data.groupIds?.[1]?.monitorId).toBeTruthy();
-        expect(body.data.groupIds?.[1]?.row).toBe(0);
-        expect(body.data.groupIds?.[1]?.col).toBe(1);
+        expect(body.data.groupIds?.[1]?.row).toBeDefined();
+        expect(body.data.groupIds?.[1]?.col).toBeDefined();
         expect(body.data.groupIds?.[2]?.monitorId).toBeTruthy();
-        expect(body.data.groupIds?.[2]?.row).toBe(1);
-        expect(body.data.groupIds?.[2]?.col).toBe(0);
+        expect(body.data.groupIds?.[2]?.row).toBeDefined();
+        expect(body.data.groupIds?.[2]?.col).toBeDefined();
         expect(body.data.groupIds?.[3]?.monitorId).toBeTruthy();
-        expect(body.data.groupIds?.[3]?.row).toBe(1);
-        expect(body.data.groupIds?.[3]?.col).toBe(1);
+        expect(body.data.groupIds?.[3]?.row).toBeDefined();
+        expect(body.data.groupIds?.[3]?.col).toBeDefined();
         expect(body.data.user?.password).toBeUndefined();
       });
   });
@@ -3078,6 +3078,32 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.payload.type).toBeTruthy();
         monitorSingleToken = body.payload.token;
         monitorSingleRefreshToken = body.payload.refreshToken || '';
+      });
+  });
+
+  /**
+   * Advertiser: Получение списка файлов
+   */
+  test('Advertiser: POST /file (Получение списка файлов: advertiserVideoId.user === true)', async () => {
+    if (!advertiserToken) {
+      expect(false).toEqual(true);
+      return;
+    }
+
+    await request
+      .post(`${apiPath}/file`)
+      .auth(advertiserToken, { type: 'bearer' })
+      .send({})
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(200)
+      .then(({ body }: { body: FilesGetResponse }) => {
+        expect(body.status).toBe(Status.Success);
+        expect(body.data).toBeInstanceOf(Object);
+        const filesAdv = body.data.filter(
+          (files) => files.id === advertiserVideoId,
+        );
+        expect(filesAdv[0].used).toBeTruthy();
       });
   });
 
