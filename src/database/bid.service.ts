@@ -25,7 +25,12 @@ import {
   UserRoleEnum,
   MICROSERVICE_MYSCREEN,
 } from '@/enums';
-import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
+import {
+  BadRequestError,
+  InternalServerError,
+  NotAcceptableError,
+  NotFoundError,
+} from '@/errors';
 import { getFullName } from '@/utils/full-name';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { MonitorService } from '@/database/monitor.service';
@@ -158,7 +163,7 @@ export class BidService {
     transact?: EntityManager;
   }): Promise<void> {
     if (!bid.monitor) {
-      throw new BadRequestError();
+      throw new InternalServerError();
     }
     const { multiple } = bid.monitor;
     const { id, seqNo, createdAt, updatedAt, ...insert } = bid;
@@ -204,7 +209,7 @@ export class BidService {
     delete?: boolean;
   }): Promise<void> {
     if (!bid.monitor) {
-      throw new BadRequestError();
+      throw new InternalServerError();
     }
     const { multiple } = bid.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
@@ -278,7 +283,7 @@ export class BidService {
 
         if (update.approved === BidApprove.NOTPROCESSED) {
           if (!bid.seller) {
-            throw new BadRequestError();
+            throw new InternalServerError();
           }
           const sellerEmail = bid.seller.email;
           if (sellerEmail) {
@@ -296,7 +301,7 @@ export class BidService {
           }
         } else if (update.approved === BidApprove.ALLOWED) {
           if (!bid.user) {
-            throw new BadRequestError();
+            throw new InternalServerError();
           }
           // Оплата поступает на пользователя - владельца монитора
           const sumIncrement =
@@ -460,7 +465,7 @@ export class BidService {
             });
           }
           if (!bid.user || !bid.seller || !bid.buyer) {
-            throw new BadRequestError();
+            throw new InternalServerError();
           }
 
           // Списываем средства со счета пользователя Рекламодателя

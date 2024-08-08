@@ -6,7 +6,12 @@ import { DeepPartial, DeleteResult, Repository } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 
 import { I18nPath } from '@/i18n';
-import { BadRequestError, NotAcceptableError, NotFoundError } from '@/errors';
+import {
+  BadRequestError,
+  InternalServerError,
+  NotAcceptableError,
+  NotFoundError,
+} from '@/errors';
 import {
   MonitorMultiple,
   MonitorOrientation,
@@ -181,7 +186,7 @@ export class EditorService {
         relations: { videoLayers: true },
       });
       if (!editor.videoLayers) {
-        throw new BadRequestError();
+        throw new InternalServerError();
       }
       updatedQuery.index = editor.videoLayers.length;
     }
@@ -273,7 +278,7 @@ export class EditorService {
     bid: BidEntity;
   }): Promise<MonitorGroupWithPlaylist[] | null> {
     if (!bid.monitor || !bid.playlist) {
-      throw new BadRequestError();
+      throw new InternalServerError();
     }
     const { playlist, userId } = bid;
     const { multiple, groupMonitors } = bid.monitor;
@@ -465,7 +470,7 @@ export class EditorService {
       });
     }
     if (!_editor.videoLayers || !_editor.audioLayers) {
-      throw new BadRequestError();
+      throw new InternalServerError();
     }
     const { id: editorId, renderedFileId, userId } = _editor;
     if (renderedFileId) {
@@ -537,7 +542,7 @@ export class EditorService {
       throw new NotFoundError(`The editor '${editorId}' is not found`);
     }
     if (!editor.videoLayers || !editor.audioLayers) {
-      throw new BadRequestError();
+      throw new InternalServerError();
     }
 
     let start = 0;
@@ -609,7 +614,7 @@ export class EditorService {
       throw new NotFoundError<I18nPath>('error.editor.not_found');
     }
     if (!editor.videoLayers || !editor.audioLayers) {
-      throw new BadRequestError();
+      throw new InternalServerError();
     }
     if (moveIndex < 1) {
       throw new BadRequestError('moveIndex must be greater or equal than 1');

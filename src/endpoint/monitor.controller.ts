@@ -32,7 +32,12 @@ import {
 import { isDateString } from 'class-validator';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
-import { BadRequestError, ForbiddenError, NotFoundError } from '@/errors';
+import {
+  BadRequestError,
+  ForbiddenError,
+  InternalServerError,
+  NotFoundError,
+} from '@/errors';
 import {
   MonitorGetResponse,
   MonitorsGetRequest,
@@ -472,7 +477,7 @@ export class MonitorController {
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<MonitorGetResponse> {
     if (!files || !Array.isArray(files) || files.length < 1) {
-      throw new BadRequestError();
+      throw new InternalServerError();
     }
     const { id: userId, role } = user;
     const find: FindManyOptions<MonitorEntity> = {

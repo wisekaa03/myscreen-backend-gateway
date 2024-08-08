@@ -12,6 +12,7 @@ import { lastValueFrom, timeout } from 'rxjs';
 
 import {
   BadRequestError,
+  InternalServerError,
   NotFoundError,
   ServiceUnavailableError,
 } from '@/errors';
@@ -262,7 +263,7 @@ export class InvoiceService {
       transact,
     });
     if (!file) {
-      throw new BadRequestError();
+      throw new InternalServerError();
     }
 
     await _transact.save(

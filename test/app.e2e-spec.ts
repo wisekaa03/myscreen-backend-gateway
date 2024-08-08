@@ -115,11 +115,11 @@ const generateCode = () =>
 
 const jabber = new Jabber();
 const emailAdvertiser = jabber.createEmail();
-const passwordAdvertiser = generatePassword(20);
+const passwordAdvertiser = generatePassword(30);
 const emailMonitorOwner = jabber.createEmail();
-const passwordMonitorOwner = generatePassword(20);
+const passwordMonitorOwner = generatePassword(30);
 const emailAccountant = jabber.createEmail();
-const passwordAccountant = generatePassword(20);
+const passwordAccountant = generatePassword(30);
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve({}),
