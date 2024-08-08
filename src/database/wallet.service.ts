@@ -117,7 +117,7 @@ export class WalletService {
 
   async walletSum({
     userId,
-    transact,
+    transact: _transact,
     dates,
     invoiceId,
     actId,
@@ -130,13 +130,11 @@ export class WalletService {
     invoiceId?: FindOperator<string> | string;
     isSubscription?: boolean | null;
   }): Promise<number> {
-    const transactWallet = transact
-      ? transact.withRepository(this.walletRepository)
-      : this.walletRepository;
+    const transact = _transact ?? this.entityManager;
 
     if (isSubscription !== null) {
-      const qb = transactWallet
-        .createQueryBuilder('wallet')
+      const qb = transact
+        .createQueryBuilder(WalletEntity, 'wallet')
         .select('SUM("wallet"."sum")', 'SUM')
         .leftJoin('act', 'act', '"act"."id" = "wallet"."actId"')
         .where(`"wallet"."userId" = :userId`, { userId })
@@ -155,8 +153,8 @@ export class WalletService {
       return sum['SUM'] ?? 0;
     }
 
-    return transactWallet
-      .sum('sum', {
+    return transact
+      .sum(WalletEntity, 'sum', {
         userId,
         invoiceId,
         actId,
@@ -240,11 +238,7 @@ export class WalletService {
           });
         }
 
-        // опять получаем баланс
-        balance = await this.walletSum({
-          userId: user.id,
-          transact,
-        });
+        balance -= sum;
         this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
 
         // и вывод информации на email

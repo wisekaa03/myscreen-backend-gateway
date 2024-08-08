@@ -97,7 +97,7 @@ export class ActEntity {
     eager: false,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_act_user_id' })
-  user!: UserEntity;
+  user?: UserEntity;
 
   @Column({ type: 'uuid' })
   @RelationId((act: ActEntity) => act.user)
@@ -120,7 +120,7 @@ export class ActEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  createdAt?: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -138,5 +138,5 @@ export class ActEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  updatedAt?: Date;
+  updatedAt!: Date;
 }

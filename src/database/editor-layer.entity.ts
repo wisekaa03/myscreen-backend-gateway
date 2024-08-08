@@ -3,14 +3,11 @@ import {
   Min,
   Max,
   IsInt,
-  IsNumber,
   IsDateString,
-  IsPositive,
   ValidateIf,
   isNumberString,
   isNumber,
   isPositive,
-  min,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -157,7 +154,7 @@ export class EditorLayerEntity {
         : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  cropX!: number;
+  cropX!: number | null;
 
   @Column({ type: 'numeric', nullable: true, default: null })
   @ApiProperty({
@@ -172,7 +169,7 @@ export class EditorLayerEntity {
         : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  cropY!: number;
+  cropY!: number | null;
 
   @Column({ type: 'numeric', nullable: true, default: null })
   @ApiProperty({
@@ -187,7 +184,7 @@ export class EditorLayerEntity {
         : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  cropW!: number;
+  cropW!: number | null;
 
   @Column({ type: 'numeric', nullable: true, default: null })
   @ApiProperty({
@@ -202,7 +199,7 @@ export class EditorLayerEntity {
         : isNumber(value, { allowInfinity: false, allowNaN: false }),
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
-  cropH!: number;
+  cropH!: number | null;
 
   @Column({ type: 'integer', default: 1 })
   @ApiProperty({
@@ -253,7 +250,7 @@ export class EditorLayerEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  createdAt?: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -271,8 +268,5 @@ export class EditorLayerEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  updatedAt?: Date;
-
-  // For path name
-  path!: string;
+  updatedAt!: Date;
 }

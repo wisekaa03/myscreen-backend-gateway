@@ -146,6 +146,9 @@ export class DatabaseModule implements OnModuleInit {
 
       await manager.query('DROP VIEW IF EXISTS folder_file_number_entity');
       await manager.query('DROP VIEW IF EXISTS user_response');
+      await manager.query(
+        'UPDATE "folder" SET "system" = false WHERE "folder"."system" = NULL',
+      );
     });
   }
 }

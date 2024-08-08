@@ -227,10 +227,10 @@ export class FileController {
     @Body() { toFolder, files }: FilesCopyRequest,
   ): Promise<FilesGetResponse> {
     const filesIds = files.map((file) => file.id);
-    const filesCopy = await this.fileService.find({
+    const copyFiles = await this.fileService.find({
       where: { userId, id: In(filesIds) },
     });
-    if (filesCopy.length !== files.length) {
+    if (copyFiles.length !== files.length) {
       const filesNotExist = await this.fileService.find({
         where: { userId, id: Not(In(filesIds)) },
       });
@@ -247,7 +247,11 @@ export class FileController {
       });
     }
 
-    const data = await this.fileService.copy(userId, folder, filesCopy);
+    const data = await this.fileService.copy({
+      userId,
+      toFolder: folder,
+      files: copyFiles,
+    });
 
     return {
       status: Status.Success,

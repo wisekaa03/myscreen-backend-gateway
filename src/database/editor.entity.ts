@@ -165,7 +165,7 @@ export class EditorEntity {
   @Column({ type: 'uuid', nullable: true })
   @RelationId((editor: EditorEntity) => editor.playlist)
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
-  playlistId?: string | null;
+  playlistId!: string | null;
 
   @Column({ type: 'boolean', default: true })
   @ApiProperty({
@@ -200,7 +200,7 @@ export class EditorEntity {
     format: 'uuid',
     isArray: true,
   })
-  videoLayers!: EditorLayerEntity[];
+  videoLayers?: EditorLayerEntity[];
 
   @ManyToMany(() => EditorLayerEntity, (layer) => layer.audio, {
     nullable: true,
@@ -213,7 +213,7 @@ export class EditorEntity {
     isArray: true,
     nullable: true,
   })
-  audioLayers!: EditorLayerEntity[];
+  audioLayers?: EditorLayerEntity[];
 
   @ManyToOne(() => UserEntity, (user) => user.id, {
     onDelete: 'CASCADE',
@@ -222,7 +222,7 @@ export class EditorEntity {
     eager: false,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_editor_user_id' })
-  user!: UserEntity;
+  user?: UserEntity;
 
   @Column({ type: 'uuid' })
   @RelationId((editor: EditorEntity) => editor.user)
@@ -250,7 +250,7 @@ export class EditorEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  createdAt?: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -268,5 +268,5 @@ export class EditorEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  updatedAt?: Date;
+  updatedAt!: Date;
 }

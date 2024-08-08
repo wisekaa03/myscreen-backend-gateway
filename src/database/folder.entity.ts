@@ -61,7 +61,7 @@ export class FolderEntity {
     eager: false,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_folder_user' })
-  user!: UserEntity;
+  user?: UserEntity;
 
   @Column({ type: 'uuid' })
   @RelationId((folder: FolderEntity) => folder.user)
@@ -81,7 +81,7 @@ export class FolderEntity {
     eager: false,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_folder_parentFolder' })
-  parentFolder!: FolderEntity | null;
+  parentFolder?: FolderEntity | null;
 
   @Column({ nullable: true })
   @RelationId((folder: FolderEntity) => folder.parentFolder)
@@ -102,7 +102,15 @@ export class FolderEntity {
     cascade: true,
     eager: false,
   })
-  files!: FileEntity[];
+  files?: FileEntity[];
+
+  @Column({ type: 'boolean', default: false, nullable: true })
+  @ApiProperty({
+    description: 'Системная папка',
+    required: true,
+  })
+  @IsBoolean()
+  system!: boolean;
 
   @CreateDateColumn()
   @ApiProperty({
@@ -120,7 +128,7 @@ export class FolderEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  createdAt?: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -138,13 +146,5 @@ export class FolderEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  updatedAt?: Date;
-
-  @Column({ type: 'boolean', default: false, nullable: true })
-  @ApiProperty({
-    description: 'Системная папка',
-    required: true,
-  })
-  @IsBoolean()
-  system!: boolean;
+  updatedAt!: Date;
 }

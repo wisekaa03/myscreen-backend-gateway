@@ -629,15 +629,20 @@ export class FileService {
       });
   }
 
-  async copy(
-    userId: string,
-    toFolder: FolderEntity,
-    originalFiles: FileEntity[],
-    transact?: EntityManager,
-  ): Promise<FileExtView[]> {
+  async copy({
+    userId,
+    toFolder,
+    files,
+    transact,
+  }: {
+    userId: string;
+    toFolder: FolderEntity;
+    files: FileEntity[];
+    transact?: EntityManager;
+  }): Promise<FileExtView[]> {
     const _transact = transact ?? this.entityManager;
     return _transact.transaction('REPEATABLE READ', async (transact) => {
-      const filePromises = originalFiles.map(async (file) =>
+      const filePromises = files.map(async (file) =>
         this.copyS3Object(toFolder, file)
           .then(() =>
             transact.save(
@@ -762,12 +767,12 @@ export class FileService {
     errorMsg.video = videoFiles.map((editor) => ({
       id: editor.id,
       name: editor.name,
-      file: editor.videoLayers.map((layer) => layer.file).at(0),
+      file: editor.videoLayers?.map((layer) => layer.file).at(0),
     }));
     errorMsg.audio = audioFiles.map((editor) => ({
       id: editor.id,
       name: editor.name,
-      file: editor.audioLayers.map((layer) => layer.file).at(0),
+      file: editor.audioLayers?.map((layer) => layer.file).at(0),
     }));
     errorMsg.playlist = playlistFiles.map((playlist) => ({
       id: playlist.id,

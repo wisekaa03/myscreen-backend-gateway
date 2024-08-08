@@ -51,9 +51,10 @@ export class FileEntity {
     eager: false,
   })
   @JoinColumn({ name: 'folderId' })
-  folder!: FolderEntity;
+  folder?: FolderEntity;
 
-  @Column()
+  @Column({ type: 'uuid' })
+  @RelationId((file: FileEntity) => file.folder)
   @ApiProperty({
     description: 'Идентификатор папки',
     type: 'string',
@@ -63,7 +64,7 @@ export class FileEntity {
   @IsDefined({ message: i18nValidationMessage('validation.IS_DEFINED') })
   @IsNotEmpty({ message: i18nValidationMessage('validation.IS_NOT_EMPTY') })
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
-  folderId?: string;
+  folderId!: string;
 
   @Column()
   @ApiProperty({
@@ -163,7 +164,7 @@ export class FileEntity {
     eager: false,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_file_user' })
-  user!: UserEntity;
+  user?: UserEntity;
 
   @Column({ type: 'uuid' })
   @RelationId((file: FileEntity) => file.user)
@@ -215,7 +216,7 @@ export class FileEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  createdAt?: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
   @ApiProperty({
@@ -233,7 +234,7 @@ export class FileEntity {
     { strict: false },
     { message: i18nValidationMessage('validation.IS_DATE') },
   )
-  updatedAt?: Date;
+  updatedAt!: Date;
 
   @ApiProperty({
     description: 'Подписанный URL на файл',
