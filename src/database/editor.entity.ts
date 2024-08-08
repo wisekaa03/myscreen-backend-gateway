@@ -191,7 +191,9 @@ export class EditorEntity {
   totalDuration!: number;
 
   @ManyToMany(() => EditorLayerEntity, (layer) => layer.video, {
-    nullable: true,
+    cascade: true,
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
   })
   @JoinTable()
   @ApiProperty({
@@ -203,7 +205,9 @@ export class EditorEntity {
   videoLayers?: EditorLayerEntity[];
 
   @ManyToMany(() => EditorLayerEntity, (layer) => layer.audio, {
-    nullable: true,
+    cascade: true,
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
   })
   @JoinTable()
   @ApiProperty({
@@ -211,7 +215,6 @@ export class EditorEntity {
     type: 'string',
     format: 'uuid',
     isArray: true,
-    nullable: true,
   })
   audioLayers?: EditorLayerEntity[];
 
