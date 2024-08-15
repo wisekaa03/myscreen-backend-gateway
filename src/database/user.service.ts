@@ -243,14 +243,18 @@ export class UserService {
           throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
         }
 
-        if (
-          controllerName === 'file' &&
-          !(crud === CRUD.READ || crud === CRUD.DELETE) &&
-          dayjs(createdAt)
-            .add(28 + 1, 'days')
-            .isBefore(dayjs())
-        ) {
-          throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+        if (controllerName === 'file') {
+          if (!(crud === CRUD.READ || crud === CRUD.DELETE)) {
+            if (
+              dayjs(createdAt)
+                .add(28 + 1, 'days')
+                .isBefore(dayjs())
+            ) {
+              throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+            }
+          } else {
+            return true;
+          }
         }
 
         if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {
