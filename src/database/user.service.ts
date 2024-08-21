@@ -204,6 +204,7 @@ export class UserService {
     controllerName: string,
     functionName: string,
     crud: CRUD,
+    fileUploaded?: Express.Multer.File[],
   ): Promise<boolean> {
     const name = user.fullNameEmail;
     this.logger.log(
@@ -252,9 +253,17 @@ export class UserService {
             ) {
               throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
             }
-          } else {
-            return true;
           }
+          if (crud === CRUD.CREATE && fileUploaded) {
+            const uploadedSize = fileUploaded.reduce(
+              (acc, { size }) => acc + size,
+              0,
+            );
+            if (uploadedSize > countUsedSpace) {
+              throw new ForbiddenError<I18nPath>('error.file.file_upload');
+            }
+          }
+          return true;
         }
 
         if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {

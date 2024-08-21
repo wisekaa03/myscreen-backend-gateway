@@ -22,6 +22,7 @@ export type I18nTranslations = {
         "file": {
             "not_found": string;
             "not_exist": string;
+            "file_upload": string;
         };
         "folder": {
             "not_found": string;
