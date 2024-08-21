@@ -144,7 +144,7 @@ export class FileController {
   @UseInterceptors(FilesInterceptor('files'))
   @Crud(CRUD.CREATE)
   async uploadFiles(
-    @Req() { user: { id: userId, storageSpace } }: ExpressRequest,
+    @Req() { user }: ExpressRequest,
     @Body() { folderId }: { folderId: string },
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<FilesUploadResponse> {
@@ -152,6 +152,9 @@ export class FileController {
       throw new BadRequestError('Files expected');
     }
 
+    await this.userService.verify(user, 'file', 'upload', CRUD.CREATE, files);
+
+    const { id: userId, storageSpace } = user;
     const data = await this.fileService.upload({
       userId,
       storageSpace,

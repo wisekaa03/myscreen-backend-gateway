@@ -14,7 +14,8 @@
   },
   "file": {
     "not_found": "File not found '{id}'",
-    "not_exist": "File not exist '{id}'. {error}"
+    "not_exist": "File not exist '{id}'. {error}",
+    "file_upload": "Can't upload files. The size exceeds the permissible limit."
   },
   "folder": {
     "not_found": "Folder not exist '{id}'",
