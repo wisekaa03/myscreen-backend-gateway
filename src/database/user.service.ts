@@ -261,7 +261,9 @@ export class UserService {
               0,
             );
             if (uploadedSize > countUsedSpace) {
-              throw new ForbiddenError<I18nPath>('error.file.file_upload');
+              throw new ForbiddenError<I18nPath>('error.file.file_upload', {
+                args: { uploadedSize, countUsedSpace },
+              });
             }
           }
           return true;
