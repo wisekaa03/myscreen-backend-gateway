@@ -63,7 +63,12 @@ export class UserExtSubscriber
         played: parseInt(playlistBroadcast ?? '0', 10),
       },
       storageSpace: {
-        storage: parseFloat(countUsedSpace ?? '0'),
+        storage:
+          typeof countUsedSpace === 'string'
+            ? parseFloat(countUsedSpace)
+            : typeof countUsedSpace === 'number'
+              ? countUsedSpace
+              : null,
         total: parseFloat(`${storageSpace}`),
       },
     };

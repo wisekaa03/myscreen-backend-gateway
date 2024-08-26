@@ -260,9 +260,10 @@ export class UserService {
               (acc, { size }) => acc + size,
               0,
             );
-            if (uploadedSize > countUsedSpace) {
+            const minUsedSpace = countUsedSpace || UserStoreSpaceEnum.DEMO;
+            if (uploadedSize > minUsedSpace) {
               throw new ForbiddenError<I18nPath>('error.file.file_upload', {
-                args: { uploadedSize, countUsedSpace },
+                args: { uploadedSize, countUsedSpace: minUsedSpace },
               });
             }
           }

@@ -48,7 +48,7 @@ export class UserMetricsStorage {
     description: 'Занятое место',
     type: 'number',
   })
-  storage!: number;
+  storage!: number | null;
 
   @ApiProperty({
     description: 'Максимальное место',
@@ -123,7 +123,8 @@ export class UserLastEntry {
   expression: (connection: DataSource) =>
     connection
       .createQueryBuilder()
-      .select('"user".*')
+      .select('"file"."countUsedSpace"', 'countUsedSpace')
+      .addSelect('"user".*')
       .from(UserEntity, 'user')
 
       // количество мониторов
@@ -191,7 +192,7 @@ export class UserLastEntry {
       )
 
       // файлы
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<FileEntity>) =>
           qb
             .select('"file"."userId"', 'fileUserId')
@@ -304,7 +305,7 @@ export class UserExtView extends UserEntity {
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  countUsedSpace?: string;
+  countUsedSpace?: string | null;
 
   @ViewColumn()
   @ApiHideProperty()
