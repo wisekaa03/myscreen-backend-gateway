@@ -211,14 +211,15 @@ export class UserService {
       `User: "${name}" Controllers: "${controllerName}" CRUD: "${crud}"`,
     );
     const {
+      id: userId,
       role = UserRoleEnum.Administrator,
       plan = UserPlanEnum.Full,
       metrics: {
         monitors: { user: countMonitors = 0 },
-        storageSpace: { storage: countUsedSpace = 0 },
       },
       createdAt = new Date(),
     } = user;
+    const countUsedSpace = await this.fileService.sum({ userId });
 
     if (role === UserRoleEnum.MonitorOwner) {
       if (plan === UserPlanEnum.Demo) {
@@ -267,7 +268,9 @@ export class UserService {
         }
 
         if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {
-          throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+          throw new ForbiddenError<I18nPath>('error.LIMITED_STORE_SPACE', {
+            args: { countUsedSpace, plan: UserStoreSpaceEnum.DEMO },
+          });
         }
       } else if (plan === UserPlanEnum.Full) {
         if (
