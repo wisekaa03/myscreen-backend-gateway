@@ -64,10 +64,11 @@ export class UserExtSubscriber
       },
       storageSpace: {
         storage:
-          typeof countUsedSpace === 'string' ||
-          typeof countUsedSpace === 'number'
-            ? parseFloat(`${countUsedSpace}`)
-            : null,
+          typeof countUsedSpace === 'string'
+            ? parseFloat(countUsedSpace)
+            : typeof countUsedSpace === 'number'
+              ? countUsedSpace
+              : null,
         total: parseFloat(`${storageSpace}`),
       },
     };
