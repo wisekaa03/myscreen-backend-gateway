@@ -1,5 +1,9 @@
 import { SpecificFormat } from '@/enums/specific-format.enum';
 
+export const DEMO_MONITORS_COUNT = 5;
+export const DEMO_MONITORS_PAY = 14;
+export const DEMO_FILE_PAY = 28;
+
 export const formatToContentType: Record<SpecificFormat, string> = {
   [SpecificFormat.PDF]: 'application/pdf',
   [SpecificFormat.XLSX]: 'application/vnd.ms-excel',

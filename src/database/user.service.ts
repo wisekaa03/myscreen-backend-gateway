@@ -8,6 +8,11 @@ import { ClientProxy } from '@nestjs/microservices';
 import { I18nService } from 'nestjs-i18n';
 
 import {
+  DEMO_MONITORS_COUNT,
+  DEMO_MONITORS_PAY,
+  DEMO_FILE_PAY,
+} from '@/constants';
+import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
@@ -28,6 +33,7 @@ import {
   UserRoleEnum,
   UserStoreSpaceEnum,
 } from '@/enums';
+import { I18nPath } from '@/i18n';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -36,7 +42,6 @@ import { UserEntity } from './user.entity';
 import { UserExtView } from './user-ext.view';
 import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
-import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class UserService {
@@ -245,22 +250,24 @@ export class UserService {
           }
 
           case UserPlanEnum.Demo: {
-            if (
-              controllerName === 'monitor' &&
-              crud === CRUD.CREATE &&
-              1 + Number(countMonitors) > 5
-            ) {
-              throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
-            }
+            if (controllerName === 'monitor') {
+              if (
+                crud === CRUD.CREATE &&
+                1 + Number(countMonitors) > DEMO_MONITORS_COUNT
+              ) {
+                throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+              }
 
-            if (
-              controllerName === 'monitor' &&
-              crud !== CRUD.READ &&
-              dayjs(createdAt)
-                .add(14 + 1, 'days')
-                .isBefore(dayjs())
-            ) {
-              throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+              if (
+                crud !== CRUD.READ &&
+                dayjs(createdAt)
+                  .add(DEMO_MONITORS_PAY + 1, 'days')
+                  .isBefore(dayjs())
+              ) {
+                throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+              }
+
+              return true;
             }
 
             if (controllerName === 'file') {
@@ -283,7 +290,7 @@ export class UserService {
 
               if (
                 dayjs(createdAt)
-                  .add(28 + 1, 'days')
+                  .add(DEMO_FILE_PAY + 1, 'days')
                   .isBefore(dayjs())
               ) {
                 throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
