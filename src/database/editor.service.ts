@@ -319,10 +319,8 @@ export class EditorService {
     );
     editor.totalDuration = await this.correctLayers(editor);
 
-    await Promise.all([
-      this.editorRepository.save(editor),
-      this.editorLayerRepository.delete(layerId),
-    ]);
+    await this.editorRepository.save(editor);
+    await this.editorLayerRepository.delete(layerId);
 
     return editor;
   }
