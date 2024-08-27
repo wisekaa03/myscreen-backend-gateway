@@ -137,7 +137,7 @@ export class WsStatistics {
     status,
   }: {
     userId: string;
-    storageSpace?: number;
+    storageSpace?: string;
     monitor: MonitorEntity;
     status: MonitorStatus;
   }): Promise<void> {
@@ -176,7 +176,7 @@ export class WsStatistics {
     transact,
   }: {
     userId: string;
-    storageSpace?: number;
+    storageSpace?: string;
     monitor: MonitorEntity;
     transact?: EntityManager;
   }): Promise<void> {
@@ -216,7 +216,7 @@ export class WsStatistics {
     monitor,
   }: {
     userId: string;
-    storageSpace?: number;
+    storageSpace?: string;
     monitor: MonitorEntity;
   }): Promise<void> {
     const { id: monitorId, user: monitorUser, userId: monitorUserId } = monitor;
@@ -354,7 +354,7 @@ export class WsStatistics {
     transact,
   }: {
     userId: string;
-    storageSpace?: number;
+    storageSpace?: string;
     transact?: EntityManager;
   }): Promise<WsMetricsObject> {
     const [
@@ -441,7 +441,7 @@ export class WsStatistics {
     transact,
   }: {
     userId: string;
-    storageSpace?: number;
+    storageSpace?: string;
     transact?: EntityManager;
   }): Promise<void> {
     wsClients.forEach(async (value, client) => {

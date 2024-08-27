@@ -409,7 +409,7 @@ export class FileService {
     transact: _transact,
   }: {
     userId: string;
-    storageSpace?: number;
+    storageSpace?: string;
     files: Express.Multer.File[] | Express.Multer.File | Buffer;
     folderId?: string;
     originalname?: string;

@@ -35,8 +35,8 @@ export class UserExtSubscriber
       storageSpace,
       monthlyPayment,
       walletSum,
-      refreshTokenLastLoginUpdatedAt,
-      refreshTokenLastLoginUserAgent,
+      lastLoginUpdatedAt,
+      lastLoginUserAgent,
       createdAt = Date.now(),
     } = entity;
 
@@ -44,12 +44,12 @@ export class UserExtSubscriber
     entity.fullNameEmail = `${entity.fullName} <${entity.email}>`;
 
     entity.lastEntry = {
-      userAgent: refreshTokenLastLoginUserAgent,
-      at: refreshTokenLastLoginUpdatedAt,
+      userAgent: lastLoginUserAgent,
+      at: lastLoginUpdatedAt,
     };
 
-    delete entity.refreshTokenLastLoginUpdatedAt;
-    delete entity.refreshTokenLastLoginUserAgent;
+    delete entity.lastLoginUpdatedAt;
+    delete entity.lastLoginUserAgent;
 
     entity.metrics = {
       monitors: {
