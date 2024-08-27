@@ -441,7 +441,7 @@ export class MonitorService {
     groupIds,
   }: {
     userId: string;
-    storageSpace?: number;
+    storageSpace?: string;
     insert: Partial<MonitorEntity>;
     groupIds?: MonitorGroup[];
   }) {
@@ -569,7 +569,7 @@ export class MonitorService {
     monitor: MonitorEntity;
     status: MonitorStatus;
     userId: string;
-    storageSpace?: number;
+    storageSpace?: string;
   }): Promise<UpdateResult> {
     const { id } = monitor;
     if (monitor.multiple === MonitorMultiple.SUBORDINATE) {

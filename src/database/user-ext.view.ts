@@ -124,11 +124,21 @@ export class UserLastEntry {
     connection
       .createQueryBuilder()
       .select('"file"."countUsedSpace"', 'countUsedSpace')
+      .addSelect('"wallet"."walletSum"', 'walletSum')
+      .addSelect('"monitor"."countMonitors"', 'countMonitors')
+      .addSelect('"onlineMonitors"."onlineMonitors"', 'onlineMonitors')
+      .addSelect('"offlineMonitors"."offlineMonitors"', 'offlineMonitors')
+      .addSelect('"emptyMonitors"."emptyMonitors"', 'emptyMonitors')
+      .addSelect('"playlistAdded"."playlistAdded"', 'playlistAdded')
+      .addSelect('"playlistBroadcast"."playlistBroadcast"', 'playlistBroadcast')
+      .addSelect('"monthlyPayment"."monthlyPayment"', 'monthlyPayment')
+      .addSelect('"lastLogin"."lastLoginUpdatedAt"', 'lastLoginUpdatedAt')
+      .addSelect('"lastLogin"."lastLoginUserAgent"', 'lastLoginUserAgent')
       .addSelect('"user".*')
       .from(UserEntity, 'user')
 
       // количество мониторов
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
             .select('"monitor"."userId"', 'monitorUserId')
@@ -143,7 +153,7 @@ export class UserLastEntry {
 
       // все включенные мониторы
       // сначала отбираем все мониторы, а потом идем в заявки и отбираем еще раз по параметрам
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
             .select('COUNT("onlineMonitors"."id")', 'onlineMonitors')
@@ -156,19 +166,22 @@ export class UserLastEntry {
       )
 
       // все мониторы, которые сейчас выключены
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
             .select('COUNT("offlineMonitors"."id")', 'offlineMonitors')
             .addSelect('"offlineMonitors"."userId"', 'offlineMonitorsUserId')
             .where(`"offlineMonitors"."status" = '${MonitorStatus.Offline}'`)
+            .andWhere(
+              `"offlineMonitors"."multiple" Not In ('${MonitorMultiple.MIRROR}', '${MonitorMultiple.SCALING}')`,
+            )
             .groupBy('"offlineMonitors"."userId"')
             .from(MonitorEntity, 'offlineMonitors'),
         'offlineMonitors',
         '"offlineMonitors"."offlineMonitorsUserId" = "user"."id"',
       )
 
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<MonitorEntity>) =>
           qb
             .select('COUNT("emptyMonitors"."id")', 'emptyMonitors')
@@ -176,6 +189,9 @@ export class UserLastEntry {
             .groupBy('"emptyMonitors"."userId"')
             .from(MonitorEntity, 'emptyMonitors')
 
+            .andWhere(
+              `"emptyMonitors"."multiple" Not In ('${MonitorMultiple.MIRROR}', '${MonitorMultiple.SCALING}')`,
+            )
             .andWhere((qbb: SelectQueryBuilder<BidEntity>) => {
               const query = qbb
                 .subQuery()
@@ -204,7 +220,7 @@ export class UserLastEntry {
       )
 
       // кошелек
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<WalletEntity>) =>
           qb
             .select('"wallet"."userId"', 'walletUserId')
@@ -216,11 +232,11 @@ export class UserLastEntry {
       )
 
       // оставшееся время plan=Demo до подключения plan=Full
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<WalletEntity>) =>
           qb
-            .select('"wallet"."userId"', 'monthlyPaymentUserId')
-            .addSelect('"wallet"."createdAt"', 'monthlyPayment')
+            .select('"monthlyPayment"."userId"', 'monthlyPaymentUserId')
+            .addSelect('"monthlyPayment"."createdAt"', 'monthlyPayment')
             .groupBy('"monthlyPaymentUserId", "monthlyPayment"')
             .where((qbb: SelectQueryBuilder<ActEntity>) => {
               const query = qbb
@@ -233,31 +249,31 @@ export class UserLastEntry {
               return `EXISTS (${query})`;
             })
             .andWhere(
-              '"wallet"."createdAt" >= now()::timestamptz - interval \'28 days\'',
+              '"monthlyPayment"."createdAt" >= now()::timestamptz - interval \'28 days\'',
             )
-            .andWhere('"wallet"."actId" IS NOT NULL')
-            .andWhere('"wallet"."invoiceId" IS NULL')
-            .orderBy('"wallet"."createdAt"', 'DESC')
-            .from(WalletEntity, 'wallet')
+            .andWhere('"monthlyPayment"."actId" IS NOT NULL')
+            .andWhere('"monthlyPayment"."invoiceId" IS NULL')
+            .orderBy('"monthlyPayment"."createdAt"', 'DESC')
+            .from(WalletEntity, 'monthlyPayment')
             .limit(1),
         'monthlyPayment',
         '"monthlyPaymentUserId" = "user"."id"',
       )
 
       // все плейлисты
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<PlaylistEntity>) =>
           qb
-            .select('"playlist"."userId"', 'playlistUserId')
+            .select('"playlistAdded"."userId"', 'playlistUserId')
             .addSelect('COUNT(*)', 'playlistAdded')
-            .groupBy('"playlist"."userId"')
-            .from(PlaylistEntity, 'playlist'),
+            .groupBy('"playlistAdded"."userId"')
+            .from(PlaylistEntity, 'playlistAdded'),
         'playlistAdded',
         '"playlistUserId" = "user"."id"',
       )
 
       // Плейлисты, условие что плейлисты.статус = Broadcast
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<PlaylistEntity>) =>
           qb
             .select('"playlistBroadcast"."userId"', 'playlistBroadcastUserId')
@@ -272,31 +288,22 @@ export class UserLastEntry {
       )
 
       // Refresh Token Last Login (lastEntry)
-      .leftJoinAndSelect(
+      .leftJoin(
         (qb: SelectQueryBuilder<RefreshTokenEntity>) =>
           qb
-            .select(
-              '"refreshTokenLastLogin"."userId"',
-              'refreshTokenLastLoginUserId',
-            )
-            .addSelect(
-              '"refreshTokenLastLogin"."updatedAt"',
-              'refreshTokenLastLoginUpdatedAt',
-            )
-            .addSelect(
-              '"refreshTokenLastLogin"."userAgent"',
-              'refreshTokenLastLoginUserAgent',
-            )
-            .groupBy('"refreshTokenLastLogin"."userId"')
-            .addGroupBy('"refreshTokenLastLogin"."updatedAt"')
-            .addGroupBy('"refreshTokenLastLogin"."userAgent"')
-            .orderBy('"refreshTokenLastLogin"."updatedAt"', 'DESC')
-            .where('"refreshTokenLastLogin"."expires" >= now()::timestamptz')
-            .andWhere('"refreshTokenLastLogin"."isRevoked" = false')
+            .select('"lastLogin"."userId"', 'lastLoginUserId')
+            .addSelect('"lastLogin"."updatedAt"', 'lastLoginUpdatedAt')
+            .addSelect('"lastLogin"."userAgent"', 'lastLoginUserAgent')
+            .groupBy('"lastLogin"."userId"')
+            .addGroupBy('"lastLogin"."updatedAt"')
+            .addGroupBy('"lastLogin"."userAgent"')
+            .orderBy('"lastLogin"."updatedAt"', 'DESC')
+            .where('"lastLogin"."expires" >= now()::timestamptz')
+            .andWhere('"lastLogin"."isRevoked" = false')
             .limit(1)
-            .from(RefreshTokenEntity, 'refreshTokenLastLogin'),
-        'refreshTokenLastLogin',
-        '"refreshTokenLastLoginUserId" = "user"."id"',
+            .from(RefreshTokenEntity, 'lastLogin'),
+        'lastLogin',
+        '"lastLoginUserId" = "user"."id"',
       ),
 })
 export class UserExtView extends UserEntity {
@@ -350,12 +357,12 @@ export class UserExtView extends UserEntity {
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  refreshTokenLastLoginUpdatedAt?: string;
+  lastLoginUpdatedAt?: string;
 
   @ViewColumn()
   @ApiHideProperty()
   @Exclude()
-  refreshTokenLastLoginUserAgent?: string;
+  lastLoginUserAgent?: string;
 
   // Вычисляемые поля
 

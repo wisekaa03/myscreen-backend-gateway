@@ -8,6 +8,11 @@ import { ClientProxy } from '@nestjs/microservices';
 import { I18nService } from 'nestjs-i18n';
 
 import {
+  DEMO_MONITORS_COUNT,
+  DEMO_MONITORS_PAY,
+  DEMO_FILE_PAY,
+} from '@/constants';
+import {
   BadRequestError,
   ForbiddenError,
   NotFoundError,
@@ -28,6 +33,7 @@ import {
   UserRoleEnum,
   UserStoreSpaceEnum,
 } from '@/enums';
+import { I18nPath } from '@/i18n';
 import { decodeMailToken, generateMailToken } from '@/utils/mail-token';
 import { genKey } from '@/utils/genKey';
 import { TypeOrmFind } from '@/utils/typeorm.find';
@@ -36,7 +42,6 @@ import { UserEntity } from './user.entity';
 import { UserExtView } from './user-ext.view';
 import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
-import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class UserService {
@@ -219,97 +224,109 @@ export class UserService {
       },
       createdAt = new Date(),
     } = user;
-    const countUsedSpace = await this.fileService.sum({ userId });
+    const storageSpace = parseInt(user.storageSpace, 10);
 
-    if (role === UserRoleEnum.MonitorOwner) {
-      if (plan === UserPlanEnum.Demo) {
-        if (controllerName === 'auth' || controllerName === 'invoice') {
-          return true;
-        }
+    if (controllerName === 'auth' || controllerName === 'invoice') {
+      return true;
+    }
 
-        if (
-          controllerName === 'monitor' &&
-          crud === CRUD.CREATE &&
-          1 + Number(countMonitors) > 5
-        ) {
-          throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
-        }
+    switch (role) {
+      case UserRoleEnum.MonitorOwner: {
+        switch (plan) {
+          case UserPlanEnum.Full: {
+            const countUsedSpace = await this.fileService.sum({ userId });
 
-        if (
-          controllerName === 'monitor' &&
-          crud !== CRUD.READ &&
-          dayjs(createdAt)
-            .add(14 + 1, 'days')
-            .isBefore(dayjs())
-        ) {
-          throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
-        }
-
-        if (controllerName === 'file') {
-          if (!(crud === CRUD.READ || crud === CRUD.DELETE)) {
             if (
-              dayjs(createdAt)
-                .add(28 + 1, 'days')
-                .isBefore(dayjs())
+              controllerName === 'file' &&
+              countUsedSpace >= storageSpace &&
+              crud === CRUD.CREATE
             ) {
-              throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
-            }
-          }
-          if (crud === CRUD.CREATE && fileUploaded) {
-            const uploadedSize = fileUploaded.reduce(
-              (acc, { size }) => acc + size,
-              0,
-            );
-            const minUsedSpace = countUsedSpace || UserStoreSpaceEnum.DEMO;
-            if (uploadedSize > minUsedSpace) {
-              throw new ForbiddenError<I18nPath>('error.file.file_upload', {
-                args: { uploadedSize, countUsedSpace: minUsedSpace },
+              throw new ForbiddenError<I18nPath>('error.LIMITED_STORE_SPACE', {
+                args: { countUsedSpace, plan: UserStoreSpaceEnum.FULL },
               });
             }
+
+            break;
           }
-          return true;
+
+          case UserPlanEnum.Demo: {
+            if (controllerName === 'monitor') {
+              if (
+                crud === CRUD.CREATE &&
+                1 + Number(countMonitors) > DEMO_MONITORS_COUNT
+              ) {
+                throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+              }
+
+              if (
+                crud !== CRUD.READ &&
+                dayjs(createdAt)
+                  .add(DEMO_MONITORS_PAY + 1, 'days')
+                  .isBefore(dayjs())
+              ) {
+                throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+              }
+
+              return true;
+            }
+
+            if (controllerName === 'file') {
+              if (crud === CRUD.READ || crud === CRUD.DELETE) {
+                return true;
+              }
+
+              if (crud === CRUD.CREATE && fileUploaded) {
+                const uploadedSize = fileUploaded.reduce(
+                  (acc, { size }) => acc + size,
+                  0,
+                );
+                const countUsedSpace = await this.fileService.sum({ userId });
+                if (uploadedSize + countUsedSpace > storageSpace) {
+                  throw new ForbiddenError<I18nPath>('error.file.file_upload', {
+                    args: { uploadedSize, storageSpace },
+                  });
+                }
+              }
+
+              if (
+                dayjs(createdAt)
+                  .add(DEMO_FILE_PAY + 1, 'days')
+                  .isBefore(dayjs())
+              ) {
+                throw new ForbiddenError<I18nPath>('error.demoTimeIsUp');
+              }
+
+              return true;
+            }
+
+            break;
+          }
         }
 
-        if (countUsedSpace >= UserStoreSpaceEnum.DEMO) {
-          throw new ForbiddenError<I18nPath>('error.LIMITED_STORE_SPACE', {
-            args: { countUsedSpace, plan: UserStoreSpaceEnum.DEMO },
-          });
+        break;
+      }
+
+      case UserRoleEnum.Advertiser: {
+        if (controllerName === 'monitor' && crud !== CRUD.READ) {
+          if (functionName.search(/monitorFavorite|MonitorPlaylist/) === -1) {
+            throw new ForbiddenError<I18nPath>('error.DENIED_ADVERTISER');
+          }
         }
-      } else if (plan === UserPlanEnum.Full) {
+
+        const countUsedSpace = await this.fileService.sum({ userId });
         if (
           controllerName === 'file' &&
-          countUsedSpace >= UserStoreSpaceEnum.FULL &&
+          countUsedSpace >= storageSpace &&
           crud === CRUD.CREATE
         ) {
           throw new ForbiddenError<I18nPath>('error.LIMITED_STORE_SPACE', {
-            args: { countUsedSpace, plan: UserStoreSpaceEnum.FULL },
+            args: { countUsedSpace, plan: storageSpace },
           });
         }
-      }
-    } else if (role === UserRoleEnum.Advertiser) {
-      if (controllerName === 'monitor' && crud !== CRUD.READ) {
-        if (functionName.search(/monitorFavorite|MonitorPlaylist/) === -1) {
-          throw new ForbiddenError<I18nPath>('error.DENIED_ADVERTISER');
-        }
-      }
 
-      if (
-        controllerName === 'file' &&
-        countUsedSpace >= UserStoreSpaceEnum.FULL &&
-        crud === CRUD.CREATE
-      ) {
-        throw new ForbiddenError<I18nPath>('error.LIMITED_STORE_SPACE', {
-          args: { countUsedSpace, plan: UserStoreSpaceEnum.FULL },
-        });
+        break;
       }
     }
-
-    /**
-      Не трогаем все остальные роли:
-        UserRoleEnum.Administrator
-        UserRoleEnum.Accountant
-        UserRoleEnum.Monitor
-    */
 
     return true;
   }
@@ -420,11 +437,11 @@ export class UserService {
         ? UserPlanEnum.Demo
         : UserPlanEnum.Full;
 
-    let storageSpace: number;
+    let storageSpace: string;
     if (plan === UserPlanEnum.Demo) {
-      storageSpace = UserStoreSpaceEnum.DEMO;
+      storageSpace = String(UserStoreSpaceEnum.DEMO);
     } else {
-      storageSpace = UserStoreSpaceEnum.FULL;
+      storageSpace = String(UserStoreSpaceEnum.FULL);
     }
 
     const emailConfirmKey = genKey();

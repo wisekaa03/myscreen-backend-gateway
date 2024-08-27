@@ -233,7 +233,7 @@ export class WalletService {
           // если у пользователя был демо-план и он оплатил акт, то переводим его на полный план
           await transact.update(UserEntity, user.id, {
             plan: UserPlanEnum.Full,
-            storageSpace: UserStoreSpaceEnum.FULL,
+            storageSpace: String(UserStoreSpaceEnum.FULL),
             nonPayment: 0,
           });
         }
@@ -261,7 +261,7 @@ export class WalletService {
             // если у пользователя был полный план и он не оплатил акт, то переводим его на демо-план
             await transact.update(UserEntity, user.id, {
               plan: UserPlanEnum.Demo,
-              storageSpace: UserStoreSpaceEnum.DEMO,
+              storageSpace: String(UserStoreSpaceEnum.DEMO),
             });
             await transact.increment(WalletEntity, '', 'nonPayment', 1);
           }

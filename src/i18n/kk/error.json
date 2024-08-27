@@ -15,7 +15,7 @@
   "file": {
     "not_found": "File not found '{id}'",
     "not_exist": "File not exist '{id}'. {error}",
-    "file_upload": "Can't upload files: {uploadedSize}. The size exceeds the permissible limit: {countUsedSpace}."
+    "file_upload": "Can't upload files: {uploadedSize}. The size exceeds the permissible limit: {storageSpace}."
   },
   "folder": {
     "not_found": "Folder not exist '{id}'",

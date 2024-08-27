@@ -184,7 +184,7 @@ export class UserEntity {
     required: false,
   })
   @IsNumber()
-  storageSpace?: number;
+  storageSpace!: string;
 
   @Column({
     type: 'enum',
