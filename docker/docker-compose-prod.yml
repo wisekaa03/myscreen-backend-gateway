@@ -10,7 +10,7 @@ volumes:
 
 services:
   rabbitmq:
-    image: bitnami/rabbitmq:3.12.14
+    image: bitnami/rabbitmq:3.13.7
     restart: always
     environment:
       - RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS=true
