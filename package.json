@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.59.1",
+  "version": "2.59.2",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -151,7 +151,7 @@
   "devDependencies": {
     "@eslint/js": "^9.9.1",
     "@golevelup/ts-jest": "^0.5.4",
-    "@nestjs/cli": "^10.4.4",
+    "@nestjs/cli": "^10.4.5",
     "@nestjs/schematics": "^10.1.4",
     "@nestjs/testing": "^10.4.1",
     "@types/debug": "^4.1.12",
