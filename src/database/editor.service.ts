@@ -346,13 +346,10 @@ export class EditorService {
       return null;
     }
     if (multiple !== MonitorMultiple.SCALING) {
-      const monitorMultipleWithPlaylist = groupMonitors.reduce((acc, item) => {
-        acc.push({
-          ...item,
-          playlist,
-        });
-        return acc;
-      }, [] as MonitorGroupWithPlaylist[]);
+      const monitorMultipleWithPlaylist = groupMonitors.reduce(
+        (acc, item) => acc.concat({ ...item, playlist }),
+        [] as MonitorGroupWithPlaylist[],
+      );
 
       return monitorMultipleWithPlaylist;
     }

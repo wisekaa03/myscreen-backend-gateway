@@ -89,7 +89,7 @@ export class PlaylistService {
       });
     }
 
-    this.wsStatistics.onChangePlaylist({ playlistId: playlist.id });
+    await this.wsStatistics.onChangePlaylist({ playlistId: playlist.id });
     if (playlist.user) {
       this.wsStatistics.onMetrics({
         userId: playlist.userId,
