@@ -12,7 +12,6 @@ export class BidRequest extends PartialType(
     'seller',
     'monitor',
     'playlist',
-    'hide',
     'parentRequest',
     'parentRequestId',
     'status',

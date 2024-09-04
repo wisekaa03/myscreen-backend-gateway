@@ -30,7 +30,7 @@ services:
       - "5432:5432"
 
   pgadmin4:
-    image: dpage/pgadmin4:8.9
+    image: dpage/pgadmin4:8.11
     restart: always
     environment:
       PGADMIN_LISTEN_PORT: 8088
@@ -58,7 +58,7 @@ services:
       - "${PGADMIN_PORT:-8088}:8088"
 
   rabbitmq:
-    image: bitnami/rabbitmq:3.12.14
+    image: bitnami/rabbitmq:3.13.7
     restart: always
     environment:
       - RABBITMQ_MANAGEMENT_ALLOW_WEB_ACCESS=true

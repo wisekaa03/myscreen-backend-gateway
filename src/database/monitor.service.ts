@@ -582,17 +582,13 @@ export class MonitorService {
       if (groupMonitor) {
         const { parentMonitorId } = groupMonitor;
         if (status === MonitorStatus.Online) {
-          await this.monitorRepository.increment(
-            { id: parentMonitorId },
-            'groupOnlineMonitors',
-            1,
-          );
+          await this.monitorRepository.update(parentMonitorId, {
+            groupOnlineMonitors: () => 'groupOnlineMonitors + 1',
+          });
         } else {
-          await this.monitorRepository.decrement(
-            { id: parentMonitorId },
-            'groupOnlineMonitors',
-            1,
-          );
+          await this.monitorRepository.update(parentMonitorId, {
+            groupOnlineMonitors: () => 'groupOnlineMonitors - 1',
+          });
         }
         const monitorGroup = await this.monitorRepository.findOne({
           where: { id: parentMonitorId },
@@ -600,14 +596,14 @@ export class MonitorService {
           relations: { groupMonitors: true },
         });
         if (monitorGroup) {
-          const onlineMonitors = monitorGroup.groupMonitors?.length ?? Infinity;
+          const onlineMonitors = monitorGroup.groupMonitors!.length;
           if (monitorGroup.groupOnlineMonitors === onlineMonitors) {
             if (monitorGroup.status !== MonitorStatus.Online) {
               await this.monitorRepository.update(
                 { id: monitorGroup.id },
                 { status: MonitorStatus.Online },
               );
-              this.wsStatistics.monitorStatus({
+              await this.wsStatistics.monitorStatus({
                 userId,
                 storageSpace,
                 monitor: monitorGroup,
@@ -620,7 +616,7 @@ export class MonitorService {
                 { id: monitorGroup.id },
                 { status: MonitorStatus.Offline },
               );
-              this.wsStatistics.monitorStatus({
+              await this.wsStatistics.monitorStatus({
                 userId,
                 storageSpace,
                 monitor: monitorGroup,

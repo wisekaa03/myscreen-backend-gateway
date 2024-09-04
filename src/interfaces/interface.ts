@@ -14,6 +14,8 @@ export interface MonitorGroupWithPlaylist
     | 'id'
     | 'col'
     | 'row'
+    | 'monitor'
+    | 'monitorId'
     | 'parentMonitor'
     | 'parentMonitorId'
     | 'user'

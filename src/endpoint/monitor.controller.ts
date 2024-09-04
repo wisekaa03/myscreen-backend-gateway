@@ -630,7 +630,7 @@ export class MonitorController {
     };
   }
 
-  @Get(':monitorId/applications')
+  @Get(':monitorId/bid')
   @Roles([
     UserRoleEnum.Administrator,
     UserRoleEnum.MonitorOwner,

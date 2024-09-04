@@ -184,10 +184,18 @@ export class BidService {
             ...insert,
             hide: true,
             parentRequestId: id,
-            monitorId: monitor.id,
+            monitor: monitor.monitor,
+            monitorId: monitor.monitorId,
             playlistId: monitor.playlist.id,
           });
-          const subBid = await transact.save(BidEntity, createReq);
+          const { id: subBidID } = await transact.save(BidEntity, createReq);
+          const subBid = await transact.findOne(BidEntity, {
+            where: { id: subBidID },
+            relations: { playlist: { files: true } },
+          });
+          if (!subBid) {
+            throw new InternalServerError();
+          }
 
           await this.wsStatistics.onChange({ bid: subBid });
 

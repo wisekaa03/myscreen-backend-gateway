@@ -10,12 +10,11 @@ export class WsExceptionsFilter extends BaseWsExceptionFilter<WsException> {
   catch(exception: WsException, host: ArgumentsHost) {
     const ctx = host.switchToWs();
     const client = ctx.getClient<WebSocket>();
-    if (typeof exception.message === 'object') {
-      client.send(JSON.stringify(exception.message));
+    const message = exception.getError();
+    if (typeof message === 'object') {
+      client.send(JSON.stringify(message));
     } else {
-      client.send(
-        JSON.stringify({ event: WsEvent.ERROR, error: exception.message }),
-      );
+      client.send(JSON.stringify({ event: WsEvent.ERROR, error: message }));
     }
   }
 }
