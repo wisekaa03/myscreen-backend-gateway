@@ -585,9 +585,7 @@ export class EditorService {
       customOutputArgs,
     });
 
-    delete _editor.audioLayers;
-    delete _editor.videoLayers;
-    return _editor;
+    return editor;
   }
 
   /**
