@@ -352,7 +352,7 @@ export class MonitorService {
       await this.wsStatistics.onChangeMonitor({
         userId: monitor.userId,
         monitor,
-        storageSpace: monitor.user?.storageSpace,
+        storageSpace: monitor.user.storageSpace,
       });
 
       // а тут начинается полный трэш
