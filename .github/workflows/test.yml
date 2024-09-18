@@ -10,7 +10,7 @@ on:
       - '.nvmrc'
       - 'package.json'
       - 'yarn.lock'
-      - '.github/workflows'
+      - '.github/workflows/*.yml'
     branches-ignore:
       - develop
       - main

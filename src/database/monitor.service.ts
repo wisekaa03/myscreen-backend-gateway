@@ -297,7 +297,7 @@ export class MonitorService {
       transact,
     });
     if (!originalMonitor) {
-      throw new NotFoundError(`Monitor '${id}' not found`);
+      throw new NotFoundError(`error.monitor.not_found`, { args: { id } });
     }
     const { userId, multiple = MonitorMultiple.SINGLE } = originalMonitor;
     const { multiple: updateMultiple = multiple } = update;
