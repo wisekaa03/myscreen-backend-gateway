@@ -10,6 +10,7 @@ on:
       - '.nvmrc'
       - 'package.json'
       - 'yarn.lock'
+      - '.github/workflows'
     branches-ignore:
       - develop
       - main
@@ -26,7 +27,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
-          cache: 'yarn'
+      - name: Install Yarn
+        run: npm install -g yarn
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Environment variables
