@@ -7,8 +7,10 @@ on:
       - '**.js'
       - '**.cjs'
       - '**.mjs'
+      - '.nvmrc'
       - 'package.json'
       - 'yarn.lock'
+      - '.github/workflows/*.yml'
     branches-ignore:
       - develop
       - main
@@ -20,11 +22,13 @@ jobs:
     environment: tests
     steps:
       - name: Initializing the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
+      - name: Install Yarn
+        run: npm install -g yarn
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile
       - name: Environment variables

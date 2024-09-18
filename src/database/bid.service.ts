@@ -217,7 +217,7 @@ export class BidService {
     delete?: boolean;
   }): Promise<void> {
     if (!bid.monitor) {
-      throw new InternalServerError();
+      throw new InternalServerError('delete bid without monitor');
     }
     const { multiple } = bid.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
