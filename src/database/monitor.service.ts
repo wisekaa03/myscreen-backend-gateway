@@ -479,6 +479,8 @@ export class MonitorService {
         }
 
         let groupMonitors: MonitorEntity[] = [];
+        let groupOnlineMonitors = 0;
+        let status = MonitorStatus.Online;
         const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
         if (multiple !== MonitorMultiple.SINGLE) {
           if (!groupIds || groupIds.length === 0) {
@@ -491,7 +493,7 @@ export class MonitorService {
               id: In(multipleMonitorIds),
               multiple: MonitorMultiple.SINGLE,
             },
-            select: ['id'],
+            select: ['id', 'monitorOnline'],
           });
           if (
             Array.isArray(groupMonitors) &&
@@ -499,6 +501,14 @@ export class MonitorService {
           ) {
             throw new BadRequestError('Not found ID of some monitors');
           }
+          groupOnlineMonitors = groupMonitors.reduce((accum, m) => {
+            if (m.status === MonitorStatus.Online) {
+              accum = accum + 1;
+            } else {
+              status = MonitorStatus.Offline;
+            }
+            return accum;
+          }, 0);
           if (multiple === MonitorMultiple.SCALING) {
             const multipleRows = new Set<number>();
             const multipleCols = new Set<number>();
@@ -547,6 +557,16 @@ export class MonitorService {
           });
 
           await Promise.all(monitorMultiple);
+
+          // и помечаем монитор статусом Online или Offline
+          await transact.update(
+            MonitorEntity,
+            { id: monitorInsertedId },
+            {
+              status,
+              groupOnlineMonitors,
+            },
+          );
         }
 
         this.wsStatistics.onMetrics({ userId, storageSpace });
