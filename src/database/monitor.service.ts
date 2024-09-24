@@ -493,7 +493,7 @@ export class MonitorService {
               id: In(multipleMonitorIds),
               multiple: MonitorMultiple.SINGLE,
             },
-            select: ['id', 'monitorOnline'],
+            select: ['id', 'monitorOnline', 'status'],
           });
           if (
             Array.isArray(groupMonitors) &&
