@@ -567,6 +567,7 @@ export class MonitorService {
               groupOnlineMonitors,
             },
           );
+          this.wsStatistics.monitorStatus({ monitor, status, userId });
         }
 
         this.wsStatistics.onMetrics({ userId, storageSpace });
