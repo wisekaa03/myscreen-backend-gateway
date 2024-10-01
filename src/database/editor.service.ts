@@ -33,6 +33,7 @@ import { FolderService } from './folder.service';
 import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { MonitorGroupEntity } from './monitor.group.entity';
 
 dayjs.extend(dayjsDuration);
 
@@ -48,10 +49,6 @@ export class EditorService {
     private readonly editorRepository: Repository<EditorEntity>,
     @InjectRepository(EditorLayerEntity)
     private readonly editorLayerRepository: Repository<EditorLayerEntity>,
-    @InjectRepository(MonitorEntity)
-    private readonly monitorRepository: Repository<MonitorEntity>,
-    @InjectRepository(PlaylistEntity)
-    private readonly playlistRepository: Repository<PlaylistEntity>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
     @Inject(MICROSERVICE_MYSCREEN.EDITOR)
@@ -166,14 +163,14 @@ export class EditorService {
    * @returns {EditorLayerEntity | undefined} Result
    */
   async createLayer({
-    userId,
     editorId,
     update,
+    moveIndex = true,
     transact,
   }: {
-    userId: string;
     editorId: string;
     update: Partial<EditorLayerEntity>;
+    moveIndex?: boolean;
     transact?: EntityManager;
   }): Promise<EditorLayerEntity> {
     const _transact = transact ?? this.entityManager;
@@ -217,12 +214,14 @@ export class EditorService {
       _transact.create(EditorLayerEntity, updatedQuery),
     );
 
-    await this.moveIndex({
-      editorId,
-      layerId: layer.id,
-      moveIndex: updatedQuery.index,
-      transact,
-    });
+    if (moveIndex) {
+      await this.moveIndex({
+        editorId,
+        layerId: layer.id,
+        moveIndex: updatedQuery.index,
+        transact,
+      });
+    }
 
     return layer;
   }
@@ -355,6 +354,102 @@ export class EditorService {
     return layer.duration ?? layer.file?.duration ?? 0;
   };
 
+  private async groupMonitorsPlaylist({
+    userId,
+    groupMonitors,
+    playlist,
+    heightMonitor,
+    widthMonitor,
+  }: {
+    userId: string;
+    groupMonitors: MonitorGroupEntity[];
+    playlist: PlaylistEntity;
+    heightMonitor: number;
+    widthMonitor: number;
+  }): Promise<MonitorGroupWithPlaylist[]> {
+    const { files } = playlist;
+    const groupMonitorsPromise = groupMonitors.map(async (groupMonitor) => {
+      const { name: monitorName, id: monitorId } = groupMonitor.monitor;
+
+      // создаем плэйлист
+      const _playlist = await this.entityManager.save(
+        PlaylistEntity,
+        this.entityManager.create(PlaylistEntity, {
+          name: `Scaling monitor "${monitorName}": #${monitorId}`,
+          description: `Scaling monitor "${monitorName}": #${monitorId}`,
+          userId,
+          monitors: [],
+          files: [],
+          parentPlaylist: playlist,
+          // hide: true,
+        }),
+      );
+      const { id: playlistId } = _playlist;
+
+      // добавляем в плэйлист монитор
+      await this.entityManager.update(MonitorEntity, monitorId, {
+        playlistId,
+      });
+
+      // создаем редакторы
+      const editorsPromise = files.map(async (file) => {
+        const editor = await this.entityManager.save(
+          EditorEntity,
+          this.entityManager.create(EditorEntity, {
+            name: `Automatic playlist: ${playlist.name}. Monitor#${monitorId}. File#${file.id}`,
+            userId,
+            width: widthMonitor,
+            height: heightMonitor,
+            fps: 30,
+            keepSourceAudio: true,
+            totalDuration: 0,
+            renderingStatus: RenderingStatus.Initial,
+            renderingPercent: null,
+            renderingError: null,
+            renderedFile: null,
+            playlistId,
+          }),
+        );
+        if (!editor) {
+          throw new InternalServerError();
+        }
+
+        // ...и добавляем в редактор видео-слой с файлом
+        await this.createLayer({
+          editorId: editor.id,
+          update: {
+            index: 1,
+            cutFrom: 0,
+            cutTo: file.duration,
+            video: [editor],
+
+            // TODO: Сделать разбиение по мониторам
+            cropX: 0,
+            cropY: 0,
+            cropW: 10,
+            cropH: 10,
+
+            duration: file.duration,
+            mixVolume: 1,
+
+            fileId: file.id,
+          },
+        });
+
+        return editor;
+      });
+
+      await Promise.all(editorsPromise);
+
+      return {
+        ...groupMonitor,
+        playlist: _playlist,
+      };
+    });
+
+    return Promise.all(groupMonitorsPromise);
+  }
+
   async partitionMonitors({
     bid,
   }: {
@@ -402,90 +497,13 @@ export class EditorService {
     const widthMonitor = widthSum / groupMonitors.length;
     const heightMonitor = heightSum / groupMonitors.length;
 
-    const { files } = playlist;
-
-    const monitorsGroup = await this.entityManager.transaction(
-      'REPEATABLE READ',
-      async (transact) => {
-        const groupMonitorsPromise = groupMonitors.map(async (groupMonitor) => {
-          const { name: monitorName, id: monitorId } = groupMonitor.monitor;
-
-          // создаем плэйлист
-          const _playlist = await transact.save(
-            PlaylistEntity,
-            transact.create(PlaylistEntity, {
-              name: `Scaling monitor "${monitorName}": #${monitorId}`,
-              description: `Scaling monitor "${monitorName}": #${monitorId}`,
-              userId,
-              monitors: [],
-              parentPlaylist: playlist,
-              // hide: true,
-            }),
-          );
-          const { id: playlistId } = _playlist;
-
-          // добавляем в плэйлист монитор
-          await transact.update(MonitorEntity, monitorId, {
-            playlistId,
-          });
-
-          // создаем редакторы
-          const editorsPromise = files.map(async (file) => {
-            const editor = await transact.save(
-              EditorEntity,
-              transact.create(EditorEntity, {
-                name: `Automatic playlist: ${playlist.name}. Monitor#${monitorId}. File#${file.id}`,
-                userId,
-                width: widthMonitor,
-                height: heightMonitor,
-                fps: 30,
-                keepSourceAudio: true,
-                totalDuration: 0,
-                renderingStatus: RenderingStatus.Initial,
-                renderingPercent: null,
-                renderingError: null,
-                renderedFile: null,
-                playlistId,
-              }),
-            );
-
-            // ...и добавляем в редактор видео-слой с файлом
-            await this.createLayer({
-              userId,
-              editorId: editor.id,
-              update: {
-                index: 1,
-                cutFrom: 0,
-                cutTo: file.duration,
-
-                // TODO: Сделать разбиение по мониторам
-                cropX: 0,
-                cropY: 0,
-                cropW: 10,
-                cropH: 10,
-
-                duration: file.duration,
-                mixVolume: 1,
-
-                file,
-                fileId: file.id,
-              },
-            });
-
-            return editor;
-          });
-
-          await Promise.all(editorsPromise);
-
-          return {
-            ...groupMonitor,
-            playlist: _playlist,
-          };
-        });
-
-        return await Promise.all(groupMonitorsPromise);
-      },
-    );
+    const monitorsGroup = await this.groupMonitorsPlaylist({
+      userId,
+      playlist,
+      groupMonitors,
+      widthMonitor,
+      heightMonitor,
+    });
 
     setTimeout(async () => {
       // Запустить рендеринг
@@ -657,7 +675,7 @@ export class EditorService {
   }): Promise<void> {
     const _transact = transact ?? this.entityManager;
 
-    const editor = await this.editorRepository.findOne({
+    const editor = await _transact.findOne(EditorEntity, {
       where: {
         id: editorId,
       },
@@ -682,7 +700,7 @@ export class EditorService {
       }
       return false;
     });
-    const layer = layers && layers[layerIdx];
+    const layer = layers?.[layerIdx];
 
     if (!layer) {
       throw new BadRequestError(`layer is not found with ID "${layerId}"`);

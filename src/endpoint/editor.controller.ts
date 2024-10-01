@@ -314,7 +314,6 @@ export class EditorController {
     }
 
     const data = await this.editorService.createLayer({
-      userId: user.id,
       editorId,
       update,
     });
