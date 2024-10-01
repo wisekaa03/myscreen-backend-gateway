@@ -293,7 +293,7 @@ export class EditorController {
       throw new NotFoundError(`The file '${body.file}' is not found`);
     }
 
-    const create: Partial<EditorLayerEntity> = {
+    const update: Partial<EditorLayerEntity> = {
       ...body,
       duration: body.duration && Number(body.duration),
       cutFrom: body.cutFrom && Number(body.cutFrom),
@@ -308,16 +308,16 @@ export class EditorController {
       fileId: file.id,
     };
     if (file.type === FileType.AUDIO) {
-      create.audio = [editor];
+      update.audio = [editor];
     } else if (file.type === FileType.IMAGE || file.type === FileType.VIDEO) {
-      create.video = [editor];
+      update.video = [editor];
     }
 
-    const data = await this.editorService.createLayer(
-      user.id,
+    const data = await this.editorService.createLayer({
+      userId: user.id,
       editorId,
-      create,
-    );
+      update,
+    });
 
     return {
       status: Status.Success,
@@ -447,7 +447,7 @@ export class EditorController {
       throw new NotFoundError(`Editor '${editorId}' not found`);
     }
 
-    await this.editorService.moveIndex(editorId, layerId, moveIndex);
+    await this.editorService.moveIndex({ editorId, layerId, moveIndex });
 
     return {
       status: Status.Success,

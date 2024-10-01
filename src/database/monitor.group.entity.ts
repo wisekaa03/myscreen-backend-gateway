@@ -3,10 +3,10 @@ import { IsNumber, IsUUID } from 'class-validator';
 import {
   Column,
   Entity,
-  Index,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  RelationId,
 } from 'typeorm';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
@@ -89,7 +89,7 @@ export class MonitorGroupEntity {
   user!: UserEntity;
 
   @Column({ type: 'uuid' })
-  @Index('monitorGroupUserIdIndex')
+  @RelationId((monitorGroup: MonitorGroupEntity) => monitorGroup.user)
   @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
   userId!: string;
 }

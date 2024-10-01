@@ -44,6 +44,7 @@ import { FileExtSubscriber } from './file-ext.subsciber';
 import { FolderExtSubscriber } from './folder-ext.subsciber';
 import { MonitorSubscriber } from './monitor.subsciber';
 import { UserExtSubscriber } from './user-ext.subsciber';
+import { BidSubscriber } from './bid.subscriber';
 
 @Global()
 @Module({
@@ -94,6 +95,7 @@ import { UserExtSubscriber } from './user-ext.subsciber';
     MonitorStatisticsService,
     MonitorOnlineService,
 
+    BidSubscriber,
     EditorLayerSubscriber,
     FileExtSubscriber,
     FolderExtSubscriber,
