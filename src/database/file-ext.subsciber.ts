@@ -23,5 +23,6 @@ export class FileExtSubscriber
     const editorCount = Number(entity.editorLayerFileCount ?? 0);
 
     entity.used = playlistCount + editorCount > 0 ? true : false;
+    entity.duration = Number(entity.duration);
   }
 }

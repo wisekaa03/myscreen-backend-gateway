@@ -17,6 +17,6 @@ export class FileSubscriber implements EntitySubscriberInterface<FileEntity> {
   }
 
   afterLoad(entity: FileEntity) {
-    entity.duration = entity.duration ?? 0;
+    entity.duration = Number(entity.duration);
   }
 }

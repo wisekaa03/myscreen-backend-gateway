@@ -112,6 +112,24 @@ export class PlaylistEntity {
   @IsBoolean({ message: i18nValidationMessage('validation.IS_BOOLEAN') })
   hide!: boolean;
 
+  @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
+    nullable: true,
+    cascade: true,
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+    eager: false,
+  })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_parent_playlist' })
+  @ApiProperty({
+    description: 'Родительский плэйлист',
+    type: 'string',
+    allOf: [{ $ref: '#/components/schemas/PlaylistResponse' }],
+  })
+  @IsUUID('all', {
+    message: i18nValidationMessage('validation.IS_UUID'),
+  })
+  parentPlaylist?: PlaylistEntity;
+
   @ManyToMany(() => FileEntity, (file) => file.playlists, {
     cascade: true,
     onUpdate: 'CASCADE',

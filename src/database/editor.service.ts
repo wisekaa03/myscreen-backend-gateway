@@ -1,8 +1,8 @@
 import dayjsDuration from 'dayjs/plugin/duration';
 import dayjs from 'dayjs';
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DeepPartial, DeleteResult, Repository } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { DeepPartial, DeleteResult, EntityManager, Repository } from 'typeorm';
 import { ClientProxy } from '@nestjs/microservices';
 
 import { I18nPath } from '@/i18n';
@@ -33,6 +33,7 @@ import { FolderService } from './folder.service';
 import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { MonitorGroupEntity } from './monitor.group.entity';
 
 dayjs.extend(dayjsDuration);
 
@@ -48,10 +49,8 @@ export class EditorService {
     private readonly editorRepository: Repository<EditorEntity>,
     @InjectRepository(EditorLayerEntity)
     private readonly editorLayerRepository: Repository<EditorLayerEntity>,
-    @InjectRepository(MonitorEntity)
-    private readonly monitorRepository: Repository<MonitorEntity>,
-    @InjectRepository(PlaylistEntity)
-    private readonly playlistRepository: Repository<PlaylistEntity>,
+    @InjectEntityManager()
+    private readonly entityManager: EntityManager,
     @Inject(MICROSERVICE_MYSCREEN.EDITOR)
     private readonly editorMsvc: ClientProxy,
   ) {}
@@ -163,11 +162,18 @@ export class EditorService {
    * @param {EditorLayerEntity} update Editor layer entity
    * @returns {EditorLayerEntity | undefined} Result
    */
-  async createLayer(
-    userId: string,
-    editorId: string,
-    update: Partial<EditorLayerEntity>,
-  ): Promise<EditorLayerEntity> {
+  async createLayer({
+    editorId,
+    update,
+    moveIndex = true,
+    transact,
+  }: {
+    editorId: string;
+    update: Partial<EditorLayerEntity>;
+    moveIndex?: boolean;
+    transact?: EntityManager;
+  }): Promise<EditorLayerEntity> {
+    const _transact = transact ?? this.entityManager;
     const updatedQuery: DeepPartial<EditorLayerEntity> = { ...update };
 
     if (updatedQuery.fileId === undefined) {
@@ -177,10 +183,10 @@ export class EditorService {
       if (updatedQuery.file === undefined) {
         throw new BadRequestError<I18nPath>('error.bid.file_must_exists');
       }
-      updatedQuery.duration = updatedQuery.file.duration;
+      updatedQuery.duration = Number(updatedQuery.file.duration);
     }
     if (updatedQuery.index === undefined) {
-      const editor = await this.editorRepository.findOneOrFail({
+      const editor = await _transact.findOneOrFail(EditorEntity, {
         where: { id: editorId },
         loadEagerRelations: false,
         relations: { videoLayers: true },
@@ -194,7 +200,7 @@ export class EditorService {
       updatedQuery.cutFrom = 0;
     }
     if (updatedQuery.cutTo === undefined) {
-      updatedQuery.cutTo = updatedQuery.duration ?? 0;
+      updatedQuery.cutTo = Number(updatedQuery.duration);
     }
     if (updatedQuery.cutFrom > updatedQuery.cutTo) {
       throw new BadRequestError('cutFrom must be less than cutTo');
@@ -203,11 +209,19 @@ export class EditorService {
       throw new BadRequestError('Duration must be cutTo - cutFrom');
     }
 
-    const layer = await this.editorLayerRepository.save(
-      this.editorLayerRepository.create(updatedQuery),
+    const layer = await _transact.save(
+      EditorLayerEntity,
+      _transact.create(EditorLayerEntity, updatedQuery),
     );
 
-    await this.moveIndex(editorId, layer.id, updatedQuery.index);
+    if (moveIndex) {
+      await this.moveIndex({
+        editorId,
+        layerId: layer.id,
+        moveIndex: updatedQuery.index,
+        transact,
+      });
+    }
 
     return layer;
   }
@@ -230,9 +244,17 @@ export class EditorService {
     await this.editorLayerRepository.update(layer.id, update);
 
     if (update.index !== undefined) {
-      await this.moveIndex(editorId, layer.id, update.index);
+      await this.moveIndex({
+        editorId,
+        layerId: layer.id,
+        moveIndex: update.index,
+      });
     } else if (update.duration !== undefined) {
-      await this.moveIndex(editorId, layer.id, layer.index);
+      await this.moveIndex({
+        editorId,
+        layerId: layer.id,
+        moveIndex: layer.index,
+      });
     }
 
     return this.editorLayerRepository.findOne({
@@ -332,6 +354,102 @@ export class EditorService {
     return layer.duration ?? layer.file?.duration ?? 0;
   };
 
+  private async groupMonitorsPlaylist({
+    userId,
+    groupMonitors,
+    playlist,
+    heightMonitor,
+    widthMonitor,
+  }: {
+    userId: string;
+    groupMonitors: MonitorGroupEntity[];
+    playlist: PlaylistEntity;
+    heightMonitor: number;
+    widthMonitor: number;
+  }): Promise<MonitorGroupWithPlaylist[]> {
+    const { files } = playlist;
+    const groupMonitorsPromise = groupMonitors.map(async (groupMonitor) => {
+      const { name: monitorName, id: monitorId } = groupMonitor.monitor;
+
+      // создаем плэйлист
+      const _playlist = await this.entityManager.save(
+        PlaylistEntity,
+        this.entityManager.create(PlaylistEntity, {
+          name: `Scaling monitor "${monitorName}": #${monitorId}`,
+          description: `Scaling monitor "${monitorName}": #${monitorId}`,
+          userId,
+          monitors: [],
+          files: [],
+          parentPlaylist: playlist,
+          // hide: true,
+        }),
+      );
+      const { id: playlistId } = _playlist;
+
+      // добавляем в плэйлист монитор
+      await this.entityManager.update(MonitorEntity, monitorId, {
+        playlistId,
+      });
+
+      // создаем редакторы
+      const editorsPromise = files.map(async (file) => {
+        const editor = await this.entityManager.save(
+          EditorEntity,
+          this.entityManager.create(EditorEntity, {
+            name: `Automatic playlist: ${playlist.name}. Monitor#${monitorId}. File#${file.id}`,
+            userId,
+            width: widthMonitor,
+            height: heightMonitor,
+            fps: 30,
+            keepSourceAudio: true,
+            totalDuration: 0,
+            renderingStatus: RenderingStatus.Initial,
+            renderingPercent: null,
+            renderingError: null,
+            renderedFile: null,
+            playlistId,
+          }),
+        );
+        if (!editor) {
+          throw new InternalServerError();
+        }
+
+        // ...и добавляем в редактор видео-слой с файлом
+        await this.createLayer({
+          editorId: editor.id,
+          update: {
+            index: 1,
+            cutFrom: 0,
+            cutTo: file.duration,
+            video: [editor],
+
+            // TODO: Сделать разбиение по мониторам
+            cropX: 0,
+            cropY: 0,
+            cropW: 10,
+            cropH: 10,
+
+            duration: file.duration,
+            mixVolume: 1,
+
+            fileId: file.id,
+          },
+        });
+
+        return editor;
+      });
+
+      await Promise.all(editorsPromise);
+
+      return {
+        ...groupMonitor,
+        playlist: _playlist,
+      };
+    });
+
+    return Promise.all(groupMonitorsPromise);
+  }
+
   async partitionMonitors({
     bid,
   }: {
@@ -379,79 +497,23 @@ export class EditorService {
     const widthMonitor = widthSum / groupMonitors.length;
     const heightMonitor = heightSum / groupMonitors.length;
 
-    const { files } = bid.playlist;
-
-    const monitorPlaylistsPromise = groupMonitors.map(async (groupMonitor) => {
-      const { name: monitorName, id: monitorId } = groupMonitor.monitor;
-      // создаем плэйлист
-      const _playlist = await this.playlistRepository.save(
-        this.playlistRepository.create({
-          name: `Scaling monitor "${monitorName}": #${monitorId}`,
-          description: `Scaling monitor "${monitorName}": #${monitorId}`,
-          userId,
-          monitors: [],
-          hide: true,
-        }),
-      );
-      const { id: playlistId } = _playlist;
-      // добавляем в плэйлист монитор
-      await this.monitorRepository.update(monitorId, {
-        playlistId,
-      });
-      // создаем редакторы
-      const editorsPromise = files.map(async (file) => {
-        const editor = await this.create({
-          name: `Automatic playlist: ${playlist.name}. Monitor#${monitorId}. File#${file.id}`,
-          userId,
-          width: widthMonitor,
-          height: heightMonitor,
-          fps: 30,
-          keepSourceAudio: true,
-          totalDuration: 0,
-          renderingStatus: RenderingStatus.Initial,
-          renderingPercent: null,
-          renderingError: null,
-          renderedFile: null,
-          playlistId,
-        });
-        // и добавляем в редактор видео-слой с файлом
-        await this.createLayer(userId, editor.id, {
-          index: 1,
-          cutFrom: 0,
-          cutTo: file.duration,
-
-          // TODO: Сделать разбиение по мониторам
-          cropX: 0,
-          cropY: 0,
-          cropW: 10,
-          cropH: 10,
-
-          duration: file.duration,
-          mixVolume: 1,
-
-          file,
-          fileId: file.id,
-        });
-
-        return editor;
-      });
-      await Promise.all(editorsPromise);
-
-      return {
-        ...groupMonitor,
-        playlist: _playlist,
-      };
+    const monitorsGroup = await this.groupMonitorsPlaylist({
+      userId,
+      playlist,
+      groupMonitors,
+      widthMonitor,
+      heightMonitor,
     });
-    const monitorPlaylists = await Promise.all(monitorPlaylistsPromise);
 
     setTimeout(async () => {
       // Запустить рендеринг
-      const playlistsPromise = monitorPlaylists.map(async (item) => {
+      const playlistsPromise = monitorsGroup.map(async (item) => {
         const editors = await this.editorRepository.find({
           where: { playlistId: item.playlist.id },
           loadEagerRelations: false,
           relations: {},
         });
+
         const editorsPromise = editors.map(async (editor) => {
           await this.export({
             id: editor.id,
@@ -459,12 +521,14 @@ export class EditorService {
             // TODO: customOutputArgs
           });
         });
+
         await Promise.all(editorsPromise);
       });
+
       await Promise.all(playlistsPromise);
     }, 0);
 
-    return monitorPlaylists;
+    return monitorsGroup;
   }
 
   /**
@@ -598,12 +662,20 @@ export class EditorService {
    * @param {number} moveIndex Move index
    * @memberof EditorService
    */
-  async moveIndex(
-    editorId: string,
-    layerId: string,
-    moveIndex: number,
-  ): Promise<void> {
-    const editor = await this.editorRepository.findOne({
+  async moveIndex({
+    editorId,
+    layerId,
+    moveIndex,
+    transact,
+  }: {
+    editorId: string;
+    layerId: string;
+    moveIndex: number;
+    transact?: EntityManager;
+  }): Promise<void> {
+    const _transact = transact ?? this.entityManager;
+
+    const editor = await _transact.findOne(EditorEntity, {
       where: {
         id: editorId,
       },
@@ -628,7 +700,7 @@ export class EditorService {
       }
       return false;
     });
-    const layer = layers && layers[layerIdx];
+    const layer = layers?.[layerIdx];
 
     if (!layer) {
       throw new BadRequestError(`layer is not found with ID "${layerId}"`);
@@ -678,7 +750,7 @@ export class EditorService {
           index,
         })
         .map((l) =>
-          this.editorLayerRepository.update(l.id, {
+          _transact.update(EditorLayerEntity, l.id, {
             start: l.start,
             index: l.index,
           }),

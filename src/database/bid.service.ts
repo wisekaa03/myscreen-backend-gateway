@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import {
   DeepPartial,
@@ -68,6 +68,7 @@ export class BidService {
     private readonly playlistRepository: Repository<PlaylistEntity>,
     @Inject(MICROSERVICE_MYSCREEN.MAIL)
     private readonly mailMsvc: ClientProxy,
+    @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {
     this.commissionPercent = parseInt(
