@@ -372,19 +372,29 @@ export class EditorService {
       const { name: monitorName, id: monitorId } = groupMonitor.monitor;
 
       // создаем плэйлист
-      const _playlist = await this.entityManager.save(
+      const playlistInsert = await this.entityManager.upsert(
         PlaylistEntity,
         this.entityManager.create(PlaylistEntity, {
-          name: `Scaling monitor "${monitorName}": #${monitorId}`,
-          description: `Scaling monitor "${monitorName}": #${monitorId}`,
+          name: `AUTO: monitor=${monitorName}`,
+          description: `Scaling monitor "${monitorName}"`,
           userId,
           monitors: [],
           files: [],
           parentPlaylist: playlist,
           // hide: true,
         }),
+        { conflictPaths: ['userId', 'name'] },
       );
-      const { id: playlistId } = _playlist;
+      const playlistId = playlistInsert.identifiers?.[0].id;
+      if (!playlistId) {
+        throw new InternalServerError();
+      }
+      const _playlist = await this.entityManager.findOne(PlaylistEntity, {
+        where: { id: playlistId },
+      });
+      if (!_playlist) {
+        throw new InternalServerError();
+      }
 
       // добавляем в плэйлист монитор
       await this.entityManager.update(MonitorEntity, monitorId, {
@@ -393,10 +403,10 @@ export class EditorService {
 
       // создаем редакторы
       const editorsPromise = files.map(async (file) => {
-        const editor = await this.entityManager.save(
+        const editorInsert = await this.entityManager.upsert(
           EditorEntity,
           this.entityManager.create(EditorEntity, {
-            name: `Automatic playlist: ${playlist.name}. Monitor#${monitorId}. File#${file.id}`,
+            name: `AUTO: playlist=${playlist.name}, monitor=${monitorName}, file=${file.name}`,
             userId,
             width: widthMonitor,
             height: heightMonitor,
@@ -409,14 +419,24 @@ export class EditorService {
             renderedFile: null,
             playlistId,
           }),
+          { conflictPaths: ['userId', 'name'] },
         );
+        const editorId = editorInsert.identifiers?.[0].id;
+        if (!editorId) {
+          throw new InternalServerError();
+        }
+        const editor = await this.entityManager.findOne(EditorEntity, {
+          where: { id: editorId },
+          loadEagerRelations: false,
+          relations: [],
+        });
         if (!editor) {
           throw new InternalServerError();
         }
 
         // ...и добавляем в редактор видео-слой с файлом
         await this.createLayer({
-          editorId: editor.id,
+          editorId,
           update: {
             index: 1,
             cutFrom: 0,
@@ -507,25 +527,23 @@ export class EditorService {
 
     setTimeout(async () => {
       // Запустить рендеринг
-      const playlistsPromise = monitorsGroup.map(async (item) => {
-        const editors = await this.editorRepository.find({
-          where: { playlistId: item.playlist.id },
-          loadEagerRelations: false,
-          relations: {},
-        });
-
-        const editorsPromise = editors.map(async (editor) => {
-          await this.export({
-            id: editor.id,
-            rerender: true,
-            // TODO: customOutputArgs
-          });
-        });
-
-        await Promise.all(editorsPromise);
+      monitorsGroup.forEach((item) => {
+        this.editorRepository
+          .find({
+            where: { playlistId: item.playlist.id },
+            loadEagerRelations: false,
+            relations: {},
+          })
+          .then((editor) =>
+            editor.forEach((editor) =>
+              this.export({
+                id: editor.id,
+                rerender: true,
+                // TODO: customOutputArgs
+              }),
+            ),
+          );
       });
-
-      await Promise.all(playlistsPromise);
     }, 0);
 
     return monitorsGroup;
