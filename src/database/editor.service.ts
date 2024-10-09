@@ -527,23 +527,24 @@ export class EditorService {
 
     setTimeout(async () => {
       // Запустить рендеринг
-      monitorsGroup.forEach((item) => {
-        this.editorRepository
-          .find({
-            where: { playlistId: item.playlist.id },
-            loadEagerRelations: false,
-            relations: {},
-          })
-          .then((editor) =>
-            editor.forEach((editor) =>
-              this.export({
-                id: editor.id,
-                rerender: true,
-                // TODO: customOutputArgs
-              }),
-            ),
-          );
-      });
+
+      for (const monitor of monitorsGroup) {
+        const editors = await this.editorRepository.find({
+          where: { playlistId: monitor.playlist.id },
+          loadEagerRelations: false,
+          relations: {},
+        });
+
+        for (const editor of editors) {
+          await this.export({
+            id: editor.id,
+            rerender: true,
+            // TODO: customOutputArgs
+          });
+
+          await new Promise((resolve) => setTimeout(resolve, 5000));
+        }
+      }
     }, 0);
 
     return monitorsGroup;
