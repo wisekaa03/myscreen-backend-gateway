@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.59.15",
+  "version": "2.59.16",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -77,7 +77,7 @@
     "**/**/rrweb-cssom": ">=0.7.1",
     "**/**/safe-buffer": ">=5.2.1",
     "**/**/semver": ">=7.6.3",
-    "**/**/send": ">=1.1.0",
+    "**/**/send": "^0.19.1",
     "**/**/serve-static": ">=1.16.2",
     "**/**/source-map-support": ">=0.5.21",
     "**/**/split2": ">=4.2.0",
