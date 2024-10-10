@@ -542,7 +542,7 @@ export class EditorService {
             // TODO: customOutputArgs
           });
 
-          await new Promise((resolve) => setTimeout(resolve, 5000));
+          await new Promise((resolve) => setTimeout(resolve, 10000));
         }
       }
     }, 0);

@@ -49,7 +49,9 @@ export class TypeOrmLogger implements ITypeOrmLogger {
     if (Array.isArray(param) && param.length > 0) {
       parameters = ` ${JSON.stringify(
         param.map((field) =>
-          typeof field === 'string' ? field.slice(0, 50) : field,
+          typeof field === 'object'
+            ? `${JSON.stringify(field).slice(0, 50)}...`
+            : field,
         ),
       )}`;
     } else {
