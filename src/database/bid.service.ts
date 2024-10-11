@@ -24,6 +24,7 @@ import {
   MonitorMultiple,
   UserRoleEnum,
   MICROSERVICE_MYSCREEN,
+  BidStatus,
 } from '@/enums';
 import {
   BadRequestError,
@@ -188,6 +189,7 @@ export class BidService {
             monitor: monitor.monitor,
             monitorId: monitor.monitorId,
             playlistId: monitor.playlist.id,
+            status: BidStatus.WAITING,
           });
           const { id: subBidID } = await transact.save(BidEntity, createReq);
           const subBid = await transact.findOne(BidEntity, {
@@ -278,7 +280,11 @@ export class BidService {
             user: true,
           };
         } else {
-          relations = { seller: true };
+          relations = {
+            seller: true,
+            monitor: { groupMonitors: true },
+            playlist: { files: true },
+          };
         }
         const bid = await transact.findOne(BidEntity, {
           where: { id },
@@ -454,7 +460,13 @@ export class BidService {
 
           let relations: FindOptionsRelations<BidEntity>;
           if (!(insert.approved === BidApprove.NOTPROCESSED || !insert.hide)) {
-            relations = { buyer: true, seller: true, user: true };
+            relations = {
+              buyer: true,
+              seller: true,
+              user: true,
+              monitor: { groupMonitors: true },
+              playlist: { files: true },
+            };
           } else {
             relations = {
               buyer: true,
