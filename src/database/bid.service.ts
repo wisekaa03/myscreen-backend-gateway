@@ -184,7 +184,7 @@ export class BidService {
         const groupMonitorPromise = groupMonitors.map(async (monitor) => {
           const createReq = transact.create(BidEntity, {
             ...insert,
-            hide: true,
+            hide: false,
             parentRequestId: id,
             monitor: monitor.monitor,
             monitorId: monitor.monitorId,
