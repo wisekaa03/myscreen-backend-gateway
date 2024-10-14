@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.59.17",
+  "version": "2.59.18",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -62,7 +62,7 @@
     "**/hosted-git-info/lru-cache": "^8.0.5",
     "**/@babel/helper-compilation-targets/lru-cache": "^8.0.5",
     "**/semver/lru-cache": "^8.0.5",
-    "**/**/memfs": ">=4.13.0",
+    "**/**/memfs": ">=4.14.0",
     "**/@eslint/eslintrc/minimatch": "^5.1.6",
     "**/@eslint/config-array/minimatch": "^5.1.6",
     "**/eslint/minimatch": "^5.1.6",
@@ -74,7 +74,6 @@
     "**/**/resolve": ">=1.22.8",
     "**/**/resolve-from": ">=5.0.0",
     "**/@mapbox/node-pre-gyp/rimraf": "^4.4.1",
-    "**/**/rrweb-cssom": ">=0.7.1",
     "**/**/safe-buffer": ">=5.2.1",
     "**/**/semver": ">=7.6.3",
     "**/**/send": "^0.19.1",
@@ -97,8 +96,8 @@
     "**/**/ws": ">=8.18.0"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.669.0",
-    "@aws-sdk/s3-request-presigner": "^3.669.0",
+    "@aws-sdk/client-s3": "^3.670.0",
+    "@aws-sdk/s3-request-presigner": "^3.670.0",
     "@elastic/elasticsearch": "^8.15.0",
     "@nestjs/common": "^10.4.4",
     "@nestjs/config": "^3.2.3",
@@ -182,7 +181,7 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.3",
-    "typescript-eslint": "^8.8.1",
+    "typescript-eslint": "^8.9.0",
     "webpack": "^5.95.0",
     "webpack-node-externals": "^3.0.0"
   }

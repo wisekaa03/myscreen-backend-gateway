@@ -1,5 +1,5 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import {
   EntityManager,
   In,
@@ -19,15 +19,18 @@ import {
 } from '@/enums';
 import { WsMetricsObject, WsWalletObject } from '@/interfaces';
 import { BidEntity } from '@/database/bid.entity';
-import { FileEntity } from '@/database/file.entity';
 import { MonitorEntity } from '@/database/monitor.entity';
 import { PlaylistService } from '@/database/playlist.service';
 import { WalletService } from '@/database/wallet.service';
 import { FileService } from '@/database/file.service';
 import { MonitorService } from '@/database/monitor.service';
+import { PlaylistEntity } from './playlist.entity';
+import { FileEntity } from './file.entity';
 
 @Injectable()
 export class WsStatistics {
+  private logger = new Logger(WsStatistics.name);
+
   constructor(
     @Inject(forwardRef(() => MonitorService))
     private readonly monitorService: MonitorService,
@@ -35,6 +38,8 @@ export class WsStatistics {
     private readonly fileService: FileService,
     private readonly playlistService: PlaylistService,
     private readonly walletService: WalletService,
+    @InjectEntityManager()
+    private readonly entityManager: EntityManager,
     @InjectRepository(BidEntity)
     private readonly bidRepository: Repository<BidEntity>,
   ) {}
@@ -253,7 +258,7 @@ export class WsStatistics {
     });
 
     const wsPromise = bids.map(async (bidDelete) =>
-      this.onChange({ bidDelete }),
+      this.onChangeBidDelete({ bidDelete }),
     );
 
     await Promise.allSettled(wsPromise);
@@ -271,7 +276,7 @@ export class WsStatistics {
       playlistId: playlistId,
     });
 
-    const wsPromise = bids.map(async (bid) => this.onChange({ bid }));
+    const wsPromise = bids.map(async (bid) => this.onChangeBid({ bid }));
 
     await Promise.allSettled(wsPromise);
   }
@@ -284,40 +289,49 @@ export class WsStatistics {
    *  - Изменение плэйлиста файлами
    * @param bid BidEntity or null
    */
-  async onChange({
+  async onChangeBid({
     bid,
-    bidDelete,
-    files,
-    filesDelete,
+    transact,
   }: {
-    bid?: BidEntity;
-    bidDelete?: BidEntity;
-    files?: FileEntity[];
-    filesDelete?: FileEntity[];
+    bid: BidEntity;
+    transact?: EntityManager;
   }): Promise<void> {
-    if (bid?.playlist) {
-      const playlistId = bid.playlistId ?? bid.playlist?.id;
-      await this.playlistService.update(playlistId, {
-        status: PlaylistStatusEnum.Broadcast,
-      });
-      const bidFind = {
-        ...bid,
-        playlist: {
-          ...bid.playlist,
-          files: await Promise.all(
-            bid.playlist.files.map(async (file) =>
-              this.fileService.signedUrl(file),
-            ),
+    const manager = transact ?? this.entityManager;
+    const playlistId = bid.playlistId ?? bid.playlist?.id;
+    await manager.update(PlaylistEntity, playlistId, {
+      status: PlaylistStatusEnum.Broadcast,
+    });
+    const bidFind = {
+      ...bid,
+      playlist: {
+        ...bid.playlist,
+        files: await Promise.all(
+          bid.playlist.files.map(async (file) =>
+            this.fileService.signedUrl(file),
           ),
-        },
-      } as BidEntity;
+        ),
+      },
+    } as BidEntity;
 
-      wsClients.forEach((value, client) => {
-        if (value.monitorId === bid.monitorId) {
-          client.send(JSON.stringify([{ event: WsEvent.BID, data: bidFind }]));
-        }
-      });
-    }
+    wsClients.forEach((value, client) => {
+      if (value.monitorId === bid.monitorId) {
+        client.send(JSON.stringify([{ event: WsEvent.BID, data: bidFind }]));
+      }
+    });
+  }
+
+  async onChangeBidDelete({ bidDelete }: { bidDelete: BidEntity }) {
+    this.logger.warn(`Change on bid delete: ${bidDelete.id}`);
+  }
+
+  async onChangeFiles({ files }: { files: FileEntity[] }) {
+    this.logger.warn(`Change on files delete: ${files.map(({ id }) => id)}`);
+  }
+
+  async onChangeFilesDelete({ filesDelete }: { filesDelete: FileEntity[] }) {
+    this.logger.warn(
+      `Change on files delete: ${filesDelete.map(({ id }) => id)}`,
+    );
   }
 
   async preWallet({

@@ -383,7 +383,7 @@ export class FileService {
             throw new NotFoundError(`S3 error: ${JSON.stringify(error)}`);
           });
 
-        await this.wsStatistics.onChange({ files: [data] });
+        await this.wsStatistics.onChangeFiles({ files: [data] });
 
         return data;
       },
@@ -797,7 +797,7 @@ export class FileService {
       return [{ affected: 0, raw: 0 }];
     }
 
-    await this.wsStatistics.onChange({ filesDelete: files });
+    await this.wsStatistics.onChangeFilesDelete({ filesDelete: files });
 
     const filesS3DeletePromise = files.map(async (file) =>
       this.deleteS3Object(file)
