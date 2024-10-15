@@ -24,9 +24,11 @@ export class CrontabService {
   }
 
   /**
-   * @description: Добавляет задачу в планировщик
-   * @description: секунда, минута, час, день месяца, месяц, день недели
+   * @description Добавляет задачу в планировщик
+   * @description секунда, минута, час, день месяца, месяц, день недели
    * @param {string} crontab Cтрока в формате cron, по умолчанию запускается каждый день в 00:00:00
+   * @param {string} cronName Наименование планировщика
+   * @param {Function} cronCommand Ссылка чтобы запускать
    */
   add(
     crontab = '0 0 0 * * *',

@@ -2,6 +2,7 @@ import { EntityManager, FindManyOptions, FindOneOptions } from 'typeorm';
 
 import { MonitorGroupEntity } from '@/database/monitor.group.entity';
 import { PlaylistEntity } from '@/database/playlist.entity';
+import { EditorEntity } from '@/database/editor.entity';
 
 export type Token = string;
 
@@ -22,6 +23,8 @@ export interface MonitorGroupWithPlaylist
     | 'userId'
   > {
   playlist: PlaylistEntity;
+  playlistId: string;
+  groupEditors?: (() => Promise<EditorEntity>)[];
 }
 
 export interface FindManyOptionsExt<T> extends FindManyOptions<T> {

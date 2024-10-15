@@ -360,36 +360,38 @@ export class EditorService {
     playlist,
     heightMonitor,
     widthMonitor,
+    transact,
   }: {
     userId: string;
     groupMonitors: MonitorGroupEntity[];
     playlist: PlaylistEntity;
     heightMonitor: number;
     widthMonitor: number;
+    transact: EntityManager;
   }): Promise<MonitorGroupWithPlaylist[]> {
     const { files } = playlist;
+
     const groupMonitorsPromise = groupMonitors.map(async (groupMonitor) => {
       const { name: monitorName, id: monitorId } = groupMonitor.monitor;
 
       // создаем плэйлист
-      const playlistInsert = await this.entityManager.upsert(
+      const playlistInsert = await transact.upsert(
         PlaylistEntity,
-        this.entityManager.create(PlaylistEntity, {
+        {
           name: `AUTO: monitor=${monitorName}`,
           description: `Scaling monitor "${monitorName}"`,
           userId,
           monitors: [],
           files: [],
           parentPlaylist: playlist,
-          // hide: true,
-        }),
+        },
         { conflictPaths: ['userId', 'name'] },
       );
       const playlistId = playlistInsert.identifiers?.[0].id;
       if (!playlistId) {
         throw new InternalServerError();
       }
-      const _playlist = await this.entityManager.findOne(PlaylistEntity, {
+      const _playlist = await transact.findOne(PlaylistEntity, {
         where: { id: playlistId },
       });
       if (!_playlist) {
@@ -397,15 +399,17 @@ export class EditorService {
       }
 
       // добавляем в плэйлист монитор
-      await this.entityManager.update(MonitorEntity, monitorId, {
+      await transact.update(MonitorEntity, monitorId, {
         playlistId,
       });
 
+      const groupEditors = [];
+
       // создаем редакторы
-      const editorsPromise = files.map(async (file) => {
-        const editorInsert = await this.entityManager.upsert(
+      for (const file of files) {
+        const editorInsert = await transact.upsert(
           EditorEntity,
-          this.entityManager.create(EditorEntity, {
+          {
             name: `AUTO: playlist=${playlist.name}, monitor=${monitorName}, file=${file.name}`,
             userId,
             width: widthMonitor,
@@ -418,19 +422,15 @@ export class EditorService {
             renderingError: null,
             renderedFile: null,
             playlistId,
-          }),
+          },
           { conflictPaths: ['userId', 'name'] },
         );
-        const editorId = editorInsert.identifiers?.[0].id;
-        if (!editorId) {
+        const editor = editorInsert.identifiers[0] as EditorEntity;
+        if (!editor) {
           throw new InternalServerError();
         }
-        const editor = await this.entityManager.findOne(EditorEntity, {
-          where: { id: editorId },
-          loadEagerRelations: false,
-          relations: [],
-        });
-        if (!editor) {
+        const editorId = editor.id;
+        if (!editorId) {
           throw new InternalServerError();
         }
 
@@ -454,16 +454,23 @@ export class EditorService {
 
             fileId: file.id,
           },
+          transact,
         });
 
-        return editor;
-      });
-
-      await Promise.all(editorsPromise);
+        groupEditors.push(() =>
+          this.export({
+            id: editorId,
+            rerender: true,
+            // TODO: customOutputArgs
+          }),
+        );
+      }
 
       return {
         ...groupMonitor,
         playlist: _playlist,
+        playlistId: _playlist.id,
+        groupEditors,
       };
     });
 
@@ -472,8 +479,10 @@ export class EditorService {
 
   async partitionMonitors({
     bid,
+    transact,
   }: {
     bid: BidEntity;
+    transact: EntityManager;
   }): Promise<MonitorGroupWithPlaylist[] | null> {
     if (!bid.monitor || !bid.playlist) {
       throw new InternalServerError();
@@ -483,10 +492,12 @@ export class EditorService {
     if (!groupMonitors) {
       return null;
     }
+
     if (multiple !== MonitorMultiple.SCALING) {
       const monitorMultipleWithPlaylist = groupMonitors.map((item) => ({
         ...item,
         playlist,
+        playlistId: playlist.id,
       }));
 
       return monitorMultipleWithPlaylist;
@@ -523,28 +534,8 @@ export class EditorService {
       groupMonitors,
       widthMonitor,
       heightMonitor,
+      transact,
     });
-
-    setTimeout(async () => {
-      // Запустить рендеринг
-      monitorsGroup.forEach((item) => {
-        this.editorRepository
-          .find({
-            where: { playlistId: item.playlist.id },
-            loadEagerRelations: false,
-            relations: {},
-          })
-          .then((editor) =>
-            editor.forEach((editor) =>
-              this.export({
-                id: editor.id,
-                rerender: true,
-                // TODO: customOutputArgs
-              }),
-            ),
-          );
-      });
-    }, 0);
 
     return monitorsGroup;
   }

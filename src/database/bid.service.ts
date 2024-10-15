@@ -24,6 +24,7 @@ import {
   MonitorMultiple,
   UserRoleEnum,
   MICROSERVICE_MYSCREEN,
+  BidStatus,
 } from '@/enums';
 import {
   BadRequestError,
@@ -167,44 +168,63 @@ export class BidService {
       throw new InternalServerError();
     }
     const { multiple } = bid.monitor;
-    const { id, seqNo, createdAt, updatedAt, ...insert } = bid;
+    const { id, seqNo, createdAt, updatedAt, monitor, playlist, ...insert } =
+      bid;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.wsStatistics.onChange({ bid });
+      await this.wsStatistics.onChangeBid({ bid, transact });
     } else {
       const manager = transact ?? this.entityManager;
-      await manager.transaction('REPEATABLE READ', async (transact) => {
-        const groupMonitors = await this.editorService.partitionMonitors({
-          bid,
-        });
-        if (!Array.isArray(groupMonitors)) {
-          throw new NotAcceptableError('Monitors or Playlists not found');
-        }
-
-        const groupMonitorPromise = groupMonitors.map(async (monitor) => {
-          const createReq = transact.create(BidEntity, {
-            ...insert,
-            hide: true,
-            parentRequestId: id,
-            monitor: monitor.monitor,
-            monitorId: monitor.monitorId,
-            playlistId: monitor.playlist.id,
+      const bidIds = await manager.transaction(
+        'REPEATABLE READ',
+        async (transact) => {
+          const groupMonitors = await this.editorService.partitionMonitors({
+            bid,
+            transact,
           });
-          const { id: subBidID } = await transact.save(BidEntity, createReq);
-          const subBid = await transact.findOne(BidEntity, {
-            where: { id: subBidID },
-            relations: { playlist: { files: true } },
-          });
-          if (!subBid) {
-            throw new InternalServerError();
+          if (!groupMonitors || groupMonitors.length === 0) {
+            throw new NotAcceptableError('Monitors or Playlists not found');
           }
 
-          await this.wsStatistics.onChange({ bid: subBid });
+          const groupMonitorPromise = groupMonitors.map(async (group) => {
+            const { id: subBidID } = await transact.save(BidEntity, {
+              ...insert,
+              hide: false,
+              parentRequestId: id,
+              monitorId: group.monitorId,
+              playlistId: group.playlistId,
+              status: BidStatus.WAITING,
+            });
 
-          return subBid;
+            return { subBidID, groupEditors: group.groupEditors };
+          });
+
+          return Promise.all(groupMonitorPromise);
+        },
+      );
+
+      for (const { subBidID } of bidIds) {
+        const subBid = await manager.findOne(BidEntity, {
+          where: { id: subBidID },
+          relations: { playlist: { files: true } },
         });
+        if (!subBid) {
+          throw new InternalServerError();
+        }
 
-        await Promise.all(groupMonitorPromise);
-      });
+        await this.wsStatistics.onChangeBid({ bid: subBid, transact });
+      }
+
+      setTimeout(async () => {
+        const editorsPromise = bidIds.flatMap(async ({ groupEditors }) =>
+          groupEditors?.flatMap(async (editorPromise) => {
+            const editor = await editorPromise();
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+            return editor;
+          }),
+        );
+
+        await Promise.all(editorsPromise);
+      }, 0);
     }
   }
 
@@ -222,7 +242,7 @@ export class BidService {
     }
     const { multiple } = bid.monitor;
     if (multiple === MonitorMultiple.SINGLE) {
-      await this.wsStatistics.onChange({ bidDelete: bid });
+      await this.wsStatistics.onChangeBidDelete({ bidDelete: bid });
     } else {
       const manager = transact ?? this.entityManager;
       await manager.transaction('REPEATABLE READ', async (transact) => {
@@ -233,7 +253,7 @@ export class BidService {
           relations: { monitor: true, playlist: true },
         });
         const groupAppPromise = groupApplication.map(async (bidLocal) => {
-          await this.wsStatistics.onChange({ bidDelete: bidLocal });
+          await this.wsStatistics.onChangeBidDelete({ bidDelete: bidLocal });
           if (deleteLocal) {
             if (multiple === MonitorMultiple.SCALING) {
               await transact.delete(PlaylistEntity, {
@@ -278,7 +298,11 @@ export class BidService {
             user: true,
           };
         } else {
-          relations = { seller: true };
+          relations = {
+            seller: true,
+            monitor: { groupMonitors: true },
+            playlist: { files: true },
+          };
         }
         const bid = await transact.findOne(BidEntity, {
           where: { id },
@@ -454,7 +478,13 @@ export class BidService {
 
           let relations: FindOptionsRelations<BidEntity>;
           if (!(insert.approved === BidApprove.NOTPROCESSED || !insert.hide)) {
-            relations = { buyer: true, seller: true, user: true };
+            relations = {
+              buyer: true,
+              seller: true,
+              user: true,
+              monitor: { groupMonitors: true },
+              playlist: { files: true },
+            };
           } else {
             relations = {
               buyer: true,
