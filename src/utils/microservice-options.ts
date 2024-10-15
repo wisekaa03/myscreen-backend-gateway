@@ -1,3 +1,8 @@
+import { AsyncModuleConfig } from '@golevelup/nestjs-modules';
+import {
+  RabbitMQConfig,
+  RabbitMQQueueConfig,
+} from '@golevelup/nestjs-rabbitmq';
 import { ConfigService } from '@nestjs/config';
 import { RmqOptions, Transport } from '@nestjs/microservices';
 
@@ -32,5 +37,18 @@ export const ModuleMicroserviceOptions = (
   name,
   useFactory: (configService: ConfigService): RmqOptions =>
     MicroserviceOptions(configService, name, options),
+  inject: [ConfigService],
+});
+
+export const ModuleRabbitOptions = (
+  options: Partial<RabbitMQConfig>,
+): AsyncModuleConfig<RabbitMQConfig> => ({
+  useFactory: (configService: ConfigService): RabbitMQConfig => {
+    const uri = `amqp://${configService.getOrThrow('RABBITMQ_USERNAME')}:${configService.getOrThrow('RABBITMQ_PASSWORD')}@${configService.getOrThrow('RABBITMQ_HOST')}:${configService.getOrThrow('RABBITMQ_PORT')}`;
+    return {
+      ...options,
+      uri,
+    };
+  },
   inject: [ConfigService],
 });

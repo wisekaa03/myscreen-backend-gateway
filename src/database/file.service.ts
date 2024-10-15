@@ -951,7 +951,7 @@ export class FileService {
                   fileId: file.id,
                   preview,
                 },
-                ['id'],
+                ['id', 'fileId'],
               );
               return preview;
             });
