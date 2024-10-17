@@ -13,6 +13,7 @@ import {
 import dayjs from 'dayjs';
 import { ClientProxy } from '@nestjs/microservices';
 
+import { I18nPath } from '@/i18n';
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
@@ -43,7 +44,6 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserExtView } from './user-ext.view';
 import { WalletService } from './wallet.service';
 import { WsStatistics } from './ws.statistics';
-import { I18nPath } from '@/i18n';
 
 @Injectable()
 export class BidService {

@@ -3,6 +3,7 @@ import {
   RabbitMQConfig,
   RabbitMQQueueConfig,
 } from '@golevelup/nestjs-rabbitmq';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RmqOptions, Transport } from '@nestjs/microservices';
 
@@ -48,6 +49,8 @@ export const ModuleRabbitOptions = (
     return {
       ...options,
       uri,
+      logger: new Logger('RabbitMQ'),
+      connectionInitOptions: { wait: false },
     };
   },
   inject: [ConfigService],

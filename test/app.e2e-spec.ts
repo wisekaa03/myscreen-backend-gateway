@@ -57,6 +57,8 @@ import {
   BidUpdateRequest,
   BidGetResponse,
   AuthMonitorRequest,
+  EditorsGetResponse,
+  EditorResponse,
 } from '@/dto';
 import {
   BidApprove,
@@ -312,6 +314,7 @@ let advertiserVideoId: string;
 let advertiserPlaylistId1: string;
 let advertiserEditorId: string;
 let advertiserEditorLayerId: string;
+let advertiserEditorAutoId: EditorResponse[];
 
 let monitorOwnerInvoiceId: string;
 let monitorOwnerInvoiceId2: string;
@@ -3227,6 +3230,52 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
     });
 
     /**
+     * Получение информации о редакторах
+     */
+    test('Advertiser: GET /editor (Получение информации о редакторах)', async () => {
+      if (!advertiserToken) {
+        expect(false).toEqual(true);
+        return;
+      }
+
+      await request
+        .post(`${apiPath}/editor`)
+        .auth(advertiserToken, { type: 'bearer' })
+        .set('Accept', 'application/json')
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .then(({ body }: { body: EditorsGetResponse }) => {
+          expect(body.status).toBe(Status.Success);
+          expect(body.data).toBeInstanceOf(Object);
+          advertiserEditorAutoId = body.data;
+        });
+    });
+
+    /**
+     * Удаление редактора advertiser
+     */
+    test('DELETE /editor/{advertiserEditorAutoId} (Удаление редактора)', async () => {
+      if (
+        !advertiserToken ||
+        !advertiserEditorAutoId ||
+        advertiserEditorAutoId.length === 0
+      ) {
+        expect(false).toEqual(true);
+        return;
+      }
+
+      for (const editor of advertiserEditorAutoId) {
+        const { body }: { body: SuccessResponse } = await request
+          .delete(`${apiPath}/editor/${editor.id}`)
+          .auth(advertiserToken, { type: 'bearer' })
+          .set('Accept', 'application/json')
+          .expect('Content-Type', /json/)
+          .expect(200);
+        expect(body.status).toBe(Status.Success);
+      }
+    });
+
+    /**
      * Удаление файлов advertiser
      */
     test('DELETE /file/{advertiserVideoId} (Удаление файлов)', async () => {
@@ -3240,8 +3289,8 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         .auth(advertiserToken, { type: 'bearer' })
         .set('Accept', 'application/json')
         .expect('Content-Type', /json/)
-        .expect(409);
-      expect(body.status).toBe(Status.Error);
+        .expect(200);
+      expect(body.status).toBe(Status.Success);
     });
 
     /**
