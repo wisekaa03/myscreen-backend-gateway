@@ -7,11 +7,15 @@ import { S3Module } from 'nestjs-s3-aws';
 import { LoggerErrorInterceptor, LoggerModule } from 'nestjs-pino';
 import { I18nModule } from 'nestjs-i18n';
 import { ClientsModule } from '@nestjs/microservices';
+import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 
 import { MICROSERVICE_MYSCREEN } from './enums';
 import { LoggerModuleOptions } from './utils/logger-module-options';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
-import { ModuleMicroserviceOptions } from './utils/microservice-options';
+import {
+  ModuleMicroserviceOptions,
+  ModuleRabbitOptions,
+} from './utils/microservice-options';
 import { UserLanguageResolver } from './i18n/userLanguageResolver';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
@@ -33,6 +37,26 @@ import { RmqController } from './rmq.controller';
       useFactory: LoggerModuleOptions,
       inject: [ConfigService],
     }),
+
+    RabbitMQModule.forRootAsync(
+      RabbitMQModule,
+      ModuleRabbitOptions({
+        queues: [
+          {
+            name: MICROSERVICE_MYSCREEN.MAIL,
+            options: { durable: false, autoDelete: true },
+          },
+          {
+            name: MICROSERVICE_MYSCREEN.FORM,
+            options: { durable: false, autoDelete: true },
+          },
+          {
+            name: MICROSERVICE_MYSCREEN.EDITOR,
+            options: { durable: false, autoDelete: true },
+          },
+        ],
+      }),
+    ),
 
     ClientsModule.registerAsync({
       isGlobal: true,

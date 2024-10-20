@@ -16,7 +16,7 @@ import { i18nValidationMessage } from 'nestjs-i18n';
 import { FileEntity } from './file.entity';
 
 @Entity('file_preview')
-@Unique('preview_uniq_file', ['file'])
+@Unique('preview_uniq_file', ['fileId'])
 export class FilePreviewEntity {
   @PrimaryGeneratedColumn('uuid', {
     primaryKeyConstraintName: 'PK_file_preview_id',
