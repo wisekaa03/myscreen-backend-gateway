@@ -224,7 +224,7 @@ export class BidService {
         );
 
         await Promise.all(editorsPromise);
-      }, 0);
+      }, 3000);
     }
   }
 
