@@ -458,7 +458,7 @@ export class EditorService {
         });
 
         groupEditors.push(() =>
-          this.export({
+          this.editorExport({
             id: editorId,
             rerender: true,
             // TODO: customOutputArgs
@@ -548,7 +548,7 @@ export class EditorService {
    * @param {boolean} rerender Re-render
    * @returns {EditorEntity} Result
    */
-  async export({
+  async editorExport({
     id,
     rerender = false,
     customOutputArgs = [

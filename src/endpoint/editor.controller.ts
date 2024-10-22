@@ -542,7 +542,7 @@ export class EditorController {
     @Param('editorId', ParseUUIDPipe) id: string,
     @Body() body?: EditorExportRequest,
   ): Promise<EditorGetRenderingStatusResponse> {
-    const data = await this.editorService.export({
+    const data = await this.editorService.editorExport({
       id,
       rerender: body?.rerender,
     });
