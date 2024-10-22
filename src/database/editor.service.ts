@@ -358,18 +358,39 @@ export class EditorService {
     userId,
     groupMonitors,
     playlist,
-    heightMonitor,
-    widthMonitor,
     transact,
   }: {
     userId: string;
     groupMonitors: MonitorGroupEntity[];
     playlist: PlaylistEntity;
-    heightMonitor: number;
-    widthMonitor: number;
     transact: EntityManager;
   }): Promise<MonitorGroupWithPlaylist[]> {
     const { files } = playlist;
+
+    const minRow = Math.min(...groupMonitors.map((m) => m.row));
+    const minCol = Math.min(...groupMonitors.map((m) => m.col));
+    const widthSum = groupMonitors
+      .filter((m) => m.row === minRow)
+      .reduce(
+        (acc, { monitor: itemMonitor }) =>
+          itemMonitor.orientation === MonitorOrientation.Horizontal
+            ? acc + itemMonitor.width
+            : acc + itemMonitor.height,
+        0,
+      );
+    const heightSum = groupMonitors
+      .filter((m) => m.col === minCol)
+      .reduce(
+        (acc, { monitor: itemMonitor }) =>
+          itemMonitor.orientation === MonitorOrientation.Horizontal
+            ? acc + itemMonitor.height
+            : acc + itemMonitor.width,
+        0,
+      );
+
+    // делим ее на количество мониторов
+    const widthMonitor = widthSum / groupMonitors.length;
+    const heightMonitor = heightSum / groupMonitors.length;
 
     const groupMonitorsPromise = groupMonitors.map(async (groupMonitor) => {
       const { name: monitorName, id: monitorId } = groupMonitor.monitor;
@@ -403,6 +424,8 @@ export class EditorService {
         playlistId,
       });
 
+      const { row, col } = groupMonitor;
+
       const groupEditors = [];
 
       // создаем редакторы
@@ -414,7 +437,7 @@ export class EditorService {
             userId,
             width: widthMonitor,
             height: heightMonitor,
-            fps: 30,
+            fps: 25,
             keepSourceAudio: true,
             totalDuration: 0,
             renderingStatus: RenderingStatus.Initial,
@@ -443,12 +466,6 @@ export class EditorService {
             cutTo: file.duration,
             video: [editor],
 
-            // TODO: Сделать разбиение по мониторам
-            cropX: 0,
-            cropY: 0,
-            cropW: 10,
-            cropH: 10,
-
             duration: file.duration,
             mixVolume: 1,
 
@@ -457,11 +474,35 @@ export class EditorService {
           transact,
         });
 
+        const { width, height } = file;
+        const cropX = width / col;
+        const cropY = height / row;
+        const cropW = width / col;
+        const cropH = height / row;
+        const customOutputArgs = [
+          '-c:v',
+          'libx264', // Video Codec: libx264, an H.264 encoder
+          '-preset',
+          'slow', // Slow x264 encoding preset. Default preset is medium. Use the slowest preset that you have patience for.
+          '-crf',
+          '20', // CRF value of 20 which will result in a high quality output. Default value is 23. A lower value is a higher quality. Use the highest value that gives an acceptable quality.
+          '-c:a',
+          'aac', // Audio Codec: AAC
+          '-b:a',
+          '160k', // Encodes the audio with a bitrate of 160k.
+          '-vf',
+          'format=yuv420p', // Chooses YUV 4:2:0 chroma-subsampling which is recommended for H.264 compatibility
+          '-movflags',
+          '+faststart', // Is an option for MP4 output that move some data to the beginning of the file after encoding is finished. This allows the video to begin playing faster if it is watched via progressive download playback.
+          '-filter:v',
+          `crop=${cropW}:${cropH}:${cropX}:${cropY}`,
+        ];
+
         groupEditors.push(() =>
           this.editorExport({
             id: editorId,
             rerender: true,
-            // TODO: customOutputArgs
+            customOutputArgs,
           }),
         );
       }
@@ -503,37 +544,10 @@ export class EditorService {
       return monitorMultipleWithPlaylist;
     }
 
-    const minRow = Math.min(...groupMonitors.map((m) => m.row));
-    const minCol = Math.min(...groupMonitors.map((m) => m.col));
-    const widthSum = groupMonitors
-      .filter((m) => m.row === minRow)
-      .reduce(
-        (acc, { monitor: itemMonitor }) =>
-          itemMonitor.orientation === MonitorOrientation.Horizontal
-            ? acc + itemMonitor.width
-            : acc + itemMonitor.height,
-        0,
-      );
-    const heightSum = groupMonitors
-      .filter((m) => m.col === minCol)
-      .reduce(
-        (acc, { monitor: itemMonitor }) =>
-          itemMonitor.orientation === MonitorOrientation.Horizontal
-            ? acc + itemMonitor.height
-            : acc + itemMonitor.width,
-        0,
-      );
-
-    // делим ее на количество мониторов
-    const widthMonitor = widthSum / groupMonitors.length;
-    const heightMonitor = heightSum / groupMonitors.length;
-
     const monitorsGroup = await this.groupMonitorsPlaylist({
       userId,
       playlist,
       groupMonitors,
-      widthMonitor,
-      heightMonitor,
       transact,
     });
 
