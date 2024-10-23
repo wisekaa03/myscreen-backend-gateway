@@ -475,8 +475,8 @@ export class EditorService {
         });
 
         const { width, height } = file;
-        const cropX = width / col;
-        const cropY = height / row;
+        const cropX = col - 1 === 0 ? 0 : width / (col - 1);
+        const cropY = row - 1 === 0 ? 0 : height / (row - 1);
         const cropW = width / col;
         const cropH = height / row;
         const customOutputArgs = [
