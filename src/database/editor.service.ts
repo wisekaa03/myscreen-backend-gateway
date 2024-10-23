@@ -475,10 +475,10 @@ export class EditorService {
         });
 
         const { width, height } = file;
-        const cropX = col - 1 === 0 ? 0 : width / (col - 1);
-        const cropY = row - 1 === 0 ? 0 : height / (row - 1);
-        const cropW = width / col;
-        const cropH = height / row;
+        const cropW = Math.floor(width / col);
+        const cropH = Math.floor(height / row);
+        const cropX = col * cropW;
+        const cropY = row * cropH;
         const customOutputArgs = [
           '-c:v',
           'libx264', // Video Codec: libx264, an H.264 encoder
