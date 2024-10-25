@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import {
   Repository,
   DeleteResult,
@@ -47,6 +47,7 @@ export class FolderService {
     private readonly fileRepository: Repository<FileEntity>,
     @InjectRepository(FolderExtView)
     private readonly folderExtRepository: Repository<FolderExtView>,
+    @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {}
 

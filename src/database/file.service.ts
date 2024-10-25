@@ -12,7 +12,7 @@ import { rimraf } from 'rimraf';
 import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import {
   CopyObjectOutput,
   DeleteObjectOutput,
@@ -106,6 +106,7 @@ export class FileService {
     private readonly filePreviewRepository: Repository<FilePreviewEntity>,
     @InjectRepository(FileExtView)
     private readonly fileExtRepository: Repository<FileExtView>,
+    @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {
     this.frontEndUrl = this.configService.get(

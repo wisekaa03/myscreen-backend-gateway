@@ -24,4 +24,5 @@ export enum MsvcEditor {
 export enum MsvcGateway {
   Update = 'update',
   FileUpload = 'file_upload',
+  EditorExportFinished = 'editor_export_finished',
 }
