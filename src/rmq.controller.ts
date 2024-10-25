@@ -51,30 +51,8 @@ export class RmqController {
   }
 
   @MessagePattern(MsvcGateway.EditorExportFinished)
-  async editorExportFinished({ editorId }: MsvcGatewayEditorExport) {
-    const editor = await this.entityManager.findOne(EditorEntity, {
-      where: { id: editorId },
-      loadEagerRelations: false,
-      select: ['id'],
-    });
-    if (!editor) {
-      this.logger.error(`No editor "${editorId}" found`);
-      return;
-    }
-
-    const playlists = await this.entityManager.find(PlaylistEntity, {
-      where: { editors: { id: editor.id } },
-      loadEagerRelations: false,
-      select: ['id'],
-    });
-    if (playlists) {
-      for (const { id } of playlists) {
-        await this.wsStatistics.onChangePlaylist({ playlistId: id });
-      }
-    } else {
-      this.logger.error(`No playlists of editor "${editorId}" found`);
-      return;
-    }
+  async editorExportFinished({ playlistId }: MsvcGatewayEditorExport) {
+    await this.wsStatistics.onChangePlaylist({ playlistId });
   }
 
   @MessagePattern(MsvcGateway.FileUpload)

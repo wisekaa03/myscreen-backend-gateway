@@ -1,3 +1,3 @@
 export interface MsvcGatewayEditorExport {
-  editorId: string;
+  playlistId: string;
 }
