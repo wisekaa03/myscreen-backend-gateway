@@ -55,6 +55,7 @@ export class RmqController {
     const editor = await this.entityManager.findOne(EditorEntity, {
       where: { id: editorId },
       loadEagerRelations: false,
+      select: ['id'],
     });
     if (!editor) {
       this.logger.error(`No editor "${editorId}" found`);
@@ -64,6 +65,7 @@ export class RmqController {
     const playlists = await this.entityManager.find(PlaylistEntity, {
       where: { editors: { id: editor.id } },
       loadEagerRelations: false,
+      select: ['id'],
     });
     if (playlists) {
       for (const { id } of playlists) {
