@@ -369,6 +369,8 @@ export class EditorService {
 
     const minRow = Math.min(...groupMonitors.map((m) => m.row));
     const minCol = Math.min(...groupMonitors.map((m) => m.col));
+    const maxRow = Math.max(...groupMonitors.map((m) => m.row));
+    const maxCol = Math.max(...groupMonitors.map((m) => m.col));
     const widthSum = groupMonitors
       .filter((m) => m.row === minRow)
       .reduce(
@@ -389,8 +391,8 @@ export class EditorService {
       );
 
     // делим ее на количество мониторов
-    const widthMonitor = widthSum / groupMonitors.length;
-    const heightMonitor = heightSum / groupMonitors.length;
+    const widthMonitor = widthSum / maxRow;
+    const heightMonitor = heightSum / maxCol;
 
     const groupMonitorsPromise = groupMonitors.map(async (groupMonitor) => {
       const { name: monitorName, id: monitorId } = groupMonitor.monitor;
@@ -431,10 +433,12 @@ export class EditorService {
       // создаем редакторы
       for (const file of files) {
         const { width, height } = file;
-        const cropW = Math.floor(width / col);
-        const cropH = Math.floor(height / row);
-        const cropX = col * cropW;
-        const cropY = row * cropH;
+        const cropW = Math.floor((width / maxCol) * (widthSum / widthMonitor));
+        const cropH = Math.floor(
+          (height / maxRow) * (heightSum / heightMonitor),
+        );
+        const cropX = (col - 1) * cropW;
+        const cropY = (row - 1) * cropH;
 
         const editorInsert = await transact.upsert(
           EditorEntity,
@@ -551,22 +555,7 @@ export class EditorService {
   async editorExport({
     id,
     rerender = false,
-    customOutputArgs = [
-      '-c:v',
-      'libx264', // Video Codec: libx264, an H.264 encoder
-      '-preset',
-      'slow', // Slow x264 encoding preset. Default preset is medium. Use the slowest preset that you have patience for.
-      '-crf',
-      '20', // CRF value of 20 which will result in a high quality output. Default value is 23. A lower value is a higher quality. Use the highest value that gives an acceptable quality.
-      '-c:a',
-      'aac', // Audio Codec: AAC
-      '-b:a',
-      '160k', // Encodes the audio with a bitrate of 160k.
-      '-vf',
-      'format=yuv420p', // Chooses YUV 4:2:0 chroma-subsampling which is recommended for H.264 compatibility
-      '-movflags',
-      '+faststart', // Is an option for MP4 output that move some data to the beginning of the file after encoding is finished. This allows the video to begin playing faster if it is watched via progressive download playback.
-    ],
+    customOutputArgs,
   }: {
     id: string;
     rerender?: boolean;
