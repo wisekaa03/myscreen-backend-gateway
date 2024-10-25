@@ -369,6 +369,8 @@ export class EditorService {
 
     const minRow = Math.min(...groupMonitors.map((m) => m.row));
     const minCol = Math.min(...groupMonitors.map((m) => m.col));
+    const maxRow = Math.max(...groupMonitors.map((m) => m.row));
+    const maxCol = Math.max(...groupMonitors.map((m) => m.col));
     const widthSum = groupMonitors
       .filter((m) => m.row === minRow)
       .reduce(
@@ -389,8 +391,8 @@ export class EditorService {
       );
 
     // делим ее на количество мониторов
-    const widthMonitor = widthSum / groupMonitors.length;
-    const heightMonitor = heightSum / groupMonitors.length;
+    const widthMonitor = widthSum / maxRow;
+    const heightMonitor = heightSum / maxCol;
 
     const groupMonitorsPromise = groupMonitors.map(async (groupMonitor) => {
       const { name: monitorName, id: monitorId } = groupMonitor.monitor;
@@ -431,8 +433,8 @@ export class EditorService {
       // создаем редакторы
       for (const file of files) {
         const { width, height } = file;
-        const cropW = Math.floor(width / col);
-        const cropH = Math.floor(height / row);
+        const cropW = Math.floor(width / maxCol);
+        const cropH = Math.floor(height / maxRow);
         const cropX = (col - 1) * cropW;
         const cropY = (row - 1) * cropH;
 
