@@ -433,8 +433,10 @@ export class EditorService {
       // создаем редакторы
       for (const file of files) {
         const { width, height } = file;
-        const cropW = Math.floor(width / maxCol);
-        const cropH = Math.floor(height / maxRow);
+        const cropW = Math.floor((width / maxCol) * (widthSum / widthMonitor));
+        const cropH = Math.floor(
+          (height / maxRow) * (heightSum / heightMonitor),
+        );
         const cropX = (col - 1) * cropW;
         const cropY = (row - 1) * cropH;
 
