@@ -433,8 +433,8 @@ export class EditorService {
         const { width, height } = file;
         const cropW = Math.floor(width / col);
         const cropH = Math.floor(height / row);
-        const cropX = col * cropW;
-        const cropY = row * cropH;
+        const cropX = (col - 1) * cropW;
+        const cropY = (row - 1) * cropH;
 
         const editorInsert = await transact.upsert(
           EditorEntity,
