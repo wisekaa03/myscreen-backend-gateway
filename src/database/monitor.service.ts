@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import {
   DeleteResult,
   EntityManager,
@@ -46,6 +46,7 @@ export class MonitorService {
     public readonly monitorFavoriteRepository: Repository<MonitorFavoriteEntity>,
     @InjectRepository(MonitorStatisticsEntity)
     public readonly monitorStatisticsRepository: Repository<MonitorStatisticsEntity>,
+    @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {}
 

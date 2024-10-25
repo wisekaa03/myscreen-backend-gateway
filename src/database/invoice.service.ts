@@ -2,7 +2,7 @@ import { Readable } from 'node:stream';
 import { buffer } from 'node:stream/consumers';
 import type { Response as ExpressResponse } from 'express';
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
@@ -66,6 +66,7 @@ export class InvoiceService {
     private readonly invoiceRepository: Repository<InvoiceEntity>,
     @InjectRepository(UserExtView)
     private readonly userExtRepository: Repository<UserExtView>,
+    @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {
     this.minInvoiceSum = parseInt(

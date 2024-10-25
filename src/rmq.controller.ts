@@ -6,10 +6,17 @@ import { ConfigService } from '@nestjs/config';
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 
-import { MsvcGatewayUpdate, MsvcGatewayFileUpload } from './interfaces';
+import {
+  MsvcGatewayUpdate,
+  MsvcGatewayFileUpload,
+  MsvcGatewayEditorExport,
+} from './interfaces';
 import { MsvcGateway } from './enums';
 import { FileService } from './database/file.service';
 import { UserService } from './database/user.service';
+import { WsStatistics } from './database/ws.statistics';
+import { BidEntity } from './database/bid.entity';
+import { InjectEntityManager } from '@nestjs/typeorm';
 
 @Controller()
 export class RmqController {
@@ -21,6 +28,8 @@ export class RmqController {
     private readonly configService: ConfigService,
     private readonly fileService: FileService,
     private readonly userService: UserService,
+    private readonly wsStatistics: WsStatistics,
+    @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {
     this.downloadDir = this.configService.getOrThrow('FILES_UPLOAD');
@@ -37,6 +46,20 @@ export class RmqController {
       return entityManager.update(criteria, column);
     } catch (error: any) {
       this.logger.error(error);
+    }
+  }
+
+  @MessagePattern(MsvcGateway.EditorExportFinished)
+  async editorExportFinished({ editorId }: MsvcGatewayEditorExport) {
+    const bid = await this.entityManager.findOne(BidEntity, {
+      where: { id: editorId },
+      relations: { playlist: { files: true } },
+    });
+
+    if (bid) {
+      await this.wsStatistics.onChangeBid({ bid });
+    } else {
+      this.logger.error(`No bid "${editorId}" found`);
     }
   }
 

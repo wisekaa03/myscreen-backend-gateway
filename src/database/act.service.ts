@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 
 import { ActStatus } from '@/enums';
@@ -21,6 +21,7 @@ export class ActService {
     private readonly wsStatistics: WsStatistics,
     @InjectRepository(ActEntity)
     private readonly actRepository: Repository<ActEntity>,
+    @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {}
 

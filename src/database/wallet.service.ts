@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import {
   EntityManager,
@@ -51,6 +51,7 @@ export class WalletService {
     private readonly mailMsvc: ClientProxy,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
+    @InjectEntityManager()
     private readonly entityManager: EntityManager,
   ) {
     this.subscriptionFee = parseInt(
