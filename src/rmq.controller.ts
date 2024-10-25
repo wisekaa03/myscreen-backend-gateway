@@ -15,8 +15,9 @@ import { MsvcGateway } from './enums';
 import { FileService } from './database/file.service';
 import { UserService } from './database/user.service';
 import { WsStatistics } from './database/ws.statistics';
-import { BidEntity } from './database/bid.entity';
 import { InjectEntityManager } from '@nestjs/typeorm';
+import { PlaylistEntity } from './database/playlist.entity';
+import { EditorEntity } from './database/editor.entity';
 
 @Controller()
 export class RmqController {
@@ -51,15 +52,26 @@ export class RmqController {
 
   @MessagePattern(MsvcGateway.EditorExportFinished)
   async editorExportFinished({ editorId }: MsvcGatewayEditorExport) {
-    const bid = await this.entityManager.findOne(BidEntity, {
+    const editor = await this.entityManager.findOne(EditorEntity, {
       where: { id: editorId },
-      relations: { playlist: { files: true } },
+      loadEagerRelations: false,
     });
+    if (!editor) {
+      this.logger.error(`No editor "${editorId}" found`);
+      return;
+    }
 
-    if (bid) {
-      await this.wsStatistics.onChangeBid({ bid });
+    const playlists = await this.entityManager.find(PlaylistEntity, {
+      where: { editors: { id: editor.id } },
+      loadEagerRelations: false,
+    });
+    if (playlists) {
+      for (const { id } of playlists) {
+        await this.wsStatistics.onChangePlaylist({ playlistId: id });
+      }
     } else {
-      this.logger.error(`No bid "${editorId}" found`);
+      this.logger.error(`No playlists of editor "${editorId}" found`);
+      return;
     }
   }
 
