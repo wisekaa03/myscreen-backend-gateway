@@ -430,6 +430,12 @@ export class EditorService {
 
       // создаем редакторы
       for (const file of files) {
+        const { width, height } = file;
+        const cropW = Math.floor(width / col);
+        const cropH = Math.floor(height / row);
+        const cropX = col * cropW;
+        const cropY = row * cropH;
+
         const editorInsert = await transact.upsert(
           EditorEntity,
           {
@@ -445,6 +451,11 @@ export class EditorService {
             renderingError: null,
             renderedFile: null,
             playlistId,
+
+            cropW,
+            cropH,
+            cropX,
+            cropY,
           },
           { conflictPaths: ['userId', 'name'] },
         );
@@ -474,35 +485,10 @@ export class EditorService {
           transact,
         });
 
-        const { width, height } = file;
-        const cropW = Math.floor(width / col);
-        const cropH = Math.floor(height / row);
-        const cropX = col * cropW;
-        const cropY = row * cropH;
-        const customOutputArgs = [
-          '-c:v',
-          'libx264', // Video Codec: libx264, an H.264 encoder
-          '-preset',
-          'slow', // Slow x264 encoding preset. Default preset is medium. Use the slowest preset that you have patience for.
-          '-crf',
-          '20', // CRF value of 20 which will result in a high quality output. Default value is 23. A lower value is a higher quality. Use the highest value that gives an acceptable quality.
-          '-c:a',
-          'aac', // Audio Codec: AAC
-          '-b:a',
-          '160k', // Encodes the audio with a bitrate of 160k.
-          '-vf',
-          'format=yuv420p', // Chooses YUV 4:2:0 chroma-subsampling which is recommended for H.264 compatibility
-          '-movflags',
-          '+faststart', // Is an option for MP4 output that move some data to the beginning of the file after encoding is finished. This allows the video to begin playing faster if it is watched via progressive download playback.
-          '-filter:v',
-          `crop=${cropW}:${cropH}:${cropX}:${cropY}`,
-        ];
-
         groupEditors.push(() =>
           this.editorExport({
             id: editorId,
             rerender: true,
-            customOutputArgs,
           }),
         );
       }

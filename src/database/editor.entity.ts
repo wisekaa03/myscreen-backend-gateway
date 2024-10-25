@@ -5,12 +5,15 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  isNumber,
   IsNumber,
+  isNumberString,
   IsOptional,
   IsPositive,
   IsString,
   IsUUID,
   Min,
+  ValidateIf,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import {
@@ -189,6 +192,66 @@ export class EditorEntity {
     { message: i18nValidationMessage('validation.IS_NUMBER') },
   )
   totalDuration!: number;
+
+  @Column({ type: 'numeric', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Обрезать слева',
+    type: 'number',
+    required: false,
+  })
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  cropX!: number | null;
+
+  @Column({ type: 'numeric', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Обрезать сверху',
+    type: 'number',
+    required: false,
+  })
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  cropY!: number | null;
+
+  @Column({ type: 'numeric', nullable: true, default: null })
+  @ApiProperty({
+    description: 'Ширина обрезки',
+    type: 'number',
+    required: false,
+  })
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  cropW!: number | null;
+
+  @Column({ type: 'numeric', nullable: true, default: null })
+  @ApiProperty({
+    type: 'number',
+    description: 'Высота обрезки',
+    required: false,
+  })
+  @ValidateIf(
+    (object, value) =>
+      typeof value === 'string'
+        ? isNumberString(value)
+        : isNumber(value, { allowInfinity: false, allowNaN: false }),
+    { message: i18nValidationMessage('validation.IS_NUMBER') },
+  )
+  cropH!: number | null;
 
   @ManyToMany(() => EditorLayerEntity, (layer) => layer.video, {
     cascade: true,
