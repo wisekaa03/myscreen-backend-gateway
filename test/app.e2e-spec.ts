@@ -2544,10 +2544,6 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data).toBeInstanceOf(Object);
         expect(body.data.id).toBeTruthy();
         expect(body.data.fileId).toBe(advertiserVideoId);
-        expect(body.data.cropH).toBeNull();
-        expect(body.data.cropW).toBeNull();
-        expect(body.data.cropX).toBeNull();
-        expect(body.data.cropY).toBeNull();
         expect(body.data.cutFrom).toBeTruthy();
         expect(body.data.cutTo).toBeTruthy();
         expect(body.data.duration).toBeTruthy();
@@ -2590,10 +2586,6 @@ describe('Пользовательский путь: MonitorOwner, Advertiser, A
         expect(body.data).toBeInstanceOf(Object);
         expect(body.data.id).toBeTruthy();
         expect(body.data.fileId).toBe(advertiserVideoId);
-        expect(body.data.cropH).toBeNull();
-        expect(body.data.cropW).toBeNull();
-        expect(body.data.cropX).toBeNull();
-        expect(body.data.cropY).toBeNull();
         expect(body.data.cutFrom).toBeTruthy();
         expect(body.data.cutTo).toBeTruthy();
         expect(body.data.duration).toBeTruthy();

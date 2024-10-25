@@ -24,10 +24,6 @@ export class EditorLayerSubscriber
     entity.duration = entity.duration && Number(entity.duration);
     entity.cutFrom = entity.cutFrom && Number(entity.cutFrom);
     entity.cutTo = entity.cutTo && Number(entity.cutTo);
-    entity.cropH = entity.cropH && Number(entity.cropH);
-    entity.cropW = entity.cropW && Number(entity.cropW);
-    entity.cropX = entity.cropX && Number(entity.cropX);
-    entity.cropY = entity.cropY && Number(entity.cropY);
     entity.start = entity.start && Number(entity.start);
     entity.index = entity.index && Number(entity.index);
   }

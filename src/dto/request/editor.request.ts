@@ -6,7 +6,15 @@ import { MSRange } from '@/interfaces';
 import { EditorEntity } from '@/database/editor.entity';
 
 export class EditorRequest extends PartialType(
-  PickType(EditorEntity, ['id', 'name', 'renderingStatus']),
+  PickType(EditorEntity, [
+    'id',
+    'name',
+    'renderingStatus',
+    'cropW',
+    'cropH',
+    'cropX',
+    'cropY',
+  ]),
 ) {
   @ApiProperty({
     description: 'Время создания',
