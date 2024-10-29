@@ -1,10 +1,7 @@
 import { AsyncModuleConfig } from '@golevelup/nestjs-modules';
-import {
-  RabbitMQConfig,
-  RabbitMQQueueConfig,
-} from '@golevelup/nestjs-rabbitmq';
+import { RabbitMQConfig } from '@golevelup/nestjs-rabbitmq';
 import { Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { RmqOptions, Transport } from '@nestjs/microservices';
 
 export const MicroserviceOptions = (
@@ -53,5 +50,6 @@ export const ModuleRabbitOptions = (
       connectionInitOptions: { wait: false },
     };
   },
+  imports: [ConfigModule],
   inject: [ConfigService],
 });

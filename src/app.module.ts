@@ -5,24 +5,20 @@ import 'dotenv';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from 'nestjs-s3-aws';
 import { LoggerErrorInterceptor, LoggerModule } from 'nestjs-pino';
-import { I18nModule } from 'nestjs-i18n';
+import { I18nModule, I18nOptionsWithoutResolvers } from 'nestjs-i18n';
 import { ClientsModule } from '@nestjs/microservices';
-import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 
 import { MICROSERVICE_MYSCREEN } from './enums';
 import { LoggerModuleOptions } from './utils/logger-module-options';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
-import {
-  ModuleMicroserviceOptions,
-  ModuleRabbitOptions,
-} from './utils/microservice-options';
+import { ModuleMicroserviceOptions } from './utils/microservice-options';
 import { UserLanguageResolver } from './i18n/userLanguageResolver';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
 import { CrontabModule } from './crontab/crontab.module';
-import { RmqController } from './rmq.controller';
+import { RabbitModule } from './rabbit/rabbit.module';
 
 @Module({
   imports: [
@@ -38,25 +34,7 @@ import { RmqController } from './rmq.controller';
       inject: [ConfigService],
     }),
 
-    RabbitMQModule.forRootAsync(
-      RabbitMQModule,
-      ModuleRabbitOptions({
-        queues: [
-          {
-            name: MICROSERVICE_MYSCREEN.MAIL,
-            options: { durable: false, autoDelete: true },
-          },
-          {
-            name: MICROSERVICE_MYSCREEN.FORM,
-            options: { durable: false, autoDelete: true },
-          },
-          {
-            name: MICROSERVICE_MYSCREEN.EDITOR,
-            options: { durable: false, autoDelete: true },
-          },
-        ],
-      }),
-    ),
+    RabbitModule,
 
     ClientsModule.registerAsync({
       isGlobal: true,
@@ -79,7 +57,9 @@ import { RmqController } from './rmq.controller';
     CrontabModule,
 
     I18nModule.forRootAsync({
-      useFactory: (configService: ConfigService) => ({
+      useFactory: (
+        configService: ConfigService,
+      ): I18nOptionsWithoutResolvers => ({
         fallbackLanguage: configService.getOrThrow('LANGUAGE_DEFAULT'),
         loaderOptions: {
           path: nodePath.join(
@@ -101,8 +81,6 @@ import { RmqController } from './rmq.controller';
       imports: [DatabaseModule, AuthModule, ConfigModule],
     }),
   ],
-
-  controllers: [RmqController],
 
   providers: [
     Logger,

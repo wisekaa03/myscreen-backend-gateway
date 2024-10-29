@@ -19,3 +19,4 @@ export * from './wallet-transaction-type.enum';
 export * from './ws-event.enum';
 export * from './microservice.enum';
 export * from './microservice-myscreen';
+export * from './msvc-exchange.enum';

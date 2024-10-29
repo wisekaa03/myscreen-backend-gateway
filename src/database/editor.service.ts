@@ -18,6 +18,7 @@ import {
   RenderingStatus,
   MICROSERVICE_MYSCREEN,
   MsvcEditor,
+  MSVC_EXCHANGE,
 } from '@/enums';
 import {
   FindManyOptionsExt,
@@ -34,6 +35,7 @@ import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 dayjs.extend(dayjsDuration);
 
@@ -53,6 +55,7 @@ export class EditorService {
     private readonly entityManager: EntityManager,
     @Inject(MICROSERVICE_MYSCREEN.EDITOR)
     private readonly editorMsvc: ClientProxy,
+    private readonly amqpConnection: AmqpConnection,
   ) {}
 
   async find({
@@ -641,7 +644,8 @@ export class EditorService {
     } as EditorEntity;
 
     const { id: folderId } = await this.folderService.exportFolder(userId);
-    this.editorMsvc.emit<Buffer, MsvcEditorExport>(MsvcEditor.Export, {
+
+    await this.amqpConnection.publish(MSVC_EXCHANGE.EDITOR, MsvcEditor.Export, {
       folderId,
       editor,
       customOutputArgs,

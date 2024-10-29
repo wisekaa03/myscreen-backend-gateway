@@ -2,6 +2,7 @@ import { Module, Logger, OnModuleInit, Global } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EntityManager, MoreThan } from 'typeorm';
 import { InjectEntityManager, TypeOrmModule } from '@nestjs/typeorm';
+import { RabbitMQModule } from '@golevelup/nestjs-rabbitmq';
 
 import { MonitorStatus } from '@/enums/monitor-status.enum';
 import { TypeOrmOptionsClass } from '@/utils/typeorm.options';
@@ -45,10 +46,13 @@ import { FolderExtSubscriber } from './folder-ext.subsciber';
 import { MonitorSubscriber } from './monitor.subsciber';
 import { UserExtSubscriber } from './user-ext.subsciber';
 import { BidSubscriber } from './bid.subscriber';
+import { RabbitModule } from '@/rabbit/rabbit.module';
 
 @Global()
 @Module({
   imports: [
+    RabbitModule,
+
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmOptionsClass,
       inject: [ConfigService],

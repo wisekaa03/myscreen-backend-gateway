@@ -10,14 +10,14 @@ import {
   MsvcGatewayUpdate,
   MsvcGatewayFileUpload,
   MsvcGatewayEditorExport,
-} from './interfaces';
-import { MsvcGateway } from './enums';
-import { FileService } from './database/file.service';
-import { UserService } from './database/user.service';
-import { WsStatistics } from './database/ws.statistics';
+} from '../interfaces';
+import { MsvcGateway } from '../enums';
+import { FileService } from '../database/file.service';
+import { UserService } from '../database/user.service';
+import { WsStatistics } from '../database/ws.statistics';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { PlaylistEntity } from './database/playlist.entity';
-import { EditorEntity } from './database/editor.entity';
+import { PlaylistEntity } from '../database/playlist.entity';
+import { EditorEntity } from '../database/editor.entity';
 
 @Controller()
 export class RmqController {
