@@ -65,7 +65,7 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
       const errorsMessage =
         errorsArray && errorsArray.flat(Infinity).join(', ');
       let messageLang = message;
-      if (i18n) {
+      if (i18n instanceof I18nContext) {
         messageLang = i18n.t(message, {
           lang: i18n.lang,
           defaultValue: message,
