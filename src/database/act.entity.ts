@@ -11,16 +11,16 @@ import {
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsDateString,
-  IsEnum,
   IsDefined,
+  IsEnum,
+  IsInt,
   IsNotEmpty,
+  IsNumberString,
   IsString,
   IsUUID,
   Min,
-  IsBoolean,
-  IsInt,
-  IsNumberString,
 } from 'class-validator';
 import { i18nValidationMessage } from 'nestjs-i18n';
 
@@ -81,9 +81,9 @@ export class ActEntity {
     comment: 'Подтверждение/отклонение акта выполненных работ',
   })
   @ApiProperty({
-    type: 'enum',
     enum: ActStatus,
     enumName: 'ActStatus',
+    enumSchema: { default: ActStatus.COMPLETE },
     description: 'Подтверждение/отклонение акта выполненных работ',
     example: ActStatus.COMPLETE,
   })

@@ -6,19 +6,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { S3Module } from 'nestjs-s3-aws';
 import { LoggerErrorInterceptor, LoggerModule } from 'nestjs-pino';
 import { I18nModule, I18nOptionsWithoutResolvers } from 'nestjs-i18n';
-import { ClientsModule } from '@nestjs/microservices';
 
-import { MICROSERVICE_MYSCREEN } from './enums';
 import { LoggerModuleOptions } from './utils/logger-module-options';
 import { S3ModuleOptionsClass } from './utils/s3-module-options-class';
-import { ModuleMicroserviceOptions } from './utils/microservice-options';
 import { UserLanguageResolver } from './i18n/userLanguageResolver';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
 import { EndpointModule } from './endpoint/endpoint.module';
 import { WSModule } from './websocket/ws.module';
 import { CrontabModule } from './crontab/crontab.module';
-import { RabbitModule } from './rabbit/rabbit.module';
+import { MsvcModule } from './microservice/microservice.module';
 
 @Module({
   imports: [
@@ -34,16 +31,7 @@ import { RabbitModule } from './rabbit/rabbit.module';
       inject: [ConfigService],
     }),
 
-    RabbitModule,
-
-    ClientsModule.registerAsync({
-      isGlobal: true,
-      clients: [
-        ModuleMicroserviceOptions(MICROSERVICE_MYSCREEN.MAIL),
-        ModuleMicroserviceOptions(MICROSERVICE_MYSCREEN.FORM),
-        ModuleMicroserviceOptions(MICROSERVICE_MYSCREEN.EDITOR),
-      ],
-    }),
+    MsvcModule,
 
     S3Module.forRootAsync({
       useClass: S3ModuleOptionsClass,

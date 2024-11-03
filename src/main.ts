@@ -3,7 +3,6 @@ import { join as pathJoin } from 'node:path';
 import { dump as yamlDump } from 'js-yaml';
 import { HttpAdapterHost, NestApplication, NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
-import { RmqOptions } from '@nestjs/microservices';
 import {
   SwaggerModule,
   DocumentBuilder,
@@ -14,14 +13,12 @@ import { Logger } from 'nestjs-pino';
 import { I18nValidationPipe } from 'nestjs-i18n';
 
 import { version, author, homepage, description } from '../package.json';
-import { MICROSERVICE_MYSCREEN } from './enums';
 import { ExceptionsFilter } from './exception/exceptions.filter';
 import { WsAdapter } from './websocket/ws-adapter';
 import { AppModule } from './app.module';
 import { UserService } from './database/user.service';
 import { I18nValidationExceptionMyScreenFilter } from './exception/i18nvalidationexception.filter';
 import { WsEventClass } from './dto/response/ws-event.response';
-import { MicroserviceOptions } from './utils/microservice-options';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -152,12 +149,6 @@ async function bootstrap() {
       ".swagger-ui .topbar { padding: 0; } .swagger-ui .topbar a { content: url('/favicon.ico'); max-width: 40px; max-height: 44px; } .swagger-ui .topbar .topbar-wrapper::after { margin-left: 5px; content: 'MyScreen'; color: white; }",
   };
   SwaggerModule.setup(apiPath, app, swaggerDocument, swaggerOptions);
-
-  app.connectMicroservice<RmqOptions>(
-    MicroserviceOptions(configService, MICROSERVICE_MYSCREEN.GATEWAY),
-    { inheritAppConfig: true },
-  );
-  await app.startAllMicroservices();
 
   await app.listen(port);
   const url = await app.getUrl();

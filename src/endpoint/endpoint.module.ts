@@ -19,9 +19,11 @@ import { BidController } from './bid.controller';
 import { CrontabController } from './crontab.controller';
 import { ConstantsController } from './constants.controller';
 import { WalletController } from './wallet.controller';
+import { MsvcModule } from '@/microservice/microservice.module';
 
 @Module({
   imports: [
+    MsvcModule,
     MulterModule.registerAsync({
       useClass: MulterModuleOptionsClass,
       inject: [ConfigService],

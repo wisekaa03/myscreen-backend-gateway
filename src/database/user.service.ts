@@ -1,10 +1,9 @@
 import { createHmac } from 'crypto';
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, type DeleteResult, type DeepPartial } from 'typeorm';
 import dayjs from 'dayjs';
-import { ClientProxy } from '@nestjs/microservices';
 import { I18nService } from 'nestjs-i18n';
 
 import {
@@ -18,16 +17,10 @@ import {
   NotFoundError,
   PreconditionFailedError,
 } from '@/errors';
-import {
-  FindManyOptionsExt,
-  FindOneOptionsExt,
-  MsvcMailForgotPassword,
-  MsvcMailVerificationCode,
-  MsvcMailWelcomeMessage,
-} from '@/interfaces';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import {
   CRUD,
-  MICROSERVICE_MYSCREEN,
+  MSVC_EXCHANGE,
   MsvcMailService,
   UserPlanEnum,
   UserRoleEnum,
@@ -42,6 +35,7 @@ import { UserEntity } from './user.entity';
 import { UserExtView } from './user-ext.view';
 import { FileEntity } from './file.entity';
 import { FileService } from './file.service';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 @Injectable()
 export class UserService {
@@ -55,14 +49,13 @@ export class UserService {
     private readonly i18n: I18nService,
     private readonly configService: ConfigService,
     private readonly fileService: FileService,
-    @Inject(MICROSERVICE_MYSCREEN.MAIL)
-    private readonly mailMsvc: ClientProxy,
     @InjectRepository(UserEntity)
     public readonly userRepository: Repository<UserEntity>,
     @InjectRepository(UserExtView)
     public readonly userExtRepository: Repository<UserExtView>,
     @InjectRepository(FileEntity)
     public readonly fileRepository: Repository<FileEntity>,
+    private readonly ampqConnection: AmqpConnection,
   ) {
     this.frontendUrl = this.configService.get(
       'FRONTEND_URL',
@@ -352,7 +345,8 @@ export class UserService {
 
       const [{ affected }] = await Promise.all([
         this.userRepository.update(userId, { ...update, emailConfirmKey }),
-        this.mailMsvc.emit<unknown, MsvcMailVerificationCode>(
+        this.ampqConnection.publish(
+          MSVC_EXCHANGE.MAIL,
           MsvcMailService.SendVerificationCode,
           {
             email: update.email,
@@ -462,14 +456,16 @@ export class UserService {
 
     const [{ id }] = await Promise.all([
       this.userRepository.save(this.userRepository.create(userPartial)),
-      this.mailMsvc.emit<unknown, MsvcMailWelcomeMessage>(
+      this.ampqConnection.publish(
+        MSVC_EXCHANGE.MAIL,
         MsvcMailService.SendWelcome,
         {
           email,
           language,
         },
       ),
-      this.mailMsvc.emit<unknown, MsvcMailVerificationCode>(
+      this.ampqConnection.publish(
+        MSVC_EXCHANGE.MAIL,
         MsvcMailService.SendVerificationCode,
         {
           email,
@@ -542,7 +538,8 @@ export class UserService {
       return true;
     }
 
-    this.mailMsvc.emit<unknown, MsvcMailForgotPassword>(
+    await this.ampqConnection.publish(
+      MSVC_EXCHANGE.MAIL,
       MsvcMailService.ForgotPassword,
       {
         email,

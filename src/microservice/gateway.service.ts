@@ -3,25 +3,23 @@ import path from 'node:path';
 import { ffprobe, FfprobeData } from 'media-probe';
 import { EntityManager, ObjectLiteral, UpdateResult } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Controller, Logger } from '@nestjs/common';
-import { MessagePattern } from '@nestjs/microservices';
+import { Injectable, Logger } from '@nestjs/common';
 
 import {
   MsvcGatewayUpdate,
   MsvcGatewayFileUpload,
   MsvcGatewayEditorExport,
 } from '../interfaces';
-import { MsvcGateway } from '../enums';
+import { MSVC_EXCHANGE, MsvcGateway } from '../enums';
 import { FileService } from '../database/file.service';
 import { UserService } from '../database/user.service';
 import { WsStatistics } from '../database/ws.statistics';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { PlaylistEntity } from '../database/playlist.entity';
-import { EditorEntity } from '../database/editor.entity';
+import { RabbitRPC } from '@golevelup/nestjs-rabbitmq';
 
-@Controller()
-export class RmqController {
-  private logger = new Logger(RmqController.name);
+@Injectable()
+export class GatewayService {
+  private logger = new Logger(GatewayService.name);
 
   downloadDir: string;
 
@@ -36,7 +34,11 @@ export class RmqController {
     this.downloadDir = this.configService.getOrThrow('FILES_UPLOAD');
   }
 
-  @MessagePattern(MsvcGateway.Update)
+  @RabbitRPC({
+    exchange: MSVC_EXCHANGE.GATEWAY,
+    routingKey: MsvcGateway.Update,
+    queue: MsvcGateway.Update,
+  })
   async update<Entity extends ObjectLiteral>({
     entity,
     criteria,
@@ -50,12 +52,20 @@ export class RmqController {
     }
   }
 
-  @MessagePattern(MsvcGateway.EditorExportFinished)
+  @RabbitRPC({
+    exchange: MSVC_EXCHANGE.GATEWAY,
+    routingKey: MsvcGateway.EditorExportFinished,
+    queue: MsvcGateway.EditorExportFinished,
+  })
   async editorExportFinished({ playlistId }: MsvcGatewayEditorExport) {
     await this.wsStatistics.onChangePlaylist({ playlistId });
   }
 
-  @MessagePattern(MsvcGateway.FileUpload)
+  @RabbitRPC({
+    exchange: MSVC_EXCHANGE.GATEWAY,
+    routingKey: MsvcGateway.FileUpload,
+    queue: MsvcGateway.FileUpload,
+  })
   async fileUpload({
     userId,
     folderId,

@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, DeleteResult, EntityManager, Repository } from 'typeorm';
-import { ClientProxy } from '@nestjs/microservices';
 
 import { I18nPath } from '@/i18n';
 import {
@@ -16,7 +15,6 @@ import {
   MonitorMultiple,
   MonitorOrientation,
   RenderingStatus,
-  MICROSERVICE_MYSCREEN,
   MsvcEditor,
   MSVC_EXCHANGE,
 } from '@/enums';
@@ -24,7 +22,6 @@ import {
   FindManyOptionsExt,
   FindOneOptionsExt,
   MonitorGroupWithPlaylist,
-  MsvcEditorExport,
 } from '@/interfaces';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
@@ -53,8 +50,6 @@ export class EditorService {
     private readonly editorLayerRepository: Repository<EditorLayerEntity>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
-    @Inject(MICROSERVICE_MYSCREEN.EDITOR)
-    private readonly editorMsvc: ClientProxy,
     private readonly amqpConnection: AmqpConnection,
   ) {}
 

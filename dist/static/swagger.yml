@@ -3,9 +3,6 @@ paths:
   /api/v2/auth:
     get:
       operationId: auth-get
-      summary: >-
-        Проверяет, авторизован ли пользователь и выдает о пользователе полную
-        информацию
       parameters: []
       responses:
         "200":
@@ -68,13 +65,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_9
-        - auth
       security:
         - bearer: []
+      summary: >-
+        Проверяет, авторизован ли пользователь и выдает о пользователе полную
+        информацию
+      tags: &ref_9
+        - auth
     patch:
       operationId: auth-update
-      summary: Изменение аккаунта пользователя
       parameters: []
       requestBody:
         required: true
@@ -98,13 +97,13 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
-      tags: *ref_9
       security:
         - bearer: []
+      summary: Изменение аккаунта пользователя
+      tags: *ref_9
   /api/v2/auth/login:
     post:
       operationId: auth-login
-      summary: Авторизация пользователя
       parameters: []
       requestBody:
         required: true
@@ -128,11 +127,11 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
+      summary: Авторизация пользователя
       tags: *ref_9
   /api/v2/auth/register:
     post:
       operationId: auth-register
-      summary: Регистрация пользователя
       parameters: []
       requestBody:
         required: true
@@ -156,11 +155,11 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
+      summary: Регистрация пользователя
       tags: *ref_9
   /api/v2/auth/refresh:
     post:
       operationId: refresh
-      summary: Обновление токена
       parameters: []
       requestBody:
         required: true
@@ -184,11 +183,11 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
+      summary: Обновление токена
       tags: *ref_9
   /api/v2/auth/email-verify:
     post:
       operationId: auth-email-verify
-      summary: Подтвердить email пользователя
       parameters: []
       requestBody:
         required: true
@@ -212,11 +211,11 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
+      summary: Подтвердить email пользователя
       tags: *ref_9
   /api/v2/auth/reset-password:
     post:
       operationId: auth-reset-password
-      summary: Отправить на почту пользователю разрешение на смену пароля
       parameters: []
       requestBody:
         required: true
@@ -240,11 +239,11 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
+      summary: Отправить на почту пользователю разрешение на смену пароля
       tags: *ref_9
   /api/v2/auth/reset-password-verify:
     post:
       operationId: auth-reset-password-verify
-      summary: Меняет пароль пользователя по приглашению из почты
       parameters: []
       requestBody:
         required: true
@@ -268,11 +267,11 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
+      summary: Меняет пароль пользователя по приглашению из почты
       tags: *ref_9
   /api/v2/auth/disable:
     patch:
       operationId: auth-disable
-      summary: Скрытие аккаунта пользователя
       parameters: []
       responses:
         "200":
@@ -290,13 +289,13 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
-      tags: *ref_9
       security:
         - bearer: []
+      summary: Скрытие аккаунта пользователя
+      tags: *ref_9
   /api/v2/auth/monitor:
     post:
       operationId: auth-monitor
-      summary: Авторизация монитора
       parameters: []
       requestBody:
         required: true
@@ -320,11 +319,11 @@ paths:
         "412": *ref_6
         "500": *ref_7
         "501": *ref_8
+      summary: Авторизация монитора
       tags: *ref_9
   /api/v2/monitor:
     post:
       operationId: monitors-get
-      summary: Получение списка мониторов
       parameters: []
       requestBody:
         required: true
@@ -393,13 +392,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_19
-        - monitor
-      security: &ref_20
+      security: &ref_19
         - bearer: []
+      summary: Получение списка мониторов
+      tags: &ref_20
+        - monitor
     put:
       operationId: monitor-create
-      summary: Создание монитора
       parameters: []
       requestBody:
         required: true
@@ -423,12 +422,12 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Создание монитора
+      tags: *ref_20
   /api/v2/monitor/playlist:
     patch:
       operationId: monitor-playlist-create
-      summary: Создание связки плэйлиста и монитора
       parameters: []
       requestBody:
         required: true
@@ -452,11 +451,11 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Создание связки плэйлиста и монитора
+      tags: *ref_20
     delete:
       operationId: monitor-playlist-delete
-      summary: Удаление связки плэйлиста и монитора
       parameters: []
       requestBody:
         required: true
@@ -480,12 +479,12 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Удаление связки плэйлиста и монитора
+      tags: *ref_20
   /api/v2/monitor/{monitorId}:
     get:
       operationId: monitor-get
-      summary: Получение монитора
       parameters:
         - name: monitorId
           required: true
@@ -508,11 +507,11 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Получение монитора
+      tags: *ref_20
     patch:
       operationId: monitor-update
-      summary: Изменение монитора
       parameters:
         - name: monitorId
           required: true
@@ -541,11 +540,11 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Изменение монитора
+      tags: *ref_20
     delete:
       operationId: monitor-delete
-      summary: Удаление монитора
       parameters:
         - name: monitorId
           required: true
@@ -568,12 +567,12 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Удаление монитора
+      tags: *ref_20
   /api/v2/monitor/{monitorId}/upload-photos:
     put:
       operationId: monitor-upload-photos
-      summary: Загрузка файлов картинок монитора
       parameters:
         - name: monitorId
           required: true
@@ -611,12 +610,12 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Загрузка файлов картинок монитора
+      tags: *ref_20
   /api/v2/monitor/{monitorId}/upload-documents:
     put:
       operationId: monitor-upload-documents
-      summary: Загрузка документов монитора
       parameters:
         - name: monitorId
           required: true
@@ -654,12 +653,12 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Загрузка документов монитора
+      tags: *ref_20
   /api/v2/monitor/{monitorId}/favoritePlus:
     get:
       operationId: monitor-favorite-plus
-      summary: Избранное '+'
       parameters:
         - name: monitorId
           required: true
@@ -682,12 +681,12 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Избранное '+'
+      tags: *ref_20
   /api/v2/monitor/{monitorId}/favoriteMinus:
     get:
       operationId: monitor-favorite-minus
-      summary: Избранное '-'
       parameters:
         - name: monitorId
           required: true
@@ -710,12 +709,12 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Избранное '-'
+      tags: *ref_20
   /api/v2/monitor/{monitorId}/bid:
     get:
       operationId: monitor-get-bid
-      summary: Получение плэйлиста монитора
       parameters:
         - name: monitorId
           required: true
@@ -738,12 +737,12 @@ paths:
         "412": *ref_16
         "500": *ref_17
         "501": *ref_18
-      tags: *ref_19
-      security: *ref_20
+      security: *ref_19
+      summary: Получение плэйлиста монитора
+      tags: *ref_20
   /api/v2/editor:
     post:
       operationId: editors-get
-      summary: Получение списка редакторов
       parameters: []
       requestBody:
         required: true
@@ -812,13 +811,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_30
-        - editor
-      security: &ref_31
+      security: &ref_30
         - bearer: []
+      summary: Получение списка редакторов
+      tags: &ref_31
+        - editor
     put:
       operationId: editor-create
-      summary: Создание редактора
       parameters: []
       requestBody:
         required: true
@@ -842,12 +841,12 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Создание редактора
+      tags: *ref_31
   /api/v2/editor/{editorId}:
     get:
       operationId: editor-get
-      summary: Получение редактора
       parameters:
         - name: editorId
           required: true
@@ -870,11 +869,11 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Получение редактора
+      tags: *ref_31
     patch:
       operationId: editor-update
-      summary: Изменить редактор
       parameters:
         - name: editorId
           required: true
@@ -903,11 +902,11 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Изменить редактор
+      tags: *ref_31
     delete:
       operationId: editor-delete
-      summary: Удаление редактора
       parameters:
         - name: editorId
           required: true
@@ -930,12 +929,12 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Удаление редактора
+      tags: *ref_31
   /api/v2/editor/layer/{editorId}:
     put:
       operationId: editor-layer-create
-      summary: Создание слоя редактора
       parameters:
         - name: editorId
           required: true
@@ -964,12 +963,12 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Создание слоя редактора
+      tags: *ref_31
   /api/v2/editor/layer/{editorId}/{layerId}:
     get:
       operationId: editor-layer-get
-      summary: Получение слоя редактора
       parameters:
         - name: editorId
           required: true
@@ -997,11 +996,11 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Получение слоя редактора
+      tags: *ref_31
     patch:
       operationId: editor-layer-update
-      summary: Изменить слой редактора
       parameters:
         - name: editorId
           required: true
@@ -1035,11 +1034,11 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Изменить слой редактора
+      tags: *ref_31
     delete:
       operationId: editor-layer-delete
-      summary: Удаление слоя редактора
       parameters:
         - name: editorId
           required: true
@@ -1067,12 +1066,12 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Удаление слоя редактора
+      tags: *ref_31
   /api/v2/editor/layer/{editorId}/{layerId}/{moveIndex}:
     put:
       operationId: editor-layer-move
-      summary: Изменить очередь слоя редактора
       parameters:
         - name: editorId
           required: true
@@ -1105,12 +1104,12 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Изменить очередь слоя редактора
+      tags: *ref_31
   /api/v2/editor/export/{editorId}:
     get:
       operationId: editor-export-status
-      summary: Узнать статус экспорта видео из редактора
       parameters:
         - name: editorId
           required: true
@@ -1133,11 +1132,11 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Узнать статус экспорта видео из редактора
+      tags: *ref_31
     post:
       operationId: editor-export
-      summary: Экспорт видео из редактора
       parameters:
         - name: editorId
           required: true
@@ -1166,12 +1165,12 @@ paths:
         "412": *ref_27
         "500": *ref_28
         "501": *ref_29
-      tags: *ref_30
-      security: *ref_31
+      security: *ref_30
+      summary: Экспорт видео из редактора
+      tags: *ref_31
   /api/v2/file:
     post:
       operationId: files-get
-      summary: Получение списка файлов
       parameters: []
       requestBody:
         required: true
@@ -1240,13 +1239,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_41
-        - file
-      security: &ref_42
+      security: &ref_41
         - bearer: []
+      summary: Получение списка файлов
+      tags: &ref_42
+        - file
     put:
       operationId: file-upload
-      summary: Загрузка файлов
       parameters: []
       requestBody:
         required: true
@@ -1284,11 +1283,11 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Загрузка файлов
+      tags: *ref_42
     patch:
       operationId: files-update
-      summary: Изменить файлы
       parameters: []
       requestBody:
         required: true
@@ -1312,11 +1311,11 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Изменить файлы
+      tags: *ref_42
     delete:
       operationId: files-delete
-      summary: Удаление файла
       parameters: []
       requestBody:
         required: true
@@ -1340,12 +1339,12 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Удаление файла
+      tags: *ref_42
   /api/v2/file/copy:
     patch:
       operationId: files-copy
-      summary: Скопировать файлы
       parameters: []
       requestBody:
         required: true
@@ -1369,12 +1368,12 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Скопировать файлы
+      tags: *ref_42
   /api/v2/file/preview/{fileId}:
     get:
       operationId: file-download-preview
-      summary: Получить файл превью
       parameters:
         - name: fileId
           required: true
@@ -1402,12 +1401,12 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Получить файл превью
+      tags: *ref_42
   /api/v2/file/download/{fileId}:
     get:
       operationId: file-download
-      summary: Скачивание файла
       parameters:
         - name: fileId
           required: true
@@ -1439,12 +1438,12 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Скачивание файла
+      tags: *ref_42
   /api/v2/file/{fileId}:
     post:
       operationId: file-get
-      summary: Получить файл
       parameters:
         - name: fileId
           required: true
@@ -1467,11 +1466,11 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Получить файл
+      tags: *ref_42
     patch:
       operationId: file-update
-      summary: Изменить файл
       parameters:
         - name: fileId
           required: true
@@ -1500,11 +1499,11 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Изменить файл
+      tags: *ref_42
     delete:
       operationId: file-delete
-      summary: Удаление файла
       parameters:
         - name: fileId
           required: true
@@ -1527,12 +1526,12 @@ paths:
         "412": *ref_38
         "500": *ref_39
         "501": *ref_40
-      tags: *ref_41
-      security: *ref_42
+      security: *ref_41
+      summary: Удаление файла
+      tags: *ref_42
   /api/v2/folder:
     post:
       operationId: folders-get
-      summary: Получение списка папок
       parameters: []
       requestBody:
         required: true
@@ -1601,13 +1600,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_52
-        - folder
-      security: &ref_53
+      security: &ref_52
         - bearer: []
+      summary: Получение списка папок
+      tags: &ref_53
+        - folder
     put:
       operationId: folder-create
-      summary: Создание новой папки
       parameters: []
       requestBody:
         required: true
@@ -1631,11 +1630,11 @@ paths:
         "412": *ref_49
         "500": *ref_50
         "501": *ref_51
-      tags: *ref_52
-      security: *ref_53
+      security: *ref_52
+      summary: Создание новой папки
+      tags: *ref_53
     patch:
       operationId: folders-update
-      summary: Изменение информации о папках
       parameters: []
       requestBody:
         required: true
@@ -1659,11 +1658,11 @@ paths:
         "412": *ref_49
         "500": *ref_50
         "501": *ref_51
-      tags: *ref_52
-      security: *ref_53
+      security: *ref_52
+      summary: Изменение информации о папках
+      tags: *ref_53
     delete:
       operationId: folders-delete
-      summary: Удаление папок
       parameters: []
       requestBody:
         required: true
@@ -1687,12 +1686,12 @@ paths:
         "412": *ref_49
         "500": *ref_50
         "501": *ref_51
-      tags: *ref_52
-      security: *ref_53
+      security: *ref_52
+      summary: Удаление папок
+      tags: *ref_53
   /api/v2/folder/copy:
     patch:
       operationId: folders-copy
-      summary: Копирование папок
       parameters: []
       requestBody:
         required: true
@@ -1716,12 +1715,12 @@ paths:
         "412": *ref_49
         "500": *ref_50
         "501": *ref_51
-      tags: *ref_52
-      security: *ref_53
+      security: *ref_52
+      summary: Копирование папок
+      tags: *ref_53
   /api/v2/folder/{folderId}:
     get:
       operationId: folder-get
-      summary: Получение информации о папке
       parameters:
         - name: folderId
           required: true
@@ -1744,11 +1743,11 @@ paths:
         "412": *ref_49
         "500": *ref_50
         "501": *ref_51
-      tags: *ref_52
-      security: *ref_53
+      security: *ref_52
+      summary: Получение информации о папке
+      tags: *ref_53
     patch:
       operationId: folder-update
-      summary: Изменение информации о папке
       parameters:
         - name: folderId
           required: true
@@ -1777,11 +1776,11 @@ paths:
         "412": *ref_49
         "500": *ref_50
         "501": *ref_51
-      tags: *ref_52
-      security: *ref_53
+      security: *ref_52
+      summary: Изменение информации о папке
+      tags: *ref_53
     delete:
       operationId: folder-delete
-      summary: Удаление папки
       parameters:
         - name: folderId
           required: true
@@ -1804,12 +1803,12 @@ paths:
         "412": *ref_49
         "500": *ref_50
         "501": *ref_51
-      tags: *ref_52
-      security: *ref_53
+      security: *ref_52
+      summary: Удаление папки
+      tags: *ref_53
   /api/v2/user:
     post:
       operationId: users-get
-      summary: Получение информации о пользователях (только администратор)
       parameters: []
       requestBody:
         required: true
@@ -1878,14 +1877,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_63
-        - user
-      security: &ref_64
+      security: &ref_63
         - bearer: []
+      summary: Получение информации о пользователях (только администратор)
+      tags: &ref_64
+        - user
   /api/v2/user/disable/{userId}:
     patch:
       operationId: user-disable
-      summary: Отключение аккаунта пользователя (только администратор)
       parameters:
         - name: userId
           required: true
@@ -1908,12 +1907,12 @@ paths:
         "412": *ref_60
         "500": *ref_61
         "501": *ref_62
-      tags: *ref_63
-      security: *ref_64
+      security: *ref_63
+      summary: Отключение аккаунта пользователя (только администратор)
+      tags: *ref_64
   /api/v2/user/enable/{userId}:
     patch:
       operationId: user-enable
-      summary: Открытие аккаунта пользователя (только администратор)
       parameters:
         - name: userId
           required: true
@@ -1936,12 +1935,12 @@ paths:
         "412": *ref_60
         "500": *ref_61
         "501": *ref_62
-      tags: *ref_63
-      security: *ref_64
+      security: *ref_63
+      summary: Открытие аккаунта пользователя (только администратор)
+      tags: *ref_64
   /api/v2/user/{userId}:
     get:
       operationId: user-get
-      summary: Получение информации о пользователе (только администратор)
       parameters:
         - name: userId
           required: true
@@ -1964,11 +1963,11 @@ paths:
         "412": *ref_60
         "500": *ref_61
         "501": *ref_62
-      tags: *ref_63
-      security: *ref_64
+      security: *ref_63
+      summary: Получение информации о пользователе (только администратор)
+      tags: *ref_64
     patch:
       operationId: user-update
-      summary: Изменение информации о пользователе (только администратор)
       parameters:
         - name: userId
           required: true
@@ -1997,11 +1996,11 @@ paths:
         "412": *ref_60
         "500": *ref_61
         "501": *ref_62
-      tags: *ref_63
-      security: *ref_64
+      security: *ref_63
+      summary: Изменение информации о пользователе (только администратор)
+      tags: *ref_64
     delete:
       operationId: user-delete
-      summary: Удаление аккаунта пользователя (только администратор)
       parameters:
         - name: userId
           required: true
@@ -2024,12 +2023,12 @@ paths:
         "412": *ref_60
         "500": *ref_61
         "501": *ref_62
-      tags: *ref_63
-      security: *ref_64
+      security: *ref_63
+      summary: Удаление аккаунта пользователя (только администратор)
+      tags: *ref_64
   /api/v2/invoice:
     post:
       operationId: invoices-get
-      summary: Получение списка счётов
       parameters: []
       requestBody:
         required: true
@@ -2098,13 +2097,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_74
-        - invoice
-      security: &ref_75
+      security: &ref_74
         - bearer: []
+      summary: Получение списка счётов
+      tags: &ref_75
+        - invoice
     put:
       operationId: invoice-create
-      summary: Выставление счета
       parameters: []
       requestBody:
         required: true
@@ -2128,12 +2127,12 @@ paths:
         "412": *ref_71
         "500": *ref_72
         "501": *ref_73
-      tags: *ref_74
-      security: *ref_75
+      security: *ref_74
+      summary: Выставление счета
+      tags: *ref_75
   /api/v2/invoice/upload/{invoiceId}:
     post:
       operationId: invoice-upload
-      summary: Загрузка счёта (только бухгалтер)
       parameters:
         - name: invoiceId
           required: true
@@ -2169,12 +2168,12 @@ paths:
         "412": *ref_71
         "500": *ref_72
         "501": *ref_73
-      tags: *ref_74
-      security: *ref_75
+      security: *ref_74
+      summary: Загрузка счёта (только бухгалтер)
+      tags: *ref_75
   /api/v2/invoice/confirmed/{invoiceId}:
     get:
       operationId: invoice-confirmed
-      summary: Подтверждение счёта (только бухгалтер)
       parameters:
         - name: invoiceId
           required: true
@@ -2197,12 +2196,12 @@ paths:
         "412": *ref_71
         "500": *ref_72
         "501": *ref_73
-      tags: *ref_74
-      security: *ref_75
+      security: *ref_74
+      summary: Подтверждение счёта (только бухгалтер)
+      tags: *ref_75
   /api/v2/invoice/payed/{invoiceId}:
     get:
       operationId: invoice-payed
-      summary: Оплата по счету (только бухгалтер)
       parameters:
         - name: invoiceId
           required: true
@@ -2221,12 +2220,12 @@ paths:
         "412": *ref_71
         "500": *ref_72
         "501": *ref_73
-      tags: *ref_74
-      security: *ref_75
+      security: *ref_74
+      summary: Оплата по счету (только бухгалтер)
+      tags: *ref_75
   /api/v2/invoice/download/{invoiceId}/{format}:
     get:
       operationId: invoice-download
-      summary: Метод для скачивания файла excel/pdf/etc
       parameters:
         - name: invoiceId
           required: true
@@ -2259,12 +2258,12 @@ paths:
         "412": *ref_71
         "500": *ref_72
         "501": *ref_73
-      tags: *ref_74
-      security: *ref_75
+      security: *ref_74
+      summary: Метод для скачивания файла excel/pdf/etc
+      tags: *ref_75
   /api/v2/playlist:
     post:
       operationId: playlists-get
-      summary: Получение списка плэйлистов
       parameters: []
       requestBody:
         required: true
@@ -2333,13 +2332,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_85
-        - playlist
-      security: &ref_86
+      security: &ref_85
         - bearer: []
+      summary: Получение списка плэйлистов
+      tags: &ref_86
+        - playlist
     put:
       operationId: playlist-create
-      summary: Создание плэйлиста
       parameters: []
       requestBody:
         required: true
@@ -2363,12 +2362,12 @@ paths:
         "412": *ref_82
         "500": *ref_83
         "501": *ref_84
-      tags: *ref_85
-      security: *ref_86
+      security: *ref_85
+      summary: Создание плэйлиста
+      tags: *ref_86
   /api/v2/playlist/{playlistId}:
     get:
       operationId: playlist-get
-      summary: Получение плэйлиста
       parameters:
         - name: playlistId
           required: true
@@ -2391,11 +2390,11 @@ paths:
         "412": *ref_82
         "500": *ref_83
         "501": *ref_84
-      tags: *ref_85
-      security: *ref_86
+      security: *ref_85
+      summary: Получение плэйлиста
+      tags: *ref_86
     patch:
       operationId: playlist-update
-      summary: Обновление плэйлиста
       parameters:
         - name: playlistId
           required: true
@@ -2424,11 +2423,11 @@ paths:
         "412": *ref_82
         "500": *ref_83
         "501": *ref_84
-      tags: *ref_85
-      security: *ref_86
+      security: *ref_85
+      summary: Обновление плэйлиста
+      tags: *ref_86
     delete:
       operationId: playlist-delete
-      summary: Удаление плэйлиста
       parameters:
         - name: playlistId
           required: true
@@ -2451,12 +2450,12 @@ paths:
         "412": *ref_82
         "500": *ref_83
         "501": *ref_84
-      tags: *ref_85
-      security: *ref_86
+      security: *ref_85
+      summary: Удаление плэйлиста
+      tags: *ref_86
   /api/v2/statistics/device-status:
     post:
       operationId: device-status
-      summary: Отчёт по статусу устройства
       parameters: []
       requestBody:
         required: true
@@ -2530,14 +2529,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_96
-        - statistics
-      security: &ref_97
+      security: &ref_96
         - bearer: []
+      summary: Отчёт по статусу устройства
+      tags: &ref_97
+        - statistics
   /api/v2/statistics/report-views:
     post:
       operationId: report-views
-      summary: Отчёт по показам
       parameters: []
       requestBody:
         required: true
@@ -2566,12 +2565,12 @@ paths:
         "412": *ref_93
         "500": *ref_94
         "501": *ref_95
-      tags: *ref_96
-      security: *ref_97
+      security: *ref_96
+      summary: Отчёт по показам
+      tags: *ref_97
   /api/v2/bid:
     post:
       operationId: bids-get
-      summary: Получение списка заявок
       parameters: []
       requestBody:
         required: true
@@ -2640,14 +2639,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_107
-        - bid
-      security: &ref_108
+      security: &ref_107
         - bearer: []
+      summary: Получение списка заявок
+      tags: &ref_108
+        - bid
   /api/v2/bid/{bidId}:
     get:
       operationId: bid-get
-      summary: Получение заявки
       parameters:
         - name: bidId
           required: true
@@ -2670,11 +2669,11 @@ paths:
         "412": *ref_104
         "500": *ref_105
         "501": *ref_106
-      tags: *ref_107
-      security: *ref_108
+      security: *ref_107
+      summary: Получение заявки
+      tags: *ref_108
     patch:
       operationId: bid-update
-      summary: Изменить заявку
       parameters:
         - name: bidId
           required: true
@@ -2703,11 +2702,11 @@ paths:
         "412": *ref_104
         "500": *ref_105
         "501": *ref_106
-      tags: *ref_107
-      security: *ref_108
+      security: *ref_107
+      summary: Изменить заявку
+      tags: *ref_108
     delete:
       operationId: bid-delete
-      summary: Удаление заявки
       parameters:
         - name: bidId
           required: true
@@ -2730,12 +2729,12 @@ paths:
         "412": *ref_104
         "500": *ref_105
         "501": *ref_106
-      tags: *ref_107
-      security: *ref_108
+      security: *ref_107
+      summary: Удаление заявки
+      tags: *ref_108
   /api/v2/bid/precalc-promo:
     post:
       operationId: bid-precalc-promo
-      summary: Возвращает предрасчет мониторов (для promo)
       parameters: []
       requestBody:
         required: true
@@ -2759,12 +2758,12 @@ paths:
         "412": *ref_104
         "500": *ref_105
         "501": *ref_106
-      tags: *ref_107
-      security: *ref_108
+      security: *ref_107
+      summary: Возвращает предрасчет мониторов (для promo)
+      tags: *ref_108
   /api/v2/bid/precalc-sum:
     post:
       operationId: bid-precalc-sum
-      summary: Возвращает предрасчет мониторов (для суммы списания)
       parameters: []
       requestBody:
         required: true
@@ -2788,12 +2787,12 @@ paths:
         "412": *ref_104
         "500": *ref_105
         "501": *ref_106
-      tags: *ref_107
-      security: *ref_108
+      security: *ref_107
+      summary: Возвращает предрасчет мониторов (для суммы списания)
+      tags: *ref_108
   /api/v2/crontab/create/users:
     post:
       operationId: crontab-create-users
-      summary: Включение CronTab для пользователей (только администратор)
       parameters: []
       requestBody:
         required: true
@@ -2862,14 +2861,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags: &ref_118
-        - crontab
-      security: &ref_119
+      security: &ref_118
         - bearer: []
+      summary: Включение CronTab для пользователей (только администратор)
+      tags: &ref_119
+        - crontab
   /api/v2/crontab/delete/users:
     post:
       operationId: crontab-delete-users
-      summary: Выключение CronTab для пользователей (только администратор)
       parameters: []
       responses:
         "200":
@@ -2887,12 +2886,12 @@ paths:
         "412": *ref_115
         "500": *ref_116
         "501": *ref_117
-      tags: *ref_118
-      security: *ref_119
+      security: *ref_118
+      summary: Выключение CronTab для пользователей (только администратор)
+      tags: *ref_119
   /api/v2/constants:
     get:
       operationId: constants-get
-      summary: Получение списка констант
       parameters: []
       responses:
         "200":
@@ -2955,12 +2954,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
+      summary: Получение списка констант
       tags:
         - constants
   /api/v2/wallet:
     post:
       operationId: wallet-operations-get
-      summary: Получение списка операций
       parameters: []
       requestBody:
         required: true
@@ -3029,14 +3028,15 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NotImplementedError"
-      tags:
-        - wallet
       security:
         - bearer: []
+      summary: Получение списка операций
+      tags:
+        - wallet
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.59.31
+  version: 2.60.0
   contact:
     name: Stanislav V Lanskoy
     url: https://wisekaa.dev
@@ -3311,13 +3311,11 @@ components:
         - message
     Status:
       type: string
-      description: Статус операции
       enum:
         - success
         - error
     UserRole:
       type: string
-      description: Роль пользователя
       enum:
         - monitor
         - monitor-owner
@@ -3326,7 +3324,6 @@ components:
         - accountant
     UserPlan:
       type: string
-      description: План пользователя
       enum:
         - DEMO
         - FULL
@@ -3477,15 +3474,19 @@ components:
           description: Дисковое пространство
           example: 20000000
         role:
+          description: Роль пользователя
           example: advertiser
-          $ref: "#/components/schemas/UserRole"
+          allOf:
+            - $ref: "#/components/schemas/UserRole"
         verified:
           type: boolean
           description: EMail подтвержден
           example: true
         plan:
+          description: План пользователя
           example: FULL
-          $ref: "#/components/schemas/UserPlan"
+          allOf:
+            - $ref: "#/components/schemas/UserPlan"
         nonPayment:
           type: number
           description: Сколько раз отправлялось напоминание о неуплате
@@ -3611,8 +3612,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Пользователь
           allOf:
@@ -3750,11 +3753,15 @@ components:
           example: Тухбатуллина Юлия Евгеньевна
           maxLength: 254
         role:
+          description: Роль пользователя
           example: advertiser
-          $ref: "#/components/schemas/UserRole"
+          allOf:
+            - $ref: "#/components/schemas/UserRole"
         plan:
+          description: План пользователя
           example: FULL
-          $ref: "#/components/schemas/UserPlan"
+          allOf:
+            - $ref: "#/components/schemas/UserPlan"
     LoginRequest:
       type: object
       properties:
@@ -3801,8 +3808,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         payload:
           description: Возвращаемый токен
           allOf:
@@ -3865,8 +3874,10 @@ components:
           example: ru
           maxLength: 6
         role:
+          description: Роль пользователя
           example: advertiser
-          $ref: "#/components/schemas/UserRole"
+          allOf:
+            - $ref: "#/components/schemas/UserRole"
         company:
           type: string
           description: Компания
@@ -3963,8 +3974,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         payload:
           description: Возвращаемый токен
           allOf:
@@ -3984,8 +3997,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
       required:
         - status
     ResetPasswordInvitationRequest:
@@ -4047,7 +4062,6 @@ components:
           example: "1"
     MonitorCategory:
       type: string
-      description: Категория
       enum:
         - FOOD
         - CAFES_AND_RESTAURANTS
@@ -4064,22 +4078,16 @@ components:
         - GAS_STATION
     MonitorOrientation:
       type: string
-      description: Ориентация экрана
       enum:
         - Horizontal
         - Vertical
     MonitorStatus:
       type: string
-      description: Подключен
       enum:
         - offline
         - online
     MonitorMultiple:
       type: string
-      description: >-
-        Обычный монитор, много мониторов с режимом масштабирования или
-        зеркалирования
-      default: SINGLE
       enum:
         - SINGLE
         - SUBORDINATE
@@ -4125,11 +4133,15 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
+          description: Категория
           example: GAS_STATION
-          $ref: "#/components/schemas/MonitorCategory"
+          allOf:
+            - $ref: "#/components/schemas/MonitorCategory"
         orientation:
+          description: Ориентация экрана
           example: Horizontal
-          $ref: "#/components/schemas/MonitorOrientation"
+          allOf:
+            - $ref: "#/components/schemas/MonitorOrientation"
         model:
           type: string
           description: Модель
@@ -4163,15 +4175,22 @@ components:
           description: "Есть звук: true/false"
           example: true
         status:
+          description: Подключен
           example: offline
-          $ref: "#/components/schemas/MonitorStatus"
+          allOf:
+            - $ref: "#/components/schemas/MonitorStatus"
         groupOnlineMonitors:
           type: number
           description: Количество подключенных мониторов в группе
           example: 0
         multiple:
+          default: SINGLE
+          description: >-
+            Обычный монитор, много мониторов с режимом масштабирования или
+            зеркалирования
           example: SINGLE
-          $ref: "#/components/schemas/MonitorMultiple"
+          allOf:
+            - $ref: "#/components/schemas/MonitorMultiple"
         playlistPlayed:
           type: boolean
           description: Проигрывается плэйлист
@@ -4283,117 +4302,173 @@ components:
       type: object
       properties:
         id:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         name:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         description:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         extension:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         width:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         height:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         folder:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         folderId:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         monitor:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         monitorId:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         videoType:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         type:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         filesize:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         category:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         duration:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         files:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         monitors:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         playlists:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         parentFolder:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         parentFolderId:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         email:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         surname:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         middleName:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         phoneNumber:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         city:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         country:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         company:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         role:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         verified:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         isDemoUser:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         countUsedSpace:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         address:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         price:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         orientation:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         monitorInfo:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         attached:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         code:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         status:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         longitude:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         latitude:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         renderingStatus:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         fps:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         renderingPercent:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         renderingError:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         renderedFile:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         renderedFileId:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         keepSourceAudio:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         totalDuration:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         videoLayers:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         audioLayers:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         createdAt:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         updatedAt:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         seller:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         buyer:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         playlist:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
         favorite:
-          $ref: "#/components/schemas/Order"
+          allOf:
+            - $ref: "#/components/schemas/Order"
     LimitRequest:
       type: object
       properties:
@@ -4475,14 +4550,12 @@ components:
         - col
     PlaylistStatus:
       type: string
-      description: Статус
       enum:
         - Offline
         - Broadcast
         - NoBroadcast
     FileType:
       type: string
-      description: Тип файла
       enum:
         - video
         - image
@@ -4566,8 +4639,10 @@ components:
           description: Hash файла
           example: 2b0439011a3a215ae1756bfc342e5bbc
         type:
+          description: Тип файла
           example: video
-          $ref: "#/components/schemas/FileType"
+          allOf:
+            - $ref: "#/components/schemas/FileType"
         filesize:
           type: number
           description: Размер файла
@@ -4656,8 +4731,10 @@ components:
           example: описание плейлиста
           nullable: true
         status:
+          description: Статус
           example: Offline
-          $ref: "#/components/schemas/PlaylistStatus"
+          allOf:
+            - $ref: "#/components/schemas/PlaylistStatus"
         userId:
           type: string
           format: uuid
@@ -4731,8 +4808,10 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
+          description: Категория
           example: GAS_STATION
-          $ref: "#/components/schemas/MonitorCategory"
+          allOf:
+            - $ref: "#/components/schemas/MonitorCategory"
         price1s:
           type: number
           description: Стоимость показа 1 секунды в рублях
@@ -4747,8 +4826,10 @@ components:
           description: Максимальная длительность плэйлиста в секундах
           example: 1
         orientation:
+          description: Ориентация экрана
           example: Horizontal
-          $ref: "#/components/schemas/MonitorOrientation"
+          allOf:
+            - $ref: "#/components/schemas/MonitorOrientation"
         model:
           type: string
           description: Модель
@@ -4782,15 +4863,22 @@ components:
           description: "Есть звук: true/false"
           example: true
         status:
+          description: Подключен
           example: offline
-          $ref: "#/components/schemas/MonitorStatus"
+          allOf:
+            - $ref: "#/components/schemas/MonitorStatus"
         groupOnlineMonitors:
           type: number
           description: Количество подключенных мониторов в группе
           example: 0
         multiple:
+          default: SINGLE
+          description: >-
+            Обычный монитор, много мониторов с режимом масштабирования или
+            зеркалирования
           example: SINGLE
-          $ref: "#/components/schemas/MonitorMultiple"
+          allOf:
+            - $ref: "#/components/schemas/MonitorMultiple"
         groupIds:
           description: Подчиненные мониторы в группе мониторов
           type: array
@@ -4868,8 +4956,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество мониторов
@@ -4895,8 +4985,10 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
+          description: Категория
           example: GAS_STATION
-          $ref: "#/components/schemas/MonitorCategory"
+          allOf:
+            - $ref: "#/components/schemas/MonitorCategory"
         price1s:
           type: number
           description: Стоимость показа 1 секунды в рублях
@@ -4911,8 +5003,10 @@ components:
           description: Максимальная длительность плэйлиста в секундах
           example: 1
         orientation:
+          description: Ориентация экрана
           example: Horizontal
-          $ref: "#/components/schemas/MonitorOrientation"
+          allOf:
+            - $ref: "#/components/schemas/MonitorOrientation"
         model:
           type: string
           description: Модель
@@ -4944,8 +5038,13 @@ components:
           description: "Есть звук: true/false"
           example: true
         multiple:
+          default: SINGLE
+          description: >-
+            Обычный монитор, много мониторов с режимом масштабирования или
+            зеркалирования
           example: SINGLE
-          $ref: "#/components/schemas/MonitorMultiple"
+          allOf:
+            - $ref: "#/components/schemas/MonitorMultiple"
         groupIds:
           description: Подчиненные мониторы в группе мониторов
           type: array
@@ -4967,8 +5066,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Монитор
           allOf:
@@ -5020,13 +5121,11 @@ components:
         - bid
     BidStatus:
       type: string
-      description: Ок / Подождите
       enum:
         - OK
         - WAITING
     BidApprove:
       type: string
-      description: Не обработан / Разрешен / Запрещен
       enum:
         - NotProcessed
         - Allowed
@@ -5054,8 +5153,11 @@ components:
           allOf:
             - $ref: "#/components/schemas/MonitorResponse"
         status:
+          description: OK / Подождите
           example: OK
-          $ref: "#/components/schemas/BidStatus"
+          default: OK
+          allOf:
+            - $ref: "#/components/schemas/BidStatus"
         hide:
           type: boolean
           description: Скрытый
@@ -5066,8 +5168,10 @@ components:
           allOf:
             - $ref: "#/components/schemas/PlaylistResponse"
         approved:
+          description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
-          $ref: "#/components/schemas/BidApprove"
+          allOf:
+            - $ref: "#/components/schemas/BidApprove"
         dateWhen:
           type: string
           format: date
@@ -5127,8 +5231,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество взаимодействий
@@ -5158,8 +5264,10 @@ components:
           allOf:
             - $ref: "#/components/schemas/Address"
         category:
+          description: Категория
           example: GAS_STATION
-          $ref: "#/components/schemas/MonitorCategory"
+          allOf:
+            - $ref: "#/components/schemas/MonitorCategory"
         price1s:
           type: number
           description: Стоимость показа 1 секунды в рублях
@@ -5174,8 +5282,10 @@ components:
           description: Максимальная длительность плэйлиста в секундах
           example: 1
         orientation:
+          description: Ориентация экрана
           example: Horizontal
-          $ref: "#/components/schemas/MonitorOrientation"
+          allOf:
+            - $ref: "#/components/schemas/MonitorOrientation"
         model:
           type: string
           description: Модель
@@ -5209,11 +5319,18 @@ components:
           description: "Есть звук: true/false"
           example: true
         status:
+          description: Подключен
           example: offline
-          $ref: "#/components/schemas/MonitorStatus"
+          allOf:
+            - $ref: "#/components/schemas/MonitorStatus"
         multiple:
+          default: SINGLE
+          description: >-
+            Обычный монитор, много мониторов с режимом масштабирования или
+            зеркалирования
           example: SINGLE
-          $ref: "#/components/schemas/MonitorMultiple"
+          allOf:
+            - $ref: "#/components/schemas/MonitorMultiple"
         groupIds:
           description: Подчиненные мониторы в группе мониторов
           type: array
@@ -5234,7 +5351,6 @@ components:
             - $ref: "#/components/schemas/PointClass"
     RenderingStatus:
       type: string
-      description: Статус рендеринга
       enum:
         - initial
         - ready
@@ -5252,8 +5368,10 @@ components:
           description: Имя редактора
           example: имя редактора
         renderingStatus:
+          description: Статус рендеринга
           example: initial
-          $ref: "#/components/schemas/RenderingStatus"
+          allOf:
+            - $ref: "#/components/schemas/RenderingStatus"
         cropX:
           type: number
           description: Обрезать слева
@@ -5428,8 +5546,10 @@ components:
           description: Фреймрейт
           example: 24
         renderingStatus:
+          description: Статус рендеринга
           example: initial
-          $ref: "#/components/schemas/RenderingStatus"
+          allOf:
+            - $ref: "#/components/schemas/RenderingStatus"
         renderingPercent:
           type: integer
           description: Процент рендеринга
@@ -5516,8 +5636,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество редакторов
@@ -5575,8 +5697,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Редактор
           allOf:
@@ -5662,8 +5786,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Слой редактора
           allOf:
@@ -5712,8 +5838,10 @@ components:
           description: Идентификатор редактора
           format: uuid
         renderingStatus:
+          description: Статус рендеринга
           example: initial
-          $ref: "#/components/schemas/RenderingStatus"
+          allOf:
+            - $ref: "#/components/schemas/RenderingStatus"
         renderingPercent:
           type: integer
           description: Процент рендеринга
@@ -5736,8 +5864,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Редактор
           allOf:
@@ -5765,8 +5895,10 @@ components:
           description: Идентификатор папки
           format: uuid
         type:
+          description: Тип файла
           example: video
-          $ref: "#/components/schemas/FileType"
+          allOf:
+            - $ref: "#/components/schemas/FileType"
         createdAt:
           description: Время создания
           oneOf:
@@ -5835,8 +5967,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество файлов
@@ -5853,8 +5987,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество файлов
@@ -5898,8 +6034,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Файл
           allOf:
@@ -6035,8 +6173,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество папок
@@ -6070,8 +6210,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Папки
           allOf:
@@ -6215,15 +6357,19 @@ components:
           description: Дисковое пространство
           example: 20000000
         role:
+          description: Роль пользователя
           example: advertiser
-          $ref: "#/components/schemas/UserRole"
+          allOf:
+            - $ref: "#/components/schemas/UserRole"
         verified:
           type: boolean
           description: EMail подтвержден
           example: true
         plan:
+          description: План пользователя
           example: FULL
-          $ref: "#/components/schemas/UserPlan"
+          allOf:
+            - $ref: "#/components/schemas/UserPlan"
         nonPayment:
           type: number
           description: Сколько раз отправлялось напоминание о неуплате
@@ -6382,8 +6528,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество пользователей
@@ -6398,7 +6546,6 @@ components:
         - data
     InvoiceStatus:
       type: string
-      description: Подтверждение/отклонение счёта
       enum:
         - AWAITING_CONFIRMATION
         - CONFIRMED_PENDING_PAYMENT
@@ -6432,6 +6579,7 @@ components:
               - 2000
         status:
           type: array
+          description: Подтверждение/отклонение счёта
           example:
             range:
               - AWAITING_CONFIRMATION
@@ -6509,8 +6657,10 @@ components:
           description: Описание заказа
           example: описание заказа
         status:
+          description: Подтверждение/отклонение счёта
           example: AWAITING_CONFIRMATION
-          $ref: "#/components/schemas/InvoiceStatus"
+          allOf:
+            - $ref: "#/components/schemas/InvoiceStatus"
         sum:
           type: number
           description: Сумма счета
@@ -6551,8 +6701,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество заказов
@@ -6582,8 +6734,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Счёт
           allOf:
@@ -6609,6 +6763,7 @@ components:
           nullable: true
         status:
           type: array
+          description: Статус
           example:
             range:
               - Offline
@@ -6679,8 +6834,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество плэйлистов
@@ -6718,8 +6875,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Плэйлист
           allOf:
@@ -6750,7 +6909,6 @@ components:
             format: uuid
     SpecificFormat:
       type: string
-      description: Формат получаемого файла
       enum:
         - xlsx
         - pdf
@@ -6758,8 +6916,10 @@ components:
       type: object
       properties:
         format:
+          description: Формат получаемого файла
           example: xlsx
-          $ref: "#/components/schemas/SpecificFormat"
+          allOf:
+            - $ref: "#/components/schemas/SpecificFormat"
         monitorIds:
           description: Мониторы ID (если не указан, то все мониторы)
           example:
@@ -6787,8 +6947,10 @@ components:
       type: object
       properties:
         format:
+          description: Формат получаемого файла
           example: xlsx
-          $ref: "#/components/schemas/SpecificFormat"
+          allOf:
+            - $ref: "#/components/schemas/SpecificFormat"
         monitorIds:
           description: Мониторы ID (если не указан, то все мониторы)
           example:
@@ -6858,6 +7020,7 @@ components:
           description: Пользователь ID
         approved:
           type: array
+          description: Не обработан / Разрешен / Запрещен
           example:
             range:
               - NotProcessed
@@ -6866,6 +7029,7 @@ components:
             $ref: "#/components/schemas/BidApprove"
         status:
           type: array
+          description: Ок / Подождите
           example:
             range:
               - OK
@@ -6975,8 +7139,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Взаимодействие покупателей и продавца
           allOf:
@@ -6988,8 +7154,10 @@ components:
       type: object
       properties:
         approved:
+          description: Не обработан / Разрешен / Запрещен
           example: NotProcessed
-          $ref: "#/components/schemas/BidApprove"
+          allOf:
+            - $ref: "#/components/schemas/BidApprove"
       required:
         - approved
     BidPrecalcPromoRequest:
@@ -7032,8 +7200,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Возвращаемое значение
           allOf:
@@ -7103,8 +7273,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         data:
           description: Константы
           allOf:
@@ -7114,7 +7286,6 @@ components:
         - data
     WalletTransactionType:
       type: string
-      description: Тип транзакции
       enum:
         - DEBIT
         - CREDIT
@@ -7138,6 +7309,7 @@ components:
           description: Пользователь ID
         type:
           type: array
+          description: Тип транзакции
           example:
             range:
               - DEBIT
@@ -7207,8 +7379,10 @@ components:
           description: Идентификатор баланса
           format: uuid
         type:
+          description: Тип транзакции
           example: DEBIT
-          $ref: "#/components/schemas/WalletTransactionType"
+          allOf:
+            - $ref: "#/components/schemas/WalletTransactionType"
         description:
           type: string
           description: Описание транзакции
@@ -7250,8 +7424,10 @@ components:
       type: object
       properties:
         status:
+          description: Статус операции
           example: success
-          $ref: "#/components/schemas/Status"
+          allOf:
+            - $ref: "#/components/schemas/Status"
         count:
           type: number
           description: Количество операций с кошельком
@@ -7280,7 +7456,8 @@ components:
       type: object
       properties:
         WsEvent:
-          $ref: "#/components/schemas/WsEvent"
+          allOf:
+            - $ref: "#/components/schemas/WsEvent"
 externalDocs:
   description: MyScreen backend API
   url: https://api.myscreen.ru

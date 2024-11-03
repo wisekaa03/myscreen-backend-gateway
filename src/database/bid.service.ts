@@ -11,7 +11,6 @@ import {
   Repository,
 } from 'typeorm';
 import dayjs from 'dayjs';
-import { ClientProxy } from '@nestjs/microservices';
 
 import { I18nPath } from '@/i18n';
 import {
@@ -24,8 +23,8 @@ import {
   MsvcMailService,
   MonitorMultiple,
   UserRoleEnum,
-  MICROSERVICE_MYSCREEN,
   BidStatus,
+  MSVC_EXCHANGE,
 } from '@/enums';
 import {
   BadRequestError,
@@ -44,6 +43,7 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserExtView } from './user-ext.view';
 import { WalletService } from './wallet.service';
 import { WsStatistics } from './ws.statistics';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 @Injectable()
 export class BidService {
@@ -67,10 +67,9 @@ export class BidService {
     private readonly bidRepository: Repository<BidEntity>,
     @InjectRepository(PlaylistEntity)
     private readonly playlistRepository: Repository<PlaylistEntity>,
-    @Inject(MICROSERVICE_MYSCREEN.MAIL)
-    private readonly mailMsvc: ClientProxy,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
+    private readonly ampqConnection: AmqpConnection,
   ) {
     this.commissionPercent = parseInt(
       configService.getOrThrow('COMMISSION_PERCENT'),
@@ -321,7 +320,8 @@ export class BidService {
           const sellerEmail = bid.seller.email;
           if (sellerEmail) {
             const language = bid.seller.preferredLanguage;
-            this.mailMsvc.emit<unknown, MsvcMailBidMessage>(
+            await this.ampqConnection.publish(
+              MSVC_EXCHANGE.MAIL,
               MsvcMailService.BidWarning,
               {
                 email: sellerEmail,
@@ -523,7 +523,8 @@ export class BidService {
             const sellerEmail = bid.seller.email;
             const language =
               bid.seller.preferredLanguage ?? user.preferredLanguage;
-            this.mailMsvc.emit<unknown, MsvcMailBidMessage>(
+            await this.ampqConnection.publish(
+              MSVC_EXCHANGE.MAIL,
               MsvcMailService.BidWarning,
               {
                 email: sellerEmail,

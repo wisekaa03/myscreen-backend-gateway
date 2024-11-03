@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { createMock } from '@golevelup/ts-jest';
 import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-import { MICROSERVICE_MYSCREEN } from '@/enums';
 import { WalletService } from './wallet.service';
 import { WalletEntity } from './wallet.entity';
 import { UserService } from './user.service';
@@ -31,7 +32,6 @@ describe(WalletService.name, () => {
         WalletService,
         { provide: UserService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
-        { provide: MICROSERVICE_MYSCREEN.MAIL, useClass: mockRepository },
         { provide: ActService, useClass: mockRepository },
         {
           provide: getRepositoryToken(WalletEntity),
@@ -41,6 +41,7 @@ describe(WalletService.name, () => {
           provide: getEntityManagerToken(),
           useClass: mockRepository,
         },
+        { provide: AmqpConnection, useValue: createMock<AmqpConnection>() },
       ],
     }).compile();
 

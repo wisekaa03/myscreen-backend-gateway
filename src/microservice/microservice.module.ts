@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 
 import { ModuleRabbitOptions } from '@/utils/microservice-options';
 import { MSVC_EXCHANGE } from '@/enums';
-import { RmqController } from './rmq.controller';
+import { GatewayService } from './gateway.service';
 
 @Module({
   imports: [
@@ -12,20 +12,23 @@ import { RmqController } from './rmq.controller';
       ModuleRabbitOptions({
         exchanges: [
           {
-            name: MSVC_EXCHANGE.EDITOR,
+            name: MSVC_EXCHANGE.GATEWAY,
+            type: 'direct',
+            createExchangeIfNotExists: true,
           },
         ],
         channels: {
           gateway: {
             prefetchCount: 1,
+            default: true,
           },
         },
       }),
     ),
   ],
 
-  controllers: [RmqController],
+  providers: [GatewayService],
 
   exports: [RabbitMQModule],
 })
-export class RabbitModule {}
+export class MsvcModule {}

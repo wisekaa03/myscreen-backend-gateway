@@ -17,6 +17,5 @@ export * from './monitor-mupliple.enum';
 export * from './bid-status.enum';
 export * from './wallet-transaction-type.enum';
 export * from './ws-event.enum';
-export * from './microservice.enum';
-export * from './microservice-myscreen';
+export * from './msvc-routing.enum';
 export * from './msvc-exchange.enum';

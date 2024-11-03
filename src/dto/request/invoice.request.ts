@@ -33,7 +33,6 @@ export class InvoiceRequest extends PartialType(
   sum?: MSRange<number>;
 
   @ApiProperty({
-    type: 'enum',
     enum: InvoiceStatus,
     enumName: 'InvoiceStatus',
     description: 'Подтверждение/отклонение счёта',

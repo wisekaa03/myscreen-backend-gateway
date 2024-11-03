@@ -24,7 +24,6 @@ export class BidRequest extends PartialType(
   ]),
 ) {
   @ApiProperty({
-    type: 'enum',
     description: 'Не обработан / Разрешен / Запрещен',
     enum: BidApprove,
     enumName: 'BidApprove',
@@ -42,7 +41,6 @@ export class BidRequest extends PartialType(
   approved?: MSRangeEnum<BidApprove>;
 
   @ApiProperty({
-    type: 'enum',
     description: 'Ок / Подождите',
     enum: BidStatus,
     enumName: 'BidStatus',
