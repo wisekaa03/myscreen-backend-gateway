@@ -34,7 +34,7 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   }
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
-    const i18n = I18nContext.current(host);
+    const i18n = I18nContext?.current(host) ?? I18nContext?.current();
     let { message } = exception;
 
     if (exception instanceof I18nValidationException) {
@@ -65,7 +65,7 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
       const errorsMessage =
         errorsArray && errorsArray.flat(Infinity).join(', ');
       let messageLang = message;
-      if (i18n) {
+      if (i18n instanceof I18nContext) {
         messageLang = i18n.t(message, {
           lang: i18n.lang,
           defaultValue: message,
