@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, DeleteResult, EntityManager, Repository } from 'typeorm';
-import { ClientProxy } from '@nestjs/microservices';
 
 import { I18nPath } from '@/i18n';
 import {
@@ -16,14 +15,13 @@ import {
   MonitorMultiple,
   MonitorOrientation,
   RenderingStatus,
-  MICROSERVICE_MYSCREEN,
   MsvcEditor,
+  MSVC_EXCHANGE,
 } from '@/enums';
 import {
   FindManyOptionsExt,
   FindOneOptionsExt,
   MonitorGroupWithPlaylist,
-  MsvcEditorExport,
 } from '@/interfaces';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { EditorEntity } from './editor.entity';
@@ -34,6 +32,7 @@ import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 dayjs.extend(dayjsDuration);
 
@@ -51,8 +50,7 @@ export class EditorService {
     private readonly editorLayerRepository: Repository<EditorLayerEntity>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
-    @Inject(MICROSERVICE_MYSCREEN.EDITOR)
-    private readonly editorMsvc: ClientProxy,
+    private readonly amqpConnection: AmqpConnection,
   ) {}
 
   async find({
@@ -641,7 +639,8 @@ export class EditorService {
     } as EditorEntity;
 
     const { id: folderId } = await this.folderService.exportFolder(userId);
-    this.editorMsvc.emit<Buffer, MsvcEditorExport>(MsvcEditor.Export, {
+
+    await this.amqpConnection.publish(MSVC_EXCHANGE.EDITOR, MsvcEditor.Export, {
       folderId,
       editor,
       customOutputArgs,

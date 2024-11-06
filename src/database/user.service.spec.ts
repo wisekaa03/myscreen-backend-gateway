@@ -1,17 +1,14 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { createMock } from '@golevelup/ts-jest';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import dayjs from 'dayjs';
 import { FindOneOptions, FindOptionsWhere } from 'typeorm';
 
 import { Observable } from 'rxjs';
 import { I18nService } from 'nestjs-i18n';
-import {
-  CRUD,
-  UserPlanEnum,
-  UserRoleEnum,
-  MICROSERVICE_MYSCREEN,
-} from '@/enums';
+import { CRUD, UserPlanEnum, UserRoleEnum } from '@/enums';
 import { RegisterRequest } from '@/dto';
 import { getFullName } from '@/utils/full-name';
 import { UserEntity } from './user.entity';
@@ -71,7 +68,6 @@ describe(UserService.name, () => {
         { provide: FileService, useClass: mockRepository },
         { provide: I18nService, useClass: mockRepository },
         { provide: ConfigService, useClass: mockRepository },
-        { provide: MICROSERVICE_MYSCREEN.MAIL, useClass: mockRepository },
         {
           provide: getRepositoryToken(UserEntity),
           useClass: mockRepository,
@@ -84,6 +80,7 @@ describe(UserService.name, () => {
           provide: getRepositoryToken(FileEntity),
           useClass: mockRepository,
         },
+        { provide: AmqpConnection, useValue: createMock<AmqpConnection>() },
       ],
     }).compile();
 

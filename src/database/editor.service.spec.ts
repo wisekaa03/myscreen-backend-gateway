@@ -1,5 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { createMock } from '@golevelup/ts-jest';
 
 import { EditorLayerEntity } from './editor-layer.entity';
 import { EditorEntity } from './editor.entity';
@@ -10,9 +12,8 @@ import { PlaylistService } from './playlist.service';
 import { BidEntity } from './bid.entity';
 import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
-import { MICROSERVICE_MYSCREEN } from '@/enums';
 
-export const mockRepository = jest.fn(() => ({
+const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
   findAndCount: async () => Promise.resolve([]),
   save: async () => Promise.resolve([]),
@@ -37,7 +38,7 @@ describe(EditorService.name, () => {
         { provide: FolderService, useClass: mockRepository },
         { provide: PlaylistService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
-        { provide: MICROSERVICE_MYSCREEN.EDITOR, useClass: mockRepository },
+        { provide: AmqpConnection, useClass: mockRepository },
         {
           provide: getRepositoryToken(EditorEntity),
           useClass: mockRepository,
@@ -62,6 +63,7 @@ describe(EditorService.name, () => {
           provide: getEntityManagerToken(),
           useClass: mockRepository,
         },
+        { provide: AmqpConnection, useValue: createMock<AmqpConnection>() },
       ],
     }).compile();
 

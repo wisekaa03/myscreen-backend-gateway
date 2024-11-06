@@ -2,10 +2,12 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { I18nService } from 'nestjs-i18n';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { createMock } from '@golevelup/ts-jest';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Observable } from 'rxjs';
 
-import { UserPlanEnum, UserRoleEnum, MICROSERVICE_MYSCREEN } from '@/enums';
+import { UserPlanEnum, UserRoleEnum } from '@/enums';
 import { UserService } from '@/database/user.service';
 import { RefreshTokenService } from '@/database/refreshtoken.service';
 import { UserEntity } from '@/database/user.entity';
@@ -56,7 +58,6 @@ describe(AuthService.name, () => {
         { provide: JwtService, useClass: mockRepository },
         { provide: JwtStrategy, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
-        { provide: MICROSERVICE_MYSCREEN.MAIL, useClass: mockRepository },
         {
           provide: getRepositoryToken(UserEntity),
           useClass: mockRepository,
@@ -74,6 +75,7 @@ describe(AuthService.name, () => {
           provide: getRepositoryToken(FolderEntity),
           useClass: mockRepository,
         },
+        { provide: AmqpConnection, useValue: createMock<AmqpConnection>() },
         AuthService,
         UserService,
       ],

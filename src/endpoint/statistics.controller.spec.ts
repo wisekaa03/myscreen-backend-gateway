@@ -1,16 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { createMock } from '@golevelup/ts-jest';
 import { Observable } from 'rxjs';
 
-import { MICROSERVICE_MYSCREEN } from '@/enums';
 import { JwtAuthGuard } from '@/guards/jwt-auth.guard';
 import { MonitorService } from '@/database/monitor.service';
 import { StatisticsController } from './statistics.controller';
 import { MonitorStatisticsService } from '@/database/monitor-statistics.service';
 import { UserService } from '@/database/user.service';
 import { MonitorOnlineService } from '@/database/monitor-online.service';
-import { MonitorStatisticsEntity } from '@/database/monitor-statistics.entity';
 
 export const mockRepository = jest.fn(() => ({
   findOne: async () => Promise.resolve([]),
@@ -39,7 +38,7 @@ describe(StatisticsController.name, () => {
         { provide: UserService, useClass: mockRepository },
         { provide: MonitorStatisticsService, useClass: mockRepository },
         { provide: MonitorOnlineService, useClass: mockRepository },
-        { provide: MICROSERVICE_MYSCREEN.FORM, useClass: mockRepository },
+        { provide: AmqpConnection, useValue: createMock<AmqpConnection>() },
       ],
     }).compile();
 

@@ -10,7 +10,6 @@ export class WalletRequest extends PartialType(
   OmitType(WalletEntity, ['type', 'createdAt', 'updatedAt']),
 ) {
   @ApiProperty({
-    type: 'enum',
     description: 'Тип транзакции',
     enum: WalletTransactionType,
     enumName: 'WalletTransactionType',

@@ -1,10 +1,12 @@
 import { Readable } from 'stream';
 import { Observable, of } from 'rxjs';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { createMock } from '@golevelup/ts-jest';
 import { ConfigService } from '@nestjs/config';
 import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 
-import { InvoiceStatus, MICROSERVICE_MYSCREEN, UserRoleEnum } from '@/enums';
+import { InvoiceStatus, UserRoleEnum } from '@/enums';
 import { InvoiceEntity } from './invoice.entity';
 import { InvoiceService } from './invoice.service';
 import { WalletService } from './wallet.service';
@@ -34,6 +36,7 @@ const user: UserEntity = {
   preferredLanguage: 'ru',
   locale: 'ru-RU',
   nonPayment: 0,
+  storageSpace: '0',
 };
 const invoice: InvoiceEntity = {
   id: idMock,
@@ -96,8 +99,6 @@ describe(InvoiceService.name, () => {
         { provide: FolderService, useClass: mockRepository },
         { provide: FileService, useClass: mockRepository },
         { provide: WsStatistics, useClass: mockRepository },
-        { provide: MICROSERVICE_MYSCREEN.MAIL, useClass: mockRepository },
-        { provide: MICROSERVICE_MYSCREEN.FORM, useClass: mockRepository },
         {
           provide: getRepositoryToken(InvoiceEntity),
           useClass: mockRepository,
@@ -120,6 +121,7 @@ describe(InvoiceService.name, () => {
               }),
           },
         },
+        { provide: AmqpConnection, useValue: createMock<AmqpConnection>() },
       ],
     }).compile();
 

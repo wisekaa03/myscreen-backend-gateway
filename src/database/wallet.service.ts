@@ -10,21 +10,15 @@ import {
   FindOperator,
 } from 'typeorm';
 import dayjs from 'dayjs';
-import { ClientProxy } from '@nestjs/microservices';
 
-import {
-  FindManyOptionsExt,
-  FindOneOptionsExt,
-  MsvcMailBalanceChanged,
-  MsvcMailBalanceNotChanged,
-} from '@/interfaces';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import {
   UserRoleEnum,
-  MICROSERVICE_MYSCREEN,
   MsvcMailService,
   UserPlanEnum,
   UserStoreSpaceEnum,
   WalletTransactionType,
+  MSVC_EXCHANGE,
 } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { getFullName } from '@/utils/full-name';
@@ -32,6 +26,7 @@ import { ActService } from './act.service';
 import { UserEntity } from './user.entity';
 import { WalletEntity } from './wallet.entity';
 import { UserExtView } from './user-ext.view';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 @Injectable()
 export class WalletService {
@@ -47,12 +42,11 @@ export class WalletService {
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => ActService))
     private readonly actService: ActService,
-    @Inject(MICROSERVICE_MYSCREEN.MAIL)
-    private readonly mailMsvc: ClientProxy,
     @InjectRepository(WalletEntity)
     private readonly walletRepository: Repository<WalletEntity>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
+    private readonly ampqConnection: AmqpConnection,
   ) {
     this.subscriptionFee = parseInt(
       this.configService.getOrThrow('SUBSCRIPTION_FEE'),
@@ -243,7 +237,8 @@ export class WalletService {
         this.logger.warn(` [✓] Balance of user "${fullName}": ₽${balance}`);
 
         // и вывод информации на email
-        this.mailMsvc.emit<unknown, MsvcMailBalanceChanged>(
+        await this.ampqConnection.publish(
+          MSVC_EXCHANGE.MAIL,
           MsvcMailService.BalanceChanged,
           {
             user,
@@ -268,7 +263,8 @@ export class WalletService {
           }
 
           // и вывод информации на email
-          this.mailMsvc.emit<unknown, MsvcMailBalanceNotChanged>(
+          await this.ampqConnection.publish(
+            MSVC_EXCHANGE.MAIL,
             MsvcMailService.BalanceNotChanged,
             {
               user,

@@ -6,9 +6,7 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { DeepPartial, EntityManager, Repository } from 'typeorm';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ru';
-import { ClientProxy } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
-import { lastValueFrom, timeout } from 'rxjs';
 
 import {
   BadRequestError,
@@ -16,22 +14,15 @@ import {
   NotFoundError,
   ServiceUnavailableError,
 } from '@/errors';
-import {
-  FindManyOptionsExt,
-  FindOneOptionsExt,
-  MsvcMailInvoiceAwaitingConfirmation,
-  MsvcMailInvoiceConfirmed,
-  MsvcMailInvoicePayed,
-  MsvcFormInvoice,
-} from '@/interfaces';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import { formatToContentType } from '@/constants';
 import {
-  MICROSERVICE_MYSCREEN,
   MsvcFormService,
   MsvcMailService,
   UserRoleEnum,
   SpecificFormat,
   InvoiceStatus,
+  MSVC_EXCHANGE,
 } from '@/enums';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { InvoiceEntity } from './invoice.entity';
@@ -44,6 +35,7 @@ import { FolderService } from './folder.service';
 import { FileEntity } from './file.entity';
 import { UserExtView } from './user-ext.view';
 import { I18nPath } from '@/i18n';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 @Injectable()
 export class InvoiceService {
@@ -58,16 +50,11 @@ export class InvoiceService {
     private readonly fileService: FileService,
     @Inject(forwardRef(() => WsStatistics))
     private readonly wsStatistics: WsStatistics,
-    @Inject(MICROSERVICE_MYSCREEN.MAIL)
-    private readonly mailMsvc: ClientProxy,
-    @Inject(MICROSERVICE_MYSCREEN.FORM)
-    private readonly formService: ClientProxy,
     @InjectRepository(InvoiceEntity)
     private readonly invoiceRepository: Repository<InvoiceEntity>,
-    @InjectRepository(UserExtView)
-    private readonly userExtRepository: Repository<UserExtView>,
     @InjectEntityManager()
     private readonly entityManager: EntityManager,
+    private readonly ampqConnection: AmqpConnection,
   ) {
     this.minInvoiceSum = parseInt(
       this.configService.getOrThrow('MIN_INVOICE_SUM'),
@@ -229,23 +216,16 @@ export class InvoiceService {
     const language =
       invoiceUser.preferredLanguage ??
       this.configService.getOrThrow('DEFAULT_LANGUAGE');
-    const invoiceFileObservable = this.formService.send<
-      Buffer,
-      MsvcFormInvoice
-    >(MsvcFormService.Invoice, {
-      format,
-      invoice,
-      language,
+    const fileBuffer = await this.ampqConnection.request<Buffer>({
+      exchange: MSVC_EXCHANGE.FORM,
+      routingKey: MsvcFormService.Invoice,
+      payload: {
+        format,
+        invoice,
+        language,
+      },
+      timeout: 3000,
     });
-    const fileBuffer = Buffer.from(
-      await lastValueFrom(invoiceFileObservable.pipe(timeout(3000))).catch(
-        (error: any) => {
-          throw new ServiceUnavailableError(
-            `File unavailable: ${JSON.stringify(error)}`,
-          );
-        },
-      ),
-    );
 
     const specificFormat = formatToContentType[format]
       ? format
@@ -320,7 +300,8 @@ export class InvoiceService {
             });
 
             // и выводится письмо о том, что счет оплачен
-            this.mailMsvc.emit<unknown, MsvcMailInvoicePayed>(
+            await this.ampqConnection.publish(
+              MSVC_EXCHANGE.MAIL,
               MsvcMailService.InvoicePayed,
               {
                 invoice,
@@ -350,7 +331,8 @@ export class InvoiceService {
 
             accountantUsers.forEach(async (user) => {
               // Вызов сервиса отправки писем
-              this.mailMsvc.emit<unknown, MsvcMailInvoiceAwaitingConfirmation>(
+              await this.ampqConnection.publish(
+                MSVC_EXCHANGE.MAIL,
                 MsvcMailService.InvoiceAwaitingConfirmation,
                 {
                   user,
@@ -382,7 +364,8 @@ export class InvoiceService {
               });
             if (data.Body instanceof Readable) {
               const invoiceFile = await buffer(data.Body);
-              this.mailMsvc.emit<unknown, MsvcMailInvoiceConfirmed>(
+              await this.ampqConnection.publish(
+                MSVC_EXCHANGE.MAIL,
                 MsvcMailService.InvoiceConfirmed,
                 {
                   user: invoiceUser,

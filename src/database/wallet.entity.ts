@@ -42,7 +42,6 @@ export class WalletEntity {
     comment: 'Тип транзакции',
   })
   @ApiProperty({
-    type: 'enum',
     enum: WalletTransactionType,
     enumName: 'WalletTransactionType',
     description: 'Тип транзакции',

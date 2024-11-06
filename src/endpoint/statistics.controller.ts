@@ -2,21 +2,19 @@ import {
   Request as ExpressRequest,
   Response as ExpressResponse,
 } from 'express';
-import { Body, HttpCode, Inject, Logger, Post, Req, Res } from '@nestjs/common';
+import { Body, HttpCode, Logger, Post, Req, Res } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { In } from 'typeorm';
-import { ClientProxy } from '@nestjs/microservices';
-import { lastValueFrom, timeout } from 'rxjs';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
-import { MsvcFormReportDeviceStatus, MsvcFormReportViews } from '@/interfaces';
 import { formatToContentType } from '@/constants';
 import { ReportDeviceStatusRequest, ReportViewsRequest } from '@/dto';
 import {
   UserRoleEnum,
   SpecificFormat,
   CRUD,
-  MICROSERVICE_MYSCREEN,
   MsvcFormService,
+  MSVC_EXCHANGE,
 } from '@/enums';
 import { ApiComplexDecorators, Crud } from '@/decorators';
 import { MonitorService } from '@/database/monitor.service';
@@ -37,8 +35,7 @@ export class StatisticsController {
 
   constructor(
     private readonly monitorService: MonitorService,
-    @Inject(MICROSERVICE_MYSCREEN.FORM)
-    private readonly formService: ClientProxy,
+    private readonly ampqConnection: AmqpConnection,
   ) {}
 
   @Post('device-status')
@@ -97,22 +94,18 @@ export class StatisticsController {
       });
     }
 
-    const data = Buffer.from(
-      await lastValueFrom(
-        this.formService
-          .send<Buffer, MsvcFormReportDeviceStatus>(
-            MsvcFormService.ReportDeviceStatus,
-            {
-              user,
-              monitors,
-              format,
-              dateFrom: new Date(dateFrom),
-              dateTo: new Date(dateTo),
-            },
-          )
-          .pipe(timeout(3000)),
-      ),
-    );
+    const data = await this.ampqConnection.request<Buffer>({
+      exchange: MSVC_EXCHANGE.FORM,
+      routingKey: MsvcFormService.ReportDeviceStatus,
+      payload: {
+        user,
+        monitors,
+        format,
+        dateFrom: new Date(dateFrom),
+        dateTo: new Date(dateTo),
+      },
+      timeout: 3000,
+    });
 
     const specificFormat = formatToContentType[format]
       ? format
@@ -180,19 +173,18 @@ export class StatisticsController {
       });
     }
 
-    const data = Buffer.from(
-      await lastValueFrom(
-        this.formService
-          .send<Buffer, MsvcFormReportViews>(MsvcFormService.ReportViews, {
-            user,
-            statistics,
-            format,
-            dateFrom: new Date(dateFrom),
-            dateTo: new Date(dateTo),
-          })
-          .pipe(timeout(3000)),
-      ),
-    );
+    const data = await this.ampqConnection.request<Buffer>({
+      exchange: MSVC_EXCHANGE.FORM,
+      routingKey: MsvcFormService.ReportViews,
+      payload: {
+        user,
+        statistics,
+        format,
+        dateFrom: new Date(dateFrom),
+        dateTo: new Date(dateTo),
+      },
+      timeout: 3000,
+    });
 
     const specificFormat = formatToContentType[format]
       ? format

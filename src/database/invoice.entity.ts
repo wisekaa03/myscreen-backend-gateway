@@ -59,7 +59,6 @@ export class InvoiceEntity {
     comment: 'Подтверждение/отклонение счёта',
   })
   @ApiProperty({
-    type: 'enum',
     enum: InvoiceStatus,
     enumName: 'InvoiceStatus',
     description: 'Подтверждение/отклонение счёта',

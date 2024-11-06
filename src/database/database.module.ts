@@ -35,6 +35,7 @@ import { ActService } from './act.service';
 import { ActEntity } from './act.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
 import { WsStatistics } from './ws.statistics';
+import { MsvcModule } from '@/microservice/microservice.module';
 import { MonitorStatisticsService } from './monitor-statistics.service';
 import { MonitorStatisticsEntity } from './monitor-statistics.entity';
 import { MonitorOnlineEntity } from './monitor-online.entity';
@@ -49,6 +50,8 @@ import { BidSubscriber } from './bid.subscriber';
 @Global()
 @Module({
   imports: [
+    MsvcModule,
+
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmOptionsClass,
       inject: [ConfigService],
