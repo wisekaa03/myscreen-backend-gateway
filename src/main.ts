@@ -10,7 +10,7 @@ import {
 } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
-import { I18nValidationPipe } from 'nestjs-i18n';
+import { I18nMiddleware, I18nValidationPipe } from 'nestjs-i18n';
 
 import { version, author, homepage, description } from '../package.json';
 import { ExceptionsFilter } from './exception/exceptions.filter';
@@ -65,7 +65,8 @@ async function bootstrap() {
         skipUndefinedProperties: true,
       }),
     )
-    .useWebSocketAdapter(new WsAdapter(app));
+    .useWebSocketAdapter(new WsAdapter(app))
+    .use(I18nMiddleware);
 
   const swaggerConfig = new DocumentBuilder()
     .addBearerAuth({
