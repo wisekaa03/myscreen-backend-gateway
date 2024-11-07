@@ -1,6 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import {
   DeepPartial,
   DeleteResult,
@@ -13,11 +14,7 @@ import {
 import dayjs from 'dayjs';
 
 import { I18nPath } from '@/i18n';
-import {
-  FindManyOptionsExt,
-  FindOneOptionsExt,
-  MsvcMailBidMessage,
-} from '@/interfaces';
+import { FindManyOptionsExt, FindOneOptionsExt } from '@/interfaces';
 import {
   BidApprove,
   MsvcMailService,
@@ -43,7 +40,6 @@ import { PlaylistEntity } from './playlist.entity';
 import { UserExtView } from './user-ext.view';
 import { WalletService } from './wallet.service';
 import { WsStatistics } from './ws.statistics';
-import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 
 @Injectable()
 export class BidService {
@@ -201,29 +197,34 @@ export class BidService {
         },
       );
 
-      for (const { subBidID } of bidIds) {
-        const subBid = await manager.findOne(BidEntity, {
-          where: { id: subBidID },
-          relations: { playlist: { files: true } },
-        });
-        if (!subBid) {
-          throw new InternalServerError();
-        }
-
-        await this.wsStatistics.onChangeBid({ bid: subBid, transact });
-      }
-
       setTimeout(async () => {
-        const editorsPromise = bidIds.flatMap(async ({ groupEditors }) =>
-          groupEditors?.flatMap(async (editorPromise) => {
-            const editor = await editorPromise();
-            await new Promise((resolve) => setTimeout(resolve, 3000));
-            return editor;
-          }),
-        );
+        for (const { subBidID, groupEditors } of bidIds) {
+          if (groupEditors) {
+            for (const editorPromise of groupEditors) {
+              await editorPromise().catch((error) => {
+                this.logger.error(error);
+              });
 
-        await Promise.all(editorsPromise);
-      }, 3000);
+              const subBid = await manager.findOne(BidEntity, {
+                where: { id: subBidID },
+                relations: { playlist: { files: true } },
+              });
+              if (!subBid) {
+                this.logger.error('error.editor.not_found', {
+                  args: { id: subBidID },
+                });
+                continue;
+              }
+
+              await this.wsStatistics
+                .onChangeBid({ bid: subBid, transact })
+                .catch((error) => {
+                  this.logger.error(error);
+                });
+            }
+          }
+        }
+      }, 0);
     }
   }
 

@@ -466,9 +466,6 @@ export class EditorService {
           throw new InternalServerError();
         }
         const editorId = editor.id;
-        if (!editorId) {
-          throw new InternalServerError();
-        }
 
         // ...и добавляем в редактор видео-слой с файлом
         await this.createLayer({
@@ -532,14 +529,12 @@ export class EditorService {
       return monitorMultipleWithPlaylist;
     }
 
-    const monitorsGroup = await this.groupMonitorsPlaylist({
+    return this.groupMonitorsPlaylist({
       userId,
       playlist,
       groupMonitors,
       transact,
     });
-
-    return monitorsGroup;
   }
 
   /**
