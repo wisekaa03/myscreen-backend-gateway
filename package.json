@@ -1,6 +1,6 @@
 {
   "name": "myscreen-backend-nest",
-  "version": "2.60.5",
+  "version": "2.60.6",
   "description": "MyScreen backend API",
   "author": {
     "name": "Stanislav V Lanskoy",
@@ -89,7 +89,7 @@
     "**/**/typescript": ">=5.6.3",
     "**/**/qs": ">=6.13.0",
     "**/**/universalify": ">=2.0.1",
-    "**/**/uuid": ">=11.0.2",
+    "**/**/uuid": ">=11.0.3",
     "**/**/webpack": ">=5.96.1",
     "**/**/which": ">=5.0.0",
     "**/**/write-file-atomic": ">=6.0.0",
@@ -141,7 +141,7 @@
     "pino": "^9.5.0",
     "pino-elasticsearch": "^8.1.0",
     "pino-http": "^10.3.0",
-    "pino-pretty": "^12.1.0",
+    "pino-pretty": "^13.0.0",
     "reflect-metadata": "^0.2.2",
     "rimraf": "^6.0.1",
     "rxjs": "^7.8.1",
