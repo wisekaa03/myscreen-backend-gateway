@@ -34,7 +34,12 @@ export class ExceptionsFilter extends BaseExceptionFilter<Error> {
   }
 
   catch(exception: HttpException | Error, host: ArgumentsHost) {
-    const i18n = I18nContext?.current(host);
+    let i18n: I18nContext | undefined;
+    try {
+      i18n = I18nContext.current(host);
+    } catch (error) {
+      this.logger.error(error);
+    }
     let { message } = exception;
 
     if (exception instanceof I18nValidationException) {
