@@ -441,7 +441,7 @@ export class EditorService {
         const editorInsert = await transact.upsert(
           EditorEntity,
           {
-            name: `AUTO: playlist=${playlist.name}, monitor=${monitorName}, file=${file.name}`,
+            name: `AUTO: monitor=${monitorName}, file=${file.name}, playlist=${playlist.name}`,
             userId,
             width: widthMonitor,
             height: heightMonitor,
