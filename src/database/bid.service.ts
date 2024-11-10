@@ -169,7 +169,7 @@ export class BidService {
       await this.wsStatistics.onChangeBid({ bid, transact });
     } else {
       const manager = transact ?? this.entityManager;
-      const bidIds = await manager.transaction(
+      const groupEditors = await manager.transaction(
         'REPEATABLE READ',
         async (transact) => {
           const groupMonitors = await this.editorService.partitionMonitors({
@@ -181,7 +181,7 @@ export class BidService {
           }
 
           const groupMonitorPromise = groupMonitors.map(async (group) => {
-            const { id: subBidID } = await transact.save(BidEntity, {
+            await transact.save(BidEntity, {
               ...insert,
               hide: false,
               parentRequestId: id,
@@ -190,41 +190,22 @@ export class BidService {
               status: BidStatus.WAITING,
             });
 
-            return { subBidID, groupEditors: group.groupEditors };
+            return group.groupEditors;
           });
 
           return Promise.all(groupMonitorPromise);
         },
       );
 
-      setTimeout(async () => {
-        for (const { subBidID, groupEditors } of bidIds) {
-          if (groupEditors) {
-            for (const editorPromise of groupEditors) {
-              await editorPromise().catch((error) => {
-                this.logger.error(error);
-              });
-
-              const subBid = await manager.findOne(BidEntity, {
-                where: { id: subBidID },
-                relations: { playlist: { files: true } },
-              });
-              if (!subBid) {
-                this.logger.error('error.editor.not_found', {
-                  args: { id: subBidID },
-                });
-                continue;
-              }
-
-              await this.wsStatistics
-                .onChangeBid({ bid: subBid, transact })
-                .catch((error) => {
-                  this.logger.error(error);
-                });
-            }
-          }
-        }
-      }, 0);
+      setTimeout(() => {
+        groupEditors.forEach((groupEditor) =>
+          groupEditor?.forEach((editorPromise) =>
+            editorPromise().catch((error) => {
+              this.logger.error(error);
+            }),
+          ),
+        );
+      }, 100);
     }
   }
 
