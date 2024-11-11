@@ -181,10 +181,6 @@ jobs:
             --exclude='*'
       - name: Run remote commands
         run: |
-          # Copy the Yandex.Cloud certificate
-          SSH_COMMAND+='mkdir -p '$REMOTE_TARGET'/certs && '
-          SSH_COMMAND+='wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" -O '$REMOTE_TARGET'/certs/root.crt && '
-
           # Yarn pm2 starting
           SSH_COMMAND+='cd '$REMOTE_TARGET' && npm run pm2:start'
 
