@@ -555,6 +555,9 @@ export class EditorService {
     customOutputArgs?: string[];
   }): Promise<EditorEntity> {
     const _editor = await this.editorRepository.findOne({
+      where: {
+        id,
+      },
       relations: {
         videoLayers: {
           file: {
@@ -571,9 +574,6 @@ export class EditorService {
         },
         playlist: true,
         user: true,
-      },
-      where: {
-        id,
       },
     });
     if (!_editor) {
@@ -635,7 +635,7 @@ export class EditorService {
 
     const { id: folderId } = await this.folderService.exportFolder(userId);
 
-    await this.amqpConnection.publish(MSVC_EXCHANGE.EDITOR, MsvcEditor.Export, {
+    this.amqpConnection.publish(MSVC_EXCHANGE.EDITOR, MsvcEditor.Export, {
       folderId,
       editor,
       customOutputArgs,
