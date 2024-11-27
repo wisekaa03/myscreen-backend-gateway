@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { ffprobe, FfprobeData } from 'media-probe';
+import { ffprobe, FfprobeData } from 'fluent-ffmpeg';
 import { EntityManager, ObjectLiteral, UpdateResult } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Injectable, Logger } from '@nestjs/common';
@@ -90,15 +90,11 @@ export class GatewayService {
       let info: FfprobeData;
       if (!_info) {
         await writeFile(outPath, fileBuffer);
-        info = await ffprobe(outPath, {
-          showFormat: true,
-          showStreams: true,
-          showFrames: false,
-          showPackets: false,
-          showPrograms: false,
-          countFrames: false,
-          countPackets: false,
-        });
+        info = await new Promise((resolve, reject) =>
+          ffprobe(outPath, (error, data) =>
+            error ? reject(error) : resolve(data),
+          ),
+        );
       } else {
         info = JSON.parse(_info);
       }
