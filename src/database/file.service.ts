@@ -30,7 +30,7 @@ import {
   EntityManager,
   IsNull,
 } from 'typeorm';
-import type { FfprobeData } from 'media-probe';
+import type { FfprobeData } from 'fluent-ffmpeg';
 
 import {
   ConflictData,
@@ -496,7 +496,7 @@ export class FileService {
           duration,
           width,
           height,
-          info,
+          info: info as FfprobeData,
           type,
           extension,
           hash,
@@ -930,7 +930,7 @@ export class FileService {
 
           preview = await FfMpegPreview(
             file.type,
-            file.info || {},
+            file.info || { streams: [], format: {}, chapters: [] },
             filename,
             outPath,
           )

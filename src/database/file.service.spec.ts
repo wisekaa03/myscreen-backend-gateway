@@ -3,7 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import { getS3ConnectionToken } from 'nestjs-s3-aws';
 import { S3_MODULE_CONNECTION } from 'nestjs-s3-aws/dist/s3.constants';
-import { FfprobeData } from 'media-probe';
+import type { FfprobeData } from 'fluent-ffmpeg';
 
 import { FileEntity } from './file.entity';
 import { FilePreviewEntity } from './file-preview.entity';
@@ -130,11 +130,11 @@ describe(FileService.name, () => {
   });
 
   it('upload', async () => {
-    const info: FfprobeData = {};
+    const info: FfprobeData = { streams: [], format: {}, chapters: [] };
     const file = Buffer.from('test');
     const files = await service.upload({
       userId: idMock,
-      storageSpace: UserStoreSpaceEnum.DEMO,
+      storageSpace: String(UserStoreSpaceEnum.DEMO),
       files: file,
       folderId: idMock,
       originalname: 'test.mp4',

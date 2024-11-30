@@ -12,7 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import type { FfprobeData } from 'media-probe';
+import type { FfprobeData } from 'fluent-ffmpeg';
 import {
   IsDateString,
   IsDefined,

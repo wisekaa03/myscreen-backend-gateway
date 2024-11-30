@@ -2,7 +2,7 @@ import child from 'node:child_process';
 import util from 'node:util';
 import path from 'node:path';
 import { Logger } from '@nestjs/common';
-import type { FfprobeData } from 'media-probe';
+import type { FfprobeData } from 'fluent-ffmpeg';
 import { rimraf } from 'rimraf';
 
 import { FileType } from '@/enums/file-type.enum';
