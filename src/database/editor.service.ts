@@ -33,6 +33,7 @@ import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
+import { async } from 'rxjs';
 
 dayjs.extend(dayjsDuration);
 
@@ -354,46 +355,42 @@ export class EditorService {
 
   private async groupMonitorsPlaylist({
     userId,
+    monitor,
     groupMonitors,
     playlist,
     transact,
   }: {
     userId: string;
+    monitor: MonitorEntity;
     groupMonitors: MonitorGroupEntity[];
     playlist: PlaylistEntity;
     transact: EntityManager;
   }): Promise<MonitorGroupWithPlaylist[]> {
     const { files } = playlist;
 
-    const minRow = Math.min(...groupMonitors.map((m) => m.row));
-    const minCol = Math.min(...groupMonitors.map((m) => m.col));
-    const maxRow = Math.max(...groupMonitors.map((m) => m.row));
     const maxCol = Math.max(...groupMonitors.map((m) => m.col));
-    const widthSum = groupMonitors
-      .filter((m) => m.row === minRow)
-      .reduce(
-        (acc, { monitor: itemMonitor }) =>
-          itemMonitor.orientation === MonitorOrientation.Horizontal
-            ? acc + itemMonitor.width
-            : acc + itemMonitor.height,
-        0,
-      );
-    const heightSum = groupMonitors
-      .filter((m) => m.col === minCol)
-      .reduce(
-        (acc, { monitor: itemMonitor }) =>
-          itemMonitor.orientation === MonitorOrientation.Horizontal
-            ? acc + itemMonitor.height
-            : acc + itemMonitor.width,
-        0,
-      );
+    const maxRow = Math.max(...groupMonitors.map((m) => m.row));
 
-    // делим ее на количество мониторов
-    const widthMonitor = widthSum / maxRow;
-    const heightMonitor = heightSum / maxCol;
+    // Определяем общую ширину и высоту видеостены
+    const totalWidth = groupMonitors
+      .filter((m) => m.col === maxCol)
+      .reduce((acc, m) => acc + m.monitor.width, 0);
+    const totalHeight = groupMonitors
+      .filter((m) => m.row === maxRow)
+      .reduce((acc, m) => acc + m.monitor.height, 0);
+    await transact.update(MonitorEntity, monitor.id, {
+      width: totalWidth,
+      height: totalHeight,
+    });
 
     const groupMonitorsPromise = groupMonitors.map(async (groupMonitor) => {
-      const { name: monitorName, id: monitorId } = groupMonitor.monitor;
+      const { row, col } = groupMonitor;
+      const {
+        name: monitorName,
+        id: monitorId,
+        width: widthMonitor,
+        height: heightMonitor,
+      } = groupMonitor.monitor;
 
       // создаем плэйлист
       const playlistInsert = await transact.upsert(
@@ -424,20 +421,14 @@ export class EditorService {
         playlistId,
       });
 
-      const { row, col } = groupMonitor;
-
       const groupEditors = [];
 
       // создаем редакторы
       for (const file of files) {
-        const { width, height } = file;
-        const cropW = Math.floor((width / maxCol) * (widthSum / widthMonitor));
-        const cropH = Math.floor(
-          (height / maxRow) * (heightSum / heightMonitor),
-        );
-        const cropX = (col - 1) * cropW;
-        const cropY = (row - 1) * cropH;
-
+        const cropW = widthMonitor;
+        const cropH = heightMonitor;
+        const cropX = (col - 1) * widthMonitor;
+        const cropY = (row - 1) * heightMonitor;
         const editorInsert = await transact.upsert(
           EditorEntity,
           {
@@ -445,19 +436,23 @@ export class EditorService {
             userId,
             width: widthMonitor,
             height: heightMonitor,
-            fps: 25,
+            fps: 24,
             keepSourceAudio: true,
             totalDuration: 0,
             renderingStatus: RenderingStatus.Initial,
             renderingPercent: null,
             renderingError: null,
             renderedFile: null,
+            monitorId,
             playlistId,
 
             cropW,
             cropH,
             cropX,
             cropY,
+
+            totalWidth,
+            totalHeight,
           },
           { conflictPaths: ['userId', 'name'] },
         );
@@ -531,6 +526,7 @@ export class EditorService {
 
     return this.groupMonitorsPlaylist({
       userId,
+      monitor: bid.monitor,
       playlist,
       groupMonitors,
       transact,
@@ -573,6 +569,7 @@ export class EditorService {
           folder: true,
         },
         playlist: true,
+        monitor: true,
         user: true,
       },
     });

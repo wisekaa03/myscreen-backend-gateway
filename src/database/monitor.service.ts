@@ -338,6 +338,7 @@ export class MonitorService {
     const _transact = transact ?? this.entityManager;
 
     await _transact.transaction('REPEATABLE READ', async (transact) => {
+      // подумать над изменением SCALING: width и height
       const updated = await transact.update(MonitorEntity, id, update);
       if (!updated.affected) {
         throw new NotAcceptableError(`Monitor with this '${id}' not found`);
@@ -456,14 +457,31 @@ export class MonitorService {
     ) {
       throw new BadRequestError('Monitor width or height is empty');
     }
-    const prepareMonitor: Partial<MonitorEntity> = {
-      ...insert,
-      userId,
-    };
-
     return this.entityManager.transaction(
       'REPEATABLE READ',
       async (transact) => {
+        const prepareMonitor: Partial<MonitorEntity> = {
+          ...insert,
+          userId,
+        };
+        const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
+        let groupMonitors: MonitorEntity[] = [];
+        if (multipleBool) {
+          const multipleMonitorIds = groupIds.map((item) => item.monitorId);
+          groupMonitors = await transact.find(MonitorEntity, {
+            where: {
+              id: In(multipleMonitorIds),
+              multiple: MonitorMultiple.SINGLE,
+            },
+            select: ['id', 'monitorOnline', 'status', 'width', 'height'],
+          });
+          if (
+            Array.isArray(groupMonitors) &&
+            groupMonitors.length !== groupIds.length
+          ) {
+            throw new BadRequestError('Not found ID of some monitors');
+          }
+        }
         const monitorInserted = await transact.insert(
           MonitorEntity,
           transact.create(MonitorEntity, prepareMonitor),
@@ -479,29 +497,13 @@ export class MonitorService {
           throw new NotAcceptableError('Monitor not created');
         }
 
-        let groupMonitors: MonitorEntity[] = [];
         let groupOnlineMonitors = 0;
         let status = MonitorStatus.Online;
-        const multipleBool = Array.isArray(groupIds) && groupIds.length > 0;
         if (multiple !== MonitorMultiple.SINGLE) {
           if (!groupIds || groupIds.length === 0) {
             throw new BadRequestError('Group monitors ID is empty');
           }
 
-          const multipleMonitorIds = groupIds.map((item) => item.monitorId);
-          groupMonitors = await transact.find(MonitorEntity, {
-            where: {
-              id: In(multipleMonitorIds),
-              multiple: MonitorMultiple.SINGLE,
-            },
-            select: ['id', 'monitorOnline', 'status'],
-          });
-          if (
-            Array.isArray(groupMonitors) &&
-            groupMonitors.length !== groupIds.length
-          ) {
-            throw new BadRequestError('Not found ID of some monitors');
-          }
           groupOnlineMonitors = groupMonitors.reduce((accum, m) => {
             if (m.status === MonitorStatus.Online) {
               accum = accum + 1;

@@ -36,6 +36,7 @@ import { UserEntity } from './user.entity';
 import { EditorLayerEntity } from '@/database/editor-layer.entity';
 import { FileEntity } from './file.entity';
 import { PlaylistEntity } from './playlist.entity';
+import { MonitorEntity } from './monitor.entity';
 
 @Entity('editor')
 @Unique('IDX_editor_userId_name', ['userId', 'name'])
@@ -63,7 +64,7 @@ export class EditorEntity {
   @ApiProperty({
     description: 'Ширина редактора',
     type: 'integer',
-    example: 1920,
+    example: 0,
     required: true,
   })
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
@@ -74,12 +75,42 @@ export class EditorEntity {
   @ApiProperty({
     description: 'Высота редактора',
     type: 'integer',
-    example: 1080,
+    example: 0,
     required: true,
   })
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
   @Min(0, { message: i18nValidationMessage('validation.MIN') })
   height!: number;
+
+  @Column({
+    type: 'integer',
+    default: 0,
+    comment: 'Ширина редактора видеостены',
+  })
+  @ApiProperty({
+    description: 'Ширина редактора видеостены',
+    type: 'integer',
+    example: 0,
+    required: true,
+  })
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  @Min(0, { message: i18nValidationMessage('validation.MIN') })
+  totalWidth!: number;
+
+  @Column({
+    type: 'integer',
+    default: 1080,
+    comment: 'Высота монитора видеостены',
+  })
+  @ApiProperty({
+    description: 'Высота монитора видеостены',
+    type: 'integer',
+    example: 1080,
+    required: true,
+  })
+  @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
+  @Min(0, { message: i18nValidationMessage('validation.MIN') })
+  totalHeight!: number;
 
   @Column({ type: 'integer', default: 24 })
   @ApiProperty({
@@ -155,12 +186,31 @@ export class EditorEntity {
   @RelationId((editor: EditorEntity) => editor.renderedFile)
   renderedFileId!: string | null;
 
+  @ManyToOne(() => MonitorEntity, (monitor) => monitor.id, {
+    nullable: true,
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+    eager: true,
+  })
+  @JoinColumn({ foreignKeyConstraintName: 'FK_editor_monitor_id' })
+  monitor?: MonitorEntity | null;
+
+  @Column({
+    type: 'uuid',
+    nullable: true,
+    comment: 'Монитор сопоставленный с данным редактором',
+  })
+  @RelationId((editor: EditorEntity) => editor.monitor)
+  @IsUUID('all', { message: i18nValidationMessage('validation.IS_UUID') })
+  monitorId!: string | null;
+
   @ManyToOne(() => PlaylistEntity, (playlist) => playlist.id, {
     nullable: true,
     cascade: true,
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
-    eager: false,
+    eager: true,
   })
   @JoinColumn({ foreignKeyConstraintName: 'FK_editor_playlist_id' })
   playlist?: PlaylistEntity | null;
