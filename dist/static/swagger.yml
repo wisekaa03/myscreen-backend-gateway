@@ -3036,7 +3036,7 @@ paths:
 info:
   title: MyScreen backend API
   description: MyScreen backend API
-  version: 2.60.11
+  version: 2.60.15
   contact:
     name: Stanislav V Lanskoy
     url: https://wisekaa.dev
@@ -5432,6 +5432,8 @@ components:
               - name
               - width
               - height
+              - totalWidth
+              - totalHeight
               - fps
               - renderingStatus
               - renderingPercent
@@ -5541,6 +5543,14 @@ components:
           type: integer
           description: Высота редактора
           example: 1080
+        totalWidth:
+          type: integer
+          description: Ширина редактора видеостены
+          example: 0
+        totalHeight:
+          type: integer
+          description: Высота монитора видеостены
+          example: 0
         fps:
           type: integer
           description: Фреймрейт
@@ -5623,6 +5633,8 @@ components:
         - name
         - width
         - height
+        - totalWidth
+        - totalHeight
         - fps
         - renderingStatus
         - renderingPercent
