@@ -99,13 +99,13 @@ export class EditorEntity {
 
   @Column({
     type: 'integer',
-    default: 1080,
+    default: 0,
     comment: 'Высота монитора видеостены',
   })
   @ApiProperty({
     description: 'Высота монитора видеостены',
     type: 'integer',
-    example: 1080,
+    example: 0,
     required: true,
   })
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })

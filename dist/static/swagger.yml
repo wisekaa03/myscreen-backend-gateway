@@ -5550,7 +5550,7 @@ components:
         totalHeight:
           type: integer
           description: Высота монитора видеостены
-          example: 1080
+          example: 0
         fps:
           type: integer
           description: Фреймрейт
