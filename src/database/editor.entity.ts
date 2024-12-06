@@ -64,7 +64,7 @@ export class EditorEntity {
   @ApiProperty({
     description: 'Ширина редактора',
     type: 'integer',
-    example: 0,
+    example: 1920,
     required: true,
   })
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
@@ -75,7 +75,7 @@ export class EditorEntity {
   @ApiProperty({
     description: 'Высота редактора',
     type: 'integer',
-    example: 0,
+    example: 1080,
     required: true,
   })
   @IsInt({ message: i18nValidationMessage('validation.IS_INT') })
