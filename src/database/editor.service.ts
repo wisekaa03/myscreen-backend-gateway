@@ -13,7 +13,6 @@ import {
 } from '@/errors';
 import {
   MonitorMultiple,
-  MonitorOrientation,
   RenderingStatus,
   MsvcEditor,
   MSVC_EXCHANGE,
@@ -33,7 +32,6 @@ import { MonitorEntity } from './monitor.entity';
 import { PlaylistEntity } from './playlist.entity';
 import { MonitorGroupEntity } from './monitor.group.entity';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
-import { async } from 'rxjs';
 
 dayjs.extend(dayjsDuration);
 
