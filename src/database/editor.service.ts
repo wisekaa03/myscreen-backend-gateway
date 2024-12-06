@@ -16,6 +16,7 @@ import {
   RenderingStatus,
   MsvcEditor,
   MSVC_EXCHANGE,
+  MonitorOrientation,
 } from '@/enums';
 import {
   FindManyOptionsExt,
@@ -372,10 +373,22 @@ export class EditorService {
     // Определяем общую ширину и высоту видеостены
     const totalWidth = groupMonitors
       .filter((m) => m.col === maxCol)
-      .reduce((acc, m) => acc + m.monitor.width, 0);
+      .reduce(
+        (acc, m) =>
+          acc + m.monitor.orientation === MonitorOrientation.Horizontal
+            ? m.monitor.width
+            : m.monitor.height,
+        0,
+      );
     const totalHeight = groupMonitors
       .filter((m) => m.row === maxRow)
-      .reduce((acc, m) => acc + m.monitor.height, 0);
+      .reduce(
+        (acc, m) =>
+          acc + m.monitor.orientation === MonitorOrientation.Horizontal
+            ? m.monitor.height
+            : m.monitor.width,
+        0,
+      );
     await transact.update(MonitorEntity, monitor.id, {
       width: totalWidth,
       height: totalHeight,
