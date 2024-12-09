@@ -374,19 +374,19 @@ export class EditorService {
     const totalWidth = groupMonitors
       .filter((m) => m.col === maxCol)
       .reduce(
-        (acc, m) =>
-          acc + m.monitor.orientation === MonitorOrientation.Horizontal
-            ? m.monitor.width
-            : m.monitor.height,
+        (acc, { monitor: m }) =>
+          acc + m.orientation === MonitorOrientation.Horizontal
+            ? m.width
+            : m.height,
         0,
       );
     const totalHeight = groupMonitors
       .filter((m) => m.row === maxRow)
       .reduce(
-        (acc, m) =>
-          acc + m.monitor.orientation === MonitorOrientation.Horizontal
-            ? m.monitor.height
-            : m.monitor.width,
+        (acc, { monitor: m }) =>
+          acc + m.orientation === MonitorOrientation.Horizontal
+            ? m.height
+            : m.width,
         0,
       );
     await transact.update(MonitorEntity, monitor.id, {
@@ -440,38 +440,39 @@ export class EditorService {
         const cropH = heightMonitor;
         const cropX = (col - 1) * widthMonitor;
         const cropY = (row - 1) * heightMonitor;
-        const editorInsert = await transact.upsert(
-          EditorEntity,
-          {
-            name: `AUTO: monitor=${monitorName}, file=${file.name}, playlist=${playlist.name}`,
-            userId,
-            width: widthMonitor,
-            height: heightMonitor,
-            fps: 24,
-            keepSourceAudio: true,
-            totalDuration: 0,
-            renderingStatus: RenderingStatus.Initial,
-            renderingPercent: null,
-            renderingError: null,
-            renderedFile: null,
-            monitorId,
-            playlistId,
+        const editor = (
+          await transact.upsert(
+            EditorEntity,
+            {
+              name: `AUTO: monitor=${monitorName}, file=${file.name}, playlist=${playlist.name}`,
+              userId,
+              width: widthMonitor,
+              height: heightMonitor,
+              fps: 24,
+              keepSourceAudio: true,
+              totalDuration: 0,
+              renderingStatus: RenderingStatus.Initial,
+              renderingPercent: null,
+              renderingError: null,
+              renderedFile: null,
+              monitorId,
+              playlistId,
 
-            cropW,
-            cropH,
-            cropX,
-            cropY,
+              cropW,
+              cropH,
+              cropX,
+              cropY,
 
-            totalWidth,
-            totalHeight,
-          },
-          { conflictPaths: ['userId', 'name'] },
-        );
-        const editor = editorInsert.identifiers[0] as EditorEntity;
+              totalWidth,
+              totalHeight,
+            },
+            { conflictPaths: ['userId', 'name'] },
+          )
+        ).identifiers[0] as EditorEntity;
         if (!editor) {
           throw new InternalServerError();
         }
-        const editorId = editor.id;
+        const { id: editorId } = editor;
 
         // ...и добавляем в редактор видео-слой с файлом
         await this.createLayer({

@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import {
   createReadStream,
-  promises as fs,
   createWriteStream,
+  promises as fs,
   ReadStream,
 } from 'node:fs';
 import { Readable } from 'node:stream';
@@ -49,7 +49,6 @@ import {
   rootFolderName,
 } from '@/constants';
 import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
-import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 import { TypeOrmFind } from '@/utils/typeorm.find';
 import { fileExist } from '@/utils/file-exist';
 import { FileEntity } from '@/database/file.entity';
@@ -60,6 +59,7 @@ import { FolderEntity } from './folder.entity';
 import { WsStatistics } from './ws.statistics';
 import { FileExtView } from './file-ext.view';
 import { I18nPath } from '@/i18n';
+import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 
 @Injectable()
 export class FileService {
@@ -466,12 +466,6 @@ export class FileService {
           buffer,
           hash,
         } = fileToSave;
-        let filesBuffer: ReadStream | Buffer;
-        if (Buffer.isBuffer(buffer)) {
-          filesBuffer = buffer;
-        } else {
-          filesBuffer = createReadStream(path);
-        }
 
         const [mime] = mimetype.split('/');
         const extension = pathParse(name).ext.slice(1);
@@ -488,6 +482,18 @@ export class FileService {
           height = Number(stream.height ?? 0);
         }
 
+        let filesBuffer: ReadStream | Buffer;
+        let preview: Buffer | undefined;
+        if (Buffer.isBuffer(buffer)) {
+          filesBuffer = buffer;
+        } else {
+          filesBuffer = createReadStream(path);
+          preview = await FfMpegPreview(type, path).catch((error) => {
+            this.logger.error(error);
+            return undefined;
+          });
+        }
+
         const fileEntity: DeepPartial<FileEntity> = {
           userId,
           folderId,
@@ -500,7 +506,7 @@ export class FileService {
           type,
           extension,
           hash,
-          preview: undefined,
+          preview: preview ? { preview } : undefined,
         };
 
         const Key = `${folderId}/${hash}-${getS3Name(name)}`;
@@ -908,57 +914,38 @@ export class FileService {
     }
 
     let preview: Buffer;
-    const outPath = pathJoin(
-      this.downloadDir,
-      `${filenameParsed.name}-preview${ext}`,
-    );
-    if (fileExist(outPath)) {
-      this.logger.debug(`Preview file "${file.name}" has cached`);
-
-      preview = await fs.readFile(outPath);
-    } else if (file.preview) {
+    if (file.preview) {
       preview = Buffer.from(file.preview.preview);
     } else {
       try {
-        const data: GetObjectCommandOutput = await this.getS3Object(file);
-        if (data.Body instanceof Readable) {
-          this.logger.debug(
-            `Preview: the file "${file.name}" has been downloaded`,
-          );
-
-          await StreamPromises.pipeline(data.Body, createWriteStream(filename));
-
-          preview = await FfMpegPreview(
-            file.type,
-            file.info || { streams: [], format: {}, chapters: [] },
-            filename,
-            outPath,
-          )
-            .then(() => {
-              this.logger.debug(
-                `Preview: the preview file "${file.name}" has been created`,
-              );
-              if (fileExist(filename)) {
-                this.logger.debug(
-                  `Preview: the file "${file.name}" has been deleted`,
-                );
-                rimraf(filename);
-              }
-            })
-            .then(() => fs.readFile(outPath))
-            .then((preview) => {
-              this.filePreviewRepository.upsert(
-                {
-                  fileId: file.id,
-                  preview,
-                },
-                ['fileId'],
-              );
-              return preview;
-            });
-        } else {
-          throw new Error('Body is not Readable');
+        const { size } = await fs.stat(file.name).catch(() => ({
+          size: -1,
+        }));
+        if (file.filesize !== size) {
+          const data: GetObjectCommandOutput = await this.getS3Object(file);
+          if (data.Body instanceof Readable) {
+            this.logger.debug(
+              `Preview: the file "${file.name}" has been downloaded`,
+            );
+            await StreamPromises.pipeline(
+              data.Body,
+              createWriteStream(filename),
+            );
+          } else {
+            throw new NotFoundError('S3 error');
+          }
         }
+
+        preview = await FfMpegPreview(file.type, filename).catch((error) => {
+          throw new NotFoundError(error);
+        });
+        await this.filePreviewRepository.upsert(
+          {
+            fileId: file.id,
+            preview,
+          },
+          ['fileId'],
+        );
       } catch (error: any) {
         this.logger.error(
           `S3 Error preview: "${file.name}" (${getS3FullName(file)}): ${error?.message}`,
