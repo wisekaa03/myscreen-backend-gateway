@@ -375,18 +375,20 @@ export class EditorService {
       .filter((m) => m.col === maxCol)
       .reduce(
         (acc, { monitor: m }) =>
-          acc + m.orientation === MonitorOrientation.Horizontal
+          acc +
+          (m.orientation === MonitorOrientation.Horizontal
             ? m.width
-            : m.height,
+            : m.height),
         0,
       );
     const totalHeight = groupMonitors
       .filter((m) => m.row === maxRow)
       .reduce(
         (acc, { monitor: m }) =>
-          acc + m.orientation === MonitorOrientation.Horizontal
+          acc +
+          (m.orientation === MonitorOrientation.Horizontal
             ? m.height
-            : m.width,
+            : m.width),
         0,
       );
     await transact.update(MonitorEntity, monitor.id, {

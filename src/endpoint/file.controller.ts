@@ -316,9 +316,8 @@ export class FileController {
         'height',
         'folderId',
         'preview',
-        'folder',
       ],
-      relations: { preview: true, folder: true },
+      relations: { preview: true },
     });
     if (!file) {
       throw new NotFoundError<I18nPath>('error.file.not_exist', {
