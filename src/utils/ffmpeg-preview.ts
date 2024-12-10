@@ -46,12 +46,9 @@ export async function FfMpegPreview(
       await new Promise<void>((resolve, reject) => {
         Ffmpeg()
           .input(inputFile)
-          .thumbnails({
-            folder: dir,
-            filename: '%b-preview-%0i.jpg',
-            count: 10,
-            size: `${previewWidth}x${previewHeight}`,
-          })
+          .outputOptions(['-hide_banner', ...options])
+          .videoCodec('mjpeg')
+          .format('mjpeg')
           .on('error', reject)
           .on('end', () => {
             ffmpegStream = Ffmpeg()
@@ -68,6 +65,12 @@ export async function FfMpegPreview(
                 resolve();
               })
               .pipe();
+          })
+          .screenshots({
+            folder: dir,
+            filename: '%b-preview-%0i.jpg',
+            count: 10,
+            size: `${previewWidth}x${previewHeight}`,
           });
       });
 
