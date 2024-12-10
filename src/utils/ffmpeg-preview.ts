@@ -15,24 +15,24 @@ export async function FfMpegPreview(
 ): Promise<Buffer> {
   const { dir, name } = pathParse(inputFile);
   let ffmpegStream: Writable = new Writable();
+  const options: string[] = [];
+  if (process.env.NODE_ENV !== 'production') {
+    process.env['FFREPORT'] = `file=${pathJoin(dir, `${name}-%t.log`)}`;
+    options.push('-loglevel debug', '-report');
+  } else {
+    options.push('-loglevel fatal');
+  }
 
   switch (type) {
     case FileType.IMAGE: {
       await new Promise((resolve, reject) => {
-        process.env['FFREPORT'] = `file=${pathJoin(dir, `${name}-%t.log`)}`;
         ffmpegStream = Ffmpeg()
           .input(inputFile)
           .videoCodec('mjpeg')
           .outputFormat('mjpeg')
           .noAudio()
           .size(`${previewWidth}x${previewHeight}`)
-          .outputOptions([
-            '-q:v 100',
-            '-hide_banner',
-            '-loglevel fatal',
-            // '-loglevel debug',
-            // '-report',
-          ])
+          .outputOptions(['-q:v 100', '-hide_banner', ...options])
           .on('error', reject)
           .on('end', resolve)
           .pipe();
@@ -44,15 +44,11 @@ export async function FfMpegPreview(
     case FileType.VIDEO: {
       const outPattern = pathJoin(dir, `${name}-preview-%02d.jpg`);
       await new Promise<void>((resolve, reject) => {
-        process.env['FFREPORT'] = `file=${pathJoin(dir, `${name}-%t.log`)}`;
         Ffmpeg()
           .input(inputFile)
-          .thumbnails({
-            folder: dir,
-            filename: '%b-preview-%0i.jpg',
-            count: 10,
-            size: `${previewWidth}x${previewHeight}`,
-          })
+          .outputOptions(['-hide_banner', ...options])
+          .videoCodec('mjpeg')
+          .format('mjpeg')
           .on('error', reject)
           .on('end', () => {
             ffmpegStream = Ffmpeg()
@@ -62,18 +58,19 @@ export async function FfMpegPreview(
               .videoFilters([
                 { filter: 'loop', options: { loop: 10, size: 10 } },
               ])
-              .outputOptions([
-                '-hide_banner',
-                '-loglevel fatal',
-                // '-loglevel debug',
-                // `-report`,
-              ])
+              .outputOptions(['-hide_banner', ...options])
               .on('error', reject)
               .on('end', () => {
                 rimraf(pathJoin(dir, `${name}-preview-??.jpg`), { glob: true });
                 resolve();
               })
               .pipe();
+          })
+          .screenshots({
+            folder: dir,
+            filename: '%b-preview-%0i.jpg',
+            count: 10,
+            size: `${previewWidth}x${previewHeight}`,
           });
       });
 
