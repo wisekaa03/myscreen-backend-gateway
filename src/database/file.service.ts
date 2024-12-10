@@ -48,8 +48,11 @@ import {
   filePreviewXLS,
   rootFolderName,
 } from '@/constants';
+import { I18nPath } from '@/i18n';
 import { getS3FullName, getS3Name } from '@/utils/get-s3-name';
 import { TypeOrmFind } from '@/utils/typeorm.find';
+import { FfMpegPreview } from '@/utils/ffmpeg-preview';
+import { dirExist } from '@/utils/dir-exist';
 import { fileExist } from '@/utils/file-exist';
 import { FileEntity } from '@/database/file.entity';
 import { FilePreviewEntity } from '@/database/file-preview.entity';
@@ -58,8 +61,6 @@ import { PlaylistEntity } from './playlist.entity';
 import { FolderEntity } from './folder.entity';
 import { WsStatistics } from './ws.statistics';
 import { FileExtView } from './file-ext.view';
-import { I18nPath } from '@/i18n';
-import { FfMpegPreview } from '@/utils/ffmpeg-preview';
 
 @Injectable()
 export class FileService {
@@ -841,7 +842,9 @@ export class FileService {
     res: ExpressResponse,
     file: FileEntity,
   ): Promise<void> {
-    await fs.mkdir(this.downloadDir, { recursive: true });
+    if (!dirExist(this.downloadDir)) {
+      await fs.mkdir(this.downloadDir, { recursive: true });
+    }
     const filename = pathJoin(this.downloadDir, file.name);
     const filenameParsed = pathParse(filename);
     let { ext } = filenameParsed;
