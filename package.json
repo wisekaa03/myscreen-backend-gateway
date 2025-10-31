@@ -145,7 +145,7 @@
     "rimraf": "^6.0.1",
     "rxjs": "^7.8.1",
     "swagger-ui-dist": "^5.18.2",
-    "typeorm": "^0.3.20",
+    "typeorm": "^0.3.26",
     "ws": "^8.18.0"
   },
   "devDependencies": {
