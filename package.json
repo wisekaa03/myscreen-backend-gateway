@@ -125,7 +125,7 @@
     "geojson": "^0.5.0",
     "ioredis": "^5.4.1",
     "iterare": "^1.2.1",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "jsonwebtoken": "^9.0.2",
     "lodash.intersection": "^4.4.0",
     "ms": "^2.1.3",
